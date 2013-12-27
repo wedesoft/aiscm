@@ -6,6 +6,7 @@
 .*.un~
 *.o
 *.html
+acinclude.m4
 aclocal.m4
 autom4te.cache
 aiscm-*.tar.bz2

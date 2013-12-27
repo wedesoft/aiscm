@@ -5,6 +5,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
+PKG_PROG_PKG_CONFIG
 AM_CONFIG_HEADER(config.h)
 AC_CHECK_PROG(TOUCH,touch,touch)
 AC_CHECK_PROG(PANDOC,pandoc,pandoc)
@@ -12,6 +13,8 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 PKG_CHECK_MODULES([GUILE], [guile-2.0])
+GUILE_SITE_DIR
+GUILE_EXT_DIR
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,
