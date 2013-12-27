@@ -13,8 +13,10 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 PKG_CHECK_MODULES([GUILE], [guile-2.0])
+GUILE_PROGS
 GUILE_SITE_DIR
 GUILE_EXT_DIR
+GUILE_CACHE_DIR
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,

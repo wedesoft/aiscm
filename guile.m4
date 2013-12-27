@@ -156,10 +156,29 @@ AC_DEFUN([GUILE_EXT_DIR],
   AC_MSG_CHECKING(for Guile extensions directory)
   GUILE_EXT=`[$GUILE_CONFIG] info extensiondir`
   if test "$GUILE_EXT" = ""; then
-     GUILE_EXT=`[$GUILE_CONFIG] info exec_prefix`/lib/guile/2.0/extensions
+     AC_MSG_ERROR([could not determine extensions directory])
   fi
   AC_MSG_RESULT($GUILE_EXT)
   AC_SUBST(GUILE_EXT)
+ ])
+
+# GUILE_CACHE_DIR -- find path to Guile "ccachedir" directory
+#
+# Usage: GUILE_CACHE_DIR
+#
+# This looks for Guile's "ccachedir" directory.
+#
+# The variable is marked for substitution, as by @code{AC_SUBST}.
+#
+AC_DEFUN([GUILE_CACHE_DIR],
+ [AC_REQUIRE([GUILE_PROGS])dnl
+  AC_MSG_CHECKING(for Guile compiler cache directory)
+  GUILE_CACHE=`[$GUILE] -c "(display (cdr (assoc 'ccachedir %guile-build-info)))"`
+  if test "$GUILE_CACHE" = ""; then
+     AC_MSG_ERROR([could not determine compiler cache directory])
+  fi
+  AC_MSG_RESULT($GUILE_CACHE)
+  AC_SUBST(GUILE_CACHE)
  ])
 
 # GUILE_CHECK -- evaluate Guile Scheme code and capture the return value

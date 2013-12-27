@@ -5,6 +5,7 @@
 .*.swp
 .*.un~
 *.o
+*.go
 *.html
 acinclude.m4
 aclocal.m4
