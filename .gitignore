@@ -1,3 +1,7 @@
+.deps
+.libs
+*.la
+*.lo
 .*.swp
 .*.un~
 *.o

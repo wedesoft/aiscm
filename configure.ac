@@ -11,6 +11,7 @@ AC_CHECK_PROG(PANDOC,pandoc,pandoc)
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
+PKG_CHECK_MODULES([GUILE], [guile-2.0])
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,
