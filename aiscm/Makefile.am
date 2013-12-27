@@ -14,6 +14,9 @@ libguile_bessel_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_bessel_la_LDFLAGS =
 libguile_bessel_la_LIBADD = $(GUILE_LIBS)
 
+install-data-hook:
+	$(TOUCH) $(cachedir)/bessel.go
+
 .scm.go:
 	$(GUILE_TOOLS) compile $< -o $@
 
