@@ -4,15 +4,15 @@ sitedir = $(GUILE_SITE)/math
 site_DATA = bessel.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-bessel.la
+extension_LTLIBRARIES = guile-bessel.la
 
 cachedir = $(GUILE_CACHE)/math
 cache_DATA = bessel.go
 
-libguile_bessel_la_SOURCES = bessel.c
-libguile_bessel_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_bessel_la_LDFLAGS =
-libguile_bessel_la_LIBADD = $(GUILE_LIBS)
+guile_bessel_la_SOURCES = bessel.c
+guile_bessel_la_CFLAGS = $(GUILE_CFLAGS)
+guile_bessel_la_LDFLAGS = -module -no-undefined -avoid-version
+guile_bessel_la_LIBADD = $(GUILE_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(cachedir)/bessel.go
