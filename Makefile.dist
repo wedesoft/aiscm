@@ -1,0 +1,10 @@
+all:
+	# cat ... > acinclude.m4
+	aclocal
+	autoheader
+	libtoolize --force || glibtoolize --force
+	automake -a --foreign
+	autoconf
+
+configure:
+	./configure

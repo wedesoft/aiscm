@@ -1,0 +1,7 @@
+SUFFIXES =
+
+CLEANFILES = *~ *.tmp
+
+DISTCLEANFILES = .*.un~ .*.swp
+
+MAINTAINERCLEANFILES = Makefile.in
