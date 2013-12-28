@@ -12,7 +12,7 @@ Usage
 (use-modules (system foreign))
 (use-modules (rnrs bytevectors))
 (use-modules (math aiscm))
-(malloc 1024)
+(make-malloc 1024)
 ```
 
 External links
