@@ -1,0 +1,6 @@
+(define-module (math aiscm)
+  #:export (malloc))
+;(use-modules (rnrs bytevectors))
+(load-extension "libguile-aiscm" "init_aiscm")
+;(define (malloc size)
+;  (make-bytevector size))
