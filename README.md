@@ -4,6 +4,22 @@ AIscm
 [**AIscm**][1] is a **real-time computer vision extension** for the
 [**Guile programming language**][2].
 
+Requirements
+------------
+
+```Shell
+sudo aptitude install guile-2.0 guile-2.0-dev guile-library
+```
+
+Installation
+------------
+
+```Shell
+./configure
+make
+sudo make install
+```
+
 Usage
 -----
 
