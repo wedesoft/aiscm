@@ -27,7 +27,7 @@ Usage
 (use-modules (oop goops))
 (use-modules (system foreign))
 (use-modules (rnrs bytevectors))
-(use-modules (math aiscm))
+(use-modules (aiscm malloc))
 (make-malloc 1024)
 ```
 

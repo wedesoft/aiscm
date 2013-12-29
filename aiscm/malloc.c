@@ -19,7 +19,7 @@ SCM malloc_plus_wrapper(SCM malloc, SCM offset)
                                     SCM_EOL)));
 }
 
-void init_aiscm(void)
+void init_malloc(void)
 {
   scm_c_define_gsubr("make-malloc", 1, 0, 0, make_malloc_wrapper);
   scm_c_define_gsubr("malloc-plus", 2, 0, 0, malloc_plus_wrapper);
