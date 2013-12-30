@@ -1,7 +1,7 @@
-TESTS_ENVIRONMENT = $(GUILE)
+TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs $(GUILE) --no-auto-compile -L $(top_builddir)
 TESTS = test_malloc.scm
 
-EXTRA_DIST = test_malloc.scm
+EXTRA_DIST = $(TESTS)
 
 CLEANFILES = *~ *.tmp
 

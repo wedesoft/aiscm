@@ -14,7 +14,7 @@ sudo aptitude install guile-2.0 guile-2.0-dev
 ```
 
 For running the tests you need to install *unit-test.scm*. It is part of the
-*guile-library* package:
+[guile-library][3] package:
 
 ```Shell
 sudo aptitude install guile-library
@@ -55,3 +55,4 @@ External links
 
 [1]: https://github.com/wedesoft/aiscm "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
+[3]: http://www.nongnu.org/guile-lib/
