@@ -1,0 +1,8 @@
+(use-modules (oop goops)
+             (unit-test))
+(define-class <test-malloc> (<test-case>))
+(define-method (test-compare (self <test-malloc>))
+  (assert-equal 2 2))
+(define-method (test-other (self <test-malloc>))
+  (assert-equal 3 3))
+(exit-with-summary (run-all-defined-test-cases))

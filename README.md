@@ -7,8 +7,17 @@ AIscm
 Requirements
 ------------
 
+You need to install [Guile][2] and its development headers.
+
 ```Shell
-sudo aptitude install guile-2.0 guile-2.0-dev guile-library
+sudo aptitude install guile-2.0 guile-2.0-dev
+```
+
+For running the tests you need to install *unit-test.scm*. It is part of the
+*guile-library* package:
+
+```Shell
+sudo aptitude install guile-library
 ```
 
 Installation

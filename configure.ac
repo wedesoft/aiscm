@@ -35,7 +35,8 @@ prefix                               : $prefix
 debug mode                           : $enable_debug"
 
 AC_OUTPUT(Makefile
-          aiscm/Makefile,
+          aiscm/Makefile
+          test/Makefile,
           echo "$info",
           info="$info")
 
