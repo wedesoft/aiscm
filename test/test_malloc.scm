@@ -1,7 +1,0 @@
-(use-modules (oop goops)
-             (unit-test)
-             (aiscm malloc))
-(define-class <test-malloc> (<test-case>))
-(define-method (test-make-malloc (self <test-malloc>))
-  (assert-equal (length (make-malloc 100)) 3))
-(exit-with-summary (run-all-defined-test-cases))

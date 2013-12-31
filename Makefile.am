@@ -1,12 +1,12 @@
 SUFFIXES = .md .html
 
-SUBDIRS = aiscm test
+SUBDIRS = aiscm tests
 
 ACLOCAL_AMFLAGS = -I m4
 
 noinst_DATA = README.html TODO.html
 
-EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING
+EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING repl.sh
 
 .md.html:
 	$(PANDOC) -o $@ $< || echo "Install Pandoc to compile Markdown to HTML"

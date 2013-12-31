@@ -20,6 +20,12 @@ For running the tests you need to install *unit-test.scm*. It is part of the
 sudo aptitude install guile-library
 ```
 
+You can also install the *Guile documentation* (info pages):
+
+```Shell
+sudo aptitude install guile-2.0-doc
+```
+
 Installation
 ------------
 
