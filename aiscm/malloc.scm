@@ -7,7 +7,10 @@
             malloc-write))
 (load-extension "libguile-malloc" "init_malloc")
 (define* (malloc-read malloc size #:optional (uvec_type 'vu8))
-  (pointer->bytevector (car malloc) size 0 uvec_type))
+  (if
+    (> size (caddr malloc))
+    (throw 'malloc-read-size-overrun size (caddr malloc))
+    (pointer->bytevector (car malloc) size 0 uvec_type)))
 (define* (malloc-write malloc bv)
   (begin
     (bytevector-copy!
