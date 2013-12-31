@@ -11,6 +11,10 @@
   (assert-equal 10 (caddr m)))
 (define-method (test-malloc-plus-reduces-size (self <test-malloc>))
   (assert-equal 4 (caddr (malloc-plus m 6))))
+(define-method (test-malloc-plus-check-offset-gt-zero (self <test-malloc>))
+  (assert-exception (malloc-plus m -1)))
+(define-method (test-malloc-plus-check-offset-lt-size (self <test-malloc>))
+  (assert-exception (malloc-plus m 11)))
 (define-method (test-malloc-read-write (self <test-malloc>))
   (begin
     (malloc-write m #vu8(2 3 5 7))
