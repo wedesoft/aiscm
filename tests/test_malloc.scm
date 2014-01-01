@@ -32,21 +32,4 @@
   (assert-exception (malloc-read m 11)))
 (define-method (test-malloc-write-overrun (self <test-malloc>))
   (assert-exception (malloc-write m #vu8(1 2 3 4 5 6 7 8 9 10 11))))
-(define-method (test-malloc-read-write-s16 (self <test-malloc>))
-  (begin
-    (malloc-write m #s16(2 3))
-    (assert-equal #s16(2 3) (malloc-read m 2 's16))))
-(define-method (test-malloc-read-write-s16-with-offset (self <test-malloc>))
-  (begin
-    (malloc-write m #s16(2 3 5 7))
-    (assert-equal #s16(3 5 7) (malloc-read (malloc-plus m 2) 3 's16))))
-(define-method (test-malloc-read-write-overlap-s16 (self <test-malloc>))
-  (begin
-    (malloc-write m #s16(1 1 1 1))
-    (malloc-write m #s16(2 2))
-    (assert-equal #s16(2 2 1 1) (malloc-read m 4 's16))))
-(define-method (test-malloc-read-overrun-s16 (self <test-malloc>))
-  (assert-exception (malloc-read m 6 's16)))
-(define-method (test-malloc-write-overrun-s16 (self <test-malloc>))
-  (assert-exception (malloc-write m #s16(1 2 3 4 5 6))))
 (exit-with-summary (run-all-defined-test-cases))
