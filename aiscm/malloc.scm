@@ -6,11 +6,8 @@
             get-memory
             get-size
             plus
-            read
-            write))
-;            malloc-plus
-;            malloc-read
-;            malloc-write))
+            read-bytes
+            write-bytes))
 (load-extension "libguile-malloc" "init_malloc")
 (define-class <malloc> ()
   (memory #:init-keyword #:memory #:getter get-memory)
@@ -19,7 +16,7 @@
 (define (make-malloc size)
   (let ((ptr (gc-malloc-pointerless size)))
     (make <malloc> #:memory ptr #:base ptr #:size size)))
-(define-method (plus (self <malloc>) offset)
+(define-method (plus (self <malloc>) (offset <integer>))
   (let ((size (get-size self)))
     (cond
       ((< offset 0) (throw 'malloc-plus-offset-lt-zero offset))
@@ -29,14 +26,12 @@
           #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
           #:base (slot-ref self 'base)
           #:size (- size offset))))))
-(define-generic read)
-(define-method (read (self <malloc>) size)
+(define-method (read-bytes (self <malloc>) (size <integer>))
   (if
     (> size (get-size self))
     (throw 'malloc-read-size-overrun size (get-size self))
     (pointer->bytevector (get-memory self) size)))
-(define-generic write)
-(define-method (write (self <malloc>) bv)
+(define-method (write-bytes (self <malloc>) (bv <bytevector>))
   (begin
     (bytevector-copy!
       bv 0
