@@ -56,8 +56,11 @@ External links
     * [Memory blocks](http://www.gnu.org/software/guile/manual/html\_node/Memory-Blocks.html)
     * [Byte vectors](http://www.gnu.org/software/guile/manual/html_node/Bytevectors.html)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
+    * [Generic function and method examples](http://www.gnu.org/software/guile/manual/html_node/Generic-Function-and-Method-Examples.html)
 * [Noweb literate programming](http://www.cs.tufts.edu/~nr/noweb/)
 * [Markdown syntax](http://daringfireball.net/projects/markdown/syntax)
+* [Xbyak - x86, x64 JIT assembler](http://homepage1.nifty.com/herumi/soft/xbyak_e.html)
+* [Haberman - The joy of simple JITs](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html)
 
 [1]: https://github.com/wedesoft/aiscm "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
