@@ -5,7 +5,6 @@
   #:export (make-malloc
             get-memory
             get-size
-            plus
             read-bytes
             write-bytes))
 (load-extension "libguile-malloc" "init_malloc")
@@ -16,7 +15,7 @@
 (define (make-malloc size)
   (let ((ptr (gc-malloc-pointerless size)))
     (make <malloc> #:memory ptr #:base ptr #:size size)))
-(define-method (plus (self <malloc>) (offset <integer>))
+(define-method (+ (self <malloc>) (offset <integer>))
   (let ((size (get-size self)))
     (cond
       ((< offset 0) (throw 'malloc-plus-offset-lt-zero offset))

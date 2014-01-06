@@ -8,11 +8,11 @@
 (define-method (test-make-malloc-stores-size (self <test-malloc>))
   (assert-equal 10 (get-size m)))
 (define-method (test-malloc-plus-reduces-size (self <test-malloc>))
-  (assert-equal 4 (get-size (plus m 6))))
+  (assert-equal 4 (get-size (+ m 6))))
 (define-method (test-malloc-plus-check-offset-gt-zero (self <test-malloc>))
-  (assert-exception (plus m -1)))
+  (assert-exception (+ m -1)))
 (define-method (test-malloc-plus-check-offset-lt-size (self <test-malloc>))
-  (assert-exception (plus m 11)))
+  (assert-exception (+ m 11)))
 (define-method (test-malloc-read-write (self <test-malloc>))
   (begin
     (write-bytes m #vu8(2 3 5 7))
@@ -20,7 +20,7 @@
 (define-method (test-malloc-read-write-with-offset (self <test-malloc>))
   (begin
     (write-bytes m #vu8(2 3 5 7))
-    (assert-equal #vu8(3 5 7) (read-bytes (plus m 1) 3))))
+    (assert-equal #vu8(3 5 7) (read-bytes (+ m 1) 3))))
 (define-method (test-malloc-read-write-overlap (self <test-malloc>))
   (begin
     (write-bytes m #vu8(1 1 1 1))
