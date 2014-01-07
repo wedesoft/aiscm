@@ -39,3 +39,8 @@
       (pointer->bytevector (get-memory self) (get-size self)) 0
       (bytevector-length bv))
     bv))
+(define-generic display)
+(define-method (display (self <malloc>) port)
+  (display "#<malloc size=")
+  (display (get-size self))
+  (display "#>"))

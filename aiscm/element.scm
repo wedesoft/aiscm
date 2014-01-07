@@ -1,0 +1,5 @@
+(define-module (aiscm element)
+  #:use-module (oop goops)
+  #:export (<element>))
+(define-class <element> ()
+  (value #:init-keyword #:value))

@@ -1,7 +1,7 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_SCRIPTS = malloc.scm bool.scm
+site_SCRIPTS = malloc.scm element.scm bool.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-malloc.la
@@ -19,7 +19,7 @@ install-data-hook:
 	$(TOUCH) $(cachedir)/bool.go
 
 .scm.go:
-	$(GUILE_TOOLS) compile $< -o $@
+	$(GUILE_TOOLS) compile $< -L$(top_builddir) -o $@
 
 EXTRA_DIST = $(site_SCRIPTS)
 

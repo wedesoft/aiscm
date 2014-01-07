@@ -1,12 +1,11 @@
 (define-module (aiscm bool)
+  #:use-module (aiscm element)
   #:use-module (oop goops)
   #:use-module (rnrs bytevectors)
   #:export (<bool>
             make-bool
             pack
             unpack-bool))
-(define-class <element> ()
-  (value #:init-keyword #:value))
 (define-class <bool> (<element>))
 (define (make-bool value)
   (make <bool> #:value value))
