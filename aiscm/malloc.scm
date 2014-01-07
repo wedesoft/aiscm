@@ -2,7 +2,8 @@
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
-  #:export (make-malloc
+  #:export (<malloc>
+            make-malloc
             get-memory
             get-size
             read-bytes
@@ -15,6 +16,7 @@
 (define (make-malloc size)
   (let ((ptr (gc-malloc-pointerless size)))
     (make <malloc> #:memory ptr #:base ptr #:size size)))
+(define-generic +)
 (define-method (+ (self <malloc>) (offset <integer>))
   (let ((size (get-size self)))
     (cond
