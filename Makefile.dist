@@ -1,5 +1,4 @@
 all:
-	cat guile.m4 > acinclude.m4
 	aclocal
 	autoheader
 	libtoolize --force || glibtoolize --force
