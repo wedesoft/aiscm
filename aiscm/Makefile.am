@@ -1,13 +1,13 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_SCRIPTS = malloc.scm element.scm bool.scm
+site_SCRIPTS = malloc.scm element.scm bool.scm int.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-malloc.la
 
 cachedir = $(GUILE_CACHE)/aiscm
-cache_DATA = malloc.go bool.go
+cache_DATA = malloc.go element.go bool.go int.go
 
 libguile_malloc_la_SOURCES = malloc.c
 libguile_malloc_la_CFLAGS = $(GUILE_CFLAGS)
