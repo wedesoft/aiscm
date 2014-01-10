@@ -1,11 +1,14 @@
-TESTS_ENVIRONMENT = \
-  LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) \
-	$(GUILE) --no-auto-compile -L $(top_builddir)
-TESTS = test_malloc.scm test_bool.scm test_int.scm
+TEST_EXTENSIONS = .scm
+TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
+SCM_LOG_COMPILE = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(srcdir)
+SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
+
+#TESTS = test_malloc.scm test_bool.scm test_int.scm
+TESTS = test_simple.scm
 
 EXTRA_DIST = $(TESTS)
 
-CLEANFILES = *~ *.tmp
+CLEANFILES = *~ *.tmp *.log *.trs
 
 DISTCLEANFILES = .*.un~ .*.swp
 

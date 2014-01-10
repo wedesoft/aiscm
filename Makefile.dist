@@ -1,5 +1,5 @@
 all:
-	aclocal
+	aclocal -I m4
 	autoheader
 	libtoolize --force || glibtoolize --force
 	automake -a --foreign
