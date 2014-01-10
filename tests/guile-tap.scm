@@ -1,8 +1,9 @@
 (define-module (guile-tap)
- :export (planned-tests ok bail-out! diagnostic skip todo)
+  #:export (planned-tests ok bail-out! diagnostic skip todo)
+  #:export-syntax (throws?)
 
 ; ~& in format strings
- :use-module (ice-9 format))
+  #:use-module (ice-9 format))
 
 ; Internal variables
 
@@ -81,3 +82,7 @@
  (lambda (tests . why)
   (do-directive tests "todo" why)))
 
+(define-syntax-rule (throws? expr)
+  (catch #t
+    (lambda () expr (throw 'test-failed))
+    (lambda (key . args) (case key ((test-failed) #f) (else #t)))))
