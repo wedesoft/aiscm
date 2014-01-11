@@ -13,13 +13,6 @@ You need to install [Guile][2] and its development headers.
 sudo aptitude install guile-2.0 guile-2.0-dev
 ```
 
-For running the tests you need to install *unit-test.scm*. It is part of the
-[guile-library][3] package:
-
-```Shell
-sudo aptitude install guile-library
-```
-
 You can also install the *Guile documentation* (info pages):
 
 ```Shell
@@ -33,6 +26,15 @@ Installation
 ./configure
 make
 sudo make install
+```
+
+Testing
+-------
+
+You can run the tests as follows
+
+```Shell
+make check
 ```
 
 Usage
