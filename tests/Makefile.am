@@ -5,7 +5,7 @@ SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 
 TESTS = test_malloc.scm test_bool.scm test_int.scm
 
-EXTRA_DIST = $(TESTS)
+EXTRA_DIST = guile-tap.scm $(TESTS)
 
 CLEANFILES = *~ *.tmp *.log *.trs
 
