@@ -60,10 +60,16 @@
   (if (null? lst)
     #x00
     (logior (car lst) (ash (u8-list->int (cdr lst)) 8))))
+(define-method (two-complement (self <int<>>))
+  (make (class-of self)
+        #:value (- (slot-ref self 'value) (expt 2 (bits (class-of self))))))
 (define-method (pack (self <int<>>))
   (u8-list->bytevector
     (int->u8-list
       (slot-ref self 'value)
       (quotient (+ (bits (class-of self)) 7) 8))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
-  (make self #:value (u8-list->int (bytevector->u8-list packed))))
+  (let ((value (u8-list->int (bytevector->u8-list packed))))
+    (if (and (signed? self) (>= value (expt 2 (- (bits self) 1))))
+      (two-complement (make self #:value value))
+      (make self #:value value))))
