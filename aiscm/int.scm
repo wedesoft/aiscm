@@ -15,16 +15,18 @@
             make-usint make-sint
             make-uint make-int
             make-ulong make-long
-            pack))
+            pack
+            unpack))
 (define signed 'signed)
 (define unsigned 'unsigned)
-(define-class <int<>> (<element>))
+(define-class <meta<int<>>> (<class>))
+(define-class <int<>> (<element>) #:metaclass <meta<int<>>>)
 (define-generic bits)
 (define-generic signed?)
 (define (make-int-class nbits sgn)
   (let* ((name (format #f "<int<~a,~a>>" nbits sgn))
          (metaname (format #f "<meta<~a>" name))
-         (metaclass (make-class (list <class>) '() #:name metaname))
+         (metaclass (make-class (list <meta<int<>>>) '() #:name metaname))
          (retval (make-class (list <int<>>)
                              '()
                              #:name name
@@ -48,12 +50,20 @@
 (define (make-int   value) (make <int>   #:value value))
 (define (make-ulong value) (make <ulong> #:value value))
 (define (make-long  value) (make <long>  #:value value))
+(define-method (equal? (a <int<>>) (b <int<>>))
+  (equal? (slot-ref a 'value) (slot-ref b 'value)))
 (define (int->u8-list i n)
   (if (> n 0)
     (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
     '()))
+(define (u8-list->int lst)
+  (if (null? lst)
+    #x00
+    (logior (car lst) (ash (u8-list->int (cdr lst)) 8))))
 (define-method (pack (self <int<>>))
   (u8-list->bytevector
     (int->u8-list
       (slot-ref self 'value)
       (quotient (+ (bits (class-of self)) 7) 8))))
+(define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
+  (make self #:value (u8-list->int (bytevector->u8-list packed))))
