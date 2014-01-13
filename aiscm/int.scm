@@ -14,7 +14,8 @@
             make-ubyte make-byte
             make-usint make-sint
             make-uint make-int
-            make-ulong make-long))
+            make-ulong make-long
+            pack))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class <int<>> (<element>))
@@ -47,3 +48,12 @@
 (define (make-int   value) (make <int>   #:value value))
 (define (make-ulong value) (make <ulong> #:value value))
 (define (make-long  value) (make <long>  #:value value))
+(define (int->u8-list i n)
+  (if (> n 0)
+    (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
+    '()))
+(define-method (pack (self <int<>>))
+  (u8-list->bytevector
+    (int->u8-list
+      (slot-ref self 'value)
+      (quotient (+ (bits (class-of self)) 7) 8))))
