@@ -76,11 +76,11 @@
 
 (define skip
  (lambda (skip? tests . why)
-  (do-directive tests "skip" why)))
+  (do-directive tests "SKIP" why)))
 
 (define todo
  (lambda (tests . why)
-  (do-directive tests "todo" why)))
+  (do-directive tests "TODO" why)))
 
 (define-syntax-rule (throws? expr)
   (catch #t
