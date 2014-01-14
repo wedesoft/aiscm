@@ -19,10 +19,27 @@ You can also install the *Guile documentation* (info pages):
 sudo aptitude install guile-2.0-doc
 ```
 
+Creating archive
+----------------
+
+You can create an archive from the repository as follows:
+
+```Shell
+git clone git@github.com:wedesoft/aiscm.git
+cd aiscm
+make -f Makefile.dist
+./configure
+make dist-xz
+```
+
 Installation
 ------------
 
+You can install from an archive as follows:
+
 ```Shell
+tar xf aiscm-*.tar.xz
+cd aiscm-*
 ./configure
 make
 sudo make install
