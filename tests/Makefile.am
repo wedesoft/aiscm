@@ -3,7 +3,7 @@ TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PAT
 SCM_LOG_COMPILE = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(srcdir)
 SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 
-TESTS = test_malloc.scm test_bool.scm test_int.scm
+TESTS = test_malloc.scm test_bool.scm test_int.scm test_pointer.scm
 
 EXTRA_DIST = guile-tap.scm $(TESTS)
 

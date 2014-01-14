@@ -4,11 +4,10 @@
   #:use-module (rnrs bytevectors)
   #:export (<bool>
             <meta<bool>>
-            make-bool
-            pack
-            unpack))
+            make-bool))
 (define-class <meta<bool>> (<class>))
 (define-class <bool> (<element>) #:metaclass <meta<bool>>)
+(define-method (storage-size (self <meta<bool>>)) 1)
 (define (make-bool value)
   (make <bool> #:value value))
 (define-method (equal? (a <bool>) (b <bool>))

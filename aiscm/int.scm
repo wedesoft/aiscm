@@ -14,9 +14,7 @@
             make-ubyte make-byte
             make-usint make-sint
             make-uint make-int
-            make-ulong make-long
-            pack
-            unpack))
+            make-ulong make-long))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class <meta<int<>>> (<class>))
@@ -34,6 +32,8 @@
     (define-method (bits (self metaclass)) nbits)
     (define-method (signed? (self metaclass)) (eq? sgn 'signed))
     retval))
+(define-method (storage-size (self <meta<int<>>>))
+  (quotient (+ (bits self) 7) 8))
 (define <ubyte> (make-int-class  8 unsigned))
 (define <byte>  (make-int-class  8 signed  ))
 (define <usint> (make-int-class 16 unsigned))
@@ -60,16 +60,16 @@
   (if (null? lst)
     #x00
     (logior (car lst) (ash (u8-list->int (cdr lst)) 8))))
-(define-method (two-complement (self <int<>>))
+(define-method (raw-negative (self <int<>>))
   (make (class-of self)
         #:value (- (slot-ref self 'value) (expt 2 (bits (class-of self))))))
 (define-method (pack (self <int<>>))
   (u8-list->bytevector
     (int->u8-list
       (slot-ref self 'value)
-      (quotient (+ (bits (class-of self)) 7) 8))))
+      (storage-size (class-of self)))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
   (let ((value (u8-list->int (bytevector->u8-list packed))))
     (if (and (signed? self) (>= value (expt 2 (- (bits self) 1))))
-      (two-complement (make self #:value value))
+      (raw-negative (make self #:value value))
       (make self #:value value))))
