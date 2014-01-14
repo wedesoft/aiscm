@@ -24,8 +24,6 @@
     retval))
 (define (make-pointer targetclass value)
   (make (make-pointer-class targetclass) #:value value))
-;(define-method (fetch (self <pointer<>>))
-;  (storage-size (target (class-of self))))
 (define-method (fetch (self <pointer<>>))
   (let ((t (target (class-of self))))
     (unpack t (read-bytes (get-value self) (storage-size t)))))
