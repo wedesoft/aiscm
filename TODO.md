@@ -1,7 +1,7 @@
 TODO
 ====
 
-* pack signed integers
+* pointer objects
 * jit: pointers and integers on stack, loops, return values
 * documentation
 
