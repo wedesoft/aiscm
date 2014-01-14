@@ -8,7 +8,8 @@
             make-pointer-class
             target
             make-pointer
-            fetch))
+            fetch
+            store))
 (define-class <meta<pointer<>>> (<class>))
 (define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
 (define-generic target)
@@ -27,5 +28,11 @@
 (define-method (fetch (self <pointer<>>))
   (let ((t (target (class-of self))))
     (unpack t (read-bytes (get-value self) (storage-size t)))))
+(define-method (store (self <pointer<>>) (element <element>))
+  (let ((converted (make (target (class-of self)) #:value (get-value element))))
+    (write-bytes (get-value self) (pack converted))
+    converted))
+(define-method (+ (self <pointer<>>) (offset <integer>))
+  (make (class-of self) #:value (+ (get-value self) (* offset (storage-size (target (class-of self)))))))
 ; TODO: store
 ; TODO: lookup

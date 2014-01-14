@@ -27,6 +27,8 @@
           #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
           #:base (slot-ref self 'base)
           #:size (- size offset))))))
+(define-method (equal? (a <malloc>) (b <malloc>))
+  (equal? (get-memory a) (get-memory b)))
 (define-method (read-bytes (self <malloc>) (size <integer>))
   (if
     (> size (get-size self))
