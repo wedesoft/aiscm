@@ -28,6 +28,6 @@
 ;  (storage-size (target (class-of self))))
 (define-method (fetch (self <pointer<>>))
   (let ((t (target (class-of self))))
-    (unpack t (read-bytes (slot-ref self 'value) (storage-size t)))))
+    (unpack t (read-bytes (get-value self) (storage-size t)))))
 ; TODO: store
 ; TODO: lookup

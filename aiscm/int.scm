@@ -51,7 +51,7 @@
 (define (make-ulong value) (make <ulong> #:value value))
 (define (make-long  value) (make <long>  #:value value))
 (define-method (equal? (a <int<>>) (b <int<>>))
-  (equal? (slot-ref a 'value) (slot-ref b 'value)))
+  (equal? (get-value a) (get-value b)))
 (define (int->u8-list i n)
   (if (> n 0)
     (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
@@ -62,11 +62,11 @@
     (logior (car lst) (ash (u8-list->int (cdr lst)) 8))))
 (define-method (raw-negative (self <int<>>))
   (make (class-of self)
-        #:value (- (slot-ref self 'value) (expt 2 (bits (class-of self))))))
+        #:value (- (get-value self) (expt 2 (bits (class-of self))))))
 (define-method (pack (self <int<>>))
   (u8-list->bytevector
     (int->u8-list
-      (slot-ref self 'value)
+      (get-value self)
       (storage-size (class-of self)))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
   (let ((value (u8-list->int (bytevector->u8-list packed))))
