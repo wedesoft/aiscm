@@ -1,0 +1,48 @@
+\input texinfo
+@setfilename aiscm.info
+@include version.texi
+@documentencoding UTF-8
+@settitle AIScm Reference Manual
+
+@copying
+This manual is for AIscm (version @value{VERSION}), @value{UPDATED}),
+which is a real-time computer vision extension for the
+Guile programming language.
+
+Copyright @copyright{} 2014 Jan Wedekind.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title AIscm
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Jan Wedekind (@email{jan@@wedesoft.de})
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top, Introduction
+@top The AIscm Reference Manual
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction::
+@end menu
+
+@include intro.texi
+
+@bye

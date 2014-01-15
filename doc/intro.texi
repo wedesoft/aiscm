@@ -1,0 +1,36 @@
+@node Introduction
+@chapter Introduction
+
+Test @url{http://www.wedesoft.de/}.
+
+@itemize
+@item Item 1
+@item Item 2
+@end itemize
+
+@menu
+* Obtaining and Installing AIscm::
+@end menu
+
+@node Obtaining and Installing AIscm
+@section Obtaining and Installing AIscm
+
+You can install AIscm from an archive as follows:
+
+@example
+tar xf aiscm-@value{VERSION}.tar.xz
+cd aiscm-@value{VERSION}
+./configure
+make
+make install
+@end example
+
+@noindent
+Some Scheme example:
+
+@lisp
+(+ 1 2)
+@result{} 3
+(display 1)
+@print{} 1
+@end lisp

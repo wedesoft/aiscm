@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.1.2])
+AC_INIT([aiscm], [0.1.3])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
 LT_INIT
@@ -38,7 +38,8 @@ debug mode                           : $enable_debug"
 
 AC_OUTPUT(Makefile
           aiscm/Makefile
-          tests/Makefile,
+          tests/Makefile
+          doc/Makefile,
           echo "$info",
           info="$info")
 

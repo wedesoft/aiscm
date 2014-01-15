@@ -1,6 +1,6 @@
 SUFFIXES = .md .html
 
-SUBDIRS = aiscm tests
+SUBDIRS = aiscm tests doc
 
 ACLOCAL_AMFLAGS = -I m4
 

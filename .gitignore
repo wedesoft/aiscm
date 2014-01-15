@@ -11,6 +11,8 @@
 *.bz2
 *.xz
 *~
+*.info
+*.pdf
 *.trs
 *.log
 aclocal.m4
@@ -30,6 +32,11 @@ Makefile
 Makefile.in
 missing
 stamp-h1
+doc/texinfo.tex
+doc/aiscm.t2p
+doc/mdate-sh
+doc/stamp-vti
+doc/version.texi
 m4/libtool.m4
 m4/ltoptions.m4
 m4/ltsugar.m4

@@ -77,8 +77,8 @@ External links
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
     * [Generic function and method examples](http://www.gnu.org/software/guile/manual/html_node/Generic-Function-and-Method-Examples.html)
 * [Test Anything Protocol](https://en.wikipedia.org/wiki/Test\_Anything\_Protocol)
+* [GNU Texinfo](http://www.gnu.org/software/texinfo/manual/texinfo/)
 * [Noweb literate programming](http://www.cs.tufts.edu/~nr/noweb/)
-* [Markdown syntax](http://daringfireball.net/projects/markdown/syntax)
 * [Xbyak - x86, x64 JIT assembler](http://homepage1.nifty.com/herumi/soft/xbyak_e.html)
 * [Haberman - The joy of simple JITs](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html)
 
