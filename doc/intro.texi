@@ -35,6 +35,7 @@ sudo aptitude install guile-2.0-doc
 You can install AIscm from an archive as follows:
 
 @example
+wget https://github.com/wedesoft/aiscm/releases/download/v@value{VERSION}/aiscm-@value{VERSION}.tar.xz
 tar xf aiscm-@value{VERSION}.tar.xz
 cd aiscm-@value{VERSION}
 ./configure

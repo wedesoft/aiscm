@@ -1,0 +1,8 @@
+2014-01-15  Jan Wedekind <jan@wedesoft.de> 0.1.3
+	* aiscm/malloc.scm: memory objects
+	* aiscm/bool.scm: native booleans
+	* aiscm/int.scm: native integers
+	* aiscm/pointer.scm: typed pointers
+	- texinfo documentation
+	- TAP testing
+
