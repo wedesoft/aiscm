@@ -9,7 +9,8 @@
             target
             make-pointer
             fetch
-            store))
+            store
+            lookup))
 (define-class <meta<pointer<>>> (<class>))
 (define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
 (define-generic target)
@@ -34,5 +35,5 @@
     converted))
 (define-method (+ (self <pointer<>>) (offset <integer>))
   (make (class-of self) #:value (+ (get-value self) (* offset (storage-size (target (class-of self)))))))
-; TODO: store
-; TODO: lookup
+(define-method (lookup (self <pointer<>>) (value <integer>) (stride <integer>))
+  (+ self (* value stride)))
