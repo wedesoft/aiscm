@@ -1,19 +1,36 @@
 @node Introduction
 @chapter Introduction
 
-Test @url{http://www.wedesoft.de/}.
-
-@itemize
-@item Item 1
-@item Item 2
-@end itemize
+@c @itemize
+@c @item Item 1
+@c @item Item 2
+@c @end itemize
 
 @menu
-* Obtaining and Installing AIscm::
+* Requirements::
+* Installation::
+* Testing::
 @end menu
 
-@node Obtaining and Installing AIscm
-@section Obtaining and Installing AIscm
+@node Requirements
+@section Requirements
+
+You need to install @uref{http://www.gnu.org/software/guile/,Guile} and its
+development headers.
+
+@example
+sudo aptitude install guile-2.0 guile-2.0-dev
+@end example
+
+@noindent
+You can also install the Guile documentation.
+
+@example
+sudo aptitude install guile-2.0-doc
+@end example
+
+@node Installation
+@section Installation
 
 You can install AIscm from an archive as follows:
 
@@ -22,15 +39,24 @@ tar xf aiscm-@value{VERSION}.tar.xz
 cd aiscm-@value{VERSION}
 ./configure
 make
-make install
+sudo make install
 @end example
 
-@noindent
-Some Scheme example:
+@node Testing
+@section Testing
 
-@lisp
-(+ 1 2)
-@result{} 3
-(display 1)
-@print{} 1
-@end lisp
+After installing AIscm you can run the test suite like this:
+
+@example
+make check
+@end example
+
+@c @noindent
+@c Some Scheme example:
+@c 
+@c @lisp
+@c (+ 1 2)
+@c @result{} 3
+@c (display 1)
+@c @print{} 1
+@c @end lisp
