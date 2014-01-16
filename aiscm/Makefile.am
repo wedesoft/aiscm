@@ -1,7 +1,8 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_SCRIPTS = malloc.scm element.scm bool.scm int.scm pointer.scm
+site_SCRIPTS = malloc.scm element.scm bool.scm int.scm pointer.scm \
+							 variable.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-malloc.la
