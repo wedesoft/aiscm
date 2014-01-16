@@ -1,7 +1,7 @@
 (define-module (aiscm bool)
-  #:use-module (aiscm element)
   #:use-module (oop goops)
   #:use-module (rnrs bytevectors)
+  #:use-module (aiscm element)
   #:export (<bool>
             <meta<bool>>
             make-bool))

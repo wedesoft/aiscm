@@ -7,7 +7,13 @@
 @copying
 This manual is for AIscm (version @value{VERSION}), @value{UPDATED}),
 which is a real-time computer vision extension for the
-Guile programming language.
+Guile programming language
+@ifnotinfo
+(see @uref{http://www.gnu.org/software/guile/manual/, GUILE manual}).
+@end ifnotinfo
+@ifinfo
+(see @inforef{Top,GUILE manual,guile-2.0}.).
+@end ifinfo
 
 Copyright @copyright{} 2014 Jan Wedekind.
 

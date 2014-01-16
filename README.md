@@ -4,66 +4,7 @@ AIscm
 [**AIscm**][1] is a **real-time computer vision extension** for the
 [**Guile programming language**][2].
 
-Requirements
-------------
-
-You need to install [Guile][2] and its development headers.
-
-```Shell
-sudo aptitude install guile-2.0 guile-2.0-dev
-```
-
-You can also install the *Guile documentation* (info pages):
-
-```Shell
-sudo aptitude install guile-2.0-doc
-```
-
-Creating archive
-----------------
-
-You can create an archive from the repository as follows:
-
-```Shell
-git clone git@github.com:wedesoft/aiscm.git
-cd aiscm
-make -f Makefile.dist
-./configure
-make dist-xz
-```
-
-Installation
-------------
-
-You can install from an archive as follows:
-
-```Shell
-tar xf aiscm-*.tar.xz
-cd aiscm-*
-./configure
-make
-sudo make install
-```
-
-Testing
--------
-
-You can run the tests as follows
-
-```Shell
-make check
-```
-
-Usage
------
-
-```Scheme
-(use-modules (oop goops))
-(use-modules (system foreign))
-(use-modules (rnrs bytevectors))
-(use-modules (aiscm malloc))
-(make-malloc 1024)
-```
+See [**AIscm homepage**][1] for documentation.
 
 External links
 --------------
@@ -73,15 +14,14 @@ External links
     * [Installing site packages](http://www.gnu.org/software/guile/manual/html\_node/Installing-Site-Packages.html)
     * [Autoconf macros](https://www.gnu.org/software/guile/docs/docs-1.8/guile-ref/Autoconf-Macros.htm)
     * [Memory blocks](http://www.gnu.org/software/guile/manual/html\_node/Memory-Blocks.html)
-    * [Byte vectors](http://www.gnu.org/software/guile/manual/html_node/Bytevectors.html)
+    * [Byte vectors](http://www.gnu.org/software/guile/manual/html\_node/Bytevectors.html)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
-    * [Generic function and method examples](http://www.gnu.org/software/guile/manual/html_node/Generic-Function-and-Method-Examples.html)
+    * [Generic function and method examples](http://www.gnu.org/software/guile/manual/html\_node/Generic-Function-and-Method-Examples.html)
 * [Test Anything Protocol](https://en.wikipedia.org/wiki/Test\_Anything\_Protocol)
 * [GNU Texinfo](http://www.gnu.org/software/texinfo/manual/texinfo/)
 * [Noweb literate programming](http://www.cs.tufts.edu/~nr/noweb/)
-* [Xbyak - x86, x64 JIT assembler](http://homepage1.nifty.com/herumi/soft/xbyak_e.html)
+* [Xbyak - x86, x64 JIT assembler](http://homepage1.nifty.com/herumi/soft/xbyak\_e.html)
 * [Haberman - The joy of simple JITs](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html)
 
-[1]: https://github.com/wedesoft/aiscm "AIscm"
+[1]: http://www.wedesoft.de/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
-[3]: http://www.nongnu.org/guile-lib/
