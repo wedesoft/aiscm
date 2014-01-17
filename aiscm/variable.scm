@@ -7,6 +7,6 @@
 (define (make-var)
   (make <variable>))
 (define-method (subst (self <variable>) (alist <pair>))
-  (if (assoc self alist)
-    (assoc-ref alist self)
+  (if (assq self alist)
+    (assq-ref alist self)
     self))
