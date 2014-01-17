@@ -1,4 +1,5 @@
 (use-modules (aiscm variable)
+             (aiscm element)
              (oop goops)
              (guile-tap))
 (define v1 (make-var))

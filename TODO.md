@@ -1,6 +1,8 @@
 TODO
 ====
 
+* variable -> var
+* variable does not need value
 * jit: pointers and integers on stack, loops, return values
 
 ```Ruby

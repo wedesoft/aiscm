@@ -10,8 +10,6 @@
 (define-method (storage-size (self <meta<bool>>)) 1)
 (define (make-bool value)
   (make <bool> #:value value))
-(define-method (equal? (a <bool>) (b <bool>))
-  (equal? (get-value a) (get-value b)))
 (define-method (pack (self <bool>))
   (u8-list->bytevector (list (if (get-value self) 1 0))))
 (define-method (unpack (self <meta<bool>>) (packed <bytevector>))

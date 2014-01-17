@@ -50,8 +50,6 @@
 (define (make-int   value) (make <int>   #:value value))
 (define (make-ulong value) (make <ulong> #:value value))
 (define (make-long  value) (make <long>  #:value value))
-(define-method (equal? (a <int<>>) (b <int<>>))
-  (equal? (get-value a) (get-value b)))
 (define (int->u8-list i n)
   (if (> n 0)
     (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
