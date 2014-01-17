@@ -4,7 +4,7 @@
              (guile-tap))
 (define bool-false (make-bool #f))
 (define bool-true (make-bool #t))
-(planned-tests 10)
+(planned-tests 12)
 (ok (equal? bool-false bool-false)
   "equal boolean objects")
 (ok (not (get-value bool-false))
@@ -25,4 +25,10 @@
   "unpack 'true' value")
 (ok (equal? bool-true (subst bool-true '()))
   "ignores substitutions")
+(ok (equal? "#<<bool> #f>"
+  (call-with-output-string (lambda (port) (display bool-false port))))
+  "display boolean object")
+(ok (equal? "#<<bool> #f>"
+  (call-with-output-string (lambda (port) (write bool-false port))))
+  "write boolean object")
 (format #t "~&")

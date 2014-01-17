@@ -71,3 +71,7 @@
     (if (and (signed? self) (>= value (expt 2 (- (bits self) 1))))
       (raw-negative (make self #:value value))
       (make self #:value value))))
+(define-method (write (self <int<>>) port)
+  (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
+(define-method (display (self <int<>>) port)
+  (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
