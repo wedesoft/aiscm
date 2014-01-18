@@ -19,3 +19,5 @@
     (equal? (get-stride a) (get-stride b))))
 (define-method (lookup (self <pointer<>>) (value <var>) (stride <integer>))
   (make-lookup self value stride))
+(define-method (subst (self <lookup>) alist)
+  (lookup (get-value self) (subst (get-index self) alist) (get-stride self)))

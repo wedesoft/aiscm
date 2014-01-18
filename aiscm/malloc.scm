@@ -41,3 +41,9 @@
       (pointer->bytevector (get-memory self) (get-size self)) 0
       (bytevector-length bv))
     bv))
+(define-method (display (self <malloc>) port)
+  (format port "#<<malloc> #x~x ~a>"
+          (pointer-address (get-memory self)) (get-size self)))
+(define-method (write (self <malloc>) port)
+  (format port "#<<malloc> #x~x ~a>"
+          (pointer-address (get-memory self)) (get-size self)))

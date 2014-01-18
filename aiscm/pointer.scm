@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:use-module (aiscm malloc)
+  #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:export (<pointer<>>
             <meta<pointer<>>>
@@ -37,3 +38,11 @@
   (make (class-of self) #:value (+ (get-value self) (* offset (storage-size (target (class-of self)))))))
 (define-method (lookup (self <pointer<>>) (value <integer>) (stride <integer>))
   (+ self (* value stride)))
+(define-method (write (self <pointer<>>) port)
+  (format port "#<~a #x~x>"
+          (class-name (class-of self))
+          (pointer-address (get-memory (get-value self)))))
+(define-method (display (self <pointer<>>) port)
+  (format port "#<~a #x~x>"
+          (class-name (class-of self))
+          (pointer-address (get-memory (get-value self)))))

@@ -1,8 +1,9 @@
 (use-modules (aiscm malloc)
              (oop goops)
+             (ice-9 regex)
              (guile-tap))
 (define m (make-malloc 10))
-(planned-tests 13)
+(planned-tests 15)
 (ok (equal? (get-memory m) (slot-ref m 'base))
   "base pointer protects allocated memory from garbage collector")
 (ok (eqv? 10 (get-size m))
@@ -33,4 +34,10 @@
   "throw exception when reading past memory boundary")
 (ok (throws? (malloc-write m #vu8(1 2 3 4 5 6 7 8 9 10 11)))
   "throw exception when attempting to write past memory boundary")
+(ok (string-match "^#<<malloc> #x[0-9a-f]* 10>$"
+  (call-with-output-string (lambda (port) (display m port))))
+  "display malloc object")
+(ok (string-match "^#<<malloc> #x[0-9a-f]* 10>$"
+  (call-with-output-string (lambda (port) (write m port))))
+  "write malloc object")
 (format #t "~&")

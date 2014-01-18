@@ -4,8 +4,9 @@
              (aiscm malloc)
              (aiscm bool)
              (aiscm int)
+             (ice-9 regex)
              (guile-tap))
-(planned-tests 14)
+(planned-tests 16)
 (define m1 (make-malloc 10))
 (define m2 (make-malloc 4))
 (write-bytes m1 #vu8(1 2 3 4 5 6 7 8 9 10))
@@ -42,4 +43,10 @@
   "lookup second element with stride 2")
 (ok (equal? (make-sint #x0a09) (fetch (lookup (make-pointer <sint> m1) 2 2)))
   "lookup third element with stride 2")
+(ok (string-match "^#<<pointer<<int<16,signed>>>> #x[0-9a-f]*>$"
+  (call-with-output-string (lambda (port) (write (make-pointer <sint> m1) port))))
+  "write pointer object")
+(ok (string-match "^#<<pointer<<int<16,signed>>>> #x[0-9a-f]*>$"
+  (call-with-output-string (lambda (port) (display (make-pointer <sint> m1) port))))
+  "display pointer object")
 (format #t "~&")
