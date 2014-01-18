@@ -1,7 +1,7 @@
 TODO
 ====
 
-* variable -> var
+* (error ...)
 * variable does not need value
 * jit: pointers and integers on stack, loops, return values
 

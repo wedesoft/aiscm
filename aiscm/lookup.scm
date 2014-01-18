@@ -2,7 +2,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
-  #:use-module (aiscm variable)
+  #:use-module (aiscm var)
   #:export (<lookup>
             make-lookup
             get-index
@@ -17,5 +17,5 @@
     (next-method)
     (equal? (get-index a) (get-index b))
     (equal? (get-stride a) (get-stride b))))
-(define-method (lookup (self <pointer<>>) (value <variable>) (stride <integer>))
+(define-method (lookup (self <pointer<>>) (value <var>) (stride <integer>))
   (make-lookup self value stride))

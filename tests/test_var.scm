@@ -1,4 +1,4 @@
-(use-modules (aiscm variable)
+(use-modules (aiscm var)
              (aiscm element)
              (oop goops)
              (guile-tap))

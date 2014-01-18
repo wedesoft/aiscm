@@ -1,12 +1,12 @@
-(define-module (aiscm variable)
+(define-module (aiscm var)
   #:use-module (oop goops)
   #:use-module (aiscm element)
-  #:export (<variable>
+  #:export (<var>
             make-var))
-(define-class <variable> (<element>))
+(define-class <var> (<element>))
 (define (make-var)
-  (make <variable>))
-(define-method (subst (self <variable>) alist)
+  (make <var>))
+(define-method (subst (self <var>) alist)
   (if (assq self alist)
     (assq-ref alist self)
     self))

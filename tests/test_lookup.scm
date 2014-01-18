@@ -2,7 +2,7 @@
              (aiscm lookup)
              (aiscm malloc)
              (aiscm pointer)
-             (aiscm variable)
+             (aiscm var)
              (aiscm int)
              (oop goops)
              (guile-tap))
