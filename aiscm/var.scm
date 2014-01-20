@@ -2,7 +2,8 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:export (<var>
-            make-var))
+            make-var
+            get-type))
 (define-class <var> (<element>))
 (define (make-var)
   (make <var>))

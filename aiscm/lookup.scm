@@ -6,18 +6,26 @@
   #:export (<lookup>
             make-lookup
             get-offset
-            get-stride))
+            get-stride
+            get-length))
 (define-class <lookup> (<element>)
   (offset #:init-keyword #:offset #:getter get-offset)
-  (stride #:init-keyword #:stride #:getter get-stride))
-(define (make-lookup value offset stride)
-  (make <lookup> #:value value #:offset offset #:stride stride))
+  (stride #:init-keyword #:stride #:getter get-stride)
+  (length #:init-keyword #:length #:getter get-length))
+(define (make-lookup value offset stride length)
+  (make <lookup> #:value value #:offset offset #:stride stride #:length length))
 (define-method (equal? (a <lookup>) (b <lookup>))
   (and
     (next-method)
     (equal? (get-offset a) (get-offset b))
     (equal? (get-stride a) (get-stride b))))
-(define-method (lookup (self <pointer<>>) (value <var>) (stride <integer>))
-  (make-lookup self value stride))
+(define-method (lookup (self <pointer<>>) (value <var>) (stride <integer>) (length <integer>))
+  (make-lookup self value stride length))
 (define-method (subst (self <lookup>) alist)
   (lookup (get-value self) (subst (get-offset self) alist) (get-stride self)))
+(define-method (typecode (self <lookup>))
+  (typecode (get-value self)))
+(define-method (dimension (self <lookup>) (var <var>))
+  (if (equal? var (get-offset self))
+    (get-length self)
+    (dimension (get-value self) var)))
