@@ -9,7 +9,6 @@
             typecode
             size
             shape
-            dimension
             lookup
             skip))
 (define-class <element> ()
@@ -23,6 +22,5 @@
 (define-method (size (self <element>)) 1)
 (define-method (shape (self <element>)) '())
 (define-generic typecode)
-(define-generic dimension)
 (define-generic lookup)
 (define-generic skip)

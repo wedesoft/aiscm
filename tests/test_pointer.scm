@@ -7,7 +7,7 @@
              (aiscm var)
              (ice-9 regex)
              (guile-tap))
-(planned-tests 18)
+(planned-tests 17)
 (define m1 (make-malloc 10))
 (define m2 (make-malloc 4))
 (define p1-bool (make-pointer <bool> m1))
@@ -50,8 +50,6 @@
   "lookup third element with stride 2")
 (ok (equal? <sint> (typecode p1-sint))
   "get element type from pointer")
-(ok (not (dimension p1-sint (make-var)))
-  "return false when querying dimension for a variable")
 (ok (string-match "^#<<pointer<int<16,signed>>> #x[0-9a-f]*>$"
   (call-with-output-string (lambda (port) (write p1-sint port))))
   "write pointer object")

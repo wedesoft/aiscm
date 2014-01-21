@@ -5,12 +5,14 @@
   #:export (<lambda>
             make-lambda
             get-index
+            get-length
             get
             set))
 (define-class <lambda> (<element>)
-  (index #:init-keyword #:index #:getter get-index))
-(define (make-lambda index term)
-  (make <lambda> #:index index #:value term))
+  (index #:init-keyword #:index #:getter get-index)
+  (length #:init-keyword #:length #:getter get-length))
+(define (make-lambda index term length)
+  (make <lambda> #:index index #:value term #:length length))
 (define-method (get (self <lambda>) (i <integer>))
   (let ((ptr (subst (get-value self) (list (cons (get-index self) i)))))
     (get-value (fetch ptr))))
@@ -21,8 +23,6 @@
 (define-method (typecode (self <lambda>))
   (typecode (get-value self)))
 (define-method (size (self <lambda>))
-  (let ((value (get-value self)))
-    (* (dimension value (get-index self)) (size value))))
+  (* (get-length self) (size (get-value self))))
 (define-method (shape (self <lambda>))
-  (let ((value (get-value self)))
-    (append (shape value) (list (dimension value (get-index self))))))
+  (append (shape (get-value self)) (list (get-length self))))
