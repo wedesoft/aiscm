@@ -2,7 +2,7 @@
              (aiscm int)
              (oop goops)
              (guile-tap))
-(planned-tests 30)
+(planned-tests 31)
 (ok (eqv? 64 (bits (make-int-class 64 signed)))
   "number of bits of integer class")
 (ok (signed? (make-int-class 64 signed))
@@ -61,6 +61,8 @@
   "ignores substitutions")
 (ok (eqv? 1 (size (make-int 123)))
   "querying element size of integer")
+(ok (null? (shape (make-int 123)))
+  "querying shape of integer")
 (ok (equal? "#<<int<16,signed>> 1234>"
   (call-with-output-string (lambda (port) (display (make-sint 1234) port))))
   "display short integer object")

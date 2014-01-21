@@ -8,6 +8,7 @@
             subst
             typecode
             size
+            shape
             dimension))
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
@@ -18,5 +19,6 @@
   (equal? (get-value a) (get-value b)))
 (define-method (subst (self <element>) alist) self)
 (define-method (size (self <element>)) 1)
+(define-method (shape (self <element>)) '())
 (define-generic typecode)
 (define-generic dimension)
