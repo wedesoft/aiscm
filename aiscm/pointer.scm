@@ -11,8 +11,7 @@
             target
             make-pointer
             fetch
-            store
-            lookup))
+            store))
 (define-class <meta<pointer<>>> (<class>))
 (define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
 (define-generic target)

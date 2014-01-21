@@ -1,7 +1,8 @@
 TODO
 ====
 
-* conversion sequence <-> list
+* move length to lambda, pointer.lookup should not query length
+* slice, skip
 * get range of elements -> simplify sequence->list
 * display/write for sequence (lambda)
 * sequence class

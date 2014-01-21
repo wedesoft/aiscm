@@ -9,7 +9,9 @@
             typecode
             size
             shape
-            dimension))
+            dimension
+            lookup
+            skip))
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
 (define-generic storage-size)
@@ -22,3 +24,5 @@
 (define-method (shape (self <element>)) '())
 (define-generic typecode)
 (define-generic dimension)
+(define-generic lookup)
+(define-generic skip)
