@@ -1,9 +1,6 @@
 TODO
 ====
 
-* make-lambda: order of params
-* get range of elements -> simplify sequence->list
-* display/write for sequence (lambda)
 * sequence class
 * get/set for elements
 * conversion sequence <-> bytevector

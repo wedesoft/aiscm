@@ -6,8 +6,7 @@
   #:export (<lookup>
             make-lookup
             get-var
-            get-stride
-            get-length))
+            get-stride))
 (define-class <lookup> (<element>)
   (var #:init-keyword #:var #:getter get-var)
   (stride #:init-keyword #:stride #:getter get-stride))

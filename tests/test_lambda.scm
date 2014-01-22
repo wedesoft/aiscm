@@ -13,7 +13,7 @@
 (define p (make-pointer <ubyte> m))
 (define v (make-var))
 (define l (make-lookup p v 2))
-(define s (make-lambda v l 4))
+(define s (make-lambda l v 4))
 (ok (equal? l (get-value s))
   "query term of lambda")
 (ok (equal? v (get-index s))
