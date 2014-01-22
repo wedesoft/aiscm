@@ -1,7 +1,7 @@
 TODO
 ====
 
-* slice
+* make-lambda: order of params
 * get range of elements -> simplify sequence->list
 * display/write for sequence (lambda)
 * sequence class

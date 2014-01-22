@@ -26,3 +26,6 @@
   (* (get-length self) (size (get-value self))))
 (define-method (shape (self <lambda>))
   (append (shape (get-value self)) (list (get-length self))))
+(define-method (slice (self <lambda>) (offset <integer>) (length <integer>))
+  (let ((value (shift (get-value self) (get-index self) offset)))
+    (make-lambda (get-index self) value length)))

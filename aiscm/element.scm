@@ -10,7 +10,8 @@
             size
             shape
             lookup
-            shift))
+            shift
+            slice))
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
 (define-generic storage-size)
@@ -24,3 +25,4 @@
 (define-generic typecode)
 (define-generic lookup)
 (define-generic shift)
+(define-generic slice)
