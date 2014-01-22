@@ -23,7 +23,7 @@
 (define-generic signed?)
 (define (make-int-class nbits sgn)
   (let* ((name (format #f "<int<~a,~a>>" nbits sgn))
-         (metaname (format #f "<meta<~a>" name))
+         (metaname (format #f "<meta~a>" name))
          (metaclass (make-class (list <meta<int<>>>) '() #:name metaname))
          (retval (make-class (list <int<>>)
                              '()

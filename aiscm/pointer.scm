@@ -17,7 +17,7 @@
 (define-generic target)
 (define (make-pointer-class targetclass)
   (let* ((name (format #f "<pointer~a>" (class-name targetclass)))
-         (metaname (format #f "<meta<~a>>" name))
+         (metaname (format #f "<meta~a>" name))
          (metaclass (make-class (list <meta<pointer<>>>) '() #:name metaname))
          (retval (make-class (list <pointer<>>)
                              '()

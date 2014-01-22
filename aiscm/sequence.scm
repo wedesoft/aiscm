@@ -7,7 +7,20 @@
   #:use-module (aiscm var)
   #:use-module (oop goops)
   #:export (make-sequence
+            make-sequence-class
             sequence->list))
+(define-class <meta<sequence<>>> (<class>))
+(define-class <sequence<>> (<element>) #:metaclass <meta<sequence<>>>)
+(define (make-sequence-class type)
+  (let* ((name (format #f "<sequence>" (class-name type)))
+         (metaname (format #f "<meta~a" name))
+         (metaclass (make-class (list <meta<sequence<>>>) '() #:name metaname))
+         (retval (make-class (list <sequence<>>)
+                             '()
+                             #:name name
+                             #:metaclass metaclass)))
+    (define-method (typecode (self metaclass)) type)
+    retval))
 (define (make-sequence type size)
   (let* ((mem (make-malloc (* (storage-size type) size)))
          (ptr (make-pointer type mem))
