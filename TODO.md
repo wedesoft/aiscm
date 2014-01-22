@@ -1,7 +1,6 @@
 TODO
 ====
 
-* skip
 * slice
 * get range of elements -> simplify sequence->list
 * display/write for sequence (lambda)

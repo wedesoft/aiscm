@@ -10,7 +10,7 @@
             size
             shape
             lookup
-            skip))
+            shift))
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
 (define-generic storage-size)
@@ -23,4 +23,4 @@
 (define-method (shape (self <element>)) '())
 (define-generic typecode)
 (define-generic lookup)
-(define-generic skip)
+(define-generic shift)
