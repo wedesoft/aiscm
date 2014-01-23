@@ -7,7 +7,7 @@ SCM gc_malloc_pointerless_wrapper(SCM size)
   return ptr;
 }
 
-void init_malloc(void)
+void init_mem(void)
 {
   scm_c_define_gsubr("gc-malloc-pointerless", 1, 0, 0, gc_malloc_pointerless_wrapper);
 }

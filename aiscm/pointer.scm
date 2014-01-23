@@ -2,7 +2,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:use-module (aiscm var)
-  #:use-module (aiscm malloc)
+  #:use-module (aiscm mem)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:export (<pointer<>>
