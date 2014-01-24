@@ -1,7 +1,7 @@
 TODO
 ====
 
-* (new <sequence<int> 3), initialize method?
+* rename pointer
 * display should show internal structure
 * conversion sequence <-> bytevector
 * (error ...)

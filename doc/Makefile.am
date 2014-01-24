@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = info-in-builddir
+
 info_TEXINFOS = aiscm.texi
 
 aiscm_TEXINFOS = intro.texi

@@ -3,7 +3,6 @@
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
   #:export (<lambda>
-            make-lambda
             get-index
             get-length
             get
@@ -11,8 +10,6 @@
 (define-class <lambda> (<element>)
   (index #:init-keyword #:index #:getter get-index)
   (length #:init-keyword #:length #:getter get-length))
-(define (make-lambda term index length)
-  (make <lambda> #:index index #:value term #:length length))
 (define-method (get (self <lambda>) (i <integer>))
   (let ((ptr (subst (get-value self) (list (cons (get-index self) i)))))
     (get-value (fetch ptr))))
@@ -28,4 +25,4 @@
   (append (shape (get-value self)) (list (get-length self))))
 (define-method (slice (self <lambda>) (offset <integer>) (length <integer>))
   (let ((value (shift (get-value self) (get-index self) offset)))
-    (make-lambda value (get-index self) length)))
+    (make <lambda> #:value value #:index (get-index self) #:length length)))

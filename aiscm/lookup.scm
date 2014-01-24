@@ -4,21 +4,18 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm var)
   #:export (<lookup>
-            make-lookup
             get-var
             get-stride))
 (define-class <lookup> (<element>)
   (var #:init-keyword #:var #:getter get-var)
   (stride #:init-keyword #:stride #:getter get-stride))
-(define (make-lookup value var stride)
-  (make <lookup> #:value value #:var var #:stride stride))
 (define-method (equal? (a <lookup>) (b <lookup>))
   (and
     (next-method)
     (equal? (get-var a) (get-var b))
     (equal? (get-stride a) (get-stride b))))
 (define-method (lookup (self <pointer<>>) (var <var>) (stride <integer>))
-  (make-lookup self var stride))
+  (make <lookup> #:value self #:var var #:stride stride))
 (define-method (subst (self <lookup>) alist)
   (lookup (get-value self) (subst (get-var self) alist) (get-stride self)))
 (define-method (shift (self <lookup>) (var <var>) (amount <integer>))

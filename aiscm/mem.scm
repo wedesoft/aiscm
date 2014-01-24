@@ -14,7 +14,7 @@
   (base #:init-keyword #:base)
   (size #:init-value 0 #:init-keyword #:size #:getter get-size))
 (define-method (initialize (self <mem>) initargs)
-  (let-keywords initargs #t (memory base size)
+  (let-keywords initargs #f (memory base size)
     (if (not (and memory base))
       (let ((ptr (gc-malloc-pointerless size)))
         (next-method self `(#:memory ,ptr #:base ,ptr #:size ,size)))
