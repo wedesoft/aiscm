@@ -1,0 +1,6 @@
+(use-modules (aiscm jit)
+             (guile-tap))
+(planned-tests 1)
+(ok (eqv? 42 (jit-call 42))
+  "Test for JIT proof-of-concept")
+(format #t "~&")

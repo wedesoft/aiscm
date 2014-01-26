@@ -1,0 +1,6 @@
+(define-module (aiscm jit)
+  #:use-module (oop goops)
+  #:use-module (system foreign)
+  #:use-module (rnrs bytevectors)
+  #:export (jit-call))
+(load-extension "libguile-jit" "init_jit")

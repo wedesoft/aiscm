@@ -4,7 +4,8 @@ SCM_LOG_COMPILE = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(srcdir)
 SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/tap-driver.sh
 
 TESTS = test_mem.scm test_bool.scm test_int.scm test_pointer.scm \
-				test_var.scm test_lookup.scm test_lambda.scm test_sequence.scm
+				test_var.scm test_lookup.scm test_lambda.scm test_sequence.scm \
+				test_jit.scm
 
 EXTRA_DIST = guile-tap.scm $(TESTS)
 
