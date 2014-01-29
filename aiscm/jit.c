@@ -1,22 +1,22 @@
 #include <libguile.h>
 #include <sys/mman.h>
 
-SCM jit_call(SCM i)
+// http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html
+
+SCM jit_call_bv(SCM code)
 {
-  unsigned char code[] = {0xb8, 0x00, 0x00, 0x00, 0x00, 0xc3};
-  int num = scm_to_int(i);
-  memcpy(&code[1], &num, 4);
-  void *mem = mmap(NULL, sizeof(code), PROT_WRITE | PROT_EXEC,
-                   MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  memcpy(mem, code, sizeof(code));
+  int len = SCM_BYTEVECTOR_LENGTH(code);
+  void *mem = mmap(NULL, len, PROT_WRITE | PROT_EXEC,
+                   MAP_ANON | MAP_PRIVATE, -1, 0);
+  memcpy(mem, SCM_BYTEVECTOR_CONTENTS(code), SCM_BYTEVECTOR_LENGTH(code));
   int (*func)() = mem;
   int result = func();
-  munmap(mem, sizeof(code));
+  munmap(mem, len);
   return scm_from_int(result);
 }
 
 void init_jit(void)
 {
-  scm_c_define_gsubr("jit-call", 1, 0, 0, jit_call);
+  scm_c_define_gsubr("jit-call-bv", 1, 0, 0, jit_call_bv);
 }
 
