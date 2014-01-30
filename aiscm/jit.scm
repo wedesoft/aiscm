@@ -7,6 +7,7 @@
   #:export (jit-call
             make-mmap
             ADD
+            JMP
             MOV
             NOP
             RET
@@ -26,6 +27,7 @@
 (define ADD_r/m32,r32   #x01)
 (define ADD_EAX,imm32   #x05)
 (define ADD_r/m32,imm32 #x81)
+(define JMP_rel32       #xe9)
 (define MOV_r/m32,r32   #x89)
 (define MOV_r32,imm32   #xb8)
 (define-class <register> () (code #:init-keyword #:code #:getter get-code))
@@ -54,6 +56,10 @@
             (r/m (get-code r/m32))
             (mod #b11))
         (append (list op) (ModR/M mod 0 r/m) id)))))
+(define-method (JMP (rel32 <int>))
+  (let ((op JMP_rel32)
+        (cd (bytevector->u8-list (pack rel32))))
+    (append (list op) cd)))
 (define-method (MOV (r/m32 <register>) (r32 <register>))
   (let ((op MOV_r/m32,r32)
         (reg (get-code r32))
