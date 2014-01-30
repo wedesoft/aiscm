@@ -5,6 +5,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:export (jit-call
+            make-mmap
             ADD
             MOV
             RET))
@@ -12,7 +13,7 @@
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define (jit-call commands)
-  (jit-call-bv (u8-list->bytevector (apply append commands))))
+  (mmap-call (make-mmap (u8-list->bytevector (apply append commands)))))
 (define ADD_r/m32,r32   #x01)
 (define ADD_EAX,imm32   #x05)
 (define ADD_r/m32,imm32 #x81)
