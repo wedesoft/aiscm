@@ -8,6 +8,7 @@
             make-mmap
             ADD
             MOV
+            NOP
             RET))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -60,4 +61,5 @@
         (reg (register-code r32))
         (id  (bytevector->u8-list (pack imm32))))
     (append (list (logior op reg)) id)))
+(define (NOP) '(#x90))
 (define (RET) '(#xc3))
