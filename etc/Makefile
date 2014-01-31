@@ -1,18 +1,23 @@
 .SUFFIXES: .s .c .o .txt
 
-all: t1 t1.s t1.txt
+CFLAGS = -O
+
+all: t1 t1.s t1.txt t2 t2.s t2.txt
 
 t1: t1.o
+	gcc -o $@ $<
+
+t2: t2.o
 	gcc -o $@ $<
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
 
 .c.o:
-	gcc -O -march=native -g -c $<
+	gcc $(CFLAGS) -march=native -g -c $<
 
 .c.s:
-	gcc -O -fverbose-asm -S $<
+	gcc $(CFLAGS) -fverbose-asm -S $<
 
 clean:
 	rm -f *.txt *.o *.s

@@ -3,6 +3,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm var)
   #:use-module (aiscm mem)
+  #:use-module (aiscm int)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:export (<pointer<>>
@@ -41,6 +42,8 @@
 (define-method (typecode (self <pointer<>>))
   (target (class-of self)))
 (define-method (dimension (self <pointer<>>) (var <var>)) #f)
+(define-method (pack (self <pointer<>>))
+  (pack (make <int> #:value (pointer-address (get-memory (get-value self))))))
 (define-method (write (self <pointer<>>) port)
   (format port "#<~a #x~x>"
           (class-name (class-of self))
