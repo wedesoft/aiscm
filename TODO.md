@@ -1,7 +1,8 @@
 TODO
 ====
 
-* CALL, jit memory io, jit labels, jit parameters, SIMD, return values
+* re-export?
+* write to memory, CALL, jit labels, jit parameters, SIMD, return values
 * element-wise operators
 * multidimensional arrays
 * display should show internal structure
