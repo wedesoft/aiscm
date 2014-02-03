@@ -8,6 +8,8 @@
             bits
             signed?
             integer
+            <int<>>
+            <meta<int<>>>
             <ubyte> <byte>
             <usint> <sint>
             <uint> <int>
