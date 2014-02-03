@@ -43,7 +43,8 @@
   (target (class-of self)))
 (define-method (dimension (self <pointer<>>) (var <var>)) #f)
 (define-method (pack (self <pointer<>>))
-  (pack (make <int> #:value (pointer-address (get-memory (get-value self))))))
+  (pack (make <native-int>
+              #:value (pointer-address (get-memory (get-value self))))))
 (define-method (write (self <pointer<>>) port)
   (format port "#<~a #x~x>"
           (class-name (class-of self))

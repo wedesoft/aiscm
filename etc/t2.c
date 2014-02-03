@@ -3,6 +3,8 @@
 int *p;
 
 int main(int argc, char *argv[])
-{
-  return *p;
+{ 
+  printf("%d\n", sizeof(p));
+  int i = *p;
+  return i;
 }

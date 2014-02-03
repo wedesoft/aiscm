@@ -52,7 +52,7 @@
 (ok (equal? <sint> (typecode p1-sint))
   "get element type from pointer")
 (ok (eqv? (pointer-address (get-memory m1))
-          (get-value (unpack <int> (pack p1-byte))))
+          (get-value (unpack <native-int> (pack p1-byte))))
   "convert pointer to bytevector containing raw data")
 (ok (string-match "^#<<pointer<int<16,signed>>> #x[0-9a-f]*>$"
   (call-with-output-string (lambda (port) (write p1-sint port))))

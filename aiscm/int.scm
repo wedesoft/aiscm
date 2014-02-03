@@ -1,7 +1,8 @@
 (define-module (aiscm int)
-  #:use-module (aiscm element)
   #:use-module (oop goops)
   #:use-module (rnrs bytevectors)
+  #:use-module (system foreign)
+  #:use-module (aiscm element)
   #:export (signed
             unsigned
             bits
@@ -10,7 +11,8 @@
             <ubyte> <byte>
             <usint> <sint>
             <uint> <int>
-            <ulong> <long>))
+            <ulong> <long>
+            <native-int>))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class <meta<int<>>> (<class>))
@@ -34,6 +36,7 @@
 ; make metaclass #:dsupers #:slots #:name options
 (define-method (storage-size (self <meta<int<>>>))
   (quotient (+ (bits self) 7) 8))
+(define native-bits (* (sizeof '*) 8))
 (define <ubyte> (integer  8 unsigned))
 (define <byte>  (integer  8 signed  ))
 (define <usint> (integer 16 unsigned))
@@ -42,6 +45,7 @@
 (define <int>   (integer 32 signed  ))
 (define <ulong> (integer 64 unsigned))
 (define <long>  (integer 64 signed  ))
+(define <native-int> (integer native-bits signed))
 (define (int->u8-list i n)
   (if (> n 0)
     (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
