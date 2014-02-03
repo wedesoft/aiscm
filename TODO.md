@@ -1,8 +1,7 @@
 TODO
 ====
 
-* SHL
-* MOV 64 bit
+* MOV 64 bit (use 64 bit pointer size in test)
 * add pointer size to pointer class
 * jit labels, CALL, jit parameters, SIMD, return values
 * element-wise operators

@@ -5,7 +5,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:use-module (aiscm pointer)
+  #:use-module (aiscm mem)
   #:export (jit-call
             make-mmap
             ADD
@@ -92,7 +92,7 @@
 (define (raw imm bits)
   (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
 (define (ptr->int ptr)
-  (pointer-address (get-memory (get-value ptr))))
+  (pointer-address (get-memory ptr)))
 (define (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash reg/opcode 3) r/m)))
 (define (REX.W)
@@ -119,8 +119,10 @@
         (reg (get-code r64))
         (id  (raw imm64 64)))
     (append (REX.W) (list (logior op reg)) id)))
-(define-method (MOV (r32 <reg32>) (imm32 <pointer<>>))
+(define-method (MOV (r32 <reg32>) (imm32 <mem>))
   (MOV r32 (ptr->int imm32)))
+(define-method (MOV (r64 <reg64>) (imm64 <mem>))
+  (MOV r64 (ptr->int imm64)))
 (define-method (MOV (r32 <reg32>) (r/m32 <address>))
   (let ((op  MOV_r32,r/m32)
         (reg (get-code r32))
