@@ -2,7 +2,8 @@ AIscm
 =====
 
 [**AIscm**][1] is a **real-time computer vision extension** for the
-[**Guile programming language**][2].
+[**Guile programming language**][2]. Performance in Scheme is achieved by means
+of a JIT compiler.
 
 See [**AIscm homepage**][1] for documentation.
 

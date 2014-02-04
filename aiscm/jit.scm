@@ -45,9 +45,11 @@
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
-(define (jit-call commands)
+(define (jit-call return_type commands)
   (let* ((code (make-mmap (u8-list->bytevector (apply append commands))))
-         (fun (pointer->procedure int (make-pointer (mmap-address code)) '())))
+         (fun (pointer->procedure return_type
+                                  (make-pointer (mmap-address code))
+                                  '())))
     (fun)))
 (define ADD_r/m32,r32   #x01)
 (define ADD_EAX,imm32   #x05)
