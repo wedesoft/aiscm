@@ -1,4 +1,5 @@
 #include <libguile.h>
+#include <stdint.h>
 #include <sys/mman.h>
 
 // http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html
@@ -32,20 +33,21 @@ SCM make_mmap(SCM code)
   return retval;
 }
 
-SCM mmap_call(SCM mmap_smob)
+SCM mmap_address(SCM mmap_smob)
 {
   scm_assert_smob_type(mmap_tag, mmap_smob);
   struct mmap_t *mem = (struct mmap_t *)SCM_SMOB_DATA(mmap_smob);
-  int (*func)() = mem->mem;
-  int result = func();
-  scm_remember_upto_here_1(mmap_smob);
-  return scm_from_int(result);
+#if defined __x86_64__
+  return scm_from_int64((int64_t)mem->mem);
+#else
+  return scm_from_int32((int32_t)mem->mem);
+#endif
 }
 
 void init_jit(void)
 {
   mmap_tag = scm_make_smob_type("mmap", sizeof(void *));
   scm_set_smob_free(mmap_tag, free_mmap);
-  scm_c_define_gsubr("mmap-call", 1, 0, 0, mmap_call);
   scm_c_define_gsubr("make-mmap", 1, 0, 0, make_mmap);
+  scm_c_define_gsubr("mmap-address", 1, 0, 0, mmap_address);
 }

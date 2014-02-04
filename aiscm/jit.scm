@@ -7,7 +7,6 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm mem)
   #:export (jit-call
-            make-mmap
             ADD
             JMP
             MOV
@@ -47,7 +46,9 @@
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define (jit-call commands)
-  (mmap-call (make-mmap (u8-list->bytevector (apply append commands)))))
+  (let* ((code (make-mmap (u8-list->bytevector (apply append commands))))
+         (fun (pointer->procedure int (make-pointer (mmap-address code)) '())))
+    (fun)))
 (define ADD_r/m32,r32   #x01)
 (define ADD_EAX,imm32   #x05)
 (define ADD_RAX,imm32   #x05)

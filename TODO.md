@@ -1,9 +1,8 @@
 TODO
 ====
 
-* MOV 64 bit (use 64 bit pointer size in test)
-* add pointer size to pointer class
 * jit labels, CALL, jit parameters, SIMD, return values
+* integer +
 * element-wise operators
 * multidimensional arrays
 * display should show internal structure
