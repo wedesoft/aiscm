@@ -35,14 +35,14 @@
             RBP
             RSI
             RDI
-            *EAX
-            *ECX
-            *EDX
-            *EBX
+            *RAX
+            *RCX
+            *RDX
+            *RBX
             *???
             *disp32
-            *ESI
-            *EDI))
+            *RSI
+            *RDI))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -81,14 +81,14 @@
 (define RSI (make <reg64> #:code #b110))
 (define RDI (make <reg64> #:code #b111))
 (define-class <address> () (code #:init-keyword #:code #:getter get-code))
-(define *EAX    (make <address> #:code #b000))
-(define *ECX    (make <address> #:code #b001))
-(define *EDX    (make <address> #:code #b010))
-(define *EBX    (make <address> #:code #b011))
+(define *RAX    (make <address> #:code #b000))
+(define *RCX    (make <address> #:code #b001))
+(define *RDX    (make <address> #:code #b010))
+(define *RBX    (make <address> #:code #b011))
 (define *???    (make <address> #:code #b100))
 (define *disp32 (make <address> #:code #b101))
-(define *ESI    (make <address> #:code #b110))
-(define *EDI    (make <address> #:code #b111))
+(define *RSI    (make <address> #:code #b110))
+(define *RDI    (make <address> #:code #b111))
 (define (raw imm bits)
   (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
 (define (ptr->int ptr)
