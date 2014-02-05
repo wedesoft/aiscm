@@ -6,7 +6,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:use-module (aiscm mem)
-  #:export (jit-call
+  #:export (<jit-context>
+            asm
             ADD
             JMP
             MOV
@@ -45,12 +46,15 @@
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
-(define (jit-call return_type commands)
-  (let* ((code (make-mmap (u8-list->bytevector (apply append commands))))
-         (fun (pointer->procedure return_type
-                                  (make-pointer (mmap-address code))
-                                  '())))
-    (fun)))
+(define-class <jit-context> ()
+  (binaries #:init-value '()))
+(define-method (asm (self <jit-context>) return_type commands . args)
+  (let ((code (make-mmap (u8-list->bytevector (apply append commands)))))
+    (slot-set! self 'binaries
+               (cons code (slot-ref self 'binaries)))
+    (pointer->procedure return_type
+                        (make-pointer (mmap-address code))
+                        args)))
 (define ADD_r/m32,r32   #x01)
 (define ADD_EAX,imm32   #x05)
 (define ADD_RAX,imm32   #x05)
