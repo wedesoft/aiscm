@@ -29,6 +29,12 @@
             EDI
             R8D
             R9D
+            R10D
+            R11D
+            R12D
+            R13D
+            R14D
+            R15D
             RAX
             RCX
             RDX
@@ -82,8 +88,14 @@
 (define EBP (make <reg32> #:code  #b101))
 (define ESI (make <reg32> #:code  #b110))
 (define EDI (make <reg32> #:code  #b111))
-(define R8D (make <reg32> #:code #b1000))
-(define R9D (make <reg32> #:code #b1001))
+(define  R8D (make <reg32> #:code #b1000))
+(define  R9D (make <reg32> #:code #b1001))
+(define R10D (make <reg32> #:code #b1010))
+(define R11D (make <reg32> #:code #b1011))
+(define R12D (make <reg32> #:code #b1100))
+(define R13D (make <reg32> #:code #b1101))
+(define R14D (make <reg32> #:code #b1110))
+(define R15D (make <reg32> #:code #b1111))
 (define-class <reg64> () (code #:init-keyword #:code #:getter get-code))
 (define RAX (make <reg64> #:code #b000))
 (define RCX (make <reg64> #:code #b001))

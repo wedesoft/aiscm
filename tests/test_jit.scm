@@ -45,10 +45,10 @@
                          (RET)))))
     "Function copying content from ECX")
 (ok (eqv? 42 ((asm ctx int
-                   (list (MOV R9D 42)
-                         (MOV EAX R9D)
+                   (list (MOV R14D 42)
+                         (MOV EAX R14D)
                          (RET)))))
-    "Function copying content from R9D")
+    "Function copying content from R14D")
 (ok (equal? '(#xd1 #xe5) (SHL EBP))
     "SHL EBP, 1")
 (ok (equal? '(#xd1 #xe5) (SAL EBP))
