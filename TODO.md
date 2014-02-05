@@ -1,7 +1,8 @@
 TODO
 ====
 
-* jit labels, CALL, jit parameters, SIMD, return values
+* R8, ...
+* jit labels, CALL, SIMD
 * integer +
 * element-wise operators
 * multidimensional arrays

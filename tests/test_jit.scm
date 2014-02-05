@@ -7,7 +7,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 45)
+(planned-tests 49)
 ; TODO: test-suite should not assume 64-bit environment
 (define ctx (make <jit-context>))
 (define mem  (make <mem> #:size 12))
@@ -170,4 +170,24 @@
                                 (RET))))
                     (get-value (fetch (+ ptr 2)))))
     "Function writing value to memory")
+(ok (eqv? 2 ((asm ctx int
+                  (list (MOV EAX EDI)
+                        (RET))
+                  int int int int) 2 3 5 7))
+    "Function return first integer argument")
+(ok (eqv? 3 ((asm ctx int
+                  (list (MOV EAX ESI)
+                        (RET))
+                  int int int int) 2 3 5 7))
+    "Function return second integer argument")
+(ok (eqv? 5 ((asm ctx int
+                  (list (MOV EAX EDX)
+                        (RET))
+                  int int int int) 2 3 5 7))
+    "Function return third integer argument")
+(ok (eqv? 7 ((asm ctx int
+                  (list (MOV EAX ECX)
+                        (RET))
+                  int int int int) 2 3 5 7))
+    "Function return fourth integer argument")
 (format #t "~&")

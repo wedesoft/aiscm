@@ -2,13 +2,10 @@
 
 CFLAGS = -O
 
-all: t1 t1.s t1.txt t2 t2.s t2.txt
+all: t t1.s t1.txt t2.s t2.txt
 
-t1: t1.o
-	gcc -o $@ $<
-
-t2: t2.o
-	gcc -o $@ $<
+t: t1.o t2.o
+	gcc -o $@ t1.o t2.o
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
@@ -20,5 +17,4 @@ t2: t2.o
 	gcc $(CFLAGS) -fverbose-asm -S $<
 
 clean:
-	rm -f *.txt *.o *.s
-
+	rm -f t *.txt *.o *.s
