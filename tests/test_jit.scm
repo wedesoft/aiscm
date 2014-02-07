@@ -7,7 +7,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 54)
+(planned-tests 55)
 ; TODO: test-suite should not assume 64-bit environment
 (define ctx (make <jit-context>))
 (define mem  (make <mem> #:size 12))
@@ -31,6 +31,8 @@
     "MOV R8D, R9D")
 (ok (equal? '(#x8b #x0a) (MOV ECX *RDX))
     "Read data from address into register")
+(ok (equal? '(#x8b #x4a #x04) (MOV ECX *RDX 4))
+    "Read data from address with byte offset into register")
 (ok (equal? '(#x89 #x11) (MOV *RCX EDX))
     "Write data from register to address")
 (ok (equal? '(#xc3) (RET))
@@ -159,8 +161,7 @@
     "Function loading value from address given as pointer")
 (ok (eqv? 13 ((asm ctx int
                    (list (MOV RCX mem)
-                         (ADD RCX 4)
-                         (MOV EAX *RCX)
+                         (MOV EAX *RCX 4)
                          (RET)))))
     "Function loading value from address with offset")
 (ok (equal? '(#xe9 #x2a #x00 #x00 #x00) (JMP 42))

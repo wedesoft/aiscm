@@ -1,7 +1,8 @@
 TODO
 ====
 
-* R8, ...
+* read parameter from stack (SIB byte?)
+* add REX prefix to more instructions
 * jit labels, CALL, SIMD
 * integer +
 * element-wise operators
