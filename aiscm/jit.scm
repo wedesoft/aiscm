@@ -47,7 +47,7 @@
             *RCX
             *RDX
             *RBX
-            *???
+            *RSP
             *disp32
             *RSI
             *RDI))
@@ -110,7 +110,7 @@
 (define *RCX    (make <address> #:code #b001))
 (define *RDX    (make <address> #:code #b010))
 (define *RBX    (make <address> #:code #b011))
-(define *???    (make <address> #:code #b100))
+(define *RSP    (make <address> #:code #b100))
 (define *disp32 (make <address> #:code #b101))
 (define *RSI    (make <address> #:code #b110))
 (define *RDI    (make <address> #:code #b111))
@@ -133,6 +133,8 @@
 (define REX.W (REX 1 0 0 0))
 (define (REX.B B) (REX 0 0 0 B))
 (define (REX.RB R B) (REX 0 R 0 B))
+(define (SIB SS index r32)
+  (list (logior (ash SS 6) (ash index 3) r32)))
 (define-method (MOV (r/m32 <reg32>) (r32 <reg32>))
   (let* ((op  MOV_r/m32,r32)
          (reg (get-code r32))
@@ -167,11 +169,12 @@
         (mod #b00))
     (append (list op) (ModR/M mod reg r/m))))
 (define-method (MOV (r32 <reg32>) (r/m32 <address>) (disp <integer>))
-  (let ((op  MOV_r32,r/m32)
-        (reg (get-code r32))
-        (r/m (get-code r/m32))
-        (mod #b01))
-    (append (list op) (ModR/M mod reg r/m) (raw disp 8))))
+  (let* ((op  MOV_r32,r/m32)
+         (reg (get-code r32))
+         (r/m (get-code r/m32))
+         (mod #b01)
+         (sib (if (eqv? r/m 4) (SIB #b00 #b100 r/m) '())))
+    (append (list op) (ModR/M mod reg r/m) sib (raw disp 8))))
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 (define-method (SHL (r/m32 <reg32>))

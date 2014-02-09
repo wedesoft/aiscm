@@ -2,7 +2,7 @@
 
 SCM gc_malloc_pointerless_wrapper(SCM size)
 {
-  void *mem = scm_gc_malloc_pointerless(scm_to_int(size), "aiscm");
+  void *mem = scm_gc_malloc_pointerless(scm_to_int(size), "mem");
   SCM ptr = scm_from_pointer(mem, NULL);
   return ptr;
 }
