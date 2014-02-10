@@ -81,6 +81,8 @@
 (define-method (bits3 (reg <reg<>>)) (bits3 (get-code reg)))
 (define-method (bit4 (reg <integer>)) (logand reg #b1))
 (define-method (bit4 (reg <reg<>>)) (bit4 (ash (get-code reg) -3)))
+(define* (opcode code #:optional reg)
+  (list (logior code (if reg (bits3 reg) 0))))
 (define (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
 (define (REX W R X B)
@@ -90,83 +92,58 @@
                  (ash (bit4 X) 1)
                  (bit4 B))))
     (if (zero? flags) '() (list (logior (ash #b0100 4) flags)))))
-(define-method (SIB (SS <integer>) (index <integer>) (r32 <integer>))
-  (list (logior (ash SS 6) (ash index 3) r32)))
-(define-method (SIB (SS <integer>) (index <integer>) (r32 <reg<>>))
-  (list (logior (ash SS 6) (ash index 3) (get-code r32))))
+(define (SIB SS index r)
+  (list (logior (ash SS 6) (ash index 3) (bits3 r))))
 (define-method (MOV (r/m32 <reg<32>>) (r32 <reg<32>>))
-  (let ((rex (REX 0 r32 0 r/m32)))
-    (append rex (list #x89) (ModR/M #b11 r32 r/m32))))
+  (append (REX 0 r32 0 r/m32) (opcode #x89) (ModR/M #b11 r32 r/m32)))
 (define-method (MOV (r/m64 <reg<64>>) (r64 <reg<64>>))
-  (let ((rex (REX 1 r64 0 r/m64)))
-    (append rex (list #x89) (ModR/M #b11 r64 r/m64))))
+  (append (REX 1 r64 0 r/m64) (opcode #x89) (ModR/M #b11 r64 r/m64)))
 (define-method (MOV (r/m32 <address>) (r32 <reg<32>>))
-  (let ((rex (REX 0 r32 0 r/m32)))
-    (append rex (list #x89) (ModR/M #b00 r32 r/m32))))
+  (append (REX 0 r32 0 r/m32) (opcode #x89) (ModR/M #b00 r32 r/m32)))
 (define-method (MOV (r32 <reg<32>>) (imm32 <integer>))
-  (let ((reg (get-code r32))
-        (id  (raw imm32 32))
-        (rex (REX 0 0 0 r32)))
-    (append rex (list (logior #xb8 reg)) id)))
+  (append (REX 0 0 0 r32) (opcode #xb8 r32) (raw imm32 32)))
 (define-method (MOV (r64 <reg<64>>) (imm64 <integer>))
-  (let ((reg (get-code r64))
-        (id  (raw imm64 64))
-        (rex (REX 1 0 0 r64)))
-    (append rex (list (logior #xb8 reg)) id)))
+  (append (REX 1 0 0 r64) (opcode #xb8 r64) (raw imm64 64)))
 (define-method (MOV (r32 <reg<32>>) (imm32 <mem>))
   (MOV r32 (ptr->int imm32)))
 (define-method (MOV (r64 <reg<64>>) (imm64 <mem>))
   (MOV r64 (ptr->int imm64)))
 (define-method (MOV (r32 <reg<32>>) (r/m32 <address>))
-  (let ((reg (get-code r32))
-        (r/m (get-code r/m32))); TODO: rex
-    (append (list #x8b) (ModR/M #b00 r32 r/m32))))
+  (append (opcode #x8b) (ModR/M #b00 r32 r/m32))); TODO: REX
 (define-method (MOV (r32 <reg<32>>) (r/m32 <address>) (disp <integer>))
-  (let ((rex (REX 0 r32 0 r/m32))
-        (sib (if (equal? r/m32 *RSP) (SIB #b00 #b100 r/m32) '())))
-    (append (list #x8b) (ModR/M #b01 r32 r/m32) sib (raw disp 8))))
+  (let ((sib (if (equal? r/m32 *RSP) (SIB #b00 #b100 r/m32) '())))
+    (append (opcode #x8b) (ModR/M #b01 r32 r/m32) sib (raw disp 8)))); TODO: REX
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 (define-method (SHL (r/m32 <reg<32>>))
-  (append (list #xd1) (ModR/M #b11 4 r/m32))); TODO: REX
+  (append (opcode #xd1) (ModR/M #b11 4 r/m32))); TODO: REX
 (define-method (SHL (r/m64 <reg<64>>))
-  (let ((rex (REX 1 0 0 0))); TODO: fix REX
-        (append rex (list #xd1) (ModR/M #b11 4 r/m64))))
+  (append (REX 1 0 0 0) (opcode #xd1) (ModR/M #b11 4 r/m64))); TODO: fix REX
 (define-method (SHR (r/m32 <reg<32>>))
-  (append (list #xd1) (ModR/M #b11 5 r/m32))); TODO: REX
+  (append (opcode #xd1) (ModR/M #b11 5 r/m32))); TODO: REX
 (define-method (SHR (r/m64 <reg<64>>))
-  (let ((rex (REX 1 0 0 0))); TODO; fix REX
-        (append rex (list #xd1) (ModR/M #b11 5 r/m64))))
+  (append (REX 1 0 0 0) (opcode #xd1) (ModR/M #b11 5 r/m64))); TODO: fix REX
 (define-method (SAL (r/m32 <reg<32>>))
-  (append (list #xd1) (ModR/M #b11 4 r/m32))); TODO: REX
+  (append (opcode #xd1) (ModR/M #b11 4 r/m32))); TODO: REX
 (define-method (SAL (r/m64 <reg<64>>))
-  (let ((rex (REX 1 0 0 0))); TODO: fix REX
-        (append rex (list #xd1) (ModR/M #b11 4 r/m64))))
+  (append (REX 1 0 0 0) (opcode #xd1) (ModR/M #b11 4 r/m64))); TODO: fix REX
 (define-method (SAR (r/m32 <reg<32>>))
-  (append (list #xd1) (ModR/M #b11 7 r/m32))); TODO: REX
+  (append (opcode #xd1) (ModR/M #b11 7 r/m32))); TODO: REX
 (define-method (SAR (r/m64 <reg<64>>))
-  (let ((rex (REX 1 0 0 0))); TODO: fix REX
-        (append rex (list #xd1) (ModR/M #b11 7 r/m64))))
+  (append (REX 1 0 0 0) (opcode #xd1) (ModR/M #b11 7 r/m64))); TODO: fix REX
 (define-method (ADD (r/m32 <reg<32>>) (r32 <reg<32>>))
-  (append (list #x01) (ModR/M #b11 r32 r/m32))); TODO: REX
+  (append (opcode #x01) (ModR/M #b11 r32 r/m32))); TODO: REX
 (define-method (ADD (r/m32 <reg<32>>) (imm32 <integer>))
-  (let ((id (raw imm32 32)))
-    (if (equal? r/m32 EAX)
-      (append (list #x05) id)
-      (append (list #x81) (ModR/M #b11 0 r/m32) id)))); TODO: REX
+  (if (equal? r/m32 EAX)
+    (append (opcode #x05) (raw imm32 32))
+    (append (opcode #x81) (ModR/M #b11 0 r/m32) (raw imm32 32)))); TODO: REX
 (define-method (ADD (r/m64 <reg<64>>) (imm32 <integer>))
-  (let ((id (raw imm32 32)))
-    (if (equal? r/m64 RAX)
-      (let ((rex (REX 1 0 0 0)))
-        (append rex (list #x05) id))
-      (let ((rex (REX 1 0 0 0))); TODO: fix REX
-        (append rex (list #x81) (ModR/M #b11 0 r/m64) id)))))
+  (if (equal? r/m64 RAX)
+    (append (REX 1 0 0 0) (opcode #x05) (raw imm32 32))
+    (append (REX 1 0 0 0) (opcode #x81) (ModR/M #b11 0 r/m64) (raw imm32 32)))); TODO: fix REX
 (define-method (PUSH (r32 <reg<32>>))
-  (let ((reg (get-code r32))); TODO: REX
-    (list (logior #x50 reg))))
+  (opcode #x50 r32)); TODO: REX
 (define-method (POP (r32 <reg<32>>))
-  (let ((reg (get-code r32))); TODO: REX
-    (list (logior #x58 reg))))
+  (opcode #x58 r32)); TODO: REX
 (define-method (JMP (rel32 <integer>))
-  (let ((cd (raw rel32 32)))
-    (append (list #xe9) cd)))
+  (append (opcode #xe9) (raw rel32 32)))
