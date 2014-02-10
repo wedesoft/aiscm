@@ -11,57 +11,12 @@
             <reg<32>>
             <reg<64>>
             asm
-            ADD
-            JMP
-            MOV
-            NOP
-            RET
-            PUSH
-            POP
-            SAL
-            SAR
-            SHL
-            SHR
-            EAX
-            ECX
-            EDX
-            EBX
-            ESP
-            EBP
-            ESI
-            EDI
-            R8W
-            R9W
-            R10W
-            R11W
-            R12W
-            R13W
-            R14W
-            R15W
-            RAX
-            RCX
-            RDX
-            RBX
-            RSP
-            RBP
-            RSI
-            RDI
-            R8D
-            R9D
-            R10D
-            R11D
-            R12D
-            R13D
-            R14D
-            R15D
-            *RAX
-            *RCX
-            *RDX
-            *RBX
-            *RSP
-            *disp32
-            *RSI
-            *RDI))
+            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR
+            EAX ECX EDX EBX ESP EBP ESI EDI
+            R8W R9W R10W R11W R12W R13W R14W R15W
+            RAX RCX RDX RBX RSP RBP RSI RDI
+            R8D R9D R10D R11D R12D R13D R14D R15D
+            *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -122,24 +77,19 @@
   (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
 (define (ptr->int ptr)
   (pointer-address (get-memory ptr)))
-(define-method (ModR/M (mod <integer>) (reg/opcode <integer>) (r/m <reg<>>))
-  (list (logior
-          (ash (logand mod #b11) 6)
-          (ash (logand reg/opcode #b111) 3)
-          (logand (get-code r/m) #b111))))
-(define-method (ModR/M (mod <integer>) (reg/opcode <reg<>>) (r/m <reg<>>))
-  (ModR/M mod (get-code reg/opcode) r/m))
-(define-method (REX (W <integer>) (R <integer>) (X <integer>) (B <integer>))
+(define-method (bits3 (reg <integer>)) (logand reg #b111))
+(define-method (bits3 (reg <reg<>>)) (bits3 (get-code reg)))
+(define-method (bit4 (reg <integer>)) (logand reg #b1))
+(define-method (bit4 (reg <reg<>>)) (bit4 (ash (get-code reg) -3)))
+(define (ModR/M mod reg/opcode r/m)
+  (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
+(define (REX W R X B)
   (let ((flags (logior
-                 (ash (logand W 1) 3)
-                 (ash (logand R 1) 2)
-                 (ash (logand X 1) 1)
-                 (logand B 1))))
+                 (ash W 3)
+                 (ash (bit4 R) 2)
+                 (ash (bit4 X) 1)
+                 (bit4 B))))
     (if (zero? flags) '() (list (logior (ash #b0100 4) flags)))))
-(define-method (REX (W <integer>) (R <integer>) (X <integer>) (B <reg<>>))
-  (REX W R X (ash (get-code B) -3)))
-(define-method (REX (W <integer>) (R <reg<>>) (X <integer>) (B <reg<>>))
-  (REX W (ash (get-code R) -3) X B))
 (define-method (SIB (SS <integer>) (index <integer>) (r32 <integer>))
   (list (logior (ash SS 6) (ash index 3) r32)))
 (define-method (SIB (SS <integer>) (index <integer>) (r32 <reg<>>))
