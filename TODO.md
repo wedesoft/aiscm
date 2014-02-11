@@ -1,12 +1,10 @@
 TODO
 ====
 
-* add REX prefix to more instructions
-* add SIB byte to more instructions (using special case with RSP)
-* jit labels, CALL, SIMD
-* integer +
-* element-wise operators
+* element-wise operation (+)
 * multidimensional arrays
+* add REX prefix and SIB byte to more instructions
+* jit labels, CALL, SIMD
 * display should show internal structure
 * conversion sequence <-> bytevector
 * (error ...)
