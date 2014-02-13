@@ -155,4 +155,4 @@
 (define-method (POP (r64 <reg<64>>))
   (opcode #x58 r64))
 (define-method (JMP (rel32 <integer>))
-  (append (opcode #xe9) (raw rel32 32))); TODO: REX
+  (append (opcode #xe9) (raw rel32 32)))
