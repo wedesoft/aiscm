@@ -7,4 +7,8 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install autoconf automake libtool
 - make -f Makefile.dist
-script: ./configure && make
+install:
+- ./configure
+- make
+script:
+- make check
