@@ -5,7 +5,7 @@ before_install:
 - sudo apt-get install libgnutls-dev # Otherwise PPA no worky
 - sudo add-apt-repository ppa:dns/gnu --yes
 - sudo apt-get update
-- sudo apt-get install autoconf automake libtool guile-2.0-dev
+- sudo apt-get install autoconf automake libtool guile-2.0-dev texinfo
 - make -f Makefile.dist
 install:
 - ./configure
