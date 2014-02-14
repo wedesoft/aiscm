@@ -1,4 +1,4 @@
-AIscm
+AIscm [![Build Status](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm)
 =====
 
 [**AIscm**][1] is a **real-time computer vision extension** for the
