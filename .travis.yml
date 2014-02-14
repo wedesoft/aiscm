@@ -6,6 +6,7 @@ before_install:
 - sudo add-apt-repository ppa:dns/gnu --yes
 - sudo apt-get update
 - sudo apt-get install autoconf automake libtool
+- sudo apt-get install guile-2.0
 - make -f Makefile.dist
 install:
 - ./configure
