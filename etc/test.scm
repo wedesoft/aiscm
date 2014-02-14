@@ -26,6 +26,7 @@
 (define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax (car (quote exp)))))))
 (define-syntax-rule (compile exp) (car (quote exp)))
 (define-syntax-rule (compile exp) `(exp ,exp))
+(define-syntax-rule (compile exp) (cons 'compile (quote exp)))
 
 (compile (+ i j))
 ;(define-syntax when
