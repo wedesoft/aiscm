@@ -1,4 +1,10 @@
 language: c
 compiler:
   - gcc
-script: make -f Makefile.dist && ./configure && make
+before_install:
+- sudo apt-get install libgnutls-dev # Otherwise PPA no worky
+- sudo add-apt-repository ppa:dns/gnu --yes
+- sudo apt-get update
+- sudo apt-get install autoconf automake libtool
+- make -f Makefile.dist
+script: ./configure && make
