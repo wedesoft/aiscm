@@ -2,33 +2,50 @@
 --no-auto-compile
 !#
 (use-modules (ice-9 format))
-(use-modules (oop goops))
-(use-modules (aiscm element))
-(use-modules (aiscm int))
-(use-modules (aiscm jit))
-(use-modules (system foreign))
-(define c (make <jit-context>))
+;(use-modules (oop goops))
+;(use-modules (aiscm element))
+;(use-modules (aiscm int))
+;(use-modules (aiscm jit))
+;(use-modules (system foreign))
+;(define c (make <jit-context>))
+
 ;(define-method (+ (a <int>) (b <int>))
 ;  (let ((f (asm c int (list (MOV EAX EDI) (ADD EAX ESI) (RET)) int int)))
 ;    (make <int> #:value (f (get-value a) (get-value b)))))
-(define i (make <int> #:value 42))
-(define j (make <int> #:value 13))
+
+;(define i (make <int> #:value 42))
+;(define j (make <int> #:value 13))
+
 ;(format #t "~a + ~a = ~a~&" (get-value i) (get-value j) (get-value (+ i j)))
 ;(format #t "~a + ~a = ~a~&" (get-value j) (get-value i) (get-value (+ j i)))
 ;(format #t "Compiled ~a method(s).~&" (length (slot-ref c 'binaries)))
 
 
-(define-syntax-rule (compile exp) 0)
-(define-syntax compile (lambda (x) 0))
-(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) 0))))
-(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax exp)))))
+;(define-syntax-rule (compile exp) 0)
+;(define-syntax compile (lambda (x) 0))
+;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) 0))))
+;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax exp)))))
 
-(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax (car (quote exp)))))))
-(define-syntax-rule (compile exp) (car (quote exp)))
-(define-syntax-rule (compile exp) `(exp ,exp))
-(define-syntax-rule (compile exp) (cons 'compile (quote exp)))
+;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax (car (quote exp)))))))
+;(define-syntax-rule (compile exp) (car (quote exp)))
+;(define-syntax-rule (compile exp) `(exp ,exp))
+;(define-syntax-rule (compile exp) (cons 'compile (quote exp)))
 
-(compile (+ i j))
+(define-syntax-rule (compile exp)
+  (letrec ((x (quote exp))
+           (f (lambda (x)
+                (cond
+                 ((null? x) x)
+                 ((pair? x) (cons (f (car x)) (f (cdr x))))
+                 (else 1)))))
+    (f x)))
+
+
+
+(format #t "~a~&" (compile ()))
+(format #t "~a~&" (compile i))
+(format #t "~a~&" (compile (+ i j)))
+(format #t "~a~&" (compile (+ i (* j k))))
 ;(define-syntax when
 ;       (syntax-rules ()
 ;         ((when condition exp ...)
