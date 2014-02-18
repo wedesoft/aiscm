@@ -20,76 +20,19 @@
 ;(format #t "~a + ~a = ~a~&" (get-value j) (get-value i) (get-value (+ j i)))
 ;(format #t "Compiled ~a method(s).~&" (length (slot-ref c 'binaries)))
 
+(define (descriptor expr)
+  (cond
+    ((null? expr) "")
+    ((pair? expr) (format #f "<~a_~a>"
+                          (car expr)
+                          (string-join (map descriptor (cdr expr)) "_")))
+    (else "?")))
 
-;(define-syntax-rule (compile exp) 0)
-;(define-syntax compile (lambda (x) 0))
-;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) 0))))
-;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax exp)))))
+(define-syntax-rule (compile expr)
+  (descriptor (quote expr)))
 
-;(define-syntax compile (lambda (x) (syntax-case x () ((_ exp) (syntax (car (quote exp)))))))
-;(define-syntax-rule (compile exp) (car (quote exp)))
-;(define-syntax-rule (compile exp) `(exp ,exp))
-;(define-syntax-rule (compile exp) (cons 'compile (quote exp)))
-
-(define-syntax-rule (compile exp)
-  (letrec ((x (quote exp))
-           (f (lambda (x)
-                (cond
-                 ((null? x) x)
-                 ((pair? x) (cons (f (car x)) (f (cdr x))))
-                 (else 1)))))
-    (f x)))
-
-
-
-(format #t "~a~&" (compile ()))
-(format #t "~a~&" (compile i))
-(format #t "~a~&" (compile (+ i j)))
-(format #t "~a~&" (compile (+ i (* j k))))
-;(define-syntax when
-;       (syntax-rules ()
-;         ((when condition exp ...)
-;          (if condition
-;              (begin exp ...)))))
-;
-;     (when #t
-;       (display "hey ho\n")
-;       (display "let's go\n"))
-
-;(define-syntax aif
-;  (lambda (x)
-;    (syntax-case x ()
-;                 ((_ test then else)
-;                  (with-syntax ((it (datum->syntax x 'it)))
-;                               #'(let ((it test))
-;                                   (if it then else)))))))
-
-;(define-syntax compile
-;  (syntax-rules ()
-;    ((compile op a b)
-;     (make <int> #:value (op (get-value a) (get-value b))))))
-
-;(define-syntax compile
-;  (lambda (x)
-;    (syntax-case x ()
-;      ((_ op a b)
-;       (syntax (make <int> #:value (op (get-value a) (get-value b))))))))
-
-;(define-syntax-rule (lazy exp)
-;  (lambda () exp))
-
-;(define-syntax descriptor
-;  (lambda (x)
-;    (syntax-case x ()
-;      ((_ op a b)
-;       (syntax op)))))
-
-;(define-syntax compile
-;  (lambda (x)
-;    (syntax-case x ()
-;      ((_ op a b)
-;       (syntax (make <int> #:value (op (get-value a) (get-value b))))))))
-
-;(format #t "~a~&" (compile + i j))
-;(format #t "~a~&" (compile - i j))
+(format #t "~s~&" (compile ()))
+(format #t "~s~&" (compile i))
+(format #t "~s~&" (compile (+ i j)))
+(format #t "~s~&" (compile (+ i (* j k))))
 

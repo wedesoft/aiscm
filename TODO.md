@@ -1,10 +1,9 @@
 TODO
 ====
 
-* element-wise operation (+)
-  info guile-2.0 'API Reference' Macros
+* element-wise operation (+), compute descriptor, define generic method,
+  compile specific implementation at runtime
 * multidimensional arrays
-* add REX prefix and SIB byte to more instructions
 * jit labels, CALL, SIMD
 * display should show internal structure
 * conversion sequence <-> bytevector
