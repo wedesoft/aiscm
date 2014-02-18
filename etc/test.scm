@@ -2,7 +2,7 @@
 --no-auto-compile
 !#
 (use-modules (ice-9 format))
-;(use-modules (oop goops))
+(use-modules (oop goops))
 ;(use-modules (aiscm element))
 ;(use-modules (aiscm int))
 ;(use-modules (aiscm jit))
@@ -28,11 +28,18 @@
                           (string-join (map descriptor (cdr expr)) "_")))
     (else "?")))
 
+(define (toplevel-define! name val)
+  (module-define! (current-module) name val))
+
+(define (dispatcher sym)
+  (if (not (defined? sym))
+    (let ((gen (make <generic> #:name sym)))
+      (toplevel-define! sym gen)
+      (add-method! gen (method () 0)))))
+
 (define-syntax-rule (compile expr)
-  (descriptor (quote expr)))
+  (let ((descr (descriptor (quote expr))))
+    (dispatcher (string->symbol descr))))
 
-(format #t "~s~&" (compile ()))
-(format #t "~s~&" (compile i))
-(format #t "~s~&" (compile (+ i j)))
-(format #t "~s~&" (compile (+ i (* j k))))
-
+(compile (+ i j))
+(format #t "~s~&" (<+_?_?>))
