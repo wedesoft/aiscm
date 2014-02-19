@@ -21,25 +21,46 @@
 ;(format #t "Compiled ~a method(s).~&" (length (slot-ref c 'binaries)))
 
 (define (descriptor expr)
+  (begin
+    (display expr)
+    (display "\n")
   (cond
     ((null? expr) "")
     ((pair? expr) (format #f "<~a_~a>"
                           (car expr)
                           (string-join (map descriptor (cdr expr)) "_")))
     (else "?")))
+  )
 
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
 
 (define (dispatcher sym)
-  (if (not (defined? sym))
-    (let ((gen (make <generic> #:name sym)))
-      (toplevel-define! sym gen)
-      (add-method! gen (method () 0)))))
+  (begin
+    (if (not (defined? sym))
+      (let ((gen (make <generic> #:name sym)))
+        (toplevel-define! sym gen)
+        (add-method! gen (method () 0))))
+    sym))
 
-(define-syntax-rule (compile expr)
-  (let ((descr (descriptor (quote expr))))
-    (dispatcher (string->symbol descr))))
+;(define-syntax-rule (compile expr)
+;  (let ((descr (string->symbol (descriptor (quote expr)))))
+;    (dispatcher descr)
+;    (eval (list descr) (current-module))))
+;
+;(define (f) (compile (+ i j)))
+;(format #t "~s~&" (f))
+;(format #t "~s~&" (f))
+;(format #t "~s~&" (f))
 
-(compile (+ i j))
-(format #t "~s~&" (<+_?_?>))
+(define-syntax compile
+  (lambda (x)
+    (syntax-case x ()
+      ((_ expr)
+       #`(begin
+           #,(descriptor (syntax->datum #'expr)))))))
+
+(define (f) (compile (+ i j)))
+(format #t "~s~&" (f))
+(format #t "~s~&" (f))
+(format #t "~s~&" (f))
