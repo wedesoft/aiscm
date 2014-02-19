@@ -36,12 +36,10 @@
   (module-define! (current-module) name val))
 
 (define (dispatcher sym)
-  (begin
-    (if (not (defined? sym))
-      (let ((gen (make <generic> #:name sym)))
-        (toplevel-define! sym gen)
-        (add-method! gen (method () 0))))
-    sym))
+  (if (not (defined? sym))
+    (let ((gen (make <generic> #:name sym)))
+      (toplevel-define! sym gen)
+      (add-method! gen (method () 0)))))
 
 ;(define-syntax-rule (compile expr)
 ;  (let ((descr (string->symbol (descriptor (quote expr)))))
@@ -57,8 +55,10 @@
   (lambda (x)
     (syntax-case x ()
       ((_ expr)
-       #`(begin
-           #,(descriptor (syntax->datum #'expr)))))))
+       #`(let
+           ((descr #,(descriptor (syntax->datum #'expr))))
+           (dispatcher (string->symbol descr))
+           descr)))))
 
 (define (f) (compile (+ i j)))
 (format #t "~s~&" (f))
