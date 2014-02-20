@@ -9,5 +9,5 @@ TODO
 * conversion sequence <-> bytevector
 * (error ...)
 * variable does not need value
-* re-export?
+* reverse module inclusion
 * https://github.com/yawaramin/ggspec

@@ -20,39 +20,47 @@
 ;(format #t "~a + ~a = ~a~&" (get-value j) (get-value i) (get-value (+ j i)))
 ;(format #t "Compiled ~a method(s).~&" (length (slot-ref c 'binaries)))
 
-(define (descr-str expr)
-  (begin
-    (display expr)
-    (display "\n")
-    (cond
-      ((null? expr) "")
-      ((pair? expr) (format #f "<~a_~a>"
-                            (car expr)
-                            (string-join (map descr-str (cdr expr)) "_")))
-      (else "?"))))
+(define (expr->descr expr)
+  (letrec
+    ((expr->str
+       (lambda (expr)
+         (cond
+           ((null? expr) "")
+           ((pair? expr) (format #f "<~a_~a>"
+                                 (car expr)
+                                 (string-join (map expr->str (cdr expr)) "_")))
+           (else "?")))))
+    (format #t "~s~&" expr)
+    (string->symbol (expr->str expr))))
 
-(define (toplevel-define! name val)
-  (module-define! (current-module) name val))
-
-(define (dispatcher sym)
-  (if (not (defined? sym))
-    (let ((gen (make <generic> #:name sym)))
-      (toplevel-define! sym gen)
-      (add-method! gen (method () 0)))))
-
-(define (descr expr)
-  (string->symbol (descr-str expr)))
+(define (expr->params expr)
+  (cond
+    ((null? expr) '())
+    ((pair? expr) (apply append (map expr->params (cdr expr))))
+    (else (list expr))))
 
 (define-syntax compile
   (lambda (x)
     (syntax-case x ()
       ((k expr)
        #`(begin
-           (dispatcher '#,(datum->syntax #'k (descr (syntax->datum #'expr))))
-           (#,(datum->syntax #'k (descr (syntax->datum #'expr)))))))))
+           (define-method
+             (#,(datum->syntax
+                  #'k
+                  (expr->descr (syntax->datum #'expr)))) 0)
+           (#,(datum->syntax
+                #'k
+                (expr->descr (syntax->datum #'expr)))))))))
+
+; * compile (+ i j)
+; * define-method (+ (a <element>) (b <element>))
+;    (make <int> #:value (+ (get-value a) (get-value b))))
+; * coercion (coerce a b)
+; * define-method (+ (a <element>) (b <element>))
+;    (make (coerce (class-of a) (class-of b)) #:value (+ (get-value a) (get-value b))))
 
 (define (f) (compile (+ i j)))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
-(format #t "~s~&" <+_?_?>)
+;(format #t "~s~&" <+_?_?>)

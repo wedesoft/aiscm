@@ -5,6 +5,8 @@ AIscm [![Build Status](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](
 [**Guile programming language**][2]. Performance in Scheme is achieved by means
 of a JIT compiler.
 
+![](construction.gif "Under construction")
+
 See [**AIscm homepage**][1] for documentation.
 
 External links
