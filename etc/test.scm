@@ -20,17 +20,16 @@
 ;(format #t "~a + ~a = ~a~&" (get-value j) (get-value i) (get-value (+ j i)))
 ;(format #t "Compiled ~a method(s).~&" (length (slot-ref c 'binaries)))
 
-(define (descriptor expr)
+(define (descr-str expr)
   (begin
     (display expr)
     (display "\n")
-  (cond
-    ((null? expr) "")
-    ((pair? expr) (format #f "<~a_~a>"
-                          (car expr)
-                          (string-join (map descriptor (cdr expr)) "_")))
-    (else "?")))
-  )
+    (cond
+      ((null? expr) "")
+      ((pair? expr) (format #f "<~a_~a>"
+                            (car expr)
+                            (string-join (map descr-str (cdr expr)) "_")))
+      (else "?"))))
 
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -41,26 +40,19 @@
       (toplevel-define! sym gen)
       (add-method! gen (method () 0)))))
 
-;(define-syntax-rule (compile expr)
-;  (let ((descr (string->symbol (descriptor (quote expr)))))
-;    (dispatcher descr)
-;    (eval (list descr) (current-module))))
-;
-;(define (f) (compile (+ i j)))
-;(format #t "~s~&" (f))
-;(format #t "~s~&" (f))
-;(format #t "~s~&" (f))
+(define (descr expr)
+  (string->symbol (descr-str expr)))
 
 (define-syntax compile
   (lambda (x)
     (syntax-case x ()
-      ((_ expr)
-       #`(let
-           ((descr #,(descriptor (syntax->datum #'expr))))
-           (dispatcher (string->symbol descr))
-           descr)))))
+      ((k expr)
+       #`(begin
+           (dispatcher '#,(datum->syntax #'k (descr (syntax->datum #'expr))))
+           (#,(datum->syntax #'k (descr (syntax->datum #'expr)))))))))
 
 (define (f) (compile (+ i j)))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
+(format #t "~s~&" <+_?_?>)
