@@ -15,6 +15,8 @@ Guile programming language
 (see @inforef{Top,GUILE manual,guile-2.0}.).
 @end ifinfo
 
+@image{construction,,,under construction,gif}
+@noindent
 Copyright @copyright{} 2014 Jan Wedekind.
 
 @quotation

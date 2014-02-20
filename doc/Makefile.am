@@ -4,6 +4,8 @@ info_TEXINFOS = aiscm.texi
 
 aiscm_TEXINFOS = intro.texi
 
+EXTRA_DIST = construction.gif
+
 CLEANFILES = *~ *.info *.pdf
 
 clean-local:

@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4
 noinst_DATA = README.html TODO.html
 
 EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING \
-	tap-driver.sh repl.sh 
+	tap-driver.sh repl.sh  construction.gif
 
 .md.html:
 	$(PANDOC) -o $@ $< || echo "Install Pandoc to compile Markdown to HTML"
