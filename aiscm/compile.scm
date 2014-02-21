@@ -1,7 +1,9 @@
 (define-module (aiscm compile)
   #:use-module (oop goops)
   #:export (expr->params
-            expr->descr))
+            expr->descr
+            expr->temps
+            expr->call))
 (define (expr->params expr)
   (cond
     ((null? expr) '())
@@ -18,4 +20,7 @@
                                  (string-join (map expr->str (cdr expr)) "_")))
            (else "?")))))
     (string->symbol (expr->str expr))))
-
+(define (expr->temps expr)
+  (syntax->datum (generate-temporaries (expr->params expr))))
+(define (expr->call expr)
+  (cons (expr->descr expr) (expr->params expr)))

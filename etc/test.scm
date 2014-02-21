@@ -59,8 +59,14 @@
 ; * define-method (+ (a <element>) (b <element>))
 ;    (make (coerce (class-of a) (class-of b)) #:value (+ (get-value a) (get-value b))))
 
+(define (ttt descr expr)
+  (list 'define-method (cons descr (syntax->datum (generate-temporaries expr)))
+        (make <int> #:value (+ (get-value a) (get-value b)))))
+
 (define (f) (compile (+ i j)))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
 (format #t "~s~&" (f))
 ;(format #t "~s~&" <+_?_?>)
+
+;(define-syntax compile (lambda (x) (syntax-case x () ((k expr) #`(syntax->datum #'expr)))))
