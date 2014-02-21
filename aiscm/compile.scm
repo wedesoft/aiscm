@@ -1,9 +1,13 @@
 (define-module (aiscm compile)
   #:use-module (oop goops)
+  #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:export (expr->params
             expr->descr
             expr->temps
-            expr->call))
+            expr->call
+            expr->method)
+  #:export-syntax (comp))
 (define (expr->params expr)
   (cond
     ((null? expr) '())
@@ -24,3 +28,16 @@
   (syntax->datum (generate-temporaries (expr->params expr))))
 (define (expr->call expr)
   (cons (expr->descr expr) (expr->params expr)))
+(define (expr->method expr)
+  (let ((descr (expr->descr expr))
+        (temps (expr->temps expr))
+        (extract (lambda (arg) `(get-value ,arg))))
+    `(define-method (,descr ,@temps)
+                    (make <int> #:value (+ ,@(map extract temps))))))
+(define-syntax comp
+  (lambda (x)
+    (syntax-case x ()
+      ((k expr)
+       #`(begin
+           #,(datum->syntax #'k (expr->method (syntax->datum #'expr)))
+           #,(datum->syntax #'k (expr->call (syntax->datum #'expr))))))))
