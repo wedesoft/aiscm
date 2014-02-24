@@ -1,6 +1,7 @@
 TODO
 ====
 
+* NEG
 * compile element-wise operation
 * plus and minus with arbitrary number of arguments
 * plus -> '+'?

@@ -11,7 +11,7 @@
             <reg<32>>
             <reg<64>>
             asm
-            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR
+            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8W R9W R10W R11W R12W R13W R14W R15W
             RAX RCX RDX RBX RSP RBP RSI RDI
@@ -156,3 +156,5 @@
   (opcode #x58 r64))
 (define-method (JMP (rel32 <integer>))
   (append (opcode #xe9) (raw rel32 32)))
+(define-method (NEG (r/m32 <reg<32>>))
+  (append (REX 0 0 0 r/m32) (opcode #xf7) (ModR/M #b11 3 r/m32)))
