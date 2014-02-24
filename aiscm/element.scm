@@ -1,6 +1,7 @@
 (define-module (aiscm element)
   #:use-module (oop goops)
   #:export (<element>
+            <meta<element>>
             get-value
             storage-size
             pack
@@ -11,7 +12,9 @@
             shape
             lookup
             shift
-            slice))
+            slice
+            coerce))
+(define-class <meta<element>> (<class>))
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
 (define-generic storage-size)
@@ -26,3 +29,4 @@
 (define-generic lookup)
 (define-generic shift)
 (define-generic slice)
+(define-generic coerce)

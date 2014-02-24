@@ -4,7 +4,7 @@
   #:use-module (aiscm element)
   #:export (<bool>
             <meta<bool>>))
-(define-class <meta<bool>> (<class>))
+(define-class <meta<bool>> (<meta<element>>))
 (define-class <bool> (<element>) #:metaclass <meta<bool>>)
 (define-method (storage-size (self <meta<bool>>)) 1)
 (define-method (pack (self <bool>))

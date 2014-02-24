@@ -1,9 +1,10 @@
 TODO
 ====
 
-* element-wise operation (+), compute descriptor, define generic method,
-  compile specific implementation at runtime
+* compile element-wise operation
+* plus and minus with arbitrary number of arguments
 * multidimensional arrays
+* compile composite operations (lazy)
 * jit labels, CALL, SIMD
 * display should show internal structure
 * conversion sequence <-> bytevector

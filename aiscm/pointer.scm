@@ -12,7 +12,7 @@
             target
             fetch
             store))
-(define-class <meta<pointer<>>> (<class>))
+(define-class <meta<pointer<>>> (<meta<element>>))
 (define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
 (define-generic target)
 (define (pointer targetclass)
@@ -53,3 +53,5 @@
   (format port "#<~a #x~x>"
           (class-name (class-of self))
           (pointer-address (get-memory (get-value self)))))
+;(define-method (equal? (a <meta<pointer<>>>) (b <meta<pointer<>>>))
+;  (equal? (target a) (target b)))

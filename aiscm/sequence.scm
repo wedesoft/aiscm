@@ -9,7 +9,7 @@
   #:use-module (oop goops)
   #:export (sequence
             sequence->list))
-(define-class <meta<sequence<>>> (<class>))
+(define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>) #:metaclass <meta<sequence<>>>)
 (define (sequence type)
   (let* ((name (format #f "<sequence~a>" (class-name type)))
