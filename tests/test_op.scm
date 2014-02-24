@@ -1,7 +1,7 @@
 (use-modules (oop goops)
              (aiscm element)
              (aiscm int)
-             (aiscm elementwise)
+             (aiscm op)
              (guile-tap))
 (planned-tests 3)
 (define i (make <byte> #:value 2))

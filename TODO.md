@@ -3,6 +3,7 @@ TODO
 
 * compile element-wise operation
 * plus and minus with arbitrary number of arguments
+* plus -> '+'?
 * multidimensional arrays
 * compile composite operations (lazy)
 * jit labels, CALL, SIMD

@@ -1,4 +1,4 @@
-(define-module (aiscm elementwise)
+(define-module (aiscm op)
   #:use-module (ice-9 r5rs)
   #:use-module (oop goops)
   #:use-module (aiscm element)
