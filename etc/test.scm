@@ -52,13 +52,8 @@
                 #'k
                 (expr->descr (syntax->datum #'expr)))))))))
 
-; * compile (+ i j)
-; * (define-method (+ (a <element>) (b <element>))
-;    (make <int> #:value (descr a b)))
-; * coercion (coerce a b)
 ; * define-method (descr (a <element>) (b <element>))
 ;    (make (coerce (class-of a) (class-of b)) #:value (+ (get-value a) (get-value b))))
-
 
 ; (define-syntax t (lambda (x) (syntax-case x () ((k expr) (datum->syntax #'k (expr->call (syntax->datum #'expr)))))))
 

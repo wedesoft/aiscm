@@ -31,8 +31,9 @@
 (define (expr->method expr)
   (let ((descr (expr->descr expr))
         (temps (expr->temps expr))
+        (param (lambda (arg) `(,arg <element>)))
         (extract (lambda (arg) `(get-value ,arg))))
-    `(define-method (,descr ,@temps)
+    `(define-method (,descr ,@(map param temps))
                     (make <int> #:value (+ ,@(map extract temps))))))
 (define-syntax comp
   (lambda (x)
