@@ -8,7 +8,10 @@
             plus))
 (define ctx (make <jit-context>))
 (define-method (minus (x <element>))
-  (let* ((code (asm ctx int (list (MOV EAX EDI) (NEG EAX) (RET)) int))
+  (let* ((type (foreign-type (class-of x)))
+         (ax   (if (eqv? (bits (class-of x)) 64) RAX EAX))
+         (di   (if (eqv? (bits (class-of x)) 64) RDI EDI))
+         (code (asm ctx type (list (MOV ax di) (NEG ax) (RET)) type))
          (proc (lambda (x) (make (class-of x) #:value (code (get-value x))))))
     (add-method! minus (make <method>
                              #:specializers (list (class-of x))

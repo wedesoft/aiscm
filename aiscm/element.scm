@@ -1,9 +1,11 @@
 (define-module (aiscm element)
   #:use-module (oop goops)
+  #:use-module (system foreign)
   #:export (<element>
             <meta<element>>
             get-value
             storage-size
+            foreign-type
             pack
             unpack
             subst
@@ -18,6 +20,7 @@
 (define-class <element> ()
   (value #:init-keyword #:value #:getter get-value))
 (define-generic storage-size)
+(define-generic foreign-type)
 (define-generic pack)
 (define-generic unpack)
 (define-method (equal? (a <element>) (b <element>))
