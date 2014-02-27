@@ -3,17 +3,21 @@
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:export (signed
             unsigned
             bits
             signed?
             integer
-            <int<>>
-            <meta<int<>>>
-            <ubyte> <byte>
-            <usint> <sint>
-            <uint> <int>
-            <ulong> <long>
+            <int<>> <meta<int<>>>
+            <ubyte> <int<8,unsigned>>  <meta<int<8,unsigned>>>
+            <byte>  <int<8,signed>>    <meta<int<8,signed>>>
+            <usint> <int<16,unsigned>> <meta<int<16,unsigned>>>
+            <sint>  <int<16,signed>>   <meta<int<16,signed>>>
+            <uint>  <int<32,unsigned>> <meta<int<32,unsigned>>>
+            <int>   <int<32,signed>>   <meta<int<32,signed>>>
+            <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
+            <long>  <int<64,signed>>   <meta<int<64,signed>>>
             <native-int>))
 (define signed 'signed)
 (define unsigned 'unsigned)
@@ -24,14 +28,14 @@
 (define (integer nbits sgn)
   (let* ((name (format #f "<int<~a,~a>>" nbits sgn))
          (metaname (format #f "<meta~a>" name))
-         (metaclass (make <class>
-                          #:dsupers (list <meta<int<>>>)
-                          #:slots '()
-                          #:name metaname))
-         (retval (make metaclass
-                       #:dsupers (list <int<>>)
-                       #:slots '()
-                       #:name name)))
+         (metaclass (def-once metaname (make <class>
+                                             #:dsupers (list <meta<int<>>>)
+                                             #:slots '()
+                                             #:name metaname)))
+         (retval (def-once name (make metaclass
+                                      #:dsupers (list <int<>>)
+                                      #:slots '()
+                                      #:name name))))
     (define-method (bits (self metaclass)) nbits)
     (define-method (signed? (self metaclass)) (eq? sgn 'signed))
     retval))

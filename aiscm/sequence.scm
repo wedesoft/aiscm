@@ -1,5 +1,6 @@
 (define-module (aiscm sequence)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm pointer)
   #:use-module (aiscm lookup)
@@ -14,14 +15,14 @@
 (define (sequence type)
   (let* ((name (format #f "<sequence~a>" (class-name type)))
          (metaname (format #f "<meta~a>" name))
-         (metaclass (make <class>
-                          #:dsupers (list <meta<sequence<>>>)
-                          #:slots '()
-                          #:name metaname))
-         (retval (make metaclass
-                       #:dsupers (list <sequence<>>)
-                       #:slots '()
-                       #:name name)))
+         (metaclass (def-once metaname (make <class>
+                                             #:dsupers (list <meta<sequence<>>>)
+                                             #:slots '()
+                                             #:name metaname)))
+         (retval (def-once name (make metaclass
+                                      #:dsupers (list <sequence<>>)
+                                      #:slots '()
+                                      #:name name))))
     (define-method (typecode (self metaclass)) type)
     (define-method (make (class metaclass) . initargs)
       (let-keywords initargs #f (size)

@@ -1,6 +1,7 @@
 (define-module (aiscm pointer)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:use-module (aiscm var)
   #:use-module (aiscm mem)
   #:use-module (aiscm int)
@@ -18,14 +19,15 @@
 (define (pointer targetclass)
   (let* ((name (format #f "<pointer~a>" (class-name targetclass)))
          (metaname (format #f "<meta~a>" name))
-         (metaclass (make <class>
-                          #:dsupers (list <meta<pointer<>>>)
-                          #:slots '()
-                          #:name metaname))
-         (retval (make metaclass
-                       #:dsupers (list <pointer<>>)
-                       #:slots '()
-                       #:name name)))
+         (metaclass (def-once metaname
+                              (make <class>
+                                    #:dsupers (list <meta<pointer<>>>)
+                                    #:slots '()
+                                    #:name metaname)))
+         (retval (def-once name (make metaclass
+                                      #:dsupers (list <pointer<>>)
+                                      #:slots '()
+                                      #:name name))))
     (define-method (target (self metaclass)) targetclass)
     retval))
 (define-method (fetch (self <pointer<>>))
@@ -53,5 +55,3 @@
   (format port "#<~a #x~x>"
           (class-name (class-of self))
           (pointer-address (get-memory (get-value self)))))
-;(define-method (equal? (a <meta<pointer<>>>) (b <meta<pointer<>>>))
-;  (equal? (target a) (target b)))

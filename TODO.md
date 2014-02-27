@@ -1,7 +1,6 @@
 TODO
 ====
 
-* compile 'minus' for different integer types at runtime
 * plus and minus with arbitrary number of arguments
 * plus -> '+'?
 * multidimensional arrays

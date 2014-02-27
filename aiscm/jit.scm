@@ -5,7 +5,6 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:use-module (aiscm mem)
   #:export (<jit-context>
             <reg<>>
             <reg<32>>

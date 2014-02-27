@@ -30,7 +30,11 @@
 (define (do-directive tests directive explanation)
   (for-each
 	(lambda (e)
-	  (primitive-eval e)
+    (if (equal? directive "SKIP")
+      (begin
+        (incr-counter)
+        (format #t "~&ok ~a" test-counter))
+      (primitive-eval e))
 	  (format #t " # ~a ~a~%"
 			  directive
 			  (if (not (null? explanation))
