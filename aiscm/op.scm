@@ -4,8 +4,8 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm jit)
-  #:export (minus
-            plus))
+  #:export (minus)
+  #:re-export (+))
 (define ctx (make <jit-context>))
 (define-method (minus (x <element>))
   (let* ((tx    (class-of x))
@@ -18,7 +18,7 @@
                              #:specializers (list tx)
                              #:procedure proc))
     (minus x)))
-(define-method (plus (a <element>) (b <element>))
+(define-method (+ (a <element>) (b <element>))
   (let* ((ta     (class-of a))
          (tb     (class-of b))
          (tr     (coerce ta tb))
@@ -30,7 +30,7 @@
          (si     (if (eqv? (bits tr) 64) RSI ESI))
          (code   (asm ctx ftr (list (MOV ax di) (ADD ax si) (RET)) fta ftb))
          (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b))))))
-    (add-method! plus (make <method>
-                            #:specializers (list ta tb)
-                            #:procedure proc))
-    (plus a b)))
+    (add-method! + (make <method>
+                         #:specializers (list ta tb)
+                         #:procedure proc))
+    (+ a b)))
