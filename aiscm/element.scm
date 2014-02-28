@@ -17,7 +17,9 @@
             slice
             coerce))
 (define-class <meta<element>> (<class>))
-(define-class <element> () (value #:init-keyword #:value #:getter get-value))
+(define-class <element> ()
+              (value #:init-keyword #:value #:getter get-value)
+              #:metaclass <meta<element>>)
 (define-generic storage-size)
 (define-generic foreign-type)
 (define-generic pack)
