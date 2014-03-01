@@ -10,7 +10,7 @@
             <reg<32>>
             <reg<64>>
             asm
-            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG
+            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             ;AL CL DL BL SPL BPL SIL DIL
             ;R8L R9L R10L R11L R12L R13L R14L R15L
             ;AX CX DX BX SP BP SI DI
@@ -187,3 +187,7 @@
   (append (REX r/m 0 0 r/m) (opcode #xf7) (ModR/M #b11 3 r/m)))
 (define-method (NEG (r/m <reg<64>>))
   (append (REX r/m 0 0 r/m) (opcode #xf7) (ModR/M #b11 3 r/m)))
+(define-method (SUB (r/m <reg<32>>) (r <reg<32>>))
+  (append (REX r/m r 0 r/m) (opcode #x29) (ModR/M #b11 r r/m)))
+(define-method (SUB (r/m <reg<64>>) (r <reg<64>>))
+  (append (REX r/m r 0 r/m) (opcode #x29) (ModR/M #b11 r r/m)))
