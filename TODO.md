@@ -1,9 +1,7 @@
 TODO
 ====
 
-* minus with arbitrary number of arguments
-* minus -> '-'?
-* plus and minus with normal integers
+* binary operation with normal integers
 * multidimensional arrays
 * compile composite operations (lazy)
 * jit labels, CALL, SIMD
