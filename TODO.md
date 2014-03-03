@@ -1,7 +1,7 @@
 TODO
 ====
 
-* plus and minus with arbitrary number of arguments
+* minus with arbitrary number of arguments
 * minus -> '-'?
 * plus and minus with normal integers
 * multidimensional arrays

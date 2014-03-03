@@ -191,3 +191,7 @@
   (append (REX r/m r 0 r/m) (opcode #x29) (ModR/M #b11 r r/m)))
 (define-method (SUB (r/m <reg<64>>) (r <reg<64>>))
   (append (REX r/m r 0 r/m) (opcode #x29) (ModR/M #b11 r r/m)))
+(define-method (SUB (r/m <reg<>>) (imm32 <integer>))
+  (if (equal? (get-code r/m) 0)
+    (append (REX r/m 0 0 r/m) (opcode #x2d) (raw imm32 32))
+    (append (REX r/m 0 0 r/m) (opcode #x81) (ModR/M #b11 5 r/m) (raw imm32 32))))
