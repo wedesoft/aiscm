@@ -15,7 +15,8 @@
             lookup
             shift
             slice
-            coerce))
+            coerce
+            match))
 (define-class <meta<element>> (<class>))
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
@@ -34,3 +35,4 @@
 (define-generic shift)
 (define-generic slice)
 (define-generic coerce)
+(define-generic match)

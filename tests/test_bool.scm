@@ -4,7 +4,7 @@
              (guile-tap))
 (define bool-false (make <bool> #:value #f))
 (define bool-true (make <bool> #:value #t))
-(planned-tests 17)
+(planned-tests 19)
 (ok (equal? bool-false bool-false)
     "equality of booleans")
 (ok (not (equal? bool-false bool-true))
@@ -41,4 +41,8 @@
 (ok (equal? "#<<bool> #f>"
             (call-with-output-string (lambda (port) (write bool-false port))))
     "write boolean object")
+(ok (equal? <bool> (match #f))
+    "type matching for #f")
+(ok (equal? <bool> (match #t))
+    "type matching for #t")
 (format #t "~&")

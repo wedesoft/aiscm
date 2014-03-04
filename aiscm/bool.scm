@@ -15,3 +15,4 @@
   (format port "#<<bool> ~a>" (get-value self)))
 (define-method (display (self <bool>) port)
   (format port "#<<bool> ~a>" (get-value self)))
+(define-method (match (b <boolean>)) <bool>)
