@@ -2,6 +2,7 @@ AC_PREREQ([2.69])
 AC_INIT([aiscm], [0.1.4], [jan@wedesoft.de])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 LT_INIT
 AC_PROG_CC
 AC_PROG_INSTALL
