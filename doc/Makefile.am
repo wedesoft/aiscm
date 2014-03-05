@@ -11,4 +11,4 @@ CLEANFILES = *~ *.info *.pdf
 clean-local:
 	rm -Rf aiscm.html aiscm.t2p
 
-MAINTAINERCLEANFILES = Makefile.in texinfo.tex version.texi mdate-sh stamp-vti
+MAINTAINERCLEANFILES = Makefile.in version.texi stamp-vti

@@ -1,7 +1,5 @@
 Makefile.in
 Makefile
-texinfo.tex
 aiscm.t2p
-mdate-sh
 stamp-vti
 version.texi
