@@ -1,8 +1,9 @@
 TODO
 ====
 
-* binary operation with normal integers
 * multidimensional arrays
+* how to export unary '-'
+* Greg Hendershott thread-last ->>?
 * compile composite operations (lazy)
 * jit labels, CALL, SIMD
 * conversion sequence <-> bytevector

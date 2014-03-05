@@ -38,12 +38,11 @@
     (throw 'mem-read-size-overrun size (get-size self))
     (pointer->bytevector (get-memory self) size)))
 (define-method (write-bytes (self <mem>) (bv <bytevector>))
-  (begin
-    (bytevector-copy!
-      bv 0
-      (pointer->bytevector (get-memory self) (get-size self)) 0
-      (bytevector-length bv))
-    bv))
+  (bytevector-copy!
+    bv 0
+    (pointer->bytevector (get-memory self) (get-size self)) 0
+    (bytevector-length bv))
+  bv)
 (define-method (display (self <mem>) port)
   (format port "#<<mem> #x~x ~a>"
           (pointer-address (get-memory self)) (get-size self)))
