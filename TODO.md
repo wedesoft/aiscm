@@ -1,8 +1,10 @@
 TODO
 ====
 
-* multidimensional arrays
+* better reporting for failed tests
+* array operation
 * how to export unary '-'
+* gccvalue (equivalent)
 * Greg Hendershott thread-last ->>?
 * compile composite operations (lazy)
 * jit labels, CALL, SIMD

@@ -4,9 +4,7 @@
   #:use-module (aiscm pointer)
   #:export (<lambda>
             get-index
-            get-length
-            get
-            set))
+            get-length))
 (define-class <lambda> (<element>)
   (index #:init-keyword #:index #:getter get-index)
   (length #:init-keyword #:length #:getter get-length))

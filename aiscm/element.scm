@@ -16,7 +16,9 @@
             shift
             slice
             coerce
-            match))
+            match
+            get
+            set))
 (define-class <meta<element>> (<class>))
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
@@ -30,9 +32,11 @@
 (define-method (subst (self <element>) alist) self)
 (define-method (size (self <element>)) 1)
 (define-method (shape (self <element>)) '())
-(define-generic typecode)
+(define-method (typecode (self <element>)) (typecode (class-of self)))
 (define-generic lookup)
 (define-generic shift)
 (define-generic slice)
 (define-generic coerce)
 (define-generic match)
+(define-generic get)
+(define-generic set)
