@@ -3,7 +3,8 @@ TODO
 
 * better reporting for failed tests
 * array operation
-* how to export unary '-'
+* Use NEG for unary '-'
+* list->sequence
 * gccvalue (equivalent)
 * Greg Hendershott thread-last ->>?
 * compile composite operations (lazy)
