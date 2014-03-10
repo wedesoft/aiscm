@@ -38,5 +38,5 @@
 (define-generic slice)
 (define-generic coerce)
 (define-generic match)
-(define-generic get)
-(define-generic set)
+(define-method (get (self <element>)) (get-value self))
+(define-method (set (self <element>) o) (begin (slot-set! self 'value o)) o)
