@@ -38,7 +38,9 @@
     (write-bytes (get-value self) (pack converted))
     converted))
 (define-method (+ (self <pointer<>>) (offset <integer>))
-  (make (class-of self) #:value (+ (get-value self) (* offset (storage-size (target (class-of self)))))))
+  (make (class-of self)
+        #:value (+ (get-value self)
+                   (* offset ((compose storage-size target class-of) self)))))
 (define-method (lookup (self <pointer<>>) (value <integer>) (stride <integer>))
   (+ self (* value stride)))
 (define-method (typecode (self <pointer<>>))
@@ -46,12 +48,12 @@
 (define-method (dimension (self <pointer<>>) (var <var>)) #f)
 (define-method (pack (self <pointer<>>))
   (pack (make <native-int>
-              #:value (pointer-address (get-memory (get-value self))))))
+              #:value ((compose pointer-address get-memory get-value) self))))
 (define-method (write (self <pointer<>>) port)
   (format port "#<~a #x~x>"
           (class-name (class-of self))
-          (pointer-address (get-memory (get-value self)))))
+          ((compose pointer-address get-memory get-value) self)))
 (define-method (display (self <pointer<>>) port)
   (format port "#<~a #x~x>"
           (class-name (class-of self))
-          (pointer-address (get-memory (get-value self)))))
+          ((compose pointer-address get-memory get-value) self)))

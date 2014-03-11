@@ -24,13 +24,11 @@
 (define-class <jit-context> ()
   (binaries #:init-value '()))
 (define-method (asm (self <jit-context>) return_type commands . args)
-  (let* ((nolabels (filter (lambda (x) (not (eq? (car x) 'label))) commands))
+  (let* ((label? (lambda (x) (eq? (car x) 'label)))
+         (nolabels (filter (negate label?) commands))
          (code (make-mmap (u8-list->bytevector (apply append nolabels)))))
-    (slot-set! self 'binaries
-               (cons code (slot-ref self 'binaries)))
-    (pointer->procedure return_type
-                        (make-pointer (mmap-address code))
-                        args)))
+    (slot-set! self 'binaries (cons code (slot-ref self 'binaries)))
+    (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 (define-class <reg<>> () (code #:init-keyword #:code #:getter get-code))
 (define-class <reg<32>> (<reg<>>))
 (define  EAX (make <reg<32>> #:code #b0000))
