@@ -1,18 +1,14 @@
-#include <stdio.h>
+#include <stdlib.h>
 
-long fun(long a, long b, long c, long d, long e, long f, long g, long h);
+void test(int *r, int *x, int n);
 
 int main(int argc, long *argv[])
 {
-  long a = atoi(argv[1]);
-  long b = atoi(argv[2]);
-  long c = atoi(argv[3]);
-  long d = atoi(argv[4]);
-  long e = atoi(argv[5]);
-  long f = atoi(argv[6]);
-  long g = atoi(argv[5]);
-  long h = atoi(argv[6]);
-  long i = fun(a, b, c, d, e, f, g, h);
-  printf("%d\n", i);
+  int n = 3;
+  int *x = (int *)malloc(n * sizeof(int));
+  int *r = (int *)malloc(n * sizeof(int));
+  test(r, x, n);
+  free(x);
+  free(r);
   return 0;
 }

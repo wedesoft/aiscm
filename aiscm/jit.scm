@@ -11,63 +11,27 @@
             <reg<64>>
             asm
             ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
-            ;AL CL DL BL SPL BPL SIL DIL
-            ;R8L R9L R10L R11L R12L R13L R14L R15L
-            ;AX CX DX BX SP BP SI DI
-            ;R8W R9W R10W R11W R12W R13W R14W R15W
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI
-            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15))
+            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15)
+  #:export-syntax (label))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> ()
   (binaries #:init-value '()))
 (define-method (asm (self <jit-context>) return_type commands . args)
-  (let ((code (make-mmap (u8-list->bytevector (apply append commands)))))
+  (let* ((nolabels (filter (lambda (x) (not (eq? (car x) 'label))) commands))
+         (code (make-mmap (u8-list->bytevector (apply append nolabels)))))
     (slot-set! self 'binaries
                (cons code (slot-ref self 'binaries)))
     (pointer->procedure return_type
                         (make-pointer (mmap-address code))
                         args)))
 (define-class <reg<>> () (code #:init-keyword #:code #:getter get-code))
-;(define-class <reg<8>> (<reg<>>))
-;(define   AL (make <reg<8>> #:code #b0000))
-;(define   CL (make <reg<8>> #:code #b0001))
-;(define   DL (make <reg<8>> #:code #b0010))
-;(define   BL (make <reg<8>> #:code #b0011))
-;(define  SPL (make <reg<8>> #:code #b0100))
-;(define  BPL (make <reg<8>> #:code #b0101))
-;(define  SIL (make <reg<8>> #:code #b0110))
-;(define  DIL (make <reg<8>> #:code #b0111))
-;(define  R8L (make <reg<8>> #:code #b1000))
-;(define  R9L (make <reg<8>> #:code #b1001))
-;(define R10L (make <reg<8>> #:code #b1010))
-;(define R11L (make <reg<8>> #:code #b1011))
-;(define R12L (make <reg<8>> #:code #b1100))
-;(define R13L (make <reg<8>> #:code #b1101))
-;(define R14L (make <reg<8>> #:code #b1110))
-;(define R15L (make <reg<8>> #:code #b1111))
-;(define-class <reg<16>> (<reg<>>))
-;(define   AX (make <reg<16>> #:code #b0000))
-;(define   CX (make <reg<16>> #:code #b0001))
-;(define   DX (make <reg<16>> #:code #b0010))
-;(define   BX (make <reg<16>> #:code #b0011))
-;(define   SP (make <reg<16>> #:code #b0100))
-;(define   BP (make <reg<16>> #:code #b0101))
-;(define   SI (make <reg<16>> #:code #b0110))
-;(define   DI (make <reg<16>> #:code #b0111))
-;(define  R8W (make <reg<16>> #:code #b1000))
-;(define  R9W (make <reg<16>> #:code #b1001))
-;(define R10W (make <reg<16>> #:code #b1010))
-;(define R11W (make <reg<16>> #:code #b1011))
-;(define R12W (make <reg<16>> #:code #b1100))
-;(define R13W (make <reg<16>> #:code #b1101))
-;(define R14W (make <reg<16>> #:code #b1110))
-;(define R15W (make <reg<16>> #:code #b1111))
 (define-class <reg<32>> (<reg<>>))
 (define  EAX (make <reg<32>> #:code #b0000))
 (define  ECX (make <reg<32>> #:code #b0001))
@@ -195,3 +159,4 @@
   (if (equal? (get-code r/m) 0)
     (append (REX r/m 0 0 r/m) (opcode #x2d) (raw imm32 32))
     (append (REX r/m 0 0 r/m) (opcode #x81) (ModR/M #b11 5 r/m) (raw imm32 32))))
+(define-syntax-rule (label name) (list 'label (quote name)))

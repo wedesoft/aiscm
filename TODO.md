@@ -1,14 +1,13 @@
 TODO
 ====
 
-* better reporting for failed tests
+* jit labels, CALL, SIMD
 * array operation
 * gccvalue (equivalent)
 * Greg Hendershott thread-last ->>?
 * compile composite operations (lazy)
-* jit labels, CALL, SIMD
 * conversion sequence <-> bytevector
 * (error ...)
 * reverse module inclusion
-* https://github.com/yawaramin/ggspec
+* better reporting for failed tests
 * display should show internal structure
