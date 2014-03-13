@@ -1,8 +1,9 @@
 TODO
 ====
 
-* jit labels, CALL, SIMD
+* jit labels
 * array operation
+* SIMD
 * gccvalue (equivalent)
 * Greg Hendershott thread-last ->>?
 * compile composite operations (lazy)

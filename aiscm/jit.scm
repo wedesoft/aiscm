@@ -9,7 +9,7 @@
             <reg<>>
             <reg<32>>
             <reg<64>>
-            asm
+            asm labels
             ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
@@ -23,9 +23,15 @@
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> ()
   (binaries #:init-value '()))
+(define (label? cmd) (eq? (car cmd) 'label))
+(define (labels commands)
+  (if (null? commands) '()
+    (let ((cmd (car commands)))
+      (if (label? cmd)
+        (acons (cadr cmd) 0 (labels (cdr commands)))
+        (map (lambda (pair) (cons (car pair) (+ (cdr pair) (length cmd)))) (labels (cdr commands)))))))
 (define-method (asm (self <jit-context>) return_type commands . args)
-  (let* ((label? (lambda (x) (eq? (car x) 'label)))
-         (nolabels (filter (negate label?) commands))
+  (let* ((nolabels (filter (negate label?) commands))
          (code (make-mmap (u8-list->bytevector (apply append nolabels)))))
     (slot-set! self 'binaries (cons code (slot-ref self 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
