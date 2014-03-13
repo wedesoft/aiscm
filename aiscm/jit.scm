@@ -2,15 +2,13 @@
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context>
-            <reg<>>
-            <reg<32>>
-            <reg<64>>
-            asm labels
+  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label>
+            get-name asm labels
             ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
@@ -26,13 +24,13 @@
   (binaries #:init-value '()))
 (define-class <label> () (name #:init-keyword #:name #:getter get-name))
 (define (labels commands)
-  (define (iterate commands offset)
-    (if (null? commands) '()
-      (let ((cmd (car commands)))
-        (if (is-a? cmd <label>)
-          (acons (get-name cmd) offset (iterate (cdr commands) offset))
-          (iterate (cdr commands) (+ offset (length cmd)))))))
-    (iterate commands 0))
+  (define (iterate cmd acc)
+    (let ((lookup (car acc))
+          (offset (cdr acc)))
+      (if (is-a? cmd <label>)
+        (cons (acons (get-name cmd) offset lookup) offset)
+        (cons lookup (+ offset (length cmd))))))
+  (car (fold iterate (cons '() 0) commands)))
 (define-method (asm (self <jit-context>) return_type commands . args)
   (let* ((nolabels (filter (negate (cut is-a? <> <label>)) commands))
          (code (make-mmap (u8-list->bytevector (apply append nolabels)))))
