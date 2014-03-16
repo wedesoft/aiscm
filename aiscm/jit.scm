@@ -8,7 +8,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label>
-            get-name asm labels
+            get-name asm labels->offsets
             ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
@@ -23,7 +23,7 @@
 (define-class <jit-context> ()
   (binaries #:init-value '()))
 (define-class <label> () (name #:init-keyword #:name #:getter get-name))
-(define (labels commands)
+(define (labels->offsets commands)
   (define (iterate cmd acc)
     (let ((lookup (car acc))
           (offset (cdr acc)))
