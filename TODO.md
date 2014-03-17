@@ -1,7 +1,6 @@
 TODO
 ====
 
-* jit labels
 * array operation
 * SIMD
 * gccvalue (equivalent)
