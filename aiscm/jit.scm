@@ -7,8 +7,8 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label>
-            get-name asm labels->offsets
+  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label> <jmp>
+            get-name asm label-offsets get-target resolve resolve-jumps
             ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
@@ -16,24 +16,40 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI
             *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15)
-  #:export-syntax (label))
+  #:export-syntax (label JMP))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> ()
   (binaries #:init-value '()))
 (define-class <label> () (name #:init-keyword #:name #:getter get-name))
-(define (labels->offsets commands)
+(define-syntax-rule (label name) (make <label> #:name (quote name)))
+(define (label-offsets commands)
   (define (iterate cmd acc)
     (let ((lookup (car acc))
           (offset (cdr acc)))
       (if (is-a? cmd <label>)
         (cons (acons (get-name cmd) offset lookup) offset)
-        (cons lookup (+ offset (length cmd))))))
+        (let ((len-cmd (if (is-a? cmd <jmp>) 5 (length cmd))))
+          (cons lookup (+ offset len-cmd))))))
   (car (fold iterate (cons '() 0) commands)))
+(define-class <jmp> () (target #:init-keyword #:target #:getter get-target))
+(define-syntax-rule (JMP target) (make <jmp> #:target (quote target)))
+(define-method (resolve (self <jmp>) (offset <integer>) lookup)
+  (append (opcode #xe9) (raw (- (assq-ref lookup (get-target self)) offset) 32)))
+(define (resolve-jumps commands lookup)
+  (define (iterate cmd acc)
+    (let ((tail   (car acc))
+          (offset (cdr acc)))
+      (cond
+        ((is-a? cmd <jmp>)   (cons (cons (resolve cmd (+ offset 5) lookup) tail) (+ offset 5)))
+        ((is-a? cmd <label>) (cons tail offset))
+        (else                (cons (cons cmd tail) (+ offset (length cmd)))))))
+  (reverse (car (fold iterate (cons '() 0) commands))))
 (define-method (asm (self <jit-context>) return_type commands . args)
-  (let* ((nolabels (filter (negate (cut is-a? <> <label>)) commands))
-         (code (make-mmap (u8-list->bytevector (apply append nolabels)))))
+  (let* ((lookup   (label-offsets commands))
+         (resolved (resolve-jumps commands lookup))
+         (code     (make-mmap (u8-list->bytevector (apply append resolved)))))
     (slot-set! self 'binaries (cons code (slot-ref self 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 (define-class <reg<>> () (code #:init-keyword #:code #:getter get-code))
@@ -150,8 +166,6 @@
   (opcode #x50 r))
 (define-method (POP (r <reg<64>>))
   (opcode #x58 r))
-(define-method (JMP (rel32 <integer>))
-  (append (opcode #xe9) (raw rel32 32)))
 (define-method (NEG (r/m <reg<32>>))
   (append (REX r/m 0 0 r/m) (opcode #xf7) (ModR/M #b11 3 r/m)))
 (define-method (NEG (r/m <reg<64>>))
@@ -164,4 +178,3 @@
   (if (equal? (get-code r/m) 0)
     (append (REX r/m 0 0 r/m) (opcode #x2d) (raw imm32 32))
     (append (REX r/m 0 0 r/m) (opcode #x81) (ModR/M #b11 5 r/m) (raw imm32 32))))
-(define-syntax-rule (label name) (make <label> #:name (quote name)))
