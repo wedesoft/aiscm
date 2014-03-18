@@ -1,6 +1,8 @@
 TODO
 ====
 
+* CMP: CF, ZF, SF, OF
+* MOVZX EAX, AL
 * array operation
 * SIMD
 * gccvalue (equivalent)

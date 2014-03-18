@@ -4,6 +4,11 @@ void test(int *r, int *x, int n)
   int *q = r;
   int *qend = r + n;
   while (q != qend) {
-    *q++ = -*p++;
-  };
+    int x = *p;
+    *q++ = x == 0;
+    *q++ = *p == *q;
+    *q++ = *p == 2;
+    *q++ = x == 0;
+    p++;
+  }
 }

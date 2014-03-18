@@ -7,9 +7,11 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <jmp>
+  #:export (<jit-context> <reg<>> <reg<8>> <reg<32>> <reg<64>> <jmp>
             get-name asm label-offsets get-target resolve resolve-jumps len
-            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB JMP
+            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB JMP CMP SETE
+            AL CL DL BL SPL BPL SIL DIL
+            R8L R9L R10L R11L R12L R13L R14L R15L
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
@@ -55,6 +57,23 @@
     (slot-set! self 'binaries (cons code (slot-ref self 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 (define-class <reg<>> () (code #:init-keyword #:code #:getter get-code))
+(define-class <reg<8>> (<reg<>>))
+(define  AL  (make <reg<8>> #:code #b0000))
+(define  CL  (make <reg<8>> #:code #b0001))
+(define  DL  (make <reg<8>> #:code #b0010))
+(define  BL  (make <reg<8>> #:code #b0011))
+(define  SPL (make <reg<8>> #:code #b0100))
+(define  BPL (make <reg<8>> #:code #b0101))
+(define  SIL (make <reg<8>> #:code #b0110))
+(define  DIL (make <reg<8>> #:code #b0111))
+(define  R8L (make <reg<8>> #:code #b1000))
+(define  R9L (make <reg<8>> #:code #b1001))
+(define R10L (make <reg<8>> #:code #b1010))
+(define R11L (make <reg<8>> #:code #b1011))
+(define R12L (make <reg<8>> #:code #b1100))
+(define R13L (make <reg<8>> #:code #b1101))
+(define R14L (make <reg<8>> #:code #b1110))
+(define R15L (make <reg<8>> #:code #b1111))
 (define-class <reg<32>> (<reg<>>))
 (define  EAX (make <reg<32>> #:code #b0000))
 (define  ECX (make <reg<32>> #:code #b0001))
@@ -180,3 +199,13 @@
   (if (equal? (get-code r/m) 0)
     (append (REX r/m 0 0 r/m) (opcode #x2d) (raw imm32 32))
     (append (REX r/m 0 0 r/m) (opcode #x81) (ModR/M #b11 5 r/m) (raw imm32 32))))
+(define-method (CMP (r/m32 <reg<32>>) (imm32 <integer>))
+  (if (equal? (get-code r/m32) 0)
+    (append (opcode #x3d) (raw imm32 32))
+    (append (REX r/m32 0 0 r/m32) (opcode #x81) (ModR/M #b11 7 r/m32) (raw imm32 32))))
+(define-method (CMP (r/m32 <reg<32>>) (r32 <reg<32>>))
+  (append (REX r32 r32 0 r/m32) (opcode #x39) (ModR/M #b11 r32 r/m32)))
+(define-method (CMP (r/m64 <reg<64>>) (r64 <reg<64>>))
+  (append (REX r64 r64 0 r/m64) (opcode #x39) (ModR/M #b11 r64 r/m64)))
+(define-method (SETE (r/m <reg<8>>))
+  (append (REX 0 0 0 r/m) (list #x0f #x94) (opcode #xc0 r/m)))
