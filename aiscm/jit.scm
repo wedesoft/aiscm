@@ -8,8 +8,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label> <jmp>
-            get-name asm label-offsets get-target resolve resolve-jumps
-            ADD JMP MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
+            get-name asm label-offsets get-target resolve resolve-jumps len
+            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
@@ -30,14 +30,15 @@
           (offset  (cdr acc)))
       (if (is-a? cmd <label>)
         (cons (acons (get-name cmd) offset offsets) offset)
-        (let ((len-cmd (if (is-a? cmd <jmp>) 5 (length cmd))))
+        (let ((len-cmd (if (is-a? cmd <jmp>) (len cmd) (length cmd))))
           (cons offsets (+ offset len-cmd))))))
   (car (fold iterate (cons '() 0) commands)))
 (define-class <jmp> () (target #:init-keyword #:target #:getter get-target))
+(define-method (len (self <jmp>)) 2)
 (define-syntax-rule (JMP target)
   (if (is-a? (quote target) <symbol>)
     (make <jmp> #:target (quote target))
-    (append (opcode #xe9) (raw target 32))))
+    (append (opcode #xeb) (raw target 8))))
 (define-method (resolve (self <jmp>) (offset <integer>) offsets)
   (JMP (- (assq-ref offsets (get-target self)) offset)))
 (define (resolve-jumps commands offsets)
@@ -45,7 +46,8 @@
     (let ((tail   (car acc))
           (offset (cdr acc)))
       (cond
-        ((is-a? cmd <jmp>)   (cons (cons (resolve cmd (+ offset 5) offsets) tail) (+ offset 5)))
+        ((is-a? cmd <jmp>)   (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
+                                   (+ offset (len cmd))))
         ((is-a? cmd <label>) (cons tail offset))
         (else                (cons (cons cmd tail) (+ offset (length cmd)))))))
   (reverse (car (fold iterate (cons '() 0) commands))))
