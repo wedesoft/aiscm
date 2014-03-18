@@ -7,37 +7,34 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <label> <jmp>
+  #:export (<jit-context> <reg<>> <reg<32>> <reg<64>> <jmp>
             get-name asm label-offsets get-target resolve resolve-jumps len
-            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB
+            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB JMP
             EAX ECX EDX EBX ESP EBP ESI EDI
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI
-            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15)
-  #:export-syntax (label JMP))
+            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> ()
   (binaries #:init-value '()))
-(define-class <label> () (name #:init-keyword #:name #:getter get-name))
-(define-syntax-rule (label name) (make <label> #:name (quote name)))
 (define (label-offsets commands)
   (define (iterate cmd acc)
     (let ((offsets (car acc))
           (offset  (cdr acc)))
-      (if (is-a? cmd <label>)
-        (cons (acons (get-name cmd) offset offsets) offset)
+      (if (is-a? cmd <symbol>)
+        (cons (acons cmd offset offsets) offset)
         (let ((len-cmd (if (is-a? cmd <jmp>) (len cmd) (length cmd))))
           (cons offsets (+ offset len-cmd))))))
   (car (fold iterate (cons '() 0) commands)))
 (define-class <jmp> () (target #:init-keyword #:target #:getter get-target))
 (define-method (len (self <jmp>)) 2)
-(define-syntax-rule (JMP target)
-  (if (is-a? (quote target) <symbol>)
-    (make <jmp> #:target (quote target))
+(define-method (JMP target)
+  (if (is-a? target <symbol>)
+    (make <jmp> #:target target)
     (append (opcode #xeb) (raw target 8))))
 (define-method (resolve (self <jmp>) (offset <integer>) offsets)
   (JMP (- (assq-ref offsets (get-target self)) offset)))
@@ -46,10 +43,10 @@
     (let ((tail   (car acc))
           (offset (cdr acc)))
       (cond
-        ((is-a? cmd <jmp>)   (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
+        ((is-a? cmd <jmp>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
                                    (+ offset (len cmd))))
-        ((is-a? cmd <label>) (cons tail offset))
-        (else                (cons (cons cmd tail) (+ offset (length cmd)))))))
+        ((is-a? cmd <symbol>) (cons tail offset))
+        (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
   (reverse (car (fold iterate (cons '() 0) commands))))
 (define-method (asm (self <jit-context>) return_type commands . args)
   (let* ((offsets  (label-offsets commands))
