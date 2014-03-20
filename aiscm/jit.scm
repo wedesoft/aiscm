@@ -7,10 +7,12 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context> <reg<>> <reg<8>> <reg<32>> <reg<64>> <jmp>
+  #:export (<jit-context> <reg<>> <reg<8>> <reg<16>> <reg<32>> <reg<64>>
+            <jmp> <je>
             get-name asm label-offsets get-target resolve resolve-jumps len
-            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB JMP CMP
+            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
+            JMP JE
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
             AX CX DX BX SP BP SI DI
@@ -37,27 +39,30 @@
   (car (fold iterate (cons '() 0) commands)))
 (define-class <jmp> () (target #:init-keyword #:target #:getter get-target))
 (define-method (len (self <jmp>)) 2)
-(define-method (JMP target)
-  (if (is-a? target <symbol>)
-    (make <jmp> #:target target)
-    (append (opcode #xeb) (raw target 8))))
+(define-method (JMP (target <symbol>)) (make <jmp> #:target target))
+(define-method (JMP (target <integer>)) (append (opcode #xeb) (raw target 8)))
 (define-method (resolve (self <jmp>) (offset <integer>) offsets)
   (JMP (- (assq-ref offsets (get-target self)) offset)))
+(define-class <je> (<jmp>))
+(define-method (JE (target <symbol>)) (make <je> #:target target))
+(define-method (JE (target <integer>)) (append (opcode #x74) (raw target 8)))
+(define-method (resolve (self <je>) (offset <integer>) offsets)
+  (JE (- (assq-ref offsets (get-target self)) offset)))
 (define (resolve-jumps commands offsets)
   (define (iterate cmd acc)
     (let ((tail   (car acc))
           (offset (cdr acc)))
       (cond
         ((is-a? cmd <jmp>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
-                                   (+ offset (len cmd))))
+                                    (+ offset (len cmd))))
         ((is-a? cmd <symbol>) (cons tail offset))
         (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
   (reverse (car (fold iterate (cons '() 0) commands))))
-(define-method (asm (self <jit-context>) return_type commands . args)
+(define (asm ctx return_type commands . args)
   (let* ((offsets  (label-offsets commands))
          (resolved (resolve-jumps commands offsets))
          (code     (make-mmap (u8-list->bytevector (apply append resolved)))))
-    (slot-set! self 'binaries (cons code (slot-ref self 'binaries)))
+    (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 (define-class <reg<>> () (code #:init-keyword #:code #:getter get-code))
 (define-class <reg<8>> (<reg<>>))
@@ -227,8 +232,7 @@
   (append (REX r32 r32 0 r/m32) (opcode #x39) (ModR/M #b11 r32 r/m32)))
 (define-method (CMP (r/m64 <reg<64>>) (r64 <reg<64>>))
   (append (REX r64 r64 0 r/m64) (opcode #x39) (ModR/M #b11 r64 r/m64)))
-(define-method (SETcc (cc <integer>) (r/m <reg<8>>))
-  (append (REX 0 0 0 r/m) (list #x0f cc) (opcode #xc0 r/m)))
+(define (SETcc cc r/m) (append (REX 0 0 0 r/m) (list #x0f cc) (opcode #xc0 r/m)))
 (define-method (SETB   (r/m <reg<8>>)) (SETcc #x92 r/m))
 (define-method (SETNB  (r/m <reg<8>>)) (SETcc #x93 r/m))
 (define-method (SETE   (r/m <reg<8>>)) (SETcc #x94 r/m))
