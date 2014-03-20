@@ -1,14 +1,6 @@
 TODO
 ====
 
-* CMP
- OF: overflow
- CF: below
- ZF: equal
- SF: sign
- PF: parity even
- CF, ZF, SF, OF; conditional jumps Jcc
-* SETcc: SETA, SETAE
 * Jcc
 * CMOVcc
 * MOVZX EAX, AL
