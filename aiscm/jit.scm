@@ -10,7 +10,7 @@
   #:export (<jit-context> <reg<>> <reg<8>> <reg<32>> <reg<64>> <jmp>
             get-name asm label-offsets get-target resolve resolve-jumps len
             ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB JMP CMP
-            SETB SETE
+            SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
             EAX ECX EDX EBX ESP EBP ESI EDI
@@ -208,7 +208,15 @@
   (append (REX r32 r32 0 r/m32) (opcode #x39) (ModR/M #b11 r32 r/m32)))
 (define-method (CMP (r/m64 <reg<64>>) (r64 <reg<64>>))
   (append (REX r64 r64 0 r/m64) (opcode #x39) (ModR/M #b11 r64 r/m64)))
-(define-method (SETB (r/m <reg<8>>))
-  (append (REX 0 0 0 r/m) (list #x0f #x92) (opcode #xc0 r/m)))
-(define-method (SETE (r/m <reg<8>>))
-  (append (REX 0 0 0 r/m) (list #x0f #x94) (opcode #xc0 r/m)))
+(define-method (SET (cc <integer>) (r/m <reg<8>>))
+  (append (REX 0 0 0 r/m) (list #x0f cc) (opcode #xc0 r/m)))
+(define-method (SETB (r/m <reg<8>>)) (SET #x92 r/m))
+(define-method (SETNB (r/m <reg<8>>)) (SET #x93 r/m))
+(define-method (SETE (r/m <reg<8>>)) (SET #x94 r/m))
+(define-method (SETNE (r/m <reg<8>>)) (SET #x95 r/m))
+(define-method (SETBE (r/m <reg<8>>)) (SET #x96 r/m))
+(define-method (SETNBE (r/m <reg<8>>)) (SET #x97 r/m))
+(define-method (SETL (r/m <reg<8>>)) (SET #x9c r/m))
+(define-method (SETNL (r/m <reg<8>>)) (SET #x9d r/m))
+(define-method (SETLE (r/m <reg<8>>)) (SET #x9e r/m))
+(define-method (SETNLE (r/m <reg<8>>)) (SET #x9f r/m))
