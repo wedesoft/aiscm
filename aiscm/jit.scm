@@ -8,11 +8,11 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context> <reg<>> <reg<8>> <reg<16>> <reg<32>> <reg<64>>
-            <jmp> <je>
+            <jmp> <jb> <je>
             get-name asm label-offsets get-target resolve resolve-jumps len
             ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
-            JMP JE
+            JMP JB JE
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
             AX CX DX BX SP BP SI DI
@@ -48,6 +48,11 @@
 (define-method (JE (target <integer>)) (append (opcode #x74) (raw target 8)))
 (define-method (resolve (self <je>) (offset <integer>) offsets)
   (JE (- (assq-ref offsets (get-target self)) offset)))
+(define-class <jb> (<jmp>))
+(define-method (JB (target <symbol>)) (make <jb> #:target target))
+(define-method (JB (target <integer>)) (append (opcode #x72) (raw target 8)))
+(define-method (resolve (self <jb>) (offset <integer>) offsets)
+  (JB (- (assq-ref offsets (get-target self)) offset)))
 (define (resolve-jumps commands offsets)
   (define (iterate cmd acc)
     (let ((tail   (car acc))
