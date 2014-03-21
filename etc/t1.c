@@ -1,10 +1,10 @@
-void test(int *r, int *x, int n)
+void test(short *r, short *x, short n)
 {
-  int *p = x;
-  int *q = r;
-  int *qend = r + n;
+  short *p = x;
+  short *q = r;
+  short *qend = r + n;
   while (q != qend) {
-    int x = *p;
+    short x = *p;
     *q++ = x == 0;
     *q++ = *p == *q;
     *q++ = *p == 2;
