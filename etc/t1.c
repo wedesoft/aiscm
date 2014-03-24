@@ -1,8 +1,17 @@
-void test(short *r, short *x, int n)
+void test(int *r, char *x, int n)
 {
-  short *p = x;
-  short *q = r;
-  short *qend = r + n;
-  while (q != qend)
-    *q++ = -*p++;
+  char *p = x;
+  int *q = r;
+  int *qend = r + n;
+  while (q != qend) {
+    char  *x1 = (char  *)q;
+    short *x2 = (short *)q;
+    int   *x3 = (int   *)q;
+    int c = *p;
+    *x1 = (char)c;
+    *x2 = (short)c;
+    *x3 = c;
+    p++;
+    q++;
+  };
 }
