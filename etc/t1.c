@@ -1,7 +1,12 @@
-int test(char *p, short *q, int *r)
+int test(char *p, short *q, int *r, long *s)
 {
-  int a = *p;
-  int b = *q;
+  char a = *p;
+  short b = *q;
   int c = *r;
-  return a + b + c;
+  long d = *s;
+  *p = a + 1;
+  *q = b + 1;
+  *r = c + 1;
+  *s = d + 1;
+  return a + b + c + d;
 }
