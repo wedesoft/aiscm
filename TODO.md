@@ -1,7 +1,6 @@
 TODO
 ====
 
-* simplify jumps?
 * MOV to 8-bit (88/r), 16-bit memory (89/r), 32-bit memory (89/r)???
 * MUL
 * LEA, MOVZX, MOVSX
