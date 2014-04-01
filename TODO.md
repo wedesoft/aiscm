@@ -1,7 +1,7 @@
 TODO
 ====
 
-* MOV to 8-bit (88/r), 16-bit memory (89/r), 32-bit memory (89/r)???
+* MOV: read 8-bit from memory, 16-bit, ... with offset
 * MUL
 * LEA, MOVZX, MOVSX
 * sint- and byte-array operation
@@ -11,7 +11,6 @@ TODO
 * compile composite operations (lazy)
 * conversion sequence <-> bytevector
 * (error ...)
-* MOVZX, MOVSX
 * reverse module inclusion
 * better reporting for failed tests
 * display should show internal structure
