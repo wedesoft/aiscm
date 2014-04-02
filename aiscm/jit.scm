@@ -239,7 +239,7 @@
 (define-method (POP (r <reg<64>>))
   (opcode #x58 r))
 (define-method (NEG (r/m <reg<>>))
-  (append (REX r/m 0 0 r/m) (list #xf7) (ModR/M #b11 3 r/m)))
+  (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xf6 #xf7) (ModR/M #b11 3 r/m)))
 (define-method (SUB (r/m <reg<>>) (r <reg<>>))
   (append (REX r/m r 0 r/m) (list #x29) (ModR/M #b11 r r/m)))
 (define-method (SUB (r/m <reg<>>) (imm32 <integer>))
