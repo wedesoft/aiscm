@@ -1,9 +1,8 @@
 TODO
 ====
 
-* MOV: read 8-bit from memory, 16-bit, ... with offset
-* MUL
-* LEA, MOVZX, MOVSX
+* negation of array, LEA, MOVZX, MOVSX
+* MOV: read with offset, write imm to memory, more complex offsets?
 * sint- and byte-array operation
 * SIMD
 * gccvalue (equivalent)

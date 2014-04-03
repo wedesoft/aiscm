@@ -219,7 +219,7 @@
   (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b00 r r/m)))
 (define-method (MOV (r <reg<>>) (r/m <address>) (disp <integer>))
   (let ((sib (if (equal? r/m *RSP) (SIB #b00 #b100 r/m) '())))
-    (append (REX r r 0 r/m) (list #x8b) (ModR/M #b01 r r/m) sib (raw disp 8))))
+    (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw disp 8))))
 (define-method (SHL (r/m <reg<>>))
   (append (REX r/m 0 0 r/m) (list #xd1) (ModR/M #b11 4 r/m)))
 (define-method (SHR (r/m <reg<>>))

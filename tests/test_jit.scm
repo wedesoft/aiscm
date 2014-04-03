@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 192)
+(planned-tests 196)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -19,8 +19,18 @@
 (define l2 (random (ash 1 62)))
 (define ctx (make <jit-context>))
 (define mem (make <mem> #:size 32))
+(define bptr (make (pointer <byte>) #:value mem))
+(define wptr (make (pointer <sint>) #:value mem))
 (define iptr (make (pointer <int>) #:value mem))
 (define lptr (make (pointer <long>) #:value mem))
+(define (bdata) (begin
+                  (store bptr       (make <sint> #:value b1))
+                  (store (+ bptr 1) (make <sint> #:value b2))
+                  mem))
+(define (wdata) (begin
+                  (store wptr       (make <sint> #:value w1))
+                  (store (+ wptr 1) (make <sint> #:value w2))
+                  mem))
 (define (idata) (begin
                   (store iptr       (make <int> #:value i1))
                   (store (+ iptr 1) (make <int> #:value i2))
@@ -234,6 +244,14 @@
     "Load long integer from address in RCX")
 (ok (eqv? l2 ((asm ctx long (list (MOV RCX (ldata)) (MOV RAX *RCX 8) (RET)))))
     "Load long integer from address in RCX with offset")
+(ok (eqv? w1 ((asm ctx short (list (MOV RCX (wdata)) (MOV AX *RCX) (RET)))))
+    "Load short integer from address in RCX")
+(ok (eqv? w2 ((asm ctx short (list (MOV RCX (wdata)) (MOV AX *RCX 2) (RET)))))
+    "Load short integer from address in RCX with offset")
+(ok (eqv? b1 ((asm ctx int8 (list (MOV RCX (bdata)) (MOV AL *RCX) (RET)))))
+    "Load byte from address in RCX")
+(ok (eqv? b2 ((asm ctx int8 (list (MOV RCX (bdata)) (MOV AL *RCX 1) (RET)))))
+    "Load byte from address in RCX with offset")
 (ok (eqv? #x08 (begin ((asm ctx long
                             (list (MOV RDI (idx))
                                   (MOV AL *RDI)
@@ -282,17 +300,16 @@
                                 (RET))))
                     (get-value (fetch iptr))))
     "Write value of ECX to memory")
-; TODO: test bytecode for 8- and 16-bit
 (ok (eqv? #x0102030405060700 (begin ((asm ctx void
                                           (list (MOV RDI (idx))
-                                                (MOV EAX 0); TODO: Use AL
+                                                (MOV AL 0)
                                                 (MOV *RDI AL)
                                                 (RET))))
                                     (get-value (fetch lptr))))
     "Write 8-bit value to memory")
 (ok (eqv? #x0102030405060000 (begin ((asm ctx void
                                           (list (MOV RDI (idx))
-                                                (MOV EAX 0); TODO: Use AX
+                                                (MOV AX 0)
                                                 (MOV *RDI AX)
                                                 (RET))))
                                     (get-value (fetch lptr))))
