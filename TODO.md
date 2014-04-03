@@ -3,6 +3,7 @@ TODO
 
 * negation of array, LEA, MOVZX, MOVSX
 * MOV: read with offset, write imm to memory, more complex offsets?
+* all ModR/M addressing modes?
 * sint- and byte-array operation
 * SIMD
 * gccvalue (equivalent)
