@@ -232,6 +232,8 @@
   (append (REX r r 0 b) (list #x8d) (ModR/M #b01 r b) (raw disp 8)))
 (define-method (LEA (r <reg<64>>) (b <address>) (x <reg<64>>) (s <integer>))
   (append (REX r r x b) (list #x8d) (ModR/M #b00 r #b100) (SIB s x b)))
+(define-method (LEA (r <reg<64>>) (b <address>) (x <reg<64>>) (s <integer>) (disp <integer>))
+  (append (REX r r x b) (list #x8d) (ModR/M #b01 r #b100) (SIB s x b) (raw disp 8)))
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))
 (define-method (SHR (r/m <reg<>>))
