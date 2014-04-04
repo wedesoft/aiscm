@@ -16,7 +16,7 @@
             <reg<64>> <meta<reg<64>>>
             <jcc>
             get-name asm label-offsets get-target resolve resolve-jumps len regsize
-            ADD MOV NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
+            ADD MOV LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -28,7 +28,8 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI
-            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15))
+            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15
+            *1 *2 *4 *8))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -203,10 +204,17 @@
                  (ash (bit4 R) 2)
                  (ash (bit4 X) 1)
                  (bit4 B))))
-    (if (or (not (zero? flags)) (need-rex? R) (need-rex? B)); TODO: add X?
+    (if (or (not (zero? flags)) (need-rex? R) (need-rex? B) (need-rex? X))
       (list (logior (ash #b0100 4) flags)) '())))
+(define *1 #b00)
+(define *2 #b01)
+(define *4 #b10)
+(define *8 #b11)
 (define (SIB SS index r)
-  (list (logior (ash SS 6) (ash index 3) (bits3 r))))
+  (list (logior
+          (ash SS 6)
+          (ash (bits3 index) 3)
+          (bits3 r))))
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 (define-method (MOV (r/m <reg<>>) (r <reg<>>))
@@ -220,6 +228,10 @@
 (define-method (MOV (r <reg<>>) (r/m <address>) (disp <integer>))
   (let ((sib (if (equal? r/m *RSP) (SIB #b00 #b100 r/m) '())))
     (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw disp 8))))
+(define-method (LEA (r <reg<64>>) (b <address>) (disp <integer>))
+  (append (REX r r 0 b) (list #x8d) (ModR/M #b01 r b) (raw disp 8)))
+(define-method (LEA (r <reg<64>>) (b <address>) (x <reg<64>>) (s <integer>))
+  (append (REX r r x b) (list #x8d) (ModR/M #b00 r #b100) (SIB s x b)))
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))
 (define-method (SHR (r/m <reg<>>))

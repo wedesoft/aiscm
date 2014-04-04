@@ -13,18 +13,15 @@
   (let* ((ta    (class-of a))
          (tb    (class-of b))
          (tr    ta)
-         (code  (asm ctx void (list (SHL ESI); TODO: use LEA to compute RCX
-                                    (SHL ESI)
-                                    (MOV RCX RDI)
-                                    (ADD RCX RSI)
+         (code  (asm ctx void (list (LEA RCX *RDI RSI *4)
                                     (CMP RDI RCX)
-                                    (JE 'q)
-                                    'b
+                                    (JE 'ret)
+                                    'loop
                                     (MOV *RDI EDX)
                                     (ADD RDI 4)
                                     (CMP RCX RDI)
-                                    (JNE 'b)
-                                    'q
+                                    (JNE 'loop)
+                                    'ret
                                     (RET))
                      int64 int int))
          (proc  (lambda (a b)

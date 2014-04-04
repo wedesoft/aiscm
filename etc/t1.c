@@ -1,4 +1,6 @@
-char test(char x)
+void test(short *p, int n)
 {
-  return x + 1;
+  short *q = p + n + 1;
+  while (p != q)
+    *p++ = 0;
 }

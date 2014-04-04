@@ -1,7 +1,8 @@
 TODO
 ====
 
-* negation of array, LEA, MOVZX, MOVSX
+* LEA with index and offset
+* negation of array, MOVZX, MOVSX
 * MOV: read with offset, write imm to memory, more complex offsets?
 * all ModR/M addressing modes?
 * sint- and byte-array operation
