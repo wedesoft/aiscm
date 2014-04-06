@@ -13,12 +13,15 @@
   (let* ((ta    (class-of a))
          (tb    (class-of b))
          (tr    ta)
-         (code  (asm ctx void (list (LEA RCX *RDI RSI *4)
+         (step  (storage-size (typecode tr)))
+         (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) step))
+         (value (assq-ref (list (cons 1 DL) (cons 2 DX) (cons 4 EDX) (cons 8 RDX)) step))
+         (code  (asm ctx void (list (LEA RCX *RDI RSI scale)
                                     (CMP RDI RCX)
                                     (JE 'ret)
                                     'loop
-                                    (MOV *RDI EDX)
-                                    (ADD RDI 4)
+                                    (MOV *RDI value)
+                                    (ADD RDI step)
                                     (CMP RCX RDI)
                                     (JNE 'loop)
                                     'ret
