@@ -6,7 +6,8 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm pointer)
-  #:export (sequence
+  #:export (<meta<sequence<>>> <sequence<>>
+            sequence
             get-size
             sequence->list
             list->sequence))
