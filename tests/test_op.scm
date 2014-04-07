@@ -55,5 +55,5 @@
 (ok (equal? '(-3 -3 -3) (sequence->list (neg (fill! seqb1 3))))
     "negate byte sequence")
 (ok (equal? '(-3 -3 -3) (sequence->list (neg (fill! seql1 3))))
-    "negate long integher sequence")
+    "negate long integer sequence")
 (format #t "~&")

@@ -18,7 +18,8 @@
             coerce
             match
             get
-            set))
+            set
+            get-size))
 (define-class <meta<element>> (<class>))
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
@@ -40,3 +41,4 @@
 (define-generic match)
 (define-method (get (self <element>)) (get-value self))
 (define-method (set (self <element>) o) (begin (slot-set! self 'value o)) o)
+(define-generic get-size)

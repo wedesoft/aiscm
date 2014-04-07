@@ -1,4 +1,5 @@
 (use-modules (oop goops)
+             (aiscm element)
              (aiscm mem)
              (ice-9 regex)
              (guile-tap))

@@ -8,7 +8,6 @@
   #:use-module (aiscm pointer)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence
-            get-size
             sequence->list
             list->sequence))
 (define-class <meta<sequence<>>> (<meta<element>>))

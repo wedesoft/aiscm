@@ -3,9 +3,9 @@
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:use-module (ice-9 optargs)
+  #:use-module (aiscm element)
   #:export (<mem>
             get-memory
-            get-size
             read-bytes
             write-bytes))
 (load-extension "libguile-mem" "init_mem")
