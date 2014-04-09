@@ -15,7 +15,7 @@
             <reg<32>> <meta<reg<32>>>
             <reg<64>> <meta<reg<64>>>
             <jcc>
-            get-name asm label-offsets get-target resolve resolve-jumps len regsize
+            get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             ADD MOV LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -89,7 +89,7 @@
 (define-class <meta<reg<>>> (<meta<operand>>))
 (define-class <reg<>> (<operand>) #:metaclass <meta<reg<>>>)
 (define-class <meta<reg<8>>> (<meta<reg<>>>))
-(define-method (regsize (self <meta<reg<8>>>)) 8)
+(define-method (get-bits (self <meta<reg<8>>>)) 8)
 (define-class <reg<8>> (<reg<>>) #:metaclass <meta<reg<8>>>)
 (define   AL (make <reg<8>> #:code #b0000))
 (define   CL (make <reg<8>> #:code #b0001))
@@ -108,7 +108,7 @@
 (define R14L (make <reg<8>> #:code #b1110))
 (define R15L (make <reg<8>> #:code #b1111))
 (define-class <meta<reg<16>>> (<meta<reg<>>>))
-(define-method (regsize (self <meta<reg<16>>>)) 16)
+(define-method (get-bits (self <meta<reg<16>>>)) 16)
 (define-class <reg<16>> (<reg<>>) #:metaclass <meta<reg<16>>>)
 (define   AX (make <reg<16>> #:code #b0000))
 (define   CX (make <reg<16>> #:code #b0001))
@@ -127,7 +127,7 @@
 (define R14W (make <reg<16>> #:code #b1110))
 (define R15W (make <reg<16>> #:code #b1111))
 (define-class <meta<reg<32>>> (<meta<reg<>>>))
-(define-method (regsize (self <meta<reg<32>>>)) 32)
+(define-method (get-bits (self <meta<reg<32>>>)) 32)
 (define-class <reg<32>> (<reg<>>) #:metaclass <meta<reg<32>>>)
 (define  EAX (make <reg<32>> #:code #b0000))
 (define  ECX (make <reg<32>> #:code #b0001))
@@ -146,7 +146,7 @@
 (define R14D (make <reg<32>> #:code #b1110))
 (define R15D (make <reg<32>> #:code #b1111))
 (define-class <meta<reg<64>>> (<meta<reg<>>>))
-(define-method (regsize (self <meta<reg<64>>>)) 64)
+(define-method (get-bits (self <meta<reg<64>>>)) 64)
 (define-class <reg<64>> (<reg<>>) #:metaclass <meta<reg<64>>>)
 (define RAX (make <reg<64>> #:code #b0000))
 (define RCX (make <reg<64>> #:code #b0001))
@@ -165,7 +165,7 @@
 (define R14 (make <reg<64>> #:code #b1110))
 (define R15 (make <reg<64>> #:code #b1111))
 (define-class <meta<address>> (<meta<operand>>))
-(define-method (regsize (self <meta<address>>)) 64)
+(define-method (get-bits (self <meta<address>>)) 64)
 (define-class <address> (<operand>) #:metaclass <meta<address>>)
 (define *RAX    (make <address> #:code #b0000))
 (define *RCX    (make <address> #:code #b0001))
@@ -222,7 +222,7 @@
 (define-method (MOV (r/m <address>) (r <reg<>>))
   (append (op16 r) (REX r r 0 r/m) (if8 r #x88 #x89) (ModR/M #b00 r r/m)))
 (define-method (MOV (r <reg<>>) imm)
-  (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (regsize (class-of r)))))
+  (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
 (define-method (MOV (r <reg<>>) (r/m <address>))
   (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b00 r r/m)))
 (define-method (MOV (r <reg<>>) (r/m <address>) (disp <integer>))
@@ -244,10 +244,10 @@
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 7 r/m)))
 (define-method (ADD (r/m <reg<>>) (r <reg<>>))
   (append (op16 r/m) (REX r/m r 0 r/m) (list #x01) (ModR/M #b11 r r/m)))
-(define-method (ADD (r/m <reg<>>) (imm32 <integer>))
+(define-method (ADD (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
-    (append (REX r/m 0 0 r/m) (list #x05) (raw imm32 32))
-    (append (REX r/m 0 0 r/m) (list #x81) (ModR/M #b11 0 r/m) (raw imm32 32))))
+    (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
+    (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x80 #x81) (ModR/M #b11 0 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
 (define-method (PUSH (r <reg<64>>))
   (opcode #x50 r))
 (define-method (POP (r <reg<64>>))
