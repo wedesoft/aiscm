@@ -1,6 +1,7 @@
 TODO
 ====
 
+* type conversions
 * +, - for scalar-array, ..., test type-combinations
 * 8-bit, 16-bit, ... negation of array, MOVZX, MOVSX
 * MOV: read with offset, write imm to memory, more complex offsets?
