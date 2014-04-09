@@ -243,7 +243,7 @@
 (define-method (SAR (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 7 r/m)))
 (define-method (ADD (r/m <reg<>>) (r <reg<>>))
-  (append (op16 r/m) (REX r/m r 0 r/m) (list #x01) (ModR/M #b11 r r/m)))
+  (append (op16 r/m) (REX r/m r 0 r/m) (if8 r/m #x00 #x01) (ModR/M #b11 r r/m)))
 (define-method (ADD (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
     (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
