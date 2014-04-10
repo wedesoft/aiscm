@@ -16,7 +16,7 @@
             <reg<64>> <meta<reg<64>>>
             <jcc>
             get-name asm label-offsets get-target resolve resolve-jumps len get-bits
-            ADD MOV LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
+            ADD MOV MOVSX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -228,6 +228,12 @@
 (define-method (MOV (r <reg<>>) (r/m <address>) (disp <integer>))
   (let ((sib (if (equal? r/m *RSP) (SIB #b00 #b100 r/m) '())))
     (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw disp 8))))
+(define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
+  (append (op16 r) (REX r r 0 r/m) (list #x0f #xbe) (ModR/M #b11 r r/m)))
+(define-method (MOVSX (r <reg<>>) (r/m <reg<16>>))
+  (append (op16 r) (REX r r 0 r/m) (list #x0f #xbf) (ModR/M #b11 r r/m)))
+(define-method (MOVSX (r <reg<>>) (r/m <reg<32>>))
+  (append (op16 r) (REX r r 0 r/m) (list #x63) (ModR/M #b11 r r/m)))
 (define-method (LEA (r <reg<64>>) (b <address>) (disp <integer>))
   (append (REX r r 0 b) (list #x8d) (ModR/M #b01 r b) (raw disp 8)))
 (define-method (LEA (r <reg<64>>) (b <address>) (x <reg<>>) (s <integer>))
@@ -248,6 +254,8 @@
   (if (equal? (get-code r/m) 0)
     (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
     (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x80 #x81) (ModR/M #b11 0 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+(define-method (ADD (r <reg<>>) (r/m <address>))
+  (append (op16 r) (REX r r 0 r/m) (if8 r #x02 #x03) (ModR/M #b00 r r/m)))
 (define-method (PUSH (r <reg<64>>))
   (opcode #x50 r))
 (define-method (POP (r <reg<64>>))

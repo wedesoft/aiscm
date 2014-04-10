@@ -72,7 +72,7 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (MOV axr 0); TODO: MOVSZB
+                                    (MOV axr 0); TODO: MOVZX
                                     (MOV axa *RSI)
                                     (ADD axr dx)
                                     (MOV *RDI axr)
@@ -108,7 +108,7 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (MOV axr 0); TODO: MOVSZB
+                                    (MOV axr 0); TODO: MOVZX
                                     (MOV axb *RDX); TODO: ADD ax *RSI
                                     (ADD axr si)
                                     (MOV *RDI axr)
@@ -145,9 +145,10 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (MOV axa *RSI); TODO: MOVSZB, ADD ax *RSI
-                                    (MOV bxb *RDX)
-                                    (ADD axr bxr)
+                                    (MOV axa *RSI); TODO: MOVZX, ADD ax *RSI
+                                    (if (eq? (typecode tb) (typecode tr))
+                                      (ADD axr *RDX)
+                                      (append (MOV bxb *RDX) (ADD axr bxr))); TODO: MOVZX
                                     (MOV *RDI axr)
                                     (ADD RDI stepr)
                                     (ADD RSI stepa)
