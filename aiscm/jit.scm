@@ -16,7 +16,7 @@
             <reg<64>> <meta<reg<64>>>
             <jcc>
             get-name asm label-offsets get-target resolve resolve-jumps len get-bits
-            ADD MOV MOVSX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -234,6 +234,10 @@
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xbf) (ModR/M #b11 r r/m)))
 (define-method (MOVSX (r <reg<>>) (r/m <reg<32>>))
   (append (op16 r) (REX r r 0 r/m) (list #x63) (ModR/M #b11 r r/m)))
+(define-method (MOVZX (r <reg<>>) (r/m <reg<8>>))
+  (append (op16 r) (REX r r 0 r/m) (list #x0f #xb6) (ModR/M #b11 r r/m)))
+(define-method (MOVZX (r <reg<>>) (r/m <reg<16>>))
+  (append (op16 r) (REX r r 0 r/m) (list #x0f #xb7) (ModR/M #b11 r r/m)))
 (define-method (LEA (r <reg<64>>) (b <address>) (disp <integer>))
   (append (REX r r 0 b) (list #x8d) (ModR/M #b01 r b) (raw disp 8)))
 (define-method (LEA (r <reg<64>>) (b <address>) (x <reg<>>) (s <integer>))
