@@ -1,7 +1,6 @@
 TODO
 ====
 
-* MOVZX
 * type conversions
 * +, - for scalar-array, ..., test type-combinations
 * MOV: read with offset, write imm to memory, more complex offsets?
