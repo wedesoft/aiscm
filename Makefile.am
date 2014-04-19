@@ -4,9 +4,9 @@ SUBDIRS = aiscm tests doc
 
 ACLOCAL_AMFLAGS = -I m4
 
-noinst_DATA = README.html TODO.html
+noinst_DATA = README.html
 
-EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING \
+EXTRA_DIST = Makefile.dist configure.ac README.md COPYING \
 	repl.sh construction.gif
 
 .md.html:
