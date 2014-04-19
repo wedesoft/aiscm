@@ -6,7 +6,6 @@
 .*.un~
 *.o
 *.go
-*.html
 *.gz
 *.bz2
 *.xz
