@@ -9,13 +9,14 @@
   #:use-module (aiscm mem)
   #:export (<jit-context>
             <operand> <meta<operand>>
+            <addr>    <meta<addr>>
             <reg<>>   <meta<reg<>>>
             <reg<8>>  <meta<reg<8>>>
             <reg<16>> <meta<reg<16>>>
             <reg<32>> <meta<reg<32>>>
             <reg<64>> <meta<reg<64>>>
             <jcc>
-            get-name asm label-offsets get-target resolve resolve-jumps len get-bits
+            addr get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -27,23 +28,13 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            *RAX *RCX *RDX *RBX *RSP *disp32 *RSI *RDI
-            *R8 *R9 *R10 *R11 *R12 *R13 *R14 *R15
             *1 *2 *4 *8))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> ()
   (binaries #:init-value '()))
-(define (label-offsets commands)
-  (define (iterate cmd acc)
-    (let ((offsets (car acc))
-          (offset  (cdr acc)))
-      (if (is-a? cmd <symbol>)
-        (cons (acons cmd offset offsets) offset)
-        (let ((len-cmd (if (is-a? cmd <jcc>) (len cmd) (length cmd))))
-          (cons offsets (+ offset len-cmd))))))
-  (car (fold iterate (cons '() 0) commands)))
+
 (define-class <jcc> ()
   (target #:init-keyword #:target #:getter get-target)
   (code #:init-keyword #:code #:getter get-code))
@@ -55,6 +46,28 @@
 (define-method (resolve (self <jcc>) (offset <integer>) offsets)
   (let ((target (- (assq-ref offsets (get-target self)) offset)))
     (Jcc target (get-code self))))
+
+(define (label-offsets commands)
+  (define (iterate cmd acc)
+    (let ((offsets (car acc))
+          (offset  (cdr acc)))
+      (if (is-a? cmd <symbol>)
+        (cons (acons cmd offset offsets) offset)
+        (let ((len-cmd (if (is-a? cmd <jcc>) (len cmd) (length cmd))))
+          (cons offsets (+ offset len-cmd))))))
+  (car (fold iterate (cons '() 0) commands)))
+
+(define (resolve-jumps commands offsets)
+  (define (iterate cmd acc)
+    (let ((tail   (car acc))
+          (offset (cdr acc)))
+      (cond
+        ((is-a? cmd <jcc>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
+                                    (+ offset (len cmd))))
+        ((is-a? cmd <symbol>) (cons tail offset))
+        (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
+  (reverse (car (fold iterate (cons '() 0) commands))))
+
 (define (JMP  target) (Jcc target #xeb))
 (define (JB   target) (Jcc target #x72))
 (define (JNB  target) (Jcc target #x73))
@@ -66,22 +79,14 @@
 (define (JNL  target) (Jcc target #x7d))
 (define (JLE  target) (Jcc target #x7e))
 (define (JNLE target) (Jcc target #x7f))
-(define (resolve-jumps commands offsets)
-  (define (iterate cmd acc)
-    (let ((tail   (car acc))
-          (offset (cdr acc)))
-      (cond
-        ((is-a? cmd <jcc>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
-                                    (+ offset (len cmd))))
-        ((is-a? cmd <symbol>) (cons tail offset))
-        (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
-  (reverse (car (fold iterate (cons '() 0) commands))))
+
 (define (asm ctx return_type commands . args)
   (let* ((offsets  (label-offsets commands))
          (resolved (resolve-jumps commands offsets))
          (code     (make-mmap (u8-list->bytevector (apply append resolved)))))
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
+
 (define-class <meta<operand>> (<class>))
 (define-class <operand> ()
               (code #:init-keyword #:code #:getter get-code)
@@ -164,33 +169,38 @@
 (define R13 (make <reg<64>> #:code #b1101))
 (define R14 (make <reg<64>> #:code #b1110))
 (define R15 (make <reg<64>> #:code #b1111))
-(define-class <meta<address>> (<meta<operand>>))
-(define-method (get-bits (self <meta<address>>)) 64)
-(define-class <address> (<operand>) #:metaclass <meta<address>>)
-(define *RAX    (make <address> #:code #b0000))
-(define *RCX    (make <address> #:code #b0001))
-(define *RDX    (make <address> #:code #b0010))
-(define *RBX    (make <address> #:code #b0011))
-(define *RSP    (make <address> #:code #b0100))
-(define *disp32 (make <address> #:code #b0101))
-(define *RSI    (make <address> #:code #b0110))
-(define *RDI    (make <address> #:code #b0111))
-(define  *R8    (make <address> #:code #b1000))
-(define  *R9    (make <address> #:code #b1001))
-(define *R10    (make <address> #:code #b1010))
-(define *R11    (make <address> #:code #b1011))
-(define *R12    (make <address> #:code #b1100))
-(define *R13    (make <address> #:code #b1101))
-(define *R14    (make <address> #:code #b1110))
-(define *R15    (make <address> #:code #b1111))
+
+(define *1 #b00)
+(define *2 #b01)
+(define *4 #b10)
+(define *8 #b11)
+
+(define-class <meta<addr>> (<class>))
+(define-class <addr> ()
+              (reg #:init-keyword #:reg #:getter get-reg)
+              (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
+              (scale #:init-keyword #:scale #:init-form *1 #:getter get-scale)
+              (index #:init-keyword #:index #:init-form #f #:getter get-index)
+              #:metaclass <meta<addr>>)
+(define-method (addr (reg <reg<64>>)); TODO: specify one of: byte, word, dword, qword
+  (make <addr> #:reg reg))
+(define-method (addr (reg <reg<64>>) (disp <integer>))
+  (make <addr> #:reg reg #:disp disp))
+(define-method (addr (reg <reg<64>>) (index <reg<32>>) (scale <integer>))
+  (make <addr> #:reg reg #:index index #:scale scale))
+(define-method (addr (reg <reg<64>>) (index <reg<32>>) (scale <integer>) (disp <integer>))
+  (make <addr> #:reg reg #:index index #:scale scale #:disp disp))
+
 (define-method (raw (imm <integer>) (bits <integer>))
   (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
 (define-method (raw (imm <mem>) (bits <integer>))
   (raw (pointer-address (get-memory imm)) bits))
-(define-method (bits3 (reg <integer>)) (logand reg #b111))
-(define-method (bits3 (reg <operand>)) (bits3 (get-code reg)))
-(define-method (bit4 (reg <integer>)) (logand reg #b1))
-(define-method (bit4 (reg <operand>)) (bit4 (ash (get-code reg) -3)))
+(define-method (bits3 (x <integer>)) (logand x #b111))
+(define-method (bits3 (x <operand>)) (bits3 (get-code x)))
+(define-method (bits3 (x <addr>)) (bits3 (get-reg x)))
+(define-method (bit4 (x <integer>)) (logand x #b1))
+(define-method (bit4 (x <operand>)) (bit4 (ash (get-code x) -3)))
+(define-method (bit4 (x <addr>)) (bit4 (get-reg x)))
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (is-a? reg <reg<8>>) a b)))
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
@@ -206,28 +216,26 @@
                  (bit4 B))))
     (if (or (not (zero? flags)) (need-rex? R) (need-rex? B) (need-rex? X))
       (list (logior (ash #b0100 4) flags)) '())))
-(define *1 #b00)
-(define *2 #b01)
-(define *4 #b10)
-(define *8 #b11)
-(define (SIB SS index r)
+(define (SIB scale index r)
   (list (logior
-          (ash SS 6)
+          (ash scale 6)
           (ash (bits3 index) 3)
           (bits3 r))))
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
+
 (define-method (MOV (r/m <reg<>>) (r <reg<>>))
-  (append (op16 r) (REX r r 0 r/m) (if8 r #x88 #x89) (ModR/M #b11 r r/m)))
-(define-method (MOV (r/m <address>) (r <reg<>>))
+  (append (op16 r) (REX r r 0 r/m) (if8 r #x88 #x89) (ModR/M #b11 r r/m))); TODO: #b10
+(define-method (MOV (r/m <addr>) (r <reg<>>))
   (append (op16 r) (REX r r 0 r/m) (if8 r #x88 #x89) (ModR/M #b00 r r/m)))
 (define-method (MOV (r <reg<>>) imm)
   (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
-(define-method (MOV (r <reg<>>) (r/m <address>))
-  (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b00 r r/m)))
-(define-method (MOV (r <reg<>>) (r/m <address>) (disp <integer>))
-  (let ((sib (if (equal? r/m *RSP) (SIB #b00 #b100 r/m) '())))
-    (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw disp 8))))
+(define-method (MOV (r <reg<>>) (r/m <addr>))
+  (if (get-disp r/m)
+    (let ((sib (if (equal? (get-reg r/m) RSP) (SIB *1 #b100 r/m) '())))
+     (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw (get-disp r/m) 8))) 
+    (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b00 r r/m))))
+
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xbe) (ModR/M #b11 r r/m)))
 (define-method (MOVSX (r <reg<>>) (r/m <reg<16>>))
@@ -238,12 +246,14 @@
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xb6) (ModR/M #b11 r r/m)))
 (define-method (MOVZX (r <reg<>>) (r/m <reg<16>>))
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xb7) (ModR/M #b11 r r/m)))
-(define-method (LEA (r <reg<64>>) (b <address>) (disp <integer>))
-  (append (REX r r 0 b) (list #x8d) (ModR/M #b01 r b) (raw disp 8)))
-(define-method (LEA (r <reg<64>>) (b <address>) (x <reg<>>) (s <integer>))
-  (append (REX r r x b) (list #x8d) (ModR/M #b00 r #b100) (SIB s x b)))
-(define-method (LEA (r <reg<64>>) (b <address>) (x <reg<>>) (s <integer>) (disp <integer>))
-  (append (REX r r x b) (list #x8d) (ModR/M #b01 r #b100) (SIB s x b) (raw disp 8)))
+
+(define-method (LEA (r <reg<64>>) (r/m <addr>))
+  (if (get-index r/m)
+    (if (get-disp r/m)
+      (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b01 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m) (raw (get-disp r/m) 8))
+      (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b00 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m)))
+    (append (REX r r 0 r/m) (list #x8d) (ModR/M #b01 r r/m) (raw (get-disp r/m) 8))))
+
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))
 (define-method (SHR (r/m <reg<>>))
@@ -252,32 +262,38 @@
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))
 (define-method (SAR (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 7 r/m)))
+
 (define-method (ADD (r/m <reg<>>) (r <reg<>>))
   (append (op16 r/m) (REX r/m r 0 r/m) (if8 r/m #x00 #x01) (ModR/M #b11 r r/m)))
 (define-method (ADD (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
     (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
     (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #x80 #x81) (ModR/M #b11 0 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
-(define-method (ADD (r <reg<>>) (r/m <address>))
+(define-method (ADD (r <reg<>>) (r/m <addr>))
   (append (op16 r) (REX r r 0 r/m) (if8 r #x02 #x03) (ModR/M #b00 r r/m)))
+
 (define-method (PUSH (r <reg<64>>))
   (opcode #x50 r))
 (define-method (POP (r <reg<64>>))
   (opcode #x58 r))
+
 (define-method (NEG (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xf6 #xf7) (ModR/M #b11 3 r/m)))
+
 (define-method (SUB (r/m <reg<>>) (r <reg<>>))
   (append (REX r/m r 0 r/m) (list #x29) (ModR/M #b11 r r/m)))
 (define-method (SUB (r/m <reg<>>) (imm32 <integer>))
   (if (equal? (get-code r/m) 0)
     (append (REX r/m 0 0 r/m) (list #x2d) (raw imm32 32))
     (append (REX r/m 0 0 r/m) (list #x81) (ModR/M #b11 5 r/m) (raw imm32 32))))
+
 (define-method (CMP (r/m <reg<>>) (imm32 <integer>))
   (if (equal? (get-code r/m) 0)
     (append (REX r/m 0 0 r/m) (list #x3d) (raw imm32 32))
     (append (REX r/m 0 0 r/m) (list #x81) (ModR/M #b11 7 r/m) (raw imm32 32))))
 (define-method (CMP (r/m <reg<>>) (r <reg<>>))
   (append (REX r r 0 r/m) (list #x39) (ModR/M #b11 r r/m)))
+
 (define (SETcc code r/m)
   (append (REX 0 0 0 r/m) (list #x0f code) (opcode #xc0 r/m)))
 (define-method (SETB   (r/m <reg<8>>)) (SETcc #x92 r/m))

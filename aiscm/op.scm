@@ -14,11 +14,11 @@
          (stepr (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) stepr))
          (dx    (assq-ref (list (cons 1 DL) (cons 2 DX) (cons 4 EDX) (cons 8 RDX)) stepr))
-         (code  (asm ctx void (list (LEA RCX *RDI RSI scale)
+         (code  (asm ctx void (list (LEA RCX (addr RDI ESI scale))
                                     (CMP RDI RCX)
                                     (JE 'ret)
                                     'loop
-                                    (MOV *RDI dx)
+                                    (MOV (addr RDI) dx)
                                     (ADD RDI stepr)
                                     (CMP RDI RCX)
                                     (JNE 'loop)
@@ -66,14 +66,14 @@
          (axa   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepa))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (dx    (assq-ref (list (cons 8 DL) (cons 16 DX) (cons 32 EDX) (cons 64 RDX)) (bits (typecode tr))))
-         (code  (asm ctx void (list (LEA R8 *RDI ECX scale)
+         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
                                     (MOV axr 0); TODO: MOVZX
-                                    (MOV axa *RSI)
+                                    (MOV axa (addr RSI))
                                     (ADD axr dx)
-                                    (MOV *RDI axr)
+                                    (MOV (addr RDI) axr)
                                     (ADD RDI stepr)
                                     (ADD RSI stepa)
                                     (CMP R8 RDI)
@@ -102,14 +102,14 @@
          (axb   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepb))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (si    (assq-ref (list (cons 8 SIL) (cons 16 SI) (cons 32 ESI) (cons 64 RSI)) (bits (typecode tr))))
-         (code  (asm ctx void (list (LEA R8 *RDI ECX scale)
+         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
                                     (MOV axr 0); TODO: MOVZX
-                                    (MOV axb *RDX); TODO: ADD ax *RSI
+                                    (MOV axb (addr RDX)); TODO: ADD ax *RSI
                                     (ADD axr si)
-                                    (MOV *RDI axr)
+                                    (MOV (addr RDI) axr)
                                     (ADD RDI stepr)
                                     (ADD RDX stepb)
                                     (CMP R8 RDI)
@@ -139,16 +139,16 @@
          (bxb   (assq-ref (list (cons 1 BL) (cons 2 BX) (cons 4 EBX) (cons 8 RBX)) stepb))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (bxr   (assq-ref (list (cons 1 BL) (cons 2 BX) (cons 4 EBX) (cons 8 RBX)) stepr))
-         (code  (asm ctx void (list (LEA R8 *RDI ECX scale)
+         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
                                     (MOV axr 0)
-                                    (MOV axa *RSI); TODO: MOVZX, ADD ax *RSI
+                                    (MOV axa (addr RSI)); TODO: MOVZX, ADD ax *RSI
                                     (if (eq? (typecode tb) (typecode tr))
-                                      (ADD axr *RDX)
-                                      (append (MOV bxr 0) (MOV bxb *RDX) (ADD axr bxr))); TODO: MOVZX
-                                    (MOV *RDI axr)
+                                      (ADD axr (addr RDX))
+                                      (append (MOV bxr 0) (MOV bxb (addr RDX)) (ADD axr bxr))); TODO: MOVZX
+                                    (MOV (addr RDI) axr)
                                     (ADD RDI stepr)
                                     (ADD RSI stepa)
                                     (ADD RDX stepb)
@@ -185,13 +185,13 @@
          (step  (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) step))
          (ax    (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) step))
-         (code  (asm ctx void (list (LEA RCX *RDI EDX scale)
+         (code  (asm ctx void (list (LEA RCX (addr RDI EDX scale))
                                     (CMP RDI RCX)
                                     (JE 'ret)
                                     'loop
-                                    (MOV ax *RSI)
+                                    (MOV ax (addr RSI))
                                     (NEG ax)
-                                    (MOV *RDI ax)
+                                    (MOV (addr RDI) ax)
                                     (ADD RDI step)
                                     (ADD RSI step)
                                     (CMP RCX RDI)
