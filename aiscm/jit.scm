@@ -186,9 +186,9 @@
   (make <addr> #:reg reg))
 (define-method (addr (reg <reg<64>>) (disp <integer>))
   (make <addr> #:reg reg #:disp disp))
-(define-method (addr (reg <reg<64>>) (index <reg<32>>) (scale <integer>))
+(define-method (addr (reg <reg<64>>) (index <reg<64>>) (scale <integer>))
   (make <addr> #:reg reg #:index index #:scale scale))
-(define-method (addr (reg <reg<64>>) (index <reg<32>>) (scale <integer>) (disp <integer>))
+(define-method (addr (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
   (make <addr> #:reg reg #:index index #:scale scale #:disp disp))
 
 (define-method (raw (imm <integer>) (bits <integer>))
@@ -252,7 +252,8 @@
     (if (get-disp r/m)
       (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b01 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m) (raw (get-disp r/m) 8))
       (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b00 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m)))
-    (append (REX r r 0 r/m) (list #x8d) (ModR/M #b01 r r/m) (raw (get-disp r/m) 8))))
+    (let ((sib (if (equal? (get-reg r/m) RSP) (SIB *1 #b100 r/m) '())))
+     (append (REX r r 0 r/m) (list #x8d) (ModR/M #b01 r r/m) sib (raw (get-disp r/m) 8)))))
 
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))

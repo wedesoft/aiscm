@@ -1,4 +1,4 @@
-int *test(int p)
+int *test(int p, short int i)
 {
-  return &p;
+  return &p + i;
 }

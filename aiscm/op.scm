@@ -14,7 +14,7 @@
          (stepr (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) stepr))
          (dx    (assq-ref (list (cons 1 DL) (cons 2 DX) (cons 4 EDX) (cons 8 RDX)) stepr))
-         (code  (asm ctx void (list (LEA RCX (addr RDI ESI scale))
+         (code  (asm ctx void (list (LEA RCX (addr RDI RSI scale))
                                     (CMP RDI RCX)
                                     (JE 'ret)
                                     'loop
@@ -66,7 +66,7 @@
          (axa   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepa))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (dx    (assq-ref (list (cons 8 DL) (cons 16 DX) (cons 32 EDX) (cons 64 RDX)) (bits (typecode tr))))
-         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
+         (code  (asm ctx void (list (LEA R8 (addr RDI RCX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
@@ -102,7 +102,7 @@
          (axb   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepb))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (si    (assq-ref (list (cons 8 SIL) (cons 16 SI) (cons 32 ESI) (cons 64 RSI)) (bits (typecode tr))))
-         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
+         (code  (asm ctx void (list (LEA R8 (addr RDI RCX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
@@ -139,7 +139,7 @@
          (bxb   (assq-ref (list (cons 1 BL) (cons 2 BX) (cons 4 EBX) (cons 8 RBX)) stepb))
          (axr   (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) stepr))
          (bxr   (assq-ref (list (cons 1 BL) (cons 2 BX) (cons 4 EBX) (cons 8 RBX)) stepr))
-         (code  (asm ctx void (list (LEA R8 (addr RDI ECX scale))
+         (code  (asm ctx void (list (LEA R8 (addr RDI RCX scale))
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
@@ -185,7 +185,7 @@
          (step  (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) step))
          (ax    (assq-ref (list (cons 1 AL) (cons 2 AX) (cons 4 EAX) (cons 8 RAX)) step))
-         (code  (asm ctx void (list (LEA RCX (addr RDI EDX scale))
+         (code  (asm ctx void (list (LEA RCX (addr RDI RDX scale))
                                     (CMP RDI RCX)
                                     (JE 'ret)
                                     'loop
