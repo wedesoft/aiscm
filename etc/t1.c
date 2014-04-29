@@ -1,4 +1,4 @@
-void test(int *p, char *q, short int r)
+int *test(int p)
 {
-  *p = *q + r;
+  return &p;
 }
