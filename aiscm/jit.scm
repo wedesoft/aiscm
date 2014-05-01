@@ -188,16 +188,20 @@
 (define-method (addr (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
   (make <addr> #:reg reg #:index index #:scale scale #:disp disp))
 
+(define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
   (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
 (define-method (raw (imm <mem>) (bits <integer>))
   (raw (pointer-address (get-memory imm)) bits))
-(define-method (raw (false <boolean>) (bits <integer>)) '())
+
 (define-method (bits3 (x <integer>)) (logand x #b111))
 (define-method (bits3 (x <reg<>>)) (bits3 (get-code x)))
+
+(define-method (bit4 (x <boolean>)) 0)
 (define-method (bit4 (x <integer>)) (logand x #b1))
 (define-method (bit4 (x <reg<>>)) (bit4 (ash (get-code x) -3)))
 (define-method (bit4 (x <addr>)) (bit4 (get-reg x)))
+
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (is-a? reg <reg<8>>) a b)))
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
@@ -243,7 +247,7 @@
 (define-method (MOV (r <reg<>>) imm)
   (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
 (define-method (MOV (r <reg<>>) (r/m <addr>))
-  (append (op16 r) (REX r r (or (get-index r/m) 0) r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+  (append (op16 r) (REX r r (get-index r/m) r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xbe) (ModR/M r r/m)))
@@ -257,7 +261,7 @@
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xb7) (ModR/M r r/m)))
 
 (define-method (LEA (r <reg<64>>) (r/m <addr>))
-  (append (REX r r (or (get-index r/m) 0) r/m) (list #x8d) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+  (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M 4 r/m)))
