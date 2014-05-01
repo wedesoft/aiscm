@@ -216,11 +216,14 @@
                  (bit4 B))))
     (if (or (not (zero? flags)) (need-rex? R) (need-rex? B) (need-rex? X))
       (list (logior (ash #b0100 4) flags)) '())))
-(define (SIB scale index r)
-  (list (logior
-          (ash scale 6)
-          (ash (bits3 index) 3)
-          (bits3 r))))
+(define (SIB r/m)
+  (if (get-index r/m)
+    (list (logior (ash (get-scale r/m) 6) (ash (bits3 (get-index r/m)) 3) (bits3 (get-reg r/m))))
+    (if (get-disp r/m)
+      (if (equal? (get-reg r/m) RSP)
+        (list (logior (ash *1 6) (ash (bits3 RSP) 3) (bits3 RSP)))
+        '()))))
+
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
@@ -232,8 +235,7 @@
   (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
 (define-method (MOV (r <reg<>>) (r/m <addr>))
   (if (get-disp r/m)
-    (let ((sib (if (equal? (get-reg r/m) RSP) (SIB *1 #b100 r/m) '())))
-     (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) sib (raw (get-disp r/m) 8))) 
+    (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b01 r r/m) (SIB r/m) (raw (get-disp r/m) 8)) 
     (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M #b00 r r/m))))
 
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
@@ -250,10 +252,9 @@
 (define-method (LEA (r <reg<64>>) (r/m <addr>))
   (if (get-index r/m)
     (if (get-disp r/m)
-      (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b01 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m) (raw (get-disp r/m) 8))
-      (append (REX r r (get-index r/m) r/m) (list #x8d) (ModR/M #b00 r #b100) (SIB (get-scale r/m) (get-index r/m) r/m)))
-    (let ((sib (if (equal? (get-reg r/m) RSP) (SIB *1 #b100 r/m) '())))
-     (append (REX r r 0 r/m) (list #x8d) (ModR/M #b01 r r/m) sib (raw (get-disp r/m) 8)))))
+      (append (REX r r (or (get-index r/m) 0) r/m) (list #x8d) (ModR/M #b01 r #b100) (SIB r/m) (raw (get-disp r/m) 8))
+      (append (REX r r (or (get-index r/m) 0) r/m) (list #x8d) (ModR/M #b00 r #b100) (SIB r/m)))
+    (append (REX r r (or (get-index r/m) 0) r/m) (list #x8d) (ModR/M #b01 r r/m) (SIB r/m) (raw (get-disp r/m) 8))))
 
 (define-method (SHL (r/m <reg<>>))
   (append (op16 r/m) (REX r/m 0 0 r/m) (if8 r/m #xd0 #xd1) (ModR/M #b11 4 r/m)))
