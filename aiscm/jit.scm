@@ -243,7 +243,7 @@
 (define-method (MOV (r <reg<>>) imm)
   (append (op16 r) (REX r 0 0 r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
 (define-method (MOV (r <reg<>>) (r/m <addr>))
-  (append (op16 r) (REX r r 0 r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+  (append (op16 r) (REX r r (or (get-index r/m) 0) r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
   (append (op16 r) (REX r r 0 r/m) (list #x0f #xbe) (ModR/M r r/m)))
