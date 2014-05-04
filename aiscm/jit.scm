@@ -299,19 +299,23 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (ModR/M 3 r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (SUB (r/m <operand>) (r <reg<>>)); TODO: use <operand> as second argument
-  (append (prefixes r r/m) (list #x29) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
-(define-method (SUB (r/m <reg<>>) (imm32 <integer>))
+(define-method (SUB (r/m <addr>) (r <reg<>>))
+  (append (prefixes r r/m) (if8 r/m #x28 #x29) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (SUB (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
-    (append (prefixes r/m) (list #x2d) (raw imm32 32))
-    (append (prefixes r/m) (list #x81) (ModR/M 5 r/m) (raw imm32 32))))
+    (append (prefixes r/m) (if8 r/m #x2c #x2d) (raw imm (min 32 (get-bits (class-of r/m)))))
+    (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 5 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+(define-method (SUB (r <reg<>>) (r/m <operand>))
+  (append (prefixes r r/m) (if8 r/m #x2a #x2b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (CMP (r/m <operand>) (r <reg<>>)); TODO: use <operand> as second argument
-  (append (prefixes r r/m) (list #x39) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
-(define-method (CMP (r/m <reg<>>) (imm32 <integer>))
+(define-method (CMP (r/m <addr>) (r <reg<>>))
+  (append (prefixes r r/m) (if8 r/m #x38 #x39) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (CMP (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
-    (append (prefixes r/m) (list #x3d) (raw imm32 32))
-    (append (prefixes r/m) (list #x81) (ModR/M 7 r/m) (raw imm32 32))))
+    (append (prefixes r/m) (if8 r/m #x3c #x3d) (raw imm (min 32 (get-bits (class-of r/m)))))
+    (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+(define-method (CMP (r <reg<>>) (r/m <operand>))
+  (append (prefixes r r/m) (if8 r/m #x3a #x3b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define (SETcc code r/m)
   (append (prefixes r/m) (list #x0f code) (opcode #xc0 r/m)))
