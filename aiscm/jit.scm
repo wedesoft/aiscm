@@ -252,13 +252,11 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (MOV (r/m <operand>) (r <reg<>>))
+(define-method (MOV (r/m <addr>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r #x88 #x89) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
-(define-method (MOV (r <reg<>>) (imm <mem>))
+(define-method (MOV (r <reg<>>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
-(define-method (MOV (r <reg<>>) (imm <integer>))
-  (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
-(define-method (MOV (r <reg<>>) (r/m <addr>))
+(define-method (MOV (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
@@ -284,13 +282,13 @@
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (ModR/M 7 r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (ADD (r/m <operand>) (r <reg<>>))
+(define-method (ADD (r/m <addr>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r/m #x00 #x01) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
-(define-method (ADD (r/m <reg<>>) (imm <integer>))
+(define-method (ADD (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
     (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 0 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
-(define-method (ADD (r <reg<>>) (r/m <addr>))
+(define-method (ADD (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (PUSH (r <reg<64>>))
@@ -301,14 +299,14 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (ModR/M 3 r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (SUB (r/m <operand>) (r <reg<>>))
+(define-method (SUB (r/m <operand>) (r <reg<>>)); TODO: use <operand> as second argument
   (append (prefixes r r/m) (list #x29) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (SUB (r/m <reg<>>) (imm32 <integer>))
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (list #x2d) (raw imm32 32))
     (append (prefixes r/m) (list #x81) (ModR/M 5 r/m) (raw imm32 32))))
 
-(define-method (CMP (r/m <operand>) (r <reg<>>))
+(define-method (CMP (r/m <operand>) (r <reg<>>)); TODO: use <operand> as second argument
   (append (prefixes r r/m) (list #x39) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (CMP (r/m <reg<>>) (imm32 <integer>))
   (if (equal? (get-code r/m) 0)
