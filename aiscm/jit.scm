@@ -8,14 +8,20 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context>
-            <addr>    <meta<addr>>
-            <reg<>>   <meta<reg<>>>
-            <reg<8>>  <meta<reg<8>>>
-            <reg<16>> <meta<reg<16>>>
-            <reg<32>> <meta<reg<32>>>
-            <reg<64>> <meta<reg<64>>>
+            <operand>   <meta<operand>>
+            <addr<>>    <meta<addr<>>>
+            <addr<8>>   <meta<addr<8>>>
+            <addr<16>>  <meta<addr<16>>>
+            <addr<32>>  <meta<addr<32>>>
+            <addr<64>>  <meta<addr<64>>>
+            <reg<>>     <meta<reg<>>>
+            <reg<8>>    <meta<reg<8>>>
+            <reg<16>>   <meta<reg<16>>>
+            <reg<32>>   <meta<reg<32>>>
+            <reg<64>>   <meta<reg<64>>>
             <jcc>
-            addr get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
+            addr byte-ptr word-ptr dword-ptr qword-ptr
+            get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -87,13 +93,13 @@
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 
 (define-class <meta<operand>> (<class>))
-(define-class <operand> ()
-              #:metaclass <meta<operand>>)
+(define-class <operand> () #:metaclass <meta<operand>>)
 
 (define-class <meta<reg<>>> (<meta<operand>>))
 (define-class <reg<>> (<operand>)
               (code #:init-keyword #:code #:getter get-code)
               #:metaclass <meta<reg<>>>)
+
 (define-class <meta<reg<8>>> (<meta<reg<>>>))
 (define-method (get-bits (self <meta<reg<8>>>)) 8)
 (define-class <reg<8>> (<reg<>>) #:metaclass <meta<reg<8>>>)
@@ -176,21 +182,44 @@
 (define *4 #b10)
 (define *8 #b11)
 
-(define-class <meta<addr>> (<meta<operand>>))
-(define-class <addr> (<operand>)
+; <operand<32>>
+(define-class <meta<addr<>>> (<meta<operand>>))
+(define-class <addr<>> (<operand>)
               (reg #:init-keyword #:reg #:getter get-reg)
               (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
               (scale #:init-keyword #:scale #:init-form *1 #:getter get-scale)
               (index #:init-keyword #:index #:init-form #f #:getter get-index)
-              #:metaclass <meta<addr>>)
-(define-method (addr (reg <reg<64>>)); TODO: specify one of: byte, word, dword, qword
-  (make <addr> #:reg reg))
-(define-method (addr (reg <reg<64>>) (disp <integer>))
-  (make <addr> #:reg reg #:disp disp))
-(define-method (addr (reg <reg<64>>) (index <reg<64>>) (scale <integer>))
-  (make <addr> #:reg reg #:index index #:scale scale))
-(define-method (addr (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
-  (make <addr> #:reg reg #:index index #:scale scale #:disp disp))
+              #:metaclass <meta<addr<>>>)
+
+(define-class <meta<addr<8>>> (<meta<addr<>>>))
+(define-method (get-bits (self <meta<addr<8>>>)) 8)
+(define-class <addr<8>> (<addr<>>) #:metaclass <meta<addr<8>>>)
+
+(define-class <meta<addr<16>>> (<meta<addr<>>>))
+(define-method (get-bits (self <meta<addr<16>>>)) 16)
+(define-class <addr<16>> (<addr<>>) #:metaclass <meta<addr<16>>>)
+
+(define-class <meta<addr<32>>> (<meta<addr<>>>))
+(define-method (get-bits (self <meta<addr<32>>>)) 32)
+(define-class <addr<32>> (<addr<>>) #:metaclass <meta<addr<32>>>)
+
+(define-class <meta<addr<64>>> (<meta<addr<>>>))
+(define-method (get-bits (self <meta<addr<64>>>)) 64)
+(define-class <addr<64>> (<addr<>>) #:metaclass <meta<addr<64>>>)
+
+(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>)); TODO: specify one of: byte, word, dword, qword
+  (make type #:reg reg))
+(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>) (disp <integer>))
+  (make type #:reg reg #:disp disp))
+(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>) (index <reg<64>>) (scale <integer>))
+  (make type #:reg reg #:index index #:scale scale))
+(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
+  (make type #:reg reg #:index index #:scale scale #:disp disp))
+
+(define (byte-ptr . args)  (apply addr (cons <addr<8>> args)))
+(define (word-ptr . args)  (apply addr (cons <addr<16>> args)))
+(define (dword-ptr . args) (apply addr (cons <addr<32>> args)))
+(define (qword-ptr . args) (apply addr (cons <addr<64>> args)))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
@@ -208,7 +237,7 @@
 (define-method (bit4 (x <boolean>)) 0)
 (define-method (bit4 (x <integer>)) (logand x #b1))
 (define-method (bit4 (x <reg<>>)) (bit4 (ash (get-code x) -3)))
-(define-method (bit4 (x <addr>)) (bit4 (get-reg x)))
+(define-method (bit4 (x <addr<>>)) (bit4 (get-reg x)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (is-a? reg <reg<8>>) a b)))
@@ -216,12 +245,12 @@
 (define (op16 reg) (if (is-a? reg <reg<16>>) (list #x66) '()))
 
 (define-method (mod (r/m <reg<>>)) #b11)
-(define-method (mod (r/m <addr>)) (if (get-disp r/m) #b01 #b00)); TODO: #b10 
+(define-method (mod (r/m <addr<>>)) (if (get-disp r/m) #b01 #b00)); TODO: #b10 (32-bit displacement)
 (define-method (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
 (define-method (ModR/M reg/opcode (r/m <reg<>>))
   (ModR/M (mod r/m) reg/opcode r/m))
-(define-method (ModR/M reg/opcode (r/m <addr>))
+(define-method (ModR/M reg/opcode (r/m <addr<>>))
   (if (get-index r/m)
     (ModR/M (mod r/m) reg/opcode #b100)
     (ModR/M (mod r/m) reg/opcode (get-reg r/m))))
@@ -252,7 +281,7 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (MOV (r/m <addr>) (r <reg<>>))
+(define-method (MOV (r/m <addr<>>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r #x88 #x89) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (MOV (r <reg<>>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
@@ -260,17 +289,27 @@
   (append (prefixes r r/m) (if8 r #x8a #x8b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (MOVSX (r <reg<>>) (r/m <reg<8>>))
-  (append (prefixes r r/m) (list #x0f #xbe) (ModR/M r r/m)))
+  (append (prefixes r r/m) (list #x0f #xbe) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (MOVSX (r <reg<>>) (r/m <addr<8>>))
+  (append (prefixes r r/m) (list #x0f #xbe) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (MOVSX (r <reg<>>) (r/m <reg<16>>))
-  (append (prefixes r r/m) (list #x0f #xbf) (ModR/M r r/m)))
+  (append (prefixes r r/m) (list #x0f #xbf) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (MOVSX (r <reg<>>) (r/m <addr<16>>))
+  (append (prefixes r r/m) (list #x0f #xbf) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (MOVSX (r <reg<>>) (r/m <reg<32>>))
-  (append (prefixes r r/m) (list #x63) (ModR/M r r/m)))
+  (append (prefixes r r/m) (list #x63) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (MOVSX (r <reg<>>) (r/m <addr<32>>))
+  (append (prefixes r r/m) (list #x63) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (MOVZX (r <reg<>>) (r/m <reg<8>>))
-  (append (prefixes r r/m) (list #x0f #xb6) (ModR/M r r/m)))
+  (append (prefixes r r/m) (list #x0f #xb6) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (MOVZX (r <reg<>>) (r/m <addr<8>>))
+  (append (prefixes r r/m) (list #x0f #xb6) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (MOVZX (r <reg<>>) (r/m <reg<16>>))
-  (append (prefixes r r/m) (list #x0f #xb7) (ModR/M r r/m)))
+  (append (prefixes r r/m) (list #x0f #xb7) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+(define-method (MOVZX (r <reg<>>) (r/m <addr<16>>))
+  (append (prefixes r r/m) (list #x0f #xb7) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (LEA (r <reg<64>>) (r/m <addr>))
+(define-method (LEA (r <reg<64>>) (r/m <addr<>>))
   (append (prefixes r r/m) (list #x8d) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define-method (SHL (r/m <operand>))
@@ -282,7 +321,7 @@
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (ModR/M 7 r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (ADD (r/m <addr>) (r <reg<>>))
+(define-method (ADD (r/m <addr<>>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r/m #x00 #x01) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (ADD (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
@@ -299,7 +338,7 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (ModR/M 3 r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (SUB (r/m <addr>) (r <reg<>>))
+(define-method (SUB (r/m <addr<>>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r/m #x28 #x29) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (SUB (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
@@ -308,7 +347,7 @@
 (define-method (SUB (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
-(define-method (CMP (r/m <addr>) (r <reg<>>))
+(define-method (CMP (r/m <addr<>>) (r <reg<>>))
   (append (prefixes r r/m) (if8 r/m #x38 #x39) (ModR/M r r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 (define-method (CMP (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
