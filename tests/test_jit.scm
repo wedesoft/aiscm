@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 255)
+(planned-tests 256)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -677,6 +677,8 @@
     "Convert unsigned short integer to unsigned integer")
 (ok (equal? '(#x0f #xb7 #xc8) (MOVZX ECX AX))
     "MOVZX ECX AX")
+(skip #t '((ok (equal? (MOV ECX EAX) (MOVZX RCX ECX)); TODO
+            "Use MOV to convert unsigned integer to unsigned long integer")))
 (ok (eqv? w1 ((asm ctx uint64 (list (MOV RAX l1) (MOV CX w1) (MOVZX RAX CX) (RET)))))
     "Convert unsigned short integer to unsigned long integer")
 (ok (eqv? i1 ((asm ctx uint64 (list (MOV RAX l1) (MOV ECX i1) (MOV RAX ECX) (RET)))))
