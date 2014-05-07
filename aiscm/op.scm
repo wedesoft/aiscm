@@ -61,8 +61,9 @@
          (tb    (class-of b))
          (tr    (coerce ta tb))
          (ftb   (foreign-type tb))
-         (stepa  (storage-size (typecode ta)))
-         (stepr  (storage-size (typecode tr)))
+         (stepa (storage-size (typecode ta)))
+         (stepr (storage-size (typecode tr)))
+         (mova  (if (eq? (typecode ta) (typecode tr)) MOV (if (signed? (typecode ta)) MOVSX MOVZX)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) stepr))
          (aptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepa))
          (rptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepr))
@@ -73,9 +74,7 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (if (eq? (typecode ta) (typecode tr))
-                                      (MOV axr (aptr RSI))
-                                      (MOVZX axr (aptr RSI))); TODO: MOVSZ? 
+                                    (mova axr (aptr RSI))
                                     (ADD axr dx)
                                     (MOV (rptr RDI) axr)
                                     (ADD RDI stepr)
@@ -102,6 +101,7 @@
          (fta   (foreign-type ta))
          (stepb (storage-size (typecode tb)))
          (stepr (storage-size (typecode tr)))
+         (movb  (if (eq? (typecode tb) (typecode tr)) MOV (if (signed? (typecode tb)) MOVSX MOVZX)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) stepr))
          (bptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepb))
          (rptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepr))
@@ -112,9 +112,7 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (if (eq? (typecode tb) (typecode tr))
-                                      (MOV axr (bptr RDX))
-                                      (MOVZX axr (bptr RDX))); TODO: MOVSZ? 
+                                    (movb axr (bptr RDX))
                                     (ADD axr si)
                                     (MOV (rptr RDI) axr)
                                     (ADD RDI stepr)
@@ -142,6 +140,7 @@
          (stepb (storage-size (typecode tb)))
          (stepr (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) stepr))
+         (mova  (if (eq? (typecode ta) (typecode tr)) MOV (if (signed? (typecode ta)) MOVSX MOVZX)))
          (aptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepa))
          (bptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepb))
          (rptr  (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) stepr))
@@ -152,12 +151,12 @@
                                     (CMP RDI R8)
                                     (JE 'ret)
                                     'loop
-                                    (if (eq? (typecode ta) (typecode tr))
-                                      (MOV axr (aptr RSI))
-                                      (MOVZX axr (aptr RSI))); TODO: MOVSZ? 
+                                    (mova axr (aptr RSI))
                                     (if (eq? (typecode tb) (typecode tr))
                                       (ADD axr (bptr RDX))
-                                      (append (MOVZX bxr (bptr RDX)) (ADD axr bxr))); TODO: MOVSX?
+                                      (append
+                                        ((if (signed? (typecode tb)) MOVSX MOVZX) bxr (bptr RDX))
+                                        (ADD axr bxr)))
                                     (MOV (rptr RDI) axr)
                                     (ADD RDI stepr)
                                     (ADD RSI stepa)
