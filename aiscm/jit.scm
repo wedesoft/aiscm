@@ -228,6 +228,7 @@
 
 (define-method (bits3 (x <integer>)) (logand x #b111))
 (define-method (bits3 (x <reg<>>)) (bits3 (get-code x)))
+(define-method (bits3 (x <addr<>>)) (bits3 (get-reg x)))
 
 (define-method (get-reg (x <reg<>>)) #f)
 (define-method (get-index (x <reg<>>)) #f)
@@ -239,9 +240,9 @@
 (define-method (bit4 (x <addr<>>)) (bit4 (get-reg x)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
-(define (if8 reg a b) (list (if (is-a? reg <reg<8>>) a b)))
+(define (if8 reg a b) (list (if (eqv? (get-bits (class-of reg)) 8) a b)))
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
-(define (op16 reg) (if (is-a? reg <reg<16>>) (list #x66) '()))
+(define (op16 reg) (if (eqv? (get-bits (class-of reg)) 16) (list #x66) '()))
 
 (define-method (mod (r/m <reg<>>)) #b11)
 (define-method (mod (r/m <addr<>>)) (if (get-disp r/m) #b01 #b00)); TODO: #b10 (32-bit displacement)
@@ -256,7 +257,7 @@
 
 (define (need-rex? r) (member r (list SPL BPL SIL DIL)))
 (define (REX W r r/m)
-  (let ((flags (logior (ash (if (is-a? W <reg<64>>) 1 0) 3)
+  (let ((flags (logior (ash (if (eqv? (get-bits (class-of W)) 64) 1 0) 3)
                        (ash (bit4 r) 2)
                        (ash (bit4 (get-index r/m)) 1)
                        (bit4 r/m))))
@@ -287,6 +288,8 @@
   (append (prefixes r r/m) (if8 r #x88 #x89) (postfixes r r/m)))
 (define-method (MOV (r <reg<>>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
+(define-method (MOV (r/m <addr<>>) imm)
+  (append (prefixes r/m) (if8 r/m #xc6 #xc7) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (MOV (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
 
@@ -320,7 +323,7 @@
 (define-method (ADD (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 0 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))); TODO: check this for r/m being an address
 (define-method (ADD (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
@@ -337,7 +340,7 @@
 (define-method (SUB (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x2c #x2d) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 5 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
 (define-method (SUB (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
@@ -346,7 +349,7 @@
 (define-method (CMP (r/m <reg<>>) (imm <integer>))
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x3c #x3d) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (ModR/M 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
 (define-method (CMP (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x3a #x3b) (postfixes r r/m)))
 

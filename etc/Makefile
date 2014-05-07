@@ -2,10 +2,7 @@
 
 CFLAGS = -O
 
-all: t t1.s t1.txt t2.s t2.txt
-
-t: t1.o t2.o
-	gcc -o $@ t1.o t2.o
+all: t1.s t1.txt
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
