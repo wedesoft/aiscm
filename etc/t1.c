@@ -1,4 +1,4 @@
 void test(char *p)
 {
-  *p += 42;
+  *p -= 42;
 }

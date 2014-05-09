@@ -342,7 +342,9 @@
 (define-method (SUB (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x2c #x2d) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+    (next-method)))
+(define-method (SUB (r/m <operand>) imm)
+  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (SUB (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
