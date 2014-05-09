@@ -323,7 +323,9 @@
 (define-method (ADD (r/m <reg<>>) imm)
   (if (equal? (get-code r/m) 0)
     (append (prefixes r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))); TODO: check this for r/m being an address
+    (next-method)))
+(define-method (ADD (r/m <operand>) imm)
+  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (ADD (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
