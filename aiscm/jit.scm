@@ -20,7 +20,7 @@
             <reg<32>>   <meta<reg<32>>>
             <reg<64>>   <meta<reg<64>>>
             <jcc>
-            addr byte-ptr word-ptr dword-ptr qword-ptr
+            byte-ptr word-ptr dword-ptr qword-ptr
             get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
@@ -215,8 +215,8 @@
 (define-method (addr (type <meta<addr<>>>) (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
   (make type #:reg reg #:index index #:scale scale #:disp disp))
 
-(define (byte-ptr . args)  (apply addr (cons <addr<8>> args)))
-(define (word-ptr . args)  (apply addr (cons <addr<16>> args)))
+(define (byte-ptr  . args) (apply addr (cons <addr<8>>  args)))
+(define (word-ptr  . args) (apply addr (cons <addr<16>> args)))
 (define (dword-ptr . args) (apply addr (cons <addr<32>> args)))
 (define (qword-ptr . args) (apply addr (cons <addr<64>> args)))
 
@@ -278,18 +278,18 @@
 (define-method (prefixes (r <reg<>>) (r/m <operand>))
   (append (op16 r) (REX r r r/m)))
 
-(define-method (postfixes reg/opcode (r/m <operand>))
+(define (postfixes reg/opcode r/m)
   (append (ModR/M reg/opcode r/m) (SIB r/m) (raw (get-disp r/m) 8)))
 
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (MOV (r/m <addr<>>) (r <reg<>>))
-  (append (prefixes r r/m) (if8 r #x88 #x89) (postfixes r r/m)))
+(define-method (MOV (m <addr<>>) (r <reg<>>))
+  (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <reg<>>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits (class-of r)))))
-(define-method (MOV (r/m <addr<>>) imm)
-  (append (prefixes r/m) (if8 r/m #xc6 #xc7) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
+(define-method (MOV (m <addr<>>) imm)
+  (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits (class-of m))))))
 (define-method (MOV (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
 
@@ -306,10 +306,10 @@
                        ((eqv? bits 16) (list #x0f #xb7)))))
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
-(define-method (LEA (r <reg<64>>) (r/m <addr<>>))
-  (append (prefixes r r/m) (list #x8d) (postfixes r r/m)))
+(define-method (LEA (r <reg<64>>) (m <addr<>>))
+  (append (prefixes r m) (list #x8d) (postfixes r m)))
 
-(define-method (SHL (r/m <operand>))
+(define-method (SHL (r/m <operand>)); TODO: Shift by CL, imm8
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
@@ -318,18 +318,18 @@
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
 
-(define-method (ADD (r/m <addr<>>) (r <reg<>>))
-  (append (prefixes r r/m) (if8 r/m #x00 #x01) (postfixes r r/m)))
-(define-method (ADD (r/m <reg<>>) imm)
-  (if (equal? (get-code r/m) 0)
-    (append (prefixes r/m) (if8 r/m #x04 #x05) (raw imm (min 32 (get-bits (class-of r/m)))))
+(define-method (ADD (m <addr<>>) (r <reg<>>))
+  (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
+(define-method (ADD (r <reg<>>) imm)
+  (if (equal? (get-code r) 0)
+    (append (prefixes r) (if8 r #x04 #x05) (raw imm (min 32 (get-bits (class-of r)))))
     (next-method)))
 (define-method (ADD (r/m <operand>) imm)
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 0 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (ADD (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
-(define-method (PUSH (r <reg<64>>))
+(define-method (PUSH (r <reg<64>>)); TODO: PUSH r/m, PUSH imm
   (opcode #x50 r))
 (define-method (POP (r <reg<64>>))
   (opcode #x58 r))
@@ -337,35 +337,37 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
-(define-method (SUB (r/m <addr<>>) (r <reg<>>))
-  (append (prefixes r r/m) (if8 r/m #x28 #x29) (postfixes r r/m)))
-(define-method (SUB (r/m <reg<>>) imm)
-  (if (equal? (get-code r/m) 0)
-    (append (prefixes r/m) (if8 r/m #x2c #x2d) (raw imm (min 32 (get-bits (class-of r/m)))))
+(define-method (SUB (m <addr<>>) (r <reg<>>))
+  (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
+(define-method (SUB (r <reg<>>) imm)
+  (if (equal? (get-code r) 0)
+    (append (prefixes r) (if8 r #x2c #x2d) (raw imm (min 32 (get-bits (class-of r)))))
     (next-method)))
 (define-method (SUB (r/m <operand>) imm)
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (SUB (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
-(define-method (CMP (r/m <addr<>>) (r <reg<>>))
-  (append (prefixes r r/m) (if8 r/m #x38 #x39) (postfixes r r/m)))
-(define-method (CMP (r/m <reg<>>) (imm <integer>))
-  (if (equal? (get-code r/m) 0)
-    (append (prefixes r/m) (if8 r/m #x3c #x3d) (raw imm (min 32 (get-bits (class-of r/m)))))
-    (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))))
+(define-method (CMP (m <addr<>>) (r <reg<>>))
+  (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
+(define-method (CMP (r <reg<>>) (imm <integer>))
+  (if (equal? (get-code r) 0)
+    (append (prefixes r) (if8 r #x3c #x3d) (raw imm (min 32 (get-bits (class-of r)))))
+    (next-method)))
+(define-method (CMP (r/m <operand>) (imm <integer>))
+  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))); TODO: test
 (define-method (CMP (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x3a #x3b) (postfixes r r/m)))
 
 (define (SETcc code r/m)
-  (append (prefixes r/m) (list #x0f code) (opcode #xc0 r/m)))
-(define-method (SETB   (r/m <reg<8>>)) (SETcc #x92 r/m))
-(define-method (SETNB  (r/m <reg<8>>)) (SETcc #x93 r/m))
-(define-method (SETE   (r/m <reg<8>>)) (SETcc #x94 r/m))
-(define-method (SETNE  (r/m <reg<8>>)) (SETcc #x95 r/m))
-(define-method (SETBE  (r/m <reg<8>>)) (SETcc #x96 r/m))
-(define-method (SETNBE (r/m <reg<8>>)) (SETcc #x97 r/m))
-(define-method (SETL   (r/m <reg<8>>)) (SETcc #x9c r/m))
-(define-method (SETNL  (r/m <reg<8>>)) (SETcc #x9d r/m))
-(define-method (SETLE  (r/m <reg<8>>)) (SETcc #x9e r/m))
-(define-method (SETNLE (r/m <reg<8>>)) (SETcc #x9f r/m))
+  (append (prefixes r/m) (list #x0f code) (postfixes 0 r/m)))
+(define (SETB   r/m) (SETcc #x92 r/m))
+(define (SETNB  r/m) (SETcc #x93 r/m))
+(define (SETE   r/m) (SETcc #x94 r/m))
+(define (SETNE  r/m) (SETcc #x95 r/m))
+(define (SETBE  r/m) (SETcc #x96 r/m))
+(define (SETNBE r/m) (SETcc #x97 r/m))
+(define (SETL   r/m) (SETcc #x9c r/m))
+(define (SETNL  r/m) (SETcc #x9d r/m))
+(define (SETLE  r/m) (SETcc #x9e r/m))
+(define (SETNLE r/m) (SETcc #x9f r/m))
