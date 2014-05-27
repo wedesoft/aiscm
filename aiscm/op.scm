@@ -166,7 +166,7 @@
                                     'ret
                                     (RET)) int64 int64 int64 int))
          (proc  (lambda (a b)
-                  (let* [(na (get-size a)); TODO: size check
+                  (let* [(na (get-size a))
                          (nb (get-size b))
                          (r  (make tr #:size na))
                          (pr ((compose pointer-address get-memory get-value get-value) r))

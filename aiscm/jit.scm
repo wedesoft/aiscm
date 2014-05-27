@@ -244,8 +244,14 @@
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
 (define (op16 reg) (if (eqv? (get-bits (class-of reg)) 16) (list #x66) '()))
 
+(define-method (disp8? (disp <boolean>)) 8)
+(define-method (disp8? (disp <integer>)) (and (>= disp -128) (< disp 128)))
+
+(define-method (mod (r/m <boolean>)) #b00)
+(define-method (mod (r/m <integer>)) (if (disp8? r/m) #b01 #b10))
 (define-method (mod (r/m <reg<>>)) #b11)
-(define-method (mod (r/m <addr<>>)) (if (get-disp r/m) #b01 #b00)); TODO: #b10 (32-bit displacement)
+(define-method (mod (r/m <addr<>>)) (mod (get-disp r/m)))
+
 (define-method (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
 (define-method (ModR/M reg/opcode (r/m <reg<>>))
@@ -279,7 +285,7 @@
   (append (op16 r) (REX r r r/m)))
 
 (define (postfixes reg/opcode r/m)
-  (append (ModR/M reg/opcode r/m) (SIB r/m) (raw (get-disp r/m) 8)))
+  (append (ModR/M reg/opcode r/m) (SIB r/m) (raw (get-disp r/m) (if (disp8? (get-disp r/m)) 8 32))))
 
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
