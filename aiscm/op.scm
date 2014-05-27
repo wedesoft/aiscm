@@ -166,12 +166,14 @@
                                     'ret
                                     (RET)) int64 int64 int64 int))
          (proc  (lambda (a b)
-                  (let* ((n  (get-size a)); TODO: size check
-                         (r  (make tr #:size n))
+                  (let* ((na (get-size a)); TODO: size check
+                         (nb (get-size b))
+                         (r  (make tr #:size na))
                          (pr ((compose pointer-address get-memory get-value get-value) r))
                          (pa ((compose pointer-address get-memory get-value get-value) a))
                          (pb ((compose pointer-address get-memory get-value get-value) b)))
-                    (code pr pa pb n)
+                    (if (not (= na nb)) (throw 'array-dimensions-different na nb))
+                    (code pr pa pb na)
                     r))))
     (add-method! + (make <method>
                          #:specializers (list ta tb)

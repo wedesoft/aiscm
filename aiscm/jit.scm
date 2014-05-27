@@ -206,7 +206,7 @@
 (define-method (get-bits (self <meta<addr<64>>>)) 64)
 (define-class <addr<64>> (<addr<>>) #:metaclass <meta<addr<64>>>)
 
-(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>)); TODO: specify one of: byte, word, dword, qword
+(define-method (addr (type <meta<addr<>>>) (reg <reg<64>>))
   (make type #:reg reg))
 (define-method (addr (type <meta<addr<>>>) (reg <reg<64>>) (disp <integer>))
   (make type #:reg reg #:disp disp))
