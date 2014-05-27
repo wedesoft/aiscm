@@ -10,7 +10,7 @@
   #:re-export (+ -))
 (define ctx (make <jit-context>))
 (define-method (fill (t <meta<element>>) (n <integer>) value)
-  (let* ((tr    (sequence t))
+  (let* [(tr    (sequence t))
          (step  (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) step))
          (ptr   (assq-ref (list (cons 1 byte-ptr) (cons 2 word-ptr) (cons 4 dword-ptr) (cons 8 qword-ptr)) step))
@@ -27,17 +27,17 @@
                                     (RET))
                      int64 int int))
          (proc  (lambda (t n value)
-                  (let* ((r  (make tr #:size n))
-                         (pr ((compose pointer-address get-memory get-value get-value) r)))
+                  (let* [(r  (make tr #:size n))
+                         (pr ((compose pointer-address get-memory get-value get-value) r))]
                     (code pr n value)
-                    r))))
+                    r)))]
     (add-method! fill (make <method>
                             #:specializers (list (class-of t) <integer> (class-of value))
                             #:procedure proc))
     (fill t n value)))
 (define-method (+ (a <element>)) a)
 (define-method (+ (a <element>) (b <element>))
-  (let* ((ta     (class-of a))
+  (let* [(ta     (class-of a))
          (tb     (class-of b))
          (tr     (coerce ta tb))
          (fta    (foreign-type ta))
@@ -47,7 +47,7 @@
          (di     (assq-ref (list (cons 8 DIL) (cons 16 DI) (cons 32 EDI) (cons 64 RDI)) (bits tr)))
          (si     (assq-ref (list (cons 8 SIL) (cons 16 SI) (cons 32 ESI) (cons 64 RSI)) (bits tr)))
          (code   (asm ctx ftr (list (MOV ax di) (ADD ax si) (RET)) fta ftb))
-         (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b))))))
+         (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)
                          #:procedure proc))
@@ -57,7 +57,7 @@
 (define-method (+ (a <integer>) (b <element>))
   (+ (make (match a) #:value a) b))
 (define-method (+ (a <sequence<>>) (b <element>))
-  (let* ((ta    (class-of a))
+  (let* [(ta    (class-of a))
          (tb    (class-of b))
          (tr    (coerce ta tb))
          (ftb   (foreign-type tb))
@@ -84,18 +84,18 @@
                                     'ret
                                     (RET)) int64 int64 ftb int))
          (proc  (lambda (a b)
-                  (let* ((n (get-size a))
+                  (let* [(n (get-size a))
                          (r (make tr #:size n))
                          (pr ((compose pointer-address get-memory get-value get-value) r))
-                         (pa ((compose pointer-address get-memory get-value get-value) a)))
+                         (pa ((compose pointer-address get-memory get-value get-value) a))]
                     (code pr pa (get-value b) n)
-                    r))))
+                    r)))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)
                          #:procedure proc))
     (+ a b)))
 (define-method (+ (a <element>) (b <sequence<>>))
-  (let* ((ta    (class-of a))
+  (let* [(ta    (class-of a))
          (tb    (class-of b))
          (tr    (coerce ta tb))
          (fta   (foreign-type ta))
@@ -122,18 +122,18 @@
                                     'ret
                                     (RET)) int64 fta int64 int))
          (proc  (lambda (a b)
-                  (let* ((n  (get-size b))
+                  (let* [(n  (get-size b))
                          (r  (make tr #:size n))
                          (pr ((compose pointer-address get-memory get-value get-value) r))
-                         (pb ((compose pointer-address get-memory get-value get-value) b)))
+                         (pb ((compose pointer-address get-memory get-value get-value) b))]
                     (code pr (get-value a) pb n)
-                    r))))
+                    r)))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)
                          #:procedure proc))
     (+ a b)))
 (define-method (+ (a <sequence<>>) (b <sequence<>>))
-  (let* ((ta    (class-of a))
+  (let* [(ta    (class-of a))
          (tb    (class-of b))
          (tr    (coerce ta tb))
          (stepa (storage-size (typecode ta)))
@@ -166,32 +166,32 @@
                                     'ret
                                     (RET)) int64 int64 int64 int))
          (proc  (lambda (a b)
-                  (let* ((na (get-size a)); TODO: size check
+                  (let* [(na (get-size a)); TODO: size check
                          (nb (get-size b))
                          (r  (make tr #:size na))
                          (pr ((compose pointer-address get-memory get-value get-value) r))
                          (pa ((compose pointer-address get-memory get-value get-value) a))
-                         (pb ((compose pointer-address get-memory get-value get-value) b)))
+                         (pb ((compose pointer-address get-memory get-value get-value) b))]
                     (if (not (= na nb)) (throw 'array-dimensions-different na nb))
                     (code pr pa pb na)
-                    r))))
+                    r)))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)
                          #:procedure proc))
     (+ a b)))
 (define-method (- (a <element>))
-  (let* ((t      (class-of a))
+  (let* [(t      (class-of a))
          (ft     (foreign-type t))
          (ax     (if (eqv? (bits t) 64) RAX EAX))
          (di     (if (eqv? (bits t) 64) RDI EDI))
          (code   (asm ctx ft (list (MOV ax di) (NEG ax) (RET)) ft))
-         (proc   (lambda (a) (make t #:value (code (get-value a))))))
+         (proc   (lambda (a) (make t #:value (code (get-value a)))))]
     (add-method! - (make <method>
                          #:specializers (list t)
                          #:procedure proc))
     (- a)))
 (define-method (- (a <sequence<>>))
-  (let* ((ta    (class-of a))
+  (let* [(ta    (class-of a))
          (tr    ta)
          (step  (storage-size (typecode tr)))
          (scale (assq-ref (list (cons 1 *1) (cons 2 *2) (cons 4  *4) (cons 8 *8)) step))
@@ -211,18 +211,18 @@
                                     'ret
                                     (RET)) int64 int64 int))
          (proc (lambda (a)
-                 (let* ((n  (get-size a))
+                 (let* [(n  (get-size a))
                         (r  (make tr #:size n))
                         (pr ((compose pointer-address get-memory get-value get-value) r))
-                        (pa ((compose pointer-address get-memory get-value get-value) a)))
+                        (pa ((compose pointer-address get-memory get-value get-value) a))]
                    (code pr pa n)
-                   r))))
+                   r)))]
     (add-method! - (make <method>
                          #:specializers (list ta)
                          #:procedure proc))
     (- a)))
 (define-method (- (a <element>) (b <element>))
-  (let* ((ta     (class-of a))
+  (let* [(ta     (class-of a))
          (tb     (class-of b))
          (tr     (coerce ta tb))
          (fta    (foreign-type ta))
@@ -232,7 +232,7 @@
          (di     (assq-ref (list (cons 8 DIL) (cons 16 DI) (cons 32 EDI) (cons 64 RDI)) (bits tr)))
          (si     (assq-ref (list (cons 8 SIL) (cons 16 SI) (cons 32 ESI) (cons 64 RSI)) (bits tr)))
          (code   (asm ctx ftr (list (MOV ax di) (SUB ax si) (RET)) fta ftb))
-         (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b))))))
+         (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
     (add-method! - (make <method>
                          #:specializers (list ta tb)
                          #:procedure proc))

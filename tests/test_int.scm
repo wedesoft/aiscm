@@ -126,7 +126,7 @@
     "type matching for -9223372036854775809")
 (ok (eqv? 123 (get (make <int> #:value 123)))
     "get value of integer")
-(ok (eqv? 123 (let ((i (make <int> #:value 0))) (set i 123) (get-value i)))
+(ok (eqv? 123 (let [(i (make <int> #:value 0))] (set i 123) (get-value i)))
     "set value of integer")
 (ok (eqv? 123 (set (make <int> #:value 0) 123))
     "return-value of setting integer")

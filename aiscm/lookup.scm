@@ -19,9 +19,9 @@
 (define-method (subst (self <lookup>) alist)
   (lookup (get-value self) (subst (get-var self) alist) (get-stride self)))
 (define-method (shift (self <lookup>) (var <var>) (amount <integer>))
-  (let ((value (if (equal? var (get-var self))
+  (let [(value (if (equal? var (get-var self))
                  (lookup (get-value self) amount (get-stride self))
-                 (shift (get-value self) var amount))))
+                 (shift (get-value self) var amount)))]
   (lookup value (get-var self) (get-stride self))))
 (define-method (typecode (self <lookup>))
   (typecode (get-value self)))

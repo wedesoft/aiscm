@@ -15,24 +15,24 @@
     (else (list expr))))
 (define (expr->descr expr)
   (letrec
-    ((expr->str
+    [(expr->str
        (lambda (expr)
          (cond
            ((null? expr) "")
            ((pair? expr) (format #f "<~a_~a>"
                                  (car expr)
                                  (string-join (map expr->str (cdr expr)) "_")))
-           (else "?")))))
+           (else "?"))))]
     (string->symbol (expr->str expr))))
 (define (expr->temps expr)
   (syntax->datum (generate-temporaries (expr->params expr))))
 (define (expr->call expr)
   (cons (expr->descr expr) (expr->params expr)))
 (define (expr->method expr)
-  (let ((descr (expr->descr expr))
+  (let [(descr (expr->descr expr))
         (temps (expr->temps expr))
         (param (lambda (arg) `(,arg <element>)))
-        (extract (lambda (arg) `(get-value ,arg))))
+        (extract (lambda (arg) `(get-value ,arg)))]
     `(define-method (,descr ,@(map param temps))
                     (make <int> #:value (+ ,@(map extract temps))))))
 (define-syntax comp

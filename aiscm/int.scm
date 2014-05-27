@@ -26,7 +26,7 @@
               #:metaclass <meta<int<>>>) (define-generic bits)
 (define-generic signed?)
 (define (integer nbits sgn)
-  (let* ((name (format #f "<int<~a,~a>>" nbits sgn))
+  (let* [(name (format #f "<int<~a,~a>>" nbits sgn))
          (metaname (format #f "<meta~a>" name))
          (metaclass (def-once metaname (make <class>
                                              #:dsupers (list <meta<int<>>>)
@@ -35,7 +35,7 @@
          (retval (def-once name (make metaclass
                                       #:dsupers (list <int<>>)
                                       #:slots '()
-                                      #:name name))))
+                                      #:name name)))]
     (define-method (bits (self metaclass)) nbits)
     (define-method (signed? (self metaclass)) (eq? sgn 'signed))
     retval))
@@ -77,7 +77,7 @@
       (get-value self)
       (storage-size (class-of self)))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
-  (let ((value (u8-list->int (bytevector->u8-list packed))))
+  (let [(value (u8-list->int (bytevector->u8-list packed)))]
     (if (and (signed? self) (>= value (expt 2 (- (bits self) 1))))
       (raw-negative (make self #:value value))
       (make self #:value value))))
@@ -94,7 +94,7 @@
           ((< i (ash 1 32)) <uint> )
           ((< i (ash 1 64)) <ulong>)
           (else (next-method)))
-    (let ((ni (lognot i)))
+    (let [(ni (lognot i))]
       (cond ((< ni (ash 1  7)) <byte>)
             ((< ni (ash 1 15)) <sint>)
             ((< ni (ash 1 31))  <int>)

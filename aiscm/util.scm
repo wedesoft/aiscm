@@ -4,7 +4,7 @@
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
 (define-syntax-rule (def-once name value)
-  (let ((sym (string->symbol name)))
+  (let [(sym (string->symbol name))]
     (if (not (defined? sym (current-module)))
       (toplevel-define! sym value))
     (primitive-eval sym)))

@@ -16,12 +16,12 @@
 (define-method (initialize (self <mem>) initargs)
   (let-keywords initargs #f (memory base size)
     (if (not (and memory base))
-      (let ((ptr (gc-malloc-pointerless size)))
+      (let [(ptr (gc-malloc-pointerless size))]
         (next-method self `(#:memory ,ptr #:base ,ptr #:size ,size)))
       (next-method))))
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))
-  (let ((size (get-size self)))
+  (let [(size (get-size self))]
     (cond
       ((< offset 0) (throw 'mem-plus-offset-lt-zero offset))
       ((> offset size) (throw 'mem-plus-offset-gt-size offset size))

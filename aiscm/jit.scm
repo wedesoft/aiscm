@@ -49,23 +49,23 @@
 (define-method (Jcc (target <integer>) (code <integer>))
   (append (list code) (raw target 8)))
 (define-method (resolve (self <jcc>) (offset <integer>) offsets)
-  (let ((target (- (assq-ref offsets (get-target self)) offset)))
+  (let [(target (- (assq-ref offsets (get-target self)) offset))]
     (Jcc target (get-code self))))
 
 (define (label-offsets commands)
   (define (iterate cmd acc)
-    (let ((offsets (car acc))
-          (offset  (cdr acc)))
+    (let [(offsets (car acc))
+          (offset  (cdr acc))]
       (if (is-a? cmd <symbol>)
         (cons (acons cmd offset offsets) offset)
-        (let ((len-cmd (if (is-a? cmd <jcc>) (len cmd) (length cmd))))
+        (let [(len-cmd (if (is-a? cmd <jcc>) (len cmd) (length cmd)))]
           (cons offsets (+ offset len-cmd))))))
   (car (fold iterate (cons '() 0) commands)))
 
 (define (resolve-jumps commands offsets)
   (define (iterate cmd acc)
-    (let ((tail   (car acc))
-          (offset (cdr acc)))
+    (let [(tail   (car acc))
+          (offset (cdr acc))]
       (cond
         ((is-a? cmd <jcc>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
                                     (+ offset (len cmd))))
@@ -86,9 +86,9 @@
 (define (JNLE target) (Jcc target #x7f))
 
 (define (asm ctx return_type commands . args)
-  (let* ((offsets  (label-offsets commands))
+  (let* [(offsets  (label-offsets commands))
          (resolved (resolve-jumps commands offsets))
-         (code     (make-mmap (u8-list->bytevector (apply append resolved)))))
+         (code     (make-mmap (u8-list->bytevector (apply append resolved))))]
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
 
@@ -257,10 +257,10 @@
 
 (define (need-rex? r) (member r (list SPL BPL SIL DIL)))
 (define (REX W r r/m)
-  (let ((flags (logior (ash (if (eqv? (get-bits (class-of W)) 64) 1 0) 3)
+  (let [(flags (logior (ash (if (eqv? (get-bits (class-of W)) 64) 1 0) 3)
                        (ash (bit4 r) 2)
                        (ash (bit4 (get-index r/m)) 1)
-                       (bit4 r/m))))
+                       (bit4 r/m)))]
     (if (or (not (zero? flags)) (need-rex? r) (need-rex? (get-index r/m)) (need-rex? r/m))
       (list (logior (ash #b0100 4) flags)) '())))
 
@@ -294,16 +294,16 @@
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
 
 (define-method (MOVSX (r <reg<>>) (r/m <operand>))
-  (let* ((bits   (get-bits (class-of r/m)))
+  (let* [(bits   (get-bits (class-of r/m)))
          (opcode (cond ((eqv? bits  8) (list #x0f #xbe))
                        ((eqv? bits 16) (list #x0f #xbf))
-                       ((eqv? bits 32) (list #x63)))))
+                       ((eqv? bits 32) (list #x63))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
 (define-method (MOVZX (r <reg<>>) (r/m <operand>))
-  (let* ((bits   (get-bits (class-of r/m)))
+  (let* [(bits   (get-bits (class-of r/m)))
          (opcode (cond ((eqv? bits  8) (list #x0f #xb6))
-                       ((eqv? bits 16) (list #x0f #xb7)))))
+                       ((eqv? bits 16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
 (define-method (LEA (r <reg<64>>) (m <addr<>>))

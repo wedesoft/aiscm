@@ -15,7 +15,7 @@
               (size #:init-keyword #:size #:getter get-size)
               #:metaclass <meta<sequence<>>>)
 (define (sequence type)
-  (let* ((name (format #f "<sequence~a>" (class-name type)))
+  (let* [(name (format #f "<sequence~a>" (class-name type)))
          (metaname (format #f "<meta~a>" name))
          (metaclass (def-once metaname (make <class>
                                              #:dsupers (list <meta<sequence<>>>)
@@ -24,11 +24,11 @@
          (retval (def-once name (make metaclass
                                       #:dsupers (list <sequence<>>)
                                       #:slots '()
-                                      #:name name))))
+                                      #:name name)))]
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (size value)
-        (let* ((mem (make <mem> #:size (* (storage-size type) size)))
-               (ptr (or value (make (pointer type) #:value mem))))
+        (let* [(mem (make <mem> #:size (* (storage-size type) size)))
+               (ptr (or value (make (pointer type) #:value mem)))]
           (next-method self `(#:value ,ptr #:size ,size)))))
     (define-method (typecode (self metaclass)) type)
     retval))
@@ -49,8 +49,8 @@
   (if (> (get-size seq) 0)
     (cons (get seq 0) (sequence->list (slice seq 1 (- (get-size seq) 1)))) '()))
 (define (list->sequence lst)
-  (let* ((t      (reduce coerce '() (map match lst)))
-         (retval (make (sequence t) #:size (length lst))))
+  (let* [(t      (reduce coerce '() (map match lst)))
+         (retval (make (sequence t) #:size (length lst)))]
     (set retval lst)
     retval))
 (define-method (write (self <sequence<>>) port)

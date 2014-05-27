@@ -479,7 +479,7 @@
 (ok (eqv? (length (MOV EAX ESI))
           (assq-ref (label-offsets (list (MOV EAX ESI) 'tst)) 'tst))
     "Label after MOV EAX ESI statement maps to length of that statement")
-(ok (equal? '(1 2) (let ((a (label-offsets (list (NOP) 'x (NOP) 'y))))
+(ok (equal? '(1 2) (let [(a (label-offsets (list (NOP) 'x (NOP) 'y)))]
                      (map (cut assq-ref a <>) '(x y))))
     "Map multiple labels")
 (ok (equal? '(#xeb #x2a) (JMP 42))
