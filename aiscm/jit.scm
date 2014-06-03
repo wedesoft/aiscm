@@ -242,7 +242,8 @@
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (eqv? (get-bits (class-of reg)) 8) a b)))
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
-(define (op16 reg) (if (eqv? (get-bits (class-of reg)) 16) (list #x66) '()))
+(define-method (op16 (x <integer>)) (if (eqv? x 16) (list #x66) '()))
+(define-method (op16 (x <operand>)) (op16 (get-bits (class-of x))))
 
 (define-method (disp8? (disp <boolean>)) 8)
 (define-method (disp8? (disp <integer>)) (and (>= disp -128) (< disp 128)))
@@ -315,7 +316,7 @@
 (define-method (LEA (r <reg<64>>) (m <addr<>>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
-(define-method (SHL (r/m <operand>)); TODO: Shift by CL, imm8
+(define-method (SHL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
@@ -335,10 +336,10 @@
 (define-method (ADD (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
-(define-method (PUSH (r <reg<64>>)); TODO: PUSH r/m, PUSH imm
-  (opcode #x50 r))
-(define-method (POP (r <reg<64>>))
-  (opcode #x58 r))
+(define-method (PUSH (r <reg<>>)); TODO: PUSH r/m, PUSH imm
+  (append (prefixes r) (opcode #x50 r)))
+(define-method (POP (r <reg<>>))
+  (append (prefixes r) (opcode #x58 r)))
 
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
@@ -361,7 +362,7 @@
     (append (prefixes r) (if8 r #x3c #x3d) (raw imm (min 32 (get-bits (class-of r)))))
     (next-method)))
 (define-method (CMP (r/m <operand>) (imm <integer>))
-  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits (class-of r/m)))))); TODO: test
+  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits (class-of r/m))))))
 (define-method (CMP (r <reg<>>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x3a #x3b) (postfixes r r/m)))
 
