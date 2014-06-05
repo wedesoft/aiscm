@@ -1,0 +1,38 @@
+# Introduction
+
+## Requirements
+
+You need to install [Guile][1] and its development headers.
+
+```
+sudo aptitude install guile-2.0 guile-2.0-dev
+```
+
+You can also install the Guile documentation.
+
+```
+sudo aptitude install guile-2.0-doc
+```
+
+## Installation
+
+You can install AIscm from an archive as follows:
+
+```
+wget https://github.com/wedesoft/aiscm/releases/download/v@VERSION@/aiscm-@VERSION@.tar.xz
+tar xf aiscm-@VERSION@.tar.xz
+cd aiscm-@VERSION@
+./configure
+make
+sudo make install
+```
+
+## Testing
+
+After installing AIscm you can run the test suite like this:
+
+```
+make check
+```
+
+[1]: http://www.gnu.org/software/guile/

@@ -12,6 +12,7 @@ AC_PROG_AWK
 PKG_PROG_PKG_CONFIG
 AM_CONFIG_HEADER(config.h)
 AC_CHECK_PROG(TOUCH,touch,touch)
+AC_CHECK_PROG(PANDOC,pandoc,pandoc)
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
@@ -40,7 +41,8 @@ debug mode                           : $enable_debug"
 AC_OUTPUT(Makefile
           aiscm/Makefile
           tests/Makefile
-          doc/Makefile,
+          doc/Makefile
+          doc/intro.md,
           echo "$info",
           info="$info")
 

@@ -1,14 +1,10 @@
-AUTOMAKE_OPTIONS = info-in-builddir
+doc_DATA = aiscm.html intro.html construction.gif
 
-info_TEXINFOS = aiscm.texi
+EXTRA_DIST = aiscm.md intro.md.in construction.gif
 
-aiscm_TEXINFOS = intro.texi
+CLEANFILES = *~ *.html
 
-EXTRA_DIST = construction.gif
+MAINTAINERCLEANFILES = Makefile.in intro.md
 
-CLEANFILES = *~ *.info *.pdf
-
-clean-local:
-	rm -Rf aiscm.html aiscm.t2p
-
-MAINTAINERCLEANFILES = Makefile.in version.texi stamp-vti
+.md.html:
+	$(PANDOC) -s $< > $@

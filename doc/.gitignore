@@ -1,5 +1,4 @@
 Makefile.in
 Makefile
-aiscm.t2p
-stamp-vti
-version.texi
+intro.md
+*.html
