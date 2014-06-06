@@ -1,10 +1,10 @@
-doc_DATA = aiscm.html intro.html construction.gif
+doc_DATA = index.html installation.html construction.gif
 
-EXTRA_DIST = aiscm.md intro.md.in construction.gif
+EXTRA_DIST = index.md installation.md.in construction.gif
 
 CLEANFILES = *~ *.html
 
-MAINTAINERCLEANFILES = Makefile.in intro.md
+MAINTAINERCLEANFILES = Makefile.in installation.md
 
 .md.html:
-	$(PANDOC) -s $< > $@
+	$(PANDOC) -s -f markdown -t html $< > $@

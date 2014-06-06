@@ -42,7 +42,7 @@ AC_OUTPUT(Makefile
           aiscm/Makefile
           tests/Makefile
           doc/Makefile
-          doc/intro.md,
+          doc/installation.md,
           echo "$info",
           info="$info")
 
