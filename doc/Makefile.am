@@ -1,10 +1,10 @@
-doc_DATA = index.html installation.html construction.gif
+doc_DATA = index.html installation.html jit.html native.html construction.gif
 
-EXTRA_DIST = index.md installation.md.in construction.gif
+EXTRA_DIST = index.md.in installation.md.in jit.md native.md construction.gif
 
 CLEANFILES = *~ *.html
 
-MAINTAINERCLEANFILES = Makefile.in installation.md
+MAINTAINERCLEANFILES = Makefile.in index.md installation.md
 
 .md.html:
 	$(PANDOC) -s -f markdown -t html $< > $@

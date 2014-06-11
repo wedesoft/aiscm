@@ -1,6 +1,6 @@
 # AIScm Reference Manual
 
-This manual is for AIscm (version 0.1.4),
+This manual is for **AIscm** (version @VERSION@),
 which is a real-time computer vision extension for the Guile programming language
 
 [Installation](installation.html "Installation")
