@@ -4,7 +4,7 @@ compiler:
 before_install:
 - sudo add-apt-repository ppa:dns/gnu --yes
 - sudo apt-get update
-- sudo apt-get install autoconf automake libtool guile-2.0-dev texinfo
+- sudo apt-get install autoconf automake libtool guile-2.0-dev texinfo pandoc
 - make -f Makefile.dist
 install:
 - ./configure
