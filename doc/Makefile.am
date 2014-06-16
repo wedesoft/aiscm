@@ -1,6 +1,6 @@
-doc_DATA = index.html installation.html jit.html native.html construction.gif
+doc_DATA = index.html installation.html native.html construction.gif
 
-EXTRA_DIST = index.md.in installation.md.in jit.md native.md construction.gif
+EXTRA_DIST = index.md.in installation.md.in native.md construction.gif
 
 CLEANFILES = *~ *.html
 
