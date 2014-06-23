@@ -1,4 +1,8 @@
-void test(char *p)
+void other(int a);
+
+int test(int *p)
 {
-  *p -= 42;
+  int a = *p;
+  other(a);
+  return a;
 }
