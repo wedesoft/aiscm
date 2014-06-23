@@ -20,7 +20,7 @@
             <reg<32>>   <meta<reg<32>>>
             <reg<64>>   <meta<reg<64>>>
             <jcc>
-            <pool> <virtual>
+            <pool> <container>
             get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             byte-ptr word-ptr dword-ptr qword-ptr get-disp get-scale get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
@@ -35,7 +35,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *1 *2 *4 *8
-            push pop virtual ready dirty location))
+            push pop container ready dirty location))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -381,29 +381,29 @@
 (define (SETLE  r/m) (SETcc #x9e r/m))
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
-(define-class <virtual> ()
+(define-class <container> ()
   (type #:init-keyword #:type #:getter get-type)
   (register #:init-value #f #:getter get-register #:setter set-register))
 (define (location vreg)
   (get-register vreg))
 (define-class <pool> ()
-  (real #:init-keyword #:real #:getter get-real)
-  (virtual #:init-value '() #:getter get-virtual))
+  (registers #:init-keyword #:registers #:getter get-registers)
+  (containers #:init-value '() #:getter get-containers #:setter set-containers))
 (define (spill-size pool)
-  (- (length (get-virtual pool)) (length (get-real pool))))
+  (- (length (get-containers pool)) (length (get-registers pool))))
 (define (push pool)
   (let [(offset (spill-size pool))]
     (if (positive? offset) (SUB RSP (* offset 8)) '()))); TODO: populate list of memory slots
 (define (pop pool)
   (let [(offset (spill-size pool))]
     (if (positive? offset) (ADD RSP (* offset 8)) '())))
-(define (virtual pool type)
-  (let [(existing (get-virtual pool))
-        (retval   (make <virtual> #:type type))]
-    (slot-set! pool 'virtual (cons retval existing))
+(define (container pool type)
+  (let [(existing (get-containers pool))
+        (retval   (make <container> #:type type))]
+    (set-containers pool (cons retval existing))
     retval))
 (define (ready pool vreg)
-  (set-register vreg (make (get-type vreg) #:code (get-code (car (get-real pool)))))
+  (set-register vreg (make (get-type vreg) #:code (get-code (car (get-registers pool)))))
   '()); TODO: find available register, load content from memory if necessary 
 (define (dirty pool vreg); TODO: "mark" as dirty, free memory location
   '())

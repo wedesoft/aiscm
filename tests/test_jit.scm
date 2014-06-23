@@ -715,19 +715,19 @@
                                  (RET)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
 (ok (equal? (list '() '())
-            (let [(pool (make <pool> #:real (list RDX)))]
+            (let [(pool (make <pool> #:registers (list RDX)))]
               (list (push pool) (pop pool))))
     "Don't reserve stack space if pool size is sufficient")
 (ok (equal? (list (SUB RSP 8) (ADD RSP 8))
-            (let* [(pool (make <pool> #:real (list RDX)))
-                   (a    (virtual pool <reg<32>>))
-                   (b    (virtual pool <reg<32>>))]
+            (let* [(pool (make <pool> #:registers (list RDX)))
+                   (a    (container pool <reg<32>>))
+                   (b    (container pool <reg<32>>))]
               (list (push pool) (pop pool))))
     "Allocate stack space for register spill")
 (ok (equal? (list '() (MOV EDX 0) '())
-            (let* [(pool (make <pool> #:real (list RDX)))
-                   (a    (virtual pool <reg<32>>))
-                   (b    (virtual pool <reg<32>>))]
+            (let* [(pool (make <pool> #:registers (list RDX)))
+                   (a    (container pool <reg<32>>))
+                   (b    (container pool <reg<32>>))]
               (list (ready pool a) (MOV (location a) 0) (dirty pool a))))
     "Use a virtual register")
 (format #t "~&")
