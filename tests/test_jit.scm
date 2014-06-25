@@ -728,6 +728,6 @@
             (let* [(pool (make <pool> #:registers (list RDX)))
                    (a    (container pool <reg<32>>))
                    (b    (container pool <reg<32>>))]
-              (list (ready pool a) (MOV (location a) 0) (dirty pool a))))
+              (list (ready a) (MOV (location a) 0) (dirty a))))
     "Use a virtual register")
 (format #t "~&")

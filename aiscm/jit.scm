@@ -382,10 +382,13 @@
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
 (define-class <container> ()
+  (container #:init-keyword #:pool #:getter get-pool)
   (type #:init-keyword #:type #:getter get-type)
-  (register #:init-value #f #:getter get-register #:setter set-register))
-(define (location vreg)
-  (get-register vreg))
+  (register #:init-value #f #:getter get-register #:setter set-register)
+  (stack #:init-value #f #:getter get-stack #:setter set-stack)
+  (dirty #:init-value #f #:getter get-dirty #:setter set-dirty))
+(define (location container)
+  (get-register container))
 (define-class <pool> ()
   (registers #:init-keyword #:registers #:getter get-registers)
   (containers #:init-value '() #:getter get-containers #:setter set-containers))
@@ -393,17 +396,19 @@
   (- (length (get-containers pool)) (length (get-registers pool))))
 (define (push pool)
   (let [(offset (spill-size pool))]
-    (if (positive? offset) (SUB RSP (* offset 8)) '()))); TODO: populate list of memory slots
+    (if (positive? offset) (SUB RSP (* offset 8)) '()))); TODO: populate list of stack slots
 (define (pop pool)
   (let [(offset (spill-size pool))]
     (if (positive? offset) (ADD RSP (* offset 8)) '())))
 (define (container pool type)
   (let [(existing (get-containers pool))
-        (retval   (make <container> #:type type))]
+        (retval   (make <container> #:pool pool #:type type))]
     (set-containers pool (cons retval existing))
     retval))
-(define (ready pool vreg)
-  (set-register vreg (make (get-type vreg) #:code (get-code (car (get-registers pool)))))
-  '()); TODO: find available register, load content from memory if necessary 
-(define (dirty pool vreg); TODO: "mark" as dirty, free memory location
+(define (ready self); TODO: spill register
+  (set-register self (make (get-type self) #:code (get-code (car (get-registers (get-pool self))))))
+  '()); TODO: find available register, load content from stack if necessary 
+(define (dirty self)
+  (set-dirty self #t)
+  (set-stack self #f)
   '())

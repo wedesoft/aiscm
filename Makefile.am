@@ -2,7 +2,7 @@ SUBDIRS = aiscm tests doc
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = Makefile.dist configure.ac README.md COPYING construction.gif
+EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING construction.gif
 
 repl:
 	LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARYPATH) \
