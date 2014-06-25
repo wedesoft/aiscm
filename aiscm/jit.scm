@@ -20,7 +20,7 @@
             <reg<32>>   <meta<reg<32>>>
             <reg<64>>   <meta<reg<64>>>
             <jcc>
-            <pool> <container>
+            <pool>
             get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
             byte-ptr word-ptr dword-ptr qword-ptr get-disp get-scale get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
@@ -35,7 +35,8 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *1 *2 *4 *8
-            push pop container ready dirty location))
+            get-live container)
+  #:export-syntax (environment))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -381,34 +382,15 @@
 (define (SETLE  r/m) (SETcc #x9e r/m))
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
-(define-class <container> ()
-  (container #:init-keyword #:pool #:getter get-pool)
-  (type #:init-keyword #:type #:getter get-type)
-  (register #:init-value #f #:getter get-register #:setter set-register)
-  (stack #:init-value #f #:getter get-stack #:setter set-stack)
-  (dirty #:init-value #f #:getter get-dirty #:setter set-dirty))
-(define (location container)
-  (get-register container))
 (define-class <pool> ()
   (registers #:init-keyword #:registers #:getter get-registers)
-  (containers #:init-value '() #:getter get-containers #:setter set-containers))
-(define (spill-size pool)
-  (- (length (get-containers pool)) (length (get-registers pool))))
-(define (push pool)
-  (let [(offset (spill-size pool))]
-    (if (positive? offset) (SUB RSP (* offset 8)) '()))); TODO: populate list of stack slots
-(define (pop pool)
-  (let [(offset (spill-size pool))]
-    (if (positive? offset) (ADD RSP (* offset 8)) '())))
-(define (container pool type)
-  (let [(existing (get-containers pool))
-        (retval   (make <container> #:pool pool #:type type))]
-    (set-containers pool (cons retval existing))
+  (live #:init-value '() #:getter get-live #:setter set-live))
+(define-syntax-rule (environment pool vars body)
+  (let* [(live   (get-live pool))
+         (retval (let vars body))]
+    (set-live pool live)
     retval))
-(define (ready self); TODO: spill register
-  (set-register self (make (get-type self) #:code (get-code (car (get-registers (get-pool self))))))
-  '()); TODO: find available register, load content from stack if necessary 
-(define (dirty self)
-  (set-dirty self #t)
-  (set-stack self #f)
-  '())
+(define (container pool type)
+  (let [(retval (find (compose not (cut member <> (get-live pool))) (get-registers pool)))]
+    (set-live pool (cons retval (get-live pool)))
+    retval))

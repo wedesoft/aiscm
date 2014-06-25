@@ -714,20 +714,22 @@
                                  (ADD RSP 8)
                                  (RET)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
-(ok (equal? (list '() '())
-            (let [(pool (make <pool> #:registers (list RDX)))]
-              (list (push pool) (pop pool))))
-    "Don't reserve stack space if pool size is sufficient")
-(ok (equal? (list (SUB RSP 8) (ADD RSP 8))
-            (let* [(pool (make <pool> #:registers (list RDX)))
-                   (a    (container pool <reg<32>>))
-                   (b    (container pool <reg<32>>))]
-              (list (push pool) (pop pool))))
-    "Allocate stack space for register spill")
-(ok (equal? (list '() (MOV EDX 0) '())
-            (let* [(pool (make <pool> #:registers (list RDX)))
-                   (a    (container pool <reg<32>>))
-                   (b    (container pool <reg<32>>))]
-              (list (ready a) (MOV (location a) 0) (dirty a))))
-    "Use a virtual register")
+(ok (equal? EDX
+            (let [(pool (make <pool> #:registers (list EDX ECX)))]
+              (environment pool
+                           [(x (container pool <reg<32>>))]
+                           x)))
+    "Get first register from pool")
+(ok (equal? ECX
+            (let [(pool (make <pool> #:registers (list EDX ECX)))]
+              (environment pool
+                           [(x (container pool <reg<32>>))
+                            (y (container pool <reg<32>>))]
+                           y)))
+    "Get second register from pool")
+(ok (equal? EDX
+            (let [(pool (make <pool> #:registers (list EDX ECX)))]
+              (environment pool [(x (container pool <reg<32>>))] x)
+              (environment pool [(x (container pool <reg<32>>))] x)))
+    "Reuse register from pool")
 (format #t "~&")
