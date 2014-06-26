@@ -399,7 +399,7 @@
 (define (spill pool type)
   (let [(retval (last (get-live pool)))]
     (set-stack pool (cons retval (get-stack pool)))
-    (set-live pool (cons retval (take (get-live pool) (- (length (get-live pool)) 1))))
+    (set-live pool (cons retval (take (get-live pool) (1- (length (get-live pool))))))
     retval))
 (define (allocate pool type)
   (let [(free (get-free pool))]

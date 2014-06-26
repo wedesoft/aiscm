@@ -21,7 +21,7 @@
    (set! printed-total #t))))
 
 (define (incr-counter)
-  (set! test-counter (+ test-counter 1)))
+  (set! test-counter (1+ test-counter)))
 
 (define (print-description description)
  (if (not (null? description))

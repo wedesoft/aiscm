@@ -62,7 +62,7 @@
 (define-method (foreign-type (t   <meta<int<64,signed>>>))  int64)
 (define (int->u8-list i n)
   (if (> n 0)
-    (cons (logand #xff i) (int->u8-list (ash i -8) (- n 1)))
+    (cons (logand #xff i) (int->u8-list (ash i -8) (1- n)))
     '()))
 (define (u8-list->int lst)
   (if (null? lst)
@@ -78,7 +78,7 @@
       (storage-size (class-of self)))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
   (let [(value (u8-list->int (bytevector->u8-list packed)))]
-    (if (and (signed? self) (>= value (expt 2 (- (bits self) 1))))
+    (if (and (signed? self) (>= value (expt 2 (1- (bits self)))))
       (raw-negative (make self #:value value))
       (make self #:value value))))
 (define-method (write (self <int<>>) port)

@@ -10,7 +10,7 @@
       (toplevel-define! sym value))
     (primitive-eval sym)))
 (define (depth val)
-  (if (list? val) (+ (apply max (map depth val)) 1) 0))
+  (if (list? val) (1+ (apply max (map depth val))) 0))
 (define (flatten-n val n)
   (if (> (depth val) n)
     (if (> (depth (car val)) (- n 1))
