@@ -36,8 +36,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *1 *2 *4 *8
-            reg
-            spill allocate get-stack get-live get-free)
+            reg)
   #:export-syntax (environment))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -404,7 +403,7 @@
 (define (allocate pool type)
   (let [(free (get-free pool))]
     (if (null? free) #f (begin (set-live pool (cons (car free) (get-live pool))) (car free)))))
-(define (reg pool type)
+(define-method (reg (type <class>) (pool <pool>))
   (or (allocate pool type) (spill pool type)))
 (define-syntax-rule (environment pool vars . body)
   (let* [(live   (get-live pool))
