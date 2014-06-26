@@ -1,6 +1,6 @@
 (define-module (aiscm util)
   #:use-module (srfi srfi-26)
-  #:export (depth flatten-n)
+  #:export (toplevel-define! depth flatten-n)
   #:export-syntax (def-once))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
