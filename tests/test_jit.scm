@@ -714,22 +714,30 @@
                                  (ADD RSP 8)
                                  (RET)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
-(ok (equal? EDX
+(ok (equal? (list (MOV EDX 42))
             (let [(pool (make <pool> #:registers (list EDX ECX)))]
               (environment pool
-                           [(x (container pool <reg<32>>))]
-                           x)))
+                           [(x (reg pool <reg<32>>))]
+                           (MOV x 42))))
     "Get first register from pool")
-(ok (equal? ECX
+(ok (equal? (list (MOV ECX 42))
             (let [(pool (make <pool> #:registers (list EDX ECX)))]
               (environment pool
-                           [(x (container pool <reg<32>>))
-                            (y (container pool <reg<32>>))]
-                           y)))
+                           [(x (reg pool <reg<32>>))
+                            (y (reg pool <reg<32>>))]
+                           (MOV y 42))))
     "Get second register from pool")
-(ok (equal? EDX
+(ok (equal? (list (MOV EDX 42))
             (let [(pool (make <pool> #:registers (list EDX ECX)))]
-              (environment pool [(x (container pool <reg<32>>))] x)
-              (environment pool [(x (container pool <reg<32>>))] x)))
+              (environment pool [(x (reg pool <reg<32>>))] (MOV x 21))
+              (environment pool [(x (reg pool <reg<32>>))] (MOV x 42))))
     "Reuse register from pool")
+;(ok (equal? (list (list (MOV ECX 42)))
+;            (let [(pool (make <pool> #:registers (list EDX ECX)))]
+;              (environment pool
+;                           [(x (reg pool <reg<32>>))]
+;                           (environment pool
+;                                        [(x (reg pool <reg<32>>))]
+;                                        (MOV x 42)))))
+;    "Nested environments")
 (format #t "~&")

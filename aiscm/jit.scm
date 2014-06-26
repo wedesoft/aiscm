@@ -5,6 +5,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context>
@@ -35,7 +36,8 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             *1 *2 *4 *8
-            get-live container)
+            reg
+            spill allocate get-stack get-live get-free)
   #:export-syntax (environment))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -384,13 +386,23 @@
 
 (define-class <pool> ()
   (registers #:init-keyword #:registers #:getter get-registers)
-  (live #:init-value '() #:getter get-live #:setter set-live))
-(define-syntax-rule (environment pool vars body)
-  (let* [(live   (get-live pool))
-         (retval (let vars body))]
-    (set-live pool live)
+  (live #:init-value '() #:getter get-live #:setter set-live)
+  (stack #:init-value '() #:getter get-stack #:setter set-stack))
+(define (get-free pool)
+  (filter (compose not (cut member <> (get-live pool))) (get-registers pool)))
+(define (clear-stack pool)
+  (let [(retval (get-stack pool))]
+    (set-stack pool '())
     retval))
-(define (container pool type)
-  (let [(retval (find (compose not (cut member <> (get-live pool))) (get-registers pool)))]
-    (set-live pool (cons retval (get-live pool)))
+(define (restore-stack pool stack)
+  (set-stack pool stack))
+(define (reg pool type)
+  (let [(free (get-free pool))]
+    (if (null? free) #f (begin (set-live pool (cons (car free) (get-live pool))) (car free)))))
+(define-syntax-rule (environment pool vars . body)
+  (let* [(live   (get-live pool))
+         (stack  (clear-stack pool))
+         (retval (flatten-n (let vars (list . body)) 2))]
+    (set-live pool live)
+    (restore-stack pool stack)
     retval))
