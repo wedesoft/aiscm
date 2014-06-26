@@ -396,13 +396,22 @@
     retval))
 (define (restore-stack pool stack)
   (set-stack pool stack))
-(define (reg pool type)
+(define (spill pool type)
+  (let [(retval (last (get-live pool)))]
+    (set-stack pool (cons retval (get-stack pool)))
+    (set-live pool (cons retval (take (get-live pool) (- (length (get-live pool)) 1))))
+    retval))
+(define (allocate pool type)
   (let [(free (get-free pool))]
     (if (null? free) #f (begin (set-live pool (cons (car free) (get-live pool))) (car free)))))
+(define (reg pool type)
+  (or (allocate pool type) (spill pool type)))
 (define-syntax-rule (environment pool vars . body)
   (let* [(live   (get-live pool))
          (stack  (clear-stack pool))
-         (retval (flatten-n (let vars (list . body)) 2))]
+         (block  (let vars (list . body)))
+         (pushes (map PUSH (reverse (get-stack pool))))
+         (pops   (map POP (get-stack pool)))]
     (set-live pool live)
     (restore-stack pool stack)
-    retval))
+    (flatten-n (append pushes block pops) 2)))

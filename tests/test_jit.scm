@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 271)
+(planned-tests 273)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -730,14 +730,22 @@
 (ok (equal? (list (MOV EDX 42))
             (let [(pool (make <pool> #:registers (list EDX ECX)))]
               (environment pool [(x (reg pool <reg<32>>))] (MOV x 21))
-              (environment pool [(x (reg pool <reg<32>>))] (MOV x 42))))
+              (environment pool [(y (reg pool <reg<32>>))] (MOV y 42))))
     "Reuse register from pool")
-;(ok (equal? (list (list (MOV ECX 42)))
-;            (let [(pool (make <pool> #:registers (list EDX ECX)))]
-;              (environment pool
-;                           [(x (reg pool <reg<32>>))]
-;                           (environment pool
-;                                        [(x (reg pool <reg<32>>))]
-;                                        (MOV x 42)))))
-;    "Nested environments")
+(ok (equal? (list (MOV ECX 42))
+            (let [(pool (make <pool> #:registers (list EDX ECX)))]
+              (environment pool
+                           [(x (reg pool <reg<32>>))]
+                           (environment pool
+                                        [(y (reg pool <reg<32>>))]
+                                        (MOV y 42)))))
+    "Nested environments")
+(ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
+            (let [(pool (make <pool> #:registers (list EDX)))]
+              (environment pool
+                           [(x (reg pool <reg<32>>))]
+                           (environment pool
+                                        [(y (reg pool <reg<32>>))]
+                                        (MOV y 42)))))
+    "Nested environments")
 (format #t "~&")
