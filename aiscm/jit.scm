@@ -1,5 +1,6 @@
 (define-module (aiscm jit)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
@@ -343,12 +344,15 @@
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
 (define-class <pool> ()
-  (registers #:init-keyword #:registers #:getter get-registers)
+  (codes #:init-keyword #:codes #:getter get-codes)
   (live #:init-value '() #:getter get-live #:setter set-live)
   (stack #:init-value '() #:getter get-stack #:setter set-stack))
+(define-method (initialize (self <pool>) initargs)
+  (let-keywords initargs #f (registers)
+    (next-method self `(#:codes ,(map get-code registers)))))
 (define (get-free pool)
   (let [(live-codes (map get-code (get-live pool)))]
-    (filter (lambda (reg) (not (member (get-code reg) live-codes))) (get-registers pool))))
+    (filter (compose not (cut member <> live-codes)) (get-codes pool))))
 (define (clear-stack pool)
   (let [(retval (get-stack pool))]
     (set-stack pool '())
@@ -356,15 +360,16 @@
 (define (restore-stack pool stack)
   (set-stack pool stack))
 (define (spill pool type)
-  (let [(target (last (get-live pool)))]
+  (let* [(target (last (get-live pool)))
+         (retval (reg type (get-code target)))]
     (set-stack pool (cons target (get-stack pool)))
-    (set-live pool (cons target (take (get-live pool) (1- (length (get-live pool))))))
-    (reg type (get-code target))))
+    (set-live pool (cons retval (take (get-live pool) (1- (length (get-live pool))))))
+    retval))
 (define (allocate pool type)
   (let [(free (get-free pool))]
     (if (null? free)
       #f
-      (let [(retval (reg type (get-code (car free))))]
+      (let [(retval (reg type (car free)))]
         (set-live pool (cons retval (get-live pool)))
         retval))))
 (define-method (reg (type <class>) (pool <pool>))
