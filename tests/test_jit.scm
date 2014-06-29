@@ -714,48 +714,48 @@
                                  (ADD RSP 8)
                                  (RET)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
-(ok (equal? (list (MOV ECX 42))
-            (let [(pool (make <pool> #:registers (list ECX EDX)))]
+(ok (equal? (list (MOV CX 42))
+            (let [(pool (make <pool> #:registers (list RCX RDX)))]
               (environment pool
-                           [(x (reg <reg<32>> pool))]
+                           [(x (reg <reg<16>> pool))]
                            (MOV x 42))))
     "Get first register from pool")
-(ok (equal? (list (MOV EDX 42))
-            (let [(pool (make <pool> #:registers (list ECX EDX)))]
+(ok (equal? (list (MOV DX 42))
+            (let [(pool (make <pool> #:registers (list RCX RDX)))]
               (environment pool
-                           [(x (reg <reg<32>> pool))
-                            (y (reg <reg<32>> pool))]
+                           [(x (reg <reg<16>> pool))
+                            (y (reg <reg<16>> pool))]
                            (MOV y 42))))
     "Get second register from pool")
-(ok (equal? (list (MOV ECX 42))
-            (let [(pool (make <pool> #:registers (list ECX EDX)))]
-              (environment pool [(x (reg <reg<32>> pool))] (MOV x 21))
-              (environment pool [(y (reg <reg<32>> pool))] (MOV y 42))))
+(ok (equal? (list (MOV CX 42))
+            (let [(pool (make <pool> #:registers (list RCX RDX)))]
+              (environment pool [(x (reg <reg<16>> pool))] (MOV x 21))
+              (environment pool [(y (reg <reg<16>> pool))] (MOV y 42))))
     "Reuse register from pool")
-(ok (equal? (list (MOV EDX 42))
-            (let [(pool (make <pool> #:registers (list ECX EDX)))]
+(ok (equal? (list (MOV RDX 42))
+            (let [(pool (make <pool> #:registers (list RCX RDX)))]
               (environment pool
                            [(x (reg <reg<32>> pool))]
                            (environment pool
-                                        [(y (reg <reg<32>> pool))]
+                                        [(y (reg <reg<64>> pool))]
                                         (MOV y 42)))))
     "Nested environments")
 (ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
-            (let [(pool (make <pool> #:registers (list EDX)))]
+            (let [(pool (make <pool> #:registers (list RDX)))]
               (environment pool
                            [(x (reg <reg<32>> pool))]
                            (environment pool
                                         [(y (reg <reg<32>> pool))]
                                         (MOV y 42)))))
     "Spilling a register")
-(ok (equal? (list (PUSH ECX) (PUSH EDX) (MOV ECX 21) (MOV EDX 42) (POP EDX) (POP ECX))
-            (let [(pool (make <pool> #:registers (list ECX EDX)))]
+(ok (equal? (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL))
+            (let [(pool (make <pool> #:registers (list RCX RDX)))]
               (environment pool
-                           [(u (reg <reg<32>> pool))
-                            (v (reg <reg<32>> pool))]
+                           [(u (reg <reg<8>> pool))
+                            (v (reg <reg<16>> pool))]
                            (environment pool
                                         [(x (reg <reg<32>> pool))
-                                         (y (reg <reg<32>> pool))]
+                                         (y (reg <reg<64>> pool))]
                                         (MOV x 21)
                                         (MOV y 42)))))
     "Spilling two registers")
