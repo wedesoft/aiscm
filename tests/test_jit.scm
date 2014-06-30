@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 276)
+(planned-tests 278)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -760,7 +760,11 @@
                                         (MOV y 42)))))
     "Spilling two registers")
 (ok (eq? EDX (reg <reg<32>> #x2))
-    "Instantiating registers by code")
+    "Instantiating registers by type and code")
+(ok (eq? EDX (reg 4 #x2))
+    "Instantiating registers by byte-size and code")
+(ok (eq? EDX (reg 4 RDX))
+    "Instantiating registers by byte-size and cardinal register")
 (ok (equal? (list (PUSH RBX) (MOV BX 42) (POP RBX))
             (let [(pool (make <pool> #:registers (list RBX)))]
               (environment pool
