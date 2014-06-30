@@ -140,14 +140,13 @@
 (each-hex (lambda (sym val) (toplevel-define! sym (reg <reg<64>> val)))
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
-(define (scale s) (index s '(1 2 4 8)))
+(define-method (scale (s <integer>)) (index s '(1 2 4 8)))
+(define-method (scale (t <meta<int<>>>)) (scale (storage-size t)))
 
 (define register-types (list <reg<8>> <reg<16>> <reg<32>> <reg<64>>))
-(define-method (reg (s <integer>)) (list-ref register-types (scale s)))
-(define-method (reg (t <meta<int<>>>)) (reg (storage-size t)))
-(define-method (reg (s <integer>) (code <integer>)) (reg (reg s) code))
-(define-method (reg (s <integer>) (cardinal <reg<>>)) (reg (reg s) (get-code cardinal)))
-(define-method (reg (t <meta<int<>>>) (cardinal <reg<>>)) (reg (reg t) (get-code cardinal)))
+(define-method (reg x) (list-ref register-types (scale x)))
+(define-method (reg x (code <integer>)) (reg (reg x) code))
+(define-method (reg x (cardinal <reg<>>)) (reg (reg x) (get-code cardinal)))
 
 (define-class <meta<ptr<>>> (<meta<operand>>))
 (define-class <ptr<>> (<operand>)
@@ -185,10 +184,7 @@
 (define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
 (define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))
 (define-method (ptr (t <meta<int<>>>)) (ptr (storage-size t)))
-(define-method (ptr (s <integer>) (reg <reg<64>>) . args)
-  (apply ptr (append (list (ptr s) reg) args)))
-(define-method (ptr (t <meta<int<>>>) (reg <reg<64>>) . args)
-  (apply ptr (append (list (ptr t) reg) args)))
+(define-method (ptr x (reg <reg<64>>) . args) (apply ptr (append (list (ptr x) reg) args)))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
