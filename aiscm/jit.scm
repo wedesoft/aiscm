@@ -343,8 +343,12 @@
 (define (SETLE  r/m) (SETcc #x9e r/m))
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
+(define default-codes
+  (map get-code (list RAX RCX RDX RSI RDI RBX RBP R10 R11 R9 R8 R12 R13 R14 R15)))
+(define callee-saved-codes
+  (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
 (define-class <pool> ()
-  (codes #:init-keyword #:codes #:getter get-codes)
+  (codes #:init-keyword #:codes #:init-default default-codes #:getter get-codes)
   (live #:init-value '() #:getter get-live #:setter set-live)
   (stack #:init-value '() #:getter get-stack #:setter set-stack))
 (define-method (initialize (self <pool>) initargs)
@@ -352,26 +356,21 @@
     (next-method self `(#:codes ,(map get-code registers)))))
 (define (get-free pool)
   (let [(live-codes (map get-code (get-live pool)))]
-    (filter (compose not (cut member <> live-codes)) (get-codes pool))))
-(define (clear-stack pool)
-  (let [(retval (get-stack pool))]
-    (set-stack pool '())
-    retval))
-(define (restore-stack pool stack)
-  (set-stack pool stack))
+    (find (compose not (cut member <> live-codes)) (get-codes pool))))
+(define (clear-stack pool) (let [(retval (get-stack pool))] (set-stack pool '()) retval))
+(define (push-stack pool reg) (set-stack pool (cons reg (get-stack pool))))
 (define (spill pool type)
   (let* [(target (last (get-live pool)))
          (retval (reg type (get-code target)))]
-    (set-stack pool (cons target (get-stack pool)))
+    (push-stack pool target)
     (set-live pool (cons retval (take (get-live pool) (1- (length (get-live pool))))))
     retval))
 (define (allocate pool type)
-  (let [(free (get-free pool))]
-    (if (null? free)
-      #f
-      (let [(retval (reg type (car free)))]
-        (set-live pool (cons retval (get-live pool)))
-        retval))))
+  (let* [(code (get-free pool))
+         (retval (if code (reg type code) #f))]
+    (if retval (set-live pool (cons retval (get-live pool))))
+    (if (member code callee-saved-codes) (push-stack pool (reg <reg<64>> code)))
+    retval))
 (define-method (reg (type <class>) (pool <pool>))
   (or (allocate pool type) (spill pool type)))
 (define-syntax-rule (environment pool vars . body)
@@ -381,5 +380,5 @@
          (pushes (map PUSH (reverse (get-stack pool))))
          (pops   (map POP (get-stack pool)))]
     (set-live pool live)
-    (restore-stack pool stack)
+    (set-stack pool stack)
     (flatten-n (append pushes block pops) 2)))

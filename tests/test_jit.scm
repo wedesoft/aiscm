@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 275)
+(planned-tests 276)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -761,4 +761,10 @@
     "Spilling two registers")
 (ok (eq? EDX (reg <reg<32>> #x2))
     "Instantiating registers by code")
+(ok (equal? (list (PUSH RBX) (MOV BX 42) (POP RBX))
+            (let [(pool (make <pool> #:registers (list RBX)))]
+              (environment pool
+                           [(x (reg <reg<16>> pool))]
+                           (MOV x 42))))
+    "Restore callee-saved registers")
 (format #t "~&")
