@@ -24,7 +24,7 @@
             <jcc>
             <pool>
             get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
-            byte-ptr word-ptr dword-ptr qword-ptr get-disp get-scale get-index
+            ptr get-disp get-scale get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -180,10 +180,10 @@
 (define-method (ptr (type <meta<ptr<>>>) (reg <reg<64>>) (index <reg<64>>) (scale <integer>) (disp <integer>))
   (make type #:reg reg #:index index #:scale scale #:disp disp))
 
-(define (byte-ptr  . args) (apply ptr (cons <ptr<8>>  args)))
-(define (word-ptr  . args) (apply ptr (cons <ptr<16>> args)))
-(define (dword-ptr . args) (apply ptr (cons <ptr<32>> args)))
-(define (qword-ptr . args) (apply ptr (cons <ptr<64>> args)))
+(define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
+(define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))
+(define-method (ptr (s <integer>) (reg <reg<64>>) . args)
+  (apply ptr (append (list (ptr s) reg) args)))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
