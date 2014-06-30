@@ -36,8 +36,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            *1 *2 *4 *8
-            reg)
+            scale reg)
   #:export-syntax (environment))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -141,16 +140,14 @@
 (each-hex (lambda (sym val) (toplevel-define! sym (reg <reg<64>> val)))
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
-(define *1 #b00)
-(define *2 #b01)
-(define *4 #b10)
-(define *8 #b11)
+(define scale-codes '((1 . #b00) (2 . #b01) (4 . #b10) (8 . #b11)))
+(define (scale s) (assq-ref scale-codes s))
 
 (define-class <meta<addr<>>> (<meta<operand>>))
 (define-class <addr<>> (<operand>)
               (reg #:init-keyword #:reg #:getter get-reg)
               (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
-              (scale #:init-keyword #:scale #:init-form *1 #:getter get-scale)
+              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale)
               (index #:init-keyword #:index #:init-form #f #:getter get-index)
               #:metaclass <meta<addr<>>>)
 
@@ -348,7 +345,7 @@
 (define callee-saved-codes
   (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
 (define-class <pool> ()
-  (codes #:init-keyword #:codes #:init-default default-codes #:getter get-codes)
+  (codes #:init-keyword #:codes #:init-value default-codes #:getter get-codes)
   (live #:init-value '() #:getter get-live #:setter set-live)
   (stack #:init-value '() #:getter get-stack #:setter set-stack))
 (define-method (initialize (self <pool>) initargs)
@@ -363,7 +360,7 @@
   (let* [(target (last (get-live pool)))
          (retval (reg type (get-code target)))]
     (push-stack pool target)
-    (set-live pool (cons retval (take (get-live pool) (1- (length (get-live pool))))))
+    (set-live pool (cons retval (reverse (cdr (reverse (get-live pool))))))
     retval))
 (define (allocate pool type)
   (let* [(code (get-free pool))
