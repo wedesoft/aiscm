@@ -89,12 +89,14 @@
 (define (JLE  target) (Jcc target #x7e))
 (define (JNLE target) (Jcc target #x7f))
 
-(define (asm ctx return_type commands . args)
+(define (asm ctx return-type commands . args)
   (let* [(offsets  (label-offsets commands))
          (resolved (resolve-jumps commands offsets))
          (code     (make-mmap (u8-list->bytevector (apply append resolved))))]
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
-    (pointer->procedure return_type (make-pointer (mmap-address code)) args)))
+    (pointer->procedure (foreign-type return-type)
+                        (make-pointer (mmap-address code))
+                        (map foreign-type args))))
 
 (define-class <meta<operand>> (<class>))
 (define-class <operand> () #:metaclass <meta<operand>>)

@@ -25,7 +25,7 @@
               (value #:init-keyword #:value #:getter get-value)
               #:metaclass <meta<element>>)
 (define-generic storage-size)
-(define-generic foreign-type)
+(define-method (foreign-type (t <class>)) void)
 (define-generic pack)
 (define-generic unpack)
 (define-method (equal? (a <element>) (b <element>))
