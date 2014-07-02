@@ -335,7 +335,7 @@
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
 (define default-codes
-  (map get-code (list RAX RCX RDX RSI RDI RBX RBP R10 R11 R9 R8 R12 R13 R14 R15)))
+  (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define callee-saved-codes (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
 (define args (map get-code (list RDI RSI RDX RCX R8 R9)))
 (define-class <pool> ()
