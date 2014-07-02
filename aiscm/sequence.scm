@@ -27,7 +27,7 @@
                                       #:name name)))]
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (size value)
-        (let* [(mem (make <mem> #:size (* (storage-size type) size)))
+        (let* [(mem (make <mem> #:size (* (size-of type) size)))
                (ptr (or value (make (pointer type) #:value mem)))]
           (next-method self `(#:value ,ptr #:size ,size)))))
     (define-method (typecode (self metaclass)) type)

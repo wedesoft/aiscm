@@ -32,7 +32,7 @@
     retval))
 (define-method (fetch (self <pointer<>>))
   (let [(t (target (class-of self)))]
-    (unpack t (read-bytes (get-value self) (storage-size t)))))
+    (unpack t (read-bytes (get-value self) (size-of t)))))
 (define-method (store (self <pointer<>>) (element <element>))
   (let [(converted (make (target (class-of self)) #:value (get-value element)))]
     (write-bytes (get-value self) (pack converted))
@@ -40,7 +40,7 @@
 (define-method (+ (self <pointer<>>) (offset <integer>))
   (make (class-of self)
         #:value (+ (get-value self)
-                   (* offset ((compose storage-size target class-of) self)))))
+                   (* offset ((compose size-of target class-of) self)))))
 (define-method (lookup (self <pointer<>>) (value <integer>) (stride <integer>))
   (+ self (* value stride)))
 (define-method (typecode (self <pointer<>>))

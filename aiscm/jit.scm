@@ -130,7 +130,7 @@
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
 (define-method (scale (s <integer>)) (index s '(1 2 4 8)))
-(define-method (scale (t <meta<int<>>>)) (scale (storage-size t)))
+(define-method (scale (t <meta<int<>>>)) (scale (size-of t)))
 
 (define register-types (list <reg<8>> <reg<16>> <reg<32>> <reg<64>>))
 (define-method (reg x) (list-ref register-types (scale x)))
@@ -172,7 +172,7 @@
 
 (define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
 (define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))
-(define-method (ptr (t <meta<int<>>>)) (ptr (storage-size t)))
+(define-method (ptr (t <meta<int<>>>)) (ptr (size-of t)))
 (define-method (ptr x (reg <reg<64>>) . args) (apply ptr (append (list (ptr x) reg) args)))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())

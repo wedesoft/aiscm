@@ -4,7 +4,7 @@
   #:export (<element>
             <meta<element>>
             get-value
-            storage-size
+            size-of
             foreign-type
             pack
             unpack
@@ -24,7 +24,7 @@
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
               #:metaclass <meta<element>>)
-(define-generic storage-size)
+(define-generic size-of)
 (define-method (foreign-type (t <class>)) void)
 (define-generic pack)
 (define-generic unpack)

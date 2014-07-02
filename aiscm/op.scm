@@ -16,7 +16,7 @@
                                       (JE 'ret)
                                       'loop
                                       (MOV (ptr t RDI) dx)
-                                      (ADD RDI (storage-size t))
+                                      (ADD RDI (size-of t))
                                       (CMP RDI RCX)
                                       (JNE 'loop)
                                       'ret
@@ -66,8 +66,8 @@
                                       (mova axr (ptr ta RSI))
                                       (ADD axr dx)
                                       (MOV (ptr tr RDI) axr)
-                                      (ADD RDI (storage-size tr))
-                                      (ADD RSI (storage-size ta))
+                                      (ADD RDI (size-of tr))
+                                      (ADD RSI (size-of ta))
                                       (CMP R8 RDI)
                                       (JNE 'loop)
                                       'ret
@@ -98,8 +98,8 @@
                                       (movb axr (ptr tb RDX))
                                       (ADD axr si)
                                       (MOV (ptr tr RDI) axr)
-                                      (ADD RDI (storage-size tr))
-                                      (ADD RDX (storage-size tb))
+                                      (ADD RDI (size-of tr))
+                                      (ADD RDX (size-of tb))
                                       (CMP R8 RDI)
                                       (JNE 'loop)
                                       'ret
@@ -134,9 +134,9 @@
                                           ((if (signed? tb) MOVSX MOVZX) bxr (ptr tb RDX))
                                           (ADD axr bxr)))
                                       (MOV (ptr tr RDI) axr)
-                                      (ADD RDI (storage-size tr))
-                                      (ADD RSI (storage-size ta))
-                                      (ADD RDX (storage-size tb))
+                                      (ADD RDI (size-of tr))
+                                      (ADD RSI (size-of ta))
+                                      (ADD RDX (size-of tb))
                                       (CMP R8 RDI)
                                       (JNE 'loop)
                                       'ret
@@ -175,8 +175,8 @@
                                       (MOV ax (ptr t RSI))
                                       (NEG ax)
                                       (MOV (ptr t RDI) ax)
-                                      (ADD RDI (storage-size t))
-                                      (ADD RSI (storage-size t))
+                                      (ADD RDI (size-of t))
+                                      (ADD RSI (size-of t))
                                       (CMP RCX RDI)
                                       (JNE 'loop)
                                       'ret

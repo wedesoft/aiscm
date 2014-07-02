@@ -19,7 +19,7 @@
     "get boolean value from bool-true")
 (ok (not (equal? bool-true bool-false))
     "unequal boolean objects")
-(ok (eqv? 1 (storage-size <bool>))
+(ok (eqv? 1 (size-of <bool>))
     "storage size of booleans")
 (ok (equal? #vu8(0) (pack bool-false))
     "pack 'false' value")

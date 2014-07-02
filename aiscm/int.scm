@@ -40,7 +40,7 @@
     (define-method (signed? (self metaclass)) (eq? sgn 'signed))
     retval))
 ; make metaclass #:dsupers #:slots #:name options
-(define-method (storage-size (self <meta<int<>>>))
+(define-method (size-of (self <meta<int<>>>))
   (quotient (+ (bits self) 7) 8))
 (define native-bits (* (sizeof '*) 8))
 (define <ubyte> (integer  8 unsigned))
@@ -75,7 +75,7 @@
   (u8-list->bytevector
     (int->u8-list
       (get-value self)
-      (storage-size (class-of self)))))
+      (size-of (class-of self)))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
   (let [(value (u8-list->int (bytevector->u8-list packed)))]
     (if (and (signed? self) (>= value (expt 2 (1- (bits self)))))

@@ -6,7 +6,7 @@
             <meta<bool>>))
 (define-class <meta<bool>> (<meta<element>>))
 (define-class <bool> (<element>) #:metaclass <meta<bool>>)
-(define-method (storage-size (self <meta<bool>>)) 1)
+(define-method (size-of (self <meta<bool>>)) 1)
 (define-method (pack (self <bool>))
   (u8-list->bytevector (list (if (get-value self) 1 0))))
 (define-method (unpack (self <meta<bool>>) (packed <bytevector>))
