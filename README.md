@@ -12,8 +12,8 @@ See [**AIscm homepage**][1] for documentation.
 
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
-* [Test Anything Protocol](https://en.wikipedia.org/wiki/Test\_Anything\_Protocol)
-* [GNU Texinfo](http://www.gnu.org/software/texinfo/manual/texinfo/)
+* [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
+* [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
 
 [1]: http://www.wedesoft.de/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"

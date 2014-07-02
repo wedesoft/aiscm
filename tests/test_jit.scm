@@ -715,48 +715,48 @@
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
 (ok (equal? (list (MOV CX 42))
             (let [(pool (make <pool> #:registers (list RCX RDX)))]
-              (environment pool
-                           [(x (reg <reg<16>> pool))]
-                           (MOV x 42))))
+              (env pool
+                   [(x (reg <reg<16>> pool))]
+                   (MOV x 42))))
     "Get first register from pool")
 (ok (equal? (list (MOV DX 42))
             (let [(pool (make <pool> #:registers (list RCX RDX)))]
-              (environment pool
-                           [(x (reg <reg<16>> pool))
-                            (y (reg <reg<16>> pool))]
-                           (MOV y 42))))
+              (env pool
+                   [(x (reg <reg<16>> pool))
+                    (y (reg <reg<16>> pool))]
+                   (MOV y 42))))
     "Get second register from pool")
 (ok (equal? (list (MOV CX 42))
             (let [(pool (make <pool> #:registers (list RCX RDX)))]
-              (environment pool [(x (reg <reg<16>> pool))] (MOV x 21))
-              (environment pool [(y (reg <reg<16>> pool))] (MOV y 42))))
+              (env pool [(x (reg <reg<16>> pool))] (MOV x 21))
+              (env pool [(y (reg <reg<16>> pool))] (MOV y 42))))
     "Reuse register from pool")
 (ok (equal? (list (MOV RDX 42))
             (let [(pool (make <pool> #:registers (list RCX RDX)))]
-              (environment pool
-                           [(x (reg <reg<32>> pool))]
-                           (environment pool
-                                        [(y (reg <reg<64>> pool))]
-                                        (MOV y 42)))))
+              (env pool
+                   [(x (reg <reg<32>> pool))]
+                   (env pool
+                        [(y (reg <reg<64>> pool))]
+                        (MOV y 42)))))
     "Nested environments")
 (ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
             (let [(pool (make <pool> #:registers (list RDX)))]
-              (environment pool
-                           [(x (reg <reg<32>> pool))]
-                           (environment pool
-                                        [(y (reg <reg<32>> pool))]
-                                        (MOV y 42)))))
+              (env pool
+                   [(x (reg <reg<32>> pool))]
+                   (env pool
+                        [(y (reg <reg<32>> pool))]
+                        (MOV y 42)))))
     "Spilling a register")
 (ok (equal? (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL))
             (let [(pool (make <pool> #:registers (list RCX RDX)))]
-              (environment pool
-                           [(u (reg <reg<8>> pool))
-                            (v (reg <reg<16>> pool))]
-                           (environment pool
-                                        [(x (reg <reg<32>> pool))
-                                         (y (reg <reg<64>> pool))]
-                                        (MOV x 21)
-                                        (MOV y 42)))))
+              (env pool
+                   [(u (reg <reg<8>> pool))
+                    (v (reg <reg<16>> pool))]
+                   (env pool
+                        [(x (reg <reg<32>> pool))
+                         (y (reg <reg<64>> pool))]
+                        (MOV x 21)
+                        (MOV y 42)))))
     "Spilling two registers")
 (ok (eq? EDX (reg <reg<32>> #x2))
     "Instantiating registers by type and code")
@@ -768,8 +768,8 @@
     "Instantiating registers by native type and cardinal register")
 (ok (equal? (list (PUSH RBX) (MOV BX 42) (POP RBX))
             (let [(pool (make <pool> #:registers (list RBX)))]
-              (environment pool
-                           [(x (reg <reg<16>> pool))]
-                           (MOV x 42))))
+              (env pool
+                   [(x (reg <reg<16>> pool))]
+                   (MOV x 42))))
     "Restore callee-saved registers")
 (format #t "~&")

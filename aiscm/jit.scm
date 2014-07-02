@@ -37,7 +37,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             scale reg)
-  #:export-syntax (environment))
+  #:export-syntax (env))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -377,7 +377,7 @@
     retval))
 (define-method (reg (type <class>) (pool <pool>))
   (or (allocate pool type) (spill pool type)))
-(define-syntax-rule (environment pool vars . body)
+(define-syntax-rule (env pool vars . body)
   (let* [(live   (get-live pool))
          (stack  (clear-stack pool))
          (block  (let vars (list . body)))

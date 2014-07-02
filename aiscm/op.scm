@@ -39,7 +39,9 @@
          (ax     (reg tr RAX))
          (di     (reg tr RDI))
          (si     (reg tr RSI))
-         (code   (asm ctx tr (list (MOV ax di) (ADD ax si) (RET)) ta tb))
+         (code   (asm ctx tr (list (MOV ax di)
+                                   (ADD ax si)
+                                   (RET)) ta tb))
          (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)

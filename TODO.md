@@ -1,3 +1,3 @@
 # TODO
 
-* method parameters for register pool
+* params for register pool
