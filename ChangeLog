@@ -1,5 +1,5 @@
 2014-07-02  Jan Wedekind <jan@wedesoft.de> 0.1.5
-  * aiscm/jit.scm: Added 'env' to support register allocation
+	* aiscm/jit.scm: Added 'env' to support register allocation
 	* aiscm/op.scm: Simpler integration of native methods
 
 2014-03-04  Jan Wedekind <jan@wedesoft.de> 0.1.4

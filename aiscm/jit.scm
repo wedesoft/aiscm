@@ -23,8 +23,8 @@
             <reg<64>>   <meta<reg<64>>>
             <jcc>
             <pool>
-            get-reg get-name asm label-offsets get-target resolve resolve-jumps len get-bits
-            ptr get-disp get-scale get-index
+            get-reg get-code get-name asm label-offsets get-target resolve
+            resolve-jumps len get-bits ptr get-disp get-scale get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -352,12 +352,9 @@
 (define callee-saved-codes
   (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
 (define-class <pool> ()
-  (codes #:init-keyword #:codes #:init-value default-codes #:getter get-codes)
+  (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes)
   (live #:init-value '() #:getter get-live #:setter set-live)
   (stack #:init-value '() #:getter get-stack #:setter set-stack))
-(define-method (initialize (self <pool>) initargs)
-  (let-keywords initargs #f (registers)
-    (next-method self `(#:codes ,(map get-code registers)))))
 (define (get-free pool)
   (let [(live-codes (map get-code (get-live pool)))]
     (find (compose not (cut member <> live-codes)) (get-codes pool))))
