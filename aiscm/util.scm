@@ -1,6 +1,6 @@
 (define-module (aiscm util)
   #:use-module (srfi srfi-26)
-  #:export (toplevel-define! index upto depth flatten-n)
+  #:export (toplevel-define! index all-but-last upto depth flatten-n)
   #:export-syntax (def-once))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -12,6 +12,7 @@
 (define (index a b)
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
+(define (all-but-last lst) (reverse (cdr (reverse lst))))
 (define (upto a b) (if (<= a b) (cons a (upto (1+ a) b)) '()))
 (define (depth val)
   (if (list? val) (1+ (apply max (map depth val))) 0))

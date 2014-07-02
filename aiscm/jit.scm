@@ -9,20 +9,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
-  #:export (<jit-context>
-            <operand>   <meta<operand>>
-            <ptr<>>     <meta<ptr<>>>
-            <ptr<8>>    <meta<ptr<8>>>
-            <ptr<16>>   <meta<ptr<16>>>
-            <ptr<32>>   <meta<ptr<32>>>
-            <ptr<64>>   <meta<ptr<64>>>
-            <reg<>>     <meta<reg<>>>
-            <reg<8>>    <meta<reg<8>>>
-            <reg<16>>   <meta<reg<16>>>
-            <reg<32>>   <meta<reg<32>>>
-            <reg<64>>   <meta<reg<64>>>
-            <jcc>
-            <pool>
+  #:export (<jit-context> <pool>
             get-reg get-code get-name asm label-offsets get-target resolve
             resolve-jumps len get-bits ptr get-disp get-scale get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
@@ -36,7 +23,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            scale reg)
+            scale reg arg)
   #:export-syntax (env))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -349,12 +336,13 @@
 
 (define default-codes
   (map get-code (list RAX RCX RDX RSI RDI RBX RBP R10 R11 R9 R8 R12 R13 R14 R15)))
-(define callee-saved-codes
-  (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
+(define callee-saved-codes (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
+(define args (map get-code (list RDI RSI RDX RCX R8 R9)))
 (define-class <pool> ()
   (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes)
   (live #:init-value '() #:getter get-live #:setter set-live)
-  (stack #:init-value '() #:getter get-stack #:setter set-stack))
+  (stack #:init-value '() #:getter get-stack #:setter set-stack)
+  (argc #:init-value 0 #:getter get-argc #:setter set-argc))
 (define (get-free pool)
   (let [(live-codes (map get-code (get-live pool)))]
     (find (compose not (cut member <> live-codes)) (get-codes pool))))
@@ -364,7 +352,7 @@
   (let* [(target (last (get-live pool)))
          (retval (reg type (get-code target)))]
     (push-stack pool target)
-    (set-live pool (cons retval (reverse (cdr (reverse (get-live pool))))))
+    (set-live pool (cons retval (all-but-last (get-live pool))))
     retval))
 (define (allocate pool type)
   (let* [(code (get-free pool))
@@ -374,6 +362,13 @@
     retval))
 (define-method (reg (type <class>) (pool <pool>))
   (or (allocate pool type) (spill pool type)))
+(define-method (arg (type <class>) (pool <pool>))
+  (let* [(n       (get-argc pool))
+         (is-reg? (< n 6))
+         (retval  (if is-reg? (reg type (list-ref args n)) (ptr type RSP (ash (- n 5) 3))))]
+    (if is-reg? (set-live pool (cons retval (get-live pool))))
+    (set-argc pool (1+ (get-argc pool)))
+    retval))
 (define-syntax-rule (env pool vars . body)
   (let* [(live   (get-live pool))
          (stack  (clear-stack pool))
