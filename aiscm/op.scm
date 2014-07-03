@@ -51,8 +51,7 @@
                             (r (reg tr pool))]
                            (MOV r a)
                            (ADD r b))
-                      ta
-                      tb))
+                      ta tb))
          (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
     (add-method! + (make <method>
                          #:specializers (list ta tb)
