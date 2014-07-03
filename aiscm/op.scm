@@ -20,14 +20,13 @@
                           (pend  (reg <long> pool))]
                          (LEA pend (ptr t pr n (scale t)))
                          (CMP pr pend)
-                         (JE 'ret)
+                         (JE 'return)
                          'loop
                          (MOV (ptr t pr) value)
                          (ADD pr (size-of t))
                          (CMP pr pend)
                          (JNE 'loop)
-                         'ret
-                         (RET))
+                         'return)
                     <long> <long> t))
          (proc (lambda (t n value)
                  (let* [(r  (make (sequence t) #:size n))
@@ -51,8 +50,7 @@
                             (b (arg tr pool))
                             (r (reg tr pool))]
                            (MOV r a)
-                           (ADD r b)
-                           (RET))
+                           (ADD r b))
                       ta
                       tb))
          (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
@@ -80,7 +78,7 @@
                           (pend (reg <long> pool))]
                          (LEA pend (ptr tr pr n (scale tr)))
                          (CMP pr pend)
-                         (JE 'ret)
+                         (JE 'return)
                          'loop
                          ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) a (ptr ta pa))
                          (ADD a b)
@@ -89,8 +87,7 @@
                          (ADD pa (size-of ta))
                          (CMP pend pr)
                          (JNE 'loop)
-                         'ret
-                         (RET))
+                         'return)
                     <long> <long> tb <long>))
          (proc (lambda (a b)
                  (let* [(n (get-size a))
@@ -119,7 +116,7 @@
                           (pend (reg <long> pool))]
                          (LEA pend (ptr tr pr n (scale tr)))
                          (CMP pr pend)
-                         (JE 'ret)
+                         (JE 'return)
                          'loop
                          ((if (eq? tb tr) MOV (if (signed? tb) MOVSX MOVZX)) b (ptr tb pb))
                          (ADD b a)
@@ -128,8 +125,7 @@
                          (ADD pb (size-of tb))
                          (CMP pend pr)
                          (JNE 'loop)
-                         'ret
-                         (RET))
+                         'return)
                     <long> ta <long> <long>))
          (proc (lambda (a b)
                  (let* [(n  (get-size b))
@@ -159,7 +155,7 @@
                           (pend (reg <long> pool))]
                          (LEA pend (ptr tr pr na (scale tr)))
                          (CMP pr pend)
-                         (JE 'ret)
+                         (JE 'return)
                          'loop
                          ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) a (ptr ta pa))
                          (if (eq? tb tr)
@@ -173,8 +169,7 @@
                          (ADD pb (size-of tb))
                          (CMP pend pr)
                          (JNE 'loop)
-                         'ret
-                         (RET))
+                         'return)
                     <long> <long> <long> <long>))
          (proc (lambda (a b)
                  (let* [(na (get-size a))
@@ -199,8 +194,7 @@
                          [(a (arg t pool))
                           (r (reg t pool))]
                          (MOV r a)
-                         (NEG r)
-                         (RET))
+                         (NEG r))
                     t))
          (proc (lambda (a) (make t #:value (code (get-value a)))))]
     (add-method! - (make <method>
@@ -220,7 +214,7 @@
                           (pend (reg <long> pool))]
                          (LEA pend (ptr t pr n (scale t)))
                          (CMP pr pend)
-                         (JE 'ret)
+                         (JE 'return)
                          'loop
                          (MOV a (ptr t pa))
                          (NEG a)
@@ -229,8 +223,7 @@
                          (ADD pa (size-of t))
                          (CMP pend pr)
                          (JNE 'loop)
-                         'ret
-                         (RET))
+                         'return)
                     <long> <long> <long>))
          (proc (lambda (a)
                  (let* [(n  (get-size a))
@@ -255,8 +248,7 @@
                           (b (arg tr pool))
                           (r (reg tr pool))]
                          (MOV r a)
-                         (SUB r b)
-                         (RET))
+                         (SUB r b))
                     ta tb))
          (proc (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
     (add-method! - (make <method>
