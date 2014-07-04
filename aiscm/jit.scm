@@ -151,8 +151,7 @@
   (make (ptr type) #:reg reg #:index index #:scale (scale (size-of type)) #:disp disp))
 
 (define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
-(define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))
-(define-method (ptr (t <meta<int<>>>)) (ptr (size-of t)))
+(define-method (ptr (t <meta<int<>>>)) (list-ref pointer-types (scale (size-of t))))
 (define-method (ptr x (reg <reg>) . args) (apply ptr (append (list (ptr x) reg) args)))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
