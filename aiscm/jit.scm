@@ -98,27 +98,22 @@
 (define (each-hex proc arg) (for-each proc arg hex))
 (define (reg-list bits) (map (cut make <reg> #:bits bits #:code <>) hex))
 (define regs (map (compose reg-list (cut * <> 8)) register-sizes)); TODO: use bytes instead of bits
-(define-method (reg (bytes <integer>) (code <integer>))
-  (list-ref (list-ref regs (index bytes register-sizes)) code))
+(define-method (reg (type <meta<int<>>>) (code <integer>))
+  (list-ref (list-ref regs (index (size-of type) register-sizes)) code))
 
-(each-hex (lambda (sym val) (toplevel-define! sym (reg 1 val)))
+(each-hex (lambda (sym val) (toplevel-define! sym (reg <byte> val)))
           '(AL CL DL BL SPL BPL SIL DIL R8L R9L R10L R11L R12L R13L R14L R15L))
 
-(each-hex (lambda (sym val) (toplevel-define! sym (reg 2 val)))
+(each-hex (lambda (sym val) (toplevel-define! sym (reg <sint> val)))
           '(AX CX DX BX SP BP SI DI R8W R9W R10W R11W R12W R13W R14W R15W))
 
-(each-hex (lambda (sym val) (toplevel-define! sym (reg 4 val)))
+(each-hex (lambda (sym val) (toplevel-define! sym (reg <int> val)))
           '(EAX ECX EDX EBX ESP EBP ESI EDI R8D R9D R10D R11D R12D R13D R14D R15D))
 
-(each-hex (lambda (sym val) (toplevel-define! sym (reg 8 val)))
+(each-hex (lambda (sym val) (toplevel-define! sym (reg <long> val)))
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
 (define (scale s) (index s register-sizes))
-
-(define-method (reg (x <integer>)) x)
-(define-method (reg (x <meta<int<>>>)) (size-of x))
-(define-method (reg x (code <integer>)) (reg (reg x) code))
-(define-method (reg x (cardinal <reg>)) (reg (reg x) (get-code cardinal)))
 
 (define-class <meta<ptr<>>> (<meta<operand>>))
 (define-class <ptr<>> (<operand>)
@@ -343,11 +338,11 @@
   (let* [(code (get-free pool))
          (retval (if code (reg type code) #f))]
     (if retval (set-live pool (cons retval (get-live pool))))
-    (if (member code callee-saved-codes) (push-stack pool (reg 8 code)))
+    (if (member code callee-saved-codes) (push-stack pool (reg <long> code)))
     retval))
-(define-method (reg (type <class>) (pool <pool>))
+(define-method (reg (type <meta<int<>>>) (pool <pool>))
   (or (allocate pool type) (spill pool type)))
-(define-method (arg (type <class>) (pool <pool>))
+(define-method (arg (type <meta<int<>>>) (pool <pool>))
   (let* [(n       (get-argc pool))
          (is-reg? (< n 6))
          (retval  (if is-reg? (reg type (list-ref args n)) (ptr type RSP (ash (- n 5) 3))))]
