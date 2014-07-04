@@ -97,7 +97,7 @@
 (define register-sizes '(1 2 4 8))
 (define (each-hex proc arg) (for-each proc arg hex))
 (define (reg-list bits) (map (cut make <reg> #:bits bits #:code <>) hex))
-(define regs (map (compose reg-list (cut * <> 8)) register-sizes))
+(define regs (map (compose reg-list (cut * <> 8)) register-sizes)); TODO: use bytes instead of bits
 (define-method (reg (bytes <integer>) (code <integer>))
   (list-ref (list-ref regs (index bytes register-sizes)) code))
 
@@ -123,9 +123,9 @@
 (define-class <meta<ptr<>>> (<meta<operand>>))
 (define-class <ptr<>> (<operand>)
               (reg #:init-keyword #:reg #:getter get-reg)
-              (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
-              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale); TODO: remove this
-              (index #:init-keyword #:index #:init-form #f #:getter get-index)
+              (disp #:init-keyword #:disp #:init-value #f #:getter get-disp)
+              (scale #:init-keyword #:scale #:init-value #f #:getter get-scale); TODO: remove this
+              (index #:init-keyword #:index #:init-value #f #:getter get-index)
               #:metaclass <meta<ptr<>>>)
 
 (define-class <meta<ptr<8>>> (<meta<ptr<>>>))
