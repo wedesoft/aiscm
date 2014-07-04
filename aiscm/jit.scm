@@ -23,7 +23,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            scale reg arg)
+            reg arg)
   #:export-syntax (env))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -113,8 +113,7 @@
 (each-hex (lambda (sym val) (toplevel-define! sym (reg 8 val)))
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
-(define-method (scale (s <integer>)) (index s register-sizes))
-(define-method (scale (t <meta<int<>>>)) (scale (size-of t)))
+(define (scale s) (index s register-sizes))
 
 (define-method (reg (x <integer>)) x)
 (define-method (reg (x <meta<int<>>>)) (size-of x))
@@ -152,9 +151,9 @@
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (disp <integer>))
   (make (ptr type) #:reg reg #:disp disp))
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>))
-  (make (ptr type) #:reg reg #:index index #:scale (scale type)))
+  (make (ptr type) #:reg reg #:index index #:scale (scale (size-of type))))
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>) (disp <integer>))
-  (make (ptr type) #:reg reg #:index index #:scale (scale type) #:disp disp))
+  (make (ptr type) #:reg reg #:index index #:scale (scale (size-of type)) #:disp disp))
 
 (define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
 (define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))
