@@ -125,7 +125,7 @@
 (define-class <ptr<>> (<operand>)
               (reg #:init-keyword #:reg #:getter get-reg)
               (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
-              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale); TODO: infer from type
+              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale); TODO: remove this
               (index #:init-keyword #:index #:init-form #f #:getter get-index)
               #:metaclass <meta<ptr<>>>)
 
@@ -147,14 +147,14 @@
 
 (define-method (get-bits (self <ptr<>>)) (get-bits (class-of self))); TODO: remove this
 
-(define-method (ptr (type <meta<ptr<>>>) (reg <reg>))
-  (make type #:reg reg))
-(define-method (ptr (type <meta<ptr<>>>) (reg <reg>) (disp <integer>))
-  (make type #:reg reg #:disp disp))
-(define-method (ptr (type <meta<ptr<>>>) (reg <reg>) (index <reg>) (scale <integer>))
-  (make type #:reg reg #:index index #:scale scale))
-(define-method (ptr (type <meta<ptr<>>>) (reg <reg>) (index <reg>) (scale <integer>) (disp <integer>))
-  (make type #:reg reg #:index index #:scale scale #:disp disp))
+(define-method (ptr (type <meta<int<>>>) (reg <reg>))
+  (make (ptr type) #:reg reg))
+(define-method (ptr (type <meta<int<>>>) (reg <reg>) (disp <integer>))
+  (make (ptr type) #:reg reg #:disp disp))
+(define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>))
+  (make (ptr type) #:reg reg #:index index #:scale (scale type)))
+(define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>) (disp <integer>))
+  (make (ptr type) #:reg reg #:index index #:scale (scale type) #:disp disp))
 
 (define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
 (define-method (ptr (s <integer>)) (list-ref pointer-types (scale s)))

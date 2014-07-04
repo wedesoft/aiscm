@@ -18,7 +18,7 @@
                           (n     (arg <long> pool))
                           (value (arg t pool))
                           (pend  (reg <long> pool))]
-                         (LEA pend (ptr t pr n (scale t)))
+                         (LEA pend (ptr t pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
@@ -75,7 +75,7 @@
                           (n    (arg <long> pool))
                           (a    (reg tr pool))
                           (pend (reg <long> pool))]
-                         (LEA pend (ptr tr pr n (scale tr)))
+                         (LEA pend (ptr tr pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
@@ -113,7 +113,7 @@
                           (n    (arg <long> pool))
                           (b    (reg tr pool))
                           (pend (reg <long> pool))]
-                         (LEA pend (ptr tr pr n (scale tr)))
+                         (LEA pend (ptr tr pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
@@ -152,7 +152,7 @@
                           (a    (reg tr pool))
                           (b    (reg tr pool))
                           (pend (reg <long> pool))]
-                         (LEA pend (ptr tr pr na (scale tr)))
+                         (LEA pend (ptr tr pr na))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
@@ -211,7 +211,7 @@
                           (n    (arg <long> pool))
                           (a    (reg t pool))
                           (pend (reg <long> pool))]
-                         (LEA pend (ptr t pr n (scale t)))
+                         (LEA pend (ptr t pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
