@@ -10,8 +10,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:export (<jit-context> <pool>
-            get-reg get-code get-name asm label-offsets get-target resolve
-            resolve-jumps len get-bits ptr get-disp get-scale get-index
+            get-type get-reg get-code get-name asm label-offsets get-target resolve
+            resolve-jumps len get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -86,8 +86,7 @@
                         (make-pointer (mmap-address code))
                         (map foreign-type args))))
 
-(define-class <meta<operand>> (<class>))
-(define-class <operand> () #:metaclass <meta<operand>>)
+(define-class <operand> ())
 
 (define-class <reg> (<operand>)
   (bits #:init-keyword #:bits #:getter get-bits)
@@ -115,44 +114,22 @@
 
 (define (scale s) (index s register-sizes))
 
-(define-class <meta<ptr<>>> (<meta<operand>>))
-(define-class <ptr<>> (<operand>)
-              (reg #:init-keyword #:reg #:getter get-reg)
-              (disp #:init-keyword #:disp #:init-value #f #:getter get-disp)
-              (scale #:init-keyword #:scale #:init-value #f #:getter get-scale); TODO: remove this
-              (index #:init-keyword #:index #:init-value #f #:getter get-index)
-              #:metaclass <meta<ptr<>>>)
+(define-class <ptr> (<operand>)
+  (type #:init-keyword #:type #:getter get-type)
+  (reg #:init-keyword #:reg #:getter get-reg)
+  (disp #:init-keyword #:disp #:init-value #f #:getter get-disp)
+  (index #:init-keyword #:index #:init-value #f #:getter get-index))
 
-(define-class <meta<ptr<8>>> (<meta<ptr<>>>))
-(define-method (get-bits (self <meta<ptr<8>>>)) 8)
-(define-class <ptr<8>> (<ptr<>>) #:metaclass <meta<ptr<8>>>)
-
-(define-class <meta<ptr<16>>> (<meta<ptr<>>>))
-(define-method (get-bits (self <meta<ptr<16>>>)) 16)
-(define-class <ptr<16>> (<ptr<>>) #:metaclass <meta<ptr<16>>>)
-
-(define-class <meta<ptr<32>>> (<meta<ptr<>>>))
-(define-method (get-bits (self <meta<ptr<32>>>)) 32)
-(define-class <ptr<32>> (<ptr<>>) #:metaclass <meta<ptr<32>>>)
-
-(define-class <meta<ptr<64>>> (<meta<ptr<>>>))
-(define-method (get-bits (self <meta<ptr<64>>>)) 64)
-(define-class <ptr<64>> (<ptr<>>) #:metaclass <meta<ptr<64>>>)
-
-(define-method (get-bits (self <ptr<>>)) (get-bits (class-of self))); TODO: remove this
+(define-method (get-bits (self <ptr>)) (* 8 (size-of (get-type self))))
 
 (define-method (ptr (type <meta<int<>>>) (reg <reg>))
-  (make (ptr type) #:reg reg))
+  (make <ptr> #:type type #:reg reg))
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (disp <integer>))
-  (make (ptr type) #:reg reg #:disp disp))
+  (make <ptr> #:type type #:reg reg #:disp disp))
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>))
-  (make (ptr type) #:reg reg #:index index #:scale (scale (size-of type))))
+  (make <ptr> #:type type #:reg reg #:index index))
 (define-method (ptr (type <meta<int<>>>) (reg <reg>) (index <reg>) (disp <integer>))
-  (make (ptr type) #:reg reg #:index index #:scale (scale (size-of type)) #:disp disp))
-
-(define pointer-types (list <ptr<8>> <ptr<16>> <ptr<32>> <ptr<64>>))
-(define-method (ptr (t <meta<int<>>>)) (list-ref pointer-types (scale (size-of t))))
-(define-method (ptr x (reg <reg>) . args) (apply ptr (append (list (ptr x) reg) args)))
+  (make <ptr> #:type type #:reg reg #:index index #:disp disp))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
@@ -162,7 +139,7 @@
 
 (define-method (bits3 (x <integer>)) (logand x #b111))
 (define-method (bits3 (x <reg>)) (bits3 (get-code x)))
-(define-method (bits3 (x <ptr<>>)) (bits3 (get-reg x)))
+(define-method (bits3 (x <ptr>)) (bits3 (get-reg x)))
 
 (define-method (get-reg (x <reg>)) #f)
 (define-method (get-index (x <reg>)) #f)
@@ -171,7 +148,7 @@
 (define-method (bit4 (x <boolean>)) 0)
 (define-method (bit4 (x <integer>)) (logand x #b1))
 (define-method (bit4 (x <reg>)) (bit4 (ash (get-code x) -3)))
-(define-method (bit4 (x <ptr<>>)) (bit4 (get-reg x)))
+(define-method (bit4 (x <ptr>)) (bit4 (get-reg x)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (eqv? (get-bits reg) 8) a b)))
@@ -185,13 +162,13 @@
 (define-method (mod (r/m <boolean>)) #b00)
 (define-method (mod (r/m <integer>)) (if (disp8? r/m) #b01 #b10))
 (define-method (mod (r/m <reg>)) #b11)
-(define-method (mod (r/m <ptr<>>)) (mod (get-disp r/m)))
+(define-method (mod (r/m <ptr>)) (mod (get-disp r/m)))
 
 (define-method (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
 (define-method (ModR/M reg/opcode (r/m <reg>))
   (ModR/M (mod r/m) reg/opcode r/m))
-(define-method (ModR/M reg/opcode (r/m <ptr<>>))
+(define-method (ModR/M reg/opcode (r/m <ptr>))
   (if (get-index r/m)
     (ModR/M (mod r/m) reg/opcode #b100)
     (ModR/M (mod r/m) reg/opcode (get-reg r/m))))
@@ -207,7 +184,7 @@
 
 (define (SIB r/m)
   (if (get-index r/m)
-    (list (logior (ash (get-scale r/m) 6)
+    (list (logior (ash (scale (size-of (get-type r/m))) 6)
                   (ash (bits3 (get-index r/m)) 3)
                   (bits3 (get-reg r/m))))
     (if (equal? (get-reg r/m) RSP)
@@ -225,11 +202,11 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (MOV (m <ptr<>>) (r <reg>))
+(define-method (MOV (m <ptr>) (r <reg>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <reg>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
-(define-method (MOV (m <ptr<>>) imm)
+(define-method (MOV (m <ptr>) imm)
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
 (define-method (MOV (r <reg>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
@@ -247,7 +224,7 @@
                        ((eqv? bits 16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
-(define-method (LEA (r <reg>) (m <ptr<>>))
+(define-method (LEA (r <reg>) (m <ptr>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
 (define-method (SHL (r/m <operand>))
@@ -259,7 +236,7 @@
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
 
-(define-method (ADD (m <ptr<>>) (r <reg>))
+(define-method (ADD (m <ptr>) (r <reg>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
 (define-method (ADD (r <reg>) imm)
   (if (equal? (get-code r) 0)
@@ -278,7 +255,7 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
-(define-method (SUB (m <ptr<>>) (r <reg>))
+(define-method (SUB (m <ptr>) (r <reg>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
 (define-method (SUB (r <reg>) imm)
   (if (equal? (get-code r) 0)
@@ -289,7 +266,7 @@
 (define-method (SUB (r <reg>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
-(define-method (CMP (m <ptr<>>) (r <reg>))
+(define-method (CMP (m <ptr>) (r <reg>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
 (define-method (CMP (r <reg>) (imm <integer>))
   (if (equal? (get-code r) 0)
