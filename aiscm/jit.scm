@@ -125,7 +125,7 @@
 (define-class <ptr<>> (<operand>)
               (reg #:init-keyword #:reg #:getter get-reg)
               (disp #:init-keyword #:disp #:init-form #f #:getter get-disp)
-              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale)
+              (scale #:init-keyword #:scale #:init-form (scale 1) #:getter get-scale); TODO: infer from type
               (index #:init-keyword #:index #:init-form #f #:getter get-index)
               #:metaclass <meta<ptr<>>>)
 
