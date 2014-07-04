@@ -113,10 +113,11 @@
 (each-hex (lambda (sym val) (toplevel-define! sym (reg 8 val)))
           '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
 
-(define-method (scale (s <integer>)) (index s '(1 2 4 8)))
+(define-method (scale (s <integer>)) (index s register-sizes))
 (define-method (scale (t <meta<int<>>>)) (scale (size-of t)))
 
-(define-method (reg x) (list-ref register-sizes (scale x)))
+(define-method (reg (x <integer>)) x)
+(define-method (reg (x <meta<int<>>>)) (size-of x))
 (define-method (reg x (code <integer>)) (reg (reg x) code))
 (define-method (reg x (cardinal <reg>)) (reg (reg x) (get-code cardinal)))
 
