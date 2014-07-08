@@ -35,7 +35,7 @@
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (shape size value)
         (let* [(n   (or size (apply * shape)))
-               (mem (make <mem> #:size (* (size-of type) n)))
+               (mem (make <mem> #:size (* (size-of (typecode type)) n)))
                (val (or value (make (pointer type) #:value mem)))]
           (next-method self `(#:value ,val #:shape ,(or shape (list size)))))))
     (define-method (element-type (self metaclass)) type)
@@ -57,7 +57,7 @@
 (define-method (get (self <sequence<>>) (i <integer>))
   (get-value (fetch (+ (get-value self) i))))
 (define-method (slice (self <sequence<>>) (offset <integer>) (size <integer>))
-  (make (class-of self) #:value (+ (get-value self) offset) #:size size))
+  (make (class-of self) #:value (+ (get-value self) offset) #:shape (cons size (cdr (shape self)))))
 (define (sequence->list seq)
   (if (> (count seq) 0)
     (cons (get seq 0) (sequence->list (slice seq 1 (- (count seq) 1)))) '()))
