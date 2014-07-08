@@ -89,7 +89,7 @@
                          'return)
                     <long> <long> tb <long>))
          (proc (lambda (a b)
-                 (let* [(n (get-size a))
+                 (let* [(n (size a))
                         (r (make (sequence tr) #:size n))
                         (pr ((compose pointer-address get-memory get-value get-value) r))
                         (pa ((compose pointer-address get-memory get-value get-value) a))]
@@ -127,7 +127,7 @@
                          'return)
                     <long> ta <long> <long>))
          (proc (lambda (a b)
-                 (let* [(n  (get-size b))
+                 (let* [(n  (size b))
                         (r  (make (sequence tr) #:size n))
                         (pr ((compose pointer-address get-memory get-value get-value) r))
                         (pb ((compose pointer-address get-memory get-value get-value) b))]
@@ -171,8 +171,8 @@
                          'return)
                     <long> <long> <long> <long>))
          (proc (lambda (a b)
-                 (let* [(na (get-size a))
-                        (nb (get-size b))
+                 (let* [(na (size a))
+                        (nb (size b))
                         (r  (make (sequence tr) #:size na))
                         (pr ((compose pointer-address get-memory get-value get-value) r))
                         (pa ((compose pointer-address get-memory get-value get-value) a))
@@ -225,7 +225,7 @@
                          'return)
                     <long> <long> <long>))
          (proc (lambda (a)
-                 (let* [(n  (get-size a))
+                 (let* [(n  (size a))
                         (r  (make (sequence t) #:size n))
                         (pr ((compose pointer-address get-memory get-value get-value) r))
                         (pa ((compose pointer-address get-memory get-value get-value) a))]

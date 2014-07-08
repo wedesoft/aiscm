@@ -29,7 +29,7 @@
 (define-method (equal? (a <element>) (b <element>))
   (equal? (get-value a) (get-value b)))
 (define-method (size (self <element>)) 1)
-(define-method (shape (self <element>)) '())
+(define-method (shape self) '())
 (define-method (dimension (self <meta<element>>)) 0)
 (define-method (dimension (self <element>)) (dimension (class-of self)))
 (define-method (typecode (self <meta<element>>)) self)
