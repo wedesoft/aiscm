@@ -10,17 +10,21 @@
   #:export (<meta<sequence<>>> <sequence<>>
             sequence
             multiarray
+            strides
             sequence->list
             list->sequence))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
               (shape #:init-keyword #:shape #:getter shape)
+              (strides #:init-keyword #:strides #:getter strides)
               #:metaclass <meta<sequence<>>>)
 (define-method (sequence-name (type <meta<element>>))
   (format #f "<sequence~a>" (class-name type)))
 (define-method (sequence-name (type <meta<sequence<>>>))
   (format #f "<multiarray~a,~a>" (class-name (typecode type)) (1+ (dimension type))))
+(define (default-strides shape)
+  (map (compose (cut apply * <>) (cut take shape <>)) (upto 0 (1- (length shape)))))
 (define (sequence type)
   (let* [(name      (sequence-name type))
          (metaname  (format #f "<meta~a>" name))
@@ -36,8 +40,10 @@
       (let-keywords initargs #f (shape size value)
         (let* [(n   (or size (apply * shape)))
                (mem (make <mem> #:size (* (size-of (typecode type)) n)))
-               (val (or value (make (pointer type) #:value mem)))]
-          (next-method self `(#:value ,val #:shape ,(or shape (list size)))))))
+               (val (or value (make (pointer type) #:value mem)))
+               (shp (or shape (list size)))
+               (str (default-strides shp))]
+          (next-method self `(#:value ,val #:shape ,shp #:strides ,str)))))
     (define-method (element-type (self metaclass)) type)
     (define-method (dimension (self metaclass)) (1+ (dimension type)))
     (define-method (typecode (self metaclass)) (typecode type))
