@@ -12,6 +12,7 @@
             typecode
             size
             shape
+            dimension
             lookup
             shift
             slice
@@ -33,6 +34,9 @@
 (define-method (subst (self <element>) alist) self)
 (define-method (size (self <element>)) 1)
 (define-method (shape (self <element>)) '())
+(define-method (dimension (self <meta<element>>)) 0)
+(define-method (dimension (self <element>)) (dimension (class-of self)))
+(define-method (typecode (self <meta<element>>)) self)
 (define-method (typecode (self <element>)) (typecode (class-of self)))
 (define-generic lookup)
 (define-generic shift)

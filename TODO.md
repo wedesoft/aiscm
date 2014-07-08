@@ -1,3 +1,4 @@
 # TODO
 
-* multi-dimensional arrays
+* multi-dimensional +
+* load image using ImageMagick

@@ -14,23 +14,28 @@
 (define-class <sequence<>> (<element>)
               (size #:init-keyword #:size #:getter get-size)
               #:metaclass <meta<sequence<>>>)
+(define-method (sequence-name (type <meta<element>>))
+  (format #f "<sequence~a>" (class-name type)))
+(define-method (sequence-name (type <meta<sequence<>>>))
+  (format #f "<multiarray~a,~a>" (class-name (typecode type)) (1+ (dimension type))))
 (define (sequence type)
-  (let* [(name (format #f "<sequence~a>" (class-name type)))
-         (metaname (format #f "<meta~a>" name))
+  (let* [(name      (sequence-name type))
+         (metaname  (format #f "<meta~a>" name))
          (metaclass (def-once metaname (make <class>
                                              #:dsupers (list <meta<sequence<>>>)
                                              #:slots '()
                                              #:name metaname)))
-         (retval (def-once name (make metaclass
-                                      #:dsupers (list <sequence<>>)
-                                      #:slots '()
-                                      #:name name)))]
+         (retval    (def-once name (make metaclass
+                                         #:dsupers (list <sequence<>>)
+                                         #:slots '()
+                                         #:name name)))]
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (size value)
         (let* [(mem (make <mem> #:size (* (size-of type) size)))
                (ptr (or value (make (pointer type) #:value mem)))]
           (next-method self `(#:value ,ptr #:size ,size)))))
-    (define-method (typecode (self metaclass)) type)
+    (define-method (dimension (self metaclass)) (1+ (dimension type)))
+    (define-method (typecode (self metaclass)) (typecode type))
     retval))
 (define-method (shape (self <sequence<>>)) (list (get-size self)))
 (define-method (set (self <sequence<>>) (i <integer>) o)
