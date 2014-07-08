@@ -2,8 +2,7 @@ SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
 site_SCRIPTS = mem.scm element.scm bool.scm int.scm pointer.scm \
-							 var.scm lookup.scm lambda.scm sequence.scm \
-							 op.scm jit.scm compile.scm util.scm
+							 sequence.scm op.scm jit.scm compile.scm util.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-mem.la libguile-jit.la

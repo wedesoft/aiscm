@@ -1,6 +1,5 @@
 (use-modules (aiscm sequence)
              (aiscm element)
-             (aiscm lambda)
              (aiscm int)
              (oop goops)
              (guile-tap))

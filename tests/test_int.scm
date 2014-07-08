@@ -3,7 +3,7 @@
              (aiscm element)
              (aiscm int)
              (guile-tap))
-(planned-tests 60)
+(planned-tests 59)
 (ok (equal? (integer 32 signed) (integer 32 signed))
     "equality of classes")
 (ok (equal? <int> (integer 32 signed))
@@ -64,8 +64,6 @@
 (ok (eqv? -2147483648
           (get-value (unpack <int> (pack (make <int> #:value -2147483648)))))
     "pack and unpack signed integer with negative number")
-(ok (equal? (make <byte> #:value 123) (subst (make <byte> #:value 123) '()))
-    "ignores substitutions")
 (ok (eqv? 1 (size (make <int> #:value 123)))
     "querying element size of integer")
 (ok (null? (shape (make <int> #:value 123)))
