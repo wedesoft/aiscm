@@ -1,6 +1,6 @@
 (define-module (aiscm util)
   #:use-module (srfi srfi-26)
-  #:export (toplevel-define! index all-but-last upto depth flatten-n)
+  #:export (toplevel-define! index all-but-last upto depth flatten-n flatten)
   #:export-syntax (def-once))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -22,3 +22,4 @@
       (flatten-n (append (car val) (cdr val)) n)
       (cons (car val) (flatten-n (cdr val) n)))
     val))
+(define (flatten val) (flatten-n val 1))

@@ -7,7 +7,7 @@
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
 (set s1 0 2) (set s1 1 3) (set s1 2 5)
-(planned-tests 29)
+(planned-tests 35)
 (ok (equal? <sint> (typecode (sequence <sint>)))
     "Query element type of sequence class")
 (ok (equal? (sequence <sint>) (sequence <sint>))
@@ -68,7 +68,18 @@
     "Query shape of multi-dimensional array")
 (ok (equal? '(1 2 3) (multiarray->list (get (list->multiarray '(1 2 3)))))
     "'get' without additional arguments should return the sequence itself")
-; TODO: test getting subarray
-; TODO: test conversion of nested lists
-; TODO: test setting subarrays
+(ok (equal? '((1 2 3) (4 5 6)) (multiarray->list (list->multiarray '((1 2 3) (4 5 6)))))
+    "Content of converted 2D array")
+(ok (equal? '(4 5 6) (multiarray->list (get (list->multiarray '((1 2 3) (4 5 6))) 1)))
+    "Getting row of 2D array")
+(ok (equal? 2 (get (list->multiarray '((1 2 3) (4 5 6))) 1 0))
+    "Getting element of 2D array with one call to 'get'")
+(ok (equal? 2 (get (get (list->multiarray '((1 2 3) (4 5 6))) 0) 1))
+    "Getting element of 2D array with two calls to 'get'")
+(ok (equal? 42 (let [(m (list->multiarray '((1 2 3) (4 5 6))))] (set m 1 0 42) (get m 1 0)))
+    "Setting an element in a 2D array")
+(ok (equal? '((1 2) (5 6)) (let [(m (list->multiarray '((1 2) (3 4))))]
+                             (set m 1 '(5 6))
+                             (multiarray->list m)))
+    "Setting a row in a 2D array")
 (format #t "~&")

@@ -65,9 +65,11 @@
 (define-method (fetch (self <sequence<>>)) self)
 (define-method (get (self <sequence<>>) . args)
   (if (null? args) self (apply get (cons (fetch (element self (last args))) (all-but-last args)))))
-(define-method (set (self <sequence<>>) (i <integer>) value)
-  (store (element self i) value))
-(define-method (set (self <sequence<>>) value) (store self value))
+(define-method (set (self <sequence<>>) . args)
+  (store (fold-right (lambda (offset self) (element self offset))
+                     self
+                     (all-but-last args))
+         (last args)))
 (define-method (store (self <sequence<>>) value)
   (for-each (lambda (i) (store (element self i) value))
             (upto 0 (1- (last (shape self)))))
@@ -83,8 +85,9 @@
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (append (shape (car self)) (list (length self))))
 (define (list->multiarray lst)
-  (let* [(t      (reduce coerce '() (map match lst)))
-         (retval (make (sequence t) #:size (length lst)))]
+  (let* [(t      (reduce coerce #f (map match (flatten lst))))
+         (shp    (shape lst))
+         (retval (make (multiarray t (length shp)) #:shape shp))]
     (store retval lst)
     retval))
 (define-method (write (self <sequence<>>) port)
