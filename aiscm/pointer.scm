@@ -15,7 +15,7 @@
 (define-class <meta<pointer<>>> (<meta<element>>))
 (define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
 (define-generic target)
-(define (pointer targetclass)
+(define-method (pointer targetclass)
   (let* [(name (format #f "<pointer~a>" (class-name targetclass)))
          (metaname (format #f "<meta~a>" name))
          (metaclass (def-once metaname

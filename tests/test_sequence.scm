@@ -70,6 +70,6 @@
     "Shape of nested list")
 (ok (equal? '(5 4 3) (shape (make (multiarray <int> 3) #:shape '(5 4 3))))
     "Query shape of multi-dimensional array")
-(ok (equal? '(1 5 20) (strides (make (multiarray <int> 3) #:shape '(5 4 3))))
-    "Query strides of multi-dimensional array")
+(ok (equal? '(1 2 3) (sequence->list (get (list->sequence '(1 2 3)))))
+    "'get' without additional arguments should return the sequence itself")
 (format #t "~&")
