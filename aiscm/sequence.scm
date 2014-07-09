@@ -10,8 +10,8 @@
   #:export (<meta<sequence<>>> <sequence<>>
             sequence
             multiarray
-            sequence->list
-            list->sequence))
+            array->list
+            list->array))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -77,20 +77,20 @@
   (store (element self 0) (car value))
   (store (slice self 1 (1- (last (shape self)))) (cdr value))
   value)
-(define-method (sequence->list self) self)
-(define-method (sequence->list (self <sequence<>>))
-  (map (compose sequence->list (cut get self <>)) (upto 0 (1- (last (shape self))))))
+(define-method (array->list self) self)
+(define-method (array->list (self <sequence<>>))
+  (map (compose array->list (cut get self <>)) (upto 0 (1- (last (shape self))))))
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (append (shape (car self)) (list (length self))))
-(define (list->sequence lst)
+(define (list->array lst)
   (let* [(t      (reduce coerce '() (map match lst)))
          (retval (make (sequence t) #:size (length lst)))]
     (store retval lst)
     retval))
 (define-method (write (self <sequence<>>) port)
-  (format port "#~a:~&~a" (class-name (class-of self)) (sequence->list self)))
+  (format port "#~a:~&~a" (class-name (class-of self)) (array->list self)))
 (define-method (display (self <sequence<>>) port)
-  (format port "#~a:~&~a" (class-name (class-of self)) (sequence->list self)))
+  (format port "#~a:~&~a" (class-name (class-of self)) (array->list self)))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<element>>))
   (sequence (coerce (typecode a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<sequence<>>>))
