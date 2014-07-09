@@ -7,7 +7,7 @@
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
 (set s1 0 2) (set s1 1 3) (set s1 2 5)
-(planned-tests 31)
+(planned-tests 29)
 (ok (equal? <sint> (typecode (sequence <sint>)))
     "Query element type of sequence class")
 (ok (equal? (sequence <sint>) (sequence <sint>))
@@ -24,14 +24,8 @@
     "Check number of dimensions of sequence type")
 (ok (equal? '(3) (shape s1))
     "Query shape of sequence")
-(ok (eqv? 2 (size (slice s1 1 2)))
-    "Size of slice")
-(ok (eqv? 5 (get (slice s1 1 2) 1))
-    "Element of slice")
 (ok (equal? '(2 3 5) (sequence->list s1))
     "Convert sequence to list")
-(ok (equal? '(3 5)) (sequence->list (slice s1 1 2))
-    "Extract slice of values from sequence")
 (ok (equal? "<sequence<int<16,signed>>>" (class-name (sequence <sint>)))
     "Class name of 16-bit integer sequence")
 (ok (equal? "#<sequence<int<16,signed>>>:\n(2 3 5)"
@@ -47,7 +41,9 @@
 (ok (eqv? 3 (size (list->sequence '(1 2 3))))
     "Size of converted list")
 (ok (equal? '(2 3 5) (begin (set s3 '(2 3 5)) (sequence->list s3)))
-    "Assignment to sequence")
+    "Assignment list to sequence")
+(ok (equal? '(3 3 3) (begin (set s3 3) (sequence->list s3)))
+    "Assignment number to sequence")
 (ok (equal? '(2 3 5) (set s3 '(2 3 5)))
     "Return value of assignment to sequence")
 (ok (equal? '(2 4 8) (sequence->list (list->sequence '(2 4 8))))
@@ -72,4 +68,7 @@
     "Query shape of multi-dimensional array")
 (ok (equal? '(1 2 3) (sequence->list (get (list->sequence '(1 2 3)))))
     "'get' without additional arguments should return the sequence itself")
+; TODO: test getting subarray
+; TODO: test conversion of nested lists
+; TODO: test setting subarrays
 (format #t "~&")

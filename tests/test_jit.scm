@@ -23,23 +23,23 @@
 (define iptr (make (pointer <int>) #:value mem))
 (define lptr (make (pointer <long>) #:value mem))
 (define (bdata) (begin
-                  (store bptr       (make <sint> #:value b1))
-                  (store (+ bptr 1) (make <sint> #:value b2))
+                  (store bptr       b1)
+                  (store (+ bptr 1) b2)
                   mem))
 (define (wdata) (begin
-                  (store wptr       (make <sint> #:value w1))
-                  (store (+ wptr 1) (make <sint> #:value w2))
+                  (store wptr       w1)
+                  (store (+ wptr 1) w2)
                   mem))
 (define (idata) (begin
-                  (store iptr       (make <int> #:value i1))
-                  (store (+ iptr 1) (make <int> #:value i2))
+                  (store iptr       i1)
+                  (store (+ iptr 1) i2)
                   mem))
 (define (ldata) (begin
-                  (store lptr       (make <long> #:value l1))
-                  (store (+ lptr 1) (make <long> #:value l2))
+                  (store lptr       l1)
+                  (store (+ lptr 1) l2)
                   mem))
 (define (idx) (begin
-                (store lptr (make <long> #:value #x0102030405060708))
+                (store lptr #x0102030405060708)
                 mem))
 (ok (eqv?  8 (get-bits AL))
     "Number of bits of AL")

@@ -12,7 +12,6 @@
             size
             shape
             dimension
-            slice
             coerce
             match
             get

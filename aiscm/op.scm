@@ -30,7 +30,7 @@
                     <long> <long> t))
          (proc (lambda (t n value)
                  (let* [(r  (make (sequence t) #:size n))
-                        (pr ((compose pointer-address get-memory get-value get-value) r))]
+                        (pr ((compose pointer-address get-memory get-value) r))]
                    (code pr n value)
                    r)))]
     (add-method! fill (make <method>
@@ -91,8 +91,8 @@
          (proc (lambda (a b)
                  (let* [(n (size a))
                         (r (make (sequence tr) #:size n))
-                        (pr ((compose pointer-address get-memory get-value get-value) r))
-                        (pa ((compose pointer-address get-memory get-value get-value) a))]
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pa ((compose pointer-address get-memory get-value) a))]
                    (code pr pa (get-value b) n)
                    r)))]
     (add-method! + (make <method>
@@ -129,8 +129,8 @@
          (proc (lambda (a b)
                  (let* [(n  (size b))
                         (r  (make (sequence tr) #:size n))
-                        (pr ((compose pointer-address get-memory get-value get-value) r))
-                        (pb ((compose pointer-address get-memory get-value get-value) b))]
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pb ((compose pointer-address get-memory get-value) b))]
                    (code pr (get-value a) pb n)
                    r)))]
     (add-method! + (make <method>
@@ -174,9 +174,9 @@
                  (let* [(na (size a))
                         (nb (size b))
                         (r  (make (sequence tr) #:size na))
-                        (pr ((compose pointer-address get-memory get-value get-value) r))
-                        (pa ((compose pointer-address get-memory get-value get-value) a))
-                        (pb ((compose pointer-address get-memory get-value get-value) b))]
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pa ((compose pointer-address get-memory get-value) a))
+                        (pb ((compose pointer-address get-memory get-value) b))]
                    (if (not (= na nb)) (throw 'array-dimensions-different na nb))
                    (code pr pa pb na)
                    r)))]
@@ -227,8 +227,8 @@
          (proc (lambda (a)
                  (let* [(n  (size a))
                         (r  (make (sequence t) #:size n))
-                        (pr ((compose pointer-address get-memory get-value get-value) r))
-                        (pa ((compose pointer-address get-memory get-value get-value) a))]
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pa ((compose pointer-address get-memory get-value) a))]
                    (code pr pa n)
                    r)))]
     (add-method! - (make <method>
