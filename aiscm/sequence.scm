@@ -29,21 +29,17 @@
          (metaname  (format #f "<meta~a>" name))
          (metaclass (def-once metaname (make <class>
                                              #:dsupers (list <meta<sequence<>>>)
-                                             #:slots '()
                                              #:name metaname)))
          (retval    (def-once name (make metaclass
                                          #:dsupers (list <sequence<>>)
-                                         #:slots '()
                                          #:name name)))]
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (shape size value strides)
-        (let* [(n   (or size (apply * shape)))
-               (t   (typecode type))
-               (mem (make <mem> #:size (* (size-of t) n)))
-               (val (or value mem))
-               (shp (or shape (list size)))
-               (str (or strides (default-strides shp)))]
-          (next-method self `(#:value ,val #:shape ,shp #:strides ,str)))))
+        (let* [(size    (or size (apply * shape)))
+               (value   (or value (make <mem> #:size (* (size-of (typecode type)) size))))
+               (shape   (or shape (list size)))
+               (strides (or strides (default-strides shape)))]
+          (next-method self `(#:value ,value #:shape ,shape #:strides ,strides)))))
     (define-method (element-type (self metaclass)) (pointer type))
     (define-method (dimension (self metaclass)) (1+ (dimension type)))
     (define-method (typecode (self metaclass)) (typecode type))
@@ -85,9 +81,9 @@
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (append (shape (car self)) (list (length self))))
 (define (list->multiarray lst)
-  (let* [(t      (reduce coerce #f (map match (flatten lst))))
-         (shp    (shape lst))
-         (retval (make (multiarray t (length shp)) #:shape shp))]
+  (let* [(type   (reduce coerce #f (map match (flatten lst))))
+         (shape  (shape lst))
+         (retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval lst)
     retval))
 (define-method (write (self <sequence<>>) port)

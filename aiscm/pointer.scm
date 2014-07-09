@@ -21,11 +21,9 @@
          (metaclass (def-once metaname
                               (make <class>
                                     #:dsupers (list <meta<pointer<>>>)
-                                    #:slots '()
                                     #:name metaname)))
          (retval (def-once name (make metaclass
                                       #:dsupers (list <pointer<>>)
-                                      #:slots '()
                                       #:name name)))]
     (define-method (target (self metaclass)) targetclass)
     retval))
