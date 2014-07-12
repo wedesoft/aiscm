@@ -28,8 +28,7 @@
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
-(define-class <jit-context> ()
-  (binaries #:init-value '()))
+(define-class <jit-context> () (binaries #:init-value '()))
 
 (define-class <jcc> ()
   (target #:init-keyword #:target #:getter get-target)

@@ -9,6 +9,7 @@
   #:export (fill)
   #:re-export (+ -))
 (define ctx (make <jit-context>))
+
 (define-method (fill (t <meta<element>>) (n <integer>) value)
   (let* [(pool (make <pool>))
          (code (asm ctx
@@ -37,6 +38,7 @@
                             #:specializers (list (class-of t) <integer> (class-of value))
                             #:procedure proc))
     (fill t n value)))
+
 (define-method (+ (a <element>)) a)
 (define-method (+ (a <element>) (b <element>))
   (let* [(ta     (class-of a))
@@ -112,14 +114,16 @@
                           (pb   (arg <long> pool))
                           (n    (arg <long> pool))
                           (b    (reg tr pool))
+                          (r    (reg tr pool))
                           (pend (reg <long> pool))]
                          (LEA pend (ptr tr pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
+                         (MOV r a)
                          ((if (eq? tb tr) MOV (if (signed? tb) MOVSX MOVZX)) b (ptr tb pb))
-                         (ADD b a)
-                         (MOV (ptr tr pr) b)
+                         (ADD r b)
+                         (MOV (ptr tr pr) r)
                          (ADD pr (size-of tr))
                          (ADD pb (size-of tb))
                          (CMP pend pr)
@@ -184,6 +188,7 @@
                          #:specializers (list (sequence ta) (sequence tb))
                          #:procedure proc))
     (+ a b)))
+
 (define-method (- (a <element>))
   (let* [(t    (class-of a))
          (pool (make <pool>))
@@ -258,3 +263,128 @@
   (- a (make (match b) #:value b)))
 (define-method (- (a <integer>) (b <element>))
   (- (make (match a) #:value a) b))
+(define-method (- (a <sequence<>>) (b <element>))
+  (let* [(ta   (typecode (class-of a)))
+         (tb   (class-of b))
+         (tr   (coerce ta tb))
+         (pool (make <pool>))
+         (code (asm ctx
+                    <null>
+                    (env pool
+                         [(pr   (arg <long> pool))
+                          (pa   (arg <long> pool))
+                          (b    (arg tr pool))
+                          (n    (arg <long> pool))
+                          (a    (reg tr pool))
+                          (pend (reg <long> pool))]
+                         (LEA pend (ptr tr pr n))
+                         (CMP pr pend)
+                         (JE 'return)
+                         'loop
+                         ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) a (ptr ta pa))
+                         (SUB a b)
+                         (MOV (ptr tr pr) a)
+                         (ADD pr (size-of tr))
+                         (ADD pa (size-of ta))
+                         (CMP pend pr)
+                         (JNE 'loop)
+                         'return)
+                    <long> <long> tb <long>))
+         (proc (lambda (a b)
+                 (let* [(n (size a))
+                        (r (make (sequence tr) #:size n))
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pa ((compose pointer-address get-memory get-value) a))]
+                   (code pr pa (get-value b) n)
+                   r)))]
+    (add-method! - (make <method>
+                         #:specializers (list (sequence ta) tb)
+                         #:procedure proc))
+    (- a b)))
+(define-method (- (a <element>) (b <sequence<>>))
+  (let* [(ta   (class-of a))
+         (tb   (typecode (class-of b)))
+         (tr   (coerce ta tb))
+         (pool (make <pool>))
+         (code (asm ctx
+                    <null>
+                    (env pool
+                         [(pr   (arg <long> pool))
+                          (a    (arg tr pool))
+                          (pb   (arg <long> pool))
+                          (n    (arg <long> pool))
+                          (b    (reg tr pool))
+                          (r    (reg tr pool))
+                          (pend (reg <long> pool))]
+                         (LEA pend (ptr tr pr n))
+                         (CMP pr pend)
+                         (JE 'return)
+                         'loop
+                         (MOV r a)
+                         ((if (eq? tb tr) MOV (if (signed? tb) MOVSX MOVZX)) b (ptr tb pb))
+                         (SUB r b)
+                         (MOV (ptr tr pr) r)
+                         (ADD pr (size-of tr))
+                         (ADD pb (size-of tb))
+                         (CMP pend pr)
+                         (JNE 'loop)
+                         'return)
+                    <long> ta <long> <long>))
+         (proc (lambda (a b)
+                 (let* [(n  (size b))
+                        (r  (make (sequence tr) #:size n))
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pb ((compose pointer-address get-memory get-value) b))]
+                   (code pr (get-value a) pb n)
+                   r)))]
+    (add-method! - (make <method>
+                         #:specializers (list ta (sequence tb))
+                         #:procedure proc))
+    (- a b)))
+(define-method (- (a <sequence<>>) (b <sequence<>>))
+  (let* [(ta   (typecode (class-of a)))
+         (tb   (typecode (class-of b)))
+         (tr   (coerce ta tb))
+         (pool (make <pool>))
+         (code (asm ctx
+                    <null>
+                    (env pool
+                         [(pr   (arg <long> pool))
+                          (pa   (arg <long> pool))
+                          (pb   (arg <long> pool))
+                          (na   (arg <long> pool))
+                          (a    (reg tr pool))
+                          (b    (reg tr pool))
+                          (pend (reg <long> pool))]
+                         (LEA pend (ptr tr pr na))
+                         (CMP pr pend)
+                         (JE 'return)
+                         'loop
+                         ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) a (ptr ta pa))
+                         (if (eq? tb tr)
+                           (SUB a (ptr tb pb))
+                           (append
+                             ((if (signed? tb) MOVSX MOVZX) b (ptr tb pb))
+                             (SUB a b)))
+                         (MOV (ptr tr pr) a)
+                         (ADD pr (size-of tr))
+                         (ADD pa (size-of ta))
+                         (ADD pb (size-of tb))
+                         (CMP pend pr)
+                         (JNE 'loop)
+                         'return)
+                    <long> <long> <long> <long>))
+         (proc (lambda (a b)
+                 (let* [(na (size a))
+                        (nb (size b))
+                        (r  (make (sequence tr) #:size na))
+                        (pr ((compose pointer-address get-memory get-value) r))
+                        (pa ((compose pointer-address get-memory get-value) a))
+                        (pb ((compose pointer-address get-memory get-value) b))]
+                   (if (not (= na nb)) (throw 'array-dimensions-different na nb))
+                   (code pr pa pb na)
+                   r)))]
+    (add-method! - (make <method>
+                         #:specializers (list (sequence ta) (sequence tb))
+                         #:procedure proc))
+    (- a b)))

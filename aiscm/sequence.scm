@@ -11,7 +11,8 @@
             sequence
             multiarray
             multiarray->list
-            list->multiarray))
+            list->multiarray
+            roll))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -53,7 +54,7 @@
         #:value   (+ (get-value self) (* offset (last (strides self)) (size-of (typecode self))))
         #:shape   (all-but-last (shape self))
         #:strides (all-but-last (strides self))))
-(define (slice self offset size)
+(define (slice offset size self)
   (make (class-of self)
         #:value   (+ (get-value self) (* offset (last (strides self)) (size-of (typecode self))))
         #:shape   (append (all-but-last (shape self)) (list size))
@@ -70,7 +71,7 @@
 (define-method (store (self <sequence<>>) (value <null>)) value)
 (define-method (store (self <sequence<>>) (value <pair>))
   (store (element 0 self) (car value))
-  (store (slice self 1 (1- (last (shape self)))) (cdr value))
+  (store (slice 1 (1- (last (shape self))) self) (cdr value))
   value)
 (define-method (multiarray->list self) self)
 (define-method (multiarray->list (self <sequence<>>))
@@ -93,3 +94,8 @@
   (sequence (coerce a (typecode b))))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<sequence<>>>))
   (sequence (coerce (typecode a) (typecode b))))
+(define (roll self)
+  (make (class-of self)
+        #:value   (get-value self)
+        #:shape   (cycle (shape self))
+        #:strides (cycle (strides self))))
