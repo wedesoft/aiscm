@@ -1,6 +1,6 @@
 # TODO
 
 * multi-dimensional +
-* load image using ImageMagick
+* PPM I/O
 * print arrays
 * getting ranges from array
