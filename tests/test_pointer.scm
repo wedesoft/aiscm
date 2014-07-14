@@ -7,7 +7,7 @@
              (aiscm bool)
              (aiscm int)
              (guile-tap))
-(planned-tests 14)
+(planned-tests 15)
 (define m1 (make <mem> #:size 10))
 (define m2 (make <mem> #:size 4))
 (define p1-bool (make (pointer <bool>) #:value m1))
@@ -50,4 +50,6 @@
 (ok (string-match "^#<<pointer<int<16,signed>>> #x[0-9a-f]*>$"
                   (call-with-output-string (lambda (port) (display p1-sint port))))
     "display pointer object")
+(ok (eqv? 4 (get-size (get-value (make (pointer <int>)))))
+    "Memory is allocated if no value is specified")
 (format #t "~&")

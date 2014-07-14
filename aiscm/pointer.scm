@@ -1,5 +1,6 @@
 (define-module (aiscm pointer)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
   #:use-module (aiscm element)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
@@ -25,6 +26,10 @@
          (retval (def-once name (make metaclass
                                       #:dsupers (list <pointer<>>)
                                       #:name name)))]
+    (define-method (initialize (self retval) initargs)
+      (let-keywords initargs #t (value)
+        (let [(value (or value (make <mem> #:size (size-of targetclass))))]
+          (next-method self `(#:value ,value)))))
     (define-method (target (self metaclass)) targetclass)
     retval))
 (define-method (fetch (self <pointer<>>))
