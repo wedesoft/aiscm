@@ -24,7 +24,7 @@
                           (r (reg cr pool))]
                          (MOV r a)
                          (ADD r b))
-                    ca cb))
+                    (list ca cb)))
          (proc (lambda (a b) (make cr #:value (code (get-value a) (get-value b)))))]
     (add-method! + (make <method>
                          #:specializers (list ca cb)
@@ -62,7 +62,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> cb <long>))
+                    (list <long> <long> cb <long>)))
          (proc (lambda (a b)
                  (let* [(n (size a))
                         (r (make cr #:size n))
@@ -104,7 +104,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> ca <long> <long>))
+                    (list <long> ca <long> <long>)))
          (proc (lambda (a b)
                  (let* [(n  (size b))
                         (r  (make cr #:size n))
@@ -151,7 +151,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> <long> <long>))
+                    (list <long> <long> <long> <long>)))
          (proc (lambda (a b)
                  (let* [(na (size a))
                         (nb (size b))
@@ -178,7 +178,7 @@
                           (r (reg cr pool))]
                          (MOV r a)
                          (NEG r))
-                    ca))
+                    (list ca)))
          (proc (lambda (a) (make cr #:value (code (get-value a)))))]
     (add-method! - (make <method>
                          #:specializers (list ca)
@@ -210,7 +210,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> <long>))
+                    (list <long> <long> <long>)))
          (proc (lambda (a)
                  (let* [(n  (size a))
                         (r  (make cr #:size n))
@@ -235,7 +235,7 @@
                           (r (reg cr pool))]
                          (MOV r a)
                          (SUB r b))
-                    ca cb))
+                    (list ca cb)))
          (proc (lambda (a b) (make cr #:value (code (get-value a) (get-value b)))))]
     (add-method! - (make <method>
                          #:specializers (list ca cb)
@@ -273,7 +273,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> cb <long>))
+                    (list <long> <long> cb <long>)))
          (proc (lambda (a b)
                  (let* [(n (size a))
                         (r (make cr #:size n))
@@ -315,7 +315,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> ca <long> <long>))
+                    (list <long> ca <long> <long>)))
          (proc (lambda (a b)
                  (let* [(n  (size b))
                         (r  (make cr #:size n))
@@ -362,7 +362,7 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> <long> <long>))
+                    (list <long> <long> <long> <long>)))
          (proc (lambda (a b)
                  (let* [(na (size a))
                         (nb (size b))
@@ -396,7 +396,7 @@
                          (CMP pr pend)
                          (JNE 'loop)
                          'return)
-                    <long> <long> t))
+                    (list <long> <long> t)))
          (proc (lambda (t n value)
                  (let* [(r  (make (sequence t) #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))]

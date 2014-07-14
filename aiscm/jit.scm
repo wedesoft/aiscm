@@ -75,7 +75,7 @@
 (define (JLE  target) (Jcc target #x7e))
 (define (JNLE target) (Jcc target #x7f))
 
-(define (asm ctx return-type commands . args)
+(define (asm ctx return-type commands arg-types)
   (let* [(offsets     (label-offsets commands))
          (resolved    (resolve-jumps commands offsets))
          (with-return (append resolved (list (RET))))
@@ -83,7 +83,7 @@
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address code))
-                        (map foreign-type args))))
+                        (map foreign-type arg-types))))
 
 (define-class <operand> ())
 
