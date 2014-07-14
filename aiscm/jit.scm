@@ -327,7 +327,7 @@
 (define-syntax-rule (env pool vars . body)
   (let* [(live   (get-live pool))
          (stack  (clear-stack pool))
-         (block  (let vars (list . body)))
+         (block  (let* vars (list . body)))
          (pushes (map PUSH (reverse (get-stack pool))))
          (pops   (map POP (get-stack pool)))]
     (set-live pool live)
