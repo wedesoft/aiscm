@@ -114,10 +114,10 @@
 (define (scale s) (index s register-sizes))
 
 (define-class <pointer> (<operand>)
-  (type #:init-keyword #:type #:getter get-type)
-  (reg #:init-keyword #:reg #:getter get-reg)
-  (disp #:init-keyword #:disp #:init-value #f #:getter get-disp)
-  (index #:init-keyword #:index #:init-value #f #:getter get-index))
+  (type  #:init-keyword #:type  #:getter get-type)
+  (reg   #:init-keyword #:reg   #:getter get-reg)
+  (disp  #:init-keyword #:disp  #:getter get-disp  #:init-value #f)
+  (index #:init-keyword #:index #:getter get-index #:init-value #f))
 
 (define-method (get-bits (self <pointer>)) (* 8 (size-of (get-type self))))
 
@@ -295,9 +295,9 @@
 (define args (map get-code (list RDI RSI RDX RCX R8 R9)))
 (define-class <pool> ()
   (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes)
-  (live #:init-value '() #:getter get-live #:setter set-live)
+  (live  #:init-value '() #:getter get-live  #:setter set-live)
   (stack #:init-value '() #:getter get-stack #:setter set-stack)
-  (argc #:init-value 0 #:getter get-argc #:setter set-argc))
+  (argc  #:init-value 0   #:getter get-argc  #:setter set-argc))
 (define (get-free pool)
   (let [(live-codes (map get-code (get-live pool)))]
     (find (compose not (cut member <> live-codes)) (get-codes pool))))

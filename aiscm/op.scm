@@ -10,53 +10,24 @@
   #:re-export (+ -))
 (define ctx (make <jit-context>))
 
-(define-method (fill (t <meta<element>>) (n <integer>) value)
-  (let* [(pool (make <pool>))
-         (code (asm ctx
-                    <null>
-                    (env pool
-                         [(pr    (arg <long> pool))
-                          (n     (arg <long> pool))
-                          (value (arg t pool))
-                          (pend  (reg <long> pool))]
-                         (LEA pend (ptr t pr n))
-                         (CMP pr pend)
-                         (JE 'return)
-                         'loop
-                         (MOV (ptr t pr) value)
-                         (ADD pr (size-of t))
-                         (CMP pr pend)
-                         (JNE 'loop)
-                         'return)
-                    <long> <long> t))
-         (proc (lambda (t n value)
-                 (let* [(r  (make (sequence t) #:size n))
-                        (pr ((compose pointer-address get-memory get-value) r))]
-                   (code pr n value)
-                   r)))]
-    (add-method! fill (make <method>
-                            #:specializers (list (class-of t) <integer> (class-of value))
-                            #:procedure proc))
-    (fill t n value)))
-
 (define-method (+ (a <element>)) a)
 (define-method (+ (a <element>) (b <element>))
-  (let* [(ta     (class-of a))
-         (tb     (class-of b))
-         (tr     (coerce ta tb))
-         (pool   (make <pool>))
-         (code   (asm ctx
-                      tr
-                      (env pool
-                           [(a (arg tr pool))
-                            (b (arg tr pool))
-                            (r (reg tr pool))]
-                           (MOV r a)
-                           (ADD r b))
-                      ta tb))
-         (proc   (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (pool (make <pool>))
+         (code (asm ctx
+                    cr
+                    (env pool
+                         [(a (arg cr pool))
+                          (b (arg cr pool))
+                          (r (reg cr pool))]
+                         (MOV r a)
+                         (ADD r b))
+                    ca cb))
+         (proc (lambda (a b) (make cr #:value (code (get-value a) (get-value b)))))]
     (add-method! + (make <method>
-                         #:specializers (list ta tb)
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (+ a b)))
 (define-method (+ (a <element>) (b <integer>))
@@ -64,9 +35,11 @@
 (define-method (+ (a <integer>) (b <element>))
   (+ (make (match a) #:value a) b))
 (define-method (+ (a <sequence<>>) (b <element>))
-  (let* [(ta   (typecode (class-of a)))
-         (tb   (class-of b))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (ta   (typecode ca))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -89,22 +62,24 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> tb <long>))
+                    <long> <long> cb <long>))
          (proc (lambda (a b)
                  (let* [(n (size a))
-                        (r (make (sequence tr) #:size n))
+                        (r (make cr #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pa ((compose pointer-address get-memory get-value) a))]
                    (code pr pa (get-value b) n)
                    r)))]
     (add-method! + (make <method>
-                         #:specializers (list (sequence ta) tb)
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (+ a b)))
 (define-method (+ (a <element>) (b <sequence<>>))
-  (let* [(ta   (class-of a))
-         (tb   (typecode (class-of b)))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (tb   (typecode cb))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -129,22 +104,25 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> ta <long> <long>))
+                    <long> ca <long> <long>))
          (proc (lambda (a b)
                  (let* [(n  (size b))
-                        (r  (make (sequence tr) #:size n))
+                        (r  (make cr #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pb ((compose pointer-address get-memory get-value) b))]
                    (code pr (get-value a) pb n)
                    r)))]
     (add-method! + (make <method>
-                         #:specializers (list ta (sequence tb))
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (+ a b)))
 (define-method (+ (a <sequence<>>) (b <sequence<>>))
-  (let* [(ta   (typecode (class-of a)))
-         (tb   (typecode (class-of b)))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (ta   (typecode ca))
+         (tb   (typecode cb))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -177,7 +155,7 @@
          (proc (lambda (a b)
                  (let* [(na (size a))
                         (nb (size b))
-                        (r  (make (sequence tr) #:size na))
+                        (r  (make cr #:size na))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pa ((compose pointer-address get-memory get-value) a))
                         (pb ((compose pointer-address get-memory get-value) b))]
@@ -185,28 +163,32 @@
                    (code pr pa pb na)
                    r)))]
     (add-method! + (make <method>
-                         #:specializers (list (sequence ta) (sequence tb))
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (+ a b)))
 
 (define-method (- (a <element>))
-  (let* [(t    (class-of a))
+  (let* [(ca   (class-of a))
+         (cr   ca)
          (pool (make <pool>))
          (code (asm ctx
-                    t
+                    cr
                     (env pool
-                         [(a (arg t pool))
-                          (r (reg t pool))]
+                         [(a (arg cr pool))
+                          (r (reg cr pool))]
                          (MOV r a)
                          (NEG r))
-                    t))
-         (proc (lambda (a) (make t #:value (code (get-value a)))))]
+                    ca))
+         (proc (lambda (a) (make cr #:value (code (get-value a)))))]
     (add-method! - (make <method>
-                         #:specializers (list t)
+                         #:specializers (list ca)
                          #:procedure proc))
     (- a)))
 (define-method (- (a <sequence<>>))
-  (let* [(t    (typecode (class-of a)))
+  (let* [(ca   (class-of a))
+         (ta   (typecode ca))
+         (cr   ca)
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -214,49 +196,49 @@
                          [(pr   (arg <long> pool))
                           (pa   (arg <long> pool))
                           (n    (arg <long> pool))
-                          (a    (reg t pool))
+                          (a    (reg tr pool))
                           (pend (reg <long> pool))]
-                         (LEA pend (ptr t pr n))
+                         (LEA pend (ptr tr pr n))
                          (CMP pr pend)
                          (JE 'return)
                          'loop
-                         (MOV a (ptr t pa))
+                         (MOV a (ptr ta pa))
                          (NEG a)
-                         (MOV (ptr t pr) a)
-                         (ADD pr (size-of t))
-                         (ADD pa (size-of t))
+                         (MOV (ptr tr pr) a)
+                         (ADD pr (size-of ta))
+                         (ADD pa (size-of tr))
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
                     <long> <long> <long>))
          (proc (lambda (a)
                  (let* [(n  (size a))
-                        (r  (make (sequence t) #:size n))
+                        (r  (make cr #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pa ((compose pointer-address get-memory get-value) a))]
                    (code pr pa n)
                    r)))]
     (add-method! - (make <method>
-                         #:specializers (list (sequence t))
+                         #:specializers (list ca)
                          #:procedure proc))
     (- a)))
 (define-method (- (a <element>) (b <element>))
-  (let* [(ta   (class-of a))
-         (tb   (class-of b))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
          (pool (make <pool>))
          (code (asm ctx
-                    tr
+                    cr
                     (env pool
-                         [(a (arg tr pool))
-                          (b (arg tr pool))
-                          (r (reg tr pool))]
+                         [(a (arg cr pool))
+                          (b (arg cr pool))
+                          (r (reg cr pool))]
                          (MOV r a)
                          (SUB r b))
-                    ta tb))
-         (proc (lambda (a b) (make tr #:value (code (get-value a) (get-value b)))))]
+                    ca cb))
+         (proc (lambda (a b) (make cr #:value (code (get-value a) (get-value b)))))]
     (add-method! - (make <method>
-                         #:specializers (list ta tb)
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (- a b)))
 (define-method (- (a <element>) (b <integer>))
@@ -264,9 +246,11 @@
 (define-method (- (a <integer>) (b <element>))
   (- (make (match a) #:value a) b))
 (define-method (- (a <sequence<>>) (b <element>))
-  (let* [(ta   (typecode (class-of a)))
-         (tb   (class-of b))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (ta   (typecode ca))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -289,22 +273,24 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> <long> tb <long>))
+                    <long> <long> cb <long>))
          (proc (lambda (a b)
                  (let* [(n (size a))
-                        (r (make (sequence tr) #:size n))
+                        (r (make cr #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pa ((compose pointer-address get-memory get-value) a))]
                    (code pr pa (get-value b) n)
                    r)))]
     (add-method! - (make <method>
-                         #:specializers (list (sequence ta) tb)
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (- a b)))
 (define-method (- (a <element>) (b <sequence<>>))
-  (let* [(ta   (class-of a))
-         (tb   (typecode (class-of b)))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (tb   (typecode cb))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -329,22 +315,25 @@
                          (CMP pend pr)
                          (JNE 'loop)
                          'return)
-                    <long> ta <long> <long>))
+                    <long> ca <long> <long>))
          (proc (lambda (a b)
                  (let* [(n  (size b))
-                        (r  (make (sequence tr) #:size n))
+                        (r  (make cr #:size n))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pb ((compose pointer-address get-memory get-value) b))]
                    (code pr (get-value a) pb n)
                    r)))]
     (add-method! - (make <method>
-                         #:specializers (list ta (sequence tb))
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (- a b)))
 (define-method (- (a <sequence<>>) (b <sequence<>>))
-  (let* [(ta   (typecode (class-of a)))
-         (tb   (typecode (class-of b)))
-         (tr   (coerce ta tb))
+  (let* [(ca   (class-of a))
+         (cb   (class-of b))
+         (cr   (coerce ca cb))
+         (ta   (typecode ca))
+         (tb   (typecode cb))
+         (tr   (typecode cr))
          (pool (make <pool>))
          (code (asm ctx
                     <null>
@@ -377,7 +366,7 @@
          (proc (lambda (a b)
                  (let* [(na (size a))
                         (nb (size b))
-                        (r  (make (sequence tr) #:size na))
+                        (r  (make cr #:size na))
                         (pr ((compose pointer-address get-memory get-value) r))
                         (pa ((compose pointer-address get-memory get-value) a))
                         (pb ((compose pointer-address get-memory get-value) b))]
@@ -385,6 +374,35 @@
                    (code pr pa pb na)
                    r)))]
     (add-method! - (make <method>
-                         #:specializers (list (sequence ta) (sequence tb))
+                         #:specializers (list ca cb)
                          #:procedure proc))
     (- a b)))
+
+(define-method (fill (t <meta<element>>) (n <integer>) value)
+  (let* [(pool (make <pool>))
+         (code (asm ctx
+                    <null>
+                    (env pool
+                         [(pr    (arg <long> pool))
+                          (n     (arg <long> pool))
+                          (value (arg t pool))
+                          (pend  (reg <long> pool))]
+                         (LEA pend (ptr t pr n))
+                         (CMP pr pend)
+                         (JE 'return)
+                         'loop
+                         (MOV (ptr t pr) value)
+                         (ADD pr (size-of t))
+                         (CMP pr pend)
+                         (JNE 'loop)
+                         'return)
+                    <long> <long> t))
+         (proc (lambda (t n value)
+                 (let* [(r  (make (sequence t) #:size n))
+                        (pr ((compose pointer-address get-memory get-value) r))]
+                   (code pr n value)
+                   r)))]
+    (add-method! fill (make <method>
+                            #:specializers (list (class-of t) <integer> (class-of value))
+                            #:procedure proc))
+    (fill t n value)))
