@@ -154,9 +154,7 @@
                          'return)
                     (flatten (map types (list cr ca cb)))))
          (proc (lambda (a b)
-                 (let [(r  (make cr #:size (size a)))]
-                   (if (not (= (size a) (size b)))
-                     (throw 'array-dimensions-different (size a) (size b)))
+                 (let [(r (make cr #:size (size a)))]
                    (apply code (flatten (map content (list r a b))))
                    r)))]
     (add-method! + (make <method> #:specializers (list ca cb) #:procedure proc))
@@ -206,7 +204,7 @@
                          'return)
                     (flatten (map types (list cr ca)))))
          (proc (lambda (a)
-                 (let [(r  (make cr #:size (size a)))]
+                 (let [(r (make cr #:size (size a)))]
                    (apply code (flatten (map content (list r a))))
                    r)))]
     (add-method! - (make <method> #:specializers (list ca) #:procedure proc))
@@ -301,7 +299,7 @@
                          'return)
                     (flatten (map types (list cr ca cb)))))
          (proc (lambda (a b)
-                 (let [(r  (make cr #:size (size b)))]
+                 (let [(r (make cr #:size (size b)))]
                    (apply code (flatten (map content (list r a b))))
                    r)))]
     (add-method! - (make <method> #:specializers (list ca cb) #:procedure proc))
@@ -345,9 +343,7 @@
                          'return)
                     (flatten (map types (list cr ca cb)))))
          (proc (lambda (a b)
-                 (let [(r  (make cr #:size (size a)))]
-                   (if (not (= (size a) (size b)))
-                     (throw 'array-dimensions-different (size a) (size b)))
+                 (let [(r (make cr #:size (size a)))]
                    (apply code (flatten (map content (list r a b))))
                    r)))]
     (add-method! - (make <method> #:specializers (list ca cb) #:procedure proc))
