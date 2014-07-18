@@ -25,9 +25,11 @@
          (code (params ctx cr (list ca cb)
                        (lambda (pool a_ b_)
                          (env pool
-                              [(r (reg cr pool))]
-                              (MOV r a_)
-                              (ADD r b_)))))
+                              [(r (reg cr pool))
+                               (a (reg a_ pool))
+                               (b (reg b_ pool))]
+                              (MOV r a)
+                              (ADD r b)))))
          (proc (lambda (a b) (make cr #:value (apply code (flatten (map content (list a b)))))))]
     (add-method! + (make <method> #:specializers (list ca cb) #:procedure proc))
     (+ a b)))
@@ -150,8 +152,9 @@
          (code (params ctx cr (list ca)
                        (lambda (pool a_)
                          (env pool
-                              [(r (reg cr pool))]
-                              (MOV r a_)
+                              [(r (reg cr pool))
+                               (a (reg a_ pool))]
+                              (MOV r a)
                               (NEG r)))))
          (proc (lambda (a) (make cr #:value (apply code (flatten (map content (list a)))))))]
     (add-method! - (make <method> #:specializers (list ca) #:procedure proc))
@@ -194,9 +197,11 @@
          (code (params ctx cr (list ca cb)
                        (lambda (pool a_ b_)
                          (env pool
-                              [(r (reg cr pool))]
-                              (MOV r a_)
-                              (SUB r b_)))))
+                              [(r (reg cr pool))
+                               (a (reg a_ pool))
+                               (b (reg b_ pool))]
+                              (MOV r a)
+                              (SUB r b)))))
          (proc (lambda (a b) (make cr #:value (apply code (flatten (map content (list a b)))))))]
     (add-method! - (make <method> #:specializers (list ca cb) #:procedure proc))
     (- a b)))
