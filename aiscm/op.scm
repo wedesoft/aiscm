@@ -323,8 +323,9 @@
                          (env pool
                               [(*r    (reg (get-value r_) pool))
                                (value (reg value_ pool))
+                               (n     (reg (car (shape r_)) pool))
                                (*rx   (reg <long> pool))]
-                              (LEA *rx (ptr t *r (car (shape r_))))
+                              (LEA *rx (ptr t *r n))
                               (CMP *r *rx)
                               (JE 'return)
                               'loop
