@@ -364,19 +364,20 @@
         (stride (arg <long> pool))]
     (make type #:value value #:shape (list size) #:strides (list stride))))
 
-(define-method (returning (x <meta<element>>)) x)
-(define-method (returning (x <meta<sequence<>>>)) <null>)
+(define-method (return-type (x <meta<element>>)) x)
+(define-method (return-type (x <meta<sequence<>>>)) <null>)
 
-(define-method (return-value (x <meta<element>>) pool args) (cons (reg x pool) args))
-(define-method (return-value (x <meta<sequence<>>>) pool args) args)
+(define-method (add-return-value (x <meta<element>>) pool args) (cons (reg x pool) args))
+(define-method (add-return-value (x <meta<sequence<>>>) pool args) args)
 
-(define-method (return-param (x <meta<element>>) arg-classes) arg-classes)
-(define-method (return-param (x <meta<sequence<>>>) arg-classes) (cons x arg-classes))
+(define-method (add-return-param (x <meta<element>>) arg-classes) arg-classes)
+(define-method (add-return-param (x <meta<sequence<>>>) arg-classes) (cons x arg-classes))
 
 (define (params ctx return-class arg-classes fun)
   (let* [(pool          (make <pool>))
-         (param-classes (return-param return-class arg-classes))
+         (param-classes (add-return-param return-class arg-classes))
          (args          (map (cut arg <> pool) param-classes))
-         (return-type   (returning return-class))
-         (arg-types     (flatten (map types param-classes)))]
-    (asm ctx return-type arg-types (apply fun (cons pool (return-value return-class pool args))))))
+         (return-type   (return-type return-class))
+         (arg-types     (flatten (map types param-classes)))
+         (vals          (add-return-value return-class pool args))]
+    (asm ctx return-type arg-types (apply fun (cons pool vals)))))
