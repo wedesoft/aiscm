@@ -765,8 +765,6 @@
                    (MOV f x))))
     "Copy seventh integer argument")
 (ok (equal? 42 ((params ctx <int> (list <int>)
-                        (lambda (pool a_)
-                          (env pool [(r (reg <int> pool))]
-                               (MOV r a_)))) 42))
+                        (lambda (pool r a_) (env pool [] (MOV r a_)))) 42))
     "Use 'params' to define method")
 (format #t "~&")

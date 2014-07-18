@@ -23,9 +23,9 @@
          (cb   (class-of b))
          (cr   (coerce ca cb))
          (code (params ctx cr (list ca cb)
-                       (lambda (pool a_ b_)
+                       (lambda (pool r_ a_ b_)
                          (env pool
-                              [(r (reg cr pool))
+                              [(r (reg r_ pool))
                                (a (reg a_ pool))
                                (b (reg b_ pool))]
                               (MOV r a)
@@ -43,7 +43,7 @@
          (cr   (coerce ca cb))
          (ta   (typecode ca))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -76,7 +76,7 @@
          (cr   (coerce ca cb))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -112,7 +112,7 @@
          (ta   (typecode ca))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -150,9 +150,9 @@
   (let* [(ca   (class-of a))
          (cr   ca)
          (code (params ctx cr (list ca)
-                       (lambda (pool a_)
+                       (lambda (pool r_ a_)
                          (env pool
-                              [(r (reg cr pool))
+                              [(r (reg r_ pool))
                                (a (reg a_ pool))]
                               (MOV r a)
                               (NEG r)))))
@@ -164,7 +164,7 @@
          (ta   (typecode ca))
          (cr   ca)
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca)
+         (code (params ctx cr (list ca)
                        (lambda (pool r_ a_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -195,9 +195,9 @@
          (cb   (class-of b))
          (cr   (coerce ca cb))
          (code (params ctx cr (list ca cb)
-                       (lambda (pool a_ b_)
+                       (lambda (pool r_ a_ b_)
                          (env pool
-                              [(r (reg cr pool))
+                              [(r (reg r_ pool))
                                (a (reg a_ pool))
                                (b (reg b_ pool))]
                               (MOV r a)
@@ -215,7 +215,7 @@
          (cr   (coerce ca cb))
          (ta   (typecode ca))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -248,7 +248,7 @@
          (cr   (coerce ca cb))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -287,7 +287,7 @@
          (ta   (typecode ca))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (code (params ctx cr (list cr ca cb)
+         (code (params ctx cr (list ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
                               [(*r  (reg (get-value r_) pool))
@@ -323,7 +323,7 @@
 
 (define-method (fill (t <meta<element>>) (n <integer>) value)
   (let* [(cr   (sequence t))
-         (code (params ctx cr (list cr t)
+         (code (params ctx cr (list t)
                        (lambda (pool r_ value_)
                          (env pool
                               [(*r    (reg (get-value r_) pool))
