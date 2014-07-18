@@ -77,7 +77,7 @@
 (define (JLE  target) (Jcc target #x7e))
 (define (JNLE target) (Jcc target #x7f))
 
-(define (asm ctx return-type commands arg-types)
+(define (asm ctx return-type arg-types commands)
   (let* [(offsets     (label-offsets commands))
          (resolved    (resolve-jumps commands offsets))
          (with-return (append resolved (list (RET))))
@@ -370,5 +370,5 @@
          (args (map (cut arg <> pool) arg-classes))]
     (asm ctx
          return-type
-         (flatten-n (append (get-before pool) (apply fun (cons pool args)) (get-after pool)) 2)
-         (flatten (map types arg-classes)))))
+         (flatten (map types arg-classes))
+         (flatten-n (append (get-before pool) (apply fun (cons pool args)) (get-after pool)) 2))))
