@@ -12,6 +12,7 @@
             multiarray
             multiarray->list
             list->multiarray
+            strides
             roll))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
@@ -36,8 +37,9 @@
                                          #:name name)))]
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #f (shape size value strides)
-        (let* [(size    (or size (apply * shape)))
-               (value   (or value (make <mem> #:size (* (size-of (typecode type)) size))))
+        (let* [(value   (or value (make <mem>
+                                   #:size (* (size-of (typecode type))
+                                             (or size (apply * shape))))))
                (shape   (or shape (list size)))
                (strides (or strides (default-strides shape)))]
           (next-method self `(#:value ,value #:shape ,shape #:strides ,strides)))))
