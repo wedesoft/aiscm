@@ -44,14 +44,14 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (*a   (reg (get-value a_) pool))
-                               (b    (reg b_ pool))
-                               (r    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (*a  (reg (get-value a_) pool))
+                               (b   (reg b_ pool))
+                               (r   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
@@ -59,7 +59,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r (size-of tr))
                               (ADD *a (size-of ta))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -77,15 +77,15 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (a    (reg a_ pool))
-                               (*b   (reg (get-value b_) pool))
-                               (r    (reg tr pool))
-                               (w    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (a   (reg a_ pool))
+                               (*b  (reg (get-value b_) pool))
+                               (r   (reg tr pool))
+                               (w   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               (MOV r a)
@@ -94,7 +94,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r (size-of tr))
                               (ADD *b (size-of tb))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -113,15 +113,15 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (*a   (reg (get-value a_) pool))
-                               (*b   (reg (get-value b_) pool))
-                               (r    (reg tr pool))
-                               (w    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (*a  (reg (get-value a_) pool))
+                               (*b  (reg (get-value b_) pool))
+                               (r   (reg tr pool))
+                               (w   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
@@ -134,7 +134,7 @@
                               (ADD *r (size-of tr))
                               (ADD *a (size-of ta))
                               (ADD *b (size-of tb))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -150,7 +150,7 @@
          (code (params ctx cr (list ca)
                        (lambda (pool a_)
                          (env pool
-                              [(r  (reg cr pool))]
+                              [(r (reg cr pool))]
                               (MOV r a_)
                               (NEG r)))))
          (proc (lambda (a) (make cr #:value (apply code (flatten (map content (list a)))))))]
@@ -164,13 +164,13 @@
          (code (params ctx <null> (list cr ca)
                        (lambda (pool r_ a_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (*a   (reg (get-value a_) pool))
-                               (r    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (*a  (reg (get-value a_) pool))
+                               (r   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               (MOV r (ptr ta *a))
@@ -178,7 +178,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r (size-of tr))
                               (ADD *a (size-of ta))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a)
@@ -194,7 +194,7 @@
          (code (params ctx cr (list ca cb)
                        (lambda (pool a_ b_)
                          (env pool
-                              [(r  (reg cr pool))]
+                              [(r (reg cr pool))]
                               (MOV r a_)
                               (SUB r b_)))))
          (proc (lambda (a b) (make cr #:value (apply code (flatten (map content (list a b)))))))]
@@ -213,14 +213,14 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r    (reg (get-value r_) pool))
-                               (*a    (reg (get-value a_) pool))
-                               (b     (reg b_ pool))
-                               (r     (reg tr pool))
-                               (n     (reg (car (shape r_)) pool))
-                               (pend  (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (*a  (reg (get-value a_) pool))
+                               (b   (reg b_ pool))
+                               (r   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
@@ -228,7 +228,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r (size-of tr))
                               (ADD *a (size-of ta))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -246,15 +246,15 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (a    (reg a_ pool))
-                               (*b   (reg (get-value b_) pool))
-                               (r    (reg tr pool))
-                               (w    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (a   (reg a_ pool))
+                               (*b  (reg (get-value b_) pool))
+                               (r   (reg tr pool))
+                               (w   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               (MOV r a)
@@ -266,7 +266,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r (size-of tr))
                               (ADD *b (size-of tb))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -285,15 +285,15 @@
          (code (params ctx <null> (list cr ca cb)
                        (lambda (pool r_ a_ b_)
                          (env pool
-                              [(*r   (reg (get-value r_) pool))
-                               (*a   (reg (get-value a_) pool))
-                               (*b   (reg (get-value b_) pool))
-                               (r    (reg tr pool))
-                               (w    (reg tr pool))
-                               (n    (reg (car (shape r_)) pool))
-                               (pend (reg <long> pool))]
-                              (LEA pend (ptr tr *r n))
-                              (CMP *r pend)
+                              [(*r  (reg (get-value r_) pool))
+                               (*a  (reg (get-value a_) pool))
+                               (*b  (reg (get-value b_) pool))
+                               (r   (reg tr pool))
+                               (w   (reg tr pool))
+                               (n   (reg (car (shape r_)) pool))
+                               (*rx (reg <long> pool))]
+                              (LEA *rx (ptr tr *r n))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
                               ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
@@ -306,7 +306,7 @@
                               (ADD *r (size-of tr))
                               (ADD *a (size-of ta))
                               (ADD *b (size-of tb))
-                              (CMP pend *r)
+                              (CMP *rx *r)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (a b)
@@ -319,16 +319,18 @@
 (define-method (fill (t <meta<element>>) (n <integer>) value)
   (let* [(cr   (sequence t))
          (code (params ctx <null> (list cr t)
-                       (lambda (pool r value)
+                       (lambda (pool r_ value_)
                          (env pool
-                              [(pend  (reg <long> pool))]
-                              (LEA pend (ptr t (get-value r) (car (shape r))))
-                              (CMP (get-value r) pend)
+                              [(*r    (reg (get-value r_) pool))
+                               (value (reg value_ pool))
+                               (*rx   (reg <long> pool))]
+                              (LEA *rx (ptr t *r (car (shape r_))))
+                              (CMP *r *rx)
                               (JE 'return)
                               'loop
-                              (MOV (ptr t (get-value r)) value)
-                              (ADD (get-value r) (size-of t))
-                              (CMP (get-value r) pend)
+                              (MOV (ptr t *r) value)
+                              (ADD *r (size-of t))
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))
          (proc (lambda (t n value)

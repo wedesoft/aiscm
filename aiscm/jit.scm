@@ -366,9 +366,11 @@
     (make type #:value value #:shape (list size) #:strides (list stride))))
 
 (define (params ctx return-type arg-classes fun)
-  (let* [(pool (make <pool>))
-         (args (map (cut arg <> pool) arg-classes))]
-    (asm ctx
-         return-type
-         (flatten (map types arg-classes))
-         (flatten-n (append (get-before pool) (apply fun (cons pool args)) (get-after pool)) 2))))
+  (let* [(pool      (make <pool>))
+         (args      (map (cut arg <> pool) arg-classes))
+         (arg-types (flatten (map types arg-classes)))]
+    (asm ctx return-type arg-types
+         (flatten-n (append (get-before pool)
+                            (apply fun (cons pool args))
+                            (get-after pool))
+                    2))))
