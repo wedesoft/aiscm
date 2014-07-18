@@ -5,10 +5,11 @@
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (aiscm element)
   #:use-module (aiscm util)
-  #:use-module (aiscm int)
   #:use-module (aiscm mem)
+  #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm sequence)
   #:export (<jit-context> <pool>
             get-type get-reg get-code get-name asm label-offsets get-target resolve
             resolve-jumps len get-bits ptr get-disp get-index
@@ -23,7 +24,8 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            reg arg)
+            reg arg params
+            types)
   #:export-syntax (env))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -352,3 +354,21 @@
     (set-after pool after)
     (set-offset pool offset)
     (flatten-n (append start middle end) 2)))
+
+(define-method (types (x <meta<element>>)) x)
+(define-method (types (x <meta<sequence<>>>))
+  (list <long> <long> <long>))
+
+(define-method (arg (type <meta<sequence<>>>) (pool <pool>))
+  (let [(value  (arg <long> pool))
+        (size   (arg <long> pool))
+        (stride (arg <long> pool))]
+    (make type #:value value #:shape (list size) #:strides (list stride))))
+
+(define (params ctx return-type arg-classes fun)
+  (let* [(pool (make <pool>))
+         (args (map (cut arg <> pool) arg-classes))]
+    (asm ctx
+         return-type
+         (flatten-n (append (get-before pool) (apply fun (cons pool args)) (get-after pool)) 2)
+         (flatten (map types arg-classes)))))
