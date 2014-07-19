@@ -1,6 +1,5 @@
 # TODO
 
-* remove redundancy for handling of return values
 * implement IMUL, strides
 * bug: only use MOVSX if type is bigger
 * multi-dimensional +

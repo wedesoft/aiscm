@@ -13,7 +13,7 @@
   #:export (<jit-context> <pool>
             get-type get-reg get-code get-name asm label-offsets get-target resolve
             resolve-jumps len get-bits ptr get-disp get-index
-            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB CMP
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -265,6 +265,9 @@
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits r/m)))))
 (define-method (SUB (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
+
+(define-method (IMUL (r <register>) (r/m <operand>))
+  (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
 
 (define-method (CMP (m <pointer>) (r <register>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
