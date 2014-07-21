@@ -268,6 +268,8 @@
 
 (define-method (IMUL (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
+(define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>))
+  (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
 
 (define-method (CMP (m <pointer>) (r <register>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
