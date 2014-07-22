@@ -103,9 +103,10 @@
         #:value   (get-value self)
         #:shape   (cycle (shape self))
         #:strides (cycle (strides self))))
-(define (downsample self n)
-  (let [(phase (1- n))]
+(define* (downsample self n #:optional phase)
+  (let* [(phase   (or phase (1- n)))
+         (skipped (skip phase self))]
     (make (class-of self)
-          #:value   (get-value (skip phase self))
-          #:shape   (list (quotient (last (shape self)) n))
-          #:strides (list (* (last (strides self)) n)))))
+          #:value   (get-value skipped)
+          #:shape   (list (quotient (+ (1- n) (last (shape skipped))) n))
+          #:strides (list (* (last (strides skipped)) n)))))
