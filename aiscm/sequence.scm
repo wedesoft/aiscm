@@ -9,7 +9,7 @@
   #:use-module (aiscm pointer)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence multiarray multiarray->list list->multiarray strides
-            roll unroll downsample))
+            drop roll unroll downsample))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -57,7 +57,7 @@
         #:value   (+ (get-value self) (* offset (last (strides self)) (size-of (typecode self))))
         #:shape   (append (all-but-last (shape self)) (list size))
         #:strides (strides self)))
-(define (skip offset self) (slice offset (- (last (shape self)) offset) self))
+(define (drop offset self) (slice offset (- (last (shape self)) offset) self))
 (define-method (fetch (self <sequence<>>)) self)
 (define-method (get (self <sequence<>>) . args)
   (if (null? args) self (get (fetch (fold-right element self args)))))
@@ -101,10 +101,13 @@
         #:value   (get-value self)
         #:shape   (uncycle (shape self))
         #:strides (uncycle (strides self))))
-(define* (downsample self n #:optional phase)
-  (let* [(phase   (or phase (1- n)))
-         (skipped (skip phase self))]
-    (make (class-of self)
-          #:value   (get-value skipped)
-          #:shape   (list (quotient (+ (1- n) (last (shape skipped))) n))
-          #:strides (list (* (last (strides skipped)) n)))))
+(define-method (downsample (self <sequence<>>) (n <integer>))
+   (let [(shape   (shape self))
+         (strides (strides self))]
+     (make (class-of self)
+           #:value   (get-value self)
+           #:shape   (append (all-but-last shape) (list (quotient (+ (1- n) (last shape)) n)))
+           #:strides (append (all-but-last strides) (list (* n (last strides)))))))
+(define-method (downsample (self <sequence<>>) (n <null>)) self)
+(define-method (downsample (self <sequence<>>) (n <pair>))
+  (downsample (unroll (downsample (roll self) (all-but-last n))) (last n)))
