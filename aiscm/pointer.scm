@@ -29,7 +29,7 @@
     (define-method (initialize (self retval) initargs)
       (let-keywords initargs #t (value)
         (let [(value (or value (make <mem> #:size (size-of targetclass))))]
-          (next-method self `(#:value ,value)))))
+          (next-method self (list #:value value)))))
     (define-method (target (self metaclass)) targetclass)
     retval))
 (define-method (fetch (self <pointer<>>))

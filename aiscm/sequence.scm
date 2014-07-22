@@ -43,7 +43,7 @@
                                              (or size (apply * shape))))))
                (shape   (or shape (list size)))
                (strides (or strides (default-strides shape)))]
-          (next-method self `(#:value ,value #:shape ,shape #:strides ,strides)))))
+          (next-method self (list #:value value #:shape shape #:strides strides)))))
     (define-method (element-type (self metaclass)) (pointer type))
     (define-method (dimension (self metaclass)) (1+ (dimension type)))
     (define-method (typecode (self metaclass)) (typecode type))
