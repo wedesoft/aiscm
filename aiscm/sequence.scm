@@ -13,7 +13,8 @@
             multiarray->list
             list->multiarray
             strides
-            roll))
+            roll
+            downsample))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -61,6 +62,7 @@
         #:value   (+ (get-value self) (* offset (last (strides self)) (size-of (typecode self))))
         #:shape   (append (all-but-last (shape self)) (list size))
         #:strides (strides self)))
+(define (skip offset self) (slice offset (- (last (shape self)) offset) self))
 (define-method (fetch (self <sequence<>>)) self)
 (define-method (get (self <sequence<>>) . args)
   (if (null? args) self (get (fetch (fold-right element self args)))))
@@ -101,3 +103,9 @@
         #:value   (get-value self)
         #:shape   (cycle (shape self))
         #:strides (cycle (strides self))))
+(define (downsample self n)
+  (let [(phase (1- n))]
+    (make (class-of self)
+          #:value   (get-value (skip phase self))
+          #:shape   (list (quotient (last (shape self)) n))
+          #:strides (list (* (last (strides self)) n)))))

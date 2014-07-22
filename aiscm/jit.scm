@@ -96,7 +96,7 @@
 (define register-sizes '(1 2 4 8))
 (define (each-hex proc arg) (for-each proc arg hex))
 (define (reg-list bits) (map (cut make <register> #:bits bits #:code <>) hex))
-(define regs (map (compose reg-list (cut * <> 8)) register-sizes)); TODO: use bytes instead of bits
+(define regs (map (compose reg-list (cut * <> 8)) register-sizes))
 (define-method (reg (type <meta<int<>>>) (code <integer>))
   (list-ref (list-ref regs (index (size-of type) register-sizes)) code))
 
@@ -268,7 +268,7 @@
 
 (define-method (IMUL (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
-(define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>))
+(define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
   (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
 
 (define-method (CMP (m <pointer>) (r <register>))
