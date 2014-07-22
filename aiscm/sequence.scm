@@ -8,13 +8,8 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm pointer)
   #:export (<meta<sequence<>>> <sequence<>>
-            sequence
-            multiarray
-            multiarray->list
-            list->multiarray
-            strides
-            roll
-            downsample))
+            sequence multiarray multiarray->list list->multiarray strides
+            roll unroll downsample))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -98,11 +93,14 @@
   (sequence (coerce a (typecode b))))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<sequence<>>>))
   (sequence (coerce (typecode a) (typecode b))))
-(define (roll self)
-  (make (class-of self)
+(define (roll self) (make (class-of self)
         #:value   (get-value self)
         #:shape   (cycle (shape self))
         #:strides (cycle (strides self))))
+(define (unroll self) (make (class-of self)
+        #:value   (get-value self)
+        #:shape   (uncycle (shape self))
+        #:strides (uncycle (strides self))))
 (define* (downsample self n #:optional phase)
   (let* [(phase   (or phase (1- n)))
          (skipped (skip phase self))]
