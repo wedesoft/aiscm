@@ -1,8 +1,8 @@
 (define-module (aiscm util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:export (toplevel-define! index all-but-last upto depth flatten-n flatten
-            cycle uncycle)
+  #:export (toplevel-define! attach index all-but-last upto depth
+            flatten-n flatten cycle uncycle)
   #:export-syntax (def-once))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -11,6 +11,7 @@
     (if (not (defined? sym (current-module)))
       (toplevel-define! sym value))
     (primitive-eval sym)))
+(define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index a b)
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
@@ -25,5 +26,5 @@
       (cons (car val) (flatten-n (cdr val) n)))
     val))
 (define (flatten val) (flatten-n val 1))
-(define (cycle lst) (append (cdr lst) (list (car lst))))
+(define (cycle lst) (attach (cdr lst) (car lst)))
 (define (uncycle lst) (cons (last lst) (all-but-last lst)))

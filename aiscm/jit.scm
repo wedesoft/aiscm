@@ -79,7 +79,7 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(offsets     (label-offsets commands))
          (resolved    (resolve-jumps commands offsets))
-         (with-return (append resolved (list (RET))))
+         (with-return (attach resolved (RET)))
          (code        (make-mmap (u8-list->bytevector (apply append with-return))))]
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
@@ -313,7 +313,7 @@
 (define (clear-after pool) (let [(retval (get-after pool))] (set-after pool '()) retval))
 (define (push-stack pool reg)
   (set-offset pool (1+ (get-offset pool)))
-  (set-before pool (append (get-before pool) (list (PUSH reg))))
+  (set-before pool (attach (get-before pool) (PUSH reg)))
   (set-after pool (cons (POP reg) (get-after pool))))
 (define (spill pool type)
   (let* [(target (last (get-live pool)))
@@ -343,7 +343,7 @@
   (let* [(retval (reg (get-type value) pool))
          (disp   (+ (get-disp value) (ash (get-offset pool) 3)))
          (setup  (MOV retval (ptr (get-type value) RSP disp)))]
-    (set-before pool (append (get-before pool) (list setup)))
+    (set-before pool (attach (get-before pool) setup))
     retval))
 (define-syntax-rule (env pool vars . body)
   (let* [(live   (get-live pool))
