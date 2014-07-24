@@ -3,7 +3,7 @@
   #:use-module (srfi srfi-26)
   #:export (toplevel-define! attach index all-but-last upto depth
             flatten-n flatten cycle uncycle)
-  #:export-syntax (def-once))
+  #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
 (define-syntax-rule (def-once name value)
@@ -17,6 +17,7 @@
     (if tail (length (cdr tail)) #f)))
 (define (all-but-last lst) (reverse (cdr (reverse lst))))
 (define (upto a b) (if (<= a b) (cons a (upto (1+ a) b)) '()))
+(define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (upto 1 n)))
 (define (depth val)
   (if (list? val) (1+ (apply max (map depth val))) 0))
 (define (flatten-n val n)

@@ -361,26 +361,27 @@
 
 (define-method (content (self <element>)) (get-value self))
 (define-method (content (self <sequence<>>))
-  (cons ((compose pointer-address get-memory get-value) self) (append (shape self) (strides self))))
+  (cons ((compose pointer-address get-memory get-value) self)
+        (append (shape self) (strides self))))
 
-(define-method (types (x <meta<element>>)) x)
-(define-method (types (x <meta<sequence<>>>))
-  (list <long> <long> <long>))
+(define-method (types (type <meta<element>>)) type)
+(define-method (types (type <meta<sequence<>>>))
+  (cons <long> (append (expand (dimension type) <long>) (expand (dimension type) <long>))))
 
 (define-method (arg (type <meta<sequence<>>>) (pool <pool>))
-  (let [(value  (arg <long> pool))
-        (size   (arg <long> pool))
-        (stride (arg <long> pool))]
-    (make type #:value value #:shape (list size) #:strides (list stride))))
+  (let [(value   (arg <long> pool))
+        (shape   (expand (dimension type) (arg <long> pool)))
+        (strides (expand (dimension type) (arg <long> pool)))]
+    (make type #:value value #:shape shape #:strides strides)))
 
-(define-method (return-type (x <meta<element>>)) x)
-(define-method (return-type (x <meta<sequence<>>>)) <null>)
+(define-method (return-type (type <meta<element>>)) type)
+(define-method (return-type (type <meta<sequence<>>>)) <null>)
 
-(define-method (add-return-value (x <meta<element>>) pool args) (cons (reg x pool) args))
-(define-method (add-return-value (x <meta<sequence<>>>) pool args) args)
+(define-method (add-return-value (type <meta<element>>) pool args) (cons (reg type pool) args))
+(define-method (add-return-value (type <meta<sequence<>>>) pool args) args)
 
-(define-method (add-return-param (x <meta<element>>) arg-classes) arg-classes)
-(define-method (add-return-param (x <meta<sequence<>>>) arg-classes) (cons x arg-classes))
+(define-method (add-return-param (type <meta<element>>) arg-classes) arg-classes)
+(define-method (add-return-param (type <meta<sequence<>>>) arg-classes) (cons type arg-classes))
 
 (define (params ctx return-class arg-classes fun)
   (let* [(pool          (make <pool>))
