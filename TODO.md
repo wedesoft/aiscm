@@ -1,6 +1,6 @@
 # TODO
 
-* allocation of return values
+* simplify 'fill'
 * bug: only use MOVSX if type is bigger
 * multi-dimensional +
 * PPM I/O
