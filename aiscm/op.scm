@@ -123,7 +123,7 @@
                                  (b+  (reg (last (strides b_)) pool))
                                  (r   (reg tr pool))
                                  (w   (reg tr pool))
-                                 (n   (reg (car (shape r_)) pool))
+                                 (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
@@ -176,7 +176,7 @@
                                  (*a  (reg (get-value a_) pool))
                                  (a+  (reg (last (strides a_)) pool))
                                  (r   (reg tr pool))
-                                 (n   (reg (car (shape r_)) pool))
+                                 (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
@@ -228,7 +228,7 @@
                                  (a+  (reg (last (strides a_)) pool))
                                  (b   (reg b_ pool))
                                  (r   (reg tr pool))
-                                 (n   (reg (car (shape r_)) pool))
+                                 (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
@@ -265,7 +265,7 @@
                                  (b+  (reg (last (strides b_)) pool))
                                  (r   (reg tr pool))
                                  (w   (reg tr pool))
-                                 (n   (reg (car (shape r_)) pool))
+                                 (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
@@ -306,7 +306,7 @@
                                  (b+  (reg (last (strides b_)) pool))
                                  (r   (reg tr pool))
                                  (w   (reg tr pool))
-                                 (n   (reg (car (shape r_)) pool))
+                                 (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
