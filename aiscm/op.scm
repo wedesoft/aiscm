@@ -349,32 +349,7 @@
     (add-method! - m)
     (- a b)))
 
-(define-method (fill (t <meta<element>>) (n <integer>) value)
-  (let* [(cr   (sequence t))
-         (code (params ctx cr (list t)
-                       (lambda (pool r_ value_)
-                         (env pool
-                              [(*r    (reg (get-value r_) pool))
-                               (r+    (reg (last (strides r_)) pool))
-                               (value (reg value_ pool))
-                               (n     (reg (car (shape r_)) pool))
-                               (*rx   (reg <long> pool))]
-                              (IMUL n r+)
-                              (LEA *rx (ptr t *r n))
-                              (IMUL r+ r+ (size-of t))
-                              (CMP *r *rx)
-                              (JE 'return)
-                              'loop
-                              (MOV (ptr t *r) value)
-                              (ADD *r r+)
-                              (CMP *r *rx)
-                              (JNE 'loop)
-                              'return))))
-         (proc (lambda (t n value)
-                 (let [(r (make cr #:size n))]
-                   (apply code (flatten (list (content r) value)))
-                   r)))]
-    (add-method! fill (make <method>
-                            #:specializers (list (class-of t) <integer> (class-of value))
-                            #:procedure proc))
-    (fill t n value)))
+(define (fill t n value)
+  (let [(retval (make (sequence t) #:size n))]
+    (store retval value)
+    retval))
