@@ -1,7 +1,5 @@
 # TODO
 
-* simplify 'fill'
-* bug: only use MOVSX if type is bigger
 * multi-dimensional +
 * PPM I/O
 * print arrays

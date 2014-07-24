@@ -55,7 +55,9 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
+                                ((if (eqv? (size-of ta) (size-of tr))
+                                   MOV
+                                   (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
                                 (ADD r b)
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
@@ -91,7 +93,9 @@
                                 (JE 'return)
                                 'loop
                                 (MOV r a)
-                                ((if (eq? tb tr) MOV (if (signed? tb) MOVSX MOVZX)) w (ptr tb *b))
+                                ((if (eqv? (size-of tb) (size-of tr))
+                                   MOV
+                                   (if (signed? tb) MOVSX MOVZX)) w (ptr tb *b))
                                 (ADD r w)
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
@@ -129,8 +133,10 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                                (if (eq? tb tr)
+                                ((if (eqv? (size-of ta) (size-of tr))
+                                   MOV
+                                   (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
+                                (if (eqv? (size-of tb) (size-of tr))
                                   (ADD r (ptr tb *b))
                                   (append
                                     ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
@@ -231,7 +237,9 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
+                                ((if (eqv? (size-of ta) (size-of tr))
+                                   MOV
+                                   (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
                                 (SUB r b)
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
@@ -267,7 +275,7 @@
                                 (JE 'return)
                                 'loop
                                 (MOV r a)
-                                (if (eq? tb tr)
+                                (if (eqv? (size-of tb) (size-of tr))
                                   (SUB r (ptr tb *b))
                                   (append
                                     ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
@@ -308,8 +316,10 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                ((if (eq? ta tr) MOV (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                                (if (eq? tb tr)
+                                ((if (eqv? (size-of ta) (size-of tr))
+                                   MOV
+                                   (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
+                                (if (eqv? (size-of tb) (size-of tr))
                                   (SUB r (ptr tb *b))
                                   (append
                                     ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
