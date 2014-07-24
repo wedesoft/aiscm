@@ -4,6 +4,7 @@
   #:export (<element>
             <meta<element>>
             get-value
+            content
             size-of
             foreign-type
             pack

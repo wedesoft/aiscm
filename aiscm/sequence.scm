@@ -4,9 +4,9 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
-  #:use-module (aiscm pointer)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence multiarray multiarray->list list->multiarray strides
             drop crop roll unroll downsample))

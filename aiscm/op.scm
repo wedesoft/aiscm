@@ -1,41 +1,16 @@
 (define-module (aiscm op)
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
-  #:use-module (system foreign)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (fill)
   #:re-export (+ -))
 (define ctx (make <jit-context>))
-
-(define-method (shape a b)
-  (let [(shape-a (shape a))
-        (shape-b (shape b))]
-    (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
-
-(define-method (content (x <element>)) (get-value x))
-(define-method (content (x <sequence<>>))
-  (list ((compose pointer-address get-memory get-value) x)
-        (car (shape x))
-        (car (strides x))))
-
-(define-method (jit-wrap (ctx <jit-context>) (return-class <meta<element>>)
-                         arg-classes (fun <procedure>))
-  (let* [(code (params ctx return-class arg-classes fun))
-         (proc (lambda args (make return-class #:value (apply code (flatten (map content args))))))]
-    (make <method> #:specializers arg-classes #:procedure proc)))
-(define-method (jit-wrap (ctx <jit-context>) (return-class <meta<sequence<>>>)
-                         arg-classes (fun <procedure>))
-  (let* [(code (params ctx return-class arg-classes fun))
-         (proc (lambda args
-                 (let [(r (make return-class #:shape (apply shape args)))]
-                   (apply code (flatten (map content (cons r args))))
-                   r)))]
-    (make <method> #:specializers arg-classes #:procedure proc)))
 
 (define-method (+ (a <element>)) a)
 (define-method (+ (a <element>) (b <element>))
@@ -349,7 +324,7 @@
     (add-method! - m)
     (- a b)))
 
-(define (fill t n value)
+(define (fill t n value); TODO: replace with tensor operation
   (let [(retval (make (sequence t) #:size n))]
     (store retval value)
     retval))
