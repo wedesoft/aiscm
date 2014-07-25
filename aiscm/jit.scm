@@ -338,7 +338,7 @@
     (if is-reg? (set-live pool (cons retval (get-live pool))))
     (set-argc pool (1+ (get-argc pool)))
     retval))
-(define-method (reg (value <register>) (pool <pool>)) value)
+(define-method (reg (value <register>) (pool <pool>)) value); TODO: move to front
 (define-method (reg (value <pointer>) (pool <pool>))
   (let* [(retval (reg (get-type value) pool))
          (disp   (+ (get-disp value) (ash (get-offset pool) 3)))

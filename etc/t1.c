@@ -1,11 +1,6 @@
 void other(int a);
 
-int test(int *p, unsigned int s, unsigned int n)
+short int test(short int i, char j)
 {
-  int *pend = p + n * s;
-  while (p != pend) {
-    other(*p);
-    p += s;
-  };
-  return 0;
+  return i - j;
 }

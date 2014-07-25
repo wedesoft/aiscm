@@ -22,9 +22,16 @@
                            (env pool
                                 [(r (reg r_ pool))
                                  (a (reg a_ pool))
-                                 (b (reg b_ pool))]
-                                (MOV r a)
-                                (ADD r b)))))]
+                                 (b (reg b_ pool))
+                                 (w (reg cr pool))]
+                                ((if (eqv? (size-of ca) (size-of cr))
+                                   MOV
+                                   (if (signed? ca) MOVSX MOVZX)) r a)
+                                (if (eqv? (size-of cb) (size-of cr))
+                                  (ADD r b)
+                                  (append
+                                    ((if (signed? cb) MOVSX MOVZX) w b)
+                                    (ADD r w)))))))]
     (add-method! + m)
     (+ a b)))
 (define-method (+ (a <element>) (b <integer>))
