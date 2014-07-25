@@ -54,6 +54,7 @@
                                  (a+  (reg (last (strides a_)) pool))
                                  (b   (reg b_ pool))
                                  (r   (reg tr pool))
+                                 (w   (reg tr pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
@@ -65,7 +66,11 @@
                                 ((if (eqv? (size-of ta) (size-of tr))
                                    MOV
                                    (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                                (ADD r b)
+                                (if (eqv? (size-of cb) (size-of tr))
+                                  (ADD r b)
+                                  (append
+                                    ((if (signed? cb) MOVSX MOVZX) w b)
+                                    (ADD r w)))
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
                                 (ADD *a a+)
@@ -99,11 +104,14 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                (MOV r a)
-                                ((if (eqv? (size-of tb) (size-of tr))
+                                ((if (eqv? (size-of ca) (size-of tr))
                                    MOV
-                                   (if (signed? tb) MOVSX MOVZX)) w (ptr tb *b))
-                                (ADD r w)
+                                   (if (signed? ca) MOVSX MOVZX)) r a)
+                                (if (eqv? (size-of tb) (size-of tr))
+                                  (ADD r (ptr tb *b))
+                                  (append
+                                    ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
+                                    (ADD r w)))
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
                                 (ADD *b b+)
@@ -211,9 +219,16 @@
                            (env pool
                                 [(r (reg r_ pool))
                                  (a (reg a_ pool))
-                                 (b (reg b_ pool))]
-                                (MOV r a)
-                                (SUB r b)))))]
+                                 (b (reg b_ pool))
+                                 (w (reg cr pool))]
+                                ((if (eqv? (size-of ca) (size-of cr))
+                                   MOV
+                                   (if (signed? ca) MOVSX MOVZX)) r a)
+                                (if (eqv? (size-of cb) (size-of cr))
+                                  (SUB r b)
+                                  (append
+                                    ((if (signed? cb) MOVSX MOVZX) w b)
+                                    (SUB r w)))))))]
     (add-method! - m)
     (- a b)))
 (define-method (- (a <element>) (b <integer>))
@@ -235,6 +250,7 @@
                                  (a+  (reg (last (strides a_)) pool))
                                  (b   (reg b_ pool))
                                  (r   (reg tr pool))
+                                 (w   (reg tr pool))
                                  (n   (reg (last (shape r_)) pool))
                                  (*rx (reg <long> pool))]
                                 (IMUL n r+)
@@ -247,7 +263,11 @@
                                 ((if (eqv? (size-of ta) (size-of tr))
                                    MOV
                                    (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                                (SUB r b)
+                                (if (eqv? (size-of cb) (size-of tr))
+                                  (SUB r b)
+                                  (append
+                                    ((if (signed? cb) MOVSX MOVZX) w b)
+                                    (SUB r w)))
                                 (MOV (ptr tr *r) r)
                                 (ADD *r r+)
                                 (ADD *a a+)
@@ -281,7 +301,9 @@
                                 (CMP *r *rx)
                                 (JE 'return)
                                 'loop
-                                (MOV r a)
+                                ((if (eqv? (size-of ca) (size-of tr))
+                                   MOV
+                                   (if (signed? ca) MOVSX MOVZX)) r a)
                                 (if (eqv? (size-of tb) (size-of tr))
                                   (SUB r (ptr tb *b))
                                   (append
