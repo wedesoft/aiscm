@@ -18,12 +18,12 @@
          (cb   (class-of b))
          (cr   (coerce ca cb))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(r (reg r_ pool))
-                                 (a (reg a_ pool))
-                                 (b (reg b_ pool))
-                                 (w (reg cr pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(r (reg r_ fun))
+                                 (a (reg a_ fun))
+                                 (b (reg b_ fun))
+                                 (w (reg cr fun))]
                                 ((if (eqv? (size-of ca) (size-of cr))
                                    MOV
                                    (if (signed? ca) MOVSX MOVZX)) r a)
@@ -45,17 +45,17 @@
          (ta   (typecode ca))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*a  (reg (get-value a_) pool))
-                                 (a+  (reg (last (strides a_)) pool))
-                                 (b   (reg b_ pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*a  (reg (get-value a_) fun))
+                                 (a+  (reg (last (strides a_)) fun))
+                                 (b   (reg b_ fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -86,17 +86,17 @@
          (tb   (typecode cb))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (a   (reg a_ pool))
-                                 (*b  (reg (get-value b_) pool))
-                                 (b+  (reg (last (strides b_)) pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (a   (reg a_ fun))
+                                 (*b  (reg (get-value b_) fun))
+                                 (b+  (reg (last (strides b_)) fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -128,18 +128,18 @@
          (tb   (typecode cb))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (*a  (reg (get-value a_) pool))
-                                 (a+  (reg (last (strides a_)) pool))
-                                 (*b  (reg (get-value b_) pool))
-                                 (b+  (reg (last (strides b_)) pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (*a  (reg (get-value a_) fun))
+                                 (a+  (reg (last (strides a_)) fun))
+                                 (*b  (reg (get-value b_) fun))
+                                 (b+  (reg (last (strides b_)) fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -170,10 +170,10 @@
   (let* [(ca   (class-of a))
          (cr   ca)
          (m    (jit-wrap ctx cr (list ca)
-                         (lambda (pool r_ a_)
-                           (env pool
-                                [(r (reg r_ pool))
-                                 (a (reg a_ pool))]
+                         (lambda (fun r_ a_)
+                           (env fun
+                                [(r (reg r_ fun))
+                                 (a (reg a_ fun))]
                                 (MOV r a)
                                 (NEG r)))))]
     (add-method! - m)
@@ -184,15 +184,15 @@
          (cr   ca)
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca)
-                         (lambda (pool r_ a_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (*a  (reg (get-value a_) pool))
-                                 (a+  (reg (last (strides a_)) pool))
-                                 (r   (reg tr pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (*a  (reg (get-value a_) fun))
+                                 (a+  (reg (last (strides a_)) fun))
+                                 (r   (reg tr fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -215,12 +215,12 @@
          (cb   (class-of b))
          (cr   (coerce ca cb))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(r (reg r_ pool))
-                                 (a (reg a_ pool))
-                                 (b (reg b_ pool))
-                                 (w (reg cr pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(r (reg r_ fun))
+                                 (a (reg a_ fun))
+                                 (b (reg b_ fun))
+                                 (w (reg cr fun))]
                                 ((if (eqv? (size-of ca) (size-of cr))
                                    MOV
                                    (if (signed? ca) MOVSX MOVZX)) r a)
@@ -242,17 +242,17 @@
          (ta   (typecode ca))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (*a  (reg (get-value a_) pool))
-                                 (a+  (reg (last (strides a_)) pool))
-                                 (b   (reg b_ pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (*a  (reg (get-value a_) fun))
+                                 (a+  (reg (last (strides a_)) fun))
+                                 (b   (reg b_ fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -283,17 +283,17 @@
          (tb   (typecode cb))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (a   (reg a_ pool))
-                                 (*b  (reg (get-value b_) pool))
-                                 (b+  (reg (last (strides b_)) pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (a   (reg a_ fun))
+                                 (*b  (reg (get-value b_) fun))
+                                 (b+  (reg (last (strides b_)) fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))
@@ -325,18 +325,18 @@
          (tb   (typecode cb))
          (tr   (typecode cr))
          (m    (jit-wrap ctx cr (list ca cb)
-                         (lambda (pool r_ a_ b_)
-                           (env pool
-                                [(*r  (reg (get-value r_) pool))
-                                 (r+  (reg (last (strides r_)) pool))
-                                 (*a  (reg (get-value a_) pool))
-                                 (a+  (reg (last (strides a_)) pool))
-                                 (*b  (reg (get-value b_) pool))
-                                 (b+  (reg (last (strides b_)) pool))
-                                 (r   (reg tr pool))
-                                 (w   (reg tr pool))
-                                 (n   (reg (last (shape r_)) pool))
-                                 (*rx (reg <long> pool))]
+                         (lambda (fun r_ a_ b_)
+                           (env fun
+                                [(*r  (reg (get-value r_) fun))
+                                 (r+  (reg (last (strides r_)) fun))
+                                 (*a  (reg (get-value a_) fun))
+                                 (a+  (reg (last (strides a_)) fun))
+                                 (*b  (reg (get-value b_) fun))
+                                 (b+  (reg (last (strides b_)) fun))
+                                 (r   (reg tr fun))
+                                 (w   (reg tr fun))
+                                 (n   (reg (last (shape r_)) fun))
+                                 (*rx (reg <long> fun))]
                                 (IMUL n r+)
                                 (LEA *rx (ptr tr *r n))
                                 (IMUL r+ r+ (size-of tr))

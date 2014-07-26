@@ -683,98 +683,98 @@
                          (ADD RSP 8)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
 (ok (equal? (list (MOV CX 42))
-            (let [(pool (make <pool> #:codes (map get-code (list RCX RDX))))]
-              (env pool
-                   [(x (reg <sint> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
+              (env fun
+                   [(x (reg <sint> fun))]
                    (MOV x 42))))
-    "Get first register from pool")
+    "Get first register from register pool")
 (ok (equal? (list (MOV DX 42))
-            (let [(pool (make <pool> #:codes (map get-code (list RCX RDX))))]
-              (env pool
-                   [(x (reg <sint> pool))
-                    (y (reg <sint> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
+              (env fun
+                   [(x (reg <sint> fun))
+                    (y (reg <sint> fun))]
                    (MOV y 42))))
-    "Get second register from pool")
+    "Get second register from register pool")
 (ok (equal? (list (MOV CX 42))
-            (let [(pool (make <pool> #:codes (map get-code (list RCX RDX))))]
-              (env pool [(x (reg <sint> pool))] (MOV x 21))
-              (env pool [(y (reg <sint> pool))] (MOV y 42))))
-    "Reuse register from pool")
+            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
+              (env fun [(x (reg <sint> fun))] (MOV x 21))
+              (env fun [(y (reg <sint> fun))] (MOV y 42))))
+    "Reuse register from register pool")
 (ok (equal? (list (MOV RDX 42))
-            (let [(pool (make <pool> #:codes (map get-code (list RCX RDX))))]
-              (env pool
-                   [(x (reg <int> pool))]
-                   (env pool
-                        [(y (reg <long> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
+              (env fun
+                   [(x (reg <int> fun))]
+                   (env fun
+                        [(y (reg <long> fun))]
                         (MOV y 42)))))
     "Nested environments")
 (ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
-            (let [(pool (make <pool> #:codes (map get-code (list RDX))))]
-              (env pool
-                   [(x (reg <int> pool))]
-                   (env pool
-                        [(y (reg <int> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RDX))))]
+              (env fun
+                   [(x (reg <int> fun))]
+                   (env fun
+                        [(y (reg <int> fun))]
                         (MOV y 42)))))
     "Spilling a register")
 (ok (equal? (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL))
-            (let [(pool (make <pool> #:codes (map get-code (list RCX RDX))))]
-              (env pool
-                   [(u (reg <byte> pool))
-                    (v (reg <sint> pool))]
-                   (env pool
-                        [(x (reg <int> pool))
-                         (y (reg <long> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
+              (env fun
+                   [(u (reg <byte> fun))
+                    (v (reg <sint> fun))]
+                   (env fun
+                        [(x (reg <int> fun))
+                         (y (reg <long> fun))]
                         (MOV x 21)
                         (MOV y 42)))))
     "Spilling two registers")
 (ok (eq? EDX (reg <int> #x2))
     "Instantiating registers by native type and code")
 (ok (equal? (list (PUSH RBX) (MOV BX 42) (POP RBX))
-            (let [(pool (make <pool> #:codes (map get-code (list RBX))))]
-              (env pool
-                   [(x (reg <sint> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RBX))))]
+              (env fun
+                   [(x (reg <sint> fun))]
                    (MOV x 42))))
     "Restore callee-saved registers")
 (ok (equal? (list (MOV AX DI))
-            (let [(pool (make <pool> #:codes (map get-code (list RAX RDI))))]
-              (env pool
-                   [(x (arg <sint> pool))
-                    (f (reg <sint> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RAX RDI))))]
+              (env fun
+                   [(x (arg <sint> fun))
+                    (f (reg <sint> fun))]
                    (MOV f x))))
     "Copy first integer argument")
 (ok (equal? (list (MOV AX DI))
-            (let [(pool (make <pool> #:codes (map get-code (list RDI RAX))))]
-              (env pool
-                   [(x (arg <sint> pool))
-                    (f (reg <sint> pool))]
+            (let [(fun (make <jit-function> #:codes (map get-code (list RDI RAX))))]
+              (env fun
+                   [(x (arg <sint> fun))
+                    (f (reg <sint> fun))]
                    (MOV f x))))
     "Register allocation respects function arguments")
 (ok (equal? (list (MOV AX R9W))
-            (let [(pool (make <pool>))]
-              (env pool
-                   [(r (arg <sint> pool))
-                    (s (arg <sint> pool))
-                    (t (arg <sint> pool))
-                    (u (arg <sint> pool))
-                    (v (arg <sint> pool))
-                    (w (arg <sint> pool))
-                    (f (reg <sint> pool))]
+            (let [(fun (make <jit-function>))]
+              (env fun
+                   [(r (arg <sint> fun))
+                    (s (arg <sint> fun))
+                    (t (arg <sint> fun))
+                    (u (arg <sint> fun))
+                    (v (arg <sint> fun))
+                    (w (arg <sint> fun))
+                    (f (reg <sint> fun))]
                    (MOV f w))))
     "Copy sixth integer argument")
 (ok (equal? (list (MOV AX (ptr <sint> RSP #x8)))
-            (let [(pool (make <pool>))]
-              (env pool
-                   [(r (arg <sint> pool))
-                    (s (arg <sint> pool))
-                    (t (arg <sint> pool))
-                    (u (arg <sint> pool))
-                    (v (arg <sint> pool))
-                    (w (arg <sint> pool))
-                    (x (arg <sint> pool))
-                    (f (reg <sint> pool))]
+            (let [(fun (make <jit-function>))]
+              (env fun
+                   [(r (arg <sint> fun))
+                    (s (arg <sint> fun))
+                    (t (arg <sint> fun))
+                    (u (arg <sint> fun))
+                    (v (arg <sint> fun))
+                    (w (arg <sint> fun))
+                    (x (arg <sint> fun))
+                    (f (reg <sint> fun))]
                    (MOV f x))))
     "Copy seventh integer argument")
 (ok (equal? 42 ((params ctx <int> (list <int>)
-                        (lambda (pool r a_) (env pool [] (MOV r a_)))) 42))
+                        (lambda (fun r a_) (env fun [] (MOV r a_)))) 42))
     "Use 'params' to define method")
 (format #t "~&")
