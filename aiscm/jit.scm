@@ -359,30 +359,25 @@
     (set-offset fun offset)
     (flatten-n (append start middle end) 2)))
 
-(define-method (content (self <element>)) (get-value self))
-(define-method (content (self <sequence<>>))
-  (cons ((compose pointer-address get-memory get-value) self)
-        (append (shape self) (strides self))))
-
-(define-method (types (type <meta<element>>)) type)
-(define-method (types (type <meta<sequence<>>>))
-  (cons <long> (append (expand (dimension type) <long>) (expand (dimension type) <long>))))
-
 (define-method (arg (type <meta<sequence<>>>) (fun <jit-function>))
   (let [(value   (arg <long> fun))
         (shape   (expand (dimension type) (arg <long> fun)))
         (strides (expand (dimension type) (arg <long> fun)))]
     (make type #:value value #:shape shape #:strides strides)))
 
+(define-method (types (type <meta<element>>)) type)
+(define-method (types (type <meta<sequence<>>>))
+  (cons <long> (append (expand (dimension type) <long>) (expand (dimension type) <long>))))
+(define-method (content (self <element>)) (get-value self))
+(define-method (content (self <sequence<>>))
+  (cons ((compose pointer-address get-memory get-value) self)
+        (append (shape self) (strides self))))
 (define-method (return-type (type <meta<element>>)) type)
 (define-method (return-type (type <meta<sequence<>>>)) <null>)
-
 (define-method (add-return-value (type <meta<element>>) fun args) (cons (reg type fun) args))
 (define-method (add-return-value (type <meta<sequence<>>>) fun args) args)
-
 (define-method (add-return-param (type <meta<element>>) arg-classes) arg-classes)
 (define-method (add-return-param (type <meta<sequence<>>>) arg-classes) (cons type arg-classes))
-
 (define (pass-parameters ctx return-class arg-classes expr)
   (let* [(fun           (make <jit-function>))
          (param-classes (add-return-param return-class arg-classes))
@@ -391,24 +386,24 @@
          (arg-types     (flatten (map types param-classes)))
          (vals          (add-return-value return-class fun args))]
     (asm ctx return-type arg-types (apply expr (cons fun vals)))))
-
 (define-method (shape a b)
   (let [(shape-a (shape a))
         (shape-b (shape b))]
     (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
-
 (define-method (pass-return-value (ctx <jit-context>) (return-class <meta<element>>)
                                   arg-classes (fun <procedure>))
   (let* [(code (pass-parameters ctx return-class arg-classes fun))
-         (proc (lambda args (make return-class #:value (apply code (flatten (map content args))))))]
+         (proc (lambda args
+                 (let [(result (apply code (flatten (map content args))))]
+                   (make return-class #:value result))))]
     (make <method> #:specializers arg-classes #:procedure proc)))
 (define-method (pass-return-value (ctx <jit-context>) (return-class <meta<sequence<>>>)
                                   arg-classes (fun <procedure>))
   (let* [(code (pass-parameters ctx return-class arg-classes fun))
          (proc (lambda args
-                 (let [(r (make return-class #:shape (apply shape args)))]
-                   (apply code (flatten (map content (cons r args))))
-                   r)))]
+                 (let [(retval (make return-class #:shape (apply shape args)))]
+                   (apply code (flatten (map content (cons retval args))))
+                   retval)))]
     (make <method> #:specializers arg-classes #:procedure proc)))
 
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) fun)
