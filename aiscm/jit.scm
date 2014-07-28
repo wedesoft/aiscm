@@ -24,8 +24,8 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            reg arg params jit-wrap)
-  #:export-syntax (env))
+            reg arg pass-parameters)
+  #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -383,7 +383,7 @@
 (define-method (add-return-param (type <meta<element>>) arg-classes) arg-classes)
 (define-method (add-return-param (type <meta<sequence<>>>) arg-classes) (cons type arg-classes))
 
-(define (params ctx return-class arg-classes expr)
+(define (pass-parameters ctx return-class arg-classes expr)
   (let* [(fun           (make <jit-function>))
          (param-classes (add-return-param return-class arg-classes))
          (args          (map (cut arg <> fun) param-classes))
@@ -397,16 +397,19 @@
         (shape-b (shape b))]
     (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
 
-(define-method (jit-wrap (ctx <jit-context>) (return-class <meta<element>>)
-                         arg-classes (fun <procedure>))
-  (let* [(code (params ctx return-class arg-classes fun))
+(define-method (pass-return-value (ctx <jit-context>) (return-class <meta<element>>)
+                                  arg-classes (fun <procedure>))
+  (let* [(code (pass-parameters ctx return-class arg-classes fun))
          (proc (lambda args (make return-class #:value (apply code (flatten (map content args))))))]
     (make <method> #:specializers arg-classes #:procedure proc)))
-(define-method (jit-wrap (ctx <jit-context>) (return-class <meta<sequence<>>>)
-                         arg-classes (fun <procedure>))
-  (let* [(code (params ctx return-class arg-classes fun))
+(define-method (pass-return-value (ctx <jit-context>) (return-class <meta<sequence<>>>)
+                                  arg-classes (fun <procedure>))
+  (let* [(code (pass-parameters ctx return-class arg-classes fun))
          (proc (lambda args
                  (let [(r (make return-class #:shape (apply shape args)))]
                    (apply code (flatten (map content (cons r args))))
                    r)))]
     (make <method> #:specializers arg-classes #:procedure proc)))
+
+(define-syntax-rule (jit-wrap ctx return-class (arg-class ...) fun)
+  (pass-return-value ctx return-class (list arg-class ...) fun))

@@ -7,7 +7,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 282)
+(planned-tests 283)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -774,7 +774,10 @@
                     (f (reg <sint> fun))]
                    (MOV f x))))
     "Copy seventh integer argument")
-(ok (equal? 42 ((params ctx <int> (list <int>)
-                        (lambda (fun r a_) (env fun [] (MOV r a_)))) 42))
-    "Use 'params' to define method")
+(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
+                                 (lambda (fun r_ a_) (env fun [] (MOV r_ a_)))) 42))
+    "Use 'pass-parameters' to define method")
+(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>) (lambda (fun r_ a_) (env fun [] (MOV r_ a_)))))]
+                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
+    "Use 'jit-wrap' to define method")
 (format #t "~&")

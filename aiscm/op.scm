@@ -17,7 +17,7 @@
   (let* [(ca   (class-of a))
          (cb   (class-of b))
          (cr   (coerce ca cb))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(r (reg r_ fun))
@@ -44,7 +44,7 @@
          (cr   (coerce ca cb))
          (ta   (typecode ca))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -85,7 +85,7 @@
          (cr   (coerce ca cb))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -127,7 +127,7 @@
          (ta   (typecode ca))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -169,7 +169,7 @@
 (define-method (- (a <element>))
   (let* [(ca   (class-of a))
          (cr   ca)
-         (m    (jit-wrap ctx cr (list ca)
+         (m    (jit-wrap ctx cr (ca)
                          (lambda (fun r_ a_)
                            (env fun
                                 [(r (reg r_ fun))
@@ -183,7 +183,7 @@
          (ta   (typecode ca))
          (cr   ca)
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca)
+         (m    (jit-wrap ctx cr (ca)
                          (lambda (fun r_ a_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -214,7 +214,7 @@
   (let* [(ca   (class-of a))
          (cb   (class-of b))
          (cr   (coerce ca cb))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(r (reg r_ fun))
@@ -241,7 +241,7 @@
          (cr   (coerce ca cb))
          (ta   (typecode ca))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -282,7 +282,7 @@
          (cr   (coerce ca cb))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
@@ -324,7 +324,7 @@
          (ta   (typecode ca))
          (tb   (typecode cb))
          (tr   (typecode cr))
-         (m    (jit-wrap ctx cr (list ca cb)
+         (m    (jit-wrap ctx cr (ca cb)
                          (lambda (fun r_ a_ b_)
                            (env fun
                                 [(*r  (reg (get-value r_) fun))
