@@ -332,12 +332,12 @@
 (define-method (arg (type <meta<int<>>>) (fun <jit-function>))
   (let* [(n       (get-argc fun))
          (is-reg? (< n (length args)))
-         (retval  (if is-reg?
-                    (reg type (list-ref args n))
-                    (ptr type RSP (ash (+ (- n (length args)) 1) 3))))]
-    (if is-reg? (set-live fun (cons retval (get-live fun))))
+         (value  (if is-reg?
+                   (reg type (list-ref args n))
+                   (ptr type RSP (ash (+ (- n (length args)) 1) 3))))]
+    (if is-reg? (set-live fun (cons value (get-live fun))))
     (set-argc fun (1+ (get-argc fun)))
-    retval))
+    (make type #:value value)))
 (define-method (reg (value <register>) (fun <jit-function>)) value); TODO: move to front
 (define-method (reg (value <pointer>) (fun <jit-function>))
   (let* [(retval (reg (get-type value) fun))
@@ -360,9 +360,9 @@
     (flatten-n (append start middle end) 2)))
 
 (define-method (arg (type <meta<sequence<>>>) (fun <jit-function>))
-  (let [(value   (arg <long> fun))
-        (shape   (expand (dimension type) (arg <long> fun)))
-        (strides (expand (dimension type) (arg <long> fun)))]
+  (let [(value   (get-value (arg <long> fun)))
+        (shape   (expand (dimension type) (get-value (arg <long> fun))))
+        (strides (expand (dimension type) (get-value (arg <long> fun))))]
     (make type #:value value #:shape shape #:strides strides)))
 
 (define-method (types (type <meta<element>>)) type)
@@ -374,7 +374,8 @@
         (append (shape self) (strides self))))
 (define-method (return-type (type <meta<element>>)) type)
 (define-method (return-type (type <meta<sequence<>>>)) <null>)
-(define-method (add-return-value (type <meta<element>>) fun args) (cons (reg type fun) args))
+(define-method (add-return-value (type <meta<element>>) fun args)
+  (cons (make type #:value (reg type fun)) args))
 (define-method (add-return-value (type <meta<sequence<>>>) fun args) args)
 (define-method (add-return-param (type <meta<element>>) arg-classes) arg-classes)
 (define-method (add-return-param (type <meta<sequence<>>>) arg-classes) (cons type arg-classes))

@@ -740,14 +740,14 @@
               (env fun
                    [(x (arg <sint> fun))
                     (f (reg <sint> fun))]
-                   (MOV f x))))
+                   (MOV f (get-value x)))))
     "Copy first integer argument")
 (ok (equal? (list (MOV AX DI))
             (let [(fun (make <jit-function> #:codes (map get-code (list RDI RAX))))]
               (env fun
                    [(x (arg <sint> fun))
                     (f (reg <sint> fun))]
-                   (MOV f x))))
+                   (MOV f (get-value x)))))
     "Register allocation respects function arguments")
 (ok (equal? (list (MOV AX R9W))
             (let [(fun (make <jit-function>))]
@@ -759,7 +759,7 @@
                     (v (arg <sint> fun))
                     (w (arg <sint> fun))
                     (f (reg <sint> fun))]
-                   (MOV f w))))
+                   (MOV f (get-value w)))))
     "Copy sixth integer argument")
 (ok (equal? (list (MOV AX (ptr <sint> RSP #x8)))
             (let [(fun (make <jit-function>))]
@@ -772,12 +772,17 @@
                     (w (arg <sint> fun))
                     (x (arg <sint> fun))
                     (f (reg <sint> fun))]
-                   (MOV f x))))
+                   (MOV f (get-value x)))))
     "Copy seventh integer argument")
 (ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
-                                 (lambda (fun r_ a_) (env fun [] (MOV r_ a_)))) 42))
+                                 (lambda (fun r_ a_)
+                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
     "Use 'pass-parameters' to define method")
-(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>) (lambda (fun r_ a_) (env fun [] (MOV r_ a_)))))]
+(ok (equal? 42 (let [(m (jit-wrap ctx
+                                  <int>
+                                  (<int>)
+                                  (lambda (fun r_ a_)
+                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
     "Use 'jit-wrap' to define method")
 (format #t "~&")
