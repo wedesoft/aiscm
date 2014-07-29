@@ -9,7 +9,7 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence multiarray multiarray->list list->multiarray strides
-            drop crop roll unroll downsample))
+            drop crop first-element roll unroll downsample))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -47,9 +47,9 @@
 (define (multiarray type dimension)
   (if (zero? dimension) (pointer type) (multiarray (sequence type) (1- dimension))))
 (define-method (size (self <sequence<>>)) (apply * (shape self)))
-(define (element offset self)
+(define (first-element self)
   (make (element-type (class-of self))
-        #:value   (+ (get-value self) (* offset (last (strides self)) (size-of (typecode self))))
+        #:value   (get-value self)
         #:shape   (all-but-last (shape self))
         #:strides (all-but-last (strides self))))
 (define-method (crop (n <integer>) (self <sequence<>>))
@@ -68,6 +68,7 @@
 (define-method (drop (n <null>) (self <sequence<>>)) self)
 (define-method (drop (n <pair>) (self <sequence<>>))
   (drop (last n) (roll (drop (all-but-last n) (unroll self)))))
+(define (element offset self) (first-element (drop offset self)))
 (define-method (fetch (self <sequence<>>)) self)
 (define-method (get (self <sequence<>>) . args)
   (if (null? args) self (get (fetch (fold-right element self args)))))
