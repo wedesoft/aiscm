@@ -80,7 +80,7 @@
   value)
 (define-method (store (self <sequence<>>) (value <null>)) value)
 (define-method (store (self <sequence<>>) (value <pair>))
-  (store (element 0 self) (car value))
+  (store (first-element self) (car value))
   (store (drop 1 self) (cdr value))
   value)
 (define-method (multiarray->list self) self)
