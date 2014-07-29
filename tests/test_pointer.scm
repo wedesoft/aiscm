@@ -44,10 +44,10 @@
 (ok (eqv? (pointer-address (get-memory m1))
           (get-value (unpack <native-int> (pack p1-byte))))
     "convert pointer to bytevector containing raw data")
-(ok (string-match "^#<<pointer<int<16,signed>>> #x[0-9a-f]*>$"
+(ok (string-match "^#<<pointer<int<16,signed>>> .*>$"
                   (call-with-output-string (lambda (port) (write p1-sint port))))
     "write pointer object")
-(ok (string-match "^#<<pointer<int<16,signed>>> #x[0-9a-f]*>$"
+(ok (string-match "^#<<pointer<int<16,signed>>> .*>$"
                   (call-with-output-string (lambda (port) (display p1-sint port))))
     "display pointer object")
 (ok (eqv? 4 (get-size (get-value (make (pointer <int>)))))
