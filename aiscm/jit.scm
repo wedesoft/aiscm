@@ -38,12 +38,12 @@
 (define-method (Jcc (target <symbol>) (code <integer>))
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
-  (append (list code) (raw target 8)))
+  (append (list code) (raw target 8))); TODO: long jumps
 (define-method (resolve (self <jcc>) (offset <integer>) offsets)
   (let [(target (- (assq-ref offsets (get-target self)) offset))]
     (Jcc target (get-code self))))
 
-(define (label-offsets commands)
+(define (label-offsets commands); TODO: run with list of zero-offsets until offsets become stable
   (define (iterate cmd acc)
     (let [(offsets (car acc))
           (offset  (cdr acc))]
