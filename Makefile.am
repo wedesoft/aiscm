@@ -5,7 +5,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING construction.gif
 
 repl: all
-	LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARYPATH) \
+	LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) \
   $(GUILE) --no-auto-compile -L $(top_builddir)
 
 CLEANFILES = *~ *.html
