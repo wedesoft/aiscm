@@ -2,17 +2,8 @@
 
 ## Requirements
 
-You need to install [Guile][1] and its development headers.
-
-```Shell
-sudo aptitude install guile-2.0 guile-2.0-dev
-```
-
-You can also install the Guile documentation.
-
-```
-sudo aptitude install guile-2.0-doc
-```
+You need to install [Guile][1] and its development headers. You need at least version 2.0.9
+which supports calling foreign functions with up to 127 arguments.
 
 ## Installation
 

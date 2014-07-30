@@ -89,7 +89,7 @@
 (ok (equal? '(3 3 3) (shape (drop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))
     "Drop elements from a 3D array")
 (ok (equal? '(1 2 3) (multiarray->list (project (list->multiarray '((1 2 3) (4 5 6))))))
-    "Project 2D array")
+    "project 2D array")
 (ok (equal? '(1 2 3) (multiarray->list (crop 3 (list->multiarray '(1 2 3 4)))))
     "Crop an array down to 3 elements")
 (ok (equal? '((1 2)) (multiarray->list (crop '(2 1) (list->multiarray '((1 2 3) (4 5 6))))))
