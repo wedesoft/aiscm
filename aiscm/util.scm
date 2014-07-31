@@ -2,7 +2,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:export (toplevel-define! attach index all-but-last upto depth
-            flatten-n flatten cycle uncycle)
+            flatten-n flatten cycle uncycle integral zipmap)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -29,3 +29,14 @@
 (define (flatten val) (flatten-n val 1))
 (define (cycle lst) (attach (cdr lst) (car lst)))
 (define (uncycle lst) (cons (last lst) (all-but-last lst)))
+(define (integral lst)
+  (letrec [(accumulate (lambda (lst x)
+                         (if (null? lst)
+                           lst
+                           (let [(xs (+ (car lst) x))]
+                             (cons xs (accumulate (cdr lst) xs))))))]
+    (accumulate lst 0)))
+(define (zipmap keys vals)
+  (if (or (null? keys) (null? vals))
+    '()
+    (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))

@@ -34,6 +34,8 @@
 (define-class <jcc> ()
   (target #:init-keyword #:target #:getter get-target)
   (code #:init-keyword #:code #:getter get-code))
+(define-method (len (self <list>)) (length self))
+(define-method (len (self <symbol>)) 0)
 (define-method (len (self <jcc>)) 2)
 (define-method (Jcc (target <symbol>) (code <integer>))
   (make <jcc> #:target target #:code code))
@@ -44,24 +46,17 @@
     (Jcc (- target offset) (get-code self))))
 
 (define (label-offsets commands); TODO: run with list of zero-offsets until offsets become stable
-  (define (iterate cmd acc)
-    (let [(offsets (car acc))
-          (offset  (cdr acc))]
-      (if (is-a? cmd <symbol>)
-        (cons (acons cmd offset offsets) offset)
-        (let [(len-cmd (if (is-a? cmd <jcc>) (len cmd) (length cmd)))]
-          (cons offsets (+ offset len-cmd))))))
-  (car (fold iterate (cons '() 0) commands)))
+  (filter (compose symbol? car) (zipmap commands (integral (map len commands)))))
 
 (define (apply-offsets commands offsets)
   (define (iterate cmd acc)
     (let [(tail   (car acc))
           (offset (cdr acc))]
       (cond
-        ((is-a? cmd <jcc>)    (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
-                                    (+ offset (len cmd))))
-        ((is-a? cmd <symbol>) (cons tail offset))
-        (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
+        ((is-a? cmd <jcc>) (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
+                                 (+ offset (len cmd))))
+        ((symbol? cmd)     (cons tail offset))
+        (else              (cons (cons cmd tail) (+ offset (length cmd)))))))
   (reverse (car (fold iterate (cons '() 0) commands))))
 
 (define (resolve-jumps commands) (apply-offsets commands (label-offsets commands)))
