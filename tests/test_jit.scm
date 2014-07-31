@@ -700,7 +700,7 @@
               (env fun [(x (reg <sint> fun))] (MOV x 21))
               (env fun [(y (reg <sint> fun))] (MOV y 42))))
     "Reuse register from register pool")
-(ok (equal? (list (MOV RDX 42))
+(ok (equal? (list (list (MOV RDX 42)))
             (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
               (env fun
                    [(x (reg <int> fun))]
@@ -708,7 +708,7 @@
                         [(y (reg <long> fun))]
                         (MOV y 42)))))
     "Nested environments")
-(ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
+(ok (equal? (list (list (PUSH EDX) (MOV EDX 42) (POP EDX)))
             (let [(fun (make <jit-function> #:codes (map get-code (list RDX))))]
               (env fun
                    [(x (reg <int> fun))]
@@ -716,7 +716,7 @@
                         [(y (reg <int> fun))]
                         (MOV y 42)))))
     "Spilling a register")
-(ok (equal? (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL))
+(ok (equal? (list (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL)))
             (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
               (env fun
                    [(u (reg <byte> fun))

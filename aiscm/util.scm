@@ -19,7 +19,7 @@
 (define (upto a b) (if (<= a b) (cons a (upto (1+ a) b)) '()))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (upto 1 n)))
 (define (depth val)
-  (if (list? val) (1+ (apply max (map depth val))) 0))
+  (if (list? val) (1+ (apply max (cons 0 (map depth val)))) 0))
 (define (flatten-n val n)
   (if (> (depth val) n)
     (if (> (depth (car val)) (- n 1))
