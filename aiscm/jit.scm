@@ -45,21 +45,18 @@
   (let [(target (assq-ref offsets (get-target self)))]
     (Jcc (- target offset) (get-code self))))
 
-(define (label-offsets commands); TODO: run with list of zero-offsets until offsets become stable
-  (filter (compose symbol? car) (zipmap commands (integral (map len commands)))))
+(define (command-offsets commands); TODO: run with list of zero-offsets until offsets become stable
+  (zipmap commands (integral (map len commands))))
 
 (define (apply-offsets commands offsets)
-  (define (iterate cmd acc)
-    (let [(tail   (car acc))
-          (offset (cdr acc))]
-      (cond
-        ((is-a? cmd <jcc>) (cons (cons (resolve cmd (+ offset (len cmd)) offsets) tail)
-                                 (+ offset (len cmd))))
-        ((symbol? cmd)     (cons tail offset))
-        (else              (cons (cons cmd tail) (+ offset (length cmd)))))))
-  (reverse (car (fold iterate (cons '() 0) commands))))
+  (map (lambda (cmd)
+         (if (is-a? cmd <jcc>)
+           (resolve cmd (assq-ref offsets cmd) offsets)
+           cmd))
+       commands))
 
-(define (resolve-jumps commands) (apply-offsets commands (label-offsets commands)))
+(define (resolve-jumps commands)
+  (filter (compose not symbol?) (apply-offsets commands (command-offsets commands))))
 
 (define (JMP  target) (Jcc target #xeb))
 (define (JB   target) (Jcc target #x72))
