@@ -41,22 +41,15 @@
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
   (append (list code) (raw target 8))); TODO: long jumps
-(define (resolve self offset offsets)
+(define (resolve-jump self offset offsets)
   (let [(target (assq-ref offsets (get-target self)))]
     (Jcc (- target offset) (get-code self))))
 
-(define (command-offsets commands); TODO: run with list of zero-offsets until offsets become stable
-  (zipmap commands (integral (map len commands))))
-
-(define (apply-offsets commands offsets)
-  (map (lambda (cmd)
-         (if (is-a? cmd <jcc>)
-           (resolve cmd (assq-ref offsets cmd) offsets)
-           cmd))
-       commands))
-
-(define (resolve-jumps commands)
-  (filter (compose not symbol?) (apply-offsets commands (command-offsets commands))))
+(define (resolve-jumps commands); TODO: iterate until offsets become stable
+  (let* [(addresses (integral (map len commands)))
+         (labels    (filter (compose symbol? car) (zipmap commands addresses)))
+         (resolve   (lambda (cmd adr) (if (is-a? cmd <jcc>) (resolve-jump cmd adr labels) cmd)))]
+    (filter (compose not symbol?) (map resolve commands addresses))))
 
 (define (JMP  target) (Jcc target #xeb))
 (define (JB   target) (Jcc target #x72))
