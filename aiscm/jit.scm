@@ -64,8 +64,7 @@
 (define (JNLE target) (Jcc target #x7f))
 
 (define (asm ctx return-type arg-types commands)
-  (let* [(flat        (flatten-n commands 2))
-         (resolved    (resolve-jumps flat))
+  (let* [(resolved    (resolve-jumps commands))
          (with-return (attach resolved (RET)))
          (code        (make-mmap (u8-list->bytevector (flatten with-return))))]
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
@@ -344,7 +343,7 @@
     (set-before fun before)
     (set-after fun after)
     (set-offset fun offset)
-    (append start middle end)))
+    (append start (resolve-jumps (flatten-n middle 2)) end)))
 
 (define-method (arg (type <meta<sequence<>>>) (fun <jit-function>))
   (let [(value   (get-value (arg <long> fun)))
