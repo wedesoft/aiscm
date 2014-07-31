@@ -11,8 +11,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<jit-context> <jit-function>
-            get-type get-reg get-code get-name asm label-offsets get-target resolve
-            resolve-jumps len get-bits ptr get-disp get-index
+            get-type get-reg get-code get-name asm get-target
+            resolve-jumps get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -39,9 +39,9 @@
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
   (append (list code) (raw target 8))); TODO: long jumps
-(define-method (resolve (self <jcc>) (offset <integer>) offsets)
-  (let [(target (- (assq-ref offsets (get-target self)) offset))]
-    (Jcc target (get-code self))))
+(define (resolve self offset offsets)
+  (let [(target (assq-ref offsets (get-target self)))]
+    (Jcc (- target offset) (get-code self))))
 
 (define (label-offsets commands); TODO: run with list of zero-offsets until offsets become stable
   (define (iterate cmd acc)
@@ -53,7 +53,7 @@
           (cons offsets (+ offset len-cmd))))))
   (car (fold iterate (cons '() 0) commands)))
 
-(define (resolve-jumps commands offsets)
+(define (apply-offsets commands offsets)
   (define (iterate cmd acc)
     (let [(tail   (car acc))
           (offset (cdr acc))]
@@ -63,6 +63,8 @@
         ((is-a? cmd <symbol>) (cons tail offset))
         (else                 (cons (cons cmd tail) (+ offset (length cmd)))))))
   (reverse (car (fold iterate (cons '() 0) commands))))
+
+(define (resolve-jumps commands) (apply-offsets commands (label-offsets commands)))
 
 (define (JMP  target) (Jcc target #xeb))
 (define (JB   target) (Jcc target #x72))
@@ -78,10 +80,9 @@
 
 (define (asm ctx return-type arg-types commands)
   (let* [(flat        (flatten-n commands 2))
-         (offsets     (label-offsets flat))
-         (resolved    (resolve-jumps flat offsets))
+         (resolved    (resolve-jumps flat))
          (with-return (attach resolved (RET)))
-         (code        (make-mmap (u8-list->bytevector (apply append with-return))))]
+         (code        (make-mmap (u8-list->bytevector (flatten with-return))))]
     (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address code))
