@@ -177,7 +177,7 @@
     (list (logior (ash (scale (size-of (get-type r/m))) 6)
                   (ash (bits3 (get-index r/m)) 3)
                   (bits3 (get-reg r/m))))
-    (if (equal? (get-reg r/m) RSP)
+    (if (memv (get-reg r/m) (list RSP R12))
       (list #b00100100)
       '())))
 
