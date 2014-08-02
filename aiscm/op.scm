@@ -74,7 +74,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r r+)
                               (ADD *a a+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! + m)
@@ -115,7 +115,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r r+)
                               (ADD *b b+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! + m)
@@ -160,7 +160,7 @@
                               (ADD *r r+)
                               (ADD *a a+)
                               (ADD *b b+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! + m)
@@ -205,7 +205,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r r+)
                               (ADD *a a+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! - m)
@@ -271,7 +271,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r r+)
                               (ADD *a a+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! - m)
@@ -312,7 +312,7 @@
                               (MOV (ptr tr *r) r)
                               (ADD *r r+)
                               (ADD *b b+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! - m)
@@ -357,7 +357,7 @@
                               (ADD *r r+)
                               (ADD *a a+)
                               (ADD *b b+)
-                              (CMP *rx *r)
+                              (CMP *r *rx)
                               (JNE 'loop)
                               'return))))]
     (add-method! - m)
