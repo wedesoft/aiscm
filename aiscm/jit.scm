@@ -11,7 +11,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<jit-context> <jit-function>
-            get-type get-reg get-code get-name asm get-target
+            get-code asm
             resolve-jumps get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
@@ -41,14 +41,14 @@
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
   (append (list code) (raw target 8))); TODO: long jumps
-(define (resolve-jump self offset offsets)
+(define-method (resolve-jump self offset offsets) self)
+(define-method (resolve-jump (self <jcc>) offset offsets)
   (let [(target (assq-ref offsets (get-target self)))]
     (Jcc (- target offset) (get-code self))))
-
 (define (resolve-jumps commands); TODO: iterate until offsets become stable
   (let* [(addresses (integral (map len commands)))
          (labels    (filter (compose symbol? car) (zipmap commands addresses)))
-         (resolve   (lambda (cmd adr) (if (is-a? cmd <jcc>) (resolve-jump cmd adr labels) cmd)))]
+         (resolve   (lambda (cmd adr) (resolve-jump cmd adr labels)))]
     (filter (compose not symbol?) (map resolve commands addresses))))
 
 (define (JMP  target) (Jcc target #xeb))
@@ -127,14 +127,18 @@
 (define-method (bits3 (x <register>)) (bits3 (get-code x)))
 (define-method (bits3 (x <pointer>)) (bits3 (get-reg x)))
 
-(define-method (get-reg (x <register>)) #f)
+(define-method (get-reg   (x <register>)) #f)
 (define-method (get-index (x <register>)) #f)
-(define-method (get-disp (x <register>)) #f)
+(define-method (get-disp  (x <register>)) #f)
 
 (define-method (bit4 (x <boolean>)) 0)
 (define-method (bit4 (x <integer>)) (logand x #b1))
 (define-method (bit4 (x <register>)) (bit4 (ash (get-code x) -3)))
 (define-method (bit4 (x <pointer>)) (bit4 (get-reg x)))
+
+(define-method (disp-value (x <register>)) #f)
+(define-method (disp-value (x <pointer>))
+  (or (get-disp x) (if (memv (get-reg x) (list RBP R13)) 0 #f)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
 (define (if8 reg a b) (list (if (eqv? (get-bits reg) 8) a b)))
@@ -142,13 +146,13 @@
 (define-method (op16 (x <integer>)) (if (eqv? x 16) (list #x66) '()))
 (define-method (op16 (x <operand>)) (op16 (get-bits x)))
 
-(define-method (disp8? (disp <boolean>)) 8)
+(define-method (disp8? (disp <boolean>)) #f)
 (define-method (disp8? (disp <integer>)) (and (>= disp -128) (< disp 128)))
 
 (define-method (mod (r/m <boolean>)) #b00)
 (define-method (mod (r/m <integer>)) (if (disp8? r/m) #b01 #b10))
 (define-method (mod (r/m <register>)) #b11)
-(define-method (mod (r/m <pointer>)) (mod (get-disp r/m)))
+(define-method (mod (r/m <pointer>)) (mod (disp-value r/m)))
 
 (define-method (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
@@ -183,7 +187,7 @@
   (append (op16 r) (REX r r r/m)))
 
 (define (postfixes reg/opcode r/m)
-  (append (ModR/M reg/opcode r/m) (SIB r/m) (raw (get-disp r/m) (if (disp8? (get-disp r/m)) 8 32))))
+  (append (ModR/M reg/opcode r/m) (SIB r/m) (raw (disp-value r/m) (if (disp8? (disp-value r/m)) 8 32))))
 
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
