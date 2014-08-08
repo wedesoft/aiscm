@@ -291,6 +291,7 @@
   (env fun
        [(r+  (reg (last (strides r_)) fun))
         (a   (reg (get-value a_) fun))
+        (*b  (reg (get-value b_) fun))
         (b+  (reg (last (strides b_)) fun))
         (n   (reg (last (shape r_)) fun))
         (*p  (reg <long> fun))
@@ -298,7 +299,7 @@
         (*rx (reg <long> fun))]
        (IMUL n r+)
        (MOV *p (get-value r_))
-       (MOV *q (get-value b_))
+       (MOV *q *b)
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
        (IMUL b+ b+ (size-of (typecode b_)))
@@ -313,7 +314,9 @@
        'return))
 (define-method (binary-minus (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <sequence<>>))
   (env fun
-       [(r+  (reg (last (strides r_)) fun))
+       [(*r  (reg (get-value r_) fun))
+        (r+  (reg (last (strides r_)) fun))
+        (*a  (reg (get-value a_) fun))
         (a+  (reg (last (strides a_)) fun))
         (*b  (reg (get-value b_) fun))
         (b+  (reg (last (strides b_)) fun))
@@ -323,8 +326,8 @@
         (*s  (reg <long> fun))
         (*rx (reg <long> fun))]
        (IMUL n r+)
-       (MOV *p (get-value r_))
-       (MOV *q (get-value a_))
+       (MOV *p *r)
+       (MOV *q *a)
        (MOV *s *b); TODO: (get-value b_) does not work here
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
