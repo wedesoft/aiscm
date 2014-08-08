@@ -7,7 +7,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 280)
+(planned-tests 281)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -764,6 +764,12 @@
                     (f (reg <sint> fun))]
                    (MOV f (get-value x)))))
     "Copy seventh integer argument")
+(ok (equal? 11 ((asm ctx
+                     <int>
+                     (list <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>)
+                     (list (MOV EAX (ptr <int> RSP #x28))))
+                1 2 3 4 5 6 7 8 9 10 11))
+    "Check whether this Guile version supports foreign calls with more than 10 arguments")
 (ok (let [(fun (make <jit-function>))]
       (equal? (env fun [] (JMP 'b) (JMP 'a) 'a (NOP) 'b)
               (env fun [] (JMP 'a) (env fun [] (JMP 'a) 'a) (NOP) 'a)))

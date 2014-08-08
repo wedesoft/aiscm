@@ -240,14 +240,15 @@
    (env fun
        [(r (reg (typecode r_) fun))
         (w (reg (typecode r_) fun))
-        (a (reg (get-value a_) fun))]
+        (a (reg (get-value a_) fun))
+        (*b (reg (get-value b_) fun))]
        ((if (eqv? (size-of (class-of a_)) (size-of (typecode r_)))
           MOV
           (if (signed? (class-of a_)) MOVSX MOVZX)) r a)
        (if (eqv? (size-of (typecode b_)) (size-of (typecode r_)))
-         (SUB r (ptr (typecode b_) (get-value b_)))
+         (SUB r (ptr (typecode b_) *b))
          (append
-           ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) (get-value b_)))
+           ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) *b))
            (SUB r w)))
        (MOV (ptr (typecode r_) (get-value r_)) r)))
 (define-method (binary-minus (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>))
