@@ -331,7 +331,9 @@
     (if is-reg? (set-live fun (cons value (get-live fun))))
     (set-argc fun (1+ (get-argc fun)))
     (make type #:value value)))
-(define-method (reg (value <register>) (fun <jit-function>)) value); TODO: move to front
+(define-method (reg (value <register>) (fun <jit-function>))
+  (set-live fun (cons value (delete value (get-live fun))))
+  value)
 (define-method (reg (value <pointer>) (fun <jit-function>))
   (let* [(retval (reg (get-type value) fun))
          (disp   (+ (get-disp value) (ash (get-offset fun) 3)))

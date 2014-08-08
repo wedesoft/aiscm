@@ -98,7 +98,7 @@
     "subtract integer from a 2D array")
 (ok (equal? '((6 5 4) (3 2 1)) (multiarray->list (- 7 (list->multiarray '((1 2 3) (4 5 6))))))
     "subtract 2D array from integer")
-(skip (equal? '((1 1 2) (3 4 5)) (multiarray->list (- (list->multiarray '((2 3 5) (7 9 11)))
+(ok (equal? '((1 1 2) (3 4 5)) (multiarray->list (- (list->multiarray '((2 3 5) (7 9 11)))
                                                     (list->multiarray '((1 2 3) (4 5 6))))))
     "subtract 2D array from each other")
 (format #t "~&")
