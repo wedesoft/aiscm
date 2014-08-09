@@ -1,3 +1,10 @@
+2014-08-09  Jan Wedekind <jan@wedesoft.de> 0.1.6
+	- using <int> instead of <reg<32>> or <ptr<32>>
+	- using register pool to implement operations
+	* aiscm/jit.scm: have 'asm' append RET to specified code block
+	* aiscm/sequence.scm: n-dimensional arrays
+	* aiscm/op.scm: minus and plus for n-dimensional arrays
+
 2014-07-02  Jan Wedekind <jan@wedesoft.de> 0.1.5
 	* aiscm/jit.scm: Added 'env' to support register allocation
 	* aiscm/op.scm: Simpler integration of native methods
