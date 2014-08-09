@@ -12,173 +12,19 @@
   #:re-export (+ -))
 (define ctx (make <jit-context>))
 
-(define-method (+ (a <element>)) a)
-(define-method (+ (a <element>) (b <element>))
-  (let* [(ca (class-of a))
-         (cb (class-of b))
-         (cr (coerce ca cb))
-         (m  (jit-wrap ctx cr (ca cb)
-                       (lambda (fun r_ a_ b_)
-                         (env fun
-                              [(r (reg (get-value r_) fun))
-                               (a (reg (get-value a_) fun))
-                               (b (reg (get-value b_) fun))
-                               (w (reg cr fun))]
-                              ((if (eqv? (size-of ca) (size-of cr))
-                                 MOV
-                                 (if (signed? ca) MOVSX MOVZX)) r a)
-                              (if (eqv? (size-of cb) (size-of cr))
-                                (ADD r b)
-                                (append
-                                  ((if (signed? cb) MOVSX MOVZX) w b)
-                                  (ADD r w)))))))]
-    (add-method! + m)
-    (+ a b)))
-(define-method (+ (a <element>) (b <integer>))
-  (+ a (make (match b) #:value b)))
-(define-method (+ (a <integer>) (b <element>))
-  (+ (make (match a) #:value a) b))
-(define-method (+ (a <sequence<>>) (b <element>))
-  (let* [(ca (class-of a))
-         (cb (class-of b))
-         (cr (coerce ca cb))
-         (ta (typecode ca))
-         (tr (typecode cr))
-         (m  (jit-wrap ctx cr (ca cb)
-                       (lambda (fun r_ a_ b_)
-                         (env fun
-                              [(*r  (reg (get-value r_) fun))
-                               (r+  (reg (last (strides r_)) fun))
-                               (n   (reg (last (shape r_)) fun))
-                               (*a  (reg (get-value a_) fun))
-                               (a+  (reg (last (strides a_)) fun))
-                               (b   (reg (get-value b_) fun))
-                               (r   (reg tr fun))
-                               (w   (reg tr fun))
-                               (*rx (reg <long> fun))]
-                              (IMUL n r+)
-                              (LEA *rx (ptr tr *r n))
-                              (IMUL r+ r+ (size-of tr))
-                              (IMUL a+ a+ (size-of ta))
-                              (CMP *r *rx)
-                              (JE 'return)
-                              'loop
-                              ((if (eqv? (size-of ta) (size-of tr))
-                                 MOV
-                                 (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                              (if (eqv? (size-of cb) (size-of tr))
-                                (ADD r b)
-                                (append
-                                  ((if (signed? cb) MOVSX MOVZX) w b)
-                                  (ADD r w)))
-                              (MOV (ptr tr *r) r)
-                              (ADD *r r+)
-                              (ADD *a a+)
-                              (CMP *r *rx)
-                              (JNE 'loop)
-                              'return))))]
-    (add-method! + m)
-    (+ a b)))
-(define-method (+ (a <element>) (b <sequence<>>))
-  (let* [(ca (class-of a))
-         (cb (class-of b))
-         (cr (coerce ca cb))
-         (tb (typecode cb))
-         (tr (typecode cr))
-         (m  (jit-wrap ctx cr (ca cb)
-                       (lambda (fun r_ a_ b_)
-                         (env fun
-                              [(*r  (reg (get-value r_) fun))
-                               (r+  (reg (last (strides r_)) fun))
-                               (n   (reg (last (shape r_)) fun))
-                               (a   (reg (get-value a_) fun))
-                               (*b  (reg (get-value b_) fun))
-                               (b+  (reg (last (strides b_)) fun))
-                               (r   (reg tr fun))
-                               (w   (reg tr fun))
-                               (*rx (reg <long> fun))]
-                              (IMUL n r+)
-                              (LEA *rx (ptr tr *r n))
-                              (IMUL r+ r+ (size-of tr))
-                              (IMUL b+ b+ (size-of tb))
-                              (CMP *r *rx)
-                              (JE 'return)
-                              'loop
-                              ((if (eqv? (size-of ca) (size-of tr))
-                                 MOV
-                                 (if (signed? ca) MOVSX MOVZX)) r a)
-                              (if (eqv? (size-of tb) (size-of tr))
-                                (ADD r (ptr tb *b))
-                                (append
-                                  ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
-                                  (ADD r w)))
-                              (MOV (ptr tr *r) r)
-                              (ADD *r r+)
-                              (ADD *b b+)
-                              (CMP *r *rx)
-                              (JNE 'loop)
-                              'return))))]
-    (add-method! + m)
-    (+ a b)))
-(define-method (+ (a <sequence<>>) (b <sequence<>>))
-  (let* [(ca (class-of a))
-         (cb (class-of b))
-         (cr (coerce ca cb))
-         (ta (typecode ca))
-         (tb (typecode cb))
-         (tr (typecode cr))
-         (m  (jit-wrap ctx cr (ca cb)
-                       (lambda (fun r_ a_ b_)
-                         (env fun
-                              [(*r  (reg (get-value r_) fun))
-                               (r+  (reg (last (strides r_)) fun))
-                               (*a  (reg (get-value a_) fun))
-                               (a+  (reg (last (strides a_)) fun))
-                               (*b  (reg (get-value b_) fun))
-                               (b+  (reg (last (strides b_)) fun))
-                               (r   (reg tr fun))
-                               (w   (reg tr fun))
-                               (n   (reg (last (shape r_)) fun))
-                               (*rx (reg <long> fun))]
-                              (IMUL n r+)
-                              (LEA *rx (ptr tr *r n))
-                              (IMUL r+ r+ (size-of tr))
-                              (IMUL a+ a+ (size-of ta))
-                              (IMUL b+ b+ (size-of tb))
-                              (CMP *r *rx)
-                              (JE 'return)
-                              'loop
-                              ((if (eqv? (size-of ta) (size-of tr))
-                                 MOV
-                                 (if (signed? ta) MOVSX MOVZX)) r (ptr ta *a))
-                              (if (eqv? (size-of tb) (size-of tr))
-                                (ADD r (ptr tb *b))
-                                (append
-                                  ((if (signed? tb) MOVSX MOVZX) w (ptr tb *b))
-                                  (ADD r w)))
-                              (MOV (ptr tr *r) r)
-                              (ADD *r r+)
-                              (ADD *a a+)
-                              (ADD *b b+)
-                              (CMP *r *rx)
-                              (JNE 'loop)
-                              'return))))]
-    (add-method! + m)
-    (+ a b)))
-
-(define-method (unary-minus (fun <jit-function>) (r_ <element>) (a_ <element>))
+(define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
   (env fun
        [(r (reg (get-value r_) fun))
         (a (reg (get-value a_) fun))]
          (MOV r a)
-         (NEG r)))
-(define-method (unary-minus (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>))
+         (op r)))
+(define-method (unary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) op)
   (env fun
        [(r (reg (typecode r_) fun))]
          (MOV r (ptr (typecode a_) (get-value a_)))
-         (NEG r)
+         (op r)
          (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (unary-minus (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>))
+(define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
   (env fun
        [(r+  (reg (last (strides r_)) fun))
         (a+  (reg (last (strides a_)) fun))
@@ -195,20 +41,14 @@
        (CMP *p *rx)
        (JE 'return)
        'loop
-       (unary-minus fun (project (rebase *p r_)) (project (rebase *q a_)))
+       (unary-op fun (project (rebase *p r_)) (project (rebase *q a_)) op)
        (ADD *p r+)
        (ADD *q a+)
        (CMP *p *rx)
        (JNE 'loop)
        'return))
-(define-method (- (a <element>))
-  (add-method! - (jit-wrap ctx
-                           (class-of a)
-                           ((class-of a))
-                           (lambda (fun r_ a_) (unary-minus fun r_ a_))))
-  (- a))
 
-(define-method (binary-minus (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>))
+(define-method (binary-op (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>) op)
   (env fun
        [(r (reg (get-value r_) fun))
         (a (reg (get-value a_) fun))
@@ -218,11 +58,11 @@
           MOV
           (if (signed? (class-of a_)) MOVSX MOVZX)) r a)
        (if (eqv? (size-of (class-of b_)) (size-of (class-of r_)))
-         (SUB r b)
+         (op r b)
          (append
            ((if (signed? (class-of b_)) MOVSX MOVZX) w b)
-           (SUB r w)))))
-(define-method (binary-minus (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <element>))
+           (op r w)))))
+(define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <element>) op)
   (env fun
        [(r (reg (typecode r_) fun))
         (w (reg (typecode r_) fun))
@@ -231,12 +71,12 @@
           MOV
           (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) (get-value a_)))
        (if (eqv? (size-of (class-of b_)) (size-of (typecode r_)))
-         (SUB r b)
+         (op r b)
          (append
            ((if (signed? (class-of b_)) MOVSX MOVZX) w b)
-           (SUB r w)))
+           (op r w)))
        (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-minus (fun <jit-function>) (r_ <pointer<>>) (a_ <element>) (b_ <pointer<>>))
+(define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <element>) (b_ <pointer<>>) op)
    (env fun
        [(r (reg (typecode r_) fun))
         (w (reg (typecode r_) fun))
@@ -246,12 +86,12 @@
           MOV
           (if (signed? (class-of a_)) MOVSX MOVZX)) r a)
        (if (eqv? (size-of (typecode b_)) (size-of (typecode r_)))
-         (SUB r (ptr (typecode b_) *b))
+         (op r (ptr (typecode b_) *b))
          (append
            ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) *b))
-           (SUB r w)))
+           (op r w)))
        (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-minus (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>))
+(define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op)
   (env fun
        [(r (reg (typecode r_) fun))
         (w (reg (typecode r_) fun))]
@@ -259,12 +99,12 @@
           MOV
           (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) (get-value a_)))
        (if (eqv? (size-of (typecode b_)) (size-of (typecode r_)))
-         (SUB r (ptr (typecode b_) (get-value b_)))
+         (op r (ptr (typecode b_) (get-value b_)))
          (append
            ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) (get-value b_)))
-           (SUB r w)))
+           (op r w)))
        (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-minus (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <element>))
+(define-method (binary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <element>) op)
   (env fun
        [(r+  (reg (last (strides r_)) fun))
         (a+  (reg (last (strides a_)) fun))
@@ -281,13 +121,13 @@
        (CMP *p *rx)
        (JE 'return)
        'loop
-       (binary-minus fun (project (rebase *p r_)) (project (rebase *q a_)) b_)
+       (binary-op fun (project (rebase *p r_)) (project (rebase *q a_)) b_ op)
        (ADD *p r+)
        (ADD *q a+)
        (CMP *p *rx)
        (JNE 'loop)
        'return))
-(define-method (binary-minus (fun <jit-function>) (r_ <sequence<>>) (a_ <element>) (b_ <sequence<>>))
+(define-method (binary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <element>) (b_ <sequence<>>) op)
   (env fun
        [(r+  (reg (last (strides r_)) fun))
         (a   (reg (get-value a_) fun))
@@ -306,13 +146,13 @@
        (CMP *p *rx)
        (JE 'return)
        'loop
-       (binary-minus fun (project (rebase *p r_)) a_ (project (rebase *q b_)))
+       (binary-op fun (project (rebase *p r_)) a_ (project (rebase *q b_)) op)
        (ADD *p r+)
        (ADD *q b+)
        (CMP *p *rx)
        (JNE 'loop)
        'return))
-(define-method (binary-minus (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <sequence<>>))
+(define-method (binary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <sequence<>>) op)
   (env fun
        [(*r  (reg (get-value r_) fun))
         (r+  (reg (last (strides r_)) fun))
@@ -336,10 +176,7 @@
        (CMP *p *rx)
        (JE 'return)
        'loop
-       (binary-minus fun
-                     (project (rebase *p r_))
-                     (project (rebase *q a_))
-                     (project (rebase *s b_)))
+       (binary-op fun (project (rebase *p r_)) (project (rebase *q a_)) (project (rebase *s b_)) op)
        (ADD *p r+)
        (ADD *q a+)
        (ADD *s b+)
@@ -347,11 +184,29 @@
        (JNE 'loop)
        'return))
 
+(define-method (+ (a <element>)) a)
+(define-method (+ (a <element>) (b <element>))
+  (add-method! + (jit-wrap ctx
+                           (coerce (class-of a) (class-of b))
+                           ((class-of a) (class-of b))
+                           (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ ADD))))
+  (+ a b))
+(define-method (+ (a <element>) (b <integer>))
+  (+ a (make (match b) #:value b)))
+(define-method (+ (a <integer>) (b <element>))
+  (+ (make (match a) #:value a) b))
+
+(define-method (- (a <element>))
+  (add-method! - (jit-wrap ctx
+                           (class-of a)
+                           ((class-of a))
+                           (lambda (fun r_ a_) (unary-op fun r_ a_ NEG))))
+  (- a))
 (define-method (- (a <element>) (b <element>))
   (add-method! - (jit-wrap ctx
                            (coerce (class-of a) (class-of b))
                            ((class-of a) (class-of b))
-                           (lambda (fun r_ a_ b_) (binary-minus fun r_ a_ b_))))
+                           (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ SUB))))
   (- a b))
 (define-method (- (a <element>) (b <integer>))
   (- a (make (match b) #:value b)))

@@ -1,6 +1,5 @@
 # TODO
 
-* n-dimensional binary operator
 * extra representation for stack values and arguments?
 * better implementation for jit-function, shallow-clone?
 * (lambda (fun ...) (env fun [(r (reg ... fun)) ...] ...)) ->
