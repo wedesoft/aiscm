@@ -12,8 +12,7 @@
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function>
-            get-code asm
-            resolve-jumps get-bits ptr get-disp get-index
+            get-code asm resolve-jumps get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -25,7 +24,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            reg arg pass-parameters)
+            reg loc arg pass-parameters)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -331,13 +330,16 @@
     (if is-reg? (set-live fun (cons value (get-live fun))))
     (set-argc fun (1+ (get-argc fun)))
     (make type #:value value)))
+(define-method (loc (value <register>) (fun <jit-function>)) value)
+(define-method (loc (value <pointer>) (fun <jit-function>))
+  (let [(disp (+ (get-disp value) (ash (get-offset fun) 3)))]
+    (ptr (get-type value) RSP disp)))
 (define-method (reg (value <register>) (fun <jit-function>))
   (set-live fun (cons value (delete value (get-live fun))))
-  value)
+  (loc value fun))
 (define-method (reg (value <pointer>) (fun <jit-function>))
   (let* [(retval (reg (get-type value) fun))
-         (disp   (+ (get-disp value) (ash (get-offset fun) 3)))
-         (setup  (MOV retval (ptr (get-type value) RSP disp)))]
+         (setup  (MOV retval (loc value fun)))]
     (set-before fun (attach (get-before fun) setup))
     retval))
 (define-syntax-rule (env fun vars . body)

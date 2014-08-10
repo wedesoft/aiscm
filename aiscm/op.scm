@@ -20,10 +20,12 @@
          (op r)))
 (define-method (unary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) op)
   (env fun
-       [(r (reg (typecode r_) fun))]
-         (MOV r (ptr (typecode a_) (get-value a_)))
+       [(*r (reg (get-value r_) fun))
+        (*a (reg (get-value a_) fun))
+        (r  (reg (typecode r_) fun))]
+         (MOV r (ptr (typecode a_) *a))
          (op r)
-         (MOV (ptr (typecode r_) (get-value r_)) r)))
+         (MOV (ptr (typecode r_) *r) r)))
 (define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
   (env fun
        [(r+  (reg (last (strides r_)) fun))
@@ -33,8 +35,8 @@
         (*q  (reg <long> fun))
         (*rx (reg <long> fun))]
        (IMUL n r+)
-       (MOV *p (get-value r_))
-       (MOV *q (get-value a_))
+       (MOV *p (loc (get-value r_) fun))
+       (MOV *q (loc (get-value a_) fun))
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
        (IMUL a+ a+ (size-of (typecode a_)))
@@ -50,10 +52,10 @@
 
 (define-method (binary-op (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>) op)
   (env fun
-       [(r (reg (get-value r_) fun))
-        (a (reg (get-value a_) fun))
-        (b (reg (get-value b_) fun))
-        (w (reg (class-of r_) fun))]
+       [(a  (reg (get-value a_) fun))
+        (b  (reg (get-value b_) fun))
+        (r  (reg (get-value r_) fun))
+        (w  (reg (class-of r_) fun))]
        ((if (eqv? (size-of (class-of a_)) (size-of (class-of r_)))
           MOV
           (if (signed? (class-of a_)) MOVSX MOVZX)) r a)
@@ -64,24 +66,27 @@
            (op r w)))))
 (define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <element>) op)
   (env fun
-       [(r (reg (typecode r_) fun))
-        (w (reg (typecode r_) fun))
-        (b (reg (get-value b_) fun))]
+       [(*r (reg (get-value r_) fun))
+        (*a (reg (get-value a_) fun))
+        (b  (reg (get-value b_) fun)) 
+        (r  (reg (typecode r_) fun))
+        (w  (reg (typecode r_) fun))]
        ((if (eqv? (size-of (typecode a_)) (size-of (typecode r_)))
           MOV
-          (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) (get-value a_)))
+          (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) *a))
        (if (eqv? (size-of (class-of b_)) (size-of (typecode r_)))
          (op r b)
          (append
            ((if (signed? (class-of b_)) MOVSX MOVZX) w b)
            (op r w)))
-       (MOV (ptr (typecode r_) (get-value r_)) r)))
+       (MOV (ptr (typecode r_) *r) r)))
 (define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <element>) (b_ <pointer<>>) op)
    (env fun
-       [(r (reg (typecode r_) fun))
-        (w (reg (typecode r_) fun))
-        (a (reg (get-value a_) fun))
-        (*b (reg (get-value b_) fun))]
+       [(*r (reg (get-value r_) fun))
+        (a  (reg (get-value a_) fun))
+        (*b (reg (get-value b_) fun))
+        (r  (reg (typecode r_) fun))
+        (w  (reg (typecode r_) fun))]
        ((if (eqv? (size-of (class-of a_)) (size-of (typecode r_)))
           MOV
           (if (signed? (class-of a_)) MOVSX MOVZX)) r a)
@@ -90,20 +95,23 @@
          (append
            ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) *b))
            (op r w)))
-       (MOV (ptr (typecode r_) (get-value r_)) r)))
+       (MOV (ptr (typecode r_) *r) r)))
 (define-method (binary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op)
   (env fun
-       [(r (reg (typecode r_) fun))
-        (w (reg (typecode r_) fun))]
+       [(*r (reg (get-value r_) fun))
+        (*a (reg (get-value a_) fun))
+        (*b (reg (get-value b_) fun))
+        (r  (reg (typecode r_) fun))
+        (w  (reg (typecode r_) fun))]
        ((if (eqv? (size-of (typecode a_)) (size-of (typecode r_)))
           MOV
-          (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) (get-value a_)))
+          (if (signed? (typecode a_)) MOVSX MOVZX)) r (ptr (typecode a_) *a))
        (if (eqv? (size-of (typecode b_)) (size-of (typecode r_)))
-         (op r (ptr (typecode b_) (get-value b_)))
+         (op r (ptr (typecode b_) *b))
          (append
-           ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) (get-value b_)))
+           ((if (signed? (typecode b_)) MOVSX MOVZX) w (ptr (typecode b_) *b))
            (op r w)))
-       (MOV (ptr (typecode r_) (get-value r_)) r)))
+       (MOV (ptr (typecode r_) *r) r)))
 (define-method (binary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <element>) op)
   (env fun
        [(r+  (reg (last (strides r_)) fun))
@@ -113,8 +121,8 @@
         (*q  (reg <long> fun))
         (*rx (reg <long> fun))]
        (IMUL n r+)
-       (MOV *p (get-value r_))
-       (MOV *q (get-value a_))
+       (MOV *p (loc (get-value r_) fun))
+       (MOV *q (loc (get-value a_) fun))
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
        (IMUL a+ a+ (size-of (typecode a_)))
@@ -131,15 +139,14 @@
   (env fun
        [(r+  (reg (last (strides r_)) fun))
         (a   (reg (get-value a_) fun))
-        (*b  (reg (get-value b_) fun))
         (b+  (reg (last (strides b_)) fun))
         (n   (reg (last (shape r_)) fun))
         (*p  (reg <long> fun))
         (*q  (reg <long> fun))
         (*rx (reg <long> fun))]
        (IMUL n r+)
-       (MOV *p (get-value r_))
-       (MOV *q *b)
+       (MOV *p (loc (get-value r_) fun))
+       (MOV *q (loc (get-value b_) fun))
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
        (IMUL b+ b+ (size-of (typecode b_)))
@@ -154,11 +161,8 @@
        'return))
 (define-method (binary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) (b_ <sequence<>>) op)
   (env fun
-       [(*r  (reg (get-value r_) fun))
-        (r+  (reg (last (strides r_)) fun))
-        (*a  (reg (get-value a_) fun))
+       [(r+  (reg (last (strides r_)) fun))
         (a+  (reg (last (strides a_)) fun))
-        (*b  (reg (get-value b_) fun))
         (b+  (reg (last (strides b_)) fun))
         (n   (reg (last (shape r_)) fun))
         (*p  (reg <long> fun))
@@ -166,9 +170,9 @@
         (*s  (reg <long> fun))
         (*rx (reg <long> fun))]
        (IMUL n r+)
-       (MOV *p *r)
-       (MOV *q *a)
-       (MOV *s *b); TODO: (get-value b_) does not work here
+       (MOV *p (loc (get-value r_) fun))
+       (MOV *q (loc (get-value a_) fun))
+       (MOV *s (loc (get-value b_) fun))
        (LEA *rx (ptr (typecode r_) *p n))
        (IMUL r+ r+ (size-of (typecode r_)))
        (IMUL a+ a+ (size-of (typecode a_)))
