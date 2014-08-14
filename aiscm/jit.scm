@@ -34,9 +34,9 @@
 (define-class <jcc> ()
   (target #:init-keyword #:target #:getter get-target)
   (code #:init-keyword #:code #:getter get-code))
-(define-method (len (self <list>)) (length self))
-(define-method (len (self <symbol>)) 0)
-(define-method (len (self <jcc>)) 2)
+(define-method (instruction-length (self <list>)) (length self))
+(define-method (instruction-length (self <symbol>)) 0)
+(define-method (instruction-length (self <jcc>)) 2)
 (define-method (Jcc (target <symbol>) (code <integer>))
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
@@ -46,7 +46,7 @@
   (let [(target (assq-ref offsets (get-target self)))]
     (Jcc (- target offset) (get-code self))))
 (define (resolve-jumps commands); TODO: iterate until offsets become stable
-  (let* [(addresses (integral (map len commands)))
+  (let* [(addresses (integral (map instruction-length commands)))
          (labels    (filter (compose symbol? car) (zipmap commands addresses)))
          (resolve   (lambda (cmd adr) (resolve-jump cmd adr labels)))]
     (filter (compose not symbol?) (map resolve commands addresses))))
