@@ -31,6 +31,9 @@
 (load-extension "libguile-jit" "init_jit")
 (define-class <jit-context> () (binaries #:init-value '()))
 
+(define-method (disp8? (disp <boolean>)) #f)
+(define-method (disp8? (disp <integer>)) (and (>= disp -128) (< disp 128)))
+
 (define-class <jcc> ()
   (target #:init-keyword #:target #:getter get-target)
   (code #:init-keyword #:code #:getter get-code))
@@ -40,7 +43,7 @@
 (define-method (Jcc (target <symbol>) (code <integer>))
   (make <jcc> #:target target #:code code))
 (define-method (Jcc (target <integer>) (code <integer>))
-  (append (list code) (raw target 8))); TODO: long jumps
+  (append (list code) (raw target (if (disp8? target) 8 32))))
 (define-method (resolve-jump self offset offsets) self)
 (define-method (resolve-jump (self <jcc>) offset offsets)
   (let [(target (assq-ref offsets (get-target self)))]
@@ -147,9 +150,6 @@
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
 (define-method (op16 (x <integer>)) (if (eqv? x 16) (list #x66) '()))
 (define-method (op16 (x <operand>)) (op16 (get-bits x)))
-
-(define-method (disp8? (disp <boolean>)) #f)
-(define-method (disp8? (disp <integer>)) (and (>= disp -128) (< disp 128)))
 
 (define-method (mod (r/m <boolean>)) #b00)
 (define-method (mod (r/m <integer>)) (if (disp8? r/m) #b01 #b10))

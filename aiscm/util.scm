@@ -1,7 +1,7 @@
 (define-module (aiscm util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:export (toplevel-define! attach index all-but-last upto depth
+  #:export (toplevel-define! attach index all-but-last upto repeat depth
             flatten-n flatten cycle uncycle integral zipmap)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
@@ -17,6 +17,7 @@
     (if tail (length (cdr tail)) #f)))
 (define (all-but-last lst) (reverse (cdr (reverse lst))))
 (define (upto a b) (if (<= a b) (cons a (upto (1+ a) b)) '()))
+(define (repeat x n) (if (zero? n) '() (cons x (repeat x (1- n)))))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (upto 1 n)))
 (define (depth val)
   (if (list? val) (1+ (apply max (cons 0 (map depth val)))) 0))
