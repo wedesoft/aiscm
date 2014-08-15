@@ -51,9 +51,8 @@
     (Jcc (- target offset) (get-code self))))
 (define (resolve-jumps commands); TODO: iterate until offsets become stable
   (let* [(sizes   (map instruction-length commands))
-         (labels  (zipmap commands (integral sizes)))
-         (resolve (lambda (cmd) (resolve-jump cmd labels)))]
-    (filter (compose not symbol?) (map resolve commands))))
+         (labels  (zipmap commands (integral sizes)))]
+    (filter (compose not symbol?) (map (cut resolve-jump <> labels) commands))))
 
 (define (JMP  target) (Jcc target #xeb))
 (define (JB   target) (Jcc target #x72))
