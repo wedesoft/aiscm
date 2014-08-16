@@ -1,6 +1,8 @@
 # TODO
 
-* long jumps
+* Jcc rel32 (tests)
+* test 3D operation
+* rename *p -> *r
 * simple and documented way to dump binary to file and disassemble
 * extra representation for stack values and arguments?
 * (lambda (fun ...) (env fun [(r (reg ... fun)) ...] ...)) ->
