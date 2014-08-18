@@ -381,33 +381,33 @@
 (define-method (add-return-value (type <meta<sequence<>>>) fun args) args)
 (define-method (add-return-param (type <meta<element>>) arg-classes) arg-classes)
 (define-method (add-return-param (type <meta<sequence<>>>) arg-classes) (cons type arg-classes))
-(define (pass-parameters ctx return-class arg-classes expr)
+(define (pass-parameters ctx return-class arg-classes proc)
   (let* [(fun           (make <jit-function>))
          (param-classes (add-return-param return-class arg-classes))
          (args          (map (cut arg <> fun) param-classes))
          (return-type   (return-type return-class))
          (arg-types     (flatten (map types param-classes)))
          (vals          (add-return-value return-class fun args))]
-    (asm ctx return-type arg-types (apply expr (cons fun vals)))))
+    (asm ctx return-type arg-types (apply proc (cons fun vals)))))
 (define-method (shape a b)
   (let [(shape-a (shape a))
         (shape-b (shape b))]
     (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
 (define-method (pass-return-value (ctx <jit-context>) (return-class <meta<element>>)
-                                  arg-classes (fun <procedure>))
-  (let* [(code (pass-parameters ctx return-class arg-classes fun))
+                                  arg-classes (proc <procedure>))
+  (let* [(code (pass-parameters ctx return-class arg-classes proc))
          (proc (lambda args
                  (let [(result (apply code (flatten (map content args))))]
                    (make return-class #:value result))))]
     (make <method> #:specializers arg-classes #:procedure proc)))
 (define-method (pass-return-value (ctx <jit-context>) (return-class <meta<sequence<>>>)
-                                  arg-classes (fun <procedure>))
-  (let* [(code (pass-parameters ctx return-class arg-classes fun))
+                                  arg-classes (proc <procedure>))
+  (let* [(code (pass-parameters ctx return-class arg-classes proc))
          (proc (lambda args
                  (let [(retval (make return-class #:shape (apply shape args)))]
                    (apply code (flatten (map content (cons retval args))))
                    retval)))]
     (make <method> #:specializers arg-classes #:procedure proc)))
 
-(define-syntax-rule (jit-wrap ctx return-class (arg-class ...) fun)
-  (pass-return-value ctx return-class (list arg-class ...) fun))
+(define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
+  (pass-return-value ctx return-class (list arg-class ...) proc))
