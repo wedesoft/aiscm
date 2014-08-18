@@ -295,7 +295,7 @@
 (define default-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define callee-saved-codes (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
-(define args (map get-code (list RDI RSI RDX RCX R8 R9)))
+(define arg-codes (map get-code (list RDI RSI RDX RCX R8 R9)))
 (define-class <jit-function> ()
   (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes)
   (live #:init-value '() #:init-keyword #:live #:getter get-live #:setter set-live)
@@ -328,10 +328,10 @@
   (or (allocate fun type) (spill fun type)))
 (define-method (arg (type <meta<int<>>>) (fun <jit-function>))
   (let* [(n       (get-argc fun))
-         (is-reg? (< n (length args)))
+         (is-reg? (< n (length arg-codes)))
          (value  (if is-reg?
-                   (reg type (list-ref args n))
-                   (ptr type RSP (ash (+ (- n (length args)) 1) 3))))]
+                   (reg type (list-ref arg-codes n))
+                   (ptr type RSP (ash (+ (- n (length arg-codes)) 1) 3))))]
     (if is-reg? (set-live fun (cons value (delete value (get-live fun))))); TODO: remove this
     (set-argc fun (1+ (get-argc fun)))
     (make type #:value value)))
@@ -339,7 +339,7 @@
 (define-method (loc (value <pointer>) (fun <jit-function>))
   (let [(disp (+ (get-disp value) (ash (get-offset fun) 3)))]
     (ptr (get-type value) RSP disp)))
-(define-method (reg (value <register>) (fun <jit-function>)); TODO: works with different sizes?
+(define-method (reg (value <register>) (fun <jit-function>))
   (set-live fun (cons value (delete value (get-live fun))))
   (loc value fun))
 (define-method (reg (value <pointer>) (fun <jit-function>))
