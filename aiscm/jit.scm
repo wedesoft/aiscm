@@ -312,16 +312,19 @@
   (set-offset fun (1+ (get-offset fun)))
   (set-before fun (attach (get-before fun) (PUSH reg)))
   (set-after fun (cons (POP reg) (get-after fun))))
+(define (same-code? a b) (eqv? (get-code a) (get-code b)))
+(define (revive register fun)
+  (set-live fun (cons register (filter (compose not (cut same-code? register <>)) (get-live fun)))))
 (define (spill fun type)
   (let* [(target (last (get-live fun)))
          (retval (reg type (get-code target)))]
     (push-stack fun target)
-    (set-live fun (cons retval (all-but-last (get-live fun))))
+    (revive retval fun)
     retval))
 (define (allocate fun type)
   (let* [(code (get-free fun))
          (retval (if code (reg type code) #f))]
-    (if retval (set-live fun (cons retval (get-live fun))))
+    (if retval (revive retval fun))
     (if (member code callee-saved-codes) (push-stack fun (reg <long> code)))
     retval))
 (define-method (reg (type <meta<int<>>>) (fun <jit-function>))
@@ -332,7 +335,7 @@
          (value  (if is-reg?
                    (reg type (list-ref arg-codes n))
                    (ptr type RSP (ash (+ (- n (length arg-codes)) 1) 3))))]
-    (if is-reg? (set-live fun (cons value (delete value (get-live fun))))); TODO: remove this
+    (if is-reg? (revive value fun))
     (set-argc fun (1+ (get-argc fun)))
     (make type #:value value)))
 (define-method (loc (value <register>) (fun <jit-function>)) value)
@@ -340,7 +343,7 @@
   (let [(disp (+ (get-disp value) (ash (get-offset fun) 3)))]
     (ptr (get-type value) RSP disp)))
 (define-method (reg (value <register>) (fun <jit-function>))
-  (set-live fun (cons value (delete value (get-live fun))))
+  (revive value fun)
   (loc value fun))
 (define-method (reg (value <pointer>) (fun <jit-function>))
   (let* [(retval (reg (get-type value) fun))
@@ -388,6 +391,7 @@
          (return-type   (return-type return-class))
          (arg-types     (flatten (map types param-classes)))
          (vals          (add-return-value return-class fun args))]
+    ;(set-codes fun (fold-right delete (get-codes fun) (take arg-codes (min (length arg-types) (length args))))); TODO: test this
     (asm ctx return-type arg-types (apply proc (cons fun vals)))))
 (define-method (shape a b)
   (let [(shape-a (shape a))
