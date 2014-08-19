@@ -105,6 +105,6 @@
     "negate 3D array")
 (ok (equal? '(((2 3 4) (5 6 7))) (multiarray->list (+ (list->multiarray '(((1 2 3) (4 5 6)))) 1)))
     "add scalar to 3D array")
-(skip (equal? '(((2 3 4) (5 6 7))) (multiarray->list (+ 1 (list->multiarray '(((1 2 3) (4 5 6)))))))
+(ok (equal? '(((2 3 4) (5 6 7))) (multiarray->list (+ 1 (list->multiarray '(((1 2 3) (4 5 6)))))))
     "add 3D array to scalar")
 (format #t "~&")

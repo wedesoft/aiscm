@@ -293,11 +293,11 @@
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
 (define default-codes
-  (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
+  (map get-code (list RAX R10 R11 RBX RBP R12 R13 R14 R15)))
 (define callee-saved-codes (map get-code (list RBX RSP RBP R12 R13 R14 R15)))
 (define arg-codes (map get-code (list RDI RSI RDX RCX R8 R9)))
 (define-class <jit-function> ()
-  (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes)
+  (codes #:init-value default-codes #:init-keyword #:codes #:getter get-codes #:setter set-codes)
   (live #:init-value '() #:init-keyword #:live #:getter get-live #:setter set-live)
   (before #:init-value '() #:getter get-before #:setter set-before)
   (after #:init-value '() #:getter get-after #:setter set-after)
@@ -314,7 +314,8 @@
   (set-after fun (cons (POP reg) (get-after fun))))
 (define (same-code? a b) (eqv? (get-code a) (get-code b)))
 (define (revive register fun)
-  (set-live fun (cons register (filter (compose not (cut same-code? register <>)) (get-live fun)))))
+  (if (member (get-code register) (get-codes fun))
+    (set-live fun (cons register (filter (compose not (cut same-code? register <>)) (get-live fun))))))
 (define (spill fun type)
   (let* [(target (last (get-live fun)))
          (retval (reg type (get-code target)))]
@@ -391,7 +392,6 @@
          (return-type   (return-type return-class))
          (arg-types     (flatten (map types param-classes)))
          (vals          (add-return-value return-class fun args))]
-    ;(set-codes fun (fold-right delete (get-codes fun) (take arg-codes (min (length arg-types) (length args))))); TODO: test this
     (asm ctx return-type arg-types (apply proc (cons fun vals)))))
 (define-method (shape a b)
   (let [(shape-a (shape a))
