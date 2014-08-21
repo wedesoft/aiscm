@@ -9,7 +9,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (fill)
-  #:re-export (+ -))
+  #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
 (define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
@@ -214,6 +214,7 @@
 
 (define-binary-op + ADD)
 (define-binary-op - SUB)
+(define-binary-op * IMUL)
 
 (define (fill t n value); TODO: replace with tensor operation
   (let [(retval (make (sequence t) #:size n))]

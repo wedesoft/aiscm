@@ -4,7 +4,7 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 49)
+(planned-tests 50)
 (define i1 (make <int> #:value (random (ash 1 29))))
 (define i2 (make <int> #:value (random (ash 1 29))))
 (define i3 (make <int> #:value (random (ash 1 29))))
@@ -110,4 +110,6 @@
 (ok (equal? '(((2 4 6) (8 10 12))) (let [(m (list->multiarray '(((1 2 3) (4 5 6)))))]
                                      (multiarray->list (+ m m))))
     "add two 3D arrays")
+(ok (equal? '((2 4) (6 8)) (multiarray->list (* 2 (list->multiarray '((1 2) (3 4))))))
+    "scalar-array multiplication")
 (format #t "~&")
