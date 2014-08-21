@@ -188,34 +188,32 @@
        (JNE 'loop)
        'return))
 
-(define-method (+ (a <element>)) a)
-(define-method (+ (a <element>) (b <element>))
-  (add-method! + (jit-wrap ctx
-                           (coerce (class-of a) (class-of b))
-                           ((class-of a) (class-of b))
-                           (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ ADD))))
-  (+ a b))
-(define-method (+ (a <element>) (b <integer>))
-  (+ a (make (match b) #:value b)))
-(define-method (+ (a <integer>) (b <element>))
-  (+ (make (match a) #:value a) b))
+(define-syntax-rule (define-unary-op name op)
+  (define-method (name (a <element>))
+    (add-method! name (jit-wrap ctx
+                                (class-of a)
+                                ((class-of a))
+                                (lambda (fun r_ a_) (unary-op fun r_ a_ op))))
+    (name a)))
 
-(define-method (- (a <element>))
-  (add-method! - (jit-wrap ctx
-                           (class-of a)
-                           ((class-of a))
-                           (lambda (fun r_ a_) (unary-op fun r_ a_ NEG))))
-  (- a))
-(define-method (- (a <element>) (b <element>))
-  (add-method! - (jit-wrap ctx
-                           (coerce (class-of a) (class-of b))
-                           ((class-of a) (class-of b))
-                           (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ SUB))))
-  (- a b))
-(define-method (- (a <element>) (b <integer>))
-  (- a (make (match b) #:value b)))
-(define-method (- (a <integer>) (b <element>))
-  (- (make (match a) #:value a) b))
+(define-syntax-rule (define-binary-op name op)
+  (begin
+    (define-method (name (a <element>) (b <element>))
+      (add-method! name (jit-wrap ctx
+                                  (coerce (class-of a) (class-of b))
+                                  ((class-of a) (class-of b))
+                                  (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ op))))
+      (name a b))
+    (define-method (name (a <element>) (b <integer>))
+      (name a (make (match b) #:value b)))
+    (define-method (name (a <integer>) (b <element>))
+      (name (make (match a) #:value a) b))))
+
+(define-method (+ (a <element>)) a)
+(define-unary-op - NEG)
+
+(define-binary-op + ADD)
+(define-binary-op - SUB)
 
 (define (fill t n value); TODO: replace with tensor operation
   (let [(retval (make (sequence t) #:size n))]
