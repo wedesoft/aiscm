@@ -1,8 +1,6 @@
 # TODO
 
-* rename *p -> *r
-* simple and documented way to dump binary to file and disassemble
-* extra representation for stack values and arguments?
+* implement infinite register machine (register allocator)
 * (lambda (fun ...) (env fun [(r (reg ... fun)) ...] ...)) ->
   (env (r_ a_) [(r (reg ...) ...] ...))
 * PPM I/O

@@ -12,7 +12,7 @@
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function>
-            get-code asm resolve-jumps get-bits ptr get-disp get-index
+            asm obj resolve-jumps get-code get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -71,15 +71,17 @@
 (define (JLE  target) (Jcc target #x7e (list #x0f #x8e)))
 (define (JNLE target) (Jcc target #x7f (list #x0f #x8f)))
 
+(define (obj commands)
+  (u8-list->bytevector (flatten (attach (resolve-jumps commands) (RET)))))
+
 (define (asm ctx return-type arg-types commands)
-  (let* [(resolved    (resolve-jumps commands))
-         (with-return (attach resolved (RET)))
-         (code        (make-mmap (u8-list->bytevector (flatten with-return))))]
-    ;(call-with-output-file "debug.obj" (lambda (f) (put-bytevector f (u8-list->bytevector (flatten with-return)))))
+  (let* [(code   (obj commands))
+         (mapped (make-mmap code))]
+    ;(call-with-output-file "debug.obj" (lambda (f) (put-bytevector f code)))
     ; objdump -D -b binary -Mintel -mi386:x86-64 debug.obj
-    (slot-set! ctx 'binaries (cons code (slot-ref ctx 'binaries)))
+    (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
-                        (make-pointer (mmap-address code))
+                        (make-pointer (mmap-address mapped))
                         (map foreign-type arg-types))))
 
 (define-class <operand> ())
