@@ -10,7 +10,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  ;#:use-module (ice-9 binary-ports)
+  #:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
@@ -77,7 +77,7 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
          (mapped (make-mmap code))]
-    ;(call-with-output-file "debug.obj" (lambda (f) (put-bytevector f code)))
+    (call-with-output-file "debug.obj" (lambda (f) (put-bytevector f code)))
     ; objdump -D -b binary -Mintel -mi386:x86-64 debug.obj
     (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
