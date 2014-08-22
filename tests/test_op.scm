@@ -112,6 +112,6 @@
     "add two 3D arrays")
 (ok (equal? '((2 4) (6 8)) (multiarray->list (* 2 (list->multiarray '((1 2) (3 4))))))
     "scalar-array multiplication")
-(ok (equal? '((256 256) (256 (256)) (list->multiarray (* 256 (multiarray->list '((1 1) (1 1)))))))
+(ok (equal? '((256 256) (256 256)) (multiarray->list (* 256 (list->multiarray '((1 1) (1 1))))))
     "correct handling of strides with 2D short integer array")
 (format #t "~&")
