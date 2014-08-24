@@ -46,7 +46,7 @@ SCM mmap_address(SCM mmap_smob)
 
 void init_jit(void)
 {
-  mmap_tag = scm_make_smob_type("mmap", sizeof(void *));
+  mmap_tag = scm_make_smob_type("mmap", sizeof(struct mmap_t));
   scm_set_smob_free(mmap_tag, free_mmap);
   scm_c_define_gsubr("make-mmap", 1, 0, 0, make_mmap);
   scm_c_define_gsubr("mmap-address", 1, 0, 0, mmap_address);
