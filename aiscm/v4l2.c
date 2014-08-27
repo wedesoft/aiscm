@@ -117,28 +117,28 @@ SCM make_v4l2(SCM device_name, SCM channel)
       self->buf[i].index = i;
       if (xioctl(self->fd, VIDIOC_QUERYBUF, &self->buf[i])) {
         close_v4l2(retval);
-        scm_misc_error("make_v4l2", "Error querying buffer ~a for device '~a~'",
+        scm_misc_error("make_v4l2", "Error querying buffer ~a for device '~a'",
                        scm_list_2(scm_from_int(i), device_name));
       };
       self->map[i] = mmap(NULL, self->buf[i].length, PROT_READ | PROT_WRITE,
                           MAP_SHARED, self->fd, self->buf[i].m.offset);
       if (self->map[i] == MAP_FAILED) {
         close_v4l2(retval);
-        scm_misc_error("make_v4l2", "Error mapping capture buffer ~a for device '~a~'",
+        scm_misc_error("make_v4l2", "Error mapping capture buffer ~a for device '~a'",
                        scm_list_2(scm_from_int(i), device_name));
       };
     }
     for (i=0; i<2; i++) {
       if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
         close_v4l2(retval);
-        scm_misc_error("make_v4l2", "Error enqueuing buffer ~a for device '~a~'",
+        scm_misc_error("make_v4l2", "Error enqueuing buffer ~a for device '~a'",
                        scm_list_2(scm_from_int(i), device_name));
       };
     };
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
       close_v4l2(retval);
-      scm_misc_error("make_v4l2", "Error starting memory-mapped capture process for device '~a~'",
+      scm_misc_error("make_v4l2", "Error starting memory-mapped capture process for device '~a'",
                      scm_list_1(device_name));
     };
     self->capture = 1;
