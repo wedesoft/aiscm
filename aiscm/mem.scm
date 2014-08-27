@@ -8,7 +8,6 @@
             get-memory
             read-bytes
             write-bytes))
-(load-extension "libguile-mem" "init_mem")
 (define-class <mem> ()
   (memory #:init-keyword #:memory #:getter get-memory)
   (base #:init-keyword #:base)
@@ -16,7 +15,7 @@
 (define-method (initialize (self <mem>) initargs)
   (let-keywords initargs #f (memory base size)
     (if (not (and memory base))
-      (let [(ptr (gc-malloc-pointerless size))]
+      (let [(ptr (bytevector->pointer (make-bytevector size)))]
         (next-method self (list #:memory ptr #:base ptr #:size size)))
       (next-method))))
 (define-generic +)
