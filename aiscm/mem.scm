@@ -22,8 +22,16 @@
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
     (cond
-      ((< offset 0) (throw 'mem-plus-offset-lt-zero offset))
-      ((> offset size) (throw 'mem-plus-offset-gt-size offset size))
+      ((< offset 0) (scm-error 'out-of-range
+                               '+
+                               "Offset not be lower than zero but was ~a"
+                               (list offset)
+                               #f))
+      ((> offset size) (scm-error 'out-of-range
+                                  '+
+                                  "Offset must be less or equal ~a but was ~a"
+                                  (list size offset)
+                                  #f))
       (else
         (make <mem>
           #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
@@ -32,10 +40,13 @@
 (define-method (equal? (a <mem>) (b <mem>))
   (equal? (get-memory a) (get-memory b)))
 (define-method (read-bytes (self <mem>) (size <integer>))
-  (if
-    (> size (get-size self))
-    (throw 'mem-read-size-overrun size (get-size self))
-    (pointer->bytevector (get-memory self) size)))
+  (if (> size (get-size self))
+      (scm-error 'out-of-range
+                 'read-bytes
+                 "Attempt to read ~a bytes from memory of size ~a"
+                 (list size (get-size self))
+                 #f)
+      (pointer->bytevector (get-memory self) size)))
 (define-method (write-bytes (self <mem>) (bv <bytevector>))
   (bytevector-copy!
     bv 0
