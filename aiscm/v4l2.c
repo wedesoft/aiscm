@@ -175,5 +175,5 @@ void init_v4l2(void)
   scm_set_smob_free(v4l2_tag, free_v4l2);
   scm_c_define_gsubr("make-v4l2", 2, 0, 0, make_v4l2);
   scm_c_define_gsubr("close-v4l2", 1, 0, 0, close_v4l2);
-  scm_c_define_gsubr("read-v4l2", 1, 0, 0, read_v4l2);
+  scm_c_define_gsubr("read-v4l2-orig", 1, 0, 0, read_v4l2);
 }
