@@ -1,9 +1,10 @@
 (use-modules (aiscm sequence)
              (aiscm element)
              (aiscm int)
+             (aiscm util)
              (oop goops)
              (guile-tap))
-(planned-tests 50)
+(planned-tests 54)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
@@ -30,10 +31,13 @@
     "Class name of 16-bit integer sequence")
 (ok (equal? "#<sequence<int<16,signed>>>:\n(2 3 5)"
       (call-with-output-string (lambda (port) (write s1 port))))
-    "Write lambda object")
+    "Write sequence object")
 (ok (equal? "#<sequence<int<16,signed>>>:\n(2 3 5)"
       (call-with-output-string (lambda (port) (display s1 port))))
-    "Display lambda object")
+    "Display sequence object")
+(ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
+      (call-with-output-string (lambda (port) (display (list->multiarray (repeat 100 40)) port))))
+    "Display longer sequence object")
 (ok (equal? <ubyte> (typecode (list->multiarray '(1 2 3))))
     "Typecode of converted list of unsigned bytes")
 (ok (equal? <byte> (typecode (list->multiarray '(1 -1))))
@@ -48,6 +52,15 @@
     "Return value of assignment to sequence")
 (ok (equal? '(2 4 8) (multiarray->list (list->multiarray '(2 4 8))))
     "Content of converted list")
+(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
+      (call-with-output-string (lambda (port) (display (list->multiarray '((1 2 3) (4 5 6))) port))))
+    "Display 2D array")
+(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
+      (call-with-output-string (lambda (port) (display (list->multiarray (list (repeat 100 40))) port))))
+    "Display 2D array with large first dimension")
+(ok (equal? "#<multiarray<int<8,unsigned>>,4>:\n((((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n ..."
+      (call-with-output-string (lambda (port) (display (list->multiarray (list (repeat (repeat '(1 1) 3) 4))) port))))
+    "Display larger n-dimensional array")
 (ok (equal? (sequence <int>) (coerce <int> (sequence <sint>)))
     "Coercion of sequences")
 (ok (equal? (sequence <int>) (coerce (sequence <int>) <byte>))

@@ -94,10 +94,46 @@
          (retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval lst)
     retval))
+(define (to-string self)
+  (define (finish-sequence lst)
+    (string-append "(" (string-join lst " ") ")"))
+  (define (finish-multiarray lst)
+    (let [(intermediate (cons (string-append "(" (car lst))
+                         (map (cut string-append " " <>) (cdr lst))))]
+      (attach (all-but-last intermediate) (string-append (last intermediate) ")"))))
+  (define (recur self w h)
+    (if (zero? (size self))
+      '()
+      (if (eqv? (dimension self) 0)
+        (format #f "~a" (get-value (fetch self)))
+        (let [(head (recur (project self) (- w 2) h))]
+         (cond
+           ((eqv? (dimension self) 1)
+            (let [(len (string-length head))]
+             (if (<= w len)
+               (list "...")
+               (cons head (recur (dump 1 self) (- w len 1) h)))))
+           ((eqv? (dimension self) 2)
+            (let* [(conv (finish-sequence head))]
+             (if (<= h 1)
+               (list conv)
+               (cons conv (recur (dump 1 self) w (- h 1))))))
+           (else
+             (let* [(conv (finish-multiarray head))
+                    (len   (length head))]
+               (if (<= h len)
+                 conv
+                 (append conv (recur (dump 1 self) w (- h len)))))))))))
+  (let [(lst (recur self 80 11))]
+    (if (<= (dimension self) 1)
+      (finish-sequence lst)
+      (if (> (length lst) 10)
+        (string-join (attach (all-but-last (finish-multiarray lst)) " ...") "\n")
+        (string-join (finish-multiarray lst) "\n")))))
 (define-method (write (self <sequence<>>) port)
-  (format port "#~a:~&~a" (class-name (class-of self)) (multiarray->list self)))
+  (format port "#~a:~&~a" (class-name (class-of self)) (to-string self)))
 (define-method (display (self <sequence<>>) port)
-  (format port "#~a:~&~a" (class-name (class-of self)) (multiarray->list self)))
+  (format port "#~a:~&~a" (class-name (class-of self)) (to-string self)))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<element>>))
   (multiarray (coerce (typecode a) b) (dimension a)))
 (define-method (coerce (a <meta<element>>) (b <meta<sequence<>>>))
