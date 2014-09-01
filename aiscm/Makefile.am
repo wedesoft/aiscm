@@ -2,11 +2,11 @@ SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
 site_SCRIPTS = mem.scm element.scm bool.scm int.scm pointer.scm sequence.scm \
-	op.scm jit.scm compile.scm util.scm v4l2.scm
+	op.scm jit.scm compile.scm util.scm v4l2.scm xorg.scm
 
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-jit.la libguile-v4l2.la
+extension_LTLIBRARIES = libguile-jit.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_SCRIPTS:.scm=.go)
@@ -20,6 +20,11 @@ libguile_v4l2_la_SOURCES = v4l2.c
 libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_v4l2_la_LDFLAGS = -no-undefined
 libguile_v4l2_la_LIBADD = $(GUILE_LIBS)
+
+libguile_xorg_la_SOURCES = xorg.c
+libguile_xorg_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_xorg_la_LDFLAGS = -no-undefined
+libguile_xorg_la_LIBADD = $(GUILE_LIBS) -lX11
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(cachedir)/,$(cache_DATA))

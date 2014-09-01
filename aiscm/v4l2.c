@@ -35,14 +35,17 @@ SCM close_v4l2(SCM smob)
   if (self->capture) {
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     xioctl(self->fd, VIDIOC_STREAMOFF, &type);
+    self->capture = 0;
   };
   for (i=0; i<2; i++)
     if (self->map[i] != MAP_FAILED) {
       munmap(self->map[i], self->buf[i].length);
       self->map[i] = MAP_FAILED;
     };
-  if (self->fd != -1) close(self->fd);
-  self->fd = -1;
+  if (self->fd != -1) {
+    close(self->fd);
+    self->fd = -1;
+  };
   return SCM_UNSPECIFIED;
 }
 

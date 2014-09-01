@@ -114,13 +114,13 @@
                (list "...")
                (cons head (recur (dump 1 self) (- w len 1) h)))))
            ((eqv? (dimension self) 2)
-            (let* [(conv (finish-sequence head))]
+            (let [(conv (finish-sequence head))]
              (if (<= h 1)
                (list conv)
                (cons conv (recur (dump 1 self) w (- h 1))))))
            (else
-             (let* [(conv (finish-multiarray head))
-                    (len   (length head))]
+             (let [(conv (finish-multiarray head))
+                   (len   (length head))]
                (if (<= h len)
                  conv
                  (append conv (recur (dump 1 self) w (- h len)))))))))))
