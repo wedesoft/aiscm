@@ -105,7 +105,7 @@
     (if (zero? (size self))
       '()
       (if (eqv? (dimension self) 0)
-        (format #f "~a" (get-value (fetch self)))
+        (call-with-output-string (cut write (get-value (fetch self)) <>))
         (let [(head (recur (project self) (- w 2) h))]
          (cond
            ((eqv? (dimension self) 1)
