@@ -61,6 +61,24 @@ SCM xdisplay_height(SCM scm_self)
   return scm_from_signed_integer(DisplayHeight(self->display, DefaultScreen(self->display)));
 }
 
+static Bool always_true(Display *display, XEvent *event, XPointer pointer)
+{
+  return True;
+}
+
+void handle_event(struct xdisplay_t *self, XEvent *event)
+{
+}
+
+SCM xdisplay_process_events(SCM scm_self)
+{
+  XEvent event;
+  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  while (XCheckIfEvent(self->display, &event, always_true, NULL))
+    handle_event(self, &event);
+  return scm_self;
+}
+
 SCM xwindow_close(SCM scm_self)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
@@ -116,7 +134,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   return retval;
 }
 
-Bool wait_for_notify(Display *d, XEvent *e, char *arg)
+static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
 {
   return (e->type == MapNotify || e->type == UnmapNotify) &&
          (e->xmap.window == (Window)arg);
@@ -149,6 +167,7 @@ void init_xorg(void)
   scm_c_define_gsubr("make-xdisplay", 1, 0, 0, make_xdisplay);
   scm_c_define_gsubr("xdisplay-width", 1, 0, 0, xdisplay_width);
   scm_c_define_gsubr("xdisplay-height", 1, 0, 0, xdisplay_height);
+  scm_c_define_gsubr("xdisplay-process-events", 1, 0, 0, xdisplay_process_events);
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
