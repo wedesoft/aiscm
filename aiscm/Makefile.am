@@ -22,9 +22,9 @@ libguile_v4l2_la_LDFLAGS = -no-undefined
 libguile_v4l2_la_LIBADD = $(GUILE_LIBS)
 
 libguile_xorg_la_SOURCES = xorg.c
-libguile_xorg_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_xorg_la_CFLAGS = $(GUILE_CFLAGS) $(X_CFLAGS)
 libguile_xorg_la_LDFLAGS = -no-undefined
-libguile_xorg_la_LIBADD = $(GUILE_LIBS) -lX11
+libguile_xorg_la_LIBADD = $(GUILE_LIBS) $(X_LIBS) $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(cachedir)/,$(cache_DATA))

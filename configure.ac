@@ -21,6 +21,12 @@ GUILE_PROGS
 GUILE_SITE_DIR
 GUILE_EXT_DIR
 GUILE_CACHE_DIR
+AC_PATH_XTRA
+if test "x$no_x" = xyes; then
+  AC_MSG_ERROR([Could not find X11 libraries.])
+fi
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,
@@ -46,4 +52,3 @@ AC_OUTPUT(Makefile
           doc/installation.md,
           echo "$info",
           info="$info")
-
