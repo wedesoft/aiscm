@@ -1,6 +1,6 @@
 (define-module (aiscm xorg)
   #:use-module (oop goops)
-  #:export (make-xdisplay close-xdisplay shape-display
-            make-xwindow show-xwindow hide-xwindow close-xwindow))
+  #:export (make-xdisplay xdisplay-close xdisplay-shape
+            make-xwindow xwindow-show xwindow-hide xwindow-close))
 (load-extension "libguile-xorg" "init_xorg")
-(define (shape-display self) (list (width-display self) (height-display self)))
+(define (xdisplay-shape self) (list (xdisplay-width self) (xdisplay-height self)))

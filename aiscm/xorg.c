@@ -15,9 +15,10 @@ struct xwindow_t {
   Window window;
   Colormap color_map;
   XVisualInfo visual_info;
+  GC gc;
 };
 
-SCM close_xdisplay(SCM scm_self)
+SCM xdisplay_close(SCM scm_self)
 {
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   if (self->display) {
@@ -48,27 +49,32 @@ SCM make_xdisplay(SCM scm_name)
   return retval;
 }
 
-SCM width_display(SCM scm_self)
+SCM xdisplay_width(SCM scm_self)
 {
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayWidth(self->display, DefaultScreen(self->display)));
 }
 
-SCM height_display(SCM scm_self)
+SCM xdisplay_height(SCM scm_self)
 {
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayHeight(self->display, DefaultScreen(self->display)));
 }
 
-SCM close_xwindow(SCM scm_self)
+SCM xwindow_close(SCM scm_self)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  if (self->gc) {
+    XFreeGC(self->display, self->gc);
+    self->gc = 0;
+  };
   if (self->window) {
     XDestroyWindow(self->display, self->window);
     self->window = 0;
   };
   if (self->color_map) {
     XFreeColormap(self->display, self->color_map);
+    self->color_map = 0;
   };
   return SCM_UNSPECIFIED;
 }
@@ -104,6 +110,9 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
                                0, self->visual_info.depth, InputOutput, self->visual_info.visual,
                                CWColormap | CWEventMask, &attributes);
   if (!self->window) scm_syserror("make_xwindow");
+  XGCValues xgcv;
+  self->gc = XCreateGC(self->display, self->window, 0L, &xgcv);
+  if (!self->gc) scm_syserror("make_xwindow");
   return retval;
 }
 
@@ -113,7 +122,7 @@ Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
-SCM show_xwindow(SCM scm_self)
+SCM xwindow_show(SCM scm_self)
 {
   XEvent event;
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
@@ -122,7 +131,7 @@ SCM show_xwindow(SCM scm_self)
   return scm_self;
 }
 
-SCM hide_xwindow(SCM scm_self)
+SCM xwindow_hide(SCM scm_self)
 {
   XEvent event;
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
@@ -138,11 +147,11 @@ void init_xorg(void)
   scm_set_smob_free(xdisplay_tag, free_xdisplay);
   scm_set_smob_free(xwindow_tag, free_xwindow);
   scm_c_define_gsubr("make-xdisplay", 1, 0, 0, make_xdisplay);
-  scm_c_define_gsubr("width-display", 1, 0, 0, width_display);
-  scm_c_define_gsubr("height-display", 1, 0, 0, height_display);
-  scm_c_define_gsubr("close-xdisplay", 1, 0, 0, close_xdisplay);
+  scm_c_define_gsubr("xdisplay-width", 1, 0, 0, xdisplay_width);
+  scm_c_define_gsubr("xdisplay-height", 1, 0, 0, xdisplay_height);
+  scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
-  scm_c_define_gsubr("show-xwindow", 1, 0, 0, show_xwindow);
-  scm_c_define_gsubr("hide-xwindow", 1, 0, 0, hide_xwindow);
-  scm_c_define_gsubr("close-xwindow", 1, 0, 0, close_xwindow);
+  scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
+  scm_c_define_gsubr("xwindow-hide", 1, 0, 0, xwindow_hide);
+  scm_c_define_gsubr("xwindow-close", 1, 0, 0, xwindow_close);
 }
