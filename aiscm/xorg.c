@@ -19,6 +19,8 @@ struct xwindow_t {
   Colormap color_map;
   XVisualInfo visual_info;
   GC gc;
+  Atom wm_protocols;
+  Atom wm_delete_window;
   struct xwindow_t *next;
 };
 
@@ -76,11 +78,16 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
   while (window && window->window != event->xany.window) window = window->next;
   if (window) {
     switch (event->type) {
+      case ClientMessage:
+        if ((event->xclient.message_type == window->wm_protocols ) &&
+            ((Atom)event->xclient.data.l[0] == window->wm_delete_window))
+          self->quit = 1;
+        break;
       case KeyPress:
         switch (event->xkey.keycode) {
           case 0x09:
           case 0x41:
-            window->display->quit = 1;
+            self->quit = 1;
         };
         break;
     };
@@ -132,6 +139,19 @@ SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
     };
   };
   return scm_self;
+}
+
+SCM xdisplay_quit(SCM scm_self)
+{
+  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  return self->quit ? SCM_BOOL_T : SCM_BOOL_F;
+}
+
+SCM xdisplay_set_quit(SCM scm_self, SCM scm_quit)
+{
+  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  self->quit = scm_quit != SCM_BOOL_F;
+  return xdisplay_quit(scm_self);
 }
 
 SCM xwindow_close(SCM scm_self)
@@ -194,6 +214,9 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   XGCValues xgcv;
   self->gc = XCreateGC(display->display, self->window, 0L, &xgcv);
   if (!self->gc) scm_syserror("make_xwindow");
+  self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
+  self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
+  XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
   self->next = display->window;
   display->window = self;
   return retval;
@@ -234,6 +257,8 @@ void init_xorg(void)
   scm_c_define_gsubr("xdisplay-height", 1, 0, 0, xdisplay_height);
   scm_c_define_gsubr("xdisplay-process-events", 1, 0, 0, xdisplay_process_events);
   scm_c_define_gsubr("xdisplay-event-loop", 2, 0, 0, xdisplay_event_loop);
+  scm_c_define_gsubr("xdisplay-quit?", 1, 0, 0, xdisplay_quit);
+  scm_c_define_gsubr("xdisplay-quit=", 2, 0, 0, xdisplay_set_quit);
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
