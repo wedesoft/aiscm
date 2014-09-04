@@ -72,6 +72,19 @@ static Bool always_true(Display *display, XEvent *event, XPointer pointer)
 
 void handle_event(struct xdisplay_t *self, XEvent *event)
 {
+  struct xwindow_t *window = self->window;
+  while (window && window->window != event->xany.window) window = window->next;
+  if (window) {
+    switch (event->type) {
+      case KeyPress:
+        switch (event->xkey.keycode) {
+          case 0x09:
+          case 0x41:
+            window->display->quit = 1;
+        };
+        break;
+    };
+  };
 }
 
 SCM xdisplay_process_events(SCM scm_self)
@@ -140,12 +153,8 @@ SCM xwindow_close(SCM scm_self)
     self->display->window = self->next;
   else {
     struct xwindow_t *window = self->display->window;
-    while (window->next != self) {
-      window = window->next;
-      if (!window) break;
-    };
-    if (window)
-      window->next = self->next;
+    while (window && window->next != self) window = window->next;
+    if (window) window->next = self->next;
   };
   self->next = NULL;
   return SCM_UNSPECIFIED;
