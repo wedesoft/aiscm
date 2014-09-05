@@ -15,7 +15,7 @@ AC_CHECK_PROG(TOUCH,touch,touch)
 AC_CHECK_PROG(PANDOC,pandoc,pandoc)
 AC_MSG_CHECKING([wether C++ compiler works])
 AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C++ program.])])
-AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
+AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h libavutil/pixfmt.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 AC_MSG_CHECKING([availablity of timersub])
@@ -25,6 +25,15 @@ AC_TRY_LINK([#include <sys/time.h>
             [AC_MSG_RESULT([yes])],
             [AC_MSG_RESULT([no])]
             [AC_MSG_ERROR([timersub is not available])])
+AC_MSG_CHECKING([for libswscale])
+old_LIBS="$LIBS"
+LIBS="$LIBS -lswscale"
+AC_TRY_LINK([#include <libswscale/swscale.h>],
+            [sws_alloc_context()],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not find libswscale])])
+LIBS="$old_LIBS"
 PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.9])
 GUILE_PROGS
 GUILE_SITE_DIR
