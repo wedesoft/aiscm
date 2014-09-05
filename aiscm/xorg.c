@@ -16,6 +16,8 @@ struct xdisplay_t {
 struct xwindow_t {
   struct xdisplay_t *display;
   Window window;
+  int width;
+  int height;
   Colormap color_map;
   XVisualInfo visual_info;
   GC gc;
@@ -72,6 +74,8 @@ static Bool always_true(Display *display, XEvent *event, XPointer pointer)
   return True;
 }
 
+void xwindow_paint(struct xwindow_t *window);
+
 void handle_event(struct xdisplay_t *self, XEvent *event)
 {
   struct xwindow_t *window = self->window;
@@ -89,6 +93,18 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
           case 0x41:
             self->quit = 1;
         };
+        break;
+      case ConfigureNotify:
+        while (XCheckTypedWindowEvent(self->display, window->window,
+                                      ConfigureNotify, event));
+        window->width = event->xconfigure.width;
+        window->height = event->xconfigure.height;
+        xwindow_paint(window);
+        break;
+      case Expose:
+        while (XCheckTypedWindowEvent(self->display, window->window,
+                                      Expose, event));
+        xwindow_paint(window);
         break;
     };
   };
@@ -183,7 +199,7 @@ SCM xwindow_close(SCM scm_self)
 size_t free_xwindow(SCM scm_self)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
-  close_xwindow(scm_self); // <-> hide
+  close_xwindow(scm_self);
   scm_gc_free(self, sizeof(struct xwindow_t), "xwindow");
   return 0;
 }
@@ -197,6 +213,8 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   SCM_NEWSMOB(retval, xwindow_tag, self);
   display = (struct xdisplay_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
+  self->width = scm_to_int(scm_width);
+  self->height = scm_to_int(scm_height);
   if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
                         24, TrueColor, &self->visual_info))
     scm_syserror("make_xwindow");
@@ -207,7 +225,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   attributes.colormap = self->color_map;
   attributes.event_mask = KeyPressMask | ExposureMask | StructureNotifyMask;
   self->window = XCreateWindow(display->display, RootWindow(display->display, self->visual_info.screen),
-                               0, 0, scm_to_int(scm_width), scm_to_int(scm_height),
+                               0, 0, self->width, self->height,
                                0, self->visual_info.depth, InputOutput, self->visual_info.visual,
                                CWColormap | CWEventMask, &attributes);
   if (!self->window) scm_syserror("make_xwindow");
@@ -244,6 +262,20 @@ SCM xwindow_hide(SCM scm_self)
   XUnmapWindow(self->display->display, self->window);
   XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
+}
+
+void xwindow_paint(struct xwindow_t *self)
+{
+  char *data = (char *)scm_gc_calloc(self->width * self->height * 4, "raw image");
+  XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
+                             24, ZPixmap, 0, data, self->width, self->height,
+                             32, self->width * 4);
+  if (!img) scm_syserror("xwindow_paint");
+  img->byte_order = LSBFirst;
+  XPutImage(self->display->display, self->window, self->gc,
+            img, 0, 0, 0, 0, self->width, self->height);
+  img->data = (char *)NULL;
+  XDestroyImage(img);
 }
 
 void init_xorg(void)
