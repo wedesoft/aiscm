@@ -3,6 +3,18 @@
 #include <X11/Xutil.h>
 #include <libguile.h>
 
+#ifndef timersub
+#define timersub(a, b, result)                                                \
+  do {                                                                        \
+    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                             \
+    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                          \
+    if ((result)->tv_usec < 0) {                                              \
+      --(result)->tv_sec;                                                     \
+      (result)->tv_usec += 1000000;                                           \
+    }                                                                         \
+  } while (0)
+#endif
+
 static scm_t_bits xdisplay_tag;
 
 static scm_t_bits xwindow_tag;
@@ -16,6 +28,7 @@ struct xdisplay_t {
 struct xwindow_t {
   struct xdisplay_t *display;
   Window window;
+  struct xwindow_t *next;
   int width;
   int height;
   Colormap color_map;
@@ -23,7 +36,6 @@ struct xwindow_t {
   GC gc;
   Atom wm_protocols;
   Atom wm_delete_window;
-  struct xwindow_t *next;
 };
 
 SCM xdisplay_close(SCM scm_self)
@@ -255,6 +267,11 @@ SCM xwindow_show(SCM scm_self)
   return scm_self;
 }
 
+SCM xwindow_write(SCM scm_self, SCM scm_fmt, SCM scm_width, SCM scm_height, SCM scm_data)
+{
+  // TODO: implement writing of images
+}
+
 SCM xwindow_hide(SCM scm_self)
 {
   XEvent event;
@@ -294,6 +311,7 @@ void init_xorg(void)
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
+  scm_c_define_gsubr("xwindow-write", 5, 0, 0, xwindow_write);
   scm_c_define_gsubr("xwindow-hide", 1, 0, 0, xwindow_hide);
   scm_c_define_gsubr("xwindow-close", 1, 0, 0, xwindow_close);
 }

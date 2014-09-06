@@ -17,9 +17,9 @@ libguile_jit_la_LDFLAGS = -no-undefined
 libguile_jit_la_LIBADD = $(GUILE_LIBS)
 
 libguile_frame_la_SOURCES = frame.c
-libguile_frame_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_frame_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS)
 libguile_frame_la_LDFLAGS = -no-undefined
-libguile_frame_la_LIBADD = $(GUILE_LIBS)
+libguile_frame_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS)
 
 libguile_v4l2_la_SOURCES = v4l2.c
 libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
