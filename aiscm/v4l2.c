@@ -168,8 +168,10 @@ SCM v4l2_read(SCM scm_self)
   self->frame.memory = V4L2_MEMORY_MMAP;
   if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("make_v4l2");
   self->frame_used = 1;
-  return scm_from_pointer(self->map[self->frame.index], NULL);
-  // TODO: return m_typecode, m_format.fmt.pix.width, m_format.fmt.pix.height
+  return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
+                    scm_from_int(self->format.fmt.pix.width),
+                    scm_from_int(self->format.fmt.pix.height),
+                    scm_from_pointer(self->map[self->frame.index], NULL));
 }
 
 void init_v4l2(void)

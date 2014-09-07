@@ -34,6 +34,7 @@ struct xwindow_t {
   Colormap color_map;
   XVisualInfo visual_info;
   GC gc;
+  char *data;
   Atom wm_protocols;
   Atom wm_delete_window;
 };
@@ -269,7 +270,9 @@ SCM xwindow_show(SCM scm_self)
 
 SCM xwindow_write(SCM scm_self, SCM scm_fmt, SCM scm_width, SCM scm_height, SCM scm_data)
 {
-  // TODO: implement writing of images
+  // TODO: store frame information for later conversion
+  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  self->data = scm_to_pointer(scm_data);
 }
 
 SCM xwindow_hide(SCM scm_self)
@@ -283,16 +286,18 @@ SCM xwindow_hide(SCM scm_self)
 
 void xwindow_paint(struct xwindow_t *self)
 {
-  char *data = (char *)scm_gc_calloc(self->width * self->height * 4, "raw image");
-  XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
-                             24, ZPixmap, 0, data, self->width, self->height,
-                             32, self->width * 4);
-  if (!img) scm_syserror("xwindow_paint");
-  img->byte_order = LSBFirst;
-  XPutImage(self->display->display, self->window, self->gc,
-            img, 0, 0, 0, 0, self->width, self->height);
-  img->data = (char *)NULL;
-  XDestroyImage(img);
+  if (self->data) {
+    // TODO: convert frame
+    XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
+                               24, ZPixmap, 0, self->data, self->width, self->height,
+                               32, self->width * 4);
+    if (!img) scm_syserror("xwindow_paint");
+    img->byte_order = LSBFirst;
+    XPutImage(self->display->display, self->window, self->gc,
+        img, 0, 0, 0, 0, self->width, self->height);
+    img->data = (char *)NULL;
+    XDestroyImage(img);
+  };
 }
 
 void init_xorg(void)

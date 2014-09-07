@@ -5,13 +5,17 @@ static void setup_format(enum PixelFormat format, int width, int height, void *p
                          uint8_t *data[], int line_size[])
 {
   switch (format) {
+    case PIX_FMT_YUYV422:
+      data[0] = (uint8_t *)ptr;
+      line_size[0] = 2 * ((width + 3) & ~0x3);
+      break;
     case PIX_FMT_GRAY8:
       data[0] = (uint8_t *)ptr;
       line_size[0] = width;
       break;
-    case PIX_FMT_YUYV422:
+    case PIX_FMT_BGRA:
       data[0] = (uint8_t *)ptr;
-      line_size[0] = 2 * ((width + 3) & ~0x3);
+      line_size[0] = width * 4;
       break;
     default:
       scm_misc_error("setup_format", "Support for format ~a not implemented",
@@ -37,7 +41,7 @@ SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
   int dest_line_size[8];
   setup_format(dest_format, width, height, dest_ptr, dest_data, dest_line_size);
   struct SwsContext *sws_context = sws_getContext(width, height, format,
-                                                  width, height, dest_format,
+                                                  width, height, dest_format, // TODO: dest_width, dest_height
                                                   SWS_FAST_BILINEAR, 0, 0, 0);
   sws_scale(sws_context, source_data, source_line_size, 0,
             height, dest_data, dest_line_size);
@@ -47,7 +51,8 @@ SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
 
 void init_frame(void)
 {
+  scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
   scm_c_define("PIX_FMT_GRAY8", scm_from_int(PIX_FMT_GRAY8));
-  scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_GRAY8));
+  scm_c_define("PIX_FMT_BGRA", scm_from_int(PIX_FMT_BGRA));
   scm_c_define_gsubr("frame-convert", 5, 0, 0, frame_convert);
 }
