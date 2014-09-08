@@ -7,10 +7,13 @@
   #:use-module (system foreign)
   #:export (make-v4l2 v4l2-close v4l2-read))
 (load-extension "libguile-v4l2" "init_v4l2")
+(define (v4l2-fmt->fmt fmt)
+  (let [(table (list (cons V4L2_PIX_FMT_YUYV PIX_FMT_YUYV422)))]
+    (assq-ref table fmt)))
 (define (v4l2-read self)
   (let [(picture (v4l2-read-orig self))]
     (make <frame>
-          #:format PIX_FMT_YUYV422; TODO: determine correct format
+          #:format (v4l2-fmt->fmt (car picture))
           #:width  (cadr picture)
           #:height (caddr picture)
           #:data   (cadddr picture))))

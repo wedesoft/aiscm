@@ -178,6 +178,7 @@ void init_v4l2(void)
 {
   v4l2_tag = scm_make_smob_type("v4l2", sizeof(struct v4l2_t));
   scm_set_smob_free(v4l2_tag, free_v4l2);
+  scm_c_define("V4L2_PIX_FMT_YUYV", scm_from_int(V4L2_PIX_FMT_YUYV));
   scm_c_define_gsubr("make-v4l2", 2, 0, 0, make_v4l2);
   scm_c_define_gsubr("v4l2-close", 1, 0, 0, v4l2_close);
   scm_c_define_gsubr("v4l2-read-orig", 1, 0, 0, v4l2_read);
