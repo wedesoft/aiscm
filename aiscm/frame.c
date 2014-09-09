@@ -25,7 +25,7 @@ static void setup_format(enum PixelFormat format, int width, int height, void *p
 
 // TODO: dest_width, dest_height
 SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
-                  SCM scm_dest_format)
+                  SCM scm_dest_format, SCM scm_dest_width, SCM scm_dest_height)
 {
   enum PixelFormat format = scm_to_int(scm_format);
   int
@@ -36,12 +36,15 @@ SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
   int source_line_size[8];
   setup_format(format, width, height, ptr, source_data, source_line_size);
   enum PixelFormat dest_format = scm_to_int(scm_dest_format);
-  void *dest_ptr = scm_gc_malloc_pointerless(width * height * 4, "frame"); // TODO: compute proper size
+  int
+    dest_width = scm_to_int(scm_dest_width),
+    dest_height = scm_to_int(scm_dest_height);
+  void *dest_ptr = scm_gc_malloc_pointerless(dest_width * dest_height * 4, "frame"); // TODO: compute proper size
   uint8_t *dest_data[8];
   int dest_line_size[8];
-  setup_format(dest_format, width, height, dest_ptr, dest_data, dest_line_size);
+  setup_format(dest_format, dest_width, dest_height, dest_ptr, dest_data, dest_line_size);
   struct SwsContext *sws_context = sws_getContext(width, height, format,
-                                                  width, height, dest_format, // TODO: dest_width, dest_height
+                                                  dest_width, dest_height, dest_format,
                                                   SWS_FAST_BILINEAR, 0, 0, 0);
   sws_scale(sws_context, source_data, source_line_size, 0,
             height, dest_data, dest_line_size);
@@ -52,7 +55,7 @@ SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
 void init_frame(void)
 {
   scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
-  scm_c_define("PIX_FMT_GRAY8", scm_from_int(PIX_FMT_GRAY8));
-  scm_c_define("PIX_FMT_BGRA", scm_from_int(PIX_FMT_BGRA));
-  scm_c_define_gsubr("frame-convert", 5, 0, 0, frame_convert);
+  scm_c_define("PIX_FMT_GRAY8",   scm_from_int(PIX_FMT_GRAY8));
+  scm_c_define("PIX_FMT_BGRA",    scm_from_int(PIX_FMT_BGRA));
+  scm_c_define_gsubr("frame-convert", 7, 0, 0, frame_convert);
 }

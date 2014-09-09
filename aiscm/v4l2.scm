@@ -8,7 +8,9 @@
   #:export (make-v4l2 v4l2-close v4l2-read))
 (load-extension "libguile-v4l2" "init_v4l2")
 (define (v4l2-fmt->sym fmt)
-  (let [(table (list (cons V4L2_PIX_FMT_YUYV 'YUYV)))]
+  (let [(table (list (cons V4L2_PIX_FMT_BGR32 'BGRA)
+                     (cons V4L2_PIX_FMT_GREY  'GREY)
+                     (cons V4L2_PIX_FMT_YUYV  'YUYV)))]
     (assq-ref table fmt)))
 (define (v4l2-read self)
   (let [(picture (v4l2-read-orig self))]

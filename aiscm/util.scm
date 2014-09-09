@@ -2,7 +2,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:export (toplevel-define! attach index all-but-last upto repeat depth
-            flatten-n flatten cycle uncycle integral zipmap)
+            flatten-n flatten cycle uncycle integral zipmap assoc-invert)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -41,3 +41,5 @@
   (if (or (null? keys) (null? vals))
     '()
     (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))
+(define (assoc-invert alist)
+  (map (lambda (x) (cons (cdr x) (car x))) alist))
