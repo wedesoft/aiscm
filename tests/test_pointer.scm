@@ -52,4 +52,3 @@
     "display pointer object")
 (ok (eqv? 4 (get-size (get-value (make (pointer <int>)))))
     "Memory is allocated if no value is specified")
-(format #t "~&")

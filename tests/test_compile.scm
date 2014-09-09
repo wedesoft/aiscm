@@ -24,4 +24,3 @@
     "expr->method uses descriptor as method name")
 (ok (eqv? 5 (get-value (comp (+ i j))))
     "compiling method generates and calls it")
-(format #t "~&")

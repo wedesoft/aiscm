@@ -114,4 +114,3 @@
     "scalar-array multiplication")
 (ok (equal? '((256 256) (256 256)) (multiarray->list (* 256 (list->multiarray '((1 1) (1 1))))))
     "correct handling of strides with 2D short integer array")
-(format #t "~&")

@@ -55,4 +55,3 @@
     "return value of setting boolean to true")
 (ok (not (set (make <bool> #:value #t) #f))
     "return value of setting boolean to false")
-(format #t "~&")

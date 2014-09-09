@@ -128,4 +128,3 @@
     "set value of integer")
 (ok (eqv? 123 (set (make <int> #:value 0) 123))
     "return-value of setting integer")
-(format #t "~&")

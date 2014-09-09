@@ -798,4 +798,3 @@
                                     (env fun [] (MOV (get-value r_) (get-value a_))))))]
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
     "Use 'jit-wrap' to define method")
-(format #t "~&")

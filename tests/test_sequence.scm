@@ -125,4 +125,3 @@
     "2-1 Downsampling of 2D array")
 (ok (equal? '(6 3 2) (shape (downsample '(2 3) (make (multiarray <int> 3) #:shape '(6 6 6)))))
     "Downsample 3D array")
-(format #t "~&")

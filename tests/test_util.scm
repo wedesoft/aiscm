@@ -46,4 +46,3 @@
     "'integral' should compute the accumulative sum of a list")
 (ok (equal? '((a . 1) (b . 2)) (zipmap '(a b) '(1 2)))
     "'zipmap creates a hash from a hash of keys and a hash of values")
-(format #t "~&")

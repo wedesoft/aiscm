@@ -41,4 +41,3 @@
 (ok (string-match "^#<<mem> #x[0-9a-f]* 10>$"
   (call-with-output-string (lambda (port) (write m port))))
   "write mem object")
-(format #t "~&")
