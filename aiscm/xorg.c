@@ -273,6 +273,8 @@ SCM xwindow_write(SCM scm_self, SCM scm_fmt, SCM scm_width, SCM scm_height, SCM 
   // TODO: store frame information for later conversion
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   self->data = scm_to_pointer(scm_data);
+  xwindow_paint(self);
+  return scm_data;
 }
 
 SCM xwindow_hide(SCM scm_self)

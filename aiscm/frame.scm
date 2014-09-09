@@ -11,12 +11,27 @@
               (height #:init-keyword #:height #:getter get-height)
               (data #:init-keyword #:data #:getter get-data)
               #:metaclass <meta<frame>>)
-(define-method (convert (self <frame>) (target <integer>))
-  (let* [(width (get-width self))
+(define formats
+  (list (cons 'YUYV  PIX_FMT_YUYV422)
+        (cons 'GRAY8 PIX_FMT_GRAY8)
+        (cons 'BGRA  PIX_FMT_BGRA)))
+(define (sym->fmt sym) (assq-ref formats sym))
+(define symbols; TODO: (map ??? formats)
+  (list (cons PIX_FMT_YUYV422 'YUYV)
+        (cons PIX_FMT_GRAY8   'GRAY8)
+        (cons PIX_FMT_BGRA    'BGRA)))
+(define (fmt->sym fmt) (assq-ref symbols fmt))
+(define-method (convert (self <frame>) (target <symbol>))
+  (let* [(format (sym->fmt (get-format self)))
+         (width (get-width self))
          (height (get-height self))
-         (result-data (frame-convert (get-format self) width height (get-data self) target))]
+         (result-data (frame-convert format width height (get-data self) (sym->fmt target)))]
     (make <frame>
           #:format target
           #:width width
           #:height height
           #:data result-data)))
+(define-method (write (self <frame>) port)
+  (format port "#<<frame> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+(define-method (display (self <frame>) port)
+  (format port "#<<frame> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))

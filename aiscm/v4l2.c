@@ -57,7 +57,7 @@ size_t free_v4l2(SCM scm_self)
   return 0;
 }
 
-SCM make_v4l2(SCM scm_name, SCM channel)
+SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
 {
   SCM retval;
   struct v4l2_t *self;
@@ -82,17 +82,57 @@ SCM make_v4l2(SCM scm_name, SCM channel)
     v4l2_close(retval);
     scm_misc_error("make_v4l2", "'~a' is not a video capture device", scm_list_1(scm_name));
   };
-  int c = scm_to_int(channel);
+  int c = scm_to_int(scm_channel);
   if (xioctl(self->fd, VIDIOC_S_INPUT, &c)) {
     v4l2_close(retval);
     scm_misc_error("make_v4l2", "Error selecting channel ~a for device '~a'",
-                   scm_list_2(channel, scm_name));
+                   scm_list_2(scm_channel, scm_name));
   };
-  // TODO: implement selection of video mode
+  SCM scm_selection = SCM_EOL;
+  int format_index = 0;
+  while (1) {
+    struct v4l2_fmtdesc format;
+    memset(&format, 0, sizeof(format));
+    format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    format.index = format_index++;
+    if (xioctl(self->fd, VIDIOC_ENUM_FMT, &format)) break;
+    int size_index = 0;
+    while (1) {
+      struct v4l2_frmsizeenum pix;
+      memset(&pix, 0, sizeof(pix));
+      pix.pixel_format = format.pixelformat;
+      pix.index = size_index++;
+      if (xioctl(self->fd, VIDIOC_ENUM_FRAMESIZES, &pix)) break;
+      if (pix.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
+        SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
+            scm_from_int(pix.discrete.width),
+            scm_from_int(pix.discrete.height));
+        scm_selection = scm_cons(scm_fmt, scm_selection);
+      } else if (pix.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
+        unsigned int
+          w = pix.stepwise.min_width,
+            h = pix.stepwise.min_height;
+        while (w <= pix.stepwise.max_width && h <= pix.stepwise.max_height) {
+          SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
+              scm_from_int(w),
+              scm_from_int(h));
+          scm_selection = scm_cons(scm_fmt, scm_selection);
+          w += pix.stepwise.step_width;
+          h += pix.stepwise.step_height;
+        };
+      } else {
+        SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
+            scm_from_int(pix.stepwise.max_width),
+            scm_from_int(pix.stepwise.max_height));
+        scm_selection = scm_cons(scm_fmt, scm_selection);
+      };
+    };
+  }
+  SCM scm_selected = scm_call_1(scm_select, scm_selection);
   self->format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  self->format.fmt.pix.width = 640;
-  self->format.fmt.pix.height = 480;
-  self->format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+  self->format.fmt.pix.pixelformat = scm_to_int(scm_car(scm_selected));
+  self->format.fmt.pix.width = scm_to_int(scm_cadr(scm_selected));
+  self->format.fmt.pix.height = scm_to_int(scm_caddr(scm_selected));
   self->format.fmt.pix.field = V4L2_FIELD_ANY;
   if (xioctl(self->fd, VIDIOC_S_FMT, &self->format)) {
     v4l2_close(retval);
@@ -179,7 +219,7 @@ void init_v4l2(void)
   v4l2_tag = scm_make_smob_type("v4l2", sizeof(struct v4l2_t));
   scm_set_smob_free(v4l2_tag, free_v4l2);
   scm_c_define("V4L2_PIX_FMT_YUYV", scm_from_int(V4L2_PIX_FMT_YUYV));
-  scm_c_define_gsubr("make-v4l2", 2, 0, 0, make_v4l2);
+  scm_c_define_gsubr("make-v4l2", 3, 0, 0, make_v4l2);
   scm_c_define_gsubr("v4l2-close", 1, 0, 0, v4l2_close);
   scm_c_define_gsubr("v4l2-read-orig", 1, 0, 0, v4l2_read);
 }
