@@ -143,6 +143,7 @@ SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
     double elapsed;
     gettimeofday(&t0, NULL);
     do {
+      xdisplay_process_events(scm_self);
       struct timeval t;
       struct timeval difference;
       int usecs_remaining;
@@ -160,7 +161,6 @@ SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
         FD_SET(fd, &fds);
         select(fd + 1, &fds, NULL, NULL, &tval);
       };
-      xdisplay_process_events(scm_self);
     } while (!self->quit && elapsed < timeout);
   } else {
     while (!self->quit) {
@@ -272,6 +272,26 @@ SCM xwindow_show(SCM scm_self)
   return scm_self;
 }
 
+SCM xwindow_title(SCM scm_self, SCM scm_title)
+{
+  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  XStoreName(self->display->display, self->window, scm_to_locale_string(scm_title));
+  return scm_title;
+}
+
+SCM xwindow_resize(SCM scm_self, SCM scm_width, SCM scm_height)
+{
+  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  int
+    width = scm_to_int(scm_width),
+    height = scm_to_int(scm_height);
+  XResizeWindow(self->display->display, self->window, width, height);
+  self->width = width;
+  self->height = height;
+  XFlush(self->display->display);
+  return scm_self;
+}
+
 SCM xwindow_write(SCM scm_self, SCM scm_frame)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
@@ -328,6 +348,8 @@ void init_xorg(void)
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
+  scm_c_define_gsubr("xwindow-title=", 2, 0, 0, xwindow_title);
+  scm_c_define_gsubr("xwindow-resize", 3, 0, 0, xwindow_resize);
   scm_c_define_gsubr("xwindow-write", 2, 0, 0, xwindow_write);
   scm_c_define_gsubr("xwindow-hide", 1, 0, 0, xwindow_hide);
   scm_c_define_gsubr("xwindow-close", 1, 0, 0, xwindow_close);

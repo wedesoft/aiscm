@@ -1,6 +1,5 @@
 # TODO
 
-* xorg_write should accept frame object (of any size and format)
 * sorting of V4L2 format selection
 * close windows when closing display
 * register allocator, RGB, swscale
