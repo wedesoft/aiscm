@@ -35,6 +35,7 @@ struct xwindow_t {
   XVisualInfo visual_info;
   GC gc;
   SCM scm_frame;
+  SCM scm_converted;
   Atom wm_protocols;
   Atom wm_delete_window;
 };
@@ -110,6 +111,7 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
       case ConfigureNotify:
         while (XCheckTypedWindowEvent(self->display, window->window,
                                       ConfigureNotify, event));
+        window->scm_converted = SCM_UNDEFINED;
         window->width = event->xconfigure.width;
         window->height = event->xconfigure.height;
         xwindow_paint(window);
@@ -225,6 +227,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   self = (struct xwindow_t *)scm_gc_calloc(sizeof(struct xwindow_t), "xwindow");
   SCM_NEWSMOB(retval, xwindow_tag, self);
   self->scm_frame = SCM_UNDEFINED;
+  self->scm_converted = SCM_UNDEFINED;
   display = (struct xdisplay_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
   self->width = scm_to_int(scm_width);
@@ -273,6 +276,7 @@ SCM xwindow_write(SCM scm_self, SCM scm_frame)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   self->scm_frame = scm_frame;
+  self->scm_converted = SCM_UNDEFINED;
   xwindow_paint(self);
   return scm_frame;
 }
@@ -289,12 +293,13 @@ SCM xwindow_hide(SCM scm_self)
 void xwindow_paint(struct xwindow_t *self)
 {
   if (!SCM_UNBNDP(self->scm_frame)) {
-    SCM scm_converted = scm_call_4(scm_c_public_ref("aiscm frame", "convert"),
-                                   self->scm_frame,
-                                   scm_from_locale_symbol("BGRA"),
-                                   scm_from_int(self->width),
-                                   scm_from_int(self->height));
-    char *data = scm_to_pointer(scm_slot_ref(scm_converted, scm_from_locale_symbol("data")));
+    if (SCM_UNBNDP(self->scm_converted))
+      self->scm_converted = scm_call_4(scm_c_public_ref("aiscm frame", "convert"),
+                                       self->scm_frame,
+                                       scm_from_locale_symbol("BGRA"),
+                                       scm_from_int(self->width),
+                                       scm_from_int(self->height));
+    char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
     XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
                                24, ZPixmap, 0, data, self->width, self->height,
                                32, self->width * 4);
