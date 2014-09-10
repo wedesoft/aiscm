@@ -21,7 +21,7 @@ static scm_t_bits xwindow_tag;
 
 struct xdisplay_t {
   Display *display;
-  struct xwindow_t *window;
+  struct xwindow_t *window;// TODO: use Scheme list?
   char quit;
 };
 
@@ -34,7 +34,7 @@ struct xwindow_t {
   Colormap color_map;
   XVisualInfo visual_info;
   GC gc;
-  char *data;
+  SCM scm_frame;
   Atom wm_protocols;
   Atom wm_delete_window;
 };
@@ -224,6 +224,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   struct xdisplay_t *display;
   self = (struct xwindow_t *)scm_gc_calloc(sizeof(struct xwindow_t), "xwindow");
   SCM_NEWSMOB(retval, xwindow_tag, self);
+  self->scm_frame = SCM_UNDEFINED;
   display = (struct xdisplay_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
   self->width = scm_to_int(scm_width);
@@ -268,13 +269,12 @@ SCM xwindow_show(SCM scm_self)
   return scm_self;
 }
 
-SCM xwindow_write(SCM scm_self, SCM scm_fmt, SCM scm_width, SCM scm_height, SCM scm_data)
+SCM xwindow_write(SCM scm_self, SCM scm_frame)
 {
-  // TODO: store frame information for later conversion
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
-  self->data = scm_to_pointer(scm_data);
+  self->scm_frame = scm_frame;
   xwindow_paint(self);
-  return scm_data;
+  return scm_frame;
 }
 
 SCM xwindow_hide(SCM scm_self)
@@ -288,10 +288,15 @@ SCM xwindow_hide(SCM scm_self)
 
 void xwindow_paint(struct xwindow_t *self)
 {
-  if (self->data) {
-    // TODO: convert frame
+  if (!SCM_UNBNDP(self->scm_frame)) {
+    SCM scm_converted = scm_call_4(scm_c_public_ref("aiscm frame", "convert"),
+                                   self->scm_frame,
+                                   scm_from_locale_symbol("BGRA"),
+                                   scm_from_int(self->width),
+                                   scm_from_int(self->height));
+    char *data = scm_to_pointer(scm_slot_ref(scm_converted, scm_from_locale_symbol("data")));
     XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
-                               24, ZPixmap, 0, self->data, self->width, self->height,
+                               24, ZPixmap, 0, data, self->width, self->height,
                                32, self->width * 4);
     if (!img) scm_syserror("xwindow_paint");
     img->byte_order = LSBFirst;
@@ -318,7 +323,7 @@ void init_xorg(void)
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
   scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
-  scm_c_define_gsubr("xwindow-write", 5, 0, 0, xwindow_write);
+  scm_c_define_gsubr("xwindow-write", 2, 0, 0, xwindow_write);
   scm_c_define_gsubr("xwindow-hide", 1, 0, 0, xwindow_hide);
   scm_c_define_gsubr("xwindow-close", 1, 0, 0, xwindow_close);
 }
