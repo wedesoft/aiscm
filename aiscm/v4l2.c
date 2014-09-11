@@ -221,7 +221,7 @@ void init_v4l2(void)
   scm_c_define("V4L2_PIX_FMT_BGR32", scm_from_int(V4L2_PIX_FMT_BGR32));
   scm_c_define("V4L2_PIX_FMT_GREY",  scm_from_int(V4L2_PIX_FMT_GREY));
   scm_c_define("V4L2_PIX_FMT_YUYV",  scm_from_int(V4L2_PIX_FMT_YUYV));
-  scm_c_define_gsubr("make-v4l2", 3, 0, 0, make_v4l2);
+  scm_c_define_gsubr("make-v4l2-orig", 3, 0, 0, make_v4l2);
   scm_c_define_gsubr("v4l2-close", 1, 0, 0, v4l2_close);
   scm_c_define_gsubr("v4l2-read-orig", 1, 0, 0, v4l2_read);
 }

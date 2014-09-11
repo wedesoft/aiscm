@@ -1,5 +1,6 @@
 (define-module (aiscm v4l2)
   #:use-module (oop goops)
+  #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm int)
   #:use-module (aiscm frame)
@@ -7,15 +8,21 @@
   #:use-module (system foreign)
   #:export (make-v4l2 v4l2-close v4l2-read))
 (load-extension "libguile-v4l2" "init_v4l2")
-(define (v4l2-fmt->sym fmt)
-  (let [(table (list (cons V4L2_PIX_FMT_BGR32 'BGRA)
-                     (cons V4L2_PIX_FMT_GREY  'GREY)
-                     (cons V4L2_PIX_FMT_YUYV  'YUYV)))]
-    (assq-ref table fmt)))
+(define formats
+  (list (cons 'BGRA V4L2_PIX_FMT_BGR32)
+        (cons 'GREY V4L2_PIX_FMT_GREY)
+        (cons 'YUYV V4L2_PIX_FMT_YUYV)))
+(define symbols (assoc-invert formats))
+(define (sym->fmt sym) (assq-ref formats sym))
+(define (fmt->sym fmt) (assq-ref symbols fmt))
+(define (make-v4l2 device channel select)
+  (let [(decode (lambda (f) (cons (fmt->sym (car f)) (cdr f))))
+        (encode (lambda (f) (cons (sym->fmt (car f)) (cdr f))))]
+    (make-v4l2-orig device channel (lambda (formats) (encode (select (map decode formats)))))))
 (define (v4l2-read self)
   (let [(picture (v4l2-read-orig self))]
     (make <frame>
-          #:format (v4l2-fmt->sym (car picture))
+          #:format (fmt->sym (car picture))
           #:width  (cadr picture)
           #:height (caddr picture)
           #:data   (cadddr picture))))
