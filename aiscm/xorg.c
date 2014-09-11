@@ -310,11 +310,13 @@ SCM xwindow_hide(SCM scm_self)
   return scm_self;
 }
 
+static SCM scm_convert;
+
 void xwindow_paint(struct xwindow_t *self)
 {
   if (!SCM_UNBNDP(self->scm_frame)) {
     if (SCM_UNBNDP(self->scm_converted))
-      self->scm_converted = scm_call_4(scm_c_public_ref("aiscm frame", "convert"),
+      self->scm_converted = scm_call_4(scm_convert,
                                        self->scm_frame,
                                        scm_from_locale_symbol("BGRA"),
                                        scm_from_int(self->width),
@@ -334,6 +336,7 @@ void xwindow_paint(struct xwindow_t *self)
 
 void init_xorg(void)
 {
+  scm_convert = scm_c_public_ref("aiscm frame", "convert");
   xdisplay_tag = scm_make_smob_type("xdisplay", sizeof(struct xdisplay_t));
   xwindow_tag = scm_make_smob_type("xwindow", sizeof(struct xwindow_t));
   scm_set_smob_free(xdisplay_tag, free_xdisplay);
