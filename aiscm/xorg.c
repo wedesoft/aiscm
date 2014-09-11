@@ -21,14 +21,13 @@ static scm_t_bits xwindow_tag;
 
 struct xdisplay_t {
   Display *display;
-  struct xwindow_t *window;// TODO: use Scheme list?
+  SCM scm_windows;
   char quit;
 };
 
 struct xwindow_t {
   struct xdisplay_t *display;
   Window window;
-  struct xwindow_t *next;
   int width;
   int height;
   Colormap color_map;
@@ -67,6 +66,7 @@ SCM make_xdisplay(SCM scm_name)
   if (!display) scm_syserror("make_xdisplay");
   self = (struct xdisplay_t *)scm_gc_calloc(sizeof(struct xdisplay_t), "xdisplay");
   SCM_NEWSMOB(retval, xdisplay_tag, self);
+  self->scm_windows = SCM_EOL;
   self->display = display;
   return retval;
 }
@@ -92,8 +92,16 @@ void xwindow_paint(struct xwindow_t *window);
 
 void handle_event(struct xdisplay_t *self, XEvent *event)
 {
-  struct xwindow_t *window = self->window;
-  while (window && window->window != event->xany.window) window = window->next;
+  SCM scm_windows = self->scm_windows;
+  struct xwindow_t *window = NULL;
+  while (!scm_is_null_and_not_nil(scm_windows)) {
+    struct xwindow_t *w = (struct xwindow_t *)SCM_SMOB_DATA(scm_car(scm_windows));
+    if (w->window == event->xany.window) {
+      window = w;
+      break;
+    };
+    scm_windows = scm_cdr(scm_windows);
+  };
   if (window) {
     switch (event->type) {
       case ClientMessage:
@@ -200,14 +208,7 @@ SCM xwindow_close(SCM scm_self)
     XFreeColormap(self->display->display, self->color_map);
     self->color_map = 0;
   };
-  if (self->display->window == self)
-    self->display->window = self->next;
-  else {
-    struct xwindow_t *window = self->display->window;
-    while (window && window->next != self) window = window->next;
-    if (window) window->next = self->next;
-  };
-  self->next = NULL;
+  self->display->scm_windows = scm_delete(scm_self, self->display->scm_windows);
   return SCM_UNSPECIFIED;
 }
 
@@ -252,8 +253,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
-  self->next = display->window;
-  display->window = self;
+  display->scm_windows = scm_cons(retval, display->scm_windows);
   return retval;
 }
 
