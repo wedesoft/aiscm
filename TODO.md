@@ -1,5 +1,6 @@
 # TODO
 
+* format setup for other frame types
 * sorting of V4L2 format selection
 * compute proper frame size
 * close windows when closing display
