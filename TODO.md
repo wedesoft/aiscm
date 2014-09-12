@@ -1,6 +1,5 @@
 # TODO
 
-* sorting of V4L2 format selection
 * close windows when closing display
 * register allocator, RGB, swscale
   nur argumente evaluieren (e.g. (MOV rl (get-value r_)) -> (MOV (reg:LI 2) (arg 5)))

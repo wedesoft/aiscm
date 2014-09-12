@@ -4,7 +4,7 @@
 static void setup_format(enum PixelFormat format, int width, int height, void *ptr,
                          uint8_t *data[], int line_size[])
 {
-  switch (format) {// TODO: YV12 and I420 have different packing 
+  switch (format) {// TODO: YV12 and I420 have different packing
     case PIX_FMT_RGB24:
     case PIX_FMT_BGR24:
       data[0] = (uint8_t *)ptr;
