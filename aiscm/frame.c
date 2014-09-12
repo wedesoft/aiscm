@@ -21,10 +21,10 @@ static void setup_format(enum PixelFormat format, int width, int height, void *p
     case PIX_FMT_YUV420P:
       data[0] = (uint8_t *)ptr;
       data[1] = (uint8_t *)ptr + width * height;
-      data[2] = (uint8_t *)data[1] + ((width + 1) / 2) * ((height + 1) / 2);
+      data[2] = (uint8_t *)data[1] + ((width + 1) >> 1) * ((height + 1) >> 1);
       line_size[0] = width;
-      line_size[1] = (width + 1) / 2;
-      line_size[2] = (width + 1) / 2;
+      line_size[1] = (width + 1) >> 1;
+      line_size[2] = (width + 1) >> 1;
       break;
     case PIX_FMT_UYVY422:
     case PIX_FMT_YUYV422:
@@ -37,7 +37,34 @@ static void setup_format(enum PixelFormat format, int width, int height, void *p
   };
 }
 
-// TODO: dest_width, dest_height
+static int frame_size(enum PixelFormat format, int width, int height)
+{
+  int retval;
+  switch (format) {
+    case PIX_FMT_RGB24:
+    case PIX_FMT_BGR24:
+      retval = width * height * 3;
+      break;
+    case PIX_FMT_BGRA:
+      retval = width * height * 4;
+      break;
+    case PIX_FMT_GRAY8:
+      retval = width * height;
+      break;
+    case PIX_FMT_YUV420P:
+      retval = width * height + 2 * ((width + 1) >> 1) * ((height + 1) >> 1);
+      break;
+    case PIX_FMT_UYVY422:
+    case PIX_FMT_YUYV422:
+      retval = ((width + 3) & ~0x3) * height * 2;
+      break;
+    default:
+      scm_misc_error("setup_format", "Support for format ~a not implemented",
+                     scm_list_1(scm_from_int(format)));
+  };
+  return retval;
+}
+
 SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
                   SCM scm_dest_format, SCM scm_dest_width, SCM scm_dest_height)
 {
@@ -53,7 +80,7 @@ SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
   int
     dest_width = scm_to_int(scm_dest_width),
     dest_height = scm_to_int(scm_dest_height);
-  void *dest_ptr = scm_gc_malloc_pointerless(dest_width * dest_height * 4, "frame"); // TODO: compute proper size
+  void *dest_ptr = scm_gc_malloc_pointerless(frame_size(dest_format, dest_width, dest_height), "frame");
   uint8_t *dest_data[8];
   int dest_line_size[8];
   setup_format(dest_format, dest_width, dest_height, dest_ptr, dest_data, dest_line_size);
