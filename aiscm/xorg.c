@@ -39,9 +39,13 @@ struct xwindow_t {
   Atom wm_delete_window;
 };
 
+SCM xwindow_close(SCM scm_self);
+
 SCM xdisplay_close(SCM scm_self)
 {
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  while (!scm_is_null_and_not_nil(self->scm_windows))
+    xwindow_close(scm_car(self->scm_windows));
   if (self->display) {
     XCloseDisplay(self->display);
     self->display = NULL;
