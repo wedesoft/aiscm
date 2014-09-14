@@ -10,6 +10,7 @@ static scm_t_bits v4l2_tag;
 
 struct v4l2_t {
   int fd;
+  enum {IO_READ, IO_MMAP} io;// TODO: IO_USERPTR
   struct v4l2_format format;
   struct v4l2_requestbuffers req;
   struct v4l2_buffer buf[2];
@@ -139,14 +140,14 @@ SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
     scm_misc_error("make_v4l2", "Error switching device '~a' to selected format",
                    scm_list_1(scm_name));
   };
+  printf("size = %d\n", self->format.fmt.pix.sizeimage);
   if (cap.capabilities & V4L2_CAP_STREAMING) {
     self->req.count = 2;
     self->req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     self->req.memory = V4L2_MEMORY_MMAP;
     if (xioctl(self->fd, VIDIOC_REQBUFS, &self->req)) {
-      // TODO: Try user pointer I/O
       v4l2_close(retval);
-      scm_misc_error("make_v4l2", "Memory mapped I/O not supported for device '~a'",
+      scm_misc_error("make_v4l2", "Failed to set up memory mapped I/O for device '~a'",
                      scm_list_1(scm_name));
     };
     if (self->req.count < 2) {
@@ -184,7 +185,10 @@ SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
       scm_misc_error("make_v4l2", "Error starting memory-mapped capture process for device '~a'",
                      scm_list_1(scm_name));
     };
+    self->io = IO_MMAP;
     self->capture = 1;
+  } else if (cap.capabilities & V4L2_CAP_STREAMING) {
+    self->io = IO_READ;
   } else {
     v4l2_close(retval);
     scm_misc_error("make_v4l2", "Device '~a' neither supports streaming nor reading from device",
@@ -195,23 +199,37 @@ SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
 
 SCM v4l2_read(SCM scm_self)
 {
+  SCM retval;
   struct v4l2_t *self = (struct v4l2_t *)SCM_SMOB_DATA(scm_self);
   if (self->fd <= 0)
     scm_misc_error("make_v4l2", "Device is not open. Did you call close before?",
                    SCM_UNDEFINED);
-  if (self->frame_used) {
-    if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("make_v4l2");
-    self->frame_used = 0;
+  int width = self->format.fmt.pix.width;
+  int height = self->format.fmt.pix.height;
+  if (self->io == IO_READ) {
+    int size = width * height * 3 / 2;// TODO: compute proper frame size
+    void *buf = scm_gc_malloc_pointerless(size, "frame");
+    if (read(self->fd, buf, size) == -1) scm_syserror("v4l2_read");
+    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
+                        scm_from_int(width),
+                        scm_from_int(height),
+                        scm_from_pointer(buf, NULL));
+  } else {
+    if (self->frame_used) {
+      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("make_v4l2");
+      self->frame_used = 0;
+    };
+    memset(&self->frame, 0, sizeof(struct v4l2_buffer));
+    self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    self->frame.memory = V4L2_MEMORY_MMAP;
+    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("make_v4l2");
+    self->frame_used = 1;
+    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
+                        scm_from_int(width),
+                        scm_from_int(height),
+                        scm_from_pointer(self->map[self->frame.index], NULL));
   };
-  memset(&self->frame, 0, sizeof(struct v4l2_buffer));
-  self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  self->frame.memory = V4L2_MEMORY_MMAP;
-  if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("make_v4l2");
-  self->frame_used = 1;
-  return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                    scm_from_int(self->format.fmt.pix.width),
-                    scm_from_int(self->format.fmt.pix.height),
-                    scm_from_pointer(self->map[self->frame.index], NULL));
+  return retval;
 }
 
 void init_v4l2(void)
