@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <malloc.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -10,11 +11,12 @@ static scm_t_bits v4l2_tag;
 
 struct v4l2_t {
   int fd;
-  enum {IO_READ, IO_MMAP} io;// TODO: IO_USERPTR
+  enum {IO_READ, IO_MMAP, IO_USERPTR} io;
   struct v4l2_format format;
   struct v4l2_requestbuffers req;
   struct v4l2_buffer buf[2];
   void *map[2];
+  void *user[2];
   struct v4l2_buffer frame;
   char frame_used;
   char capture;
@@ -140,15 +142,47 @@ SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
     scm_misc_error("make_v4l2", "Error switching device '~a' to selected format",
                    scm_list_1(scm_name));
   };
-  printf("size = %d\n", self->format.fmt.pix.sizeimage);
   if (cap.capabilities & V4L2_CAP_STREAMING) {
     self->req.count = 2;
     self->req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     self->req.memory = V4L2_MEMORY_MMAP;
     if (xioctl(self->fd, VIDIOC_REQBUFS, &self->req)) {
-      v4l2_close(retval);
-      scm_misc_error("make_v4l2", "Failed to set up memory mapped I/O for device '~a'",
-                     scm_list_1(scm_name));
+      self->req.memory = V4L2_MEMORY_USERPTR;
+      if (xioctl(self->fd, VIDIOC_REQBUFS, &self->req)) {
+        v4l2_close(retval);
+        scm_misc_error("make_v4l2", "Failed to set up memory mapped and user pointer I/O for device '~a'",
+                       scm_list_1(scm_name));
+      };
+      int page_size = getpagesize();
+      int buffer_size = (self->format.fmt.pix.sizeimage + page_size - 1) & ~(page_size - 1);
+      self->user[0] = memalign(page_size, buffer_size);
+      self->user[1] = memalign(page_size, buffer_size);
+      if (self->user[0] == NULL || self->user[1] == NULL) {
+        v4l2_close(retval);
+        scm_misc_error("make_v4l2", "Could not allocate memory for user pointer I/O for device '~a'",
+                       scm_list_1(scm_name));
+      };
+      for (i=0; i<2; i++) {
+        self->buf[i].type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        self->buf[i].memory = V4L2_MEMORY_USERPTR;
+        self->buf[i].index = i;
+        self->buf[i].m.userptr = (unsigned long)self->user[i];
+        self->buf[i].length = buffer_size;
+      };
+      for (i=0; i<2; i++) {
+        if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
+          v4l2_close(retval);
+          scm_misc_error("make_v4l2", "Error enqueuing user memory buffer ~a for device '~a'",
+                         scm_list_2(scm_from_int(i), scm_name));
+        };
+      };
+      enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
+        v4l2_close(retval);
+        scm_misc_error("make_v4l2", "Error starting user pointer capture process for device '~a'",
+                         scm_list_1(scm_name));
+      };
+      self->io = IO_USERPTR;
     };
     if (self->req.count < 2) {
       v4l2_close(retval);
@@ -207,7 +241,7 @@ SCM v4l2_read(SCM scm_self)
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
   if (self->io == IO_READ) {
-    int size = width * height * 3 / 2;// TODO: compute proper frame size
+    int size = self->format.fmt.pix.sizeimage;
     void *buf = scm_gc_malloc_pointerless(size, "frame");
     if (read(self->fd, buf, size) == -1) scm_syserror("v4l2_read");
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
@@ -221,13 +255,14 @@ SCM v4l2_read(SCM scm_self)
     };
     memset(&self->frame, 0, sizeof(struct v4l2_buffer));
     self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    self->frame.memory = V4L2_MEMORY_MMAP;
+    self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
     if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("make_v4l2");
     self->frame_used = 1;
+    void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                         scm_from_int(width),
                         scm_from_int(height),
-                        scm_from_pointer(self->map[self->frame.index], NULL));
+                        scm_from_pointer(p, NULL));
   };
   return retval;
 }
