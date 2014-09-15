@@ -31,12 +31,29 @@ GUILE_PROGS
 GUILE_SITE_DIR
 GUILE_EXT_DIR
 GUILE_CACHE_DIR
+
 AC_PATH_XTRA
 if test "x$no_x" = xyes; then
   AC_MSG_ERROR([Could not find X11 libraries.])
 fi
 AC_SUBST(X_CFLAGS)
 AC_SUBST(X_LIBS)
+
+AX_HAVE_OPENGL
+AC_MSG_CHECKING([for GL])
+if test "x$have_GL" != "xyes"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Could not find GL])
+else
+  AC_MSG_RESULT([yes])
+fi
+AC_MSG_CHECKING([for GLU])
+if test "x$have_GLU" != "xyes"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Could not find GLU])
+else
+  AC_MSG_RESULT([yes])
+fi
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,

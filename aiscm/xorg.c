@@ -1,17 +1,19 @@
+#include <GL/glu.h>
+#include <GL/glx.h>
 #include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <libguile.h>
 
 #ifndef timersub
-#define timersub(a, b, result)                                                \
-  do {                                                                        \
-    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                             \
-    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                          \
-    if ((result)->tv_usec < 0) {                                              \
-      --(result)->tv_sec;                                                     \
-      (result)->tv_usec += 1000000;                                           \
-    }                                                                         \
+#define timersub(a, b, result)                       \
+  do {                                               \
+    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;    \
+    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec; \
+    if ((result)->tv_usec < 0) {                     \
+      --(result)->tv_sec;                            \
+      (result)->tv_usec += 1000000;                  \
+    }                                                \
   } while (0)
 #endif
 
@@ -28,10 +30,11 @@ struct xdisplay_t {
 struct xwindow_t {
   struct xdisplay_t *display;
   Window window;
+  enum {IO_XIMAGE, IO_OPENGL} io;// TODO: IO_XVIDEO
   int width;
   int height;
   Colormap color_map;
-  XVisualInfo visual_info;
+  XVisualInfo *visual_info;
   GC gc;
   SCM scm_frame;
   SCM scm_converted;
@@ -123,7 +126,7 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
       case ConfigureNotify:
         while (XCheckTypedWindowEvent(self->display, window->window,
                                       ConfigureNotify, event));
-        window->scm_converted = SCM_UNDEFINED;
+        if (window->io == IO_XIMAGE) window->scm_converted = SCM_UNDEFINED;
         window->width = event->xconfigure.width;
         window->height = event->xconfigure.height;
         xwindow_paint(window);
@@ -224,7 +227,7 @@ size_t free_xwindow(SCM scm_self)
   return 0;
 }
 
-SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
+SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
 {
   SCM retval;
   struct xwindow_t *self;
@@ -235,20 +238,36 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height)
   self->scm_converted = SCM_UNDEFINED;
   display = (struct xdisplay_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
+  self->io = scm_to_int(scm_io);
   self->width = scm_to_int(scm_width);
   self->height = scm_to_int(scm_height);
-  if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
-                        24, TrueColor, &self->visual_info))
-    scm_syserror("make_xwindow");
+  switch (self->io) {
+    case IO_XIMAGE:
+      self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
+      if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
+                            24, TrueColor, self->visual_info))
+        scm_syserror("make_xwindow");
+      break;
+    case IO_OPENGL: {
+      int attributes[] = {GLX_RGBA,
+                          GLX_RED_SIZE, 1,
+                          GLX_GREEN_SIZE, 1,
+                          GLX_BLUE_SIZE, 1,
+                          GLX_DEPTH_SIZE, 0, None};
+      self->visual_info = glXChooseVisual(display->display, DefaultScreen(display->display),
+                                          attributes);
+      if (!self->visual_info) scm_syserror("make_xwindow");
+      break;}
+  };
   self->color_map = XCreateColormap(display->display, DefaultRootWindow(display->display),
-                                    self->visual_info.visual, AllocNone);
+                                    self->visual_info->visual, AllocNone);
   if (!self->color_map) scm_syserror("make_xwindow");
   XSetWindowAttributes attributes;
   attributes.colormap = self->color_map;
   attributes.event_mask = KeyPressMask | ExposureMask | StructureNotifyMask;
-  self->window = XCreateWindow(display->display, RootWindow(display->display, self->visual_info.screen),
+  self->window = XCreateWindow(display->display, RootWindow(display->display, self->visual_info->screen),
                                0, 0, self->width, self->height,
-                               0, self->visual_info.depth, InputOutput, self->visual_info.visual,
+                               0, self->visual_info->depth, InputOutput, self->visual_info->visual,
                                CWColormap | CWEventMask, &attributes);
   if (!self->window) scm_syserror("make_xwindow");
   XGCValues xgcv;
@@ -319,22 +338,51 @@ static SCM scm_convert;
 void xwindow_paint(struct xwindow_t *self)
 {
   if (!SCM_UNBNDP(self->scm_frame)) {
-    if (SCM_UNBNDP(self->scm_converted))
-      self->scm_converted = scm_call_4(scm_convert,
-                                       self->scm_frame,
-                                       scm_from_locale_symbol("BGRA"),
-                                       scm_from_int(self->width),
-                                       scm_from_int(self->height));
-    char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
-    XImage *img = XCreateImage(self->display->display, self->visual_info.visual,
-                               24, ZPixmap, 0, data, self->width, self->height,
-                               32, self->width * 4);
-    if (!img) scm_syserror("xwindow_paint");
-    img->byte_order = LSBFirst;
-    XPutImage(self->display->display, self->window, self->gc,
-        img, 0, 0, 0, 0, self->width, self->height);
-    img->data = (char *)NULL;
-    XDestroyImage(img);
+    switch (self->io) {
+      case IO_XIMAGE: {
+        if (SCM_UNBNDP(self->scm_converted))
+          self->scm_converted = scm_call_4(scm_convert,
+                                           self->scm_frame,
+                                           scm_from_locale_symbol("BGRA"),
+                                           scm_from_int(self->width),
+                                           scm_from_int(self->height));
+        char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
+                                   24, ZPixmap, 0, data, self->width, self->height,
+                                   32, self->width * 4);
+        if (!img) scm_syserror("xwindow_paint");
+        img->byte_order = LSBFirst;
+        XPutImage(self->display->display, self->window, self->gc,
+                  img, 0, 0, 0, 0, self->width, self->height);
+        img->data = (char *)NULL;
+        XDestroyImage(img);}
+      case IO_OPENGL: {// TODO: gluErrorString
+        if (SCM_UNBNDP(self->scm_converted))
+          self->scm_converted = scm_call_2(scm_convert,
+                                           self->scm_frame,
+                                           scm_from_locale_symbol("RGB"));
+        GLXContext context =
+          glXCreateContext(self->display->display,
+                           self->visual_info, 0, GL_TRUE);
+        glXMakeCurrent(self->display->display, self->window, context);
+        glLoadIdentity();
+        glViewport(0, 0, self->width, self->height);
+        glOrtho(0, self->width, self->height, 0, -1.0, 1.0);
+        glDisable(GL_DITHER);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glRasterPos2i(0, 0);
+        int width = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("width")));
+        int height = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("height")));
+        printf("%dx%d\n", width, height);
+        char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        glPixelZoom((float)self->width / width, -(float)self->height / height);
+        // TODO: fast rendering of grayscale images
+        glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glEnable(GL_DITHER);
+        glFinish();
+        glXDestroyContext(self->display->display, context);
+      };
+    };
   };
 }
 
@@ -345,6 +393,8 @@ void init_xorg(void)
   xwindow_tag = scm_make_smob_type("xwindow", sizeof(struct xwindow_t));
   scm_set_smob_free(xdisplay_tag, free_xdisplay);
   scm_set_smob_free(xwindow_tag, free_xwindow);
+  scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
+  scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
   scm_c_define_gsubr("make-xdisplay", 1, 0, 0, make_xdisplay);
   scm_c_define_gsubr("xdisplay-width", 1, 0, 0, xdisplay_width);
   scm_c_define_gsubr("xdisplay-height", 1, 0, 0, xdisplay_height);
@@ -353,7 +403,7 @@ void init_xorg(void)
   scm_c_define_gsubr("xdisplay-quit?", 1, 0, 0, xdisplay_quit);
   scm_c_define_gsubr("xdisplay-quit=", 2, 0, 0, xdisplay_set_quit);
   scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
-  scm_c_define_gsubr("make-xwindow", 3, 0, 0, make_xwindow);
+  scm_c_define_gsubr("make-xwindow", 4, 0, 0, make_xwindow);
   scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
   scm_c_define_gsubr("xwindow-title=", 2, 0, 0, xwindow_title);
   scm_c_define_gsubr("xwindow-resize", 3, 0, 0, xwindow_resize);

@@ -3,6 +3,7 @@
   #:export (make-xdisplay xdisplay-shape xdisplay-process-events
             xdisplay-event-loop xdisplay-close xdisplay-quit? xdisplay-quit=
             make-xwindow xwindow-show xwindow-title= xwindow-resize
-            xwindow-write xwindow-hide xwindow-close))
+            xwindow-write xwindow-hide xwindow-close
+            IO-XIMAGE IO-OPENGL))
 (load-extension "libguile-xorg" "init_xorg")
 (define (xdisplay-shape self) (list (xdisplay-width self) (xdisplay-height self)))
