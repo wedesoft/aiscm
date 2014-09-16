@@ -23,19 +23,17 @@
 (define symbols (assoc-invert formats))
 (define (sym->fmt sym) (assq-ref formats sym))
 (define (fmt->sym fmt) (assq-ref symbols fmt))
+(define-method (descriptor (format <symbol>) (width <integer>) (height <integer>))
+  (list (sym->fmt format) width height))
+(define-method (descriptor (self <frame>))
+  (descriptor (get-format self) (get-width self) (get-height self)))
 (define-method (convert (self <frame>) (format <symbol>) (width <integer>) (height <integer>))
-  (let [(data (frame-convert (sym->fmt (get-format self))
-                             (get-width self)
-                             (get-height self)
-                             (get-data self)
-                             (sym->fmt format)
-                             width
-                             height))]
-    (make <frame>
-          #:format format
-          #:width width
-          #:height height
-          #:data data)))
+  (let [(source-type (descriptor (get-format self) (get-width self) (get-height self)))
+        (dest-type   (descriptor format width height))]
+    (if (equal? source-type dest-type)
+      self
+      (let [(data (apply frame-convert (cons (get-data self) (append source-type dest-type))))]
+        (make <frame> #:format format #:width width #:height height #:data data)))))
 (define-method (convert (self <frame>) (format <symbol>))
   (convert self format (get-width self) (get-height self)))
 (define-method (write (self <frame>) port)

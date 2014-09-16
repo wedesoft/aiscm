@@ -65,7 +65,7 @@ static int frame_size(enum PixelFormat format, int width, int height)
   return retval;
 }
 
-SCM frame_convert(SCM scm_format, SCM scm_width, SCM scm_height, SCM scm_ptr,
+SCM frame_convert(SCM scm_ptr, SCM scm_format, SCM scm_width, SCM scm_height,
                   SCM scm_dest_format, SCM scm_dest_width, SCM scm_dest_height)
 {
   enum PixelFormat format = scm_to_int(scm_format);
