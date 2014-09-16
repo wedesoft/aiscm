@@ -335,6 +335,20 @@ SCM xwindow_hide(SCM scm_self)
 
 static SCM scm_convert;
 
+void gl_error(const char *context)
+{
+  SCM msg = SCM_EOL;
+  while (1) {
+    GLenum err = glGetError();
+    if (err == GL_NO_ERROR) break;
+    msg = scm_cons(scm_from_locale_string(gluErrorString(err)), msg);
+  };
+  SCM str = scm_list_1(scm_string_join(msg,
+                                       scm_from_locale_string(", "),
+                                       scm_from_locale_symbol("infix")));
+  scm_misc_error(context, "~a", scm_list_1(str));
+}
+
 void xwindow_paint(struct xwindow_t *self)
 {
   if (!SCM_UNBNDP(self->scm_frame)) {
@@ -356,7 +370,7 @@ void xwindow_paint(struct xwindow_t *self)
                   img, 0, 0, 0, 0, self->width, self->height);
         img->data = (char *)NULL;
         XDestroyImage(img);}
-      case IO_OPENGL: {// TODO: gluErrorString
+      case IO_OPENGL: {
         if (SCM_UNBNDP(self->scm_converted))
           self->scm_converted = scm_call_2(scm_convert,
                                            self->scm_frame,
@@ -364,7 +378,8 @@ void xwindow_paint(struct xwindow_t *self)
         GLXContext context =
           glXCreateContext(self->display->display,
                            self->visual_info, 0, GL_TRUE);
-        glXMakeCurrent(self->display->display, self->window, context);
+        if (!context) gl_error("xwindow_paint");
+        if (!glXMakeCurrent(self->display->display, self->window, context)) gl_error("xwindow_paint");
         glLoadIdentity();
         glViewport(0, 0, self->width, self->height);
         glOrtho(0, self->width, self->height, 0, -1.0, 1.0);
@@ -373,7 +388,6 @@ void xwindow_paint(struct xwindow_t *self)
         glRasterPos2i(0, 0);
         int width = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("width")));
         int height = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("height")));
-        printf("%dx%d\n", width, height);
         char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
         glPixelZoom((float)self->width / width, -(float)self->height / height);
         // TODO: fast rendering of grayscale images
