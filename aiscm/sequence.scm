@@ -107,23 +107,20 @@
       (if (eqv? (dimension self) 0)
         (call-with-output-string (cut write (get-value (fetch self)) <>))
         (let [(head (recur (project self) (- w 2) h))]
-         (cond
-           ((eqv? (dimension self) 1)
-            (let [(len (string-length head))]
-             (if (<= w len)
-               (list "...")
-               (cons head (recur (dump 1 self) (- w len 1) h)))))
-           ((eqv? (dimension self) 2)
-            (let [(conv (finish-sequence head))]
-             (if (<= h 1)
-               (list conv)
-               (cons conv (recur (dump 1 self) w (- h 1))))))
-           (else
-             (let [(conv (finish-multiarray head))
-                   (len   (length head))]
-               (if (<= h len)
-                 conv
-                 (append conv (recur (dump 1 self) w (- h len)))))))))))
+         (case (dimension self)
+           ((1) (let [(len (string-length head))]
+                  (if (<= w len)
+                    (list "...")
+                    (cons head (recur (dump 1 self) (- w len 1) h)))))
+           ((2) (let [(conv (finish-sequence head))]
+                  (if (<= h 1)
+                    (list conv)
+                    (cons conv (recur (dump 1 self) w (- h 1))))))
+           (else (let [(conv (finish-multiarray head))
+                       (len   (length head))]
+                   (if (<= h len)
+                     conv
+                     (append conv (recur (dump 1 self) w (- h len)))))))))))
   (let [(lst (recur self 80 11))]
     (if (<= (dimension self) 1)
       (finish-sequence lst)

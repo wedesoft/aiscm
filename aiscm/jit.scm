@@ -212,15 +212,15 @@
 
 (define-method (MOVSX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
-         (opcode (cond ((eqv? bits  8) (list #x0f #xbe))
-                       ((eqv? bits 16) (list #x0f #xbf))
-                       ((eqv? bits 32) (list #x63))))]
+         (opcode (case bits (( 8) (list #x0f #xbe))
+                            ((16) (list #x0f #xbf))
+                            ((32) (list #x63))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
 (define-method (MOVZX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
-         (opcode (cond ((eqv? bits  8) (list #x0f #xb6))
-                       ((eqv? bits 16) (list #x0f #xb7))))]
+         (opcode (case bits (( 8) (list #x0f #xb6))
+                            ((16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
 (define-method (LEA (r <register>) (m <pointer>))
