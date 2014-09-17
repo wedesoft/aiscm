@@ -1,96 +1,51 @@
 #include <libswscale/swscale.h>
 #include <libguile.h>
 
-static void setup_format(enum PixelFormat format, int width, int height, void *ptr,
-                         uint8_t *data[], int line_size[])
+void scm_to_array(SCM source, int dest[])
 {
-  switch (format) {// TODO: YV12 and I420 have different packing
-    case PIX_FMT_RGB24:
-    case PIX_FMT_BGR24:
-      data[0] = (uint8_t *)ptr;
-      line_size[0] = width * 3;
-      break;
-    case PIX_FMT_BGRA:
-      data[0] = (uint8_t *)ptr;
-      line_size[0] = width * 4;
-      break;
-    case PIX_FMT_GRAY8:
-      data[0] = (uint8_t *)ptr;
-      line_size[0] = width;
-      break;
-    case PIX_FMT_YUV420P:
-      data[0] = (uint8_t *)ptr;
-      data[1] = (uint8_t *)ptr + width * height;
-      data[2] = (uint8_t *)data[1] + ((width + 1) >> 1) * ((height + 1) >> 1);
-      line_size[0] = width;
-      line_size[1] = (width + 1) >> 1;
-      line_size[2] = (width + 1) >> 1;
-      break;
-    case PIX_FMT_UYVY422:
-    case PIX_FMT_YUYV422:
-      data[0] = (uint8_t *)ptr;
-      line_size[0] = 2 * ((width + 3) & ~0x3);
-      break;
-    default:
-      scm_misc_error("setup_format", "Support for format ~a not implemented",
-                     scm_list_1(scm_from_int(format)));
+  if (!scm_is_null_and_not_nil(source)) {
+    *dest = scm_to_int(scm_car(source));
+    scm_to_array(scm_cdr(source), dest + 1);
   };
 }
 
-static int frame_size(enum PixelFormat format, int width, int height)
+void frame_setup(SCM scm_type, enum PixelFormat *format, int *width, int *height,
+                 uint8_t *data[], int pitches[], void *ptr)
 {
-  int retval;
-  switch (format) {
-    case PIX_FMT_RGB24:
-    case PIX_FMT_BGR24:
-      retval = width * height * 3;
-      break;
-    case PIX_FMT_BGRA:
-      retval = width * height * 4;
-      break;
-    case PIX_FMT_GRAY8:
-      retval = width * height;
-      break;
-    case PIX_FMT_YUV420P:
-      retval = width * height + 2 * ((width + 1) >> 1) * ((height + 1) >> 1);
-      break;
-    case PIX_FMT_UYVY422:
-    case PIX_FMT_YUYV422:
-      retval = ((width + 3) & ~0x3) * height * 2;
-      break;
-    default:
-      scm_misc_error("setup_format", "Support for format ~a not implemented",
-                     scm_list_1(scm_from_int(format)));
-  };
-  return retval;
+  int i;
+  int offsets[8];
+  *format = scm_to_int(scm_car(scm_type));
+  *width = scm_to_int(scm_cadr(scm_type)),
+  *height = scm_to_int(scm_caddr(scm_type));
+  scm_to_array(scm_cadddr(scm_type), offsets);
+  scm_to_array(scm_cadddr(scm_cdr(scm_type)), pitches);
+  for (i=0; i<8; i++) data[i] = (uint8_t *)ptr + offsets[i];
 }
 
-SCM frame_convert(SCM scm_ptr, SCM scm_format, SCM scm_width, SCM scm_height,
-                  SCM scm_dest_format, SCM scm_dest_width, SCM scm_dest_height)
+SCM frame_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
-  enum PixelFormat format = scm_to_int(scm_format);
-  int
-    width = scm_to_int(scm_width),
-    height = scm_to_int(scm_height);
+  enum PixelFormat format;
+  int width, height;
   void *ptr = scm_to_pointer(scm_ptr);
   uint8_t *source_data[8];
-  int source_line_size[8];
-  setup_format(format, width, height, ptr, source_data, source_line_size);
-  enum PixelFormat dest_format = scm_to_int(scm_dest_format);
-  int
-    dest_width = scm_to_int(scm_dest_width),
-    dest_height = scm_to_int(scm_dest_height);
-  void *dest_ptr = scm_gc_malloc_pointerless(frame_size(dest_format, dest_width, dest_height), "frame");
+  int source_pitches[8];
+  frame_setup(scm_source_type, &format, &width, &height, source_data, source_pitches, ptr);
+
+  enum PixelFormat dest_format;
+  int dest_width, dest_height;
+  void *dest_ptr = scm_to_pointer(scm_dest_ptr);
   uint8_t *dest_data[8];
-  int dest_line_size[8];
-  setup_format(dest_format, dest_width, dest_height, dest_ptr, dest_data, dest_line_size);
+  int dest_pitches[8];
+  frame_setup(scm_dest_type, &dest_format, &dest_width, &dest_height, dest_data, dest_pitches, dest_ptr);
+
   struct SwsContext *sws_context = sws_getContext(width, height, format,
                                                   dest_width, dest_height, dest_format,
                                                   SWS_FAST_BILINEAR, 0, 0, 0);
-  sws_scale(sws_context, source_data, source_line_size, 0,
-            height, dest_data, dest_line_size);
+  sws_scale(sws_context, source_data, source_pitches, 0,
+            height, dest_data, dest_pitches);
+
   sws_freeContext(sws_context);
-  return scm_from_pointer(dest_ptr, NULL);
+  return SCM_UNDEFINED;
 }
 
 void init_frame(void)
@@ -102,5 +57,5 @@ void init_frame(void)
   scm_c_define("PIX_FMT_YUV420P", scm_from_int(PIX_FMT_YUV420P));
   scm_c_define("PIX_FMT_UYVY422", scm_from_int(PIX_FMT_UYVY422));
   scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
-  scm_c_define_gsubr("frame-convert", 7, 0, 0, frame_convert);
+  scm_c_define_gsubr("frame-convert", 4, 0, 0, frame_convert);
 }

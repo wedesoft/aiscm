@@ -222,7 +222,7 @@ SCM xwindow_close(SCM scm_self)
 size_t free_xwindow(SCM scm_self)
 {
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
-  close_xwindow(scm_self);
+  xwindow_close(scm_self);
   scm_gc_free(self, sizeof(struct xwindow_t), "xwindow");
   return 0;
 }
@@ -386,8 +386,9 @@ void xwindow_paint(struct xwindow_t *self)
         glDisable(GL_DITHER);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glRasterPos2i(0, 0);
-        int width = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("width")));
-        int height = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("height")));
+        int
+          width = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("width"))),
+          height = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("height")));
         char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
         glPixelZoom((float)self->width / width, -(float)self->height / height);
         // TODO: fast rendering of grayscale images
