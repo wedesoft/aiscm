@@ -1,7 +1,7 @@
 (define-module (aiscm xorg)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
-  #:use-module (aiscm frame)
+  #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             shape process-events event-loop close quit? quit=
@@ -23,6 +23,7 @@
   (display-event-loop (get-display self) timeout))
 (define-method (event-loop (self <xdisplay>)) (display-event-loop (get-display self) -1))
 ; TODO: rename close
+(define-generic close)
 (define-method (close (self <xdisplay>)) (display-close (get-display self)))
 (define-method (quit? (self <xdisplay>)) (display-quit? (get-display self)))
 (define-method (quit= (self <xdisplay>) (value <boolean>)) (display-quit= (get-display self) value))
@@ -42,5 +43,5 @@
 (define-method (resize (self <xwindow>) (width <integer>) (height <integer>))
   (window-resize (get-window self) width height))
 ; TOOD: rename write
-(define-method (write (self <xwindow>) (frame <frame>))
-  (window-write (get-window self) frame))
+(define-method (write (self <xwindow>) (image <image>))
+  (window-write (get-window self) image))

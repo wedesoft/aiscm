@@ -2,11 +2,11 @@ SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
 site_SCRIPTS = mem.scm element.scm bool.scm int.scm pointer.scm sequence.scm \
-	op.scm jit.scm compile.scm util.scm frame.scm v4l2.scm xorg.scm
+	op.scm jit.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
 
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-jit.la libguile-frame.la libguile-v4l2.la libguile-xorg.la
+extension_LTLIBRARIES = libguile-jit.la libguile-image.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_SCRIPTS:.scm=.go)
@@ -16,10 +16,10 @@ libguile_jit_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_jit_la_LDFLAGS = -no-undefined
 libguile_jit_la_LIBADD = $(GUILE_LIBS)
 
-libguile_frame_la_SOURCES = frame.c
-libguile_frame_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS)
-libguile_frame_la_LDFLAGS = -no-undefined
-libguile_frame_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS)
+libguile_image_la_SOURCES = image.c
+libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS)
+libguile_image_la_LDFLAGS = -no-undefined
+libguile_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS)
 
 libguile_v4l2_la_SOURCES = v4l2.c
 libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)

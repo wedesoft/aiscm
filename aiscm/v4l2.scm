@@ -3,7 +3,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm int)
-  #:use-module (aiscm frame)
+  #:use-module (aiscm image)
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
   #:export (make-v4l2 v4l2-close v4l2-read))
@@ -33,7 +33,7 @@
                     (lambda (formats) (encode (select (sort (map decode formats) format<)))))))
 (define (v4l2-read self)
   (let [(picture (v4l2-read-orig self))]
-    (make <frame>
+    (make <image>
           #:format (fmt->sym (car picture))
           #:width  (cadr picture)
           #:height (caddr picture)

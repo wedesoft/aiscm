@@ -9,7 +9,7 @@ void scm_to_array(SCM source, int dest[])
   };
 }
 
-void frame_setup(SCM scm_type, enum PixelFormat *format, int *width, int *height,
+void image_setup(SCM scm_type, enum PixelFormat *format, int *width, int *height,
                  uint8_t *data[], int pitches[], void *ptr)
 {
   int i;
@@ -22,21 +22,21 @@ void frame_setup(SCM scm_type, enum PixelFormat *format, int *width, int *height
   for (i=0; i<8; i++) data[i] = (uint8_t *)ptr + offsets[i];
 }
 
-SCM frame_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
+SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
   enum PixelFormat format;
   int width, height;
   void *ptr = scm_to_pointer(scm_ptr);
   uint8_t *source_data[8];
   int source_pitches[8];
-  frame_setup(scm_source_type, &format, &width, &height, source_data, source_pitches, ptr);
+  image_setup(scm_source_type, &format, &width, &height, source_data, source_pitches, ptr);
 
   enum PixelFormat dest_format;
   int dest_width, dest_height;
   void *dest_ptr = scm_to_pointer(scm_dest_ptr);
   uint8_t *dest_data[8];
   int dest_pitches[8];
-  frame_setup(scm_dest_type, &dest_format, &dest_width, &dest_height, dest_data, dest_pitches, dest_ptr);
+  image_setup(scm_dest_type, &dest_format, &dest_width, &dest_height, dest_data, dest_pitches, dest_ptr);
 
   struct SwsContext *sws_context = sws_getContext(width, height, format,
                                                   dest_width, dest_height, dest_format,
@@ -48,7 +48,7 @@ SCM frame_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   return SCM_UNDEFINED;
 }
 
-void init_frame(void)
+void init_image(void)
 {
   scm_c_define("PIX_FMT_RGB24",   scm_from_int(PIX_FMT_RGB24));
   scm_c_define("PIX_FMT_BGR24",   scm_from_int(PIX_FMT_BGR24));
@@ -57,5 +57,5 @@ void init_frame(void)
   scm_c_define("PIX_FMT_YUV420P", scm_from_int(PIX_FMT_YUV420P));
   scm_c_define("PIX_FMT_UYVY422", scm_from_int(PIX_FMT_UYVY422));
   scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
-  scm_c_define_gsubr("frame-convert", 4, 0, 0, frame_convert);
+  scm_c_define_gsubr("image-convert", 4, 0, 0, image_convert);
 }

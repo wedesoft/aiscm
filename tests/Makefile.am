@@ -5,7 +5,7 @@ SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-dr
 
 TESTS = test_mem.scm test_bool.scm test_int.scm test_pointer.scm \
 				test_sequence.scm test_jit.scm test_op.scm test_util.scm test_compile.scm \
-				test_frame.scm
+				test_image.scm
 
 EXTRA_DIST = guile-tap.scm $(TESTS)
 

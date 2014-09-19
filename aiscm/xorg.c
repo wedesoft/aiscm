@@ -36,7 +36,7 @@ struct window_t {
   Colormap color_map;
   XVisualInfo *visual_info;
   GC gc;
-  SCM scm_frame;
+  SCM scm_image;
   SCM scm_converted;
   Atom wm_protocols;
   Atom wm_delete_window;
@@ -242,7 +242,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
   struct display_t *display;
   self = (struct window_t *)scm_gc_calloc(sizeof(struct window_t), "window");
   SCM_NEWSMOB(retval, window_tag, self);
-  self->scm_frame = SCM_UNDEFINED;
+  self->scm_image = SCM_UNDEFINED;
   self->scm_converted = SCM_UNDEFINED;
   display = (struct display_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
@@ -326,14 +326,14 @@ SCM window_resize(SCM scm_self, SCM scm_width, SCM scm_height)
   return scm_self;
 }
 
-SCM window_write(SCM scm_self, SCM scm_frame)
+SCM window_write(SCM scm_self, SCM scm_image)
 {
   scm_assert_smob_type(window_tag, scm_self);
   struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
-  self->scm_frame = scm_frame;
+  self->scm_image = scm_image;
   self->scm_converted = SCM_UNDEFINED;
   window_paint(self);
-  return scm_frame;
+  return scm_image;
 }
 
 SCM window_hide(SCM scm_self)
@@ -364,12 +364,12 @@ void gl_error(const char *context)
 
 void window_paint(struct window_t *self)
 {
-  if (!SCM_UNBNDP(self->scm_frame)) {
+  if (!SCM_UNBNDP(self->scm_image)) {
     switch (self->io) {
       case IO_XIMAGE: {
         if (SCM_UNBNDP(self->scm_converted))
           self->scm_converted = scm_call_4(scm_convert,
-                                           self->scm_frame,
+                                           self->scm_image,
                                            scm_from_locale_symbol("BGRA"),
                                            scm_from_int(self->width),
                                            scm_from_int(self->height));
@@ -386,7 +386,7 @@ void window_paint(struct window_t *self)
       case IO_OPENGL: {
         if (SCM_UNBNDP(self->scm_converted))
           self->scm_converted = scm_call_2(scm_convert,
-                                           self->scm_frame,
+                                           self->scm_image,
                                            scm_from_locale_symbol("RGB"));
         GLXContext context =
           glXCreateContext(self->display->display,
@@ -416,7 +416,7 @@ void window_paint(struct window_t *self)
 
 void init_xorg(void)
 {
-  scm_convert = scm_c_public_ref("aiscm frame", "convert");
+  scm_convert = scm_c_public_ref("aiscm image", "convert");
   display_tag = scm_make_smob_type("display", sizeof(struct display_t));
   window_tag = scm_make_smob_type("window", sizeof(struct window_t));
   scm_set_smob_free(display_tag, free_display);

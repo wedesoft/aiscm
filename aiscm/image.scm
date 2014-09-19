@@ -1,24 +1,23 @@
-(define-module (aiscm frame)
+(define-module (aiscm image)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm util)
-  #:export (<frame> <meta<frame>>
+  #:export (<image> <meta<image>>
             get-format get-width get-height get-data convert
             PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA))
-(load-extension "libguile-frame" "init_frame")
-(define-class <meta<frame>> (<class>))
-; TODO: rename <frame>
-(define-class <frame> ()
+(load-extension "libguile-image" "init_image")
+(define-class <meta<image>> (<class>))
+(define-class <image> ()
               (format #:init-keyword #:format #:getter get-format)
               (width #:init-keyword #:width #:getter get-width)
               (height #:init-keyword #:height #:getter get-height)
               (offsets #:init-keyword #:offsets #:getter get-offsets)
               (pitches #:init-keyword #:pitches #:getter get-pitches)
               (data #:init-keyword #:data #:getter get-data)
-              #:metaclass <meta<frame>>)
-(define-method (initialize (self <frame>) initargs)
+              #:metaclass <meta<image>>)
+(define-method (initialize (self <image>) initargs)
   (let-keywords initargs #f (format width height offsets pitches data)
     (let* [(pitches (or pitches (default-pitches format width)))
            (offsets (or offsets (default-offsets format pitches height)))]
@@ -39,7 +38,7 @@
 (define symbols (assoc-invert formats))
 (define (sym->fmt sym) (assq-ref formats sym))
 (define (fmt->sym fmt) (assq-ref symbols fmt))
-(define (frame-size format pitches height)
+(define (image-size format pitches height)
   (case format
     ((RGB)  (* (car pitches) height))
     ((BGR)  (* (car pitches) height))
@@ -73,13 +72,13 @@
                            (offsets <list>)
                            (pitches <list>))
   (list (sym->fmt format) width height offsets pitches))
-(define-method (descriptor (self <frame>))
+(define-method (descriptor (self <image>))
   (descriptor (get-format self)
               (get-width self)
               (get-height self)
               (get-offsets self)
               (get-pitches self)))
-(define-method (convert (self <frame>)
+(define-method (convert (self <image>)
                         (format <symbol>)
                         (width <integer>)
                         (height <integer>)
@@ -89,21 +88,21 @@
         (dest-type   (descriptor format width height offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (let [(data (bytevector->pointer (make-bytevector (frame-size format pitches height))))]
-        (frame-convert (get-data self) source-type data dest-type)
-        (make <frame> #:format format
+      (let [(data (bytevector->pointer (make-bytevector (image-size format pitches height))))]
+        (image-convert (get-data self) source-type data dest-type)
+        (make <image> #:format format
                       #:width width
                       #:height height
                       #:data data
                       #:offsets offsets
                       #:pitches pitches)))))
-(define-method (convert (self <frame>) (format <symbol>) (width <integer>) (height <integer>))
+(define-method (convert (self <image>) (format <symbol>) (width <integer>) (height <integer>))
   (let* [(pitches (default-pitches format width))
          (offsets (default-offsets format pitches height))]
     (convert self format width height offsets pitches)))
-(define-method (convert (self <frame>) (format <symbol>))
+(define-method (convert (self <image>) (format <symbol>))
   (convert self format (get-width self) (get-height self)))
-(define-method (write (self <frame>) port)
-  (format port "#<<frame> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
-(define-method (display (self <frame>) port)
-  (format port "#<<frame> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+(define-method (write (self <image>) port)
+  (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+(define-method (display (self <image>) port)
+  (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
