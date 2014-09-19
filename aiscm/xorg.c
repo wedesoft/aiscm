@@ -17,18 +17,18 @@
   } while (0)
 #endif
 
-static scm_t_bits xdisplay_tag;
+static scm_t_bits display_tag;
 
-static scm_t_bits xwindow_tag;
+static scm_t_bits window_tag;
 
-struct xdisplay_t {
+struct display_t {
   Display *display;
   SCM scm_windows;
   char quit;
 };
 
-struct xwindow_t {
-  struct xdisplay_t *display;
+struct window_t {
+  struct display_t *display;
   Window window;
   enum {IO_XIMAGE, IO_OPENGL} io;// TODO: IO_XVIDEO
   int width;
@@ -42,14 +42,14 @@ struct xwindow_t {
   Atom wm_delete_window;
 };
 
-SCM xwindow_close(SCM scm_self);
+SCM window_close(SCM scm_self);
 
-SCM xdisplay_close(SCM scm_self)
+SCM display_close(SCM scm_self)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   while (!scm_is_null_and_not_nil(self->scm_windows))
-    xwindow_close(scm_car(self->scm_windows));
+    window_close(scm_car(self->scm_windows));
   if (self->display) {
     XCloseDisplay(self->display);
     self->display = NULL;
@@ -57,39 +57,39 @@ SCM xdisplay_close(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-size_t free_xdisplay(SCM scm_self)
+size_t free_display(SCM scm_self)
 {
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
-  close_xdisplay(scm_self);
-  scm_gc_free(self, sizeof(struct xdisplay_t), "xdisplay");
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
+  close_display(scm_self);
+  scm_gc_free(self, sizeof(struct display_t), "display");
   return 0;
 }
 
-SCM make_xdisplay(SCM scm_name)
+SCM make_display(SCM scm_name)
 {
   SCM retval;
-  struct xdisplay_t *self;
+  struct display_t *self;
   const char *name = scm_to_locale_string(scm_name);
   Display *display = XOpenDisplay(*name == '\0' ? (const char *)NULL : name);
-  if (!display) scm_syserror("make_xdisplay");
-  self = (struct xdisplay_t *)scm_gc_calloc(sizeof(struct xdisplay_t), "xdisplay");
-  SCM_NEWSMOB(retval, xdisplay_tag, self);
+  if (!display) scm_syserror("make_display");
+  self = (struct display_t *)scm_gc_calloc(sizeof(struct display_t), "display");
+  SCM_NEWSMOB(retval, display_tag, self);
   self->scm_windows = SCM_EOL;
   self->display = display;
   return retval;
 }
 
-SCM xdisplay_width(SCM scm_self)
+SCM display_width(SCM scm_self)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayWidth(self->display, DefaultScreen(self->display)));
 }
 
-SCM xdisplay_height(SCM scm_self)
+SCM display_height(SCM scm_self)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayHeight(self->display, DefaultScreen(self->display)));
 }
 
@@ -98,14 +98,14 @@ static Bool always_true(Display *display, XEvent *event, XPointer pointer)
   return True;
 }
 
-void xwindow_paint(struct xwindow_t *window);
+void window_paint(struct window_t *window);
 
-void handle_event(struct xdisplay_t *self, XEvent *event)
+void handle_event(struct display_t *self, XEvent *event)
 {
   SCM scm_windows = self->scm_windows;
-  struct xwindow_t *window = NULL;
+  struct window_t *window = NULL;
   while (!scm_is_null_and_not_nil(scm_windows)) {
-    struct xwindow_t *w = (struct xwindow_t *)SCM_SMOB_DATA(scm_car(scm_windows));
+    struct window_t *w = (struct window_t *)SCM_SMOB_DATA(scm_car(scm_windows));
     if (w->window == event->xany.window) {
       window = w;
       break;
@@ -132,38 +132,38 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
         if (window->io == IO_XIMAGE) window->scm_converted = SCM_UNDEFINED;
         window->width = event->xconfigure.width;
         window->height = event->xconfigure.height;
-        xwindow_paint(window);
+        window_paint(window);
         break;
       case Expose:
         while (XCheckTypedWindowEvent(self->display, window->window,
                                       Expose, event));
-        xwindow_paint(window);
+        window_paint(window);
         break;
     };
   };
 }
 
-SCM xdisplay_process_events(SCM scm_self)
+SCM display_process_events(SCM scm_self)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
   XEvent event;
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   while (XCheckIfEvent(self->display, &event, always_true, NULL))
     handle_event(self, &event);
   return scm_self;
 }
 
-SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
+SCM display_event_loop(SCM scm_self, SCM scm_timeout)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   double timeout = scm_to_double(scm_timeout);
   if (timeout >= 0) {
     struct timeval t0;
     double elapsed;
     gettimeofday(&t0, NULL);
     do {
-      xdisplay_process_events(scm_self);
+      display_process_events(scm_self);
       struct timeval t;
       struct timeval difference;
       int usecs_remaining;
@@ -192,25 +192,25 @@ SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
   return scm_self;
 }
 
-SCM xdisplay_quit(SCM scm_self)
+SCM display_quit(SCM scm_self)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   return self->quit ? SCM_BOOL_T : SCM_BOOL_F;
 }
 
-SCM xdisplay_set_quit(SCM scm_self, SCM scm_quit)
+SCM display_set_quit(SCM scm_self, SCM scm_quit)
 {
-  scm_assert_smob_type(xdisplay_tag, scm_self);
-  struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(display_tag, scm_self);
+  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   self->quit = scm_quit != SCM_BOOL_F;
-  return xdisplay_quit(scm_self);
+  return display_quit(scm_self);
 }
 
-SCM xwindow_close(SCM scm_self)
+SCM window_close(SCM scm_self)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   if (self->gc) {
     XFreeGC(self->display->display, self->gc);
     self->gc = 0;
@@ -227,24 +227,24 @@ SCM xwindow_close(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-size_t free_xwindow(SCM scm_self)
+size_t free_window(SCM scm_self)
 {
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
-  xwindow_close(scm_self);
-  scm_gc_free(self, sizeof(struct xwindow_t), "xwindow");
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
+  window_close(scm_self);
+  scm_gc_free(self, sizeof(struct window_t), "window");
   return 0;
 }
 
-SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
+SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
 {
   SCM retval;
-  struct xwindow_t *self;
-  struct xdisplay_t *display;
-  self = (struct xwindow_t *)scm_gc_calloc(sizeof(struct xwindow_t), "xwindow");
-  SCM_NEWSMOB(retval, xwindow_tag, self);
+  struct window_t *self;
+  struct display_t *display;
+  self = (struct window_t *)scm_gc_calloc(sizeof(struct window_t), "window");
+  SCM_NEWSMOB(retval, window_tag, self);
   self->scm_frame = SCM_UNDEFINED;
   self->scm_converted = SCM_UNDEFINED;
-  display = (struct xdisplay_t *)SCM_SMOB_DATA(scm_display);
+  display = (struct display_t *)SCM_SMOB_DATA(scm_display);
   self->display = display;
   self->io = scm_to_int(scm_io);
   self->width = scm_to_int(scm_width);
@@ -254,7 +254,7 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
       if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
                             24, TrueColor, self->visual_info))
-        scm_syserror("make_xwindow");
+        scm_syserror("make_window");
       break;
     case IO_OPENGL: {
       int attributes[] = {GLX_RGBA,
@@ -264,12 +264,12 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                           GLX_DEPTH_SIZE, 0, None};
       self->visual_info = glXChooseVisual(display->display, DefaultScreen(display->display),
                                           attributes);
-      if (!self->visual_info) scm_syserror("make_xwindow");
+      if (!self->visual_info) scm_syserror("make_window");
       break;}
   };
   self->color_map = XCreateColormap(display->display, DefaultRootWindow(display->display),
                                     self->visual_info->visual, AllocNone);
-  if (!self->color_map) scm_syserror("make_xwindow");
+  if (!self->color_map) scm_syserror("make_window");
   XSetWindowAttributes attributes;
   attributes.colormap = self->color_map;
   attributes.event_mask = KeyPressMask | ExposureMask | StructureNotifyMask;
@@ -277,10 +277,10 @@ SCM make_xwindow(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                                0, 0, self->width, self->height,
                                0, self->visual_info->depth, InputOutput, self->visual_info->visual,
                                CWColormap | CWEventMask, &attributes);
-  if (!self->window) scm_syserror("make_xwindow");
+  if (!self->window) scm_syserror("make_window");
   XGCValues xgcv;
   self->gc = XCreateGC(display->display, self->window, 0L, &xgcv);
-  if (!self->gc) scm_syserror("make_xwindow");
+  if (!self->gc) scm_syserror("make_window");
   self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
@@ -294,28 +294,28 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
-SCM xwindow_show(SCM scm_self)
+SCM window_show(SCM scm_self)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
   XEvent event;
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   XMapWindow(self->display->display, self->window);
   XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
-SCM xwindow_title(SCM scm_self, SCM scm_title)
+SCM window_title(SCM scm_self, SCM scm_title)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   XStoreName(self->display->display, self->window, scm_to_locale_string(scm_title));
   return scm_title;
 }
 
-SCM xwindow_resize(SCM scm_self, SCM scm_width, SCM scm_height)
+SCM window_resize(SCM scm_self, SCM scm_width, SCM scm_height)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   int
     width = scm_to_int(scm_width),
     height = scm_to_int(scm_height);
@@ -326,21 +326,21 @@ SCM xwindow_resize(SCM scm_self, SCM scm_width, SCM scm_height)
   return scm_self;
 }
 
-SCM xwindow_write(SCM scm_self, SCM scm_frame)
+SCM window_write(SCM scm_self, SCM scm_frame)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   self->scm_frame = scm_frame;
   self->scm_converted = SCM_UNDEFINED;
-  xwindow_paint(self);
+  window_paint(self);
   return scm_frame;
 }
 
-SCM xwindow_hide(SCM scm_self)
+SCM window_hide(SCM scm_self)
 {
-  scm_assert_smob_type(xwindow_tag, scm_self);
+  scm_assert_smob_type(window_tag, scm_self);
   XEvent event;
-  struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
+  struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   XUnmapWindow(self->display->display, self->window);
   XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
@@ -362,7 +362,7 @@ void gl_error(const char *context)
   scm_misc_error(context, "~a", scm_list_1(str));
 }
 
-void xwindow_paint(struct xwindow_t *self)
+void window_paint(struct window_t *self)
 {
   if (!SCM_UNBNDP(self->scm_frame)) {
     switch (self->io) {
@@ -377,7 +377,7 @@ void xwindow_paint(struct xwindow_t *self)
         XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
                                    24, ZPixmap, 0, data, self->width, self->height,
                                    32, self->width * 4);
-        if (!img) scm_syserror("xwindow_paint");
+        if (!img) scm_syserror("window_paint");
         img->byte_order = LSBFirst;
         XPutImage(self->display->display, self->window, self->gc,
                   img, 0, 0, 0, 0, self->width, self->height);
@@ -391,8 +391,8 @@ void xwindow_paint(struct xwindow_t *self)
         GLXContext context =
           glXCreateContext(self->display->display,
                            self->visual_info, 0, GL_TRUE);
-        if (!context) gl_error("xwindow_paint");
-        if (!glXMakeCurrent(self->display->display, self->window, context)) gl_error("xwindow_paint");
+        if (!context) gl_error("window_paint");
+        if (!glXMakeCurrent(self->display->display, self->window, context)) gl_error("window_paint");
         glLoadIdentity();
         glViewport(0, 0, self->width, self->height);
         glOrtho(0, self->width, self->height, 0, -1.0, 1.0);
@@ -417,25 +417,25 @@ void xwindow_paint(struct xwindow_t *self)
 void init_xorg(void)
 {
   scm_convert = scm_c_public_ref("aiscm frame", "convert");
-  xdisplay_tag = scm_make_smob_type("xdisplay", sizeof(struct xdisplay_t));
-  xwindow_tag = scm_make_smob_type("xwindow", sizeof(struct xwindow_t));
-  scm_set_smob_free(xdisplay_tag, free_xdisplay);
-  scm_set_smob_free(xwindow_tag, free_xwindow);
+  display_tag = scm_make_smob_type("display", sizeof(struct display_t));
+  window_tag = scm_make_smob_type("window", sizeof(struct window_t));
+  scm_set_smob_free(display_tag, free_display);
+  scm_set_smob_free(window_tag, free_window);
   scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
   scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
-  scm_c_define_gsubr("make-xdisplay", 1, 0, 0, make_xdisplay);
-  scm_c_define_gsubr("xdisplay-width", 1, 0, 0, xdisplay_width);
-  scm_c_define_gsubr("xdisplay-height", 1, 0, 0, xdisplay_height);
-  scm_c_define_gsubr("xdisplay-process-events", 1, 0, 0, xdisplay_process_events);
-  scm_c_define_gsubr("xdisplay-event-loop", 2, 0, 0, xdisplay_event_loop);
-  scm_c_define_gsubr("xdisplay-quit?", 1, 0, 0, xdisplay_quit);
-  scm_c_define_gsubr("xdisplay-quit=", 2, 0, 0, xdisplay_set_quit);
-  scm_c_define_gsubr("xdisplay-close", 1, 0, 0, xdisplay_close);
-  scm_c_define_gsubr("make-xwindow", 4, 0, 0, make_xwindow);
-  scm_c_define_gsubr("xwindow-show", 1, 0, 0, xwindow_show);
-  scm_c_define_gsubr("xwindow-title=", 2, 0, 0, xwindow_title);
-  scm_c_define_gsubr("xwindow-resize", 3, 0, 0, xwindow_resize);
-  scm_c_define_gsubr("xwindow-write", 2, 0, 0, xwindow_write);
-  scm_c_define_gsubr("xwindow-hide", 1, 0, 0, xwindow_hide);
-  scm_c_define_gsubr("xwindow-close", 1, 0, 0, xwindow_close);
+  scm_c_define_gsubr("make-display", 1, 0, 0, make_display);
+  scm_c_define_gsubr("display-width", 1, 0, 0, display_width);
+  scm_c_define_gsubr("display-height", 1, 0, 0, display_height);
+  scm_c_define_gsubr("display-process-events", 1, 0, 0, display_process_events);
+  scm_c_define_gsubr("display-event-loop", 2, 0, 0, display_event_loop);
+  scm_c_define_gsubr("display-quit?", 1, 0, 0, display_quit);
+  scm_c_define_gsubr("display-quit=", 2, 0, 0, display_set_quit);
+  scm_c_define_gsubr("display-close", 1, 0, 0, display_close);
+  scm_c_define_gsubr("make-window", 4, 0, 0, make_window);
+  scm_c_define_gsubr("window-show", 1, 0, 0, window_show);
+  scm_c_define_gsubr("window-title=", 2, 0, 0, window_title);
+  scm_c_define_gsubr("window-resize", 3, 0, 0, window_resize);
+  scm_c_define_gsubr("window-write", 2, 0, 0, window_write);
+  scm_c_define_gsubr("window-hide", 1, 0, 0, window_hide);
+  scm_c_define_gsubr("window-close", 1, 0, 0, window_close);
 }

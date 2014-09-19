@@ -9,6 +9,7 @@
             PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA))
 (load-extension "libguile-frame" "init_frame")
 (define-class <meta<frame>> (<class>))
+; TODO: rename <frame>
 (define-class <frame> ()
               (format #:init-keyword #:format #:getter get-format)
               (width #:init-keyword #:width #:getter get-width)
