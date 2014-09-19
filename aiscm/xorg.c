@@ -46,6 +46,7 @@ SCM xwindow_close(SCM scm_self);
 
 SCM xdisplay_close(SCM scm_self)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   while (!scm_is_null_and_not_nil(self->scm_windows))
     xwindow_close(scm_car(self->scm_windows));
@@ -80,12 +81,14 @@ SCM make_xdisplay(SCM scm_name)
 
 SCM xdisplay_width(SCM scm_self)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayWidth(self->display, DefaultScreen(self->display)));
 }
 
 SCM xdisplay_height(SCM scm_self)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   return scm_from_signed_integer(DisplayHeight(self->display, DefaultScreen(self->display)));
 }
@@ -142,6 +145,7 @@ void handle_event(struct xdisplay_t *self, XEvent *event)
 
 SCM xdisplay_process_events(SCM scm_self)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   XEvent event;
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   while (XCheckIfEvent(self->display, &event, always_true, NULL))
@@ -151,6 +155,7 @@ SCM xdisplay_process_events(SCM scm_self)
 
 SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   double timeout = scm_to_double(scm_timeout);
   if (timeout >= 0) {
@@ -189,12 +194,14 @@ SCM xdisplay_event_loop(SCM scm_self, SCM scm_timeout)
 
 SCM xdisplay_quit(SCM scm_self)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   return self->quit ? SCM_BOOL_T : SCM_BOOL_F;
 }
 
 SCM xdisplay_set_quit(SCM scm_self, SCM scm_quit)
 {
+  scm_assert_smob_type(xdisplay_tag, scm_self);
   struct xdisplay_t *self = (struct xdisplay_t *)SCM_SMOB_DATA(scm_self);
   self->quit = scm_quit != SCM_BOOL_F;
   return xdisplay_quit(scm_self);
@@ -202,6 +209,7 @@ SCM xdisplay_set_quit(SCM scm_self, SCM scm_quit)
 
 SCM xwindow_close(SCM scm_self)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   if (self->gc) {
     XFreeGC(self->display->display, self->gc);
@@ -288,6 +296,7 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
 
 SCM xwindow_show(SCM scm_self)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   XEvent event;
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   XMapWindow(self->display->display, self->window);
@@ -297,6 +306,7 @@ SCM xwindow_show(SCM scm_self)
 
 SCM xwindow_title(SCM scm_self, SCM scm_title)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   XStoreName(self->display->display, self->window, scm_to_locale_string(scm_title));
   return scm_title;
@@ -304,6 +314,7 @@ SCM xwindow_title(SCM scm_self, SCM scm_title)
 
 SCM xwindow_resize(SCM scm_self, SCM scm_width, SCM scm_height)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   int
     width = scm_to_int(scm_width),
@@ -317,6 +328,7 @@ SCM xwindow_resize(SCM scm_self, SCM scm_width, SCM scm_height)
 
 SCM xwindow_write(SCM scm_self, SCM scm_frame)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   self->scm_frame = scm_frame;
   self->scm_converted = SCM_UNDEFINED;
@@ -326,6 +338,7 @@ SCM xwindow_write(SCM scm_self, SCM scm_frame)
 
 SCM xwindow_hide(SCM scm_self)
 {
+  scm_assert_smob_type(xwindow_tag, scm_self);
   XEvent event;
   struct xwindow_t *self = (struct xwindow_t *)SCM_SMOB_DATA(scm_self);
   XUnmapWindow(self->display->display, self->window);

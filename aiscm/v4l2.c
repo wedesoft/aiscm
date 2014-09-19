@@ -33,6 +33,7 @@ static int xioctl(int fd, int request, void *arg)
 
 SCM v4l2_close(SCM scm_self)
 {
+  scm_assert_smob_type(v4l2_tag, scm_self);
   int i;
   struct v4l2_t *self = (struct v4l2_t *)SCM_SMOB_DATA(scm_self);
   if (self->capture) {
@@ -233,6 +234,7 @@ SCM make_v4l2(SCM scm_name, SCM scm_channel, SCM scm_select)
 
 SCM v4l2_read(SCM scm_self)
 {
+  scm_assert_smob_type(v4l2_tag, scm_self);
   SCM retval;
   struct v4l2_t *self = (struct v4l2_t *)SCM_SMOB_DATA(scm_self);
   if (self->fd <= 0)
