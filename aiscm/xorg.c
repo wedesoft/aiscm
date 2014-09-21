@@ -218,7 +218,10 @@ SCM window_destroy(SCM scm_self)
     XFreeColormap(self->display->display, self->color_map);
     self->color_map = 0;
   };
-  self->display->scm_windows = scm_delete(scm_self, self->display->scm_windows);
+  if (self->display) {
+    self->display->scm_windows = scm_delete(scm_self, self->display->scm_windows);
+    self->display = NULL;
+  };
   return SCM_UNSPECIFIED;
 }
 
