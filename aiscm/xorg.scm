@@ -1,10 +1,11 @@
 (define-module (aiscm xorg)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (aiscm element)
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            shape process-events event-loop close quit? quit=
+            process-events event-loop close quit? quit=
             show hide title= resize write
             IO-XIMAGE IO-OPENGL))
 (load-extension "libguile-xorg" "init_xorg")
@@ -16,8 +17,7 @@
   (let-keywords initargs #f (name)
     (let [(name (or name ":0.0"))]
       (next-method self (list #:display (make-display name))))))
-(define-method (shape (self <xdisplay>))
-  (list (display-width (get-display self)) (display-height (get-display self))))
+(define-method (shape (self <xdisplay>)) (display-shape (get-display self)))
 (define-method (process-events (self <xdisplay>)) (display-process-events (get-display self)))
 (define-method (event-loop (self <xdisplay>) (timeout <real>))
   (display-event-loop (get-display self) timeout))
@@ -36,6 +36,16 @@
     (let [(io (or io IO-XIMAGE))]
       (next-method self (list #:window (make-window (get-display display) width height io))))))
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
+(define-method (show (self <image>))
+  (let* [(display (make <xdisplay>))
+         (window (make <xwindow> #:display display #:width (get-width self) #:height (get-height self)))]
+    (title= window "AIscm")
+    (write window self)
+    (show window)
+    (event-loop display)
+    (hide window)
+    (close window)
+    (close display)))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 ; TODO: rename close
 (define-method (close (self <xwindow>)) (window-close (get-window self)))

@@ -3,6 +3,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
+  #:use-module (aiscm element)
   #:use-module (aiscm util)
   #:export (<image> <meta<image>>
             get-format get-width get-height get-data convert
@@ -96,6 +97,8 @@
                       #:data data
                       #:offsets offsets
                       #:pitches pitches)))))
+(define-method (shape (self <image>))
+  (list (get-width self) (get-height self)))
 (define-method (convert (self <image>) (format <symbol>) (width <integer>) (height <integer>))
   (let* [(pitches (default-pitches format width))
          (offsets (default-offsets format pitches height))]

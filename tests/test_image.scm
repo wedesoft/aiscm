@@ -5,7 +5,7 @@
              (guile-tap))
 (define data (bytevector->pointer #vu8(2 3 5 7 11 13 17 19)))
 (define f (make <image> #:format 'GRAY #:width 8 #:height 1 #:data data))
-(planned-tests 6)
+(planned-tests 7)
 (ok (equal? #vu8(2 2 2 255 3 3 3 255) (pointer->bytevector (get-data (convert f 'BGRA)) 8))
   "conversion to BGRA")
 (ok (eqv? 16 (get-width (convert f 'BGRA 16 2)))
@@ -20,3 +20,5 @@
 (ok (equal? 2
             (bytevector-u8-ref (pointer->bytevector (get-data (convert f 'GRAY 8 2 '(0) '(10))) 20) 10))
   "correct application of custom pitches")
+(ok (equal? '(8 1) (shape f))
+  "'shape' should return the width and height of the image")

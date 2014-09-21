@@ -60,7 +60,7 @@ SCM display_close(SCM scm_self)
 size_t free_display(SCM scm_self)
 {
   struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
-  close_display(scm_self);
+  display_close(scm_self);
   scm_gc_free(self, sizeof(struct display_t), "display");
   return 0;
 }
@@ -79,18 +79,13 @@ SCM make_display(SCM scm_name)
   return retval;
 }
 
-SCM display_width(SCM scm_self)
+SCM display_shape(SCM scm_self)
 {
   scm_assert_smob_type(display_tag, scm_self);
   struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
-  return scm_from_signed_integer(DisplayWidth(self->display, DefaultScreen(self->display)));
-}
-
-SCM display_height(SCM scm_self)
-{
-  scm_assert_smob_type(display_tag, scm_self);
-  struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
-  return scm_from_signed_integer(DisplayHeight(self->display, DefaultScreen(self->display)));
+  int width = DisplayWidth(self->display, DefaultScreen(self->display));
+  int height = DisplayHeight(self->display, DefaultScreen(self->display));
+  return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
 static Bool always_true(Display *display, XEvent *event, XPointer pointer)
@@ -424,8 +419,7 @@ void init_xorg(void)
   scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
   scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
   scm_c_define_gsubr("make-display", 1, 0, 0, make_display);
-  scm_c_define_gsubr("display-width", 1, 0, 0, display_width);
-  scm_c_define_gsubr("display-height", 1, 0, 0, display_height);
+  scm_c_define_gsubr("display-shape", 1, 0, 0, display_shape);
   scm_c_define_gsubr("display-process-events", 1, 0, 0, display_process_events);
   scm_c_define_gsubr("display-event-loop", 2, 0, 0, display_event_loop);
   scm_c_define_gsubr("display-quit?", 1, 0, 0, display_quit);
