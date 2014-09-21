@@ -6,7 +6,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
-  #:export (make-v4l2 v4l2-close v4l2-read))
+  #:export (make-v4l2 v4l2-destroy v4l2-read))
 (load-extension "libguile-v4l2" "init_v4l2")
 (define formats
   (list (cons 'RGB  V4L2_PIX_FMT_RGB24)

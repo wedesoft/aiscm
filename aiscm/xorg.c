@@ -42,14 +42,14 @@ struct window_t {
   Atom wm_delete_window;
 };
 
-SCM window_close(SCM scm_self);
+SCM window_destroy(SCM scm_self);
 
-SCM display_close(SCM scm_self)
+SCM display_destroy(SCM scm_self)
 {
   scm_assert_smob_type(display_tag, scm_self);
   struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
   while (!scm_is_null_and_not_nil(self->scm_windows))
-    window_close(scm_car(self->scm_windows));
+    window_destroy(scm_car(self->scm_windows));
   if (self->display) {
     XCloseDisplay(self->display);
     self->display = NULL;
@@ -60,7 +60,7 @@ SCM display_close(SCM scm_self)
 size_t free_display(SCM scm_self)
 {
   struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
-  display_close(scm_self);
+  display_destroy(scm_self);
   scm_gc_free(self, sizeof(struct display_t), "display");
   return 0;
 }
@@ -202,7 +202,7 @@ SCM display_set_quit(SCM scm_self, SCM scm_quit)
   return display_quit(scm_self);
 }
 
-SCM window_close(SCM scm_self)
+SCM window_destroy(SCM scm_self)
 {
   scm_assert_smob_type(window_tag, scm_self);
   struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
@@ -225,7 +225,7 @@ SCM window_close(SCM scm_self)
 size_t free_window(SCM scm_self)
 {
   struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
-  window_close(scm_self);
+  window_destroy(scm_self);
   scm_gc_free(self, sizeof(struct window_t), "window");
   return 0;
 }
@@ -424,12 +424,12 @@ void init_xorg(void)
   scm_c_define_gsubr("display-event-loop", 2, 0, 0, display_event_loop);
   scm_c_define_gsubr("display-quit?", 1, 0, 0, display_quit);
   scm_c_define_gsubr("display-quit=", 2, 0, 0, display_set_quit);
-  scm_c_define_gsubr("display-close", 1, 0, 0, display_close);
+  scm_c_define_gsubr("display-destroy", 1, 0, 0, display_destroy);
   scm_c_define_gsubr("make-window", 4, 0, 0, make_window);
   scm_c_define_gsubr("window-show", 1, 0, 0, window_show);
   scm_c_define_gsubr("window-title=", 2, 0, 0, window_title);
   scm_c_define_gsubr("window-resize", 3, 0, 0, window_resize);
   scm_c_define_gsubr("window-write", 2, 0, 0, window_write);
   scm_c_define_gsubr("window-hide", 1, 0, 0, window_hide);
-  scm_c_define_gsubr("window-close", 1, 0, 0, window_close);
+  scm_c_define_gsubr("window-destroy", 1, 0, 0, window_destroy);
 }

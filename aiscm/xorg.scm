@@ -5,7 +5,7 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop close quit? quit=
+            process-events event-loop destroy quit? quit=
             show hide title= resize write
             IO-XIMAGE IO-OPENGL))
 (load-extension "libguile-xorg" "init_xorg")
@@ -22,9 +22,7 @@
 (define-method (event-loop (self <xdisplay>) (timeout <real>))
   (display-event-loop (get-display self) timeout))
 (define-method (event-loop (self <xdisplay>)) (display-event-loop (get-display self) -1))
-; TODO: rename close
-(define-generic close)
-(define-method (close (self <xdisplay>)) (display-close (get-display self)))
+(define-method (destroy (self <xdisplay>)) (display-destroy (get-display self)))
 (define-method (quit? (self <xdisplay>)) (display-quit? (get-display self)))
 (define-method (quit= (self <xdisplay>) (value <boolean>)) (display-quit= (get-display self) value))
 (define-class <meta<xwindow>> (<class>))
@@ -44,7 +42,7 @@
     (show window)
     (event-loop display)
     (hide window)
-    (close display)))
+    (destroy display)))
 (define-method (show (self <procedure>))
   (let* [(img     (self))
          (display (make <xdisplay>))
@@ -54,10 +52,9 @@
     (show window)
     (do () ((quit? display)) (write window (self)) (process-events display))
     (hide window)
-    (close display)))
+    (destroy display)))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
-; TODO: rename close
-(define-method (close (self <xwindow>)) (window-close (get-window self)))
+(define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
 (define-method (resize (self <xwindow>) (shape <list>))
   (window-resize (get-window self) (car shape) (cadr shape)))

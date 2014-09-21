@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (rnrs bytevectors)
              (system foreign)
+             (aiscm element)
              (aiscm image)
              (guile-tap))
 (define data (bytevector->pointer #vu8(2 3 5 7 11 13 17 19)))
