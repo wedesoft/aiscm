@@ -1,13 +1,19 @@
 (define-module (aiscm v4l2)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
+  #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm int)
   #:use-module (aiscm image)
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
-  #:export (make-v4l2 v4l2-destroy v4l2-read))
+  #:export (<v4l2> <meta<v4l2>> read))
 (load-extension "libguile-v4l2" "init_v4l2")
+(define-class <meta<v4l2>> (<class>))
+(define-class <v4l2> ()
+  (videodev2 #:init-keyword #:videodev2 #:getter get-videodev2)
+  #:metaclass <meta<v4l2>>)
 (define formats
   (list (cons 'RGB  V4L2_PIX_FMT_RGB24)
         (cons 'BGR  V4L2_PIX_FMT_BGR24)
@@ -25,14 +31,18 @@
         (size-x (apply * (cdr x)))
         (size-y (apply * (cdr y)))]
     (or (< ord-x ord-y) (and (eqv? ord-x ord-y) (< size-x size-y)))))
-(define (make-v4l2 device channel select)
-  (let [(decode (lambda (f) (cons (fmt->sym (car f)) (cdr f))))
-        (encode (lambda (f) (cons (sym->fmt (car f)) (cdr f))))]
-    (make-v4l2-orig device
-                    channel
-                    (lambda (formats) (encode (select (sort (map decode formats) format<)))))))
-(define (v4l2-read self)
-  (let [(picture (v4l2-read-orig self))]
+(define-method (initialize (self <v4l2>) initargs)
+  (let-keywords initargs #f (device channel select)
+    (let* [(device    (or device "/dev/video0"))
+           (channel   (or channel 0))
+           (select    (or select last))
+           (decode    (lambda (f) (cons (fmt->sym (car f)) (cdr f))))
+           (encode    (lambda (f) (cons (sym->fmt (car f)) (cdr f))))
+           (selection (lambda (formats) (encode (select (sort (map decode formats) format<)))))]
+      (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
+(define-method (destroy (self <v4l2>)) (videodev2-destroy (get-videodev2 self)))
+(define-method (read (self <v4l2>))
+  (let [(picture (videodev2-read (get-videodev2 self)))]
     (make <image>
           #:format (fmt->sym (car picture))
           #:width  (cadr picture)

@@ -1,8 +1,10 @@
 (define-module (aiscm util)
+  #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:export (toplevel-define! attach index all-but-last upto repeat depth
-            flatten-n flatten cycle uncycle integral zipmap assoc-invert)
+            flatten-n flatten cycle uncycle integral zipmap assoc-invert
+            destroy)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -43,3 +45,4 @@
     (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))
 (define (assoc-invert alist)
   (map (lambda (x) (cons (cdr x) (car x))) alist))
+(define-generic destroy)

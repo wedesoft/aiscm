@@ -1,18 +1,18 @@
 (define-module (aiscm xorg)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop destroy quit? quit=
-            show hide title= resize write
-            IO-XIMAGE IO-OPENGL))
+            process-events event-loop quit? quit=
+            show hide title= resize write IO-XIMAGE IO-OPENGL))
 (load-extension "libguile-xorg" "init_xorg")
 (define-class <meta<xdisplay>> (<class>))
 (define-class <xdisplay> ()
-              (display #:init-keyword #:display #:getter get-display)
-              #:metaclass <meta<xdisplay>>)
+  (display #:init-keyword #:display #:getter get-display)
+  #:metaclass <meta<xdisplay>>)
 (define-method (initialize (self <xdisplay>) initargs)
   (let-keywords initargs #f (name)
     (let [(name (or name ":0.0"))]
