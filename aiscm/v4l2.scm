@@ -8,7 +8,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
-  #:export (<v4l2> <meta<v4l2>> read))
+  #:export (<v4l2> <meta<v4l2>> grab))
 (load-extension "libguile-v4l2" "init_v4l2")
 (define-class <meta<v4l2>> (<class>))
 (define-class <v4l2> ()
@@ -41,7 +41,7 @@
            (selection (lambda (formats) (encode (select (sort (map decode formats) format<)))))]
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
 (define-method (destroy (self <v4l2>)) (videodev2-destroy (get-videodev2 self)))
-(define-method (read (self <v4l2>))
+(define-method (grab (self <v4l2>))
   (let [(picture (videodev2-read (get-videodev2 self)))]
     (make <image>
           #:format (fmt->sym (car picture))
