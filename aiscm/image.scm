@@ -115,8 +115,7 @@
   (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
 (define (image->multiarray self)
   (let* [(img   (convert self 'GRAY))
-         (data  (get-data img))
          (shape (list (get-width img) (get-height img)))
          (size  (image-size 'GRAY (get-pitches img) (get-height img)))
-         (mem   (make <mem> #:base data #:size size))]
+         (mem   (make <mem> #:base (get-data img) #:size size))]
     (make (multiarray <ubyte> 2) #:value mem #:shape shape)))
