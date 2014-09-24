@@ -3,11 +3,15 @@
   #:use-module (ice-9 optargs)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
+  #:use-module (aiscm mem)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:export (<image> <meta<image>>
             get-format get-width get-height get-data convert
-            PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA))
+            PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA
+            image->multiarray))
 (load-extension "libguile-image" "init_image")
 (define-class <meta<image>> (<class>))
 (define-class <image> ()
@@ -109,3 +113,10 @@
   (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
 (define-method (display (self <image>) port)
   (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+(define (image->multiarray self)
+  (let* [(img   (convert self 'GRAY))
+         (data  (get-data img))
+         (shape (list (get-width img) (get-height img)))
+         (size  (image-size 'GRAY (get-pitches img) (get-height img)))
+         (mem   (make <mem> #:memory data #:base data #:size size))]
+    (make (multiarray <ubyte> 2) #:value mem #:shape shape)))
