@@ -118,5 +118,5 @@
          (data  (get-data img))
          (shape (list (get-width img) (get-height img)))
          (size  (image-size 'GRAY (get-pitches img) (get-height img)))
-         (mem   (make <mem> #:memory data #:base data #:size size))]
+         (mem   (make <mem> #:base data #:size size))]
     (make (multiarray <ubyte> 2) #:value mem #:shape shape)))

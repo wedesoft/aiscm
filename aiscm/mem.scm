@@ -14,10 +14,10 @@
   (size #:init-value 0 #:init-keyword #:size #:getter get-size))
 (define-method (initialize (self <mem>) initargs)
   (let-keywords initargs #f (memory base size)
-    (if (not (and memory base))
+    (if base
+      (next-method self (list #:memory (or memory base) #:base base #:size size))
       (let [(ptr (bytevector->pointer (make-bytevector size)))]
-        (next-method self (list #:memory ptr #:base ptr #:size size)))
-      (next-method))))
+        (next-method self (list #:memory ptr #:base ptr #:size size))))))
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
