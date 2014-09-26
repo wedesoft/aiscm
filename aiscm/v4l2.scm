@@ -45,6 +45,5 @@
   (let [(picture (videodev2-read (get-videodev2 self)))]
     (make <image>
           #:format (fmt->sym (car picture))
-          #:width  (cadr picture)
-          #:height (caddr picture)
-          #:data   (cadddr picture))))
+          #:shape  (cadr picture)
+          #:data   (caddr picture))))

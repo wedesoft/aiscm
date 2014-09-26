@@ -261,9 +261,8 @@ SCM videodev2_read(SCM scm_self)
     if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("videodev2_read");
     self->frame_used = 1;
     void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
-    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                        scm_from_int(width),
-                        scm_from_int(height),
+    retval = scm_list_3(scm_from_int(self->format.fmt.pix.pixelformat),
+                        scm_list_2(scm_from_int(width), scm_from_int(height)),
                         scm_from_pointer(p, NULL));
   };
   return retval;

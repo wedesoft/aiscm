@@ -366,11 +366,11 @@ void window_paint(struct window_t *self)
     switch (self->io) {
       case IO_XIMAGE: {
         if (SCM_UNBNDP(self->scm_converted))
-          self->scm_converted = scm_call_4(scm_convert,
+          self->scm_converted = scm_call_3(scm_convert,
                                            self->scm_image,
                                            scm_from_locale_symbol("BGRA"),
-                                           scm_from_int(self->width),
-                                           scm_from_int(self->height));
+                                           scm_list_2(scm_from_int(self->width),
+                                                      scm_from_int(self->height)));
         char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
         XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
                                    24, ZPixmap, 0, data, self->width, self->height,
@@ -397,9 +397,10 @@ void window_paint(struct window_t *self)
         glDisable(GL_DITHER);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glRasterPos2i(0, 0);
+        SCM shape = scm_slot_ref(self->scm_converted, scm_from_locale_symbol("shape"));
         int
-          width = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("width"))),
-          height = scm_to_int(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("height")));
+          width = scm_to_int(scm_car(shape)),
+          height = scm_to_int(scm_cadr(shape));
         char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
         glPixelZoom((float)self->width / width, -(float)self->height / height);
         // TODO: fast rendering of grayscale images

@@ -1,6 +1,5 @@
 # TODO
 
-* use shape instead of width and height with <image>
 * image <-> multiarray with strides and pitches
 * X11: XVideo-output
 * register allocator, RGB, swscale

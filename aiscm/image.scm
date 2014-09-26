@@ -9,26 +9,24 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:export (<image> <meta<image>>
-            get-format get-width get-height get-data convert
+            get-format get-data convert
             PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA
             image->multiarray))
 (load-extension "libguile-image" "init_image")
 (define-class <meta<image>> (<class>))
 (define-class <image> ()
               (format #:init-keyword #:format #:getter get-format)
-              (width #:init-keyword #:width #:getter get-width)
-              (height #:init-keyword #:height #:getter get-height)
+              (shape #:init-keyword #:shape #:getter shape)
               (offsets #:init-keyword #:offsets #:getter get-offsets)
               (pitches #:init-keyword #:pitches #:getter get-pitches)
               (data #:init-keyword #:data #:getter get-data)
               #:metaclass <meta<image>>)
 (define-method (initialize (self <image>) initargs)
-  (let-keywords initargs #f (format width height offsets pitches data)
-    (let* [(pitches (or pitches (default-pitches format width)))
-           (offsets (or offsets (default-offsets format pitches height)))]
+  (let-keywords initargs #f (format shape offsets pitches data)
+    (let* [(pitches (or pitches (default-pitches format (car shape))))
+           (offsets (or offsets (default-offsets format pitches (cadr shape))))]
       (next-method self (list #:format format
-                              #:width width
-                              #:height height
+                              #:shape shape
                               #:offsets offsets
                               #:pitches pitches
                               #:data data)))))
@@ -71,52 +69,43 @@
     ((I420) (list width (ash (+ width 1) -1) (ash (+ width 1) -1)))
     ((UYVY) (list (* 2 (logand (+ width 3) (lognot #x3)))))
     ((YUY2) (list (* 2 (logand (+ width 3) (lognot #x3)))))))
-(define-method (descriptor (format <symbol>)
-                           (width <integer>)
-                           (height <integer>)
-                           (offsets <list>)
-                           (pitches <list>))
-  (list (sym->fmt format) width height offsets pitches))
+(define-method (descriptor (format <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
+  (list (sym->fmt format) shape offsets pitches))
 (define-method (descriptor (self <image>))
   (descriptor (get-format self)
-              (get-width self)
-              (get-height self)
+              (shape self)
               (get-offsets self)
               (get-pitches self)))
 (define-method (convert (self <image>)
                         (format <symbol>)
-                        (width <integer>)
-                        (height <integer>)
+                        (shape <list>)
                         (offsets <list>)
                         (pitches <list>))
   (let [(source-type (descriptor self))
-        (dest-type   (descriptor format width height offsets pitches))]
+        (dest-type   (descriptor format shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (let [(data (bytevector->pointer (make-bytevector (image-size format pitches height))))]
+      (let [(data (bytevector->pointer (make-bytevector (image-size format pitches (cadr shape)))))]
         (image-convert (get-data self) source-type data dest-type)
         (make <image> #:format format
-                      #:width width
-                      #:height height
+                      #:shape shape
                       #:data data
                       #:offsets offsets
                       #:pitches pitches)))))
-(define-method (shape (self <image>))
-  (list (get-width self) (get-height self)))
-(define-method (convert (self <image>) (format <symbol>) (width <integer>) (height <integer>))
-  (let* [(pitches (default-pitches format width))
-         (offsets (default-offsets format pitches height))]
-    (convert self format width height offsets pitches)))
+(define-method (convert (self <image>) (format <symbol>) (shape <list>))
+  (let* [(pitches (default-pitches format (car shape)))
+         (offsets (default-offsets format pitches (cadr shape)))]
+    (convert self format shape offsets pitches)))
 (define-method (convert (self <image>) (format <symbol>))
-  (convert self format (get-width self) (get-height self)))
+  (convert self format (shape self)))
 (define-method (write (self <image>) port)
-  (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+  (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 (define-method (display (self <image>) port)
-  (format port "#<<image> ~a ~a ~a>" (get-format self) (get-width self) (get-height self)))
+  (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 (define (image->multiarray self)
   (case (get-format self)
-    ((GRAY) (let* [(shape (list (get-width self) (get-height self)))
-                   (size  (image-size 'GRAY (get-pitches self) (get-height self)))
+    ((GRAY) (let* [(shape (shape self))
+                   (size  (image-size 'GRAY (get-pitches self) (cadr shape)))
                    (mem   (make <mem> #:base (get-data self) #:size size))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape)))
     (else   (image->multiarray (convert self 'GRAY)))))

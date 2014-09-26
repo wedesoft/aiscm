@@ -15,10 +15,10 @@ void image_setup(SCM scm_type, enum PixelFormat *format, int *width, int *height
   int i;
   int offsets[8];
   *format = scm_to_int(scm_car(scm_type));
-  *width = scm_to_int(scm_cadr(scm_type)),
-  *height = scm_to_int(scm_caddr(scm_type));
-  scm_to_array(scm_cadddr(scm_type), offsets);
-  scm_to_array(scm_cadddr(scm_cdr(scm_type)), pitches);
+  *width = scm_to_int(scm_caadr(scm_type)),
+  *height = scm_to_int(scm_cadadr(scm_type));
+  scm_to_array(scm_caddr(scm_type), offsets);
+  scm_to_array(scm_cadddr(scm_type), pitches);
   for (i=0; i<8; i++) data[i] = (uint8_t *)ptr + offsets[i];
 }
 
