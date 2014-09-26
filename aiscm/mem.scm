@@ -21,22 +21,16 @@
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
-    (cond
-      ((< offset 0) (scm-error 'out-of-range
-                               '+
-                               "Offset not be lower than zero but was ~a"
-                               (list offset)
-                               #f))
-      ((> offset size) (scm-error 'out-of-range
-                                  '+
-                                  "Offset must be less or equal ~a but was ~a"
-                                  (list size offset)
-                                  #f))
-      (else
-        (make <mem>
-          #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
-          #:base (slot-ref self 'base)
-          #:size (- size offset))))))
+    (if (< offset 0)
+      (scm-error 'out-of-range
+                 '+
+                 "Offset not be lower than zero but was ~a"
+                 (list offset)
+                 #f)
+      (make <mem>
+            #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
+            #:base (slot-ref self 'base)
+            #:size (- size offset)))))
 (define-method (equal? (a <mem>) (b <mem>))
   (equal? (get-memory a) (get-memory b)))
 (define-method (read-bytes (self <mem>) (size <integer>))

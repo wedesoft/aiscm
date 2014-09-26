@@ -104,8 +104,9 @@
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 (define (image->multiarray self)
   (case (get-format self)
-    ((GRAY) (let* [(shape (shape self))
-                   (size  (image-size 'GRAY (get-pitches self) (cadr shape)))
-                   (mem   (make <mem> #:base (get-data self) #:size size))]
-              (make (multiarray <ubyte> 2) #:value mem #:shape shape)))
+    ((GRAY) (let* [(shape   (shape self))
+                   (pitches (get-pitches self))
+                   (size    (image-size 'GRAY (get-pitches self) (cadr shape)))
+                   (mem     (make <mem> #:base (get-data self) #:size size))]
+              (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
     (else   (image->multiarray (convert self 'GRAY)))))

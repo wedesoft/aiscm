@@ -1,5 +1,6 @@
 # TODO
 
+* display rolled image
 * image <-> multiarray with strides and pitches
 * X11: XVideo-output
 * register allocator, RGB, swscale
