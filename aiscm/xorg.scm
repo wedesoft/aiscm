@@ -7,7 +7,7 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit=
-            show hide title= resize write IO-XIMAGE IO-OPENGL))
+            show hide title= resize write IO-XIMAGE IO-OPENGL IO-XVIDEO))
 (load-extension "libguile-xorg" "init_xorg")
 (define-class <meta<xdisplay>> (<class>))
 (define-class <xdisplay> ()

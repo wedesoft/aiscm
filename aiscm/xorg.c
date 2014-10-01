@@ -3,6 +3,8 @@
 #include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
 #include <libguile.h>
 
 #ifndef timersub
@@ -30,7 +32,7 @@ struct display_t {
 struct window_t {
   struct display_t *display;
   Window window;
-  enum {IO_XIMAGE, IO_OPENGL} io;// TODO: IO_XVIDEO
+  enum {IO_XIMAGE, IO_OPENGL, IO_XVIDEO} io;
   int width;
   int height;
   Colormap color_map;
@@ -40,6 +42,10 @@ struct window_t {
   SCM scm_converted;
   Atom wm_protocols;
   Atom wm_delete_window;
+  XvPortID port;
+  int require_color_key;
+  int color_key;
+  XvImage *xv_image;
 };
 
 SCM window_destroy(SCM scm_self);
@@ -93,7 +99,7 @@ static Bool always_true(Display *display, XEvent *event, XPointer pointer)
   return True;
 }
 
-void window_paint(struct window_t *window);
+void window_paint(struct window_t *window, int x11_event);
 
 void handle_event(struct display_t *self, XEvent *event)
 {
@@ -127,12 +133,12 @@ void handle_event(struct display_t *self, XEvent *event)
         if (window->io == IO_XIMAGE) window->scm_converted = SCM_UNDEFINED;
         window->width = event->xconfigure.width;
         window->height = event->xconfigure.height;
-        window_paint(window);
+        window_paint(window, 1);
         break;
       case Expose:
         while (XCheckTypedWindowEvent(self->display, window->window,
                                       Expose, event));
-        window_paint(window);
+        window_paint(window, 1);
         break;
     };
   };
@@ -206,6 +212,14 @@ SCM window_destroy(SCM scm_self)
 {
   scm_assert_smob_type(window_tag, scm_self);
   struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
+  if (self->xv_image) {
+    XFree(self->xv_image);
+    self->xv_image = NULL;
+  };
+  if (self->port) {
+    XvUngrabPort(self->display->display, self->port, CurrentTime);
+    self->port = 0;
+  };
   if (self->gc) {
     XFreeGC(self->display->display, self->gc);
     self->gc = 0;
@@ -231,6 +245,24 @@ size_t free_window(SCM scm_self)
   window_destroy(scm_self);
   scm_gc_free(self, sizeof(struct window_t), "window");
   return 0;
+}
+
+Atom findAtom(Display *display, XvPortID port, const char *name)
+{
+  XvAttribute *attributes;
+  int numAttributes;
+  Atom retVal = None;
+  attributes = XvQueryPortAttributes(display, port, &numAttributes);
+  if (attributes) {
+    int i;
+    for (i=0; i<numAttributes; i++)
+      if (!strcmp(attributes[i].name, name)) {
+        retVal = XInternAtom(display, name, False);
+        break;
+      }
+    XFree(attributes);
+  };
+  return retVal;
 }
 
 SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
@@ -263,6 +295,62 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       self->visual_info = glXChooseVisual(display->display, DefaultScreen(display->display),
                                           attributes);
       if (!self->visual_info) scm_syserror("make_window");
+      break;}
+    case IO_XVIDEO: {
+      XWindowAttributes attributes;
+      XGetWindowAttributes(display->display, DefaultRootWindow(display->display), &attributes);
+      int depth;
+      switch ( attributes.depth ) {
+      case 15:
+      case 16:
+      case 24:
+      case 32:
+        depth = attributes.depth;
+        break;
+      default:
+        depth = 24;
+      };
+      self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
+      if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
+                            depth, TrueColor, self->visual_info))
+        scm_syserror("make_window");
+      unsigned int ver, rel, req, ev, err;
+      if (XvQueryExtension(display->display, &ver, &rel, &req, &ev, &err) != Success)
+        scm_misc_error("make_xwindow", "Failure requesting X video extension", SCM_EOL);
+      unsigned int numAdaptors;
+      XvAdaptorInfo *adaptorInfo = NULL;
+      if (XvQueryAdaptors(display->display, DefaultRootWindow(display->display),
+                          &numAdaptors, &adaptorInfo) != Success)
+        scm_misc_error("make_xwindow", "Error requesting information about X video adaptors", SCM_EOL);
+      int i;
+      for (i=0; i<(signed)numAdaptors; i++) {
+        int mask = XvInputMask | XvImageMask;
+        if ((adaptorInfo[i].type & mask) == mask) {
+          int p;
+          int idBegin = adaptorInfo[i].base_id;
+          int idEnd = idBegin + adaptorInfo[i].num_ports;
+          for (p=idBegin; p!=idEnd; p++)
+            // TODO: API does not seem to protect against grabbing a port
+            // twice (from within the same process).
+            if (XvGrabPort(display->display, p, CurrentTime) == Success) {
+              self->port = p;
+              break;
+            };
+        };
+        if (self->port != 0)
+          break;
+      };
+      XvFreeAdaptorInfo(adaptorInfo);
+      if (self->port == 0)
+        scm_misc_error("make_xwindow", "Could not find a free port for X video output", SCM_EOL);
+      Atom xvColorKey = findAtom(display->display, self->port, "XV_COLORKEY");
+      if (xvColorKey != None) {
+        self->require_color_key = 1;
+        if (XvGetPortAttribute(display->display, self->port, xvColorKey, &self->color_key) != Success)
+          scm_misc_error("make_xwindow", "Error reading value of color-key", SCM_EOL);
+        Atom xvAutoPaint = findAtom(display->display, self->port, "XV_AUTOPAINT_COLORKEY");
+        if (xvAutoPaint != None) XvSetPortAttribute(display->display, self->port, xvAutoPaint, 0);
+      };
       break;}
   };
   self->color_map = XCreateColormap(display->display, DefaultRootWindow(display->display),
@@ -330,7 +418,7 @@ SCM window_write(SCM scm_self, SCM scm_image)
   struct window_t *self = (struct window_t *)SCM_SMOB_DATA(scm_self);
   self->scm_image = scm_image;
   self->scm_converted = SCM_UNDEFINED;
-  window_paint(self);
+  window_paint(self, 0);
   return scm_image;
 }
 
@@ -360,7 +448,36 @@ void gl_error(const char *context)
   scm_misc_error(context, "~a", scm_list_1(str));
 }
 
-void window_paint(struct window_t *self)
+SCM scm_xv_formats(Display *display, int port)
+{
+  SCM retval = SCM_EOL;
+  int n;
+  XvImageFormatValues *formats = XvListImageFormats(display, port, &n);
+  int i;
+  for (i=0; i<n; i++) {
+    int id = formats[i].id;
+    switch (id) {
+      case 0x20424752:
+        retval = scm_cons(scm_cons(scm_from_locale_symbol("RGB"), scm_from_int(id)), retval);
+        break;
+      case 0x32595559:
+        retval = scm_cons(scm_cons(scm_from_locale_symbol("YUY2"), scm_from_int(id)), retval);
+        break;
+      case 0x59565955:
+        retval = scm_cons(scm_cons(scm_from_locale_symbol("UYVY"), scm_from_int(id)), retval);
+        break;
+      case 0x32315659:
+        retval = scm_cons(scm_cons(scm_from_locale_symbol("YV12"), scm_from_int(id)), retval);
+        break;
+      case 0x30323449:
+        retval = scm_cons(scm_cons(scm_from_locale_symbol("I420"), scm_from_int(id)), retval);
+        break;
+    };
+  };
+  return retval;
+}
+
+void window_paint(struct window_t *self, int x11_event)
 {
   if (!SCM_UNBNDP(self->scm_image)) {
     switch (self->io) {
@@ -380,7 +497,8 @@ void window_paint(struct window_t *self)
         XPutImage(self->display->display, self->window, self->gc,
                   img, 0, 0, 0, 0, self->width, self->height);
         img->data = (char *)NULL;
-        XDestroyImage(img);}
+        XDestroyImage(img);
+        break;}
       case IO_OPENGL: {
         if (SCM_UNBNDP(self->scm_converted))
           self->scm_converted = scm_call_2(scm_convert,
@@ -408,7 +526,51 @@ void window_paint(struct window_t *self)
         glEnable(GL_DITHER);
         glFinish();
         glXDestroyContext(self->display->display, context);
-      };
+        break;};
+      case IO_XVIDEO: {
+        if (x11_event && self->require_color_key) {
+          XSetForeGround(self->display->display, self->gc, self->color_key);
+          XFillRectangle(self->display->display, self->window, self->gc,
+                         0, 0, self->width, self->height);
+        };
+        SCM scm_formats = scm_xv_formats(self->display->display, self->port);
+        SCM scm_format = scm_slot_ref(self->scm_image, scm_from_locale_symbol("format"));
+        SCM scm_target = scm_assoc(scm_format, scm_formats);
+        if (scm_is_false_and_not_nil(scm_target)) scm_target = scm_car(scm_formats);
+        int uid = scm_to_int(scm_cdr(scm_target));
+        SCM scm_shape = scm_slot_ref(self->scm_image, scm_from_locale_symbol("shape"));
+        int
+          width = scm_to_int(scm_car(scm_shape)),
+          height = scm_to_int(scm_cadr(scm_shape));
+        if (self->xv_image)
+          if (self->xv_image->id != uid ||
+              self->xv_image->width != width ||
+              self->xv_image->height != height) {
+            XFree(self->xv_image);
+            self->xv_image = NULL;
+          };
+        if (!self->xv_image)
+          self->xv_image = XvCreateImage(self->display->display, self->port,
+                                         uid, NULL, width, height);
+        if (SCM_UNBNDP(self->scm_converted))
+          // TODO: use specified pitches and offsets for conversion
+          self->scm_converted = scm_call_3(scm_convert,
+                                           self->scm_image,
+                                           scm_car(scm_target),
+                                           scm_shape);
+        printf("%d %d %d %d %d %d\n",
+               self->xv_image->offsets[0],
+               self->xv_image->offsets[1],
+               self->xv_image->offsets[2],
+               self->xv_image->pitches[0],
+               self->xv_image->pitches[1],
+               self->xv_image->pitches[2]);
+        self->xv_image->data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        XvPutImage(self->display->display, self->port, self->window,
+                   self->gc, self->xv_image,
+                   0, 0, width, height,
+                   0, 0, self->width, self->height);
+        break;}
     };
   };
 }
@@ -422,6 +584,7 @@ void init_xorg(void)
   scm_set_smob_free(window_tag, free_window);
   scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
   scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
+  scm_c_define("IO-XVIDEO" ,scm_from_int(IO_XVIDEO));
   scm_c_define_gsubr("make-display", 1, 0, 0, make_display);
   scm_c_define_gsubr("display-shape", 1, 0, 0, display_shape);
   scm_c_define_gsubr("display-process-events", 1, 0, 0, display_process_events);
