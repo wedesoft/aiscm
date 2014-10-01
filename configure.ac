@@ -13,20 +13,17 @@ PKG_PROG_PKG_CONFIG
 AM_CONFIG_HEADER(config.h)
 AC_CHECK_PROG(TOUCH,touch,touch)
 AC_CHECK_PROG(PANDOC,pandoc,pandoc)
-AC_MSG_CHECKING([wether C++ compiler works])
-AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C++ program.])])
+AC_MSG_CHECKING([wether C compiler works])
+AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C program.])])
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 
-PKG_CHECK_MODULES(SWSCALE, libswscale >= 2.1.0,
-                  [AC_MSG_RESULT([yes])],
-                  [AC_MSG_RESULT([no])]
-                  [AC_MSG_ERROR([Could not find libswscale])])
+PKG_CHECK_MODULES(SWSCALE, libswscale >= 2.1.0)
 AC_SUBST(SWSCALE_CFLAGS)
 AC_SUBST(SWSCALE_LIBS)
 
-PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.9])
+PKG_CHECK_MODULES(GUILE, guile-2.0 >= 2.0.9)
 GUILE_PROGS
 GUILE_SITE_DIR
 GUILE_EXT_DIR
@@ -54,6 +51,14 @@ if test "x$have_GLU" != "xyes"; then
 else
   AC_MSG_RESULT([yes])
 fi
+
+AC_MSG_CHECKING([for Xvideo])
+LIBS="$LIBS -lXv"
+AC_TRY_LINK([#include <X11/extensions/Xv.h>],
+   [XvQueryPortAttributes(0, 0, 0)],
+   [AC_MSG_RESULT([yes])],
+   [AC_MSG_RESULT([no])]
+   [AC_MSG_ERROR([Could not locate Xvideo extension])])
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,
