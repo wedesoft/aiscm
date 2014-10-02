@@ -1,5 +1,6 @@
 (define-module (aiscm image)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
@@ -62,8 +63,8 @@
                   (* (car pitches) height)
                   (+ (* (car pitches) height) (* (cadr pitches) (ash (+ height 1) -1)))))
     ((YV12) (list 0
-                  (+ (* (car pitches) height) (* (cadr pitches) (ash (+ height 1) -1)))
-                  (* (car pitches) height)))
+                  (* (car pitches) height)
+                  (+ (* (car pitches) height) (* (cadr pitches) (ash (+ height 1) -1)))))
     ((UYVY) (list 0))
     ((YUY2) (list 0))))
 (define (default-pitches format width)
@@ -76,8 +77,12 @@
     ((YV12) (list width (ash (+ width 1) -1) (ash (+ width 1) -1)))
     ((UYVY) (list (* 2 (logand (+ width 3) (lognot #x3)))))
     ((YUY2) (list (* 2 (logand (+ width 3) (lognot #x3)))))))
+(define (warp lst indices) (map (cut list-ref lst <>) indices))
 (define-method (descriptor (format <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
-  (list (sym->fmt format) shape offsets pitches))
+  (list (sym->fmt format)
+        shape
+        (if (eqv? format 'YV12) (warp offsets '(0 2 1)) offsets)
+        (if (eqv? format 'YV12) (warp pitches '(0 2 1)) pitches)))
 (define-method (descriptor (self <image>))
   (descriptor (get-format self)
               (shape self)
@@ -92,11 +97,12 @@
         (dest-type   (descriptor format shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (let [(data (bytevector->pointer (make-bytevector (image-size format pitches (cadr shape)))))]
-        (image-convert (get-data self) source-type data dest-type)
+      (let [(source-data (get-data self))
+            (dest-data   (bytevector->pointer (make-bytevector (image-size format pitches (cadr shape)))))]
+        (image-convert source-data source-type dest-data dest-type)
         (make <image> #:format format
                       #:shape shape
-                      #:data data
+                      #:data dest-data
                       #:offsets offsets
                       #:pitches pitches)))))
 (define-method (convert (self <image>) (format <symbol>) (shape <list>))
