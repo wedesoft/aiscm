@@ -477,6 +477,11 @@ SCM scm_xv_formats(Display *display, int port)
   return retval;
 }
 
+static SCM scm_int_list(int n, int *p)
+{
+  return n == 0 ? SCM_EOL : scm_cons(scm_from_int(*p), scm_int_list(n - 1, p + 1));
+}
+
 void window_paint(struct window_t *self, int x11_event)
 {
   if (!SCM_UNBNDP(self->scm_image)) {
@@ -552,19 +557,16 @@ void window_paint(struct window_t *self, int x11_event)
         if (!self->xv_image)
           self->xv_image = XvCreateImage(self->display->display, self->port,
                                          uid, NULL, width, height);
-        if (SCM_UNBNDP(self->scm_converted))
-          // TODO: use specified pitches and offsets for conversion
-          self->scm_converted = scm_call_3(scm_convert,
+        if (SCM_UNBNDP(self->scm_converted)) {
+          SCM scm_offsets = scm_int_list(self->xv_image->num_planes, self->xv_image->offsets);
+          SCM scm_pitches = scm_int_list(self->xv_image->num_planes, self->xv_image->pitches);
+          self->scm_converted = scm_call_5(scm_convert,
                                            self->scm_image,
                                            scm_car(scm_target),
-                                           scm_shape);
-        printf("%d %d %d %d %d %d\n",
-               self->xv_image->offsets[0],
-               self->xv_image->offsets[1],
-               self->xv_image->offsets[2],
-               self->xv_image->pitches[0],
-               self->xv_image->pitches[1],
-               self->xv_image->pitches[2]);
+                                           scm_shape,
+                                           scm_offsets,
+                                           scm_pitches);
+        };
         self->xv_image->data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
         XvPutImage(self->display->display, self->port, self->window,
                    self->gc, self->xv_image,
