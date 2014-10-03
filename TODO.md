@@ -1,6 +1,6 @@
 # TODO
 
-* correct pitches and offsets for Xvideo frames
+* register used Xvideo ports
 * memory alignment for frames
 * getting ranges from array
 * register allocator, RGB, swscale

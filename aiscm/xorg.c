@@ -26,6 +26,7 @@ static scm_t_bits window_tag;
 struct display_t {
   Display *display;
   SCM scm_windows;
+  SCM scm_ports;
   char quit;
 };
 
@@ -81,6 +82,7 @@ SCM make_display(SCM scm_name)
   self = (struct display_t *)scm_gc_calloc(sizeof(struct display_t), "display");
   SCM_NEWSMOB(retval, display_tag, self);
   self->scm_windows = SCM_EOL;
+  self->scm_ports = SCM_EOL;
   self->display = display;
   return retval;
 }
@@ -218,6 +220,7 @@ SCM window_destroy(SCM scm_self)
   };
   if (self->port) {
     XvUngrabPort(self->display->display, self->port, CurrentTime);
+    self->display->scm_ports = scm_delete(scm_from_int(self->port), self->display->scm_ports);
     self->port = 0;
   };
   if (self->gc) {
@@ -330,15 +333,14 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
           int idBegin = adaptorInfo[i].base_id;
           int idEnd = idBegin + adaptorInfo[i].num_ports;
           for (p=idBegin; p!=idEnd; p++)
-            // TODO: API does not seem to protect against grabbing a port
-            // twice (from within the same process).
-            if (XvGrabPort(display->display, p, CurrentTime) == Success) {
+            if (scm_is_false_and_not_nil(scm_memv(scm_from_int(p), display->scm_ports)) &&
+                XvGrabPort(display->display, p, CurrentTime) == Success) {
+              display->scm_ports = scm_cons(scm_from_int(p), display->scm_ports);
               self->port = p;
               break;
             };
         };
-        if (self->port != 0)
-          break;
+        if (self->port != 0) break;
       };
       XvFreeAdaptorInfo(adaptorInfo);
       if (self->port == 0)
