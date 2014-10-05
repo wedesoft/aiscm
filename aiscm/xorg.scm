@@ -36,7 +36,7 @@
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
 (define-method (show (self <image>))
   (let* [(display (make <xdisplay>))
-         (window  (make <xwindow> #:display display #:shape (shape self)))]
+         (window  (make <xwindow> #:display display #:shape (shape self) #:io IO-XIMAGE))]
     (title= window "AIscm")
     (write window self)
     (show window)
@@ -46,7 +46,7 @@
 (define-method (show (self <procedure>))
   (let* [(img     (self))
          (display (make <xdisplay>))
-         (window  (make <xwindow> #:display display #:shape (shape img) #:io IO-OPENGL))]
+         (window  (make <xwindow> #:display display #:shape (shape img) #:io IO-XVIDEO))]
     (title= window "AIscm")
     (write window img)
     (show window)

@@ -1,9 +1,10 @@
 (define-module (aiscm mem)
   #:use-module (oop goops)
-  #:use-module (system foreign)
-  #:use-module (rnrs bytevectors)
   #:use-module (ice-9 optargs)
+  #:use-module (rnrs bytevectors)
+  #:use-module (system foreign)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:export (<mem>
             get-memory
             read-bytes
@@ -16,7 +17,7 @@
   (let-keywords initargs #f (memory base size)
     (if base
       (next-method self (list #:memory (or memory base) #:base base #:size size))
-      (let [(ptr (bytevector->pointer (make-bytevector size)))]
+      (let [(ptr (malloc size))]
         (next-method self (list #:memory ptr #:base ptr #:size size))))))
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))

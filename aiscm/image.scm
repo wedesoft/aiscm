@@ -2,8 +2,6 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
-  #:use-module (rnrs bytevectors)
-  #:use-module (system foreign)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
@@ -98,7 +96,7 @@
     (if (equal? source-type dest-type)
       self
       (let [(source-data (get-data self))
-            (dest-data   (bytevector->pointer (make-bytevector (image-size format pitches (cadr shape)))))]
+            (dest-data   (malloc (image-size format pitches (cadr shape))))]
         (image-convert source-data source-type dest-data dest-type)
         (make <image> #:format format
                       #:shape shape

@@ -1,8 +1,8 @@
 # TODO
 
-* register used Xvideo ports
 * memory alignment for frames
 * getting ranges from array
+* conversion from/to array
 * register allocator, RGB, swscale
   nur argumente evaluieren (e.g. (MOV rl (get-value r_)) -> (MOV (reg:LI 2) (arg 5)))
 * (lambda (fun ...) (env fun [(r (reg ... fun)) ...] ...)) ->
