@@ -183,45 +183,47 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
         scm_misc_error("make_videodev2", "Error starting user pointer capture process for device '~a'",
                          scm_list_1(scm_name));
       };
+      self->capture = 1;
       self->io = IO_USERPTR;
-    };
-    if (self->req.count < 2) {
-      videodev2_destroy(retval);
-      scm_misc_error("make_videodev2", "Insufficient buffer memory on device '~a'",
-                     scm_list_1(scm_name));
-    };
-    for (i=0; i<2; i++) {
-      self->buf[i].type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-      self->buf[i].memory = V4L2_MEMORY_MMAP;
-      self->buf[i].index = i;
-      if (xioctl(self->fd, VIDIOC_QUERYBUF, &self->buf[i])) {
+    } else {
+      if (self->req.count < 2) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Error querying buffer ~a for device '~a'",
-                       scm_list_2(scm_from_int(i), scm_name));
+        scm_misc_error("make_videodev2", "Insufficient buffer memory on device '~a'",
+                       scm_list_1(scm_name));
       };
-      self->map[i] = mmap(NULL, self->buf[i].length, PROT_READ | PROT_WRITE,
-                          MAP_SHARED, self->fd, self->buf[i].m.offset);
-      if (self->map[i] == MAP_FAILED) {
+      for (i=0; i<2; i++) {
+        self->buf[i].type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        self->buf[i].memory = V4L2_MEMORY_MMAP;
+        self->buf[i].index = i;
+        if (xioctl(self->fd, VIDIOC_QUERYBUF, &self->buf[i])) {
+          videodev2_destroy(retval);
+          scm_misc_error("make_videodev2", "Error querying buffer ~a for device '~a'",
+                         scm_list_2(scm_from_int(i), scm_name));
+        };
+        self->map[i] = mmap(NULL, self->buf[i].length, PROT_READ | PROT_WRITE,
+                            MAP_SHARED, self->fd, self->buf[i].m.offset);
+        if (self->map[i] == MAP_FAILED) {
+          videodev2_destroy(retval);
+          scm_misc_error("make_videodev2", "Error mapping capture buffer ~a for device '~a'",
+                         scm_list_2(scm_from_int(i), scm_name));
+        };
+      }
+      for (i=0; i<2; i++) {
+        if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
+          videodev2_destroy(retval);
+          scm_misc_error("make_videodev2", "Error enqueuing buffer ~a for device '~a'",
+                         scm_list_2(scm_from_int(i), scm_name));
+        };
+      };
+      enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Error mapping capture buffer ~a for device '~a'",
-                       scm_list_2(scm_from_int(i), scm_name));
+        scm_misc_error("make_videodev2", "Error starting memory-mapped capture process for device '~a'",
+                       scm_list_1(scm_name));
       };
-    }
-    for (i=0; i<2; i++) {
-      if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
-        videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Error enqueuing buffer ~a for device '~a'",
-                       scm_list_2(scm_from_int(i), scm_name));
-      };
+      self->capture = 1;
+      self->io = IO_MMAP;
     };
-    enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
-      videodev2_destroy(retval);
-      scm_misc_error("make_videodev2", "Error starting memory-mapped capture process for device '~a'",
-                     scm_list_1(scm_name));
-    };
-    self->io = IO_MMAP;
-    self->capture = 1;
   } else if (cap.capabilities & V4L2_CAP_STREAMING) {
     self->io = IO_READ;
   } else {
@@ -232,7 +234,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   return retval;
 }
 
-SCM videodev2_read(SCM scm_self)
+SCM videodev2_grab(SCM scm_self)
 {
   scm_assert_smob_type(videodev2_tag, scm_self);
   SCM retval;
@@ -261,9 +263,10 @@ SCM videodev2_read(SCM scm_self)
     if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("videodev2_read");
     self->frame_used = 1;
     void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
-    retval = scm_list_3(scm_from_int(self->format.fmt.pix.pixelformat),
+    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                         scm_list_2(scm_from_int(width), scm_from_int(height)),
-                        scm_from_pointer(p, NULL));
+                        scm_from_pointer(p, NULL),
+                        scm_from_int(self->format.fmt.pix.sizeimage));
   };
   return retval;
 }
@@ -280,5 +283,5 @@ void init_v4l2(void)
   scm_c_define("V4L2_PIX_FMT_YUYV"  ,scm_from_int(V4L2_PIX_FMT_YUYV));
   scm_c_define_gsubr("make-videodev2", 3, 0, 0, make_videodev2);
   scm_c_define_gsubr("videodev2-destroy", 1, 0, 0, videodev2_destroy);
-  scm_c_define_gsubr("videodev2-read", 1, 0, 0, videodev2_read);
+  scm_c_define_gsubr("videodev2-grab", 1, 0, 0, videodev2_grab);
 }

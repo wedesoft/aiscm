@@ -484,6 +484,12 @@ static SCM scm_int_list(int n, int *p)
   return n == 0 ? SCM_EOL : scm_cons(scm_from_int(*p), scm_int_list(n - 1, p + 1));
 }
 
+static char *image_data(SCM scm_image)
+{
+  return scm_to_pointer(scm_slot_ref(scm_slot_ref(scm_image, scm_from_locale_symbol("mem")),
+                                     scm_from_locale_symbol("memory")));
+}
+
 void window_paint(struct window_t *self, int x11_event)
 {
   if (!SCM_UNBNDP(self->scm_image)) {
@@ -495,7 +501,7 @@ void window_paint(struct window_t *self, int x11_event)
                                            scm_from_locale_symbol("BGRA"),
                                            scm_list_2(scm_from_int(self->width),
                                                       scm_from_int(self->height)));
-        char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        char *data = image_data(self->scm_converted);
         XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
                                    24, ZPixmap, 0, data, self->width, self->height,
                                    32, self->width * 4);
@@ -526,7 +532,7 @@ void window_paint(struct window_t *self, int x11_event)
         int
           width = scm_to_int(scm_car(shape)),
           height = scm_to_int(scm_cadr(shape));
-        char *data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        char *data = image_data(self->scm_converted);
         glPixelZoom((float)self->width / width, -(float)self->height / height);
         // TODO: fast rendering of grayscale images
         glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -569,7 +575,7 @@ void window_paint(struct window_t *self, int x11_event)
                                            scm_offsets,
                                            scm_pitches);
         };
-        self->xv_image->data = scm_to_pointer(scm_slot_ref(self->scm_converted, scm_from_locale_symbol("data")));
+        self->xv_image->data = image_data(self->scm_converted);
         XvPutImage(self->display->display, self->port, self->window,
                    self->gc, self->xv_image,
                    0, 0, width, height,

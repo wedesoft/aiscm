@@ -42,8 +42,8 @@
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
 (define-method (destroy (self <v4l2>)) (videodev2-destroy (get-videodev2 self)))
 (define-method (grab (self <v4l2>))
-  (let [(picture (videodev2-read (get-videodev2 self)))]
+  (let [(picture (videodev2-grab (get-videodev2 self)))]
     (make <image>
           #:format (fmt->sym (car picture))
           #:shape  (cadr picture)
-          #:data   (caddr picture))))
+          #:mem    (make <mem> #:base (caddr picture) #:size (cadddr picture)))))

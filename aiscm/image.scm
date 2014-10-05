@@ -2,13 +2,14 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
+  #:use-module (system foreign)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:export (<image> <meta<image>>
-            get-format get-data convert
+            get-format get-mem convert
             PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA
             image->multiarray))
 (load-extension "libguile-image" "init_image")
@@ -18,17 +19,17 @@
               (shape #:init-keyword #:shape #:getter shape)
               (offsets #:init-keyword #:offsets #:getter get-offsets)
               (pitches #:init-keyword #:pitches #:getter get-pitches)
-              (data #:init-keyword #:data #:getter get-data)
+              (mem #:init-keyword #:mem #:getter get-mem)
               #:metaclass <meta<image>>)
 (define-method (initialize (self <image>) initargs)
-  (let-keywords initargs #f (format shape offsets pitches data)
+  (let-keywords initargs #f (format shape offsets pitches mem)
     (let* [(pitches (or pitches (default-pitches format (car shape))))
            (offsets (or offsets (default-offsets format pitches (cadr shape))))]
       (next-method self (list #:format format
                               #:shape shape
                               #:offsets offsets
                               #:pitches pitches
-                              #:data data)))))
+                              #:mem mem)))))
 (define formats
   (list (cons 'RGB  PIX_FMT_RGB24)
         (cons 'BGR  PIX_FMT_BGR24)
@@ -86,6 +87,13 @@
               (shape self)
               (get-offsets self)
               (get-pitches self)))
+(define (memalign size alignment)
+  (let* [(offset        (1- alignment))
+         (extended-size (+ size offset))
+         (mem           (make <mem> #:size extended-size))
+         (base          (get-memory mem))
+         (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
+    (make <mem> #:memory memory #:base base #:size size)))
 (define-method (convert (self <image>)
                         (format <symbol>)
                         (shape <list>)
@@ -95,12 +103,12 @@
         (dest-type   (descriptor format shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (let [(source-data (get-data self))
-            (dest-data   (malloc (image-size format pitches (cadr shape))))]
-        (image-convert source-data source-type dest-data dest-type)
-        (make <image> #:format format
-                      #:shape shape
-                      #:data dest-data
+      (let [(source-mem (get-mem self))
+            (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
+        (image-convert (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
+        (make <image> #:format  format
+                      #:shape   shape
+                      #:mem     dest-mem
                       #:offsets offsets
                       #:pitches pitches)))))
 (define-method (convert (self <image>) (format <symbol>) (shape <list>))
@@ -118,6 +126,6 @@
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (get-pitches self))
                    (size    (image-size 'GRAY (get-pitches self) (cadr shape)))
-                   (mem     (make <mem> #:base (get-data self) #:size size))]
+                   (mem     (get-mem self))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
-    (else   (image->multiarray (convert self 'GRAY)))))
+    (else   (image->multiarray (convert self 'GRAY))))); TODO: conversion of color images

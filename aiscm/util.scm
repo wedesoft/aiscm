@@ -47,6 +47,5 @@
     (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))
 (define (assoc-invert alist)
   (map (lambda (x) (cons (cdr x) (car x))) alist))
-(define (malloc size)
-  (bytevector->pointer (make-bytevector size)))
+(define (malloc size) (bytevector->pointer (make-bytevector size)))
 (define-generic destroy)
