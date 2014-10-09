@@ -1,5 +1,6 @@
 # TODO
 
+* compacting of arrays, type conversions, compact arrays when converting to image
 * prefer YV12 for grayscale images
 * getting ranges from array
 * conversion from/to array
