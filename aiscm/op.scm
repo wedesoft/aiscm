@@ -8,7 +8,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill)
+  #:export (fill duplicate)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -216,6 +216,7 @@
       (name (make (match a) #:value a) b))))
 
 (define-method (+ (a <element>)) a)
+(define-unary-op duplicate (const '()))
 (define-unary-op - NEG)
 
 (define-binary-op + ADD)

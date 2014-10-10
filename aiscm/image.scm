@@ -8,6 +8,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
+  #:use-module (aiscm op)
   #:export (<image> <meta<image>>
             get-format get-mem convert
             PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA
@@ -130,8 +131,10 @@
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
     (else   (image->multiarray (convert self 'GRAY))))); TODO: conversion of color images
 (define (multiarray->image self); TODO: convert arrays other than UBYTE, compact image if strides not 1
-  (make <image> #:format 'GRAY
-                #:shape (shape self)
-                #:mem (get-value self)
-                #:offsets '(0)
-                #:pitches (list (cadr (strides self)))))
+  (if (eqv? (car (strides self)) 1)
+    (make <image> #:format 'GRAY
+                  #:shape (shape self)
+                  #:mem (get-value self)
+                  #:offsets '(0)
+                  #:pitches (list (cadr (strides self))))
+    (multiarray->image (duplicate self))))
