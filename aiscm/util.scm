@@ -4,7 +4,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! attach index all-but-last upto repeat depth
+  #:export (toplevel-define! attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap assoc-invert
             malloc destroy)
   #:export-syntax (def-once expand))
@@ -20,9 +20,8 @@
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
 (define (all-but-last lst) (reverse (cdr (reverse lst))))
-(define (upto a b) (if (<= a b) (cons a (upto (1+ a) b)) '()))
 (define (repeat x n) (if (zero? n) '() (cons x (repeat x (1- n)))))
-(define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (upto 1 n)))
+(define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
 (define (depth val)
   (if (list? val) (1+ (apply max (cons 0 (map depth val)))) 0))
 (define (flatten-n val n)

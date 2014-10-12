@@ -90,7 +90,7 @@
   (bits #:init-keyword #:bits #:getter get-bits)
   (code #:init-keyword #:code #:getter get-code))
 
-(define hex (upto #x0 #xf))
+(define hex (iota #x10))
 (define register-sizes '(1 2 4 8))
 (define (each-hex proc arg) (for-each proc arg hex))
 (define (reg-list bits) (map (cut make <register> #:bits bits #:code <>) hex))
