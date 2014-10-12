@@ -36,3 +36,40 @@ It is also possible to specify a closure for selecting the video mode.
 (grab v)
 (destroy v)
 ```
+
+## Xorg display
+
+You can capture an image from a camera and display it using *show* as follows:
+
+```Scheme
+(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm util))
+(define v (make <v4l2>))
+(show (grab v))
+(destroy v)
+```
+
+It is also possible to display a video using the *show* command:
+
+```Scheme
+(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm util))
+(define v (make <v4l2>))
+(show (lambda () (grab v)))
+(destroy v)
+```
+
+If necessary, one can also handle the display and window objects directly.
+Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
+
+```Scheme
+(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm util))
+(define v (make <v4l2>))
+(define d (make <xdisplay> #:name ":0.0"))
+(define w (make <xwindow> #:display d #:shape '(640 480) #:io IO-XVIDEO))
+(title= w "Test")
+(show w)
+(do () ((quit? d)) (write w (grab v)) (process-events d))
+(quit= d #f)
+(hide w)
+(destroy d)
+(destroy v)
+```
