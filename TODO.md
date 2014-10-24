@@ -1,6 +1,5 @@
 # TODO
 
-* reduce number of files to include
 * element-wise type conversions
 * getting ranges from array
 * register allocator, RGB, swscale
@@ -9,3 +8,4 @@
   (env (r_ a_) [(r (reg ...) ...] ...))
 * documentation: (do () ((quit? d)) (write w (grab v)) (process-events d))
 * scm_display(scm_target, scm_current_output_port()); printf("\n");
+* reduce number of files to include
