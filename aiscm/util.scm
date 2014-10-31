@@ -5,8 +5,8 @@
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:export (toplevel-define! attach index all-but-last repeat depth
-            flatten-n flatten cycle uncycle integral zipmap assoc-invert
-            malloc destroy)
+            flatten-n flatten cycle uncycle integral zipmap alist-invert
+            assq-set malloc destroy)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -44,7 +44,14 @@
   (if (or (null? keys) (null? vals))
     '()
     (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))
-(define (assoc-invert alist)
+(define (alist-invert alist)
   (map (lambda (x) (cons (cdr x) (car x))) alist))
+(define (alist-set = alist key val)
+  (if (null? alist)
+    (list (cons key val))
+    (if (= (caar alist) key)
+      (cons (cons key val) (cdr alist))
+      (cons (car alist) (assq-set (cdr alist) key val)))))
+(define (assq-set alist key val) (alist-set eq? alist key val))
 (define (malloc size) (bytevector->pointer (make-bytevector size)))
 (define-generic destroy)

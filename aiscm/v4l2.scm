@@ -21,7 +21,7 @@
         (cons 'UYVY V4L2_PIX_FMT_UYVY)
         (cons 'YUY2 V4L2_PIX_FMT_YUYV)
         (cons 'GRAY V4L2_PIX_FMT_GREY)))
-(define symbols (assoc-invert formats))
+(define symbols (alist-invert formats))
 (define (sym->fmt sym) (assq-ref formats sym))
 (define (fmt->sym fmt) (assq-ref symbols fmt))
 (define format-order (map car formats))

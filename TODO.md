@@ -1,5 +1,6 @@
 # TODO
 
+* documentation with assembler (objdump)
 * element-wise type conversions
 * getting ranges from array
 * register allocator, RGB, swscale

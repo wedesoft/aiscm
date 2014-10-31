@@ -40,7 +40,7 @@
         (cons 'YV12 PIX_FMT_YUV420P)
         (cons 'UYVY PIX_FMT_UYVY422)
         (cons 'YUY2 PIX_FMT_YUYV422)))
-(define symbols (assoc-invert formats))
+(define symbols (alist-invert formats))
 (define (sym->fmt sym) (assq-ref formats sym))
 (define (fmt->sym fmt) (assq-ref symbols fmt))
 (define (image-size format pitches height)
