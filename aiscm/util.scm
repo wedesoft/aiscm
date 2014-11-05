@@ -4,9 +4,9 @@
   #:use-module (srfi srfi-26)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! attach index all-but-last repeat depth
+  #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
-            assq-set malloc destroy)
+            assq-set assv-set assoc-set product sort-by)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -15,6 +15,8 @@
     (if (not (defined? sym (current-module)))
       (toplevel-define! sym value))
     (primitive-eval sym)))
+(define (malloc size) (bytevector->pointer (make-bytevector size)))
+(define-generic destroy)
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index a b)
   (let [(tail (member a (reverse b)))]
@@ -53,5 +55,7 @@
       (cons (cons key val) (cdr alist))
       (cons (car alist) (assq-set (cdr alist) key val)))))
 (define (assq-set alist key val) (alist-set eq? alist key val))
-(define (malloc size) (bytevector->pointer (make-bytevector size)))
-(define-generic destroy)
+(define (assv-set alist key val) (alist-set eqv? alist key val))
+(define (assoc-set alist key val) (alist-set equal? alist key val))
+(define (product lst1 lst2) (apply append (map (lambda (x) (map (cut cons x <>) lst2)) lst1))) 
+(define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
