@@ -1,9 +1,10 @@
 # TODO
 
+* register allocator, RGB, swscale
 * documentation with assembler (objdump)
+* remove 'product'?
 * element-wise type conversions
 * getting ranges from array
-* register allocator, RGB, swscale
   nur argumente evaluieren (e.g. (MOV rl (get-value r_)) -> (MOV (reg:LI 2) (arg 5)))
 * (lambda (fun ...) (env fun [(r (reg ... fun)) ...] ...)) ->
   (env (r_ a_) [(r (reg ...) ...] ...))

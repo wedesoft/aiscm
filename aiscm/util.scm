@@ -6,7 +6,7 @@
   #:use-module (system foreign)
   #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
-            assq-set assv-set assoc-set product sort-by)
+            assq-set assv-set assoc-set product sort-by argmin argmax)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -57,5 +57,11 @@
 (define (assq-set alist key val) (alist-set eq? alist key val))
 (define (assv-set alist key val) (alist-set eqv? alist key val))
 (define (assoc-set alist key val) (alist-set equal? alist key val))
-(define (product lst1 lst2) (apply append (map (lambda (x) (map (cut cons x <>) lst2)) lst1))) 
+(define (product lst1 lst2) (apply append (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
 (define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
+(define (argop op fun lst)
+  (let* [(vals  (map fun lst))
+         (opval (apply op vals))]
+    (list-ref lst (- (length lst) (length (member opval vals))))))
+(define (argmin fun lst) (argop min fun lst))
+(define (argmax fun lst) (argop max fun lst))
