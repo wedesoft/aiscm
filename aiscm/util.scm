@@ -6,7 +6,8 @@
   #:use-module (system foreign)
   #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
-            assq-set assv-set assoc-set product sort-by argmin argmax)
+            assq-set assv-set assoc-set product sort-by argmin argmax
+            nodes adjacent remove-node coloring)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -65,3 +66,19 @@
     (list-ref lst (- (length lst) (length (member opval vals))))))
 (define (argmin fun lst) (argop min fun lst))
 (define (argmax fun lst) (argop max fun lst))
+(define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
+(define (has-node? edge node) (or (eq? (car edge) node) (eq? (cdr edge) node)))
+(define (adjacent graph node) (nodes (filter (cut has-node? <> node) graph)))
+(define (remove-node graph node) (filter (lambda (edge) (not (has-node? edge node))) graph))
+(define (order graph nodes)
+  (if (null? nodes) '()
+    (let [(target (argmin (lambda (node) (length (adjacent graph node))) nodes))]
+      (cons target (order (remove-node graph target) (delete target nodes))))))
+(define (assign-colors graph nodes colors)
+  (if (null? nodes) '()
+    (let* [(target    (car nodes))
+           (coloring  (assign-colors (remove-node graph target) (delete target nodes) colors))
+           (blocked   (map (cut assq-ref coloring <>) (adjacent graph target)))
+           (available (lset-difference eq? colors blocked))]
+      (cons (cons target (car available)) coloring))))
+(define (coloring graph colors) (assign-colors graph (nodes graph) colors))
