@@ -63,7 +63,7 @@
     "Get element with minimum of argument")
 (ok (lset= eq? '(a b c d) (nodes '((b . a) (a . c) (d . c))))
     "'nodes' should return the nodes of a graph")
-(ok (lset= eq? '(a b c) (adjacent '((b . a) (a . c) (d . c)) 'a))
+(ok (lset= eq? '(a b c) ((adjacent '((b . a) (a . c) (d . c))) 'a))
     "'adjacent' should return a list of adjacent nodes")
 (ok (equal? '((d . c)) (remove-node '((b . a) (a . c) (d . c)) 'a))
     "'remove-node' should return a subgraph with node and connecting edges removed")
