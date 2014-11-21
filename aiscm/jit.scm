@@ -13,6 +13,7 @@
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function>
+            <jcc> get-target; TODO: hide this?
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE

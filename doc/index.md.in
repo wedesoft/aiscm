@@ -1,4 +1,5 @@
 # AIScm Reference Manual
+![](aiscm.gif "AIScm")
 
 This manual is for **AIscm** (version @VERSION@)
 which is a real-time computer vision extension for the Guile programming language
@@ -6,6 +7,7 @@ which is a real-time computer vision extension for the Guile programming languag
 * [Getting started](installation.html "Getting started")
 * [Native types](native.html "Native types")
 * [Built-in assembler](assembler.html "Built-in assembler")
+* [Just-in-time compilation](jit.html "Just-in-time compilation")
 
 ![Under construction](construction.gif "Under construction")
 
