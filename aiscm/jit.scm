@@ -12,9 +12,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
-  #:export (<jit-context> <jit-function>
-            <jcc> get-target; TODO: hide this?
-            asm obj resolve-jumps get-code get-bits ptr get-disp get-index
+  #:export (<jit-context> <jit-function> <jcc> <cmd> <var>
+            asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -26,7 +25,8 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            reg loc arg pass-parameters)
+            reg loc arg pass-parameters
+            subst)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -40,9 +40,9 @@
   (target #:init-keyword #:target #:getter get-target)
   (code8 #:init-keyword #:code8 #:getter get-code8)
   (code32 #:init-keyword #:code32 #:getter get-code32))
+(define-method (instruction-length self) 0)
 (define-method (instruction-length (self <list>)) (length self))
-(define-method (instruction-length (self <symbol>)) 0)
-(define-method (Jcc (target <symbol>) code8 code32)
+(define-method (Jcc target code8 code32)
   (make <jcc> #:target target #:code8 code8 #:code32 code32))
 (define-method (Jcc (target <integer>) code8 code32)
   (append (if (disp8? target) (list code8) code32) (raw target (if (disp8? target) 8 32))))
@@ -203,6 +203,20 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
+(define-class <cmd> ()
+  (op #:init-keyword #:op #:getter get-op)
+  (args #:init-keyword #:args #:getter get-args))
+(define-class <var> ()
+  (type #:init-keyword #:type #:getter get-type))
+(define-method (subst self alist) self)
+(define-method (subst (self <var>) alist)
+  (let [(code (assq-ref alist self))]
+    (if code (reg (get-type self) code) self)))
+(define-method (subst (self <cmd>) alist); TODO: work with typed variables and register codes
+  (apply (get-op self) (map (cut subst <> alist) (get-args self))))
+(define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
+
+(define-method (MOV arg1 arg2) (make <cmd> #:op MOV #:args (list arg1 arg2)))
 (define-method (MOV (m <pointer>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <register>) imm)

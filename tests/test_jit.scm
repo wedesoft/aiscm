@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 286)
+(planned-tests 287)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -798,3 +798,6 @@
                                     (env fun [] (MOV (get-value r_) (get-value a_))))))]
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
     "Use 'jit-wrap' to define method")
+(ok (equal? (list (MOV EAX 0))
+            (let [(v (make <var> #:type <int>))] (subst (list (MOV v 0)) (list (cons v 0)))))
+    "Variable substitution")
