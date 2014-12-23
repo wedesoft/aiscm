@@ -14,6 +14,7 @@ before_install:
 - sudo make install
 - cd ..
 install:
+- export LD_LIBRARY_PATH=/usr/local/lib
 - make -f Makefile.dist
 - ./configure
 - make
