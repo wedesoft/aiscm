@@ -4,7 +4,7 @@ compiler:
 before_install:
 - sudo add-apt-repository ppa:dns/gnu --yes
 - sudo apt-get update
-- sudo apt-get install autoconf automake libtool pandoc
+- sudo apt-get install autoconf automake libtool pandoc libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
 - sudo apt-get install pkg-config libgmp-dev libunistring-dev libffi-dev libgc-dev
 - wget ftp://ftp.cs.tu-berlin.de/pub/gnu/guile/guile-2.0.11.tar.gz
 - tar xzf guile-2.0.11.tar.gz
