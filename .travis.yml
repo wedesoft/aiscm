@@ -4,9 +4,17 @@ compiler:
 before_install:
 - sudo add-apt-repository ppa:dns/gnu --yes
 - sudo apt-get update
-- sudo apt-get install autoconf automake libtool guile-2.0-dev texinfo pandoc
-- make -f Makefile.dist
+- sudo apt-get install autoconf automake libtool pandoc
+- sudo apt-get install pkg-config libgmp-dev libunistring-dev libffi-dev libgc-dev
+- wget ftp://ftp.cs.tu-berlin.de/pub/gnu/guile/guile-2.0.11.tar.gz
+- tar xzf guile-2.0.11.tar.gz
+- cd guile-2.0.11
+- ./configure
+- make
+- sudo make install
+- cd ..
 install:
+- make -f Makefile.dist
 - ./configure
 - make
 script:
