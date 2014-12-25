@@ -11,8 +11,8 @@ AC_PROG_LN_S
 AC_PROG_AWK
 PKG_PROG_PKG_CONFIG
 AM_CONFIG_HEADER(config.h)
-AC_CHECK_PROG(TOUCH,touch,touch)
-AC_CHECK_PROG(PANDOC,pandoc,pandoc)
+AC_CHECK_PROG(TOUCH,touch,touch,touch)
+AC_CHECK_PROG(PANDOC,pandoc,pandoc,pandoc)
 AC_MSG_CHECKING([wether C compiler works])
 AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C program.])])
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
