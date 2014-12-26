@@ -1,5 +1,6 @@
 (use-modules (oop goops)
              (rnrs bytevectors)
+             (srfi srfi-1)
              (srfi srfi-26)
              (aiscm util)
              (aiscm jit)
@@ -8,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 287)
+(planned-tests 289)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -685,6 +686,7 @@
                          (MOV RBX (ptr <long> RSP))
                          (ADD RSP 8)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
+; ------------------------------------------------------------------------------
 (ok (equal? (list (MOV CX 42))
             (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
               (env fun
@@ -798,6 +800,16 @@
                                     (env fun [] (MOV (get-value r_) (get-value a_))))))]
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
     "Use 'jit-wrap' to define method")
+; ------------------------------------------------------------------------------
 (ok (equal? (list (MOV EAX 0))
-            (let [(v (make <var> #:type <int>))] (subst (list (MOV v 0)) (list (cons v 0)))))
+            (let [(v (make <var> #:type <int>))]
+              (subst (list (MOV v 0)) (list (cons v 0)))))
     "Variable substitution")
+(ok (let [(a (make <var> #:type <int>))
+          (b (make <var> #:type <int>))]
+      (lset= eq?  (list a b) (vars (list (MOV a 0) (MOV b a))))
+    "Get variables of a program"))
+(todo (equal? (list (MOV AX 42))
+            (rtl [(x (make <var> #:type <sint>))]
+                 (MOV x 42)))
+    "Allocate register for a variable")

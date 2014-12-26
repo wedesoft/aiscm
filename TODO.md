@@ -1,6 +1,9 @@
 # TODO
 
-* register allocator, RGB, swscale
+* naive register allocation (rtl)
+* live times, register allocation
+* method parameters, environments (variables, jumps)
+* RGB, swscale
 * nicer website
 * element-wise type conversions
 * getting ranges from array
@@ -10,3 +13,4 @@
 * test code examples
 * scm_display(scm_target, scm_current_output_port()); printf("\n");
 * reduce number of files to include
+* ./configure CC=colorgcc

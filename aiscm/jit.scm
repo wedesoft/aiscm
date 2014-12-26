@@ -26,8 +26,8 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst)
-  #:export-syntax (env jit-wrap))
+            subst vars get-args)
+  #:export-syntax (env jit-wrap rtl))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -203,6 +203,7 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
+(define-method (get-args self) '())
 (define-class <cmd> ()
   (op #:init-keyword #:op #:getter get-op)
   (args #:init-keyword #:args #:getter get-args))
@@ -212,7 +213,7 @@
 (define-method (subst (self <var>) alist)
   (let [(code (assq-ref alist self))]
     (if code (reg (get-type self) code) self)))
-(define-method (subst (self <cmd>) alist); TODO: work with typed variables and register codes
+(define-method (subst (self <cmd>) alist)
   (apply (get-op self) (map (cut subst <> alist) (get-args self))))
 (define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
 
@@ -310,6 +311,7 @@
 (define (SETLE  r/m) (SETcc #x9e r/m))
 (define (SETNLE r/m) (SETcc #x9f r/m))
 
+; ------------------------------------------------------------------------------
 ;(define default-codes
 ;  (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define default-codes
@@ -433,6 +435,9 @@
                    (apply code (flatten (map content (cons retval args))))
                    retval)))]
     (make <method> #:specializers arg-classes #:procedure proc)))
-
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
   (pass-return-value ctx return-class (list arg-class ...) proc))
+; ------------------------------------------------------------------------------
+(define (vars prog) (filter (cut is-a? <> <var>) (apply append (map get-args prog))))
+(define-syntax-rule (rtl vars . body)
+  (let vars . body)); TODO: extract all vars and replace using subst
