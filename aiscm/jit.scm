@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst vars get-args)
+            subst variables get-args get-input get-output)
   #:export-syntax (env jit-wrap rtl))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -206,7 +206,9 @@
 (define-method (get-args self) '())
 (define-class <cmd> ()
   (op #:init-keyword #:op #:getter get-op)
-  (args #:init-keyword #:args #:getter get-args))
+  (args #:init-keyword #:args #:getter get-args)
+  (input #:init-keyword #:input #:getter get-input)
+  (output #:init-keyword #:output #:getter get-output))
 (define-class <var> ()
   (type #:init-keyword #:type #:getter get-type))
 (define-method (subst self alist) self)
@@ -217,7 +219,11 @@
   (apply (get-op self) (map (cut subst <> alist) (get-args self))))
 (define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
 
-(define-method (MOV arg1 arg2) (make <cmd> #:op MOV #:args (list arg1 arg2)))
+(define-method (MOV arg1 arg2) (make <cmd>
+                                     #:op MOV
+                                     #:args (list arg1 arg2)
+                                     #:input (list arg2)
+                                     #:output (list arg1)))
 (define-method (MOV (m <pointer>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <register>) imm)
@@ -438,6 +444,10 @@
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
   (pass-return-value ctx return-class (list arg-class ...) proc))
 ; ------------------------------------------------------------------------------
-(define (vars prog) (filter (cut is-a? <> <var>) (apply append (map get-args prog))))
+(define (variables prog)
+  (delete-duplicates (filter (cut is-a? <> <var>) (apply append (map get-args prog)))))
+(define my-codes
+  (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)
-  (let vars . body)); TODO: extract all vars and replace using subst
+  (let [(prog (let vars (list . body)))]
+    (subst prog (map cons (variables prog) my-codes))))
