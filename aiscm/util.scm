@@ -8,7 +8,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax
-            nodes adjacent remove-node coloring)
+            nodes adjacent remove-node color-nodes color-graph)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -71,11 +71,11 @@
 (define ((has-node? node) edge) (or (eq? (car edge) node) (eq? (cdr edge) node)))
 (define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
 (define (remove-node graph node) (filter (compose not (has-node? node)) graph))
-(define (assign-colors graph nodes colors)
-  (if (null? nodes) '()
+(define (color-nodes graph nodes predefined colors)
+  (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (adjacent graph)) nodes))
-           (coloring  (assign-colors (remove-node graph target) (delete target nodes) colors))
+           (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))
            (blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
            (available (lset-difference eq? colors blocked))]
       (cons (cons target (car available)) coloring))))
-(define (coloring graph colors) (assign-colors graph (nodes graph) colors))
+(define (color-graph graph colors) (color-nodes graph (nodes graph) '() colors))

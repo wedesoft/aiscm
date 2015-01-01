@@ -445,7 +445,8 @@
   (pass-return-value ctx return-class (list arg-class ...) proc))
 ; ------------------------------------------------------------------------------
 (define (variables prog)
-  (delete-duplicates (filter (cut is-a? <> <var>) (apply append (map get-args prog)))))
+  (let [(is-var? (cut is-a? <> <var>))]
+    (delete-duplicates (filter is-var? (apply append (map get-args prog))))))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)

@@ -1,7 +1,6 @@
 # TODO
 
-* naive register allocation (rtl)
-* live times, register allocation
+* live times, register allocation, parameters are pre-allocated registers
 * method parameters, environments (variables, jumps)
 * RGB, swscale
 * nicer website
