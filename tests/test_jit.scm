@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 293)
+(planned-tests 295)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -828,3 +828,7 @@
             (rtl [(x (make <var> #:type <sint>))]
                  (MOV x 42)))
     "Allocate register for a variable")
+(ok (equal? '(1) (next-indices (list (MOV CX 0) (MOV AX CX)) 0))
+    "Get following indices for a statement in a program")
+(ok (equal? '() (next-indices (list (MOV CX 0) (MOV AX CX)) 1))
+    "Get following indices of last statement")

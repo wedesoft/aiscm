@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args get-input get-output)
+            subst variables get-args get-input get-output next-indices)
   #:export-syntax (env jit-wrap rtl))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -204,6 +204,8 @@
 (define (RET) '(#xc3))
 
 (define-method (get-args self) '())
+(define-method (get-input self) '())
+(define-method (get-output self) '())
 (define-class <cmd> ()
   (op #:init-keyword #:op #:getter get-op)
   (args #:init-keyword #:args #:getter get-args)
@@ -447,6 +449,7 @@
 (define (variables prog)
   (let [(is-var? (cut is-a? <> <var>))]
     (delete-duplicates (filter is-var? (apply append (map get-args prog))))))
+(define (next-indices prog k) (if (< k (1- (length prog))) (list (+ k 1)) '()))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)

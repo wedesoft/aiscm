@@ -2,7 +2,7 @@
 
 * live times, register allocation, parameters are pre-allocated registers
 * method parameters, environments (variables, jumps)
-* RGB, swscale
+* RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)
 * nicer website
 * element-wise type conversions
 * getting ranges from array
