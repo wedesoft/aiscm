@@ -64,7 +64,7 @@
 (define (argop op fun lst)
   (let* [(vals  (map fun lst))
          (opval (apply op vals))]
-    (list-ref lst (- (length lst) (length (member opval vals))))))
+    (list-ref (reverse lst) (1- (length (member opval vals))))))
 (define (argmin fun lst) (argop min fun lst))
 (define (argmax fun lst) (argop max fun lst))
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
