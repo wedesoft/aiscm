@@ -446,17 +446,9 @@
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
   (pass-return-value ctx return-class (list arg-class ...) proc))
 ; ------------------------------------------------------------------------------
-(define (variables prog)
-  (let [(is-var? (cut is-a? <> <var>))]
-    (delete-duplicates (filter is-var? (apply append (map get-args prog))))))
-(define (labels prog)
-  (letrec [(recursion
-             (lambda (prog offset)
-               (cond ((null? prog)         '())
-                     ((symbol? (car prog)) (cons (cons (car prog) offset)
-                                                 (recursion (cdr prog) (1+ offset))))
-                     (else (recursion (cdr prog) (1+ offset))))))]
-    (recursion prog 0)))
+(define (is-var? value) (is-a? value <var>))
+(define (variables prog) (delete-duplicates (filter is-var? (apply append (map get-args prog)))))
+(define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
