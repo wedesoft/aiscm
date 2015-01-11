@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 299)
+(planned-tests 301)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -840,3 +840,10 @@
     "Get following indices for a jump statement")
 (ok (equal? '(1 2) (next-indices (JNE 'a) 0 '((a . 2))))
     "Get following indices for a conditional jump")
+(ok (let [(a (make <var> #:type <int>))]
+      (equal? (list '() (list a) '()) (live (list 'x (MOV a 0) (RET)))))
+    "live-analysis for definition of unused variable")
+(ok (let [(a (make <var> #:type <int>))
+          (b (make <var> #:type <int>))]
+      (equal? (list (list a) (list a) (list b a) '()) (live (list (MOV a 0) (NOP) (MOV b a) (RET)))))
+    "live-analysis for definition and later use of a variable")

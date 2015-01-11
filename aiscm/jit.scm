@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args get-input get-output labels next-indices)
+            subst variables get-args get-input get-output labels next-indices live)
   #:export-syntax (env jit-wrap rtl))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -453,6 +453,24 @@
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (eq? #xeb (get-code8 cmd)) (list target) (list (1+ k) target))))
+(define (union . args) (apply lset-union (cons eq? args))); TODO: remove (from here)
+(define (difference . args) (apply lset-difference (cons eq? args))); TODO: remove (from here)
+(define (live prog); TODO: test live-analysis with JMP statement
+  (letrec* [(inputs    (map (lambda (cmd) (filter is-var? (get-input cmd))) prog)); TODO: test
+            (outputs   (map (lambda (cmd) (filter is-var? (get-output cmd))) prog)); TOOD: test
+            (indices   (iota (length prog)))
+            (lut       (labels prog))
+            (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices)); TODO: test
+            (track     (lambda (value)
+                         (lambda (in ind out)
+                           (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
+            (iteration (lambda (value) (map (track value) inputs flow outputs)))
+            (iterate   (lambda (value)
+                         (let [(successor (iteration value))]
+                           (if (equal? value successor); TODO: use tested fixpoint operation
+                             (map union value outputs)
+                             (iterate successor)))))]
+    (iterate (map (const '()) prog))))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)
