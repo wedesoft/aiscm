@@ -260,6 +260,11 @@
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
 
+(define-method (ADD arg1 arg2) (make <cmd>
+                                     #:op ADD
+                                     #:args (list arg1 arg2)
+                                     #:input (list arg1 arg2)
+                                     #:output (list arg1)))
 (define-method (ADD (m <pointer>) (r <register>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
 (define-method (ADD (r <register>) imm)
@@ -453,24 +458,23 @@
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (eq? #xeb (get-code8 cmd)) (list target) (list (1+ k) target))))
-(define (union . args) (apply lset-union (cons eq? args))); TODO: remove (from here)
-(define (difference . args) (apply lset-difference (cons eq? args))); TODO: remove (from here)
-(define (live prog); TODO: test live-analysis with JMP statement
-  (letrec* [(inputs    (map (lambda (cmd) (filter is-var? (get-input cmd))) prog)); TODO: test
-            (outputs   (map (lambda (cmd) (filter is-var? (get-output cmd))) prog)); TOOD: test
+(define (live prog)
+  (letrec* [(inputs    (map (lambda (cmd) (filter is-var? (get-input cmd))) prog))
+            (outputs   (map (lambda (cmd) (filter is-var? (get-output cmd))) prog))
             (indices   (iota (length prog)))
             (lut       (labels prog))
-            (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices)); TODO: test
+            (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices))
             (track     (lambda (value)
                          (lambda (in ind out)
                            (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
+            (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))
-            (iterate   (lambda (value)
+            (iterate   (lambda (value); TODO: use tested fixpoint operation
                          (let [(successor (iteration value))]
-                           (if (equal? value successor); TODO: use tested fixpoint operation
-                             (map union value outputs)
+                           (if (equal? value successor); TODO: is 'equal?' sufficient?
+                             value
                              (iterate successor)))))]
-    (iterate (map (const '()) prog))))
+    (map union (iterate initial) outputs)))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)

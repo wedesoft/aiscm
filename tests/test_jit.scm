@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 301)
+(planned-tests 302)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -847,3 +847,7 @@
           (b (make <var> #:type <int>))]
       (equal? (list (list a) (list a) (list b a) '()) (live (list (MOV a 0) (NOP) (MOV b a) (RET)))))
     "live-analysis for definition and later use of a variable")
+(ok (let [(a (make <var> #:type <int>))]
+      (equal? (list (list a) (list a) (list a) (list a) '())
+              (live (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET)))))
+    "live-analysis with jump statement")

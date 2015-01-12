@@ -8,7 +8,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax
-            nodes adjacent remove-node color-nodes color-graph)
+            nodes adjacent remove-node color-nodes color-graph union difference)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -67,6 +67,8 @@
     (list-ref (reverse lst) (1- (length (member opval vals))))))
 (define (argmin fun lst) (argop min fun lst))
 (define (argmax fun lst) (argop max fun lst))
+(define (union . args) (apply lset-union (cons eq? args)))
+(define (difference . args) (apply lset-difference (cons eq? args)))
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
 (define ((has-node? node) edge) (or (eq? (car edge) node) (eq? (cdr edge) node)))
 (define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
