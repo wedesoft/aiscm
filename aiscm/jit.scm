@@ -212,7 +212,10 @@
   (input #:init-keyword #:input #:getter get-input)
   (output #:init-keyword #:output #:getter get-output))
 (define-class <var> ()
-  (type #:init-keyword #:type #:getter get-type))
+  (type #:init-keyword #:type #:getter get-type)
+  (symbol #:init-keyword #:symbol #:init-form (gensym)))
+(define-method (display (self <var>) port) (display (slot-ref self 'symbol) port))
+(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
 (define-method (subst self alist) self)
 (define-method (subst (self <var>) alist)
   (let [(code (assq-ref alist self))]

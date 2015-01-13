@@ -801,31 +801,31 @@
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
     "Use 'jit-wrap' to define method")
 ; ------------------------------------------------------------------------------
-(ok (let [(a (make <var> #:type <int>))
-          (b (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))]
       (equal? (list b) (get-input (MOV a b))))
     "Get input variables of command")
-(ok (let [(a (make <var> #:type <int>))
-          (b (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))]
       (equal? (list a) (get-output (MOV a b))))
     "Get output variables of command")
-(ok (let [(a (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list a 0) (get-args (MOV a 0))))
     "Get arguments of command")
 (ok (equal? (list (MOV ECX 42))
-            (let [(v (make <var> #:type <int>))]
+            (let [(v (make <var> #:type <int> #:symbol 'v))]
               (subst (list (MOV v 42)) (list (cons v 1)))))
     "Substitute integer variable with register")
 (ok (equal? (list (MOV RCX 42))
-            (let [(v (make <var> #:type <long>))]
+            (let [(v (make <var> #:type <long> #:symbol 'v))]
               (subst (list (MOV v 42)) (list (cons v 1)))))
     "Substitute long integer variable with register")
-(ok (let [(a (make <var> #:type <int>))
-          (b (make <var> #:type <sint>))]
+(ok (let [(a (make <var> #:type <int>  #:symbol 'a))
+          (b (make <var> #:type <sint> #:symbol 'b))]
       (equal?  (list a b) (variables (list (MOV a 0) (MOV b a))))
     "Get variables of a program"))
 (ok (equal? (list (MOV AX 42))
-            (rtl [(x (make <var> #:type <sint>))]
+            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
                  (MOV x 42)))
     "Allocate register for a variable")
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
@@ -840,14 +840,14 @@
     "Get following indices for a jump statement")
 (ok (equal? '(1 2) (next-indices (JNE 'a) 0 '((a . 2))))
     "Get following indices for a conditional jump")
-(ok (let [(a (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list '() (list a) '()) (live (list 'x (MOV a 0) (RET)))))
     "live-analysis for definition of unused variable")
-(ok (let [(a (make <var> #:type <int>))
-          (b (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))]
       (equal? (list (list a) (list a) (list b a) '()) (live (list (MOV a 0) (NOP) (MOV b a) (RET)))))
     "live-analysis for definition and later use of a variable")
-(ok (let [(a (make <var> #:type <int>))]
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list (list a) (list a) (list a) (list a) '())
               (live (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET)))))
     "live-analysis with jump statement")
