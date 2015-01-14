@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 302)
+(planned-tests 303)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -842,12 +842,20 @@
     "Get following indices for a conditional jump")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list '() (list a) '()) (live (list 'x (MOV a 0) (RET)))))
-    "live-analysis for definition of unused variable")
+    "Live-analysis for definition of unused variable")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))]
       (equal? (list (list a) (list a) (list b a) '()) (live (list (MOV a 0) (NOP) (MOV b a) (RET)))))
-    "live-analysis for definition and later use of a variable")
+    "Live-analysis for definition and later use of a variable")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list (list a) (list a) (list a) (list a) '())
               (live (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET)))))
-    "live-analysis with jump statement")
+    "Live-analysis with conditional jump statement")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))
+          (c (make <var> #:type <int> #:symbol 'c))]
+      (lset= equal?
+             (list (cons a a) (cons b b) (cons b a) (cons a b)
+                   (cons c c) (cons c b) (cons b c))
+             (collisions (list (MOV a 0) (MOV b a) (MOV c b) (RET)))))
+    "Detecting collisions between variables")

@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args get-input get-output labels next-indices live)
+            subst variables get-args get-input get-output labels next-indices live collisions)
   #:export-syntax (env jit-wrap rtl))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -40,6 +40,8 @@
   (target #:init-keyword #:target #:getter get-target)
   (code8 #:init-keyword #:code8 #:getter get-code8)
   (code32 #:init-keyword #:code32 #:getter get-code32))
+(define-method (display (self <jcc>) port) (format port "(Jcc ~a)" (get-target self)))
+(define-method (write (self <jcc>) port) (format port "(Jcc ~a)" (get-target self)))
 (define-method (instruction-length self) 0)
 (define-method (instruction-length (self <list>)) (length self))
 (define-method (Jcc target code8 code32)
@@ -211,6 +213,10 @@
   (args #:init-keyword #:args #:getter get-args)
   (input #:init-keyword #:input #:getter get-input)
   (output #:init-keyword #:output #:getter get-output))
+(define-method (display (self <cmd>) port)
+  (display (cons (generic-function-name (get-op self)) (get-args self))))
+(define-method (write (self <cmd>) port)
+  (write (cons (generic-function-name (get-op self)) (get-args self))))
 (define-class <var> ()
   (type #:init-keyword #:type #:getter get-type)
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
@@ -478,6 +484,9 @@
                              value
                              (iterate successor)))))]
     (map union (iterate initial) outputs)))
+(define (collisions prog)
+  (let [(live (live prog))]
+    (delete-duplicates (apply append (map product live live)))))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define-syntax-rule (rtl vars . body)
