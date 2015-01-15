@@ -17,9 +17,9 @@ libguile_jit_la_LDFLAGS = -no-undefined
 libguile_jit_la_LIBADD = $(GUILE_LIBS)
 
 libguile_image_la_SOURCES = image.c
-libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS)
+libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
 libguile_image_la_LDFLAGS = -no-undefined
-libguile_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS)
+libguile_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS) $(MJPEG_LIBS) -llavjpeg
 
 libguile_v4l2_la_SOURCES = v4l2.c
 libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)

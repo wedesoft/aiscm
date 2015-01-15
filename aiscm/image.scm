@@ -11,7 +11,6 @@
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
             get-format get-mem convert
-            PIX_FMT_YUYV422 PIX_FMT_GRAY8 PIX_FMT_BGRA
             image->multiarray multiarray->image))
 (load-extension "libguile-image" "init_image")
 (define-class <meta<image>> (<class>))
@@ -39,7 +38,8 @@
         (cons 'I420 PIX_FMT_YUV420P)
         (cons 'YV12 PIX_FMT_YUV420P)
         (cons 'UYVY PIX_FMT_UYVY422)
-        (cons 'YUY2 PIX_FMT_YUYV422)))
+        (cons 'YUY2 PIX_FMT_YUYV422)
+        (cons 'MJPG 0)))
 (define symbols (alist-invert formats))
 (define (sym->fmt sym) (assq-ref formats sym))
 (define (fmt->sym fmt) (assq-ref symbols fmt))
@@ -52,7 +52,8 @@
     ((I420) (+ (* (car pitches) height) (* 2 (cadr pitches) (ash (+ height 1) -1))))
     ((YV12) (+ (* (car pitches) height) (* 2 (cadr pitches) (ash (+ height 1) -1))))
     ((UYVY) (* (car pitches) height 2))
-    ((YUY2) (* (car pitches) height 2))))
+    ((YUY2) (* (car pitches) height 2))
+    ((MJPG) (* (car pitches) height 2))))
 (define (default-offsets format pitches height)
   (case format
     ((RGB)  (list 0))
@@ -66,7 +67,8 @@
                   (* (car pitches) height)
                   (+ (* (car pitches) height) (* (cadr pitches) (ash (+ height 1) -1)))))
     ((UYVY) (list 0))
-    ((YUY2) (list 0))))
+    ((YUY2) (list 0))
+    ((MJPG) (list 0))))
 (define (default-pitches format width)
   (case format
     ((RGB)  (list (* width 3)))
@@ -76,7 +78,8 @@
     ((I420) (list width (ash (+ width 1) -1) (ash (+ width 1) -1)))
     ((YV12) (list width (ash (+ width 1) -1) (ash (+ width 1) -1)))
     ((UYVY) (list (* 2 (logand (+ width 3) (lognot #x3)))))
-    ((YUY2) (list (* 2 (logand (+ width 3) (lognot #x3)))))))
+    ((YUY2) (list (* 2 (logand (+ width 3) (lognot #x3)))))
+    ((MJPG) (list))))
 (define (warp lst indices) (map (cut list-ref lst <>) indices))
 (define-method (descriptor (format <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
   (list (sym->fmt format)
@@ -104,14 +107,26 @@
         (dest-type   (descriptor format shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (let [(source-mem (get-mem self))
-            (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
-        (image-convert (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
-        (make <image> #:format  format
-                      #:shape   shape
-                      #:mem     dest-mem
-                      #:offsets offsets
-                      #:pitches pitches)))))
+      (if (eq? (get-format self) 'MJPG); TODO: simplify code
+        (if (eq? format 'YV12); TODO: check alignment of mjpeg-decoder
+          (let [(source-mem (get-mem self))
+                (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
+            (mjpeg-to-yuv420p (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
+            (make <image> #:format  format
+                          #:shape   shape
+                          #:mem     dest-mem
+                          #:offsets offsets
+                          #:pitches pitches))
+          (convert (convert self 'YV12) format shape offsets pitches))
+        (let [(source-mem (get-mem self))
+              (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
+          ((if (eq? (get-format self) 'MJPG) mjpeg-to-yuv420p image-convert)
+            (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
+          (make <image> #:format  format
+                        #:shape   shape
+                        #:mem     dest-mem
+                        #:offsets offsets
+                        #:pitches pitches))))))
 (define-method (convert (self <image>) (format <symbol>) (shape <list>))
   (let* [(pitches (default-pitches format (car shape)))
          (offsets (default-offsets format pitches (cadr shape)))]

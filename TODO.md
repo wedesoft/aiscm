@@ -1,5 +1,16 @@
 # TODO
 
+(use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2) (aiscm util) (aiscm image) (aiscm xorg))
+(define (select formats)
+  (for-each (lambda (i mode) (format #t "~a: ~a~&" i mode))
+            (iota (length formats))
+            formats)
+  (format #t "> ")
+  (list-ref formats (string->number (read-line (current-input-port)))))
+(define v (make <v4l2> #:device "/dev/video1" #:select select))
+(grab v)
+(destroy v)
+
 (use-modules (aiscm jit) (aiscm int) (oop goops) (srfi srfi-1) (srfi srfi-26))
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
