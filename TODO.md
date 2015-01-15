@@ -1,6 +1,17 @@
 # TODO
 
-* register allocator, RGB, swscale
+(use-modules (aiscm jit) (aiscm int) (oop goops) (srfi srfi-1) (srfi srfi-26))
+(define a (make <var> #:type <int> #:symbol 'a))
+(define b (make <var> #:type <int> #:symbol 'b))
+(define c (make <var> #:type <int> #:symbol 'c))
+(define prog (list (JE 'x) (MOV a 0) 'x (MOV b a) (RET)))
+(live prog)
+
+(rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
+
+* register allocation, parameters are pre-allocated registers
+* method parameters, environments (variables, jumps)
+* RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)
 * nicer website
 * element-wise type conversions
 * getting ranges from array
