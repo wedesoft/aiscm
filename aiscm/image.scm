@@ -107,19 +107,20 @@
         (dest-type   (descriptor format shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
-      (if (eq? (get-format self) 'MJPG); TODO: simplify code
-        (if (eq? format 'YV12); TODO: check alignment of mjpeg-decoder
-          (let [(source-mem (get-mem self))
-                (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
-            (mjpeg-to-yuv420p (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
-            (make <image> #:format  format
-                          #:shape   shape
-                          #:mem     dest-mem
-                          #:offsets offsets
-                          #:pitches pitches))
-          (convert (convert self 'YV12) format shape offsets pitches))
-        (let [(source-mem (get-mem self))
-              (dest-mem   (memalign (image-size format pitches (cadr shape)) 16))]
+      (if (eq? (get-format self) 'MJPG)
+        (let* [(source-mem      (get-mem self))
+               (width           (car (slot-ref self 'shape)))
+               (height          (cadr (slot-ref self 'shape)))
+               (default-pitches (default-pitches 'YV12 width))
+               (default-offsets (default-offsets 'YV12 default-pitches height))
+               (size            (image-size 'YV12 default-pitches height))
+               (dest-mem        (memalign size 16))]
+          (mjpeg-to-yuv420p (get-memory source-mem) width height (get-memory dest-mem) default-offsets)
+          (convert (make <image> #:format 'YV12 #:shape (slot-ref self 'shape) #:mem dest-mem)
+                   format shape offsets pitches))
+        (let* [(source-mem (get-mem self))
+               (size       (image-size format pitches (cadr shape)))
+               (dest-mem   (memalign size 16))]
           ((if (eq? (get-format self) 'MJPG) mjpeg-to-yuv420p image-convert)
             (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
           (make <image> #:format  format

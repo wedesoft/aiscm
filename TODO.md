@@ -8,7 +8,7 @@
   (format #t "> ")
   (list-ref formats (string->number (read-line (current-input-port)))))
 (define v (make <v4l2> #:device "/dev/video1" #:select select))
-(grab v)
+(show (lambda () (grab v)))
 (destroy v)
 
 (use-modules (aiscm jit) (aiscm int) (oop goops) (srfi srfi-1) (srfi srfi-26))

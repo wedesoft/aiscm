@@ -52,25 +52,17 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   return SCM_UNDEFINED;
 }
 
-SCM mjpeg_to_yuv420p(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
+SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_width, SCM scm_height, SCM scm_dest_ptr, SCM scm_offsets)
 {
-  enum PixelFormat format;
-  int width, height;
-  void *ptr = scm_to_pointer(scm_ptr);
-  uint8_t *source_data[8];
-  int source_pitches[8];
-  memset(source_pitches, 0, sizeof(source_pitches));
-  image_setup(scm_source_type, &format, &width, &height, source_data, source_pitches, ptr);
-
-  enum PixelFormat dest_format;
-  int dest_width, dest_height;
+  void *source_ptr = scm_to_pointer(scm_source_ptr);
   void *dest_ptr = scm_to_pointer(scm_dest_ptr);
-  uint8_t *dest_data[8];
-  int dest_pitches[8];
-  memset(dest_pitches, 0, sizeof(dest_pitches));
-  image_setup(scm_dest_type, &dest_format, &dest_width, &dest_height, dest_data, dest_pitches, dest_ptr);
-  decode_jpeg_raw(source_data[0], width * height * 2, Y4M_ILACE_NONE,
-                  0, width, height, dest_data[0], dest_data[1], dest_data[2]);
+  int width = scm_to_int(scm_width);
+  int height = scm_to_int(scm_height);
+  int offsets[3];
+  memset(offsets, 0, sizeof(offsets));
+  scm_to_array(scm_offsets, offsets);
+  decode_jpeg_raw(source_ptr, width * height * 2, Y4M_ILACE_NONE, 0, width, height,
+                  dest_ptr + offsets[0], dest_ptr + offsets[2], dest_ptr + offsets[1]);
   return SCM_UNDEFINED;
 }
 
@@ -84,5 +76,5 @@ void init_image(void)
   scm_c_define("PIX_FMT_UYVY422", scm_from_int(PIX_FMT_UYVY422));
   scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
   scm_c_define_gsubr("image-convert", 4, 0, 0, image_convert);
-  scm_c_define_gsubr("mjpeg-to-yuv420p", 4, 0, 0, mjpeg_to_yuv420p);
+  scm_c_define_gsubr("mjpeg-to-yuv420p", 5, 0, 0, mjpeg_to_yuv420p);
 }
