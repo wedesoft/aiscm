@@ -99,31 +99,33 @@
          (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
     (make <mem> #:memory memory #:base base #:size size)))
 (define-method (convert (self <image>)
-                        (format <symbol>)
+                        (fmt <symbol>)
                         (shape <list>)
                         (offsets <list>)
                         (pitches <list>))
   (let [(source-type (descriptor self))
-        (dest-type   (descriptor format shape offsets pitches))]
+        (dest-type   (descriptor fmt shape offsets pitches))]
     (if (equal? source-type dest-type)
       self
       (if (eq? (get-format self) 'MJPG)
-        (let* [(source-mem      (get-mem self))
-               (width           (car (slot-ref self 'shape)))
-               (height          (cadr (slot-ref self 'shape)))
-               (default-pitches (default-pitches 'YV12 width))
-               (default-offsets (default-offsets 'YV12 default-pitches height))
-               (size            (image-size 'YV12 default-pitches height))
-               (dest-mem        (memalign size 16))]
-          (mjpeg-to-yuv420p (get-memory source-mem) width height (get-memory dest-mem) default-offsets)
-          (convert (make <image> #:format 'YV12 #:shape (slot-ref self 'shape) #:mem dest-mem)
-                   format shape offsets pitches))
+        (if (and (eqv? (sym->fmt fmt) PIX_FMT_YUV420P)
+                 (equal? (slot-ref self 'shape) shape)
+                 (equal? pitches (default-pitches fmt (car shape))))
+          (let* [(source-mem      (get-mem self))
+                 (size            (image-size fmt pitches (cadr shape)))
+                 (dest-mem        (memalign size 16))]
+            (mjpeg-to-yuv420p (get-memory source-mem)
+                              (car shape)
+                              (cadr shape)
+                              (get-memory dest-mem)
+                              (caddr dest-type))
+            (make <image> #:format fmt #:shape shape #:mem dest-mem))
+          (convert (convert self 'YV12) fmt shape offsets pitches))
         (let* [(source-mem (get-mem self))
-               (size       (image-size format pitches (cadr shape)))
+               (size       (image-size fmt pitches (cadr shape)))
                (dest-mem   (memalign size 16))]
-          ((if (eq? (get-format self) 'MJPG) mjpeg-to-yuv420p image-convert)
-            (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
-          (make <image> #:format  format
+          (image-convert (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
+          (make <image> #:format  fmt
                         #:shape   shape
                         #:mem     dest-mem
                         #:offsets offsets
