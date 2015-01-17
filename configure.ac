@@ -19,7 +19,7 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 
-PKG_CHECK_MODULES(MJPEG, mjpegtools >= 1.9.0)
+PKG_CHECK_MODULES(MJPEG, mjpegtools >= 2.0.0)
 AC_SUBST(MJPEG_CFLAGS)
 AC_SUBST(MJPEG_LIBS)
 
