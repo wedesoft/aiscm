@@ -1,4 +1,6 @@
 #include <libswscale/swscale.h>
+#include <yuv4mpeg.h>
+#include <jpegutils.h>
 #include <libguile.h>
 
 void scm_to_array(SCM source, int dest[])
@@ -50,6 +52,20 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   return SCM_UNDEFINED;
 }
 
+SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_width, SCM scm_height, SCM scm_dest_ptr, SCM scm_offsets)
+{
+  void *source_ptr = scm_to_pointer(scm_source_ptr);
+  void *dest_ptr = scm_to_pointer(scm_dest_ptr);
+  int width = scm_to_int(scm_width);
+  int height = scm_to_int(scm_height);
+  int offsets[3];
+  memset(offsets, 0, sizeof(offsets));
+  scm_to_array(scm_offsets, offsets);
+  decode_jpeg_raw(source_ptr, width * height * 2, Y4M_ILACE_NONE, 0, width, height,
+                  dest_ptr + offsets[0], dest_ptr + offsets[1], dest_ptr + offsets[2]);
+  return SCM_UNDEFINED;
+}
+
 void init_image(void)
 {
   scm_c_define("PIX_FMT_RGB24",   scm_from_int(PIX_FMT_RGB24));
@@ -60,4 +76,5 @@ void init_image(void)
   scm_c_define("PIX_FMT_UYVY422", scm_from_int(PIX_FMT_UYVY422));
   scm_c_define("PIX_FMT_YUYV422", scm_from_int(PIX_FMT_YUYV422));
   scm_c_define_gsubr("image-convert", 4, 0, 0, image_convert);
+  scm_c_define_gsubr("mjpeg-to-yuv420p", 5, 0, 0, mjpeg_to_yuv420p);
 }

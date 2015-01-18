@@ -281,6 +281,7 @@ void init_v4l2(void)
   scm_c_define("V4L2_PIX_FMT_YUV420",scm_from_int(V4L2_PIX_FMT_YUV420));
   scm_c_define("V4L2_PIX_FMT_UYVY"  ,scm_from_int(V4L2_PIX_FMT_UYVY));
   scm_c_define("V4L2_PIX_FMT_YUYV"  ,scm_from_int(V4L2_PIX_FMT_YUYV));
+  scm_c_define("V4L2_PIX_FMT_MJPEG" ,scm_from_int(V4L2_PIX_FMT_MJPEG));
   scm_c_define_gsubr("make-videodev2", 3, 0, 0, make_videodev2);
   scm_c_define_gsubr("videodev2-destroy", 1, 0, 0, videodev2_destroy);
   scm_c_define_gsubr("videodev2-grab", 1, 0, 0, videodev2_grab);

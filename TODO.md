@@ -1,6 +1,5 @@
 # TODO
 
-* register allocator, RGB, swscale
 (use-modules (aiscm jit) (aiscm int) (oop goops) (srfi srfi-1) (srfi srfi-26))
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))

@@ -5,5 +5,5 @@ all:
 	automake -a --foreign
 	autoconf
 
-configure:
-	./configure
+configure::
+	./configure CC=colorgcc
