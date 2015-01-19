@@ -8,7 +8,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last repeat depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax
-            nodes adjacent remove-node color-nodes color-graph union difference)
+            nodes adjacent remove-node color-graph union difference)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -78,6 +78,10 @@
     (let* [(target    (argmin (compose length (adjacent graph)) nodes))
            (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))
            (blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
-           (available (lset-difference eq? colors blocked))]
+           (available (difference colors blocked))]
       (cons (cons target (car available)) coloring))))
-(define (color-graph graph colors) (color-nodes graph (nodes graph) '() colors))
+(define (color-graph graph colors predefined)
+  (color-nodes graph
+               (difference (nodes graph) (map car predefined))
+               predefined
+               colors))

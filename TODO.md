@@ -1,33 +1,12 @@
 # TODO
 
-(use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2) (aiscm util) (aiscm image) (aiscm xorg) (srfi srfi-1) (srfi srfi-26))
-(define v (make <v4l2> #:device "/dev/video1" #:select last))
-(show (lambda () (grab v)))
-(destroy v)
-
-(define d (make <xdisplay> #:name ":0.0"))
-(define w (make <xwindow> #:display d #:shape '(1280 720) #:io IO-XVIDEO))
-(title= w "Test")
-(show w)
-(do () ((quit? d)) (write w (grab v)) (process-events d))
-(quit= d #f)
-(hide w)
-
-(define (select formats)
-  (for-each (lambda (i mode) (format #t "~a: ~a~&" i mode))
-            (iota (length formats))
-            formats)
-  (format #t "> ")
-  (list-ref formats (string->number (read-line (current-input-port)))))
-(define v (make <v4l2> #:device "/dev/video1" #:select select))
-
-
-(use-modules (aiscm jit) (aiscm int) (oop goops) (srfi srfi-1) (srfi srfi-26))
+(use-modules (aiscm jit) (aiscm int) (aiscm util) (oop goops) (srfi srfi-1) (srfi srfi-26))
+(define my-codes (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
 (define prog (list (JE 'x) (MOV a 0) 'x (MOV b a) (RET)))
-(live prog)
+(resolve-jumps (subst prog (color-graph (collisions prog) my-codes '())))
 
 (rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
 
