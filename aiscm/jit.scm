@@ -26,8 +26,9 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args get-input get-output labels next-indices live collisions)
-  #:export-syntax (env jit-wrap rtl))
+            subst variables get-args get-input get-output labels next-indices live collisions
+            register-allocate)
+  #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -484,6 +485,10 @@
     (delete-duplicates (apply append (map product live live)))))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
-(define-syntax-rule (rtl vars . body)
-  (let [(prog (let vars (list . body)))]
-    (subst prog (map cons (variables prog) my-codes))))
+(define (register-allocate prog)
+  (let* [(registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+         (codes     (map get-code registers))]
+    (subst prog (color-graph (collisions prog) codes '()))))
+;(define-syntax-rule (rtl vars . body)
+;  (let [(prog (let vars (list . body)))]
+;    (subst prog (map cons (variables prog) my-codes))))

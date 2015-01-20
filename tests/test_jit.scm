@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 303)
+(planned-tests 304)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -824,10 +824,6 @@
           (b (make <var> #:type <sint> #:symbol 'b))]
       (equal?  (list a b) (variables (list (MOV a 0) (MOV b a))))
     "Get variables of a program"))
-(ok (equal? (list (MOV AX 42))
-            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
-                 (MOV x 42)))
-    "Allocate register for a variable")
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
 (ok (equal? '(1) (next-indices (MOV CX 0) 0 '()))
@@ -859,3 +855,17 @@
                    (cons c c) (cons c b) (cons b c))
              (collisions (list (MOV a 0) (MOV b a) (MOV c b) (RET)))))
     "Detecting collisions between variables")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))]
+      (equal? (list (MOV EAX 42) (RET))
+              (register-allocate (list (MOV a 42) (RET)))))
+    "Allocate a single register")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))
+          (c (make <var> #:type <int> #:symbol 'c))]
+      (equal? (list (MOV ECX 1) (MOV EAX 2) (ADD ECX EAX) (MOV EAX ECX) (RET))
+              (register-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET)))))
+    "Allocate multiple registers")
+;(ok (equal? (list (MOV AX 42))
+;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
+;                 (MOV x 42)))
+;    "Allocate register for a variable")
