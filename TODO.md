@@ -7,6 +7,7 @@
 (define c (make <var> #:type <int> #:symbol 'c))
 (define prog (list (JE 'x) (MOV a 0) 'x (MOV b a) (RET)))
 (resolve-jumps (subst prog (color-graph (collisions prog) my-codes '())))
+; put into method, test, test with predefined return register, test with predefined parameter register
 
 (rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
 

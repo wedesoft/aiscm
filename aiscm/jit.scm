@@ -477,13 +477,8 @@
                          (lambda (in ind out)
                            (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
             (initial   (map (const '()) prog))
-            (iteration (lambda (value) (map (track value) inputs flow outputs)))
-            (iterate   (lambda (value); TODO: use tested fixpoint operation
-                         (let [(successor (iteration value))]
-                           (if (equal? value successor); TODO: is 'equal?' sufficient?
-                             value
-                             (iterate successor)))))]
-    (map union (iterate initial) outputs)))
+            (iteration (lambda (value) (map (track value) inputs flow outputs)))]
+    (map union (fixed-point initial iteration equal?) outputs))); TODO: is 'equal?' sufficient?
 (define (collisions prog)
   (let [(live (live prog))]
     (delete-duplicates (apply append (map product live live)))))
