@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 304)
+(planned-tests 305)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -857,14 +857,21 @@
     "Detecting collisions between variables")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list (MOV EAX 42) (RET))
-              (register-allocate (list (MOV a 42) (RET)))))
+              (register-allocate (list (MOV a 42) (RET)) '())))
     "Allocate a single register")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))
           (c (make <var> #:type <int> #:symbol 'c))]
       (equal? (list (MOV ECX 1) (MOV EAX 2) (ADD ECX EAX) (MOV EAX ECX) (RET))
-              (register-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET)))))
+              (register-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET)) '())))
     "Allocate multiple registers")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))
+          (c (make <var> #:type <int> #:symbol 'c))]
+      (equal? (list (MOV ECX 1) (ADD ECX ESI) (MOV EAX ECX) (RET))
+              (register-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
+                                 (list (cons a RSI) (cons c RAX)))))
+    "Register allocation with predefined registers")
 ;(ok (equal? (list (MOV AX 42))
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))

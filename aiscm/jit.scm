@@ -485,10 +485,11 @@
     (delete-duplicates (apply append (map product live live)))))
 (define my-codes
   (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
-(define (register-allocate prog)
-  (let* [(registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
-         (codes     (map get-code registers))]
-    (subst prog (color-graph (collisions prog) codes '()))))
+(define (register-allocate prog predefined)
+  (let [(registers  (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))]
+    (subst prog (color-graph (collisions prog)
+                             (map get-code registers)
+                             (mapcdr get-code predefined)))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))
