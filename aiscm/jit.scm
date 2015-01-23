@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             subst variables get-args get-input get-output labels next-indices live collisions
-            register-allocate)
+            register-allocate virtual-registers)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -77,7 +77,7 @@
 (define (JNLE target) (Jcc target #x7f (list #x0f #x8f)))
 
 (define (obj commands)
-  (u8-list->bytevector (flatten (attach (resolve-jumps commands) (RET)))))
+  (u8-list->bytevector (flatten (attach (resolve-jumps commands) (RET))))); TODO: remove (RET) here
 
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
@@ -490,6 +490,13 @@
     (subst prog (color-graph (collisions prog)
                              (map get-code registers)
                              (mapcdr get-code predefined)))))
+(define (virtual-registers ctx return-type arg-types proc)
+  (let [(return-value (if (null? return-type) '() (list (make <var> #:type return-type))))
+        (arg-values   (map (cut make <var> #:type <>) arg-types))]
+    (asm ctx return-type arg-types
+         (register-allocate (apply proc (append return-value arg-values))
+                            (append (list (cons return-value RAX))
+                                    (map cons arg-values (list RDI RSI RDX RCX R8 R9)))))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))

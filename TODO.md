@@ -12,8 +12,12 @@
 
 (rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
 
-* register allocation, parameters are pre-allocated registers
+* method without return value (empty list)
+* parameters are pre-allocated registers
 * method parameters, environments (variables, jumps)
+* pointer variables
+* register spilling
+* GOOPS monkey patching
 * RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)
 * nicer website
 * element-wise type conversions

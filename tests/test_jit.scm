@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 305)
+(planned-tests 307)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -686,6 +686,12 @@
                          (MOV RBX (ptr <long> RSP))
                          (ADD RSP 8)))))
     "Explicitely manage stack pointer (this will crash if it does not restore RBX and RSP properly)")
+(ok (equal? 11 ((asm ctx
+                     <int>
+                     (list <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>)
+                     (list (MOV EAX (ptr <int> RSP #x28))))
+                1 2 3 4 5 6 7 8 9 10 11))
+    "Check whether this Guile version supports foreign calls with more than 10 arguments")
 ; ------------------------------------------------------------------------------
 (ok (equal? (list (MOV CX 42))
             (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
@@ -779,12 +785,6 @@
                     (f (reg <sint> fun))]
                    (MOV f (get-value x)))))
     "Copy seventh integer argument")
-(ok (equal? 11 ((asm ctx
-                     <int>
-                     (list <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>)
-                     (list (MOV EAX (ptr <int> RSP #x28))))
-                1 2 3 4 5 6 7 8 9 10 11))
-    "Check whether this Guile version supports foreign calls with more than 10 arguments")
 (ok (let [(fun (make <jit-function>))]
       (equal? (env fun [] (JMP 'b) (JMP 'a) 'a (NOP) 'b)
               (env fun [] (JMP 'a) (env fun [] (JMP 'a) 'a) (NOP) 'a)))
@@ -793,9 +793,7 @@
                                  (lambda (fun r_ a_)
                                    (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
     "Use 'pass-parameters' to define method")
-(ok (equal? 42 (let [(m (jit-wrap ctx
-                                  <int>
-                                  (<int>)
+(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
                                   (lambda (fun r_ a_)
                                     (env fun [] (MOV (get-value r_) (get-value a_))))))]
                  (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
@@ -872,6 +870,12 @@
               (register-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                  (list (cons a RSI) (cons c RAX)))))
     "Register allocation with predefined registers")
+(ok (eqv? 42 ((virtual-registers ctx <int> '() (lambda (r) (list (MOV r 42) (RET))))))
+    "'virtual-registers' allocates variable for return value")
+(ok (eqv? 55 ((virtual-registers ctx <byte> (list <byte>)
+                                 (lambda (r a) (list (MOV r a) (ADD r 13) (RET))))
+              42))
+    "'virtual-registers' allocates variables for function arguments")
 ;(ok (equal? (list (MOV AX 42))
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))
