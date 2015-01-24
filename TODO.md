@@ -12,9 +12,6 @@
 
 (rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
 
-* method without return value (empty list)
-* parameters are pre-allocated registers
-* method parameters, environments (variables, jumps)
 * pointer variables
 * register spilling
 * GOOPS monkey patching
