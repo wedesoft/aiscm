@@ -13,7 +13,7 @@
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <var>
-            asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target
+            asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             subst variables get-args get-input get-output labels next-indices live collisions
-            register-allocate virtual-registers)
+            register-allocate virtual-registers relabel)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -49,11 +49,12 @@
   (make <jcc> #:target target #:code8 code8 #:code32 code32))
 (define-method (Jcc (target <integer>) code8 code32)
   (append (if (disp8? target) (list code8) code32) (raw target (if (disp8? target) 8 32))))
+(define (retarget jcc target) (Jcc target (get-code8 jcc) (get-code32 jcc)))
 (define-method (apply-offset self offsets) self)
 (define-method (apply-offset (self <jcc>) offsets)
   (let [(pos    (assq-ref offsets self))
         (target (assq-ref offsets (get-target self)))]
-    (Jcc (if target (- target pos) 0) (get-code8 self) (get-code32 self))))
+    (retarget self (if target (- target pos) 0))))
 (define (apply-offsets commands offsets) (map (cut apply-offset <> offsets) commands))
 (define (stabilize-jumps commands guess)
   (let* [(applied  (apply-offsets commands guess))
@@ -497,6 +498,17 @@
          (register-allocate (apply proc (append return-value arg-values))
                             (append (list (cons return-value RAX))
                                     (map cons arg-values (list RDI RSI RDX RCX R8 R9)))))))
+(define (relabel prog)
+  (let* [(labels       (filter symbol? prog))
+         (replacements (map (compose gensym symbol->string) labels))
+         (translations (map cons labels replacements))]
+    (map (lambda (x)
+      (cond
+        ((symbol? x)     (assq-ref translations x))
+        ((is-a? x <jcc>) (retarget x (assq-ref translations (get-target x))))
+        ((list? x)       (relabel x))
+        (else            x)))
+      prog)))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))
