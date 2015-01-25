@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             subst variables get-args get-input get-output labels next-indices live collisions
-            register-allocate virtual-registers relabel)
+            register-allocate virtual-registers flatten-code relabel)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -498,17 +498,22 @@
          (register-allocate (apply proc (append return-value arg-values))
                             (append (list (cons return-value RAX))
                                     (map cons arg-values (list RDI RSI RDX RCX R8 R9)))))))
+(define (flatten-code prog)
+  (apply append (map (lambda (x)
+                       (if (and (list? x) (not (every integer? x)))
+                         (flatten-code x)
+                         (list x))) prog)))
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
          (replacements (map (compose gensym symbol->string) labels))
          (translations (map cons labels replacements))]
     (map (lambda (x)
-      (cond
-        ((symbol? x)     (assq-ref translations x))
-        ((is-a? x <jcc>) (retarget x (assq-ref translations (get-target x))))
-        ((list? x)       (relabel x))
-        (else            x)))
-      prog)))
+           (cond
+             ((symbol? x)     (assq-ref translations x))
+             ((is-a? x <jcc>) (retarget x (assq-ref translations (get-target x))))
+             ((list? x)       (relabel x))
+             (else            x)))
+         prog)))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))
