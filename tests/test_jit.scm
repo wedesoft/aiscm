@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 310)
+(planned-tests 311)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -812,12 +812,17 @@
     "Get arguments of command")
 (ok (equal? (list (MOV ECX 42))
             (let [(v (make <var> #:type <int> #:symbol 'v))]
-              (subst (list (MOV v 42)) (list (cons v 1)))))
+              (subst (list (MOV v 42)) (list (cons v RCX)))))
     "Substitute integer variable with register")
 (ok (equal? (list (MOV RCX 42))
             (let [(v (make <var> #:type <long> #:symbol 'v))]
-              (subst (list (MOV v 42)) (list (cons v 1)))))
+              (subst (list (MOV v 42)) (list (cons v RCX)))))
     "Substitute long integer variable with register")
+(ok (equal? (list (MOV (ptr <sint> RCX) SI))
+            (let [(p (make <var> #:type <long> #:symbol 'p))
+                  (x (make <var> #:type <sint> #:symbol 'x))]
+              (subst (list (MOV (ptr <sint> p) x)) (list (cons p RCX) (cons x RSI)))))
+    "Substitute pointer variable")
 (ok (let [(a (make <var> #:type <int>  #:symbol 'a))
           (b (make <var> #:type <sint> #:symbol 'b))]
       (equal?  (list a b) (variables (list (MOV a 0) (MOV b a))))

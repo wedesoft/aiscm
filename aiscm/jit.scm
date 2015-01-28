@@ -12,7 +12,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   ;#:use-module (ice-9 binary-ports)
-  #:export (<jit-context> <jit-function> <jcc> <cmd> <var>
+  #:export (<jit-context> <jit-function> <jcc> <cmd> <ptr> <operand> <register> <address> <var>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
@@ -90,6 +90,40 @@
                         (make-pointer (mmap-address mapped))
                         (map foreign-type arg-types))))
 
+(define-method (get-args self) '())
+(define-method (get-input self) '())
+(define-method (get-output self) '())
+(define-class <cmd> ()
+  (op #:init-keyword #:op #:getter get-op)
+  (args #:init-keyword #:args #:getter get-args)
+  (input #:init-keyword #:input #:getter get-input)
+  (output #:init-keyword #:output #:getter get-output))
+(define-method (display (self <cmd>) port)
+  (display (cons (generic-function-name (get-op self)) (get-args self)) port))
+(define-method (write (self <cmd>) port)
+  (write (cons (generic-function-name (get-op self)) (get-args self)) port))
+(define-class <var> ()
+  (type #:init-keyword #:type #:getter get-type)
+  (symbol #:init-keyword #:symbol #:init-form (gensym)))
+(define-method (display (self <var>) port) (display (slot-ref self 'symbol) port))
+(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
+(define-class <ptr> ()
+  (type #:init-keyword #:type #:getter get-type)
+  (args #:init-keyword #:args #:getter get-args))
+(define-method (display (self <ptr>) port)
+  (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
+(define-method (write (self <ptr>) port)
+  (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
+(define-method (subst self alist) self)
+(define-method (subst (self <var>) alist)
+  (let [(register (assq-ref alist self))]
+    (if register (reg (get-type self) (get-code register)) self)))
+(define-method (subst (self <ptr>) alist)
+  (apply ptr (cons (get-type self) (map (cut subst <> alist) (get-args self)))))
+(define-method (subst (self <cmd>) alist)
+  (apply (get-op self) (map (cut subst <> alist) (get-args self))))
+(define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
+
 (define-class <operand> ())
 
 (define-class <register> (<operand>)
@@ -118,22 +152,24 @@
 
 (define (scale s) (index s register-sizes))
 
-(define-class <pointer> (<operand>)
+(define-class <address> (<operand>)
   (type  #:init-keyword #:type  #:getter get-type)
   (reg   #:init-keyword #:reg   #:getter get-reg)
   (disp  #:init-keyword #:disp  #:getter get-disp  #:init-value #f)
   (index #:init-keyword #:index #:getter get-index #:init-value #f))
 
-(define-method (get-bits (self <pointer>)) (* 8 (size-of (get-type self))))
+(define-method (get-bits (self <address>)) (* 8 (size-of (get-type self))))
 
+(define-method (ptr (type <meta<int<>>>) . args)
+  (make <ptr> #:type type #:args args))
 (define-method (ptr (type <meta<int<>>>) (reg <register>))
-  (make <pointer> #:type type #:reg reg))
+  (make <address> #:type type #:reg reg))
 (define-method (ptr (type <meta<int<>>>) (reg <register>) (disp <integer>))
-  (make <pointer> #:type type #:reg reg #:disp disp))
+  (make <address> #:type type #:reg reg #:disp disp))
 (define-method (ptr (type <meta<int<>>>) (reg <register>) (index <register>))
-  (make <pointer> #:type type #:reg reg #:index index))
+  (make <address> #:type type #:reg reg #:index index))
 (define-method (ptr (type <meta<int<>>>) (reg <register>) (index <register>) (disp <integer>))
-  (make <pointer> #:type type #:reg reg #:index index #:disp disp))
+  (make <address> #:type type #:reg reg #:index index #:disp disp))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
@@ -143,7 +179,7 @@
 
 (define-method (bits3 (x <integer>)) (logand x #b111))
 (define-method (bits3 (x <register>)) (bits3 (get-code x)))
-(define-method (bits3 (x <pointer>)) (bits3 (get-reg x)))
+(define-method (bits3 (x <address>)) (bits3 (get-reg x)))
 
 (define-method (get-reg   (x <register>)) #f)
 (define-method (get-index (x <register>)) #f)
@@ -152,10 +188,10 @@
 (define-method (bit4 (x <boolean>)) 0)
 (define-method (bit4 (x <integer>)) (logand x #b1))
 (define-method (bit4 (x <register>)) (bit4 (ash (get-code x) -3)))
-(define-method (bit4 (x <pointer>)) (bit4 (get-reg x)))
+(define-method (bit4 (x <address>)) (bit4 (get-reg x)))
 
 (define-method (disp-value (x <register>)) #f)
-(define-method (disp-value (x <pointer>))
+(define-method (disp-value (x <address>))
   (or (get-disp x) (if (memv (get-reg x) (list RBP R13)) 0 #f)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
@@ -167,13 +203,13 @@
 (define-method (mod (r/m <boolean>)) #b00)
 (define-method (mod (r/m <integer>)) (if (disp8? r/m) #b01 #b10))
 (define-method (mod (r/m <register>)) #b11)
-(define-method (mod (r/m <pointer>)) (mod (disp-value r/m)))
+(define-method (mod (r/m <address>)) (mod (disp-value r/m)))
 
 (define-method (ModR/M mod reg/opcode r/m)
   (list (logior (ash mod 6) (ash (bits3 reg/opcode) 3) (bits3 r/m))))
 (define-method (ModR/M reg/opcode (r/m <register>))
   (ModR/M (mod r/m) reg/opcode r/m))
-(define-method (ModR/M reg/opcode (r/m <pointer>))
+(define-method (ModR/M reg/opcode (r/m <address>))
   (if (get-index r/m)
     (ModR/M (mod r/m) reg/opcode #b100)
     (ModR/M (mod r/m) reg/opcode (get-reg r/m))))
@@ -207,41 +243,16 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (get-args self) '())
-(define-method (get-input self) '())
-(define-method (get-output self) '())
-(define-class <cmd> ()
-  (op #:init-keyword #:op #:getter get-op)
-  (args #:init-keyword #:args #:getter get-args)
-  (input #:init-keyword #:input #:getter get-input)
-  (output #:init-keyword #:output #:getter get-output))
-(define-method (display (self <cmd>) port)
-  (display (cons (generic-function-name (get-op self)) (get-args self)) port))
-(define-method (write (self <cmd>) port)
-  (write (cons (generic-function-name (get-op self)) (get-args self)) port))
-(define-class <var> ()
-  (type #:init-keyword #:type #:getter get-type)
-  (symbol #:init-keyword #:symbol #:init-form (gensym)))
-(define-method (display (self <var>) port) (display (slot-ref self 'symbol) port))
-(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
-(define-method (subst self alist) self)
-(define-method (subst (self <var>) alist)
-  (let [(code (assq-ref alist self))]
-    (if code (reg (get-type self) code) self)))
-(define-method (subst (self <cmd>) alist)
-  (apply (get-op self) (map (cut subst <> alist) (get-args self))))
-(define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
-
 (define-method (MOV arg1 arg2) (make <cmd>
                                      #:op MOV
                                      #:args (list arg1 arg2)
                                      #:input (list arg2)
                                      #:output (list arg1)))
-(define-method (MOV (m <pointer>) (r <register>))
+(define-method (MOV (m <address>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <register>) imm)
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
-(define-method (MOV (m <pointer>) imm)
+(define-method (MOV (m <address>) imm)
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
@@ -259,7 +270,7 @@
                             ((16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
-(define-method (LEA (r <register>) (m <pointer>))
+(define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
 (define-method (SHL (r/m <operand>))
@@ -276,7 +287,7 @@
                                      #:args (list arg1 arg2)
                                      #:input (list arg1 arg2)
                                      #:output (list arg1)))
-(define-method (ADD (m <pointer>) (r <register>))
+(define-method (ADD (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
 (define-method (ADD (r <register>) imm)
   (if (equal? (get-code r) 0)
@@ -295,7 +306,7 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
-(define-method (SUB (m <pointer>) (r <register>))
+(define-method (SUB (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
 (define-method (SUB (r <register>) imm)
   (if (equal? (get-code r) 0)
@@ -311,7 +322,7 @@
 (define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
   (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
 
-(define-method (CMP (m <pointer>) (r <register>))
+(define-method (CMP (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
 (define-method (CMP (r <register>) (imm <integer>))
   (if (equal? (get-code r) 0)
@@ -386,13 +397,13 @@
     (set-argc fun (1+ (get-argc fun)))
     (make type #:value value)))
 (define-method (loc (value <register>) (fun <jit-function>)) value)
-(define-method (loc (value <pointer>) (fun <jit-function>))
+(define-method (loc (value <address>) (fun <jit-function>))
   (let [(disp (+ (get-disp value) (ash (get-offset fun) 3)))]
     (ptr (get-type value) RSP disp)))
 (define-method (reg (value <register>) (fun <jit-function>))
   (revive value fun)
   (loc value fun))
-(define-method (reg (value <pointer>) (fun <jit-function>))
+(define-method (reg (value <address>) (fun <jit-function>))
   (let* [(retval (reg (get-type value) fun))
          (setup  (MOV retval (loc value fun)))]
     (set-before fun (attach (get-before fun) setup))
@@ -484,13 +495,9 @@
 (define (collisions prog)
   (let [(live (live prog))]
     (delete-duplicates (apply append (map product live live)))))
-(define my-codes
-  (map get-code (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15)))
 (define (register-allocate prog predefined)
   (let [(registers  (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))]
-    (subst prog (color-graph (collisions prog)
-                             (map get-code registers)
-                             (mapcdr get-code predefined)))))
+    (subst prog (color-graph (collisions prog) registers predefined))))
 (define (virtual-registers ctx return-type arg-types proc)
   (let [(return-value (if (null? return-type) '() (list (make <var> #:type return-type))))
         (arg-values   (map (cut make <var> #:type <>) arg-types))]
