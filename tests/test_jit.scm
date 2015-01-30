@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 312)
+(planned-tests 314)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -801,12 +801,19 @@
 ; ------------------------------------------------------------------------------
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))]
-      (equal? (list b) (get-input (MOV a b))))
-    "Get input variables of command")
+      (equal? (list b) (input (MOV a b))))
+    "Get input variables of MOV")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))]
+      (equal? (list a) (input (ADD a a))))
+    "Get input variables of ADD")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))]
-      (equal? (list a) (get-output (MOV a b))))
+      (equal? (list a) (output (MOV a b))))
     "Get output variables of command")
+(ok (let [(a (make <var> #:type <int> #:symbol 'a))
+          (b (make <var> #:type <int> #:symbol 'b))]
+      (equal? (list b a) (input (MOV (ptr <int> a) b))))
+    "Get input variables of command writing to address")
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))]
       (equal? (list a 0) (get-args (MOV a 0))))
     "Get arguments of command")

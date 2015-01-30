@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args get-input get-output labels next-indices live collisions
+            subst variables get-args input output labels next-indices live collisions
             register-allocate virtual-registers flatten-code relabel)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
@@ -91,13 +91,20 @@
                         (map foreign-type arg-types))))
 
 (define-method (get-args self) '())
-(define-method (get-input self) '())
-(define-method (get-output self) '())
+(define-method (input self) '())
+(define-method (output self) '())
 (define-class <cmd> ()
   (op #:init-keyword #:op #:getter get-op)
   (args #:init-keyword #:args #:getter get-args)
   (input #:init-keyword #:input #:getter get-input)
   (output #:init-keyword #:output #:getter get-output))
+(define-method (input (self <cmd>))
+  (delete-duplicates
+    (filter is-var?
+            (apply append (cons (get-input self)
+                                (map get-args
+                                     (filter is-ptr? (get-args self))))))))
+(define-method (output (self <cmd>)) (delete-duplicates (filter is-var? (get-output self))))
 (define-method (display (self <cmd>) port)
   (display (cons (generic-function-name (get-op self)) (get-args self)) port))
 (define-method (write (self <cmd>) port)
@@ -107,6 +114,7 @@
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
 (define-method (display (self <var>) port) (display (slot-ref self 'symbol) port))
 (define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
+(define (is-var? value) (is-a? value <var>))
 (define-class <ptr> ()
   (type #:init-keyword #:type #:getter get-type)
   (args #:init-keyword #:args #:getter get-args))
@@ -114,6 +122,7 @@
   (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
 (define-method (write (self <ptr>) port)
   (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
+(define (is-ptr? value) (is-a? value <ptr>))
 (define-method (subst self alist) self)
 (define-method (subst (self <var>) alist)
   (let [(register (assq-ref alist self))]
@@ -473,7 +482,6 @@
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
   (pass-return-value ctx return-class (list arg-class ...) proc))
 ; ------------------------------------------------------------------------------
-(define (is-var? value) (is-a? value <var>))
 (define (variables prog) (delete-duplicates (filter is-var? (apply append (map get-args prog)))))
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -481,8 +489,8 @@
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (eq? #xeb (get-code8 cmd)) (list target) (list (1+ k) target))))
 (define (live prog)
-  (letrec* [(inputs    (map (lambda (cmd) (filter is-var? (get-input cmd))) prog))
-            (outputs   (map (lambda (cmd) (filter is-var? (get-output cmd))) prog))
+  (letrec* [(inputs    (map input prog))
+            (outputs   (map output prog))
             (indices   (iota (length prog)))
             (lut       (labels prog))
             (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices))
