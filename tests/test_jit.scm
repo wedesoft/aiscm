@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 311)
+(planned-tests 312)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -817,6 +817,10 @@
 (ok (equal? (list (MOV RCX 42))
             (let [(v (make <var> #:type <long> #:symbol 'v))]
               (subst (list (MOV v 42)) (list (cons v RCX)))))
+    "Substitute long integer variable with register")
+(ok (equal? (list (MOV RCX (ptr <long> RAX)))
+            (let [(v (make <var> #:type <long> #:symbol 'v))]
+              (subst (list (MOV v (ptr <long> RAX))) (list (cons v RCX)))))
     "Substitute long integer variable with register")
 (ok (equal? (list (MOV (ptr <sint> RCX) SI))
             (let [(p (make <var> #:type <long> #:symbol 'p))
