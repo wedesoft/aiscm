@@ -692,17 +692,6 @@
                      (list (MOV EAX (ptr <int> RSP #x28))))
                 1 2 3 4 5 6 7 8 9 10 11))
     "Check whether this Guile version supports foreign calls with more than 10 arguments")
-; ------------------------------------------------------------------------------
-;(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
-;                                 (lambda (fun r_ a_)
-;                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
-;    "Use 'pass-parameters' to define method")
-;(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
-;                                  (lambda (fun r_ a_)
-;                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
-;                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
-;    "Use 'jit-wrap' to define method")
-; ------------------------------------------------------------------------------
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))]
       (equal? (list b) (input (MOV a b))))
@@ -813,3 +802,14 @@
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))
 ;    "Allocate register for a variable")
+; ------------------------------------------------------------------------------
+;(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
+;                                 (lambda (fun r_ a_)
+;                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
+;    "Use 'pass-parameters' to define method")
+;(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
+;                                  (lambda (fun r_ a_)
+;                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
+;                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
+;    "Use 'jit-wrap' to define method")
+; ------------------------------------------------------------------------------

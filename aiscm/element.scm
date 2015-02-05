@@ -3,21 +3,9 @@
   #:use-module (system foreign)
   #:export (<element>
             <meta<element>>
-            get-value
-            content
-            size-of
-            foreign-type
-            pack
-            unpack
-            typecode
-            size
-            shape
-            dimension
-            coerce
-            match
-            get
-            set
-            get-size))
+            get-value size-of foreign-type pack unpack
+            typecode size shape dimension coerce match get set get-size
+            types content))
 (define-class <meta<element>> (<class>))
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
@@ -40,3 +28,5 @@
 (define-method (get (self <element>)) (get-value self))
 (define-method (set (self <element>) o) (begin (slot-set! self 'value o)) o)
 (define-generic get-size)
+(define-method (types (type <meta<element>>)) (list type))
+(define-method (content (self <element>)) (list (get-value self)))

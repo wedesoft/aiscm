@@ -1,18 +1,6 @@
 # TODO
 
-(use-modules (aiscm jit) (aiscm int) (aiscm util) (oop goops) (srfi srfi-1) (srfi srfi-26))
-(define a (make <var> #:type <int> #:symbol 'a))
-(define b (make <var> #:type <int> #:symbol 'b))
-(define c (make <var> #:type <int> #:symbol 'c))
-(define cmd (MOV (ptr <int> a) b))
-(get-input cmd)
-(get-output cmd)
-(define prog (list (MOV b 1) (ADD b a) (MOV c a) (RET)))
-(resolve-jumps (subst prog (color-graph (collisions prog) my-codes '())))
-
-(rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
-
-* structure parameters
+* "types" and "content" for structure parameters
 * register spilling
 * parameters on stack
 * callee-saved registers
