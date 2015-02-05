@@ -9,7 +9,7 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 315)
+(planned-tests 300)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -693,111 +693,15 @@
                 1 2 3 4 5 6 7 8 9 10 11))
     "Check whether this Guile version supports foreign calls with more than 10 arguments")
 ; ------------------------------------------------------------------------------
-(ok (equal? (list (MOV CX 42))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
-              (env fun
-                   [(x (reg <sint> fun))]
-                   (MOV x 42))))
-    "Get first register from register pool")
-(ok (equal? (list (MOV DX 42))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
-              (env fun
-                   [(x (reg <sint> fun))
-                    (y (reg <sint> fun))]
-                   (MOV y 42))))
-    "Get second register from register pool")
-(ok (equal? (list (MOV CX 42))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
-              (env fun [(x (reg <sint> fun))] (MOV x 21))
-              (env fun [(y (reg <sint> fun))] (MOV y 42))))
-    "Reuse register from register pool")
-(ok (equal? (list (MOV RDX 42))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
-              (env fun
-                   [(x (reg <int> fun))]
-                   (env fun
-                        [(y (reg <long> fun))]
-                        (MOV y 42)))))
-    "Nested environments")
-(ok (equal? (list (PUSH EDX) (MOV EDX 42) (POP EDX))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RDX))))]
-              (env fun
-                   [(x (reg <int> fun))]
-                   (env fun
-                        [(y (reg <int> fun))]
-                        (MOV y 42)))))
-    "Spilling a register")
-(ok (equal? (list (PUSH CL) (PUSH DX) (MOV ECX 21) (MOV RDX 42) (POP DX) (POP CL))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RCX RDX))))]
-              (env fun
-                   [(u (reg <byte> fun))
-                    (v (reg <sint> fun))]
-                   (env fun
-                        [(x (reg <int> fun))
-                         (y (reg <long> fun))]
-                        (MOV x 21)
-                        (MOV y 42)))))
-    "Spilling two registers")
-(ok (eq? EDX (reg <int> #x2))
-    "Instantiating registers by native type and code")
-(ok (equal? (list (PUSH RBX) (MOV BX 42) (POP RBX))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RBX))))]
-              (env fun
-                   [(x (reg <sint> fun))]
-                   (MOV x 42))))
-    "Restore callee-saved registers")
-(ok (equal? (list (MOV AX DI))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RAX RDI))))]
-              (env fun
-                   [(x (arg <sint> fun))
-                    (f (reg <sint> fun))]
-                   (MOV f (get-value x)))))
-    "Copy first integer argument")
-(ok (equal? (list (MOV AX DI))
-            (let [(fun (make <jit-function> #:codes (map get-code (list RDI RAX))))]
-              (env fun
-                   [(x (arg <sint> fun))
-                    (f (reg <sint> fun))]
-                   (MOV f (get-value x)))))
-    "Register allocation respects function arguments")
-(ok (equal? (list (MOV AX R9W))
-            (let [(fun (make <jit-function>))]
-              (env fun
-                   [(r (arg <sint> fun))
-                    (s (arg <sint> fun))
-                    (t (arg <sint> fun))
-                    (u (arg <sint> fun))
-                    (v (arg <sint> fun))
-                    (w (arg <sint> fun))
-                    (f (reg <sint> fun))]
-                   (MOV f (get-value w)))))
-    "Copy sixth integer argument")
-(ok (equal? (list (MOV AX (ptr <sint> RSP #x8)))
-            (let [(fun (make <jit-function>))]
-              (env fun
-                   [(r (arg <sint> fun))
-                    (s (arg <sint> fun))
-                    (t (arg <sint> fun))
-                    (u (arg <sint> fun))
-                    (v (arg <sint> fun))
-                    (w (arg <sint> fun))
-                    (x (arg <sint> fun))
-                    (f (reg <sint> fun))]
-                   (MOV f (get-value x)))))
-    "Copy seventh integer argument")
-(ok (let [(fun (make <jit-function>))]
-      (equal? (env fun [] (JMP 'b) (JMP 'a) 'a (NOP) 'b)
-              (env fun [] (JMP 'a) (env fun [] (JMP 'a) 'a) (NOP) 'a)))
-    "Separate namespaces for labels")
-(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
-                                 (lambda (fun r_ a_)
-                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
-    "Use 'pass-parameters' to define method")
-(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
-                                  (lambda (fun r_ a_)
-                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
-                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
-    "Use 'jit-wrap' to define method")
+;(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
+;                                 (lambda (fun r_ a_)
+;                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
+;    "Use 'pass-parameters' to define method")
+;(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
+;                                  (lambda (fun r_ a_)
+;                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
+;                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
+;    "Use 'jit-wrap' to define method")
 ; ------------------------------------------------------------------------------
 (ok (let [(a (make <var> #:type <int> #:symbol 'a))
           (b (make <var> #:type <int> #:symbol 'b))]
@@ -902,9 +806,9 @@
 (ok (equal? (list (JMP 1) 'a (NOP) (RET))
             (flatten-code (list (list (JMP 1) 'a) (NOP) (RET))))
     "'flatten-code' should flatten nested environments")
-(ok (equal? (resolve-jumps (list (JMP 'a) 'a (JMP 'b) 'b))
-            (resolve-jumps (flatten-code (relabel (list (JMP 'a) 'a (list (JMP 'b) 'b))))))
-    "'relabel' should differentiate labels of different environments")
+(ok (equal? (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
+            (resolve-jumps (flatten-code (relabel (list (JMP 'a) (list (JMP 'a) 'a) (NOP) 'a)))))
+    "'relabel' should create separate namespaces for labels")
 ;(ok (equal? (list (MOV AX 42))
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))

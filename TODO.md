@@ -12,8 +12,11 @@
 
 (rtl [(a (make <var> #:type <int>)) (b (make <var> #:type <int>))] (MOV a 0) (MOV b a))
 
-* pointer variables
+* structure parameters
 * register spilling
+* parameters on stack
+* callee-saved registers
+* remove pass-parameters, reg, arg, ...
 * GOOPS monkey patching
 * REPL docs: (help ...)
 * RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)
