@@ -1,6 +1,6 @@
 # TODO
 
-* "types" and "content" for structure parameters
+* "types" and "content" for structures
 * register spilling
 * parameters on stack
 * callee-saved registers

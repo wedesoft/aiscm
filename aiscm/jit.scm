@@ -437,11 +437,6 @@
         (strides (expand (dimension type) (get-value (arg <long> fun))))]
     (make type #:value value #:shape shape #:strides strides)))
 
-(define-method (types (type <meta<sequence<>>>))
-  (cons <long> (append (expand (dimension type) <long>) (expand (dimension type) <long>))))
-(define-method (content (self <sequence<>>))
-  (cons ((compose pointer-address get-memory get-value) self)
-        (append (shape self) (strides self))))
 (define-method (return-type (type <meta<element>>)) type)
 (define-method (return-type (type <meta<sequence<>>>)) <null>)
 (define-method (add-return-value (type <meta<element>>) fun args)
