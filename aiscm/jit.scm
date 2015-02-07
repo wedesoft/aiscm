@@ -101,9 +101,9 @@
 (define-method (input (self <cmd>))
   (delete-duplicates
     (filter is-var?
-            (apply append (cons (get-input self)
-                                (map get-args
-                                     (filter is-ptr? (get-args self))))))))
+            (concatenate (cons (get-input self)
+                               (map get-args
+                                    (filter is-ptr? (get-args self))))))))
 (define-method (output (self <cmd>)) (delete-duplicates (filter is-var? (get-output self))))
 (define-method (display (self <cmd>) port)
   (display (cons (generic-function-name (get-op self)) (get-args self)) port))
@@ -475,7 +475,7 @@
 (define-syntax-rule (jit-wrap ctx return-class (arg-class ...) proc)
   (pass-return-value ctx return-class (list arg-class ...) proc))
 ; ------------------------------------------------------------------------------
-(define (variables prog) (delete-duplicates (filter is-var? (apply append (map get-args prog)))))
+(define (variables prog) (delete-duplicates (filter is-var? (concatenate (map get-args prog)))))
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
@@ -495,7 +495,7 @@
     (map union (fixed-point initial iteration equal?) outputs))); TODO: is 'equal?' sufficient?
 (define (collisions prog)
   (let [(live (live prog))]
-    (delete-duplicates (apply append (map product live live)))))
+    (delete-duplicates (concatenate (map product live live)))))
 (define (register-allocate prog predefined)
   (let [(registers  (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))]
     (subst prog (color-graph (collisions prog) registers predefined))))
@@ -507,10 +507,10 @@
                             (append (list (cons return-value RAX))
                                     (map cons arg-values (list RDI RSI RDX RCX R8 R9)))))))
 (define (flatten-code prog)
-  (apply append (map (lambda (x)
-                       (if (and (list? x) (not (every integer? x)))
-                         (flatten-code x)
-                         (list x))) prog)))
+  (concatenate (map (lambda (x)
+                      (if (and (list? x) (not (every integer? x)))
+                        (flatten-code x)
+                        (list x))) prog)))
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
          (replacements (map (compose gensym symbol->string) labels))

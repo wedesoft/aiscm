@@ -1,5 +1,6 @@
 (define-module (aiscm compile)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:export (expr->params
@@ -11,7 +12,7 @@
 (define (expr->params expr)
   (cond
     ((null? expr) '())
-    ((pair? expr) (apply append (map expr->params (cdr expr))))
+    ((pair? expr) (concatenate (map expr->params (cdr expr))))
     (else (list expr))))
 (define (expr->descr expr)
   (letrec

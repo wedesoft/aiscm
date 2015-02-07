@@ -59,7 +59,7 @@
 (define (assq-set alist key val) (alist-set eq? alist key val))
 (define (assv-set alist key val) (alist-set eqv? alist key val))
 (define (assoc-set alist key val) (alist-set equal? alist key val))
-(define (product lst1 lst2) (apply append (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
+(define (product lst1 lst2) (concatenate (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
 (define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
 (define (argop op fun lst)
   (let* [(vals  (map fun lst))
