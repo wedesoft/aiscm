@@ -44,10 +44,7 @@
                            (let [(xs (+ (car lst) x))]
                              (cons xs (accumulate (cdr lst) xs))))))]
     (accumulate lst 0)))
-(define (zipmap keys vals)
-  (if (or (null? keys) (null? vals))
-    '()
-    (cons (cons (car keys) (car vals)) (zipmap (cdr keys) (cdr vals)))))
+(define (zipmap keys vals) (map (lambda (x) (cons (car x) (cadr x))) (zip keys vals)))
 (define (alist-invert alist)
   (map (lambda (x) (cons (cdr x) (car x))) alist))
 (define (alist-set = alist key val)
