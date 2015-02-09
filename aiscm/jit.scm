@@ -503,7 +503,7 @@
   (let [(return-value (if (null? return-type) '() (list (make <var> #:type return-type))))
         (arg-values   (map (cut make <var> #:type <>) arg-types))]
     (register-allocate (apply proc (append return-value arg-values))
-                       (append (list (cons return-value RAX))
+                       (append (map cons return-value (list RAX))
                                (map cons arg-values (list RDI RSI RDX RCX R8 R9))))))
 (define (flatten-code prog)
   (concatenate (map (lambda (x)
