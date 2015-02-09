@@ -3,17 +3,15 @@
              (aiscm jit)
              (aiscm int))
 (define i (make <int> #:value 42))
-(define ctx (make <jit-context>))
 
-(define (wrap ctx return-type argument-types proc)
+(define (wrap return-type argument-types proc)
   (let* [(r     (make <var> #:type return-type))
          (args  (map (lambda (type) (make <var> #:type type)) argument-types))
          (prog  (apply proc (cons r args)))
-         (alist (zipmap (cons r args) (list RAX RDI RSI RDX RCX R8 R9)))
-         (code  (subst prog alist))]
-  (asm ctx return-type argument-types code)))
+         (alist (zipmap (cons r args) (list RAX RDI RSI RDX RCX R8 R9)))]
+  (subst prog alist)))
 
-(define f (wrap ctx <int> (list <int>) (lambda (r x) (list (MOV r x) (RET)))))
+(wrap <int> (list <int>) (lambda (r x) (list (MOV r x) (RET))))
 
 ;(wrap ctx
 ;      <int>

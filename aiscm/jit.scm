@@ -499,13 +499,12 @@
 (define (register-allocate prog predefined)
   (let [(registers  (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))]
     (subst prog (color-graph (collisions prog) registers predefined))))
-(define (virtual-registers ctx return-type arg-types proc)
+(define (virtual-registers return-type arg-types proc)
   (let [(return-value (if (null? return-type) '() (list (make <var> #:type return-type))))
         (arg-values   (map (cut make <var> #:type <>) arg-types))]
-    (asm ctx return-type arg-types
-         (register-allocate (apply proc (append return-value arg-values))
-                            (append (list (cons return-value RAX))
-                                    (map cons arg-values (list RDI RSI RDX RCX R8 R9)))))))
+    (register-allocate (apply proc (append return-value arg-values))
+                       (append (list (cons return-value RAX))
+                               (map cons arg-values (list RDI RSI RDX RCX R8 R9))))))
 (define (flatten-code prog)
   (concatenate (map (lambda (x)
                       (if (and (list? x) (not (every integer? x)))
