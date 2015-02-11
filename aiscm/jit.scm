@@ -451,7 +451,6 @@
          (return-type   (return-type return-class))
          (arg-types     (flatten (map types param-classes)))
          (vals          (add-return-value return-class fun args))]
-    ;(set-codes fun (map get-code (list RAX R10 R11 RBX RBP R12 R13 R14 R15)))
     (asm ctx return-type arg-types (apply proc (cons fun vals)))))
 (define-method (shape a b)
   (let [(shape-a (shape a))

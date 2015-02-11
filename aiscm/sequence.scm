@@ -9,7 +9,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
-            sequence multiarray multiarray->list list->multiarray strides
+            sequence multiarray multiarray->list list->multiarray
             dump crop project rebase roll unroll downsample))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
@@ -156,7 +156,16 @@
 (define-method (downsample (n <null>) (self <sequence<>>)) self)
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
-(define-method (types (type <meta<sequence<>>>))
-  (append (types (element-type type)) (list <long> <long>)))
+(define-method (types (self <meta<sequence<>>>))
+  (append (list <long> <long>) (types (element-type self))))
 (define-method (content (self <sequence<>>))
-  (append (content (project self)) (list (last (shape self)) (last (strides self)))))
+  (append (map (cut make <long> #:value <>)
+               (list (last (shape self)) (last (strides self))))
+          (content (project self))))
+(define-method (construct (self <meta<sequence<>>>) lst)
+  (let [(slice (construct (element-type self) (cddr lst)))]
+    (make self
+          #:value (get-value slice)
+          #:shape (attach (shape slice) (get-value (car lst)))
+          #:strides (attach (strides slice) (get-value (cadr lst))))))
+; TODO: construct for sequences

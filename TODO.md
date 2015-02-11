@@ -1,9 +1,9 @@
 # TODO
 
-* "types" and "content" for structures
 * register spilling
 * parameters on stack
 * callee-saved registers
+* pack and unpack necessary? <int> and <bool> necessary?
 * remove pass-parameters, reg, arg, ...
 * GOOPS monkey patching
 * REPL docs: (help ...)

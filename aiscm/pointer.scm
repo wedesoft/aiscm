@@ -45,4 +45,3 @@
   (pack (make <native-int>
               #:value ((compose pointer-address get-memory get-value) self))))
 (define-method (types (type <meta<pointer<>>>)) (list <long>))
-(define-method (content (self <pointer<>>)) (list ((compose pointer-address get-memory get-value) self)))

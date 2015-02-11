@@ -1,26 +1,13 @@
 (use-modules (oop goops)
              (aiscm util)
+             (aiscm element)
+             (aiscm pointer)
+             (aiscm sequence)
              (aiscm jit)
              (aiscm int))
-(define i (make <int> #:value 42))
+(define s (make (sequence <byte>) #:size 3))
 
-(define (wrap return-type argument-types proc)
-  (let* [(r     (make <var> #:type return-type))
-         (args  (map (lambda (type) (make <var> #:type type)) argument-types))
-         (prog  (apply proc (cons r args)))
-         (alist (zipmap (cons r args) (list RAX RDI RSI RDX RCX R8 R9)))]
-  (subst prog alist)))
-
-(wrap <int> (list <int>) (lambda (r x) (list (MOV r x) (RET))))
-
-;(wrap ctx
-;      <int>
-;      (list <int>)
-;      (lambda (f r x)
-;        (let [(v (make <var> #:type <int> #:symbol 'v))])
-;        (MOV v x)
-;        (ADD v 42)
-;        (MOV r v)))
+(content s)
 
 ;(define-syntax env
 ;  (lambda (x)
