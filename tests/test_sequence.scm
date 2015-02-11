@@ -37,7 +37,7 @@
       (call-with-output-string (lambda (port) (display s1 port))))
     "Display sequence object")
 (ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
-      (call-with-output-string (lambda (port) (display (list->multiarray (repeat 100 40)) port))))
+      (call-with-output-string (lambda (port) (display (list->multiarray (make-list 40 100)) port))))
     "Display longer sequence object")
 (ok (equal? <ubyte> (typecode (list->multiarray '(1 2 3))))
     "Typecode of converted list of unsigned bytes")
@@ -57,10 +57,10 @@
       (call-with-output-string (lambda (port) (display (list->multiarray '((1 2 3) (4 5 6))) port))))
     "Display 2D array")
 (ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
-      (call-with-output-string (lambda (port) (display (list->multiarray (list (repeat 100 40))) port))))
+      (call-with-output-string (lambda (port) (display (list->multiarray (list (make-list 40 100))) port))))
     "Display 2D array with large first dimension")
 (ok (equal? "#<multiarray<int<8,unsigned>>,4>:\n((((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n ..."
-      (call-with-output-string (lambda (port) (display (list->multiarray (list (repeat (repeat '(1 1) 3) 4))) port))))
+      (call-with-output-string (lambda (port) (display (list->multiarray (list (make-list 4 (make-list 3 '(1 1))))) port))))
     "Display larger n-dimensional array")
 (ok (equal? (sequence <int>) (coerce <int> (sequence <sint>)))
     "Coercion of sequences")
