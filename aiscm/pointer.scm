@@ -44,4 +44,14 @@
 (define-method (pack (self <pointer<>>))
   (pack (make <native-int>
               #:value ((compose pointer-address get-memory get-value) self))))
-(define-method (types (type <meta<pointer<>>>)) (list <long>))
+(define-method (types (type <meta<pointer<>>>)) (list <long> <long> <long>))
+(define-method (content (self <pointer<>>))
+  (let [(mem (get-value self))]
+    (list (pointer-address (get-memory mem))
+          (pointer-address (slot-ref mem 'base))
+          (slot-ref mem 'size))))
+(define-method (construct (self <meta<pointer<>>>) lst)
+  (let [(memory (make-pointer (car lst)))
+        (base   (make-pointer (cadr lst)))
+        (size   (caddr lst))]
+    (make self #:value (make <mem> #:memory memory #:base base #:size size))))

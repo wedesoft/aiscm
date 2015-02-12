@@ -168,4 +168,3 @@
           #:value (get-value slice)
           #:shape (attach (shape slice) (get-value (car lst)))
           #:strides (attach (strides slice) (get-value (cadr lst))))))
-; TODO: construct for sequences

@@ -52,5 +52,5 @@
     "display pointer object")
 (ok (eqv? 4 (get-size (get-value (make (pointer <int>)))))
     "Memory is allocated if no value is specified")
-(ok (equal? (list <long>) (types (pointer <sint>)))
-    "'types' for a pointer returns a long integer")
+(ok (equal? (list <long> <long> <long>) (types (pointer <sint>)))
+    "'types' for a pointer returns a list of three long integer")

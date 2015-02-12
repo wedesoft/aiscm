@@ -1,5 +1,6 @@
 # TODO
 
+* content and construct should remove types
 * register spilling
 * parameters on stack
 * callee-saved registers
@@ -18,5 +19,6 @@
 * test code examples
 * scm_display(scm_target, scm_current_output_port()); printf("\n");
 * reduce number of files to include
+* use first, second, ... from srfi-1
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
