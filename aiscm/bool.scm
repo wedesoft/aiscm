@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (rnrs bytevectors)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:export (<bool>
             <meta<bool>>))
 (define-class <meta<bool>> (<meta<element>>))
@@ -16,3 +17,6 @@
 (define-method (display (self <bool>) port)
   (format port "#<<bool> ~a>" (get-value self)))
 (define-method (match (b <boolean>)) <bool>)
+(define-method (types (self <meta<bool>>)) (list <ubyte>))
+(define-method (content (self <bool>)) (list (if (get-value self) 1 0)))
+(define-method (construct (self <meta<element>>) lst) (make self #:value (not (eq? 0 (car lst)))))

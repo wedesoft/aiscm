@@ -97,3 +97,6 @@
             ((< ni (ash 1 31))  <int>)
             ((< ni (ash 1 63)) <long>)
             (else (next-method))))))
+(define-method (types (self <meta<int<>>>)) (list self))
+(define-method (content (self <int<>>)) (list (get-value self)))
+(define-method (construct (self <meta<int<>>>) lst) (make self #:value (car lst)))
