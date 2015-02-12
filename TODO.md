@@ -1,6 +1,5 @@
 # TODO
 
-* content and construct should remove types
 * register spilling
 * parameters on stack
 * callee-saved registers

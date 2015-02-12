@@ -30,5 +30,5 @@
 (define-method (set (self <element>) o) (begin (slot-set! self 'value o)) o)
 (define-generic get-size)
 (define-method (types (self <meta<element>>)) (list self))
-(define-method (content (self <element>)) (list self))
-(define-method (construct (self <meta<element>>) lst) (car lst))
+(define-method (content (self <element>)) (list (get-value self)))
+(define-method (construct (self <meta<element>>) lst) (make self #:value (car lst)))
