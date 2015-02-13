@@ -5,6 +5,7 @@
              (aiscm sequence)
              (aiscm jit)
              (aiscm int))
+(define regs (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define s (make (sequence <byte>) #:size 3))
 
 (content s)

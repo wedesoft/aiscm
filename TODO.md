@@ -1,5 +1,6 @@
 # TODO
 
+* store pointer as integer
 * register spilling
 * parameters on stack
 * callee-saved registers
