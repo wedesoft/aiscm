@@ -2,6 +2,7 @@
              (system foreign)
              (aiscm element)
              (aiscm int)
+             (aiscm jit)
              (guile-tap))
 (planned-tests 62)
 (ok (equal? (integer 32 signed) (integer 32 signed))
@@ -132,5 +133,6 @@
     "'types' returns the type itself")
 (ok (equal? '(42) (content (make <sint> #:value 42)))
     "'content' returns the value")
-(ok (eqv? 42 (get-value (construct <int> '(42))))
-    "'construct' builds integer objects")
+(ok (let [(v (make <var> #:type <int> #:symbol 'v))]
+      (equal? v (param <int> (list v))))
+    "'param' passes integer variables through")

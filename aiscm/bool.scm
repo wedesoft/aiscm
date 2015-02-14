@@ -19,4 +19,3 @@
 (define-method (match (b <boolean>)) <bool>)
 (define-method (types (self <meta<bool>>)) (list <ubyte>))
 (define-method (content (self <bool>)) (list (if (get-value self) 1 0)))
-(define-method (construct (self <meta<element>>) lst) (make self #:value (not (eq? 0 (car lst)))))

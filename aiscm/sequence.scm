@@ -160,9 +160,9 @@
   (append (list <long> <long>) (types (element-type self))))
 (define-method (content (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (content (project self))))
-(define-method (construct (self <meta<sequence<>>>) lst)
-  (let [(slice (construct (element-type self) (cddr lst)))]
+(define-method (param (self <meta<sequence<>>>) lst)
+  (let [(slice (param (element-type self) (cddr lst)))]
     (make self
-          #:value (get-value slice)
-          #:shape (attach (shape slice) (car lst))
+          #:value   (if (is-a? slice <sequence<>>) (get-value slice) slice)
+          #:shape   (attach (shape slice) (car lst))
           #:strides (attach (strides slice) (cadr lst)))))

@@ -5,7 +5,7 @@
             <meta<element>>
             get-value size-of foreign-type pack unpack
             typecode size shape strides dimension coerce match get set get-size
-            types content construct))
+            types content param))
 (define-class <meta<element>> (<class>))
 (define-class <element> ()
               (value #:init-keyword #:value #:getter get-value)
@@ -31,4 +31,4 @@
 (define-generic get-size)
 (define-generic types)
 (define-generic content)
-(define-generic construct)
+(define-method (param (self <meta<element>>) lst) (car lst))
