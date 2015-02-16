@@ -64,10 +64,9 @@
 (define (argmin fun lst) (argop min fun lst))
 (define (argmax fun lst) (argop max fun lst))
 (define (gather sizes lst)
-  (unfold (compose null? car)
-          (lambda (x) (take (car x) (cadr x)))
-          (lambda (x) (cons (drop (car x) (cadr x)) (cddr x)))
-          (cons lst sizes)))
+  (if (null? sizes) '()
+    (let [(n (car sizes))]
+      (cons (take lst n) (gather (cdr sizes) (drop lst n))))))
 (define (fixed-point initial iteration compare?)
   (let [(successor (iteration initial))]
     (if (compare? initial successor)
