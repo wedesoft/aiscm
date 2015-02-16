@@ -7,7 +7,7 @@
   #:use-module (system foreign)
   #:export (toplevel-define! malloc destroy attach index all-but-last depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
-            assq-set assv-set assoc-set product sort-by argmin argmax
+            assq-set assv-set assoc-set product sort-by argmin argmax gather
             nodes adjacent remove-node color-graph union difference fixed-point)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
@@ -63,6 +63,11 @@
     (list-ref (reverse lst) (1- (length (member opval vals))))))
 (define (argmin fun lst) (argop min fun lst))
 (define (argmax fun lst) (argop max fun lst))
+(define (gather sizes lst)
+  (unfold (compose null? car)
+          (lambda (x) (take (car x) (cadr x)))
+          (lambda (x) (cons (drop (car x) (cadr x)) (cddr x)))
+          (cons lst sizes)))
 (define (fixed-point initial iteration compare?)
   (let [(successor (iteration initial))]
     (if (compare? initial successor)

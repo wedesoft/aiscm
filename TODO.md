@@ -1,5 +1,6 @@
 # TODO
 
+* collate
 * store pointer as integer
 * register spilling
 * parameters on stack

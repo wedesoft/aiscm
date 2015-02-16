@@ -1,12 +1,35 @@
 (use-modules (oop goops)
+             (srfi srfi-1)
+             (srfi srfi-26)
              (aiscm util)
              (aiscm element)
              (aiscm pointer)
              (aiscm sequence)
              (aiscm jit)
              (aiscm int))
-(define regs (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
-(define s (make (sequence <byte>) #:size 2))
+(define i 42)
+(define s (make (sequence <byte>) #:size 3))
+
+; (match 42) -> <int>
+; (match s) -> (sequence <byte>)
+; (match '(1 2 3)) -> ???
+
+(define c (list (match i) (class-of s)))
+(define t (concatenate (map types c)))
+(define v (map (cut make <var> #:type <>) t))
+
+
+(gather (map (compose length types) c) v)
+
+(define (collate classes vars)
+  (map param classes (gather (map (compose length types) classes) vars)))
+
+(define a (collate t v))
+(car a)
+(get-value (cadr a))
+(shape (cadr a))
+(strides (cadr a))
+
 
 (content s)
 
