@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             subst variables get-args input output labels next-indices live collisions
-            register-allocate virtual-registers flatten-code relabel)
+            register-allocate virtual-registers flatten-code relabel collate)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -520,6 +520,8 @@
              ((list? x)       (relabel x))
              (else            x)))
          prog)))
+(define (collate classes vars)
+  (map param classes (gather (map (compose length types) classes) vars)))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))

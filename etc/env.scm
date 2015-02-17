@@ -8,23 +8,23 @@
              (aiscm jit)
              (aiscm int))
 (define i 42)
-(define s (make (sequence <byte>) #:size 3))
+(define s (list->multiarray '(1 2 3)))
 
 ; (match 42) -> <int>
 ; (match s) -> (sequence <byte>)
 ; (match '(1 2 3)) -> ???
 
-(define c (list (match i) (class-of s)))
+(define c (map match (list i s)))
 (define t (concatenate (map types c)))
 (define v (map (cut make <var> #:type <>) t))
 
 
-(gather (map (compose length types) c) v)
 
-(define (collate classes vars)
-  (map param classes (gather (map (compose length types) classes) vars)))
+;(define (plus r a x)
+;
+;)
 
-(define a (collate t v))
+(define a (collate c v))
 (car a)
 (get-value (cadr a))
 (shape (cadr a))
