@@ -1,10 +1,11 @@
 # TODO
 
-* collate
+* make structs of variables printable
 * store pointer as integer
 * register spilling
 * parameters on stack
 * callee-saved registers
+* matching for lists?
 * pack and unpack necessary? <int> and <bool> necessary?
 * remove pass-parameters, reg, arg, ...
 * GOOPS monkey patching

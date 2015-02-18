@@ -259,9 +259,13 @@
                                      #:output (list arg1)))
 (define-method (MOV (m <address>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
-(define-method (MOV (r <register>) imm)
+(define-method (MOV (r <register>) (imm <integer>)); TODO: fix redundancy
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
-(define-method (MOV (m <address>) imm)
+(define-method (MOV (m <address>) (imm <integer>)); TODO: fix redundancy
+  (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
+(define-method (MOV (r <register>) (imm <mem>)); TODO: fix redundancy
+  (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
+(define-method (MOV (m <address>) (imm <mem>)); TODO: fix redundancy
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
@@ -298,11 +302,11 @@
                                      #:output (list arg1)))
 (define-method (ADD (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
-(define-method (ADD (r <register>) imm)
+(define-method (ADD (r <register>) (imm <integer>))
   (if (equal? (get-code r) 0)
     (append (prefixes r) (if8 r #x04 #x05) (raw imm (min 32 (get-bits r))))
     (next-method)))
-(define-method (ADD (r/m <operand>) imm)
+(define-method (ADD (r/m <operand>) (imm <integer>))
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 0 r/m) (raw imm (min 32 (get-bits r/m)))))
 (define-method (ADD (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
@@ -317,11 +321,11 @@
 
 (define-method (SUB (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
-(define-method (SUB (r <register>) imm)
+(define-method (SUB (r <register>) (imm <integer>))
   (if (equal? (get-code r) 0)
     (append (prefixes r) (if8 r #x2c #x2d) (raw imm (min 32 (get-bits r))))
     (next-method)))
-(define-method (SUB (r/m <operand>) imm)
+(define-method (SUB (r/m <operand>) (imm <integer>))
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 5 r/m) (raw imm (min 32 (get-bits r/m)))))
 (define-method (SUB (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))

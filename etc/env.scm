@@ -8,27 +8,41 @@
              (aiscm jit)
              (aiscm int))
 (define i 42)
+(define j 42)
 (define s (list->multiarray '(1 2 3)))
 
-; (match 42) -> <int>
-; (match s) -> (sequence <byte>)
-; (match '(1 2 3)) -> ???
+(define args (list i j))
+(define classes (map match args))
+(define basics (concatenate (map types classes)))
+(define vars (map (cut make <var> #:type <>) basics))
+(define abstract (collate classes vars))
+(define predefined (map cons vars (list EDI ESI)))
 
-(define c (map match (list i s)))
-(define t (concatenate (map types c)))
-(define v (map (cut make <var> #:type <>) t))
+(define ctx (make <jit-context>))
 
+(define sum
+  (let* [(result-type (apply coerce basics))
+         (result-var  (make <var> #:type result-type))]
+    (asm ctx (apply coerce basics) basics
+      (register-allocate
+        (apply (lambda (r a b)
+                 (list (MOV r a)
+                       (ADD r b)
+                       (RET)))
+               (cons result-var vars))
+        (cons (cons result-var EAX) predefined))))); assoc?
+
+(sum 2 3)
 
 
 ;(define (plus r a x)
 ;
 ;)
 
-(define a (collate c v))
-(car a)
-(get-value (cadr a))
-(shape (cadr a))
-(strides (cadr a))
+; (car a)
+; (get-value (cadr a))
+; (shape (cadr a))
+; (strides (cadr a))
 
 
 (content s)
