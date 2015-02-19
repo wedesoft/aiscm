@@ -10,30 +10,17 @@
 (define i 42)
 (define j 42)
 (define s (list->multiarray '(1 2 3)))
-
-(define args (list i j))
-(define classes (map match args))
-(define basics (concatenate (map types classes)))
-(define vars (map (cut make <var> #:type <>) basics))
-(define abstract (collate classes vars))
-(define predefined (map cons vars (list EDI ESI)))
-
 (define ctx (make <jit-context>))
-
 (define sum
-  (let* [(result-type (apply coerce basics))
-         (result-var  (make <var> #:type result-type))]
-    (asm ctx (apply coerce basics) basics
-      (register-allocate
-        (apply (lambda (r a b)
-                 (list (MOV r a)
-                       (ADD r b)
-                       (RET)))
-               (cons result-var vars))
-        (cons (cons result-var EAX) predefined))))); assoc?
-
+  (wrap ctx <ubyte> (list <ubyte> <ubyte>)
+    (lambda (r a b)
+      (list (MOV r a)
+            (ADD r b)
+            (RET)))))
+sum
 (sum 2 3)
 
+((asm ctx <int> (list <int> <int> <int> <int> <int> <int>) (list (MOV EAX R8D) (RET))) 1 2 3 4 5 6)
 
 ;(define (plus r a x)
 ;
