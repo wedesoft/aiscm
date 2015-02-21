@@ -59,9 +59,9 @@
     "return value of setting boolean to false")
 (ok (equal? (list <ubyte>) (types <bool>))
     "'types' returns unsigned byte")
-(ok (equal? '(0) (content (make <bool> #:value #f)))
+(ok (equal? '(0) (content #f))
     "'content' returns 0 for false")
-(ok (equal? '(1) (content (make <bool> #:value #t)))
+(ok (equal? '(1) (content #t))
     "'content' returns 1 for true")
 (ok (let [(v (make <var> #:type <ubyte> #:symbol 'v))]
       (equal? v (param <bool> (list v))))

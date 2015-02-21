@@ -18,4 +18,4 @@
   (format port "#<<bool> ~a>" (get-value self)))
 (define-method (match (b <boolean>)) <bool>)
 (define-method (types (self <meta<bool>>)) (list <ubyte>))
-(define-method (content (self <bool>)) (list (if (get-value self) 1 0)))
+(define-method (content (self <boolean>)) (list (if self 1 0)))

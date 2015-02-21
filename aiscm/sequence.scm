@@ -138,7 +138,6 @@
   (multiarray (coerce a (typecode b)) (dimension b)))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<sequence<>>>))
   (multiarray (coerce (typecode a) (typecode b)) (max (dimension a) (dimension b))))
-(define-method (match (s <sequence<>>)) (class-of s))
 (define (roll self) (make (class-of self)
         #:value   (get-value self)
         #:shape   (cycle (shape self))

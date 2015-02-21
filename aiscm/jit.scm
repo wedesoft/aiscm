@@ -529,11 +529,15 @@
 (define (wrap ctx result-type arg-classes proc)
   (let* [(arg-types    (concatenate (map types arg-classes)))
          (vars         (map (cut make <var> #:type <>) (cons result-type arg-types)))
-         (predefined   (map cons vars (list RAX RDI RSI RDX RCX R8 R9)))]
-    (asm ctx
-         result-type
-         arg-types
-         (register-allocate (apply proc vars) predefined))))
+         (predefined   (map cons vars (list RAX RDI RSI RDX RCX R8 R9)))
+         (args         (collate (cons result-type arg-classes) vars))]
+    (lambda params
+      (apply
+        (asm ctx
+             result-type
+             arg-types
+             (register-allocate (apply proc args) predefined))
+        (concatenate (map content params))))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))

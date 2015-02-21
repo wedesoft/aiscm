@@ -98,4 +98,4 @@
             ((< ni (ash 1 63)) <long>)
             (else (next-method))))))
 (define-method (types (self <meta<int<>>>)) (list self))
-(define-method (content (self <int<>>)) (list (get-value self)))
+(define-method (content (self <integer>)) (list self))

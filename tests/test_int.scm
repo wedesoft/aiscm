@@ -131,8 +131,8 @@
     "return-value of setting integer")
 (ok (equal? (list <sint>) (types <sint>))
     "'types' returns the type itself")
-(ok (equal? '(42) (content (make <sint> #:value 42)))
-    "'content' returns the value")
+(ok (equal? '(42) (content 42))
+    "'content' returns integer values")
 (ok (let [(v (make <var> #:type <int> #:symbol 'v))]
       (equal? v (param <int> (list v))))
     "'param' passes integer variables through")

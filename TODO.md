@@ -1,7 +1,7 @@
 # TODO
 
+* pointer for content defined on correct class? (define on <mem> or <foreign>?)
 * make structs of variables printable
-* store pointer as integer
 * register spilling
 * parameters on stack
 * callee-saved registers

@@ -20,7 +20,11 @@
 sum
 (sum 2 3)
 
-((asm ctx <int> (list <int> <int> <int> <int> <int> <int>) (list (MOV EAX R8D) (RET))) 1 2 3 4 5 6)
+(define sum
+  (wrap ctx <long> (list (sequence <ubyte>))
+        (lambda (r s) (list (MOV r (car (shape s))) (RET)))))
+sum
+(sum s)
 
 ;(define (plus r a x)
 ;
