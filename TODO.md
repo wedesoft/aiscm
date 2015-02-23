@@ -1,6 +1,7 @@
 # TODO
 
-* pointer for content defined on correct class? (define on <mem> or <foreign>?)
+* <null> return value
+* sequences as return values
 * make structs of variables printable
 * register spilling
 * parameters on stack

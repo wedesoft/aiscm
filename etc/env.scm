@@ -4,6 +4,7 @@
              (aiscm util)
              (aiscm element)
              (aiscm pointer)
+             (aiscm mem)
              (aiscm sequence)
              (aiscm jit)
              (aiscm int))
@@ -17,26 +18,27 @@
       (list (MOV r a)
             (ADD r b)
             (RET)))))
-sum
 (sum 2 3)
 
-(define sum
+(define shp
   (wrap ctx <long> (list (sequence <ubyte>))
         (lambda (r s) (list (MOV r (car (shape s))) (RET)))))
-sum
-(sum s)
+(shp s)
 
-;(define (plus r a x)
-;
-;)
+; no return value
+(define i1 (random (ash 1 30)))
+(define i2 (random (ash 1 30)))
+(define mem (make <mem> #:size 256))
+(define iptr (make (pointer <int>) #:value mem))
+(define (idata) (begin
+                  (store iptr       i1)
+                  (store (+ iptr 1) i2)
+                  mem))
+((asm ctx <null> (list <int>) (list (MOV RAX (idata)) (ADD (ptr <int> RAX) EDI) (RET))) i2)
+(+ i1 i2)
+(get-value (fetch iptr))
 
-; (car a)
-; (get-value (cadr a))
-; (shape (cadr a))
-; (strides (cadr a))
-
-
-(content s)
+(wrap ctx <null> '() (lambda () (list (RET))))
 
 ;(define-syntax env
 ;  (lambda (x)
