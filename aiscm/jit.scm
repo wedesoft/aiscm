@@ -528,16 +528,16 @@
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
   (let* [(arg-types    (concatenate (map types arg-classes)))
-         (vars         (map (cut make <var> #:type <>) (cons result-type arg-types)))
-         (predefined   (map cons vars (list RAX RDI RSI RDX RCX R8 R9)))
-         (args         (collate (cons result-type arg-classes) vars))]
+         (result-types (if (eq? result-type <null>) '() (list result-type)))
+         (arg-vars     (map (cut make <var> #:type <>) arg-types))
+         (result-vars  (map (cut make <var> #:type <>) result-types))
+         (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
+         (result-regs  (map cons result-vars (list RAX)))
+         (args         (collate (append result-types arg-classes) (append result-vars arg-vars)))]
     (lambda params
-      (apply
-        (asm ctx
-             result-type
-             arg-types
-             (register-allocate (apply proc args) predefined))
-        (concatenate (map content params))))))
+      (apply (asm ctx result-type arg-types
+                  (register-allocate (apply proc args) (append result-regs arg-regs)))
+             (concatenate (map content params))))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))

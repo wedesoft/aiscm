@@ -11,7 +11,7 @@
              (aiscm bool)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 308)
+(planned-tests 309)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -818,6 +818,8 @@
            (s (car (collate (list (sequence <byte>)) (list l i p))))]
       (equal? (list p l i) (list (get-value s) (car (shape s)) (car (strides s)))))
     "'collate' constructs sequences")
+(ok (unspecified? ((wrap ctx <null> '() (lambda () (list (RET))))))
+    "'wrap' can create an empty function")
 (ok (eqv? i1 ((wrap ctx <int> '() (lambda (r) (list (MOV r i1) (RET))))))
     "'wrap' creates constant function returning an integer")
 (ok (eqv? 5 ((wrap ctx <ubyte> (list <ubyte> <ubyte>)
