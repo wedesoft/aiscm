@@ -48,6 +48,10 @@ s
 
 (wrap ctx <null> '() (lambda () (list (RET))))
 
+(define fill (wrap ctx <null> (list (pointer <int>)) (lambda (p) (list (MOV (ptr <int> p) 0) (RET)))))
+(fill iptr)
+(get-value (fetch iptr))
+
 ;(define-syntax env
 ;  (lambda (x)
 ;    (syntax-case x (call)
