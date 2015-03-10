@@ -1,5 +1,6 @@
 # TODO
 
+* negate sequence (generalise NEG, macro, recursion, extra parameters, register spilling)
 * <null> return value
 * sequences as return values
 * make structs of variables printable

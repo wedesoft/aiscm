@@ -11,7 +11,7 @@
              (aiscm bool)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 309)
+(planned-tests 310)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -835,6 +835,13 @@
                    (lambda (r s) (list (MOV r (car (shape s))) (RET))))
              (make (sequence <ubyte>) #:size 5)))
     "'wrap' composes variables for representing sequences")
+(ok (equal?
+      '(0 2 3)
+      (let [(s (list->multiarray '(1 2 3)))]
+        ((wrap ctx <null> (list (sequence <ubyte>))
+           (lambda (s) (list (MOV (ptr <ubyte> (get-value s)) 0) (RET)))) s)
+        (multiarray->list s)))
+  "'wrap' passes pointer variables for sequence data")
 ;(ok (equal? (list (MOV AX 42))
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))

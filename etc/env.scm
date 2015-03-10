@@ -20,6 +20,14 @@
             (RET)))))
 (sum 2 3)
 
+(define clr
+  (wrap ctx <null> (list (sequence <byte>))
+    (lambda (s)
+      (list (MOV (ptr <ubyte> (get-value s)) 0)
+            (RET)))))
+(clr s)
+s
+
 (define shp
   (wrap ctx <long> (list (sequence <ubyte>))
         (lambda (r s) (list (MOV r (car (shape s))) (RET)))))
