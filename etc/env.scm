@@ -7,50 +7,36 @@
              (aiscm mem)
              (aiscm sequence)
              (aiscm jit)
+             (aiscm op)
              (aiscm int))
-(define i 42)
-(define j 42)
-(define s (list->multiarray '(1 2 3)))
+(define s (list->multiarray '(-1 2 3)))
 (define ctx (make <jit-context>))
-(define sum
-  (wrap ctx <ubyte> (list <ubyte> <ubyte>)
-    (lambda (r a b)
-      (list (MOV r a)
-            (ADD r b)
-            (RET)))))
-(sum 2 3)
 
-(define clr
-  (wrap ctx <null> (list (sequence <byte>))
-    (lambda (s)
-      (list (MOV (ptr <ubyte> (get-value s)) 0)
-            (RET)))))
-(clr s)
-s
+(define (neg s)
+  (let [(r (make (sequence <byte>) #:size (last (shape s))))]
+    ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
+      (lambda (r_ a_)
+        (let [(*r  (make <var> #:type <long> #:symbol '*r))
+              (*a  (make <var> #:type <long> #:symbol '*a))
+              (r   (make <var> #:type <byte> #:symbol 'r ))
+              (*rx (make <var> #:type <long> #:symbol '*rx))]
+          (list (MOV *r (get-value r_))
+                (MOV *a (get-value a_))
+                (LEA *rx (ptr <byte> *r (last (shape r_))))
+                'loop
+                (CMP *r *rx)
+                (JE 'return)
+                (MOV r (ptr <byte> *a))
+                (NEG r)
+                (MOV (ptr <byte> *r) r)
+                (ADD *r 1)
+                (ADD *a 1)
+                (JMP 'loop)
+                'return
+                (RET))))) r s)
+    r))
+(neg s)
 
-(define shp
-  (wrap ctx <long> (list (sequence <ubyte>))
-        (lambda (r s) (list (MOV r (car (shape s))) (RET)))))
-(shp s)
-
-; no return value
-(define i1 (random (ash 1 30)))
-(define i2 (random (ash 1 30)))
-(define mem (make <mem> #:size 256))
-(define iptr (make (pointer <int>) #:value mem))
-(define (idata) (begin
-                  (store iptr       i1)
-                  (store (+ iptr 1) i2)
-                  mem))
-((asm ctx <null> (list <int>) (list (MOV RAX (idata)) (ADD (ptr <int> RAX) EDI) (RET))) i2)
-(+ i1 i2)
-(get-value (fetch iptr))
-
-(wrap ctx <null> '() (lambda () (list (RET))))
-
-(define fill (wrap ctx <null> (list (pointer <int>)) (lambda (p) (list (MOV (ptr <int> p) 0) (RET)))))
-(fill iptr)
-(get-value (fetch iptr))
 
 ;(define-syntax env
 ;  (lambda (x)

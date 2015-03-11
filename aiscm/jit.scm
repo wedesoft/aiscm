@@ -11,7 +11,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  ;#:use-module (ice-9 binary-ports)
+  #:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <ptr> <operand> <register> <address> <var>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
@@ -83,8 +83,9 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
          (mapped (make-mmap code))]
-    ;(call-with-output-file "debug.obj" (lambda (f) (put-bytevector f code)))
-    ; objdump -D -b binary -Mintel -mi386:x86-64 debug.obj
+    (let [(filename (tmpnam))]
+      (call-with-output-file filename (cut put-bytevector <> code))
+      (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename)))
     (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address mapped))
@@ -283,6 +284,11 @@
                             ((16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
+(define-method (LEA arg1 arg2) (make <cmd>
+                                     #:op LEA
+                                     #:args (list arg1 arg2)
+                                     #:input (list arg2)
+                                     #:output (list arg1)))
 (define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
@@ -316,6 +322,11 @@
 (define-method (POP (r <register>))
   (append (prefixes r) (opcode #x58 r)))
 
+(define-method (NEG arg) (make <cmd>
+                               #:op NEG
+                               #:args (list arg)
+                               #:input (list arg)
+                               #:output (list arg)))
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
@@ -335,6 +346,11 @@
 (define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
   (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
 
+(define-method (CMP arg1 arg2) (make <cmd>
+                                     #:op CMP
+                                     #:args (list arg1 arg2)
+                                     #:input (list arg1 arg2)
+                                     #:output '()))
 (define-method (CMP (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
 (define-method (CMP (r <register>) (imm <integer>))

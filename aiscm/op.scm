@@ -12,6 +12,30 @@
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
+(define-method (- (a <sequence<>>))
+  (let [(r (make (sequence <byte>) #:size (last (shape a))))]
+    ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
+       (lambda (r_ a_)
+         (let [(*r  (make <var> #:type <long> #:symbol '*r))
+               (*a  (make <var> #:type <long> #:symbol '*a))
+               (r   (make <var> #:type <byte> #:symbol 'r ))
+               (*rx (make <var> #:type <long> #:symbol '*rx))]
+           (list (MOV *r (get-value r_))
+                 (MOV *a (get-value a_))
+                 (LEA *rx (ptr <byte> *r (last (shape r_))))
+                 'loop
+                 (CMP *r *rx)
+                 (JE 'return)
+                 (MOV r (ptr <byte> *a))
+                 (NEG r)
+                 (MOV (ptr <byte> *r) r)
+                 (ADD *r 1)
+                 (ADD *a 1)
+                 (JMP 'loop)
+                 'return
+                 (RET))))) r a)
+    r))
+
 (define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
   (env fun
        [(r (reg (get-value r_) fun))
@@ -217,10 +241,10 @@
 
 (define-method (+ (a <element>)) a)
 (define-unary-op duplicate (const '()))
-(define-unary-op - NEG)
+;(define-unary-op - NEG)
 
 (define-binary-op + ADD)
-(define-binary-op - SUB)
+;(define-binary-op - SUB)
 (define-binary-op * IMUL)
 
 (define (fill t n value); TODO: replace with tensor operation
