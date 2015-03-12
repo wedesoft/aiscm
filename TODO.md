@@ -1,5 +1,6 @@
 # TODO
 
+* remove duplicate RET
 * negate sequence (macro, recursion, extra parameters, register spilling)
 * make structs of variables printable
 * register spilling

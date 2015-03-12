@@ -12,6 +12,9 @@
 (define s (list->multiarray '(-1 2 3)))
 (define ctx (make <jit-context>))
 
+
+((wrap ctx <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))] (list (list (MOV v 0)) (RET) )))))
+
 (define (neg s)
   (let [(r (make (sequence <byte>) #:size (last (shape s))))]
     ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))

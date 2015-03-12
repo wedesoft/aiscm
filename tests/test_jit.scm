@@ -11,7 +11,7 @@
              (aiscm bool)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 311)
+(planned-tests 313)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -845,6 +845,12 @@
            (lambda (s) (list (MOV (ptr <ubyte> (get-value s)) 0) (RET)))) s)
         (multiarray->list s)))
   "'wrap' passes pointer variables for sequence data")
+(ok (unspecified? ((wrap ctx <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))]
+                                                     (list (list (MOV v 0)) (RET)))))))
+    "'wrap' handles nested code blocks and virtual registers")
+(ok (eqv? 3 ((wrap ctx <int> '()  (lambda (r)
+                                    (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))
+    "'wrap' creates separate namespaces for labels")
 ;(ok (equal? (list (MOV AX 42))
 ;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
 ;                 (MOV x 42)))

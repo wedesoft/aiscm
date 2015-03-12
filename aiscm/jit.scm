@@ -552,7 +552,8 @@
          (args         (collate (append result-types arg-classes) (append result-vars arg-vars)))]
     (lambda params
       (apply (asm ctx result-type arg-types
-                  (register-allocate (apply proc args) (append result-regs arg-regs)))
+                  (register-allocate (flatten-code (relabel (apply proc args)))
+                                     (append result-regs arg-regs)))
              (concatenate (map content params))))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
