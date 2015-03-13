@@ -12,69 +12,76 @@
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
-(define-method (- (a <sequence<>>))
+(define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>))
+  (let [(r (make <var> #:type <byte> #:symbol 'r ))]
+     (list (MOV r (ptr <byte> (get-value a_)))
+           (NEG r)
+           (MOV (ptr <byte> (get-value r_)) r))))
+(define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>))
+  (let [(*r (make <var> #:type <long> #:symbol '*r))
+        (*a  (make <var> #:type <long> #:symbol '*a))
+        (*rx (make <var> #:type <long> #:symbol '*rx))]
+    (list (MOV *r (get-value r_))
+          (MOV *a (get-value a_))
+          (LEA *rx (ptr <byte> *r (last (shape r_))))
+          'loop
+          (CMP *r *rx)
+          (JE 'return)
+          (unary-op (project (rebase *r r_)) (project (rebase *a a_)))
+          (ADD *r 1)
+          (ADD *a 1)
+          (JMP 'loop)
+          'return)))
+(define-method (- (a <element>))
   (let [(r (make (sequence <byte>) #:size (last (shape a))))]
     ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
-       (lambda (r_ a_)
-         (let [(*r  (make <var> #:type <long> #:symbol '*r))
-               (*a  (make <var> #:type <long> #:symbol '*a))
-               (r   (make <var> #:type <byte> #:symbol 'r ))
-               (*rx (make <var> #:type <long> #:symbol '*rx))]
-           (list (MOV *r (get-value r_))
-                 (MOV *a (get-value a_))
-                 (LEA *rx (ptr <byte> *r (last (shape r_))))
-                 'loop
-                 (CMP *r *rx)
-                 (JE 'return)
-                 (MOV r (ptr <byte> *a))
-                 (NEG r)
-                 (MOV (ptr <byte> *r) r)
-                 (ADD *r 1)
-                 (ADD *a 1)
-                 (JMP 'loop)
-                 'return
-                 (RET))))) r a)
+      (lambda (r_ a_)
+        (let [(*r  (make <var> #:type <long> #:symbol '*r))
+              (*a  (make <var> #:type <long> #:symbol '*a))
+              (*rx (make <var> #:type <long> #:symbol '*rx))]
+          (list (unary-op r_ a_)
+                (RET))))) r a)
     r))
 
-(define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
-  (env fun
-       [(r (reg (get-value r_) fun))
-        (a (reg (get-value a_) fun))]
-         (MOV r a)
-         (op r)))
-(define-method (unary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) op)
-  (env fun
-       [(*r (reg (get-value r_) fun))
-        (*a (reg (get-value a_) fun))
-        (r  (reg (typecode r_) fun))]
-         (MOV r (ptr (typecode a_) *a))
-         (op r)
-         (MOV (ptr (typecode r_) *r) r)))
-(define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
-  (env fun
-       [(rs  (reg (last (strides r_)) fun))
-        (n   (reg (last (shape r_)) fun))
-        (as  (reg (last (strides a_)) fun))
-        (*r  (reg <long> fun))
-        (r+  (reg <long> fun))
-        (*a  (reg <long> fun))
-        (a+  (reg <long> fun))
-        (*rx (reg <long> fun))]
-       (IMUL n rs)
-       (MOV *r (loc (get-value r_) fun))
-       (MOV *a (loc (get-value a_) fun))
-       (LEA *rx (ptr (typecode r_) *r n))
-       (IMUL r+ rs (size-of (typecode r_)))
-       (IMUL a+ as (size-of (typecode a_)))
-       (CMP *r *rx)
-       (JE 'return)
-       'loop
-       (unary-op fun (project (rebase *r r_)) (project (rebase *a a_)) op)
-       (ADD *r r+)
-       (ADD *a a+)
-       (CMP *r *rx)
-       (JNE 'loop)
-       'return))
+;(define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
+;  (env fun
+;       [(r (reg (get-value r_) fun))
+;        (a (reg (get-value a_) fun))]
+;         (MOV r a)
+;         (op r)))
+;(define-method (unary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) op)
+;  (env fun
+;       [(*r (reg (get-value r_) fun))
+;        (*a (reg (get-value a_) fun))
+;        (r  (reg (typecode r_) fun))]
+;         (MOV r (ptr (typecode a_) *a))
+;         (op r)
+;         (MOV (ptr (typecode r_) *r) r)))
+;(define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
+;  (env fun
+;       [(rs  (reg (last (strides r_)) fun))
+;        (n   (reg (last (shape r_)) fun))
+;        (as  (reg (last (strides a_)) fun))
+;        (*r  (reg <long> fun))
+;        (r+  (reg <long> fun))
+;        (*a  (reg <long> fun))
+;        (a+  (reg <long> fun))
+;        (*rx (reg <long> fun))]
+;       (IMUL n rs)
+;       (MOV *r (loc (get-value r_) fun))
+;       (MOV *a (loc (get-value a_) fun))
+;       (LEA *rx (ptr (typecode r_) *r n))
+;       (IMUL r+ rs (size-of (typecode r_)))
+;       (IMUL a+ as (size-of (typecode a_)))
+;       (CMP *r *rx)
+;       (JE 'return)
+;       'loop
+;       (unary-op fun (project (rebase *r r_)) (project (rebase *a a_)) op)
+;       (ADD *r r+)
+;       (ADD *a a+)
+;       (CMP *r *rx)
+;       (JNE 'loop)
+;       'return))
 
 (define-method (binary-op (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>) op)
   (env fun
