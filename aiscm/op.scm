@@ -13,64 +13,35 @@
 (define ctx (make <jit-context>))
 
 (define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
-  (let [(r (make <var> #:type <byte> #:symbol 'r ))]
-     (list (MOV r (ptr <byte> (get-value a_)))
+  (let [(r (make <var> #:type (typecode r_) #:symbol 'r ))]
+     (list (MOV r (ptr (typecode a_) (get-value a_)))
            (op r)
-           (MOV (ptr <byte> (get-value r_)) r))))
+           (MOV (ptr (typecode r_) (get-value r_)) r))))
 (define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>) op)
-  (let [(*r (make <var> #:type <long> #:symbol '*r))
+  (let [(*r  (make <var> #:type <long> #:symbol '*r))
+        (r+  (make <var> #:type <long> #:symbol 'r+))
+        (n   (make <var> #:type <long> #:symbol 'n))
         (*a  (make <var> #:type <long> #:symbol '*a))
+        (a+  (make <var> #:type <long> #:symbol 'a+))
         (*rx (make <var> #:type <long> #:symbol '*rx))]
     (list (MOV *r (get-value r_))
+          (MOV r+ (last (strides r_)))
+          (MOV n (last (shape r_)))
           (MOV *a (get-value a_))
-          (LEA *rx (ptr <byte> *r (last (shape r_))))
+          (MOV a+ (last (strides a_)))
+          (IMUL n r+)
+          (IMUL r+ r+ (size-of (typecode r_)))
+          (IMUL a+ a+ (size-of (typecode a_)))
+          (LEA *rx (ptr (typecode a_) *r n))
           'loop
           (CMP *r *rx)
           (JE 'return)
           (unary-op (project (rebase *r r_)) (project (rebase *a a_)) op)
-          (ADD *r 1)
-          (ADD *a 1)
+          (ADD *r r+)
+          (ADD *a a+)
           (JMP 'loop)
           'return)))
-;(define-syntax-rule (define-unary-op name op)
-;  (define-method (name (a <element>))
-;    (add-method! name (jit-wrap ctx
-;                                (class-of a)
-;                                ((class-of a))
-;                                (lambda (fun r_ a_) (unary-op fun r_ a_ op))))
-;    (name a)))
-(define-syntax-rule (define-unary-op name op)
-  (define-method (name (a <element>))
-    (let [(fun (wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
-                 (lambda (r_ a_) (list (unary-op r_ a_ NEG) (RET)))))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (list (class-of a))
-                         #:procedure (lambda (a)
-                                       (let [(r (make (sequence <byte>) #:size (last (shape a))))]
-                                         (fun r a)
-                                         r)))))
-    (name a)))
-;(define-method (- (a <element>))
-;  (let [(r (make (sequence <byte>) #:size (last (shape a))))]
-;    ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
-;      (lambda (r_ a_) (list (unary-op r_ a_ NEG) (RET)))) r a) r))
-(define-unary-op - NEG)
 
-;(define-method (unary-op (fun <jit-function>) (r_ <element>) (a_ <element>) op)
-;  (env fun
-;       [(r (reg (get-value r_) fun))
-;        (a (reg (get-value a_) fun))]
-;         (MOV r a)
-;         (op r)))
-;(define-method (unary-op (fun <jit-function>) (r_ <pointer<>>) (a_ <pointer<>>) op)
-;  (env fun
-;       [(*r (reg (get-value r_) fun))
-;        (*a (reg (get-value a_) fun))
-;        (r  (reg (typecode r_) fun))]
-;         (MOV r (ptr (typecode a_) *a))
-;         (op r)
-;         (MOV (ptr (typecode r_) *r) r)))
 ;(define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
 ;  (env fun
 ;       [(rs  (reg (last (strides r_)) fun))
@@ -239,13 +210,18 @@
        (JNE 'loop)
        'return))
 
-;(define-syntax-rule (define-unary-op name op)
-;  (define-method (name (a <element>))
-;    (add-method! name (jit-wrap ctx
-;                                (class-of a)
-;                                ((class-of a))
-;                                (lambda (fun r_ a_) (unary-op fun r_ a_ op))))
-;    (name a)))
+(define-syntax-rule (define-unary-op name op)
+  (define-method (name (a <element>))
+    (let [(fun (wrap ctx <null> (list (class-of a) (class-of a))
+                 (lambda (r_ a_) (list (unary-op r_ a_ NEG) (RET)))))]
+      (add-method! name
+                   (make <method>
+                         #:specializers (list (class-of a))
+                         #:procedure (lambda (a)
+                                       (let [(r (make (class-of a) #:shape (shape a)))]
+                                         (fun r a)
+                                         r)))))
+    (name a)))
 
 (define-syntax-rule (define-binary-op name op)
   (begin
@@ -261,8 +237,8 @@
       (name (make (match a) #:value a) b))))
 
 (define-method (+ (a <element>)) a)
-;(define-unary-op duplicate (const '()))
-;(define-unary-op - NEG)
+(define-unary-op duplicate (const '()))
+(define-unary-op - NEG)
 
 (define-binary-op + ADD)
 ;(define-binary-op - SUB)

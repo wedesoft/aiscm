@@ -341,6 +341,16 @@
 (define-method (SUB (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
+(define-method (IMUL arg1 arg2) (make <cmd>
+                                      #:op IMUL
+                                      #:args (list arg1 arg2)
+                                      #:input (list arg1 arg2)
+                                      #:output (list arg1)))
+(define-method (IMUL arg1 arg2 arg3) (make <cmd>
+                                           #:op IMUL
+                                           #:args (list arg1 arg2 arg3)
+                                           #:input (list arg1 arg2 arg3)
+                                           #:output (list arg1)))
 (define-method (IMUL (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
 (define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit

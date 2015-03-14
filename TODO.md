@@ -1,7 +1,8 @@
 # TODO
 
 * remove duplicate RET
-* negate sequence (macro, recursion, extra parameters, register spilling)
+* negate sequence (extra parameters, register spilling, macro)
+* extra wrapper for compound return values?
 * make structs of variables printable
 * register spilling
 * parameters on stack
