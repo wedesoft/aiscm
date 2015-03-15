@@ -12,41 +12,6 @@
 (define s (list->multiarray '(-1 2 3)))
 (define ctx (make <jit-context>))
 
-(define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>))
-  (let [(r (make <var> #:type <byte> #:symbol 'r ))]
-     (list (MOV r (ptr <byte> (get-value a_)))
-           (NEG r)
-           (MOV (ptr <byte> (get-value r_)) r))))
-
-(define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>))
-  (let [(*r (make <var> #:type <long> #:symbol '*r))
-        (*a  (make <var> #:type <long> #:symbol '*a))
-        (*rx (make <var> #:type <long> #:symbol '*rx))]
-    (list (MOV *r (get-value r_))
-          (MOV *a (get-value a_))
-          (LEA *rx (ptr <byte> *r (last (shape r_))))
-          'loop
-          (CMP *r *rx)
-          (JE 'return)
-          (unary-op (project (rebase *r r_)) (project (rebase *a a_)))
-          (ADD *r 1)
-          (ADD *a 1)
-          (JMP 'loop)
-          'return)))
-
-(define-method (- (s <element>))
-  (let [(r (make (sequence <byte>) #:size (last (shape s))))]
-    ((wrap ctx <null> (list (sequence <byte>) (sequence <byte>))
-      (lambda (r_ a_)
-        (let [(*r  (make <var> #:type <long> #:symbol '*r))
-              (*a  (make <var> #:type <long> #:symbol '*a))
-              (*rx (make <var> #:type <long> #:symbol '*rx))]
-          (list (unary-op r_ a_)
-                (RET))))) r s)
-    r))
-(neg s)
-
-
 ;(define-syntax env
 ;  (lambda (x)
 ;    (syntax-case x (call)

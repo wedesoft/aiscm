@@ -558,12 +558,11 @@
          (result-vars  (map (cut make <var> #:type <>) result-types))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
          (result-regs  (map cons result-vars (list RAX)))
-         (args         (collate (append result-types arg-classes) (append result-vars arg-vars)))]
-    (lambda params
-      (apply (asm ctx result-type arg-types
-                  (register-allocate (flatten-code (relabel (apply proc args)))
-                                     (append result-regs arg-regs)))
-             (concatenate (map content params))))))
+         (args         (collate (append result-types arg-classes) (append result-vars arg-vars)))
+         (code         (asm ctx result-type arg-types
+                         (register-allocate (flatten-code (relabel (apply proc args)))
+                                            (append result-regs arg-regs))))]
+    (lambda params (apply code (concatenate (map content params))))))
 ;(define-syntax-rule (rtl vars . body)
 ;  (let [(prog (let vars (list . body)))]
 ;    (subst prog (map cons (variables prog) my-codes))))
