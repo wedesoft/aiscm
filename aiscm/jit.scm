@@ -77,8 +77,7 @@
 (define (JLE  target) (Jcc target #x7e (list #x0f #x8e)))
 (define (JNLE target) (Jcc target #x7f (list #x0f #x8f)))
 
-(define (obj commands)
-  (u8-list->bytevector (flatten (attach (resolve-jumps commands) (RET))))); TODO: remove (RET) here
+(define (obj commands) (u8-list->bytevector (flatten (resolve-jumps commands))))
 
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))

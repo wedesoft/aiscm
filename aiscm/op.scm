@@ -42,32 +42,6 @@
           (JMP 'loop)
           'return)))
 
-;(define-method (unary-op (fun <jit-function>) (r_ <sequence<>>) (a_ <sequence<>>) op)
-;  (env fun
-;       [(rs  (reg (last (strides r_)) fun))
-;        (n   (reg (last (shape r_)) fun))
-;        (as  (reg (last (strides a_)) fun))
-;        (*r  (reg <long> fun))
-;        (r+  (reg <long> fun))
-;        (*a  (reg <long> fun))
-;        (a+  (reg <long> fun))
-;        (*rx (reg <long> fun))]
-;       (IMUL n rs)
-;       (MOV *r (loc (get-value r_) fun))
-;       (MOV *a (loc (get-value a_) fun))
-;       (LEA *rx (ptr (typecode r_) *r n))
-;       (IMUL r+ rs (size-of (typecode r_)))
-;       (IMUL a+ as (size-of (typecode a_)))
-;       (CMP *r *rx)
-;       (JE 'return)
-;       'loop
-;       (unary-op fun (project (rebase *r r_)) (project (rebase *a a_)) op)
-;       (ADD *r r+)
-;       (ADD *a a+)
-;       (CMP *r *rx)
-;       (JNE 'loop)
-;       'return))
-
 (define-method (binary-op (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>) op)
   (env fun
        [(r  (reg (get-value r_) fun))
