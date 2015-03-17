@@ -270,6 +270,11 @@
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
 
+(define-method (MOVSX arg1 arg2) (make <cmd>
+                                       #:op MOVSX
+                                       #:args (list arg1 arg2)
+                                       #:input (list arg2)
+                                       #:output (list arg1)))
 (define-method (MOVSX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
          (opcode (case bits (( 8) (list #x0f #xbe))
@@ -277,6 +282,11 @@
                             ((32) (list #x63))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
+(define-method (MOVZX arg1 arg2) (make <cmd>
+                                       #:op MOVZX
+                                       #:args (list arg1 arg2)
+                                       #:input (list arg2)
+                                       #:output (list arg1)))
 (define-method (MOVZX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
          (opcode (case bits (( 8) (list #x0f #xb6))
@@ -291,12 +301,32 @@
 (define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
+(define-method (SHL arg) (make <cmd>
+                               #:op SHL
+                               #:args (list arg)
+                               #:input (list arg)
+                               #:output (list arg)))
 (define-method (SHL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
+(define-method (SHR arg) (make <cmd>
+                               #:op SHR
+                               #:args (list arg)
+                               #:input (list arg)
+                               #:output (list arg)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
+(define-method (SAL arg) (make <cmd>
+                               #:op SAL
+                               #:args (list arg)
+                               #:input (list arg)
+                               #:output (list arg)))
 (define-method (SAL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
+(define-method (SAR arg) (make <cmd>
+                               #:op SAR
+                               #:args (list arg)
+                               #:input (list arg)
+                               #:output (list arg)))
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
 
@@ -316,8 +346,18 @@
 (define-method (ADD (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
+(define-method (PUSH arg) (make <cmd>
+                                #:op PUSH
+                                #:args (list arg)
+                                #:input (list arg)
+                                #:output '()))
 (define-method (PUSH (r <register>)); TODO: PUSH r/m, PUSH imm
   (append (prefixes r) (opcode #x50 r)))
+(define-method (POP arg) (make <cmd>
+                               #:op POP
+                               #:args (list arg)
+                               #:input '()
+                               #:output (list arg)))
 (define-method (POP (r <register>))
   (append (prefixes r) (opcode #x58 r)))
 
@@ -329,6 +369,11 @@
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
+(define-method (SUB arg1 arg2) (make <cmd>
+                                     #:op SUB
+                                     #:args (list arg1 arg2)
+                                     #:input (list arg1 arg2)
+                                     #:output (list arg1)))
 (define-method (SUB (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
 (define-method (SUB (r <register>) (imm <integer>))
@@ -373,16 +418,26 @@
 
 (define (SETcc code r/m)
   (append (prefixes r/m) (list #x0f code) (postfixes 0 r/m)))
-(define (SETB   r/m) (SETcc #x92 r/m))
-(define (SETNB  r/m) (SETcc #x93 r/m))
-(define (SETE   r/m) (SETcc #x94 r/m))
-(define (SETNE  r/m) (SETcc #x95 r/m))
-(define (SETBE  r/m) (SETcc #x96 r/m))
-(define (SETNBE r/m) (SETcc #x97 r/m))
-(define (SETL   r/m) (SETcc #x9c r/m))
-(define (SETNL  r/m) (SETcc #x9d r/m))
-(define (SETLE  r/m) (SETcc #x9e r/m))
-(define (SETNLE r/m) (SETcc #x9f r/m))
+(define-method (SETB   arg) (make <cmd> #:op SETB   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETB   (r/m <operand>)) (SETcc #x92 r/m))
+(define-method (SETNB  arg) (make <cmd> #:op SETNB  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNB  (r/m <operand>)) (SETcc #x93 r/m))
+(define-method (SETE   arg) (make <cmd> #:op SETE   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETE   (r/m <operand>)) (SETcc #x94 r/m))
+(define-method (SETNE  arg) (make <cmd> #:op SETNE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNE  (r/m <operand>)) (SETcc #x95 r/m))
+(define-method (SETBE  arg) (make <cmd> #:op SETBE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETBE  (r/m <operand>)) (SETcc #x96 r/m))
+(define-method (SETNBE arg) (make <cmd> #:op SETNBE #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNBE (r/m <operand>)) (SETcc #x97 r/m))
+(define-method (SETL   arg) (make <cmd> #:op SETL   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETL   (r/m <operand>)) (SETcc #x9c r/m))
+(define-method (SETNL  arg) (make <cmd> #:op SETNL  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNL  (r/m <operand>)) (SETcc #x9d r/m))
+(define-method (SETLE  arg) (make <cmd> #:op SETLE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETLE  (r/m <operand>)) (SETcc #x9e r/m))
+(define-method (SETNLE arg) (make <cmd> #:op SETNLE #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNLE (r/m <operand>)) (SETcc #x9f r/m))
 
 ; ------------------------------------------------------------------------------
 ;(define default-codes
