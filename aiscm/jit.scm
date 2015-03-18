@@ -98,6 +98,13 @@
   (args #:init-keyword #:args #:getter get-args)
   (input #:init-keyword #:input #:getter get-input)
   (output #:init-keyword #:output #:getter get-output))
+(define-method (initialize (self <cmd>) initargs)
+  (let-keywords initargs #f (op (out '()) (io '()) (in '()))
+    (next-method self (list #:op op
+                            #:args (append out io in)
+                            #:input (append io in)
+                            #:output (append io out)))))
+
 (define-method (input (self <cmd>))
   (delete-duplicates
     (filter is-var?
@@ -252,11 +259,7 @@
 (define (NOP) '(#x90))
 (define (RET) '(#xc3))
 
-(define-method (MOV arg1 arg2) (make <cmd>
-                                     #:op MOV
-                                     #:args (list arg1 arg2)
-                                     #:input (list arg2)
-                                     #:output (list arg1)))
+(define-method (MOV arg1 arg2) (make <cmd> #:op MOV #:out (list arg1) #:in (list arg2)))
 (define-method (MOV (m <address>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
 (define-method (MOV (r <register>) (imm <integer>)); TODO: fix redundancy
@@ -270,11 +273,7 @@
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
 
-(define-method (MOVSX arg1 arg2) (make <cmd>
-                                       #:op MOVSX
-                                       #:args (list arg1 arg2)
-                                       #:input (list arg2)
-                                       #:output (list arg1)))
+(define-method (MOVSX arg1 arg2) (make <cmd> #:op MOVSX #:out (list arg1) #:in (list arg2)))
 (define-method (MOVSX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
          (opcode (case bits (( 8) (list #x0f #xbe))
@@ -282,59 +281,31 @@
                             ((32) (list #x63))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
-(define-method (MOVZX arg1 arg2) (make <cmd>
-                                       #:op MOVZX
-                                       #:args (list arg1 arg2)
-                                       #:input (list arg2)
-                                       #:output (list arg1)))
+(define-method (MOVZX arg1 arg2) (make <cmd> #:op MOVZX #:out (list arg1) #:in (list arg2)))
 (define-method (MOVZX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
          (opcode (case bits (( 8) (list #x0f #xb6))
                             ((16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
-(define-method (LEA arg1 arg2) (make <cmd>
-                                     #:op LEA
-                                     #:args (list arg1 arg2)
-                                     #:input (list arg2)
-                                     #:output (list arg1)))
+(define-method (LEA arg1 arg2) (make <cmd> #:op LEA #:out (list arg1) #:in (list arg2)))
 (define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
-(define-method (SHL arg) (make <cmd>
-                               #:op SHL
-                               #:args (list arg)
-                               #:input (list arg)
-                               #:output (list arg)))
+(define-method (SHL arg) (make <cmd> #:op SHL #:io (list arg)))
 (define-method (SHL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
-(define-method (SHR arg) (make <cmd>
-                               #:op SHR
-                               #:args (list arg)
-                               #:input (list arg)
-                               #:output (list arg)))
+(define-method (SHR arg) (make <cmd> #:op SHR #:io (list arg)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
-(define-method (SAL arg) (make <cmd>
-                               #:op SAL
-                               #:args (list arg)
-                               #:input (list arg)
-                               #:output (list arg)))
+(define-method (SAL arg) (make <cmd> #:op SAL #:io (list arg)))
 (define-method (SAL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
-(define-method (SAR arg) (make <cmd>
-                               #:op SAR
-                               #:args (list arg)
-                               #:input (list arg)
-                               #:output (list arg)))
+(define-method (SAR arg) (make <cmd> #:op SAR #:io (list arg)))
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
 
-(define-method (ADD arg1 arg2) (make <cmd>
-                                     #:op ADD
-                                     #:args (list arg1 arg2)
-                                     #:input (list arg1 arg2)
-                                     #:output (list arg1)))
+(define-method (ADD arg1 arg2) (make <cmd> #:op ADD #:io (list arg1) #:in (list arg2)))
 (define-method (ADD (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
 (define-method (ADD (r <register>) (imm <integer>))
@@ -346,34 +317,18 @@
 (define-method (ADD (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
-(define-method (PUSH arg) (make <cmd>
-                                #:op PUSH
-                                #:args (list arg)
-                                #:input (list arg)
-                                #:output '()))
+(define-method (PUSH arg) (make <cmd> #:op PUSH #:in (list arg)))
 (define-method (PUSH (r <register>)); TODO: PUSH r/m, PUSH imm
   (append (prefixes r) (opcode #x50 r)))
-(define-method (POP arg) (make <cmd>
-                               #:op POP
-                               #:args (list arg)
-                               #:input '()
-                               #:output (list arg)))
+(define-method (POP arg) (make <cmd> #:op POP #:out (list arg)))
 (define-method (POP (r <register>))
   (append (prefixes r) (opcode #x58 r)))
 
-(define-method (NEG arg) (make <cmd>
-                               #:op NEG
-                               #:args (list arg)
-                               #:input (list arg)
-                               #:output (list arg)))
+(define-method (NEG arg) (make <cmd> #:op NEG #:io (list arg)))
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
 
-(define-method (SUB arg1 arg2) (make <cmd>
-                                     #:op SUB
-                                     #:args (list arg1 arg2)
-                                     #:input (list arg1 arg2)
-                                     #:output (list arg1)))
+(define-method (SUB arg1 arg2) (make <cmd> #:op SUB #:io (list arg1) #:in (list arg2)))
 (define-method (SUB (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))
 (define-method (SUB (r <register>) (imm <integer>))
@@ -385,26 +340,13 @@
 (define-method (SUB (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x2a #x2b) (postfixes r r/m)))
 
-(define-method (IMUL arg1 arg2) (make <cmd>
-                                      #:op IMUL
-                                      #:args (list arg1 arg2)
-                                      #:input (list arg1 arg2)
-                                      #:output (list arg1)))
-(define-method (IMUL arg1 arg2 arg3) (make <cmd>
-                                           #:op IMUL
-                                           #:args (list arg1 arg2 arg3)
-                                           #:input (list arg1 arg2 arg3)
-                                           #:output (list arg1)))
+(define-method (IMUL arg1 . args) (make <cmd> #:op IMUL #:io (list arg1) #:in args))
 (define-method (IMUL (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
 (define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
   (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
 
-(define-method (CMP arg1 arg2) (make <cmd>
-                                     #:op CMP
-                                     #:args (list arg1 arg2)
-                                     #:input (list arg1 arg2)
-                                     #:output '()))
+(define-method (CMP arg1 arg2) (make <cmd> #:op CMP #:in (list arg1 arg2)))
 (define-method (CMP (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x38 #x39) (postfixes r m)))
 (define-method (CMP (r <register>) (imm <integer>))
@@ -418,25 +360,25 @@
 
 (define (SETcc code r/m)
   (append (prefixes r/m) (list #x0f code) (postfixes 0 r/m)))
-(define-method (SETB   arg) (make <cmd> #:op SETB   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETB   arg) (make <cmd> #:op SETB   #:out (list arg)))
 (define-method (SETB   (r/m <operand>)) (SETcc #x92 r/m))
-(define-method (SETNB  arg) (make <cmd> #:op SETNB  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNB  arg) (make <cmd> #:op SETNB  #:out (list arg)))
 (define-method (SETNB  (r/m <operand>)) (SETcc #x93 r/m))
-(define-method (SETE   arg) (make <cmd> #:op SETE   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETE   arg) (make <cmd> #:op SETE   #:out (list arg)))
 (define-method (SETE   (r/m <operand>)) (SETcc #x94 r/m))
-(define-method (SETNE  arg) (make <cmd> #:op SETNE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNE  arg) (make <cmd> #:op SETNE  #:out (list arg)))
 (define-method (SETNE  (r/m <operand>)) (SETcc #x95 r/m))
-(define-method (SETBE  arg) (make <cmd> #:op SETBE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETBE  arg) (make <cmd> #:op SETBE  #:out (list arg)))
 (define-method (SETBE  (r/m <operand>)) (SETcc #x96 r/m))
-(define-method (SETNBE arg) (make <cmd> #:op SETNBE #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNBE arg) (make <cmd> #:op SETNBE #:out (list arg)))
 (define-method (SETNBE (r/m <operand>)) (SETcc #x97 r/m))
-(define-method (SETL   arg) (make <cmd> #:op SETL   #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETL   arg) (make <cmd> #:op SETL   #:out (list arg)))
 (define-method (SETL   (r/m <operand>)) (SETcc #x9c r/m))
-(define-method (SETNL  arg) (make <cmd> #:op SETNL  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNL  arg) (make <cmd> #:op SETNL  #:out (list arg)))
 (define-method (SETNL  (r/m <operand>)) (SETcc #x9d r/m))
-(define-method (SETLE  arg) (make <cmd> #:op SETLE  #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETLE  arg) (make <cmd> #:op SETLE  #:out (list arg)))
 (define-method (SETLE  (r/m <operand>)) (SETcc #x9e r/m))
-(define-method (SETNLE arg) (make <cmd> #:op SETNLE #:args (list arg) #:input '() #:output (list arg)))
+(define-method (SETNLE arg) (make <cmd> #:op SETNLE #:out (list arg)))
 (define-method (SETNLE (r/m <operand>)) (SETcc #x9f r/m))
 
 ; ------------------------------------------------------------------------------
