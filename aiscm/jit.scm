@@ -548,18 +548,19 @@
          prog)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
+(define (load-vars vars)
+  (map (lambda (var offset) (MOV var (ptr (get-type var) RSP offset)))
+       vars (iota (length vars) 8 8)))
 (define (wrap ctx result-type arg-classes proc)
   (let* [(arg-types    (concatenate (map types arg-classes)))
          (result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
          (result-vars  (map (cut make <var> #:type <>) result-types))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
+         (load-args    (load-vars (drop-up-to arg-vars 6)))
          (result-regs  (map cons result-vars (list RAX)))
          (args         (collate (append result-types arg-classes) (append result-vars arg-vars)))
          (code         (asm ctx result-type arg-types
-                         (register-allocate (flatten-code (relabel (apply proc args)))
+                         (register-allocate (flatten-code (append load-args (relabel (apply proc args))))
                                             (append result-regs arg-regs))))]
     (lambda params (apply code (concatenate (map content params))))))
-;(define-syntax-rule (rtl vars . body)
-;  (let [(prog (let vars (list . body)))]
-;    (subst prog (map cons (variables prog) my-codes))))

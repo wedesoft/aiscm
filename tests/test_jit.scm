@@ -11,7 +11,7 @@
              (aiscm bool)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 331)
+(planned-tests 332)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -887,18 +887,7 @@
 (ok (eqv? 3 ((wrap ctx <int> '()  (lambda (r)
                                     (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))
     "'wrap' creates separate namespaces for labels")
-;(ok (equal? (list (MOV AX 42))
-;            (rtl [(x (make <var> #:type <sint> #:symbol 'x))]
-;                 (MOV x 42)))
-;    "Allocate register for a variable")
-; ------------------------------------------------------------------------------
-;(ok (equal? 42 ((pass-parameters ctx <int> (list <int>)
-;                                 (lambda (fun r_ a_)
-;                                   (env fun [] (MOV (get-value r_) (get-value a_))))) 42))
-;    "Use 'pass-parameters' to define method")
-;(ok (equal? 42 (let [(m (jit-wrap ctx <int> (<int>)
-;                                  (lambda (fun r_ a_)
-;                                    (env fun [] (MOV (get-value r_) (get-value a_))))))]
-;                 (get-value ((slot-ref m 'procedure) (make <int> #:value 42)))))
-;    "Use 'jit-wrap' to define method")
-; ------------------------------------------------------------------------------
+(ok (equal? 7 (apply (wrap ctx <int> (make-list 7 <int>)
+                           (lambda (r . args) (list (MOV r (list-ref args 6)) (RET))))
+                     (iota 7 1)))
+    "'wrap' maps the 7th integer parameter correctly")

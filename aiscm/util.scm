@@ -5,7 +5,7 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! malloc destroy attach index all-but-last depth
+  #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to depth
             flatten-n flatten cycle uncycle integral zipmap alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
             nodes adjacent remove-node color-graph union difference fixed-point)
@@ -24,6 +24,8 @@
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
 (define (all-but-last lst) (reverse (cdr (reverse lst))))
+(define (drop-up-to lst n)
+  (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
 (define (depth val)
   (if (list? val) (1+ (apply max (cons 0 (map depth val)))) 0))
