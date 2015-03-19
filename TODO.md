@@ -4,7 +4,6 @@
 * coalesce registers (see Chaitin's paper)
 * extra wrapper for compound return values?
 * make structs of variables printable
-* register spilling
 * parameters on stack
 * callee-saved registers
 * matching for lists?
