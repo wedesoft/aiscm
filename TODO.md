@@ -1,10 +1,10 @@
 # TODO
 
-* negate sequence (extra parameters, register spilling, macro)
+* binary operations
+* register spilling
 * coalesce registers (see Chaitin's paper)
 * extra wrapper for compound return values?
 * make structs of variables printable
-* parameters on stack
 * callee-saved registers
 * matching for lists?
 * pack and unpack necessary? <int> and <bool> necessary?

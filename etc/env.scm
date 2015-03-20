@@ -10,7 +10,15 @@
              (aiscm op)
              (aiscm int))
 (define s (list->multiarray '(-1 2 3)))
+(define m (list->multiarray '((-1 2) (3 4))))
 (define ctx (make <jit-context>))
+
+(define names '(a b c d e f g h i))
+(define vars (map (cut make <var> #:type <int> #:symbol <>) names))
+
+(drop vars 6)
+
+(MOV a (ptr <int> RSP #x8))
 
 ;(define-syntax env
 ;  (lambda (x)
