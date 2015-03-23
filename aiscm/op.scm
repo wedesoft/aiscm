@@ -45,14 +45,26 @@
 (define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) b_ op)
   (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
     (list ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
-               MOV
-               (if (signed? (typecode a_)) MOVSX MOVZX))
+             MOV
+             (if (signed? (typecode a_)) MOVSX MOVZX))
            r (ptr (typecode a_) (get-value a_)))
-          ;(op r b_)
           (if (eqv? (bits (typecode r_)) (bits (get-type b_)))
             (op r b_)
             (let [(b (make <var> #:type (typecode r_)))]
               (list ((if (signed? (get-type b_)) MOVSX MOVZX) b b_)
+                    (op r b))))
+          (MOV (ptr (typecode r_) (get-value r_)) r))))
+
+(define-method (binary-op (r_ <pointer<>>) a_ (b_ <pointer<>>) op)
+  (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
+    (list ((if (eqv? (bits (typecode r_)) (bits (get-type a_)))
+             MOV
+             (if (signed? (get-type a_)) MOVSX MOVZX))
+           r a_)
+          (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
+            (op r (ptr (typecode b_) (get-value b_)))
+            (let [(b (make <var> #:type (typecode r_)))]
+              (list ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
 
@@ -78,6 +90,31 @@
           (binary-op (project (rebase *r r_)) (project (rebase *a a_)) b_ op)
           (ADD *r r+)
           (ADD *a a+)
+          (JMP 'loop)
+          'return)))
+
+(define-method (binary-op (r_ <sequence<>>) a_ (b_ <sequence<>>)  op)
+  (let [(*r  (make <var> #:type <long> #:symbol '*r))
+        (r+  (make <var> #:type <long> #:symbol 'r+))
+        (n   (make <var> #:type <long> #:symbol 'n))
+        (*b  (make <var> #:type <long> #:symbol '*b))
+        (b+  (make <var> #:type <long> #:symbol 'b+))
+        (*rx (make <var> #:type <long> #:symbol '*rx))]
+    (list (MOV *r (get-value r_))
+          (MOV r+ (last (strides r_)))
+          (MOV n (last (shape r_)))
+          (MOV *b (get-value b_))
+          (MOV b+ (last (strides b_)))
+          (IMUL n r+)
+          (IMUL r+ r+ (size-of (typecode r_)))
+          (IMUL b+ b+ (size-of (typecode b_)))
+          (LEA *rx (ptr (typecode r_) *r n))
+          'loop
+          (CMP *r *rx)
+          (JE 'return)
+          (binary-op (project (rebase *r r_)) a_ (project (rebase *b b_)) op)
+          (ADD *r r+)
+          (ADD *b b+)
           (JMP 'loop)
           'return)))
 
@@ -111,7 +148,7 @@
                            #:specializers (list (class-of a) (class-of b))
                            #:procedure (lambda (a b)
                                          (let [(r (make (coerce (class-of a) (class-of b)) #:shape (shape a b)))]
-                                           (fun r a (get b))
+                                           (fun r (get a) (get b))
                                            r)))))
       (name a b))
     (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
