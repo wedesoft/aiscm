@@ -32,7 +32,7 @@
           (IMUL n r+)
           (IMUL r+ r+ (size-of (typecode r_)))
           (IMUL a+ a+ (size-of (typecode a_)))
-          (LEA *rx (ptr (typecode a_) *r n))
+          (LEA *rx (ptr (typecode r_) *r n))
           'loop
           (CMP *r *rx)
           (JE 'return)
@@ -42,6 +42,93 @@
           (JMP 'loop)
           'return)))
 
+(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) b_ op)
+  (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
+    (list ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
+               MOV
+               (if (signed? (typecode a_)) MOVSX MOVZX))
+           r (ptr (typecode a_) (get-value a_)))
+          ;(op r b_)
+          (if (eqv? (bits (typecode r_)) (bits (get-type b_)))
+            (op r b_)
+            (let [(b (make <var> #:type (typecode r_)))]
+              (list ((if (signed? (get-type b_)) MOVSX MOVZX) b b_)
+                    (op r b))))
+          (MOV (ptr (typecode r_) (get-value r_)) r))))
+
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  b_  op)
+  (let [(*r  (make <var> #:type <long> #:symbol '*r))
+        (r+  (make <var> #:type <long> #:symbol 'r+))
+        (n   (make <var> #:type <long> #:symbol 'n))
+        (*a  (make <var> #:type <long> #:symbol '*a))
+        (a+  (make <var> #:type <long> #:symbol 'a+))
+        (*rx (make <var> #:type <long> #:symbol '*rx))]
+    (list (MOV *r (get-value r_))
+          (MOV r+ (last (strides r_)))
+          (MOV n (last (shape r_)))
+          (MOV *a (get-value a_))
+          (MOV a+ (last (strides a_)))
+          (IMUL n r+)
+          (IMUL r+ r+ (size-of (typecode r_)))
+          (IMUL a+ a+ (size-of (typecode a_)))
+          (LEA *rx (ptr (typecode r_) *r n))
+          'loop
+          (CMP *r *rx)
+          (JE 'return)
+          (binary-op (project (rebase *r r_)) (project (rebase *a a_)) b_ op)
+          (ADD *r r+)
+          (ADD *a a+)
+          (JMP 'loop)
+          'return)))
+
+(define-syntax-rule (define-unary-op name op)
+  (define-method (name (a <element>))
+    (let [(fun (wrap ctx <null> (list (class-of a) (class-of a))
+                 (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
+      (add-method! name
+                   (make <method>
+                         #:specializers (list (class-of a))
+                         #:procedure (lambda (a)
+                                       (let [(r (make (class-of a) #:shape (shape a)))]
+                                         (fun r a)
+                                         r)))))
+    (name a)))
+
+(define-method (shape a b)
+  (let [(shape-a (shape a))
+        (shape-b (shape b))]
+    (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
+
+(define-syntax-rule (define-binary-op name op)
+  (begin
+    (define-method (name (a <element>) (b <element>))
+      (let* [(result-type (coerce (class-of a) (class-of b)))
+             (fun         (wrap ctx <null>
+                                (list result-type (class-of a) (class-of b))
+                                (lambda (r_ a_ b_) (list (binary-op r_ a_ b_ op) (RET)))))]
+        (add-method! name
+                     (make <method>
+                           #:specializers (list (class-of a) (class-of b))
+                           #:procedure (lambda (a b)
+                                         (let [(r (make (coerce (class-of a) (class-of b)) #:shape (shape a b)))]
+                                           (fun r a (get b))
+                                           r)))))
+      (name a b))
+    (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
+    (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
+
+(define-method (+ (a <element>)) a)
+(define-unary-op duplicate (const '()))
+(define-unary-op - NEG)
+
+(define-binary-op + ADD)
+(define-binary-op - SUB)
+;(define-binary-op * IMUL)
+
+(define (fill t n value); TODO: replace with tensor operation
+  (let [(retval (make (sequence t) #:size n))]
+    (store retval value)
+    retval))
 ;(define-method (binary-op (fun <jit-function>) (r_ <element>) (a_ <element>) (b_ <element>) op)
 ;  (env fun
 ;       [(r  (reg (get-value r_) fun))
@@ -184,41 +271,3 @@
 ;       (JNE 'loop)
 ;       'return))
 
-(define-syntax-rule (define-unary-op name op)
-  (define-method (name (a <element>))
-    (let [(fun (wrap ctx <null> (list (class-of a) (class-of a))
-                 (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (list (class-of a))
-                         #:procedure (lambda (a)
-                                       (let [(r (make (class-of a) #:shape (shape a)))]
-                                         (fun r a)
-                                         r)))))
-    (name a)))
-
-(define-syntax-rule (define-binary-op name op)
-  (begin
-    (define-method (name (a <element>) (b <element>))
-      (add-method! name (jit-wrap ctx
-                                  (coerce (class-of a) (class-of b))
-                                  ((class-of a) (class-of b))
-                                  (lambda (fun r_ a_ b_) (binary-op fun r_ a_ b_ op))))
-      (name a b))
-    (define-method (name (a <element>) (b <integer>))
-      (name a (make (match b) #:value b)))
-    (define-method (name (a <integer>) (b <element>))
-      (name (make (match a) #:value a) b))))
-
-(define-method (+ (a <element>)) a)
-(define-unary-op duplicate (const '()))
-(define-unary-op - NEG)
-
-(define-binary-op + ADD)
-;(define-binary-op - SUB)
-(define-binary-op * IMUL)
-
-(define (fill t n value); TODO: replace with tensor operation
-  (let [(retval (make (sequence t) #:size n))]
-    (store retval value)
-    retval))

@@ -25,7 +25,7 @@
 (define-method (typecode (self <element>)) (typecode (class-of self)))
 (define-generic slice)
 (define-generic coerce)
-(define-generic match)
+(define-method (match (e <element>)) (class-of e))
 (define-method (get (self <element>)) (get-value self))
 (define-method (set (self <element>) o) (begin (slot-set! self 'value o)) o)
 (define-generic get-size)

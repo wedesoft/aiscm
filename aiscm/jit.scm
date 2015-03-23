@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
-            subst variables get-args input output labels next-indices live collisions
+            get-type subst variables get-args input output labels next-indices live collisions
             register-allocate virtual-registers flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
