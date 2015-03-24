@@ -1,11 +1,13 @@
 # TODO
 
-* binary operations
+* virtual-registers?
+* callee-saved registers
+* array-array binary operations
 * register spilling
+* 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
 * extra wrapper for compound return values?
 * make structs of variables printable
-* callee-saved registers
 * matching for lists?
 * pack and unpack necessary? <int> and <bool> necessary?
 * remove pass-parameters, reg, arg, ...
