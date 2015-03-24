@@ -836,12 +836,19 @@
 (ok (equal? (list (MOV ECX 42) (MOV EAX ECX) (RET))
             (virtual-registers <int> '() (lambda (r) (list (MOV a 42) (MOV r a) (RET)))))
     "'virtual-registers' allocates local variables")
-; TODO: move tests here: relabel, load-args, flatten-code
 (ok (eq? 'new (get-target (retarget (JMP 'old) 'new)))
     "'retarget' should update target of jump statement")
 (ok (equal? (list (JMP 1) 'a (NOP) (RET))
             (flatten-code (list (list (JMP 1) 'a) (NOP) (RET))))
     "'flatten-code' should flatten nested environments")
+(ok (equal? (list (MOV EAX 0) (RET))
+            (virtual-registers <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))]
+                                                       (list (list (MOV v 0)) (RET))))))
+    "'virtual-registers' handles nested code blocks")
+(ok (equal? (list (MOV ECX (ptr <int> RSP 8)) (MOV EAX ECX) (RET))
+            (virtual-registers <int> (make-list 7 <int>)
+                               (lambda (r . args) (list (MOV r (list-ref args 6)) (RET)))))
+    "'virtual-registers' maps the 7th integer parameter correctly")
 (ok (equal? (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
             (resolve-jumps (flatten-code (relabel (list (JMP 'a) (list (JMP 'a) 'a) (NOP) 'a)))))
     "'relabel' should create separate namespaces for labels")
@@ -882,13 +889,6 @@
            (lambda (s) (list (MOV (ptr <ubyte> (get-value s)) 0) (RET)))) s)
         (multiarray->list s)))
   "'wrap' passes pointer variables for sequence data")
-(ok (unspecified? ((wrap ctx <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))]
-                                                     (list (list (MOV v 0)) (RET)))))))
-    "'wrap' handles nested code blocks and virtual registers"); TODO
 (ok (eqv? 3 ((wrap ctx <int> '()  (lambda (r)
                                     (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))
-    "'wrap' creates separate namespaces for labels"); TODO
-(ok (equal? 7 (apply (wrap ctx <int> (make-list 7 <int>)
-                           (lambda (r . args) (list (MOV r (list-ref args 6)) (RET))))
-                     (iota 7 1)))
-    "'wrap' maps the 7th integer parameter correctly"); TODO
+    "'wrap' creates separate namespaces for labels")
