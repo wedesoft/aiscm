@@ -821,10 +821,10 @@
                                (list (cons a RSI) (cons c RAX))))
     "Register allocation with predefined registers")
 (ok (equal? (list (RET))
-            (virtual-registers '() '() (lambda () (list (RET)))))
+            (virtual-registers <null> '() (lambda () (list (RET)))))
     "'virtual-registers' handles empty function")
 (ok (equal? (list (MOV (ptr <byte> RDI) 42) (RET))
-            (virtual-registers '() (list <long>) (lambda (x) (list (MOV (ptr <byte> x) 42) (RET)))))
+            (virtual-registers <null> (list <long>) (lambda (x) (list (MOV (ptr <byte> x) 42) (RET)))))
     "'virtual-registers' allocates variables for function arguments")
 (ok (equal? (list (MOV EAX 42) (RET))
             (virtual-registers <int> '() (lambda (r) (list (MOV r 42) (RET)))))
@@ -836,6 +836,7 @@
 (ok (equal? (list (MOV ECX 42) (MOV EAX ECX) (RET))
             (virtual-registers <int> '() (lambda (r) (list (MOV a 42) (MOV r a) (RET)))))
     "'virtual-registers' allocates local variables")
+; TODO: move tests here: relabel, load-args, flatten-code
 (ok (eq? 'new (get-target (retarget (JMP 'old) 'new)))
     "'retarget' should update target of jump statement")
 (ok (equal? (list (JMP 1) 'a (NOP) (RET))
@@ -883,11 +884,11 @@
   "'wrap' passes pointer variables for sequence data")
 (ok (unspecified? ((wrap ctx <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))]
                                                      (list (list (MOV v 0)) (RET)))))))
-    "'wrap' handles nested code blocks and virtual registers")
+    "'wrap' handles nested code blocks and virtual registers"); TODO
 (ok (eqv? 3 ((wrap ctx <int> '()  (lambda (r)
                                     (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))
-    "'wrap' creates separate namespaces for labels")
+    "'wrap' creates separate namespaces for labels"); TODO
 (ok (equal? 7 (apply (wrap ctx <int> (make-list 7 <int>)
                            (lambda (r . args) (list (MOV r (list-ref args 6)) (RET))))
                      (iota 7 1)))
-    "'wrap' maps the 7th integer parameter correctly")
+    "'wrap' maps the 7th integer parameter correctly"); TODO
