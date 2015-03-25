@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (srfi srfi-1)
              (srfi srfi-26)
+             (ice-9 optargs)
              (aiscm util)
              (aiscm element)
              (aiscm pointer)
