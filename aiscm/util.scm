@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 optargs)
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
@@ -87,7 +88,7 @@
            (blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
            (available (difference colors blocked))]
       (cons (cons target (car available)) coloring))))
-(define (color-graph graph colors predefined)
+(define* (color-graph graph colors #:key (predefined '()))
   (color-nodes graph
                (difference (nodes graph) (map car predefined))
                predefined

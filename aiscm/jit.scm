@@ -522,8 +522,9 @@
   (let [(live (live prog))]
     (delete-duplicates (concatenate (map product live live)))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+(define callee-saved-codes (list RBX RSP RBP R12 R13 R14 R15))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
-  (subst prog (color-graph (collisions prog) registers predefined)))
+  (color-graph (collisions prog) registers #:predefined predefined))
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (get-type var) RSP offset)))
        vars (iota (length vars) 8 8)))
@@ -550,9 +551,11 @@
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
          (load-args    (load-vars (drop-up-to arg-vars 6)))
          (result-regs  (map cons result-vars (list RAX)))
-         (vars         (append result-vars arg-vars))]
-    (register-allocate (flatten-code (append load-args (relabel (apply proc vars))))
-                       #:predefined (append result-regs arg-regs))))
+         (vars         (append result-vars arg-vars))
+         (predefined   (append result-regs arg-regs))
+         (prog         (flatten-code (append load-args (relabel (apply proc vars)))))
+         (colors       (register-allocate prog #:predefined predefined))]
+    (subst prog colors)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
