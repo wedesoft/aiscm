@@ -14,12 +14,13 @@
 (define m (list->multiarray '((-1 2) (3 4))))
 (define ctx (make <jit-context>))
 
-(define names '(a b c d e f g h i))
-(define vars (map (cut make <var> #:type <int> #:symbol <>) names))
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+(define callee-saved-codes (list RBX RSP RBP R12 R13 R14 R15))
+(lset-intersection eq? (delete-duplicates (list RAX RBX RBX)) callee-saved-codes)
 
-(drop vars 6)
-
-(MOV a (ptr <int> RSP #x8))
+(MOV (ptr <long> RSP #x8) RBX)
+(MOV (ptr <long> RSP #x10) RBP)
+(MOV (ptr <long> RSP #x18) R12)
 
 ;(define-syntax env
 ;  (lambda (x)

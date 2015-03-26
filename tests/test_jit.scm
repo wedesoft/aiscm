@@ -11,7 +11,7 @@
              (aiscm bool)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 333)
+(planned-tests 334)
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -854,6 +854,8 @@
 (ok (equal? (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
             (resolve-jumps (flatten-code (relabel (list (JMP 'a) (list (JMP 'a) 'a) (NOP) 'a)))))
     "'relabel' should create separate namespaces for labels")
+(ok (lset= eq? (list RBP R12) (callee-saved (list RAX RBP R10 R10 R12 R12)))
+    "'callee-saved' should extract the set of callee-saved registers")
 (ok (let [(b (make <var> #:type <int> #:symbol 'b))
           (i (make <var> #:type <ubyte> #:symbol 'i))]
       (equal? (list i b) (collate (list <int> <bool>) (list i b))))

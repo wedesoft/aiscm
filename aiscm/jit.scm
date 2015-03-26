@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             get-type subst variables get-args input output labels next-indices live collisions
-            register-allocate virtual-registers flatten-code relabel collate wrap)
+            register-allocate callee-saved virtual-registers flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -522,7 +522,8 @@
   (let [(live (live prog))]
     (delete-duplicates (concatenate (map product live live)))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
-(define callee-saved-codes (list RBX RSP RBP R12 R13 R14 R15))
+(define (callee-saved registers)
+  (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
   (color-graph (collisions prog) registers #:predefined predefined))
 (define (load-vars vars)
