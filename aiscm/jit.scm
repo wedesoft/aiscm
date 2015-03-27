@@ -27,7 +27,8 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             reg loc arg pass-parameters
             get-type subst variables get-args input output labels next-indices live collisions
-            register-allocate callee-saved virtual-registers flatten-code relabel collate wrap)
+            register-allocate callee-saved save-registers load-registers virtual-registers
+            flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -529,6 +530,12 @@
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (get-type var) RSP offset)))
        vars (iota (length vars) 8 8)))
+(define (save-registers registers offset)
+  (map (lambda (register offset) (MOV (ptr <long> RSP offset) register))
+       registers (iota (length registers) (* offset 8) 8)))
+(define (load-registers registers offset)
+  (map (lambda (register offset) (MOV register (ptr <long> RSP offset)))
+       registers (iota (length registers) (* offset 8) 8)))
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
          (replacements (map (compose gensym symbol->string) labels))
@@ -545,7 +552,7 @@
                       (if (and (list? x) (not (every integer? x)))
                         (flatten-code x)
                         (list x))) prog)))
-(define (virtual-registers result-type arg-types proc)
+(define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
          (result-vars  (map (cut make <var> #:type <>) result-types))
@@ -555,8 +562,13 @@
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
          (prog         (flatten-code (append load-args (relabel (apply proc vars)))))
-         (colors       (register-allocate prog #:predefined predefined))]
-    (subst prog colors)))
+         (colors       (register-allocate prog #:predefined predefined #:registers registers))
+         (stack-offset (max 1 (- (length arg-vars) 5)))
+         (to-save      (callee-saved (map cdr colors)))]
+    (append (save-registers to-save stack-offset)
+            (all-but-last (subst prog colors))
+            (load-registers to-save stack-offset)
+            (list (RET)))))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
