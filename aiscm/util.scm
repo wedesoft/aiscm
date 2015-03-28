@@ -7,7 +7,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to depth
-            flatten-n flatten cycle uncycle integral zipmap alist-invert
+            flatten-n flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
             nodes adjacent remove-node color-graph union difference fixed-point)
   #:export-syntax (def-once expand))
@@ -46,7 +46,6 @@
                            (let [(xs (+ (car lst) x))]
                              (cons xs (accumulate (cdr lst) xs))))))]
     (accumulate lst 0)))
-(define (zipmap keys vals) (map (lambda (x) (cons (car x) (cadr x))) (zip keys vals)))
 (define (alist-invert alist)
   (map (lambda (x) (cons (cdr x) (car x))) alist))
 (define (alist-set = alist key val)

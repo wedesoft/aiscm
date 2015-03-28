@@ -60,7 +60,7 @@
 (define (stabilize-jumps commands guess)
   (let* [(applied  (apply-offsets commands guess))
          (sizes    (map instruction-length applied))
-         (offsets  (zipmap commands (integral sizes)))]
+         (offsets  (map cons commands (integral sizes)))]
     (if (equal? offsets guess)
       (filter (compose not symbol?) applied)
       (stabilize-jumps commands offsets))))
