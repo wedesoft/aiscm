@@ -1,7 +1,6 @@
 # TODO
 
-* virtual-registers?
-* callee-saved registers
+* live-analysis for 2D unary-op
 * array-array binary operations
 * register spilling
 * 1d-array plus 2d-array
