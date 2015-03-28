@@ -394,12 +394,13 @@
             (indices   (iota (length prog)))
             (lut       (labels prog))
             (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices))
+            (same?     (cut every (cut lset= equal? <...>) <...>))
             (track     (lambda (value)
                          (lambda (in ind out)
                            (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
-    (map union (fixed-point initial iteration equal?) outputs))); TODO: is 'equal?' sufficient?
+    (map union (fixed-point initial iteration same?) outputs)))
 (define (collisions prog)
   (let [(live (live prog))]
     (delete-duplicates (concatenate (map product live live)))))
