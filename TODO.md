@@ -5,6 +5,8 @@
 * register spilling
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
+* increase RSP if using more than 128 bytes
+  http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * extra wrapper for compound return values?
 * make structs of variables printable
 * matching for lists?
