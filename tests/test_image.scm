@@ -34,5 +34,5 @@
   "'multiarray->image' preserves shape of array")
 (ok (equal? l (multiarray->list (image->multiarray (multiarray->image m))))
   "Converting from UBYTE multiarray to image and back preserves data")
-(skip (equal? #vu8(1 3 2 4) (read-bytes (get-mem (multiarray->image (roll (list->multiarray '((1 2) (3 4)))))) 4))
+(ok (equal? #vu8(1 3 2 4) (read-bytes (get-mem (multiarray->image (roll (list->multiarray '((1 2) (3 4)))))) 4))
   "Conversion to image ensures compacting of pixel lines")

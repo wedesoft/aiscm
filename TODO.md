@@ -1,6 +1,7 @@
 # TODO
 
-* live-analysis for 2D unary-op
+* document motivation: vector instructions, compose array functions and calls,
+  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * array-array binary operations
 * register spilling
 * 1d-array plus 2d-array
