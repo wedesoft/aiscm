@@ -54,7 +54,6 @@
               (list ((if (signed? (get-type b_)) MOVSX MOVZX) b b_)
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
-
 (define-method (binary-op (r_ <pointer<>>) a_ (b_ <pointer<>>) op)
   (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
     (list ((if (eqv? (bits (typecode r_)) (bits (get-type a_)))
@@ -67,7 +66,18 @@
               (list ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
-
+(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op); TODO: fix this one
+  (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
+    (list ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
+             MOV
+             (if (signed? (typecode a_)) MOVSX MOVZX))
+           r (ptr (typecode a_) (get-value a_)))
+          (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
+            (op r (ptr (typecode b_) (get-value b_)))
+            (let [(b (make <var> #:type (typecode r_)))]
+              (list ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
+                    (op r b))))
+          (MOV (ptr (typecode r_) (get-value r_)) r))))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  b_  op)
   (let [(*r  (make <var> #:type <long> #:symbol '*r))
         (r+  (make <var> #:type <long> #:symbol 'r+))
@@ -92,7 +102,6 @@
           (ADD *a a+)
           (JMP 'loop)
           'return)))
-
 (define-method (binary-op (r_ <sequence<>>) a_ (b_ <sequence<>>)  op)
   (let [(*r  (make <var> #:type <long> #:symbol '*r))
         (r+  (make <var> #:type <long> #:symbol 'r+))
@@ -114,6 +123,36 @@
           (JE 'return)
           (binary-op (project (rebase *r r_)) a_ (project (rebase *b b_)) op)
           (ADD *r r+)
+          (ADD *b b+)
+          (JMP 'loop)
+          'return)))
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>)  op)
+  (let [(*r  (make <var> #:type <long> #:symbol '*r))
+        (r+  (make <var> #:type <long> #:symbol 'r+))
+        (n   (make <var> #:type <long> #:symbol 'n))
+        (*a  (make <var> #:type <long> #:symbol '*a))
+        (a+  (make <var> #:type <long> #:symbol 'a+))
+        (*b  (make <var> #:type <long> #:symbol '*b))
+        (b+  (make <var> #:type <long> #:symbol 'b+))
+        (*rx (make <var> #:type <long> #:symbol '*rx))]
+    (list (MOV *r (get-value r_))
+          (MOV r+ (last (strides r_)))
+          (MOV n (last (shape r_)))
+          (MOV *a (get-value a_))
+          (MOV a+ (last (strides a_)))
+          (MOV *b (get-value b_))
+          (MOV b+ (last (strides b_)))
+          (IMUL n r+)
+          (IMUL r+ r+ (size-of (typecode r_)))
+          (IMUL a+ a+ (size-of (typecode a_)))
+          (IMUL b+ b+ (size-of (typecode b_)))
+          (LEA *rx (ptr (typecode r_) *r n))
+          'loop
+          (CMP *r *rx)
+          (JE 'return)
+          (binary-op (project (rebase *r r_)) (project (rebase *a a_)) (project (rebase *b b_)) op)
+          (ADD *r r+)
+          (ADD *a a+)
           (ADD *b b+)
           (JMP 'loop)
           'return)))
