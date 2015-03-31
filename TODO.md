@@ -1,14 +1,13 @@
 # TODO
 
-* document motivation: vector instructions, compose array functions and calls,
-  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
-* array-array binary operations
+* reeintroduce <int>, ...
 * register spilling
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
 * increase RSP if using more than 128 bytes
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
-* extra wrapper for compound return values?
+* document motivation: vector instructions, compose array functions and calls,
+  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * make structs of variables printable
 * matching for lists?
 * pack and unpack necessary? <int> and <bool> necessary?
