@@ -48,17 +48,17 @@
              MOV
              (if (signed? (typecode a_)) MOVSX MOVZX))
            r (ptr (typecode a_) (get-value a_)))
-          (if (eqv? (bits (typecode r_)) (bits (get-type b_)))
+          (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
             (op r b_)
             (let [(b (make <var> #:type (typecode r_)))]
-              (list ((if (signed? (get-type b_)) MOVSX MOVZX) b b_)
+              (list ((if (signed? (typecode b_)) MOVSX MOVZX) b b_)
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
 (define-method (binary-op (r_ <pointer<>>) (a_ <var>) (b_ <pointer<>>) op)
   (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
-    (list ((if (eqv? (bits (typecode r_)) (bits (get-type a_)))
+    (list ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
              MOV
-             (if (signed? (get-type a_)) MOVSX MOVZX))
+             (if (signed? (typecode a_)) MOVSX MOVZX))
            r a_)
           (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
             (op r (ptr (typecode b_) (get-value b_)))

@@ -25,7 +25,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            get-type subst variables get-args input output labels next-indices live collisions
+            subst variables get-args input output labels next-indices live collisions
             register-allocate callee-saved save-registers load-registers virtual-registers
             flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
@@ -117,25 +117,25 @@
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
 (define-class <var> ()
-  (type #:init-keyword #:type #:getter get-type)
+  (type #:init-keyword #:type #:getter typecode)
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
 (define-method (display (self <var>) port) (display (slot-ref self 'symbol) port))
 (define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
 (define (is-var? value) (is-a? value <var>))
 (define-class <ptr> ()
-  (type #:init-keyword #:type #:getter get-type)
+  (type #:init-keyword #:type #:getter typecode)
   (args #:init-keyword #:args #:getter get-args))
 (define-method (display (self <ptr>) port)
-  (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
+  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
 (define-method (write (self <ptr>) port)
-  (display (cons 'ptr (cons (class-name (get-type self)) (get-args self))) port))
+  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
 (define (is-ptr? value) (is-a? value <ptr>))
 (define-method (subst self alist) self)
 (define-method (subst (self <var>) alist)
   (let [(register (assq-ref alist self))]
-    (if register (reg (get-type self) (get-code register)) self)))
+    (if register (reg (typecode self) (get-code register)) self)))
 (define-method (subst (self <ptr>) alist)
-  (apply ptr (cons (get-type self) (map (cut subst <> alist) (get-args self)))))
+  (apply ptr (cons (typecode self) (map (cut subst <> alist) (get-args self)))))
 (define-method (subst (self <cmd>) alist)
   (apply (get-op self) (map (cut subst <> alist) (get-args self))))
 (define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
@@ -409,7 +409,7 @@
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
   (color-graph (collisions prog) registers #:predefined predefined))
 (define (load-vars vars)
-  (map (lambda (var offset) (MOV var (ptr (get-type var) RSP offset)))
+  (map (lambda (var offset) (MOV var (ptr (typecode var) RSP offset)))
        vars (iota (length vars) 8 8)))
 (define (save-registers registers)
   (map (lambda (register offset) (MOV (ptr <long> RSP offset) register))

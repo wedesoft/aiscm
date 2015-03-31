@@ -1,6 +1,5 @@
 # TODO
 
-* get-type -> typecode
 * register spilling
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
