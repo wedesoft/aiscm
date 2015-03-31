@@ -42,7 +42,7 @@
           (JMP 'loop)
           'return)))
 
-(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) b_ op)
+(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <var>) op)
   (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
     (list ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
              MOV
@@ -54,7 +54,7 @@
               (list ((if (signed? (get-type b_)) MOVSX MOVZX) b b_)
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
-(define-method (binary-op (r_ <pointer<>>) a_ (b_ <pointer<>>) op)
+(define-method (binary-op (r_ <pointer<>>) (a_ <var>) (b_ <pointer<>>) op)
   (let [(r (make <var> #:type (typecode r_) #:symbol 'r))]
     (list ((if (eqv? (bits (typecode r_)) (bits (get-type a_)))
              MOV
@@ -78,7 +78,7 @@
               (list ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
                     (op r b))))
           (MOV (ptr (typecode r_) (get-value r_)) r))))
-(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  b_  op)
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <var>) op)
   (let [(*r  (make <var> #:type <long> #:symbol '*r))
         (r+  (make <var> #:type <long> #:symbol 'r+))
         (n   (make <var> #:type <long> #:symbol 'n))
@@ -102,7 +102,7 @@
           (ADD *a a+)
           (JMP 'loop)
           'return)))
-(define-method (binary-op (r_ <sequence<>>) a_ (b_ <sequence<>>)  op)
+(define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>)  op)
   (let [(*r  (make <var> #:type <long> #:symbol '*r))
         (r+  (make <var> #:type <long> #:symbol 'r+))
         (n   (make <var> #:type <long> #:symbol 'n))

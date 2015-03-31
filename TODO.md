@@ -1,6 +1,6 @@
 # TODO
 
-* reeintroduce <int>, ...
+* get-type -> typecode
 * register spilling
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
@@ -10,8 +10,7 @@
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * make structs of variables printable
 * matching for lists?
-* pack and unpack necessary? <int> and <bool> necessary?
-* remove pass-parameters, reg, arg, ...
+* pack and unpack necessary? instances of <int> and <bool> necessary?
 * GOOPS monkey patching
 * REPL docs: (help ...)
 * RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)

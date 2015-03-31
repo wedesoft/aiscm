@@ -25,7 +25,6 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            reg loc arg pass-parameters
             get-type subst variables get-args input output labels next-indices live collisions
             register-allocate callee-saved save-registers load-registers virtual-registers
             flatten-code relabel collate wrap)
