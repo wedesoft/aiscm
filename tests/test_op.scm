@@ -77,7 +77,7 @@
 (skip (equal? '(((2 4 6) (8 10 12))) (let [(m (list->multiarray '(((1 2 3) (4 5 6)))))]
                                      (multiarray->list (+ m m))))
     "add two 3D arrays")
-(skip (equal? '((2 4) (6 8)) (multiarray->list (* 2 (list->multiarray '((1 2) (3 4))))))
+(ok (equal? '((2 4) (6 8)) (multiarray->list (* 2 (list->multiarray '((1 2) (3 4))))))
     "scalar-array multiplication")
 (skip (equal? '((256 256) (256 256)) (multiarray->list (* 256 (list->multiarray '((1 1) (1 1))))))
     "correct handling of strides with 2D short integer array")

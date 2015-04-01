@@ -199,7 +199,7 @@
 
 (define-binary-op + ADD)
 (define-binary-op - SUB)
-;(define-binary-op * IMUL)
+(define-binary-op * IMUL)
 
 (define (fill t n value); TODO: replace with tensor operation
   (let [(retval (make (sequence t) #:size n))]
