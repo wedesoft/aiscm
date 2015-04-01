@@ -193,7 +193,6 @@
     (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
     (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
 
-(define-method (+ (a <element>)) a)
 (define-unary-op duplicate (const '()))
 (define-unary-op - NEG)
 
