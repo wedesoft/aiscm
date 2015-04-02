@@ -13,7 +13,7 @@
 * GOOPS monkey patching
 * REPL docs: (help ...)
 * RGB, libswscale2, libmjpegtools (mjpegtools/jpegutils.h -> decode_jpeg_raw)
-* remove flatten-n
+* logging?
 * nicer website
 * element-wise type conversions
 * getting ranges from array

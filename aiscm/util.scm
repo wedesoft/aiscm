@@ -6,8 +6,8 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to depth
-            flatten-n flatten cycle uncycle integral alist-invert
+  #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to
+            flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
             nodes adjacent remove-node color-graph union difference fixed-point)
   #:export-syntax (def-once expand))
@@ -28,15 +28,10 @@
 (define (drop-up-to lst n)
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
-(define (depth val)
-  (if (list? val) (1+ (apply max (cons 0 (map depth val)))) 0))
-(define (flatten-n val n)
-  (if (> (depth val) n)
-    (if (> (depth (car val)) (- n 1))
-      (flatten-n (append (car val) (cdr val)) n)
-      (cons (car val) (flatten-n (cdr val) n)))
-    val))
-(define (flatten val) (flatten-n val 1))
+(define (flatten x)
+  (cond ((null? x) x)
+        ((pair? x) (append (flatten (car x)) (flatten (cdr x))))
+        (else      (list x))))
 (define (cycle lst) (attach (cdr lst) (car lst)))
 (define (uncycle lst) (cons (last lst) (all-but-last lst)))
 (define (integral lst)
