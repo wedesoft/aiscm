@@ -81,8 +81,8 @@
            (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))]
       (and coloring
         (let* [(blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
-               (available (difference colors blocked))]
-          (if (null? available) #f (cons (cons target (car available)) coloring)))))))
+               (available (find (negate (cut memv <> blocked)) colors))]
+          (and available (cons (cons target available) coloring)))))))
 (define* (color-graph graph colors #:key (predefined '()))
   (color-nodes graph
                (difference (nodes graph) (map car predefined))
