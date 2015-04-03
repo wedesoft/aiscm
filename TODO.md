@@ -1,6 +1,6 @@
 # TODO
 
-* register spilling
+* register spilling (definition-use graph)
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
 * increase RSP if using more than 128 bytes
@@ -9,6 +9,7 @@
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * make structs of variables printable
 * matching for lists?
+* array stack/unstack/record arrays
 * pack and unpack necessary? instances of <int> and <bool> necessary?
 * GOOPS monkey patching
 * REPL docs: (help ...)

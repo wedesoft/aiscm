@@ -78,10 +78,11 @@
 (define (color-nodes graph nodes predefined colors)
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (adjacent graph)) nodes))
-           (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))
-           (blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
-           (available (difference colors blocked))]
-      (cons (cons target (car available)) coloring))))
+           (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))]
+      (and coloring
+        (let* [(blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
+               (available (difference colors blocked))]
+          (if (null? available) #f (cons (cons target (car available)) coloring)))))))
 (define* (color-graph graph colors #:key (predefined '()))
   (color-nodes graph
                (difference (nodes graph) (map car predefined))
