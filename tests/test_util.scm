@@ -69,5 +69,5 @@
 (ok (equal? '((b . green) (a . red) (c . green) (d . red))
             (color-graph '((b . a) (a . c) (d . c)) '(red green blue) #:predefined '((d . red))))
     "'color-graph' should respect predefined colors")
-(ok (not (color-graph '((a . b)) '(red)))
-    "'color-graph' should return false if running out of registers")
+(ok (equal? '((a . #f) (b . red)) (color-graph '((a . b)) '(red)))
+    "'color-graph' should bind variables to false when out of registers")
