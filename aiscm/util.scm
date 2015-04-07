@@ -9,7 +9,8 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to
             flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
-            nodes adjacent remove-node color-graph union difference fixed-point)
+            nodes adjacent remove-node color-graph union difference fixed-point
+            compact)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -87,3 +88,4 @@
                (difference (nodes graph) (map car predefined))
                predefined
                colors))
+(define (compact lst) (filter identity lst))

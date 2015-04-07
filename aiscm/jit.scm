@@ -436,7 +436,7 @@
 (define (spill-variable var offset prog)
   (let [(load-var (lambda (cmd) (and (memv var (input  cmd)) (MOV var (ptr (typecode var) RSP offset)))))
         (save-var (lambda (cmd) (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) var))))]
-    (concatenate (map (lambda (cmd) (filter identity (list (load-var cmd) cmd (save-var cmd)))) prog))))
+    (concatenate (map (lambda (cmd) (compact (list (load-var cmd) cmd (save-var cmd)))) prog))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
