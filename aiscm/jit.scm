@@ -26,8 +26,8 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             subst variables get-args input output labels next-indices live collisions
-            register-allocate callee-saved save-registers load-registers virtual-registers
-            flatten-code relabel collate wrap)
+            register-allocate callee-saved save-registers load-registers spill-variable
+            virtual-registers flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -433,6 +433,10 @@
                       (if (and (list? x) (not (every integer? x)))
                         (flatten-code x)
                         (list x))) prog)))
+(define (spill-variable var offset prog)
+  (let [(load-var (lambda (cmd) (and (memv var (input  cmd)) (MOV var (ptr (typecode var) RSP offset)))))
+        (save-var (lambda (cmd) (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) var))))]
+    (concatenate (map (lambda (cmd) (filter identity (list (load-var cmd) cmd (save-var cmd)))) prog))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))

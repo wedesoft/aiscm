@@ -1,8 +1,9 @@
 # TODO
 
-* register spilling (definition-use graph)
+* register spilling (spill variables, spill definition-use connected components)
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
+* flatten-code needed?
 * increase RSP if using more than 128 bytes
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * document motivation: vector instructions, compose array functions and calls,
