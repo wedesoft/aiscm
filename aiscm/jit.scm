@@ -25,7 +25,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            subst variables get-args input output labels next-indices live collisions
+            substitute-variables variables get-args input output labels next-indices live collisions
             register-allocate callee-saved save-registers load-registers spill-variable
             virtual-registers flatten-code relabel collate wrap)
   #:export-syntax (env jit-wrap))
@@ -130,15 +130,15 @@
 (define-method (write (self <ptr>) port)
   (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
 (define (is-ptr? value) (is-a? value <ptr>))
-(define-method (subst self alist) self)
-(define-method (subst (self <var>) alist)
+(define-method (substitute-variables self alist) self)
+(define-method (substitute-variables (self <var>) alist)
   (let [(register (assq-ref alist self))]
     (if register (reg (typecode self) (get-code register)) self)))
-(define-method (subst (self <ptr>) alist)
-  (apply ptr (cons (typecode self) (map (cut subst <> alist) (get-args self)))))
-(define-method (subst (self <cmd>) alist)
-  (apply (get-op self) (map (cut subst <> alist) (get-args self))))
-(define-method (subst (self <list>) alist) (map (cut subst <> alist) self))
+(define-method (substitute-variables (self <ptr>) alist)
+  (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
+(define-method (substitute-variables (self <cmd>) alist)
+  (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
+(define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define-class <operand> ())
 
@@ -450,7 +450,7 @@
          (colors       (register-allocate prog #:predefined predefined #:registers registers))
          (to-save      (callee-saved (map cdr colors)))]
     (append (save-registers to-save)
-            (all-but-last (subst prog colors))
+            (all-but-last (substitute-variables prog colors))
             (load-registers to-save)
             (list (RET)))))
 (define (collate classes vars)
