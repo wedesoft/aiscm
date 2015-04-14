@@ -1,9 +1,10 @@
 (define-module (aiscm jit)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 binary-ports)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
@@ -11,7 +12,6 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:use-module (ice-9 binary-ports)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <ptr> <operand> <register> <address> <var>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
@@ -132,8 +132,11 @@
 (define (is-ptr? value) (is-a? value <ptr>))
 (define-method (substitute-variables self alist) self)
 (define-method (substitute-variables (self <var>) alist)
-  (let [(register (assq-ref alist self))]
-    (if register (reg (typecode self) (get-code register)) self)))
+  (let [(target (assq-ref alist self))]
+    (cond
+      ((is-a? target <register>) (reg (typecode self) (get-code target)))
+      ((is-a? target <var>)      target)
+      (else                      self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
 (define-method (substitute-variables (self <cmd>) alist)
@@ -434,9 +437,13 @@
                         (flatten-code x)
                         (list x))) prog)))
 (define (spill-variable var offset prog)
-  (let [(load-var (lambda (cmd) (and (memv var (input  cmd)) (MOV var (ptr (typecode var) RSP offset)))))
-        (save-var (lambda (cmd) (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) var))))]
-    (concatenate (map (lambda (cmd) (compact (list (load-var cmd) cmd (save-var cmd)))) prog))))
+  (define (spill cmd)
+    (let [(temporary (make <var> #:type (typecode var)))]
+      (list
+        (and (memv var (input cmd)) (MOV temporary (ptr (typecode var) RSP offset)))
+        (substitute-variables cmd (list (cons var temporary)))
+        (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) temporary))))) 
+  (concatenate (map (compose compact spill) prog)))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))

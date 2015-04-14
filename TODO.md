@@ -1,6 +1,7 @@
 # TODO
 
-* register spilling (spill variables, spill definition-use connected components)
+* select variable to spill, iteration,
+  http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * 1d-array plus 2d-array
 * coalesce registers (see Chaitin's paper)
 * flatten-code needed?
