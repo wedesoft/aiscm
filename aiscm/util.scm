@@ -3,7 +3,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
-  #:use-module (ice-9 common-list)
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
@@ -26,7 +25,7 @@
 (define (index a b)
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
-(define (all-but-last lst) (butlast lst 1))
+(define all-but-last (compose reverse cdr reverse))
 (define (drop-up-to lst n)
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
