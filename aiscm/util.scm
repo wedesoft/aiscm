@@ -88,4 +88,4 @@
                (difference (nodes graph) (map car predefined))
                predefined
                colors))
-(define (compact lst) (filter identity lst))
+(define (compact . args) (filter identity args))

@@ -436,14 +436,14 @@
                       (if (and (list? x) (not (every integer? x)))
                         (flatten-code x)
                         (list x))) prog)))
+(define (spill-single var offset cmd)
+  (let [(temporary (make <var> #:type (typecode var)))]
+    (compact
+      (and (memv var (input cmd)) (MOV temporary (ptr (typecode var) RSP offset)))
+      (substitute-variables cmd (list (cons var temporary)))
+      (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) temporary)))))
 (define (spill-variable var offset prog)
-  (define (spill cmd)
-    (let [(temporary (make <var> #:type (typecode var)))]
-      (list
-        (and (memv var (input cmd)) (MOV temporary (ptr (typecode var) RSP offset)))
-        (substitute-variables cmd (list (cons var temporary)))
-        (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) temporary))))) 
-  (concatenate (map (compose compact spill) prog)))
+  (concatenate (map (cut spill-single var offset <>) prog)))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))

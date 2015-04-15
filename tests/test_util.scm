@@ -71,5 +71,5 @@
     "'color-graph' should respect predefined colors")
 (ok (equal? '((a . #f) (b . red)) (color-graph '((a . b)) '(red)))
     "'color-graph' should bind variables to false when out of registers")
-(ok (equal? '(1 2 3) (compact '(1 2 #f 3 #f)))
-    "Remove false elements from a list")
+(ok (equal? '(1 2 3) (compact 1 2 #f 3 #f))
+    "Remove false elements from arguments")
