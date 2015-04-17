@@ -11,7 +11,6 @@
 *.xz
 *~
 *.info
-*.pdf
 *.trs
 *.log
 aclocal.m4
