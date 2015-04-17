@@ -10,17 +10,26 @@
              (aiscm jit)
              (aiscm op)
              (aiscm int))
-(define s (list->multiarray '(-1 2 3)))
-(define m (list->multiarray '((-1 2) (3 4))))
-(define ctx (make <jit-context>))
 
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
-(define callee-saved-codes (list RBX RSP RBP R12 R13 R14 R15))
-(lset-intersection eq? (delete-duplicates (list RAX RBX RBX)) callee-saved-codes)
+(define a (make <var> #:type <int> #:symbol 'a))
+(define b (make <var> #:type <int> #:symbol 'b))
+(define c (make <var> #:type <int> #:symbol 'c))
 
-(MOV (ptr <long> RSP #x8) RBX)
-(MOV (ptr <long> RSP #x10) RBP)
-(MOV (ptr <long> RSP #x18) R12)
+(define prog (list (ADD a b) (ADD a c) (RET)))
+
+(define colors (register-allocate prog #:registers (list RAX ESI)))
+(define unassigned (find (compose not cdr) (reverse colors)))
+(define participants ((adjacent (collisions prog)) (car unassigned)))
+
+(define spill-var (argmin (cut occurrences <> prog) participants))
+
+(define prog (spill-variable spill-var 8 prog))
+
+(define colors (register-allocate prog #:registers (list RAX ESI)))
+(substitute-variables prog colors)
+
+; #:predefined?
+
 
 ;(define-syntax env
 ;  (lambda (x)
