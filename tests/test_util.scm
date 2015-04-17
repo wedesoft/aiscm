@@ -46,7 +46,7 @@
 (ok (equal? '(a . 1) (argmin cdr '((c . 3) (a . 1) (b . 2))))
     "Get element with minimum of argument")
 (ok (equal? '(c . 3) (argmax cdr '((c . 3) (a . 1) (b . 2))))
-    "Get element with minimum of argument")
+    "Get element with maximum of argument")
 (ok (equal? '((0 1) (2 3 4) (5 6 7 8 9)) (gather '(2 3 5) (iota 10)))
     "'gather' groups elements into groups of specified size")
 (ok (< (abs (- (sqrt 2)
