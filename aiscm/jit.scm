@@ -133,10 +133,9 @@
 (define-method (substitute-variables self alist) self)
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
-    (cond
-      ((is-a? target <register>) (reg (typecode self) (get-code target)))
-      ((is-a? target <var>)      target)
-      (else                      self))))
+    (if (is-a? target <register>)
+      (reg (typecode self) (get-code target)); TODO: do type conversion elsewhere
+      (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
 (define-method (substitute-variables (self <cmd>) alist)
@@ -436,14 +435,18 @@
                       (if (and (list? x) (not (every integer? x)))
                         (flatten-code x)
                         (list x))) prog)))
-(define (spill-single var offset cmd)
+(define ((insert-temporary var) cmd)
   (let [(temporary (make <var> #:type (typecode var)))]
     (compact
-      (and (memv var (input cmd)) (MOV temporary (ptr (typecode var) RSP offset)))
+      (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
-      (and (memv var (output cmd)) (MOV (ptr (typecode var) RSP offset) temporary)))))
+      (and (memv var (output cmd)) (MOV var temporary)))))
+(define (insert-temporaries var prog); TODO: test and use this instead of spill-variable
+  (concatenate (map (insert-temporary var) prog)))
 (define (spill-variable var offset prog)
-  (concatenate (map (cut spill-single var offset <>) prog)))
+  (substitute-variables
+    (insert-temporaries var prog)
+    (list (cons var (ptr (typecode var) RSP offset)))))
 (define (occurrences var prog) (count identity (map (lambda (cmd) (memv var (get-args cmd))) prog)))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
