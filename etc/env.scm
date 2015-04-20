@@ -16,10 +16,11 @@
 (define c (make <var> #:type <int> #:symbol 'c))
 
 (define prog (list (ADD a b) (ADD a c) (RET)))
+(define live (live-analysis prog))
 
 (define colors (register-allocate prog #:registers (list RAX ESI)))
 (define unassigned (find (compose not cdr) (reverse colors)))
-(define participants ((adjacent (interference-graph prog)) (car unassigned)))
+(define participants ((adjacent (interference-graph live)) (car unassigned)))
 
 (define spill-var (argmin (cut occurrences <> prog) participants))
 

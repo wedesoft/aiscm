@@ -25,9 +25,9 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            substitute-variables variables get-args input output labels next-indices live interference-graph
-            register-allocate callee-saved save-registers load-registers spill-variable
-            virtual-registers flatten-code relabel collate wrap occurrences)
+            substitute-variables variables get-args input output labels next-indices live-analysis
+            interference-graph register-allocate callee-saved save-registers load-registers
+            spill-variable virtual-registers flatten-code relabel collate wrap occurrences)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -389,7 +389,7 @@
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (eq? #xeb (get-code8 cmd)) (list target) (list (1+ k) target))))
-(define (live prog)
+(define (live-analysis prog)
   (letrec* [(inputs    (map input prog))
             (outputs   (map output prog))
             (indices   (iota (length prog)))
@@ -407,7 +407,7 @@
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
-  (color-graph (interference-graph (live prog)) registers #:predefined predefined))
+  (color-graph (interference-graph (live-analysis prog)) registers #:predefined predefined))
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (typecode var) RSP offset)))
        vars (iota (length vars) 8 8)))
