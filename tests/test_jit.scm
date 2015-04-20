@@ -812,7 +812,7 @@
     "Live-analysis with conditional jump statement")
 (ok (lset= equal?
            (list (cons a a) (cons b b) (cons b a) (cons a b) (cons c c) (cons c b) (cons b c))
-           (collisions (list (MOV a 0) (MOV b a) (MOV c b) (RET))))
+           (interference-graph (list (MOV a 0) (MOV b a) (MOV c b) (RET))))
     "Detecting collisions between variables")
 (ok (equal? (list (cons a RAX)) (register-allocate (list (MOV a 42) (RET))))
     "Allocate a single register")

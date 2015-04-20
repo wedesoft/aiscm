@@ -25,7 +25,7 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
-            substitute-variables variables get-args input output labels next-indices live collisions
+            substitute-variables variables get-args input output labels next-indices live interference-graph
             register-allocate callee-saved save-registers load-registers spill-variable
             virtual-registers flatten-code relabel collate wrap occurrences)
   #:export-syntax (env jit-wrap))
@@ -402,14 +402,14 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
-(define (collisions prog)
+(define (interference-graph prog)
   (let [(live (live prog))]
     (delete-duplicates (concatenate (map product live live)))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
-  (color-graph (collisions prog) registers #:predefined predefined))
+  (color-graph (interference-graph prog) registers #:predefined predefined))
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (typecode var) RSP offset)))
        vars (iota (length vars) 8 8)))
