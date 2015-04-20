@@ -402,14 +402,12 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
-(define (interference-graph prog)
-  (let [(live (live prog))]
-    (delete-duplicates (concatenate (map product live live)))))
+(define (interference-graph live) (delete-duplicates (concatenate (map product live live))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers))
-  (color-graph (interference-graph prog) registers #:predefined predefined))
+  (color-graph (interference-graph (live prog)) registers #:predefined predefined))
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (typecode var) RSP offset)))
        vars (iota (length vars) 8 8)))

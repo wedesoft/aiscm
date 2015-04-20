@@ -811,9 +811,9 @@
             (live (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET))))
     "Live-analysis with conditional jump statement")
 (ok (lset= equal?
-           (list (cons a a) (cons b b) (cons b a) (cons a b) (cons c c) (cons c b) (cons b c))
-           (interference-graph (list (MOV a 0) (MOV b a) (MOV c b) (RET))))
-    "Detecting collisions between variables")
+           (list (cons a a) (cons a b) (cons b a) (cons b b) (cons b c) (cons c b) (cons c c))
+           (interference-graph (list (list a) (list a b) (list b c) (list))))
+    "Determine collisions of live variables")
 (ok (equal? (list (cons a RAX)) (register-allocate (list (MOV a 42) (RET))))
     "Allocate a single register")
 (ok (equal? (list (cons a RCX))
