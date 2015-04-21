@@ -27,7 +27,8 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             substitute-variables variables get-args input output labels next-indices live-analysis
             interference-graph register-allocate callee-saved save-registers load-registers
-            spill-variable virtual-registers flatten-code relabel collate wrap idle-live)
+            spill-variable save-and-use-registers virtual-registers flatten-code relabel
+            collate wrap idle-live)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -447,6 +448,17 @@
     (list (cons var (ptr (typecode var) RSP offset)))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
+(define (save-and-use-registers prog colors)
+  (let [(need-saving (callee-saved (map cdr colors)))]
+    (append (save-registers need-saving)
+            (all-but-last (substitute-variables prog colors))
+            (load-registers need-saving)
+            (list (RET)))))
+(define* (replace-variables prog #:key (predefined '()) (registers default-registers)); TODO: test this directly
+  (let* [(live       (live-analysis prog))
+         (conflicts  (interference-graph live))
+         (colors     (color-graph conflicts registers #:predefined predefined))]
+    (save-and-use-registers prog colors)))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
@@ -456,13 +468,8 @@
          (result-regs  (map cons result-vars (list RAX)))
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
-         (prog         (flatten-code (append load-args (relabel (apply proc vars)))))
-         (colors       (register-allocate prog #:predefined predefined #:registers registers))
-         (to-save      (callee-saved (map cdr colors)))]
-    (append (save-registers to-save)
-            (all-but-last (substitute-variables prog colors))
-            (load-registers to-save)
-            (list (RET)))))
+         (prog         (flatten-code (append load-args (relabel (apply proc vars)))))]
+    (replace-variables prog #:predefined predefined #:registers registers)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
