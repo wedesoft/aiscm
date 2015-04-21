@@ -1,7 +1,6 @@
 # TODO
 
 * function for assigning stack locations to spilled variables
-* function for choosing register to spill
   http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * better test-suite, mocking?
 * 1d-array plus 2d-array

@@ -22,7 +22,7 @@
 (define unassigned (find (compose not cdr) (reverse colors)))
 (define participants ((adjacent (interference-graph live)) (car unassigned)))
 
-(define spill-var (argmin (cut occurrences <> prog) participants))
+(define spill-var (argmax (idle-live prog live) participants))
 
 (define prog (spill-variable spill-var 8 prog))
 

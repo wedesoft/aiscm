@@ -926,5 +926,7 @@
 (ok (equal? (list (MOV AL (ptr <byte> RSP 24)) (ADD AL 1) (MOV (ptr <byte> RSP 24) AL) (RET))
             (virtual-registers <null> '() (lambda () (spill-variable u 24 (list (ADD u 1) (RET))))))
     "Read and write spilled variable")
-(ok (equal? (map (cut occurrences <> (list (ADD a b) (ADD a c))) (list a b c)) '(2 1 1))
-    "Count occurrences of a variable")
+(ok (equal? (let [(prog (list (ADD a b) (ADD a c) (RET)))]
+              (map (idle-live prog (live-analysis prog)) (list a b c)))
+            '(0 0 1))
+    "Count times a variable is live but not used")

@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             substitute-variables variables get-args input output labels next-indices live-analysis
             interference-graph register-allocate callee-saved save-registers load-registers
-            spill-variable virtual-registers flatten-code relabel collate wrap occurrences)
+            spill-variable virtual-registers flatten-code relabel collate wrap idle-live)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -445,7 +445,8 @@
   (substitute-variables
     (insert-temporaries var prog)
     (list (cons var (ptr (typecode var) RSP offset)))))
-(define (occurrences var prog) (count identity (map (lambda (cmd) (memv var (get-args cmd))) prog)))
+(define ((idle-live prog live) var)
+  (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
