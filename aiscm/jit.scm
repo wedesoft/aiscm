@@ -174,6 +174,12 @@
   (reg   #:init-keyword #:reg   #:getter get-reg)
   (disp  #:init-keyword #:disp  #:getter get-disp  #:init-value #f)
   (index #:init-keyword #:index #:getter get-index #:init-value #f))
+(define-method (display (self <address>) port)
+  (format port "~a"
+          (compact 'ptr (class-name (get-type self)) (get-reg self) (get-index self) (get-disp self))))
+(define-method (write (self <address>) port)
+  (format port "~a"
+          (compact 'ptr (class-name (get-type self)) (get-reg self) (get-index self) (get-disp self))))
 
 (define-method (get-bits (self <address>)) (* 8 (size-of (get-type self))))
 
