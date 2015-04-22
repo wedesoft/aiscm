@@ -15,6 +15,10 @@
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
 
+(virtual-registers <null> '()
+                   (lambda () (list (MOV a 1) (MOV b 2) (MOV c 3) (ADD a b) (ADD a c) (RET)))
+                   #:registers (list RSI RDI))
+
 (define prog (list (ADD a b) (ADD a c) (RET)))
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))

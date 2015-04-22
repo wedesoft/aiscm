@@ -135,7 +135,7 @@
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
     (if (is-a? target <register>)
-      (reg (typecode self) (get-code target)); TODO: do type conversion elsewhere
+      (reg (size-of (typecode self)) (get-code target)); TODO: do type conversion elsewhere
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
@@ -146,30 +146,28 @@
 (define-class <operand> ())
 
 (define-class <register> (<operand>)
-  (bits #:init-keyword #:bits #:getter get-bits)
-  (code #:init-keyword #:code #:getter get-code))
+  (bits   #:init-keyword #:bits #:getter get-bits)
+  (code   #:init-keyword #:code #:getter get-code)
+  (symbol #:init-keyword #:symbol))
+(define-method (display (self <register>) port) (format port "~a" (slot-ref self 'symbol)))
+(define-method (write (self <register>) port) (format port "~a" (slot-ref self 'symbol)))
 
-(define hex (iota #x10))
-(define register-sizes '(1 2 4 8))
-(define (each-hex proc arg) (for-each proc arg hex))
-(define (reg-list bits) (map (cut make <register> #:bits bits #:code <>) hex))
-(define regs (map (compose reg-list (cut * <> 8)) register-sizes))
-(define-method (reg (type <meta<int<>>>) (code <integer>))
-  (list-ref (list-ref regs (index (size-of type) register-sizes)) code))
+(define register-symbols
+  '((1 AL  CL  DL  BL  SPL BPL SIL DIL R8L R9L R10L R11L R12L R13L R14L R15L)
+    (2 AX  CX  DX  BX  SP  BP  SI  DI  R8W R9W R10W R11W R12W R13W R14W R15W)
+    (4 EAX ECX EDX EBX ESP EBP ESI EDI R8D R9D R10D R11D R12D R13D R14D R15D)
+    (8 RAX RCX RDX RBX RSP RBP RSI RDI R8  R9  R10  R11  R12  R13  R14  R15)))
+(define (reg-list bytes lst)
+  (map (lambda (sym code) (make <register> #:bits (ash bytes 3) #:code code #:symbol sym)) lst (iota #x10)))
+(define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) register-symbols))
+(define (reg size code) (list-ref (assq-ref regs size) code))
+(for-each
+  (lambda (pair)
+    (for-each
+      (lambda (sym code) (toplevel-define! sym (reg (car pair) code))) (cdr pair) (iota #x10)))
+  register-symbols)
 
-(each-hex (lambda (sym val) (toplevel-define! sym (reg <byte> val)))
-          '(AL CL DL BL SPL BPL SIL DIL R8L R9L R10L R11L R12L R13L R14L R15L))
-
-(each-hex (lambda (sym val) (toplevel-define! sym (reg <sint> val)))
-          '(AX CX DX BX SP BP SI DI R8W R9W R10W R11W R12W R13W R14W R15W))
-
-(each-hex (lambda (sym val) (toplevel-define! sym (reg <int> val)))
-          '(EAX ECX EDX EBX ESP EBP ESI EDI R8D R9D R10D R11D R12D R13D R14D R15D))
-
-(each-hex (lambda (sym val) (toplevel-define! sym (reg <long> val)))
-          '(RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15))
-
-(define (scale s) (index s register-sizes))
+(define (scale s) (index s '(1 2 4 8)))
 
 (define-class <address> (<operand>)
   (type  #:init-keyword #:type  #:getter get-type)
@@ -448,13 +446,15 @@
     (list (cons var (ptr (typecode var) RSP offset)))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
-(define (save-and-use-registers prog colors)
+(define (save-and-use-registers prog colors); TODO: avoid conflict with other stack use
   (let [(need-saving (callee-saved (map cdr colors)))]
+    ;(format #t "~a~&" prog)
+    ;(format #t "~a~&" colors)
     (append (save-registers need-saving)
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving)
             (list (RET)))))
-(define* (replace-variables prog #:key (predefined '()) (registers default-registers)); TODO: test this directly
+(define* (replace-variables prog #:key (predefined '()) (registers default-registers)); TODO: test directly
   (let* [(live       (live-analysis prog))
          (conflicts  (interference-graph live))
          (colors     (color-graph conflicts registers #:predefined predefined))]

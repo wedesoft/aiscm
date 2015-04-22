@@ -1,5 +1,9 @@
 # TODO
 
+(lambda (r x y) (list (MOV a x) (MOV a y) (MOV r a) (RET)))
+
+* spill if live in the beginning!
+* do not spill predefined / write spilled register parameters
 * function for assigning stack locations to spilled variables
   http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * better test-suite, mocking?
