@@ -27,7 +27,7 @@
             R8 R9 R10 R11 R12 R13 R14 R15
             substitute-variables variables get-args input output labels next-indices live-analysis
             interference-graph register-allocate callee-saved save-registers load-registers
-            spill-variable save-and-use-registers virtual-registers flatten-code relabel
+            spill-variable save-and-use-registers replace-variables virtual-registers flatten-code relabel
             collate wrap idle-live)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
@@ -454,17 +454,23 @@
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define (save-and-use-registers prog colors); TODO: avoid conflict with other stack use
   (let [(need-saving (callee-saved (map cdr colors)))]
-    ;(format #t "~a~&" prog)
-    ;(format #t "~a~&" colors)
     (append (save-registers need-saving)
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving)
             (list (RET)))))
-(define* (replace-variables prog #:key (predefined '()) (registers default-registers)); TODO: test directly
+(define* (replace-variables prog #:key (predefined '()) (registers default-registers) (offset -8)); TODO: test directly
   (let* [(live       (live-analysis prog))
          (conflicts  (interference-graph live))
-         (colors     (color-graph conflicts registers #:predefined predefined))]
-    (save-and-use-registers prog colors)))
+         (colors     (color-graph conflicts registers #:predefined predefined))
+         (unassigned (find (compose not cdr) (reverse colors)))]
+    (if unassigned
+      (let* [(participants ((adjacent (interference-graph live)) (car unassigned)))
+             (spill-var    (argmax (idle-live prog live) participants))]
+        (replace-variables (spill-variable spill-var offset prog)
+                           #:predefined predefined
+                           #:registers registers
+                           #:offset (- offset 8)))
+      (save-and-use-registers prog colors))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))

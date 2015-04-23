@@ -10,14 +10,14 @@
              (aiscm jit)
              (aiscm op)
              (aiscm int))
-
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
+(define prog (list (MOV b 2) (MOV c 3) (MOV a b) (ADD a c) (RET)))
 
-(virtual-registers <null> '()
-                   (lambda () (list (MOV a 1) (MOV b 2) (MOV c 3) (ADD a b) (ADD a c) (RET)))
-                   #:registers (list RSI RDI))
+(virtual-registers <null> '() (lambda () prog) #:registers (list RSI RDI))
+
+(map (idle-live prog (live-analysis prog)) (list a b c))
 
 (define prog (list (ADD a b) (ADD a c) (RET)))
 
