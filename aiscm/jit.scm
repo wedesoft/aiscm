@@ -416,12 +416,12 @@
 (define (load-vars vars)
   (map (lambda (var offset) (MOV var (ptr (typecode var) RSP offset)))
        vars (iota (length vars) 8 8)))
-(define (save-registers registers)
+(define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> RSP offset) register))
-       registers (iota (length registers) -8 -8)))
-(define (load-registers registers)
+       registers (iota (length registers) offset -8)))
+(define (load-registers registers offset)
   (map (lambda (register offset) (MOV register (ptr <long> RSP offset)))
-       registers (iota (length registers) -8 -8)))
+       registers (iota (length registers) offset -8)))
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
          (replacements (map (compose gensym symbol->string) labels))
@@ -452,13 +452,13 @@
     (list (cons var (ptr (typecode var) RSP offset)))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
-(define (save-and-use-registers prog colors); TODO: avoid conflict with other stack use
+(define* (save-and-use-registers prog colors #:key (offset -8)); TODO: avoid conflict with other stack use
   (let [(need-saving (callee-saved (map cdr colors)))]
-    (append (save-registers need-saving)
+    (append (save-registers need-saving offset)
             (all-but-last (substitute-variables prog colors))
-            (load-registers need-saving)
+            (load-registers need-saving offset)
             (list (RET)))))
-(define* (replace-variables prog #:key (predefined '()) (registers default-registers) (offset -8)); TODO: test directly
+(define* (replace-variables prog #:key (predefined '()) (registers default-registers) (offset -8))
   (let* [(live       (live-analysis prog))
          (conflicts  (interference-graph live))
          (colors     (color-graph conflicts registers #:predefined predefined))
@@ -470,7 +470,7 @@
                            #:predefined predefined
                            #:registers registers
                            #:offset (- offset 8)))
-      (save-and-use-registers prog colors))))
+      (save-and-use-registers prog colors #:offset offset))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
