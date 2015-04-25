@@ -83,9 +83,9 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
          (mapped (make-mmap code))]
-    (let [(filename (tmpnam))]
-      (call-with-output-file filename (cut put-bytevector <> code))
-      (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename)))
+    ;(let [(filename (tmpnam))]
+    ;  (call-with-output-file filename (cut put-bytevector <> code))
+    ;  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename)))
     (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address mapped))
@@ -446,9 +446,9 @@
       (and (memv var (output cmd)) (MOV var temporary)))))
 (define (insert-temporaries var prog); TODO: test and use this instead of spill-variable
   (concatenate (map (insert-temporary var) prog)))
-(define (spill-variable var offset prog)
+(define (spill-variable var offset prog initial)
   (substitute-variables
-    (insert-temporaries var prog)
+    ((lambda (x) (if initial (cons (MOV var initial) x) x)) (insert-temporaries var prog))
     (list (cons var (ptr (typecode var) RSP offset)))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
@@ -465,8 +465,8 @@
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(participants ((adjacent (interference-graph live)) (car unassigned)))
-             (spill-var    (argmax (idle-live prog live) (difference participants (map car predefined))))]; TODO: allow spilling of predefined stuff
-        (replace-variables (spill-variable spill-var offset prog)
+             (spill-var    (argmax (idle-live prog live) participants))]
+        (replace-variables (spill-variable spill-var offset prog (assq-ref predefined spill-var))
                            #:predefined predefined
                            #:registers registers
                            #:offset (- offset 8)))
