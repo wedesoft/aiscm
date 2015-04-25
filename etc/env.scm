@@ -13,13 +13,13 @@
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
-(define prog (list (MOV b 2) (MOV c 3) (MOV a b) (ADD a c) (RET)))
+(define prog (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)))
 
-(virtual-registers <null> '() (lambda () prog) #:registers (list RSI RDI))
+(virtual-registers <null> '() (lambda () prog) #:registers (list RAX))
 
 (map (idle-live prog (live-analysis prog)) (list a b c))
 
-(define prog (list (ADD a b) (ADD a c) (RET)))
+(define prog (list (MOV a 1) (MOV b 2) (ADD b 1) (ADD a 1) (RET)))
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 
