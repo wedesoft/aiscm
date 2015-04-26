@@ -444,7 +444,7 @@
       (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
       (and (memv var (output cmd)) (MOV var temporary)))))
-(define (insert-temporaries var prog); TODO: test and use this instead of spill-variable
+(define (insert-temporaries var prog)
   (concatenate (map (insert-temporary var) prog)))
 (define (spill-variable var offset prog initial)
   (substitute-variables
