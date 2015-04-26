@@ -13,6 +13,7 @@
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
+
 (define prog (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)))
 
 (virtual-registers <null> '() (lambda () prog) #:registers (list RAX))

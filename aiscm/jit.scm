@@ -446,10 +446,10 @@
       (and (memv var (output cmd)) (MOV var temporary)))))
 (define (insert-temporaries var prog)
   (concatenate (map (insert-temporary var) prog)))
-(define (spill-variable var offset prog initial)
+(define (spill-variable var location initial prog)
   (substitute-variables
     ((lambda (x) (if initial (cons (MOV var initial) x) x)) (insert-temporaries var prog))
-    (list (cons var (ptr (typecode var) RSP offset)))))
+    (list (cons var location))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define* (save-and-use-registers prog colors offset)
@@ -466,7 +466,10 @@
     (if unassigned
       (let* [(participants ((adjacent (interference-graph live)) (car unassigned)))
              (spill-var    (argmax (idle-live prog live) participants))]
-        (replace-variables (spill-variable spill-var offset prog (assq-ref predefined spill-var))
+        (replace-variables (spill-variable spill-var
+                                           (ptr (typecode spill-var) RSP offset)
+                                           (assq-ref predefined spill-var)
+                                           prog)
                            #:predefined predefined
                            #:registers registers
                            #:offset (- offset 8)))
