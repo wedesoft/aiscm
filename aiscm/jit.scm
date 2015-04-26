@@ -452,7 +452,7 @@
     (list (cons var (ptr (typecode var) RSP offset)))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
-(define* (save-and-use-registers prog colors #:key (offset -8)); TODO: avoid conflict with other stack use
+(define* (save-and-use-registers prog colors offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
             (all-but-last (substitute-variables prog colors))
@@ -470,7 +470,7 @@
                            #:predefined predefined
                            #:registers registers
                            #:offset (- offset 8)))
-      (save-and-use-registers prog colors #:offset offset))))
+      (save-and-use-registers prog colors offset))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
