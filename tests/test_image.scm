@@ -11,7 +11,7 @@
 (define mem (get-value m))
 (define img (make <image> #:format 'GRAY #:shape '(8 1) #:mem mem))
 (planned-tests 12)
-(skip (equal? #vu8(2 2 2 255 3 3 3 255) (read-bytes (get-mem (convert img 'BGRA)) 8))
+(skip (equal? #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))
   "conversion to BGRA")
 (ok (equal? '(16 2) (shape (convert img 'BGRA '(16 2))))
   "shape of scaled image")
