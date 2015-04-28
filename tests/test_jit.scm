@@ -883,10 +883,10 @@
             (load-registers (list RBP R12) #x-10))
     "'load-registers' should use the specified offset")
 (ok (equal? (list (MOV (ptr <long> RSP #x-8) R12) (MOV R12D 0) (MOV R12 (ptr <long> RSP #x-8)) (RET))
-            (save-and-use-registers (list (MOV a 0) (RET)) (list (cons a R12))))
+            (save-and-use-registers (list (MOV a 0) (RET)) (list (cons a R12)) -8))
     "'save-and-use-registers' should save and restore callee-saved registers")
 (ok (equal? (list (MOV (ptr <long> RSP #x-10) R12) (MOV R12D 0) (MOV R12 (ptr <long> RSP #x-10)) (RET))
-            (save-and-use-registers (list (MOV a 0) (RET)) (list (cons a R12)) #:offset -16))
+            (save-and-use-registers (list (MOV a 0) (RET)) (list (cons a R12)) -16))
     "'save-and-use-registers' should use the specified offset for saving callee-saved registers")
 (ok (let [(b (make <var> #:type <int> #:symbol 'b))
           (i (make <var> #:type <ubyte> #:symbol 'i))]

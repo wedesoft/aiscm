@@ -1,8 +1,8 @@
 # TODO
 
-* 'prespilled' registers,
-  function for assigning stack locations to spilled variables
-  http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
+* store spilled register arguments, load live stack-arguments
+* RET keeps return value and callee-saved stuff alive
+* http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * better test-suite, mocking?
 * 1d-array plus 2d-array
 * increase RSP if using more than 128 bytes
