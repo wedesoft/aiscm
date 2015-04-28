@@ -10,6 +10,9 @@
              (aiscm jit)
              (aiscm op)
              (aiscm int))
+
+(- (list->multiarray '(((1 -2 3) (-4 5 -6)))))
+
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
