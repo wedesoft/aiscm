@@ -5,7 +5,7 @@
 .*.swp
 .*.un~
 *.o
-*.go
+*.go*
 *.gz
 *.bz2
 *.xz
