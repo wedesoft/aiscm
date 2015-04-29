@@ -28,7 +28,7 @@
             substitute-variables variables get-args input output labels next-indices live-analysis
             interference-graph register-allocate callee-saved save-registers load-registers
             spill-variable save-and-use-registers replace-variables virtual-registers flatten-code relabel
-            collate wrap idle-live)
+            collate wrap idle-live fetch-parameters spill-parameters)
   #:export-syntax (env jit-wrap))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -452,6 +452,19 @@
     (list (cons var location))))
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
+(define ((spill-parameters parameters) colors)
+  (apply compact
+    (map (lambda (parameter register)
+      (let [(value (assq-ref colors parameter))]; TODO: do type conversion elsewhere
+        (if (is-a? value <address>) (MOV value (reg (size-of (typecode parameter)) (get-code register))) #f)))
+      parameters (list RDI RSI RDX RCX R8 R9))))
+(define ((fetch-parameters parameters) colors)
+  (apply compact
+    (map (lambda (parameter offset)
+      (let [(value (assq-ref colors parameter))]
+        (if (is-a? value <register>) (MOV (reg (size-of (typecode parameter)) (get-code value))
+                                          (ptr (typecode parameter) RSP offset)) #f)))
+      parameters (iota (length parameters) 8 8))))
 (define (save-and-use-registers prog colors offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
