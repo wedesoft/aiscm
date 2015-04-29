@@ -6,8 +6,8 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! malloc destroy attach index all-but-last drop-up-to
-            flatten cycle uncycle integral alist-invert
+  #:export (toplevel-define! malloc destroy attach index all-but-last
+            drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
             nodes adjacent remove-node color-graph union difference fixed-point
             compact)
@@ -28,6 +28,8 @@
 (define all-but-last (compose reverse cdr reverse))
 (define (drop-up-to lst n)
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
+(define (take-up-to lst n)
+  (if (zero? n) '() (if (null? lst) lst (cons (car lst) (take-up-to (cdr lst) (1- n))))))
 (define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
 (define (flatten x)
   (cond ((null? x) x)
