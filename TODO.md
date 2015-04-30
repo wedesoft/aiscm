@@ -1,6 +1,5 @@
 # TODO
 
-* store spilled register arguments, load live stack-arguments
 * RET keeps return value and callee-saved stuff alive
 * http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * better test-suite, mocking?

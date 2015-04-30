@@ -940,11 +940,6 @@
 (ok (equal? (list (MOV AL (ptr <byte> RSP -24)) (ADD AL 1) (MOV (ptr <byte> RSP -24) AL) (RET))
             (virtual-registers <null> '() (lambda () (spill-variable u (ptr <byte> RSP -24) (list (ADD u 1) (RET))))))
     "Read and write spilled variable")
-(skip (equal? (list (MOV (ptr <int> RSP -8) ESI) (NOP) (RET))
-            (virtual-registers <null>
-                               (list <int>)
-                               (lambda (x) (spill-variable x (ptr <int> RSP -8) ESI (list (NOP) (RET))))))
-    "Spill a parameter (variable with an initial location)")
 (ok (equal? (let [(prog (list (ADD a b) (ADD a c) (RET)))
                   (live (list (list a b c) (list a c) '()))]
               (map (idle-live prog live) (list a b c)))
@@ -1008,3 +1003,8 @@
             (virtual-registers <null> (list <int> <int>) (lambda (a b) (list (MOV c a) (ADD c b) (RET)))
                                #:registers (list RSI RDI)))
     "Spill register-parameter to the stack")
+(ok (equal? (list (ADD EDI 1) (MOV EDI (ptr <int> RSP 8)) (ADD EDI 2) (MOV (ptr <int> RSP 8) EDI) (RET))
+            (virtual-registers <null> (make-list 7 <int>)
+                               (lambda args (list (ADD (car args) 1) (ADD (last args) 2) (RET)))
+                               #:registers (list RDI)))
+    "'virtual-registers' maps the 7th integer parameter correctly")

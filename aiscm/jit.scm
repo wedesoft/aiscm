@@ -478,12 +478,14 @@
     (if unassigned
       (let* [(participants ((adjacent (interference-graph live)) (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
-             (location     (ptr (typecode var) RSP offset))]
+             (location     (if (and (index var parameters) (<= 6 (index var parameters)))
+                             (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
+                             (ptr (typecode var) RSP offset)))]
         (replace-variables (spill-variable var location prog)
                            #:predefined (assq-set predefined var location)
                            #:registers registers
                            #:parameters parameters
-                           #:offset (- offset 8)))
+                           #:offset (- offset 8))); TODO: only change offset if necessary
       (save-and-use-registers prog colors parameters offset))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
