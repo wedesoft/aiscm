@@ -32,7 +32,7 @@ libguile_xorg_la_LDFLAGS = -no-undefined
 libguile_xorg_la_LIBADD = $(GUILE_LIBS) $(X_LIBS) $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv -lGL -lGLU
 
 install-data-hook:
-	$(TOUCH) $(addprefix $(cachedir)/,$(cache_DATA))
+	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))
 
 .scm.go:
 	LD_LIBRARY_PATH=$(srcdir)/.libs:$(LD_LIBRARY_PATH) $(GUILE_TOOLS) compile $< -L$(top_builddir) -o $@

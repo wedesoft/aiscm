@@ -26,10 +26,9 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             substitute-variables variables get-args input output labels next-indices live-analysis
-            interference-graph register-allocate callee-saved save-registers load-registers
-            spill-variable save-and-use-registers replace-variables virtual-registers flatten-code relabel
-            collate wrap idle-live fetch-parameters spill-parameters)
-  #:export-syntax (env jit-wrap))
+            interference-graph callee-saved save-registers load-registers
+            spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
+            collate wrap idle-live fetch-parameters spill-parameters))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -411,8 +410,6 @@
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
-(define* (register-allocate prog #:key (predefined '()) (registers default-registers))
-  (color-graph (interference-graph (live-analysis prog)) registers #:predefined predefined))
 (define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> RSP offset) register))
        registers (iota (length registers) offset -8)))
@@ -470,18 +467,18 @@
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
             (list (RET)))))
-(define* (replace-variables prog #:key (predefined '()) (registers default-registers) (parameters '()) (offset -8))
+(define* (register-allocate prog #:key (predefined '()) (registers default-registers) (parameters '()) (offset -8))
   (let* [(live       (live-analysis prog))
          (conflicts  (interference-graph live))
          (colors     (color-graph conflicts registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
-      (let* [(participants ((adjacent (interference-graph live)) (car unassigned)))
+      (let* [(participants ((adjacent conflicts) (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
              (location     (if (and (index var parameters) (<= 6 (index var parameters)))
                              (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
                              (ptr (typecode var) RSP offset)))]
-        (replace-variables (spill-variable var location prog)
+        (register-allocate (spill-variable var location prog)
                            #:predefined (assq-set predefined var location)
                            #:registers registers
                            #:parameters parameters
@@ -496,7 +493,7 @@
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
          (prog         (flatten-code (relabel (append '() (apply proc vars)))))]
-    (replace-variables prog #:predefined predefined #:registers registers #:parameters arg-vars)))
+    (register-allocate prog #:predefined predefined #:registers registers #:parameters arg-vars)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
