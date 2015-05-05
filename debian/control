@@ -1,0 +1,13 @@
+Source: aiscm
+Maintainer: Jan Wedekind <jan@wedesoft.de>
+Section: misc
+Priority: optional
+Standards-Version: 0.1.6
+Build-Depends: guile-2.0-dev (>= 2.0.9), libmjpegtools-dev (>= 2.1.0), xorg-dev, libswscale-dev (>= 2.1.0), debhelper (>= 9)
+
+Package: aiscm
+Architecture: any
+Depends: guile-2.0 (>= 2.0.9), libmjpegutils-2.1.0 (>= 2.1.0), xorg, libswscale2 (>= 2.1.0), ${shlibs:Depends}, ${misc:Depends}
+Description: Guile computer vision extension
+ AIscm is a real-time computer vision extension for the Guile programming language.
+ Performance in Scheme is achieved by means of a JIT compiler.
