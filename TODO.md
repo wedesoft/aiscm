@@ -1,5 +1,6 @@
 # TODO
 
+* macros to declare variables (and omit 'list' statement)
 * RET keeps return value and callee-saved stuff alive
 * http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * better test-suite, mocking?
@@ -25,6 +26,5 @@
 * test code examples
 * scm_display(scm_target, scm_current_output_port()); printf("\n");
 * reduce number of files to include
-* use first, second, ... from srfi-1
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
