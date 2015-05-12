@@ -8,6 +8,11 @@ of a JIT compiler.
 
 See [**AIscm homepage**][1] for documentation.
 
+## See also
+
+* [AIscm homepage][1]
+* [AIscm packages](https://build.opensuse.org/package/show/home:wedesoft/aiscm)
+
 ## External links
 
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
