@@ -1,4 +1,6 @@
-all:
+VERSION=0.1.6
+
+all::
 	aclocal -I m4
 	autoheader
 	libtoolize --force || glibtoolize --force
@@ -7,3 +9,11 @@ all:
 
 configure::
 	./configure CC=colorgcc
+
+package::
+	make dist
+	mkdir -p pkg
+	cp aiscm-$(VERSION).tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
+	tar xzf aiscm-$(VERSION).tar.gz -C pkg
+	cp -a debian pkg/aiscm-$(VERSION)
+	cd pkg/aiscm-$(VERSION) && debuild -us -uc && cd ../..

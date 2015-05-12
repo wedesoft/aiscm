@@ -19,6 +19,8 @@
 
 (define prog (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)))
 
+; scm_display(scm_target, scm_current_output_port()); printf("\n");
+
 ;(define-syntax env
 ;  (lambda (x)
 ;    (syntax-case x (call)
