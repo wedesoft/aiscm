@@ -17,24 +17,24 @@
 
 (define-syntax env; TODO: export and test
   (syntax-rules ()
-    ((env [(type name) vars ...] body ...)
+    ((env [(name type) vars ...] body ...)
      (let [(name (make <var> #:type type #:symbol (quote name)))]
        (env [vars ...] body ...)))
     ((env [] body ...)
      (list body ...))))
 
 (define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
-  (env [((typecode r_) r)]
+  (env [(r (typecode r_))]
     (MOV r (ptr (typecode a_) (get-value a_)))
     (op r)
     (MOV (ptr (typecode r_) (get-value r_)) r)))
 (define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>) op)
-  (env [(<long> *r)
-        (<long> r+)
-        (<long> n)
-        (<long> *a)
-        (<long> a+)
-        (<long> *rx)]
+  (env [(*r  <long>)
+        (r+  <long>)
+        (n   <long>)
+        (*a  <long>)
+        (a+  <long>)
+        (*rx <long>)]
     (MOV *r (get-value r_))
     (MOV r+ (last (strides r_)))
     (MOV n (last (shape r_)))
@@ -50,48 +50,48 @@
            (ADD *a a+))))
 
 (define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <var>) op)
-  (env [((typecode r_) r)]
+  (env [(r (typecode r_))]
     ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (ptr (typecode a_) (get-value a_)))
     (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
       (op r b_)
-      (env [((typecode r_) b)]
+      (env [(b (typecode r_))]
         ((if (signed? (typecode b_)) MOVSX MOVZX) b b_)
         (op r b)))
     (MOV (ptr (typecode r_) (get-value r_)) r)))
 (define-method (binary-op (r_ <pointer<>>) (a_ <var>) (b_ <pointer<>>) op)
-  (env [((typecode r_) r)]
+  (env [(r (typecode r_))]
     ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r a_)
     (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
       (op r (ptr (typecode b_) (get-value b_)))
-      (env [((typecode r_) b)]
+      (env [(b (typecode r_))]
         ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
         (op r b)))
     (MOV (ptr (typecode r_) (get-value r_)) r)))
 (define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op); TODO: fix this one
-  (env [((typecode r_) r)]
+  (env [(r (typecode r_))]
     ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (ptr (typecode a_) (get-value a_)))
     (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
       (op r (ptr (typecode b_) (get-value b_)))
-      (env [((typecode r_) b)]
+      (env [(b (typecode r_))]
         ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
         (op r b)))
     (MOV (ptr (typecode r_) (get-value r_)) r)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <var>) op)
-  (env [(<long> *r)
-        (<long> r+)
-        (<long> n)
-        (<long> *a)
-        (<long> a+)
-        (<long> *rx)]
+  (env [(*r  <long>)
+        (r+  <long>)
+        (n   <long>)
+        (*a  <long>)
+        (a+  <long>)
+        (*rx <long>)]
     (MOV *r (get-value r_))
     (MOV r+ (last (strides r_)))
     (MOV n (last (shape r_)))
@@ -106,12 +106,12 @@
            (ADD *r r+)
            (ADD *a a+))))
 (define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>)  op)
-  (env [(<long> *r)
-        (<long> r+)
-        (<long> n)
-        (<long> *b)
-        (<long> b+)
-        (<long> *rx)]
+  (env [(*r  <long>)
+        (r+  <long>)
+        (n   <long>)
+        (*b  <long>)
+        (b+  <long>)
+        (*rx <long>)]
     (MOV *r (get-value r_))
     (MOV r+ (last (strides r_)))
     (MOV n (last (shape r_)))
@@ -126,14 +126,14 @@
            (ADD *r r+)
            (ADD *b b+))))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>)  op)
-  (env [(<long> *r)
-        (<long> r+)
-        (<long> n)
-        (<long> *a)
-        (<long> a+)
-        (<long> *b)
-        (<long> b+)
-        (<long> *rx)]
+  (env [(*r  <long>)
+        (r+  <long>)
+        (n   <long>)
+        (*a  <long>)
+        (a+  <long>)
+        (*b  <long>)
+        (b+  <long>)
+        (*rx <long>)]
     (MOV *r (get-value r_))
     (MOV r+ (last (strides r_)))
     (MOV n (last (shape r_)))
