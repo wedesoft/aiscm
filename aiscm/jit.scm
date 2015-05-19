@@ -28,7 +28,8 @@
             substitute-variables variables get-args input output labels next-indices live-analysis
             interference-graph callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
-            collate wrap idle-live fetch-parameters spill-parameters))
+            collate wrap idle-live fetch-parameters spill-parameters)
+  #:export-syntax (env))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -141,6 +142,14 @@
 (define-method (substitute-variables (self <cmd>) alist)
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
+
+(define-syntax env
+  (syntax-rules ()
+    ((env [(name type) vars ...] body ...)
+     (let [(name (make <var> #:type type #:symbol (quote name)))]
+       (env [vars ...] body ...)))
+    ((env [] body ...)
+     (list body ...))))
 
 (define-class <operand> ())
 

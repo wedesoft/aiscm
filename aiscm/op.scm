@@ -15,14 +15,6 @@
 (define-syntax-rule (until condition body ...); TODO: for loop, export, and test
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 
-(define-syntax env; TODO: export and test
-  (syntax-rules ()
-    ((env [(name type) vars ...] body ...)
-     (let [(name (make <var> #:type type #:symbol (quote name)))]
-       (env [vars ...] body ...)))
-    ((env [] body ...)
-     (list body ...))))
-
 (define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
   (env [(r (typecode r_))]
     (MOV r (ptr (typecode a_) (get-value a_)))
