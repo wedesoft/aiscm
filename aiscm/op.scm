@@ -15,20 +15,19 @@
 (define-syntax-rule (until condition body ...); TODO: for loop, export, and test
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 
-(define-syntax-rule (element-wise (type i start n step) body ...)
-  (env [(i     <long>)
+(define-syntax-rule (element-wise (type p start n step) body ...)
+  (env [(p     <long>)
         (delta <long>)
         (stop  <long>)
         (incr  <long>)]
-    (MOV incr step)
-    (IMUL incr incr (size-of type))
+    (IMUL incr step (size-of type))
     (MOV delta n)
     (IMUL delta incr)
     (LEA stop (ptr type start delta))
-    (MOV i start)
-    (until (CMP i stop)
+    (MOV p start)
+    (until (CMP p stop)
            body ...
-           (ADD i incr))) )
+           (ADD p incr))) )
 
 (define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
   (env [(r (typecode r_))]
