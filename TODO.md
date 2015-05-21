@@ -1,5 +1,6 @@
 # TODO
 
+* benchmark
 * use intervals instead of conflict graph
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
