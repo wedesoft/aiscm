@@ -39,7 +39,7 @@ install-data-hook:
 
 EXTRA_DIST = $(site_SCRIPTS)
 
-CLEANFILES = *~ *.tmp *.go
+CLEANFILES = *~ *.tmp *.go*
 
 DISTCLEANFILES = .*.un~ .*.swp
 
