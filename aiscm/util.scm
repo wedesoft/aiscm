@@ -9,8 +9,8 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
-            nodes adjacent remove-node color-graph union difference fixed-point
-            compact)
+            pair->list nodes adjacent color-graph union difference fixed-point
+            first-index last-index compact)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
@@ -74,14 +74,14 @@
       (fixed-point successor iteration compare?))))
 (define (union . args) (apply lset-union (cons eq? args)))
 (define (difference . args) (apply lset-difference (cons eq? args)))
+(define (pair->list pair) (list (car pair) (cdr pair)))
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
-(define ((has-node? node) edge) (or (eq? (car edge) node) (eq? (cdr edge) node)))
-(define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
-(define (remove-node graph node) (filter (compose not (has-node? node)) graph))
+(define ((adjacent graph) node)
+  (nodes (filter (compose (cut memv node <>) pair->list) graph)))
 (define (color-nodes graph nodes predefined colors)
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (adjacent graph)) nodes))
-           (coloring  (color-nodes (remove-node graph target) (delete target nodes) predefined colors))
+           (coloring  (color-nodes graph (delete target nodes) predefined colors))
            (blocked   (map (cut assq-ref coloring <>) ((adjacent graph) target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
@@ -90,4 +90,14 @@
                (difference (nodes graph) (map car predefined))
                predefined
                colors))
+(define (first-index pred lst)
+  (if (null? lst) #f
+    (if (pred (car lst)) 0
+      (let [(idx (first-index pred (cdr lst)))]
+        (if idx (1+ idx) #f)))))
+(define (last-index pred lst)
+  (if (null? lst) #f
+    (let [(idx (last-index pred (cdr lst)))]
+      (if idx (1+ idx)
+        (if (pred (car lst)) 0 #f)))))
 (define (compact . args) (filter identity args))
