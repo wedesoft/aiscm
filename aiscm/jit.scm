@@ -26,7 +26,7 @@
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
             substitute-variables variables get-args input output labels next-indices live-analysis
-            live-intervals interference-graph callee-saved save-registers load-registers
+            live-intervals overlap interference-graph callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
             collate wrap idle-live fetch-parameters spill-parameters)
   #:export-syntax (env))
@@ -419,6 +419,10 @@
   (map
     (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
     variables))
+(define ((overlap intervals) var)
+  (let [(interval (assq-ref intervals var))]
+    (map car (filter (lambda (x) (or (>= (cddr x) (car interval))
+                                     (<= (cadr x) (cdr interval)))) intervals))))
 (define (interference-graph live) (delete-duplicates (concatenate (map product live live))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
