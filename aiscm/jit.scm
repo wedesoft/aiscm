@@ -421,8 +421,8 @@
     variables))
 (define ((overlap intervals) var)
   (let [(interval (assq-ref intervals var))]
-    (map car (filter (lambda (x) (or (>= (cddr x) (car interval))
-                                     (<= (cadr x) (cdr interval)))) intervals))))
+    (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
+                                      (<= (cadr x) (cdr interval)))) intervals))))
 (define (interference-graph live) (delete-duplicates (concatenate (map product live live))))
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
