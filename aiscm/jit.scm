@@ -486,11 +486,12 @@
             (list (RET)))))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers) (parameters '()) (offset -8))
   (let* [(live       (live-analysis prog))
-         (conflicts  (interference-graph live))
-         (colors     (color-graph conflicts registers #:predefined predefined))
+         (vars       (difference (variables prog) (map car predefined)))
+         (conflicts  (adjacent (interference-graph live)))
+         (colors     (color-graph conflicts vars registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
-      (let* [(participants ((adjacent conflicts) (car unassigned)))
+      (let* [(participants (conflicts (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
              (location     (if (and (index var parameters) (<= 6 (index var parameters)))
                              (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))

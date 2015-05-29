@@ -78,18 +78,13 @@
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
 (define ((adjacent graph) node)
   (nodes (filter (compose (cut memv node <>) pair->list) graph)))
-(define (color-nodes conflicts nodes predefined colors)
+(define* (color-graph conflicts nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length conflicts) nodes))
-           (coloring  (color-nodes conflicts (delete target nodes) predefined colors))
+           (coloring  (color-graph conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
            (blocked   (map (cut assq-ref coloring <>) (conflicts target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
-(define* (color-graph graph colors #:key (predefined '()))
-  (color-nodes (adjacent graph)
-               (difference (nodes graph) (map car predefined))
-               predefined
-               colors))
 (define (first-index pred lst)
   (if (null? lst) #f
     (if (pred (car lst)) 0
