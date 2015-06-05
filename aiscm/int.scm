@@ -26,8 +26,6 @@
               #:metaclass <meta<int<>>>) (define-generic bits)
 (define-method (write (self <int<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
-(define-method (display (self <int<>>) port)
-  (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic signed?)
 (define (integer nbits sgn)
   (let* [(name (format #f "<int<~a,~a>>" nbits sgn))

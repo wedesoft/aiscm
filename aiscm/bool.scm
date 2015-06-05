@@ -14,8 +14,6 @@
   (make <bool> #:value (if (eq? (car (bytevector->u8-list packed)) 0) #f #t)))
 (define-method (write (self <bool>) port)
   (format port "#<<bool> ~a>" (get-value self)))
-(define-method (display (self <bool>) port)
-  (format port "#<<bool> ~a>" (get-value self)))
 (define-method (match (b <boolean>)) <bool>)
 (define-method (types (self <meta<bool>>)) (list <ubyte>))
 (define-method (content (self <boolean>)) (list (if self 1 0)))

@@ -130,8 +130,6 @@
         (string-join (finish-multiarray lst) "\n")))))
 (define-method (write (self <sequence<>>) port)
   (format port "#~a:~&~a" (class-name (class-of self)) (to-string self)))
-(define-method (display (self <sequence<>>) port)
-  (format port "#~a:~&~a" (class-name (class-of self)) (to-string self)))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<element>>))
   (multiarray (coerce (typecode a) b) (dimension a)))
 (define-method (coerce (a <meta<element>>) (b <meta<sequence<>>>))

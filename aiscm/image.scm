@@ -138,8 +138,6 @@
   (convert self format (shape self)))
 (define-method (write (self <image>) port)
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
-(define-method (display (self <image>) port)
-  (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 (define (image->multiarray self)
   (case (get-format self)
     ((GRAY) (let* [(shape   (shape self))
