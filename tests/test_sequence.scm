@@ -31,15 +31,15 @@
     "Convert sequence to list")
 (ok (equal? "<sequence<int<16,signed>>>" (class-name (sequence <sint>)))
     "Class name of 16-bit integer sequence")
+(ok (equal? "#<sequence<int<32,signed>>>:\n()"
+      (call-with-output-string (lambda (port) (write (make (sequence <int>) #:size 0) port))))
+    "Write empty sequence")
 (ok (equal? "#<sequence<int<16,signed>>>:\n(2 3 5)"
       (call-with-output-string (lambda (port) (write s1 port))))
     "Write sequence object")
-(ok (equal? "#<sequence<int<16,signed>>>:\n(2 3 5)"
-      (call-with-output-string (lambda (port) (display s1 port))))
-    "Display sequence object")
-(ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
-      (call-with-output-string (lambda (port) (display (list->multiarray (make-list 40 100)) port))))
-    "Display longer sequence object")
+(ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
+      (call-with-output-string (lambda (port) (write (list->multiarray (make-list 40 100)) port))))
+    "Write longer sequence object")
 (ok (equal? <ubyte> (typecode (list->multiarray '(1 2 3))))
     "Typecode of converted list of unsigned bytes")
 (ok (equal? <byte> (typecode (list->multiarray '(1 -1))))
@@ -54,15 +54,15 @@
     "Return value of assignment to sequence")
 (ok (equal? '(2 4 8) (multiarray->list (list->multiarray '(2 4 8))))
     "Content of converted list")
-(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
-      (call-with-output-string (lambda (port) (display (list->multiarray '((1 2 3) (4 5 6))) port))))
-    "Display 2D array")
-(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
-      (call-with-output-string (lambda (port) (display (list->multiarray (list (make-list 40 100))) port))))
-    "Display 2D array with large first dimension")
-(ok (equal? "#<multiarray<int<8,unsigned>>,4>:\n((((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n ..."
-      (call-with-output-string (lambda (port) (display (list->multiarray (list (make-list 4 (make-list 3 '(1 1))))) port))))
-    "Display larger n-dimensional array")
+(todo (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
+      (call-with-output-string (lambda (port) (write (list->multiarray '((1 2 3) (4 5 6))) port))))
+    "Write 2D array")
+(todo (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
+      (call-with-output-string (lambda (port) (write (list->multiarray (list (make-list 40 100))) port))))
+    "Write 2D array with large first dimension")
+(todo (equal? "#<multiarray<int<8,unsigned>>,4>:\n((((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n ..."
+      (call-with-output-string (lambda (port) (write (list->multiarray (list (make-list 4 (make-list 3 '(1 1))))) port))))
+    "Write larger n-dimensional array")
 (ok (equal? (sequence <int>) (coerce <int> (sequence <sint>)))
     "Coercion of sequences")
 (ok (equal? (sequence <int>) (coerce (sequence <int>) <byte>))

@@ -1,8 +1,9 @@
 # TODO
 
+* faster printing
 * benchmark
-* use intervals instead of conflict graph
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
+* linear-scan register allocator
 * http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * https://www.gnu.org/software/guile/manual/html_node/Arrays.html#Arrays
 * 1d-array plus 2d-array
