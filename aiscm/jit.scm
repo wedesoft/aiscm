@@ -486,8 +486,9 @@
             (list (RET)))))
 (define* (register-allocate prog #:key (predefined '()) (registers default-registers) (parameters '()) (offset -8))
   (let* [(live       (live-analysis prog))
+         (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
-         (conflicts  (adjacent (interference-graph live)))
+         (conflicts  (overlap (live-intervals live all-vars)))
          (colors     (color-graph conflicts vars registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
