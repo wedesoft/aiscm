@@ -1,15 +1,25 @@
 (define-module (guile-tap)
   #:use-module (ice-9 format)
-  #:export (planned-tests ok diagnostic)
-  #:export-syntax (skip todo throws?))
+  #:use-module (srfi srfi-26)
+  #:export (planned-tests)
+  #:export-syntax (ok skip todo throws?))
 (define (planned-tests num) (format #t "1..~a~&~!" num))
 
 (define test-counter 0)
 (define (incr-counter) (set! test-counter (+ test-counter 1)))
 
-(define (ok result description)
-  (incr-counter)
-  (format #t "~a ~a - ~a~&~!" (if result "ok" "not ok") test-counter description))
+(define (print-result result index description)
+  (format #t "~a ~a - ~a~&~!" (if result "ok" "not ok") index description))
+
+(define-syntax-rule (ok expr description)
+  (begin
+    (incr-counter)
+    (catch #t
+      (lambda () (print-result expr test-counter description))
+      (lambda (key function fmt vals . args)
+        (let* [(msg  (apply (cut format #f fmt <...>) vals))
+               (info (format #f "~a (ERROR: In procedure ~a: ~a)" description function msg))]
+          (print-result #f test-counter info))))))
 
 (define-syntax-rule (skip expr description)
   (ok #t (string-append description " # SKIP")))
