@@ -96,7 +96,7 @@
     (store retval lst)
     retval))
 
-(define (print-columns self first infix suffix count width port)
+(define (print-columns self first infix count width port)
   (if (zero? count)
     (begin
       (if first (display "(" port))
@@ -107,31 +107,30 @@
       (if (> remaining 0)
         (begin
           (display text port)
-          (print-columns (dump 1 self) #f infix suffix (1- count) remaining port))
+          (print-columns (dump 1 self) #f infix (1- count) remaining port))
         (begin
-          (display "..." port)
-          (display suffix port)))))
+          (display "...)" port)))))
   1)
-(define (print-rows self first infix suffix count height port)
+(define (print-rows self first infix count height port)
   (if (zero? count)
     (begin
       (if first (display "(" port))
-      (if (> height 0) (display suffix port))
+      (if (> height 0) (display ")" port))
       height)
     (if (> height 0)
       (begin
         (display (if first "(" infix) port)
         (let [(h (if (> (dimension self) 2)
-                   (print-rows (project self) #t (string-append infix " ") suffix (last (shape (project self))) height port)
-                   (begin (print-columns (project self) #t " " ")" (last (shape (project self))) (- 80 2) port) (1- height))))]
-          (print-rows (dump 1 self) #f infix suffix (1- count) h port)))
+                   (print-rows (project self) #t (string-append infix " ") (last (shape (project self))) height port)
+                   (begin (print-columns (project self) #t " " (last (shape (project self))) (- 80 2) port) (1- height))))]
+          (print-rows (dump 1 self) #f infix (1- count) h port)))
       (begin
         (display "\n ..." port)
         height))))
 (define (print-elements self port)
   (if (> (dimension self) 1)
-    (print-rows self #t "\n " ")" (last (shape self)) (- 11 1) port)
-    (print-columns self #t " " ")" (last (shape self)) (- 80 2) port)))
+    (print-rows self #t "\n " (last (shape self)) (- 11 1) port)
+    (print-columns self #t " " (last (shape self)) (- 80 2) port)))
 (define-method (write (self <sequence<>>) port)
   (format port "#~a:~&" (class-name (class-of self)))
   (print-elements self port))
