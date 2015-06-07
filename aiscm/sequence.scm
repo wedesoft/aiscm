@@ -122,15 +122,16 @@
         (display (if first "(" infix) port)
         (let [(h (if (> (dimension self) 2)
                    (print-rows (project self) #t (string-append infix " ") (last (shape (project self))) height port)
-                   (begin (print-columns (project self) #t " " (last (shape (project self))) (- 80 2) port) (1- height))))]
+                   (begin
+                     (print-columns (project self) #t " " (car (shape self)) (- 80 2) port)
+                     (if (eqv? height 1) (display "\n ..." port))
+                     (1- height))))]
           (print-rows (dump 1 self) #f infix (1- count) h port)))
-      (begin
-        (display "\n ..." port)
-        height))))
+      height)))
 (define (print-elements self port)
   (if (> (dimension self) 1)
     (print-rows self #t "\n " (last (shape self)) (- 11 1) port)
-    (print-columns self #t " " (last (shape self)) (- 80 2) port)))
+    (print-columns self #t " " (car (shape self)) (- 80 2) port)))
 (define-method (write (self <sequence<>>) port)
   (format port "#~a:~&" (class-name (class-of self)))
   (print-elements self port))
