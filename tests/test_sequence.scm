@@ -6,7 +6,7 @@
              (aiscm jit)
              (aiscm util)
              (guile-tap))
-(planned-tests 60)
+(planned-tests 63)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
@@ -54,15 +54,24 @@
     "Return value of assignment to sequence")
 (ok (equal? '(2 4 8) (multiarray->list (list->multiarray '(2 4 8))))
     "Content of converted list")
-(todo (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
+(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
       (call-with-output-string (lambda (port) (write (list->multiarray '((1 2 3) (4 5 6))) port))))
     "Write 2D array")
-(todo (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
+(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
       (call-with-output-string (lambda (port) (write (list->multiarray (list (make-list 40 100))) port))))
     "Write 2D array with large first dimension")
-(todo (equal? "#<multiarray<int<8,unsigned>>,4>:\n((((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n   (1 1)\n   (1 1))\n  ((1 1)\n ..."
-      (call-with-output-string (lambda (port) (write (list->multiarray (list (make-list 4 (make-list 3 '(1 1))))) port))))
-    "Write larger n-dimensional array")
+(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n ..."
+      (call-with-output-string (lambda (port) (write (list->multiarray (make-list 11 '(1))) port))))
+    "Write 2D array with large second dimension")
+(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1))\n ((1 1)\n  (1 1)))"
+      (call-with-output-string (lambda (port) (write (list->multiarray (make-list 2 (make-list 2 '(1 1)))) port))))
+    "Write 3D array")
+(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
+      (call-with-output-string (lambda (port) (write (list->multiarray (make-list 4 (make-list 3 '(1 1)))) port))))
+    "Write 4x3x2 array")
+(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
+      (call-with-output-string (lambda (port) (write (list->multiarray (make-list 5 (make-list 3 '(1 1)))) port))))
+    "Write  5x3x2 array")
 (ok (equal? (sequence <int>) (coerce <int> (sequence <sint>)))
     "Coercion of sequences")
 (ok (equal? (sequence <int>) (coerce (sequence <int>) <byte>))
