@@ -9,7 +9,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assv-set assoc-set product sort-by argmin argmax gather
-            pair->list nodes adjacent color-graph union difference fixed-point
+            pair->list nodes adjacent color-intervals union difference fixed-point
             first-index last-index compact)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
@@ -78,10 +78,10 @@
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
 (define ((adjacent graph) node)
   (nodes (filter (compose (cut memv node <>) pair->list) graph)))
-(define* (color-graph conflicts nodes colors #:key (predefined '()))
+(define* (color-intervals conflicts nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length conflicts) nodes))
-           (coloring  (color-graph conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
+           (coloring  (color-intervals conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
            (blocked   (map (cut assq-ref coloring <>) (conflicts target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
