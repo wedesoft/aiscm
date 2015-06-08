@@ -8,7 +8,7 @@
   #:use-module (system foreign)
   #:export (toplevel-define! malloc destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
-            assq-set assv-set assoc-set product sort-by argmin argmax gather
+            assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes adjacent color-intervals union difference fixed-point
             first-index last-index compact)
   #:export-syntax (def-once expand))
@@ -53,8 +53,7 @@
       (cons (cons key val) (cdr alist))
       (cons (car alist) (assq-set (cdr alist) key val)))))
 (define (assq-set alist key val) (alist-set eq? alist key val))
-(define (assv-set alist key val) (alist-set eqv? alist key val))
-(define (assoc-set alist key val) (alist-set equal? alist key val))
+(define (assq-remove alist key) (filter (compose not (cut eq? key <>) car) alist))
 (define (product lst1 lst2) (concatenate (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
 (define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
 (define (argop op fun lst)
