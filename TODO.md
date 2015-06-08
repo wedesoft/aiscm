@@ -1,5 +1,6 @@
 # TODO
 
+* remove node in register allocation?
 * 1d-array plus 2d-array
 * benchmark
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)

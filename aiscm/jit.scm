@@ -454,18 +454,16 @@
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define ((spill-parameters parameters) colors)
-  (apply compact
-    (map (lambda (parameter register)
-      (let [(value (assq-ref colors parameter))]; TODO: do type conversion elsewhere
-        (if (is-a? value <address>) (MOV value (reg (size-of (typecode parameter)) (get-code register))) #f)))
-      parameters (list RDI RSI RDX RCX R8 R9))))
+  (filter-map (lambda (parameter register)
+    (let [(value (assq-ref colors parameter))]; TODO: do type conversion elsewhere
+      (if (is-a? value <address>) (MOV value (reg (size-of (typecode parameter)) (get-code register))) #f)))
+    parameters (list RDI RSI RDX RCX R8 R9)))
 (define ((fetch-parameters parameters) colors)
-  (apply compact
-    (map (lambda (parameter offset)
-      (let [(value (assq-ref colors parameter))]
-        (if (is-a? value <register>) (MOV (reg (size-of (typecode parameter)) (get-code value))
-                                          (ptr (typecode parameter) RSP offset)) #f)))
-      parameters (iota (length parameters) 8 8))))
+  (filter-map (lambda (parameter offset)
+    (let [(value (assq-ref colors parameter))]
+      (if (is-a? value <register>) (MOV (reg (size-of (typecode parameter)) (get-code value))
+                                        (ptr (typecode parameter) RSP offset)) #f)))
+    parameters (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
