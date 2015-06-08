@@ -89,7 +89,7 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) (project (rebase *a a_)) b_ op)
                   (ADD *a a+))))
-(define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>)  op)
+(define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>) op)
   (env [(*b  <long>)
         (b+  <long>)]
     (MOV *b (get-value b_))
@@ -98,7 +98,7 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) a_ (project (rebase *b b_)) op)
                   (ADD *b b+))))
-(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>)  op)
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>) op)
   (env [(*a  <long>)
         (a+  <long>)
         (*b  <long>)
@@ -160,7 +160,7 @@
 (define-binary-op - SUB)
 (define-binary-op * IMUL)
 
-(define (fill t n value); TODO: replace with tensor operation
-  (let [(retval (make (sequence t) #:size n))]
+(define (fill type shape value); TODO: n-dimensional arrays; replace with tensor operation
+  (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
