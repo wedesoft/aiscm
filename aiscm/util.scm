@@ -9,7 +9,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
-            pair->list nodes adjacent remove-node color-intervals union difference fixed-point
+            pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
@@ -74,10 +74,14 @@
 (define (union . args) (apply lset-union (cons eq? args)))
 (define (difference . args) (apply lset-difference (cons eq? args)))
 (define (pair->list pair) (list (car pair) (cdr pair)))
-(define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
-(define (has-node? node) (compose (cut memv node <>) pair->list))
-(define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
-(define (remove-node graph node) (filter (compose not (has-node? node)) graph))
+(define (live-intervals live variables)
+  (map
+    (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
+    variables))
+(define ((overlap intervals) var)
+  (let [(interval (assq-ref intervals var))]
+    (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
+                                      (<= (cadr x) (cdr interval)))) intervals))))
 (define* (color-intervals adjacent without conflicts nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (adjacent conflicts)) nodes))
