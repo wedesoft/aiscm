@@ -467,11 +467,11 @@
   (let* [(live       (live-analysis prog))
          (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
-         (conflicts  (live-intervals live all-vars))
-         (colors     (color-intervals overlap assq-remove conflicts vars registers #:predefined predefined))
+         (intervals  (live-intervals live all-vars))
+         (colors     (color-intervals intervals vars registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
-      (let* [(participants ((overlap conflicts) (car unassigned)))
+      (let* [(participants ((overlap intervals) (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
              (stack-param? (and (index var parameters) (<= 6 (index var parameters))))
              (location     (if stack-param?

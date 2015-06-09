@@ -82,11 +82,11 @@
   (let [(interval (assq-ref intervals var))]
     (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
                                       (<= (cadr x) (cdr interval)))) intervals))))
-(define* (color-intervals adjacent without conflicts nodes colors #:key (predefined '()))
+(define* (color-intervals intervals nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
-    (let* [(target    (argmin (compose length (adjacent conflicts)) nodes))
-           (coloring  (color-intervals adjacent without (without conflicts target) (delete target nodes) colors #:predefined predefined))
-           (blocked   (map (cut assq-ref coloring <>) ((adjacent conflicts) target)))
+    (let* [(target    (argmin (compose length (overlap intervals)) nodes))
+           (coloring  (color-intervals (assq-remove intervals target) (delete target nodes) colors #:predefined predefined))
+           (blocked   (map (cut assq-ref coloring <>) ((overlap intervals) target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
 (define (first-index pred lst)
