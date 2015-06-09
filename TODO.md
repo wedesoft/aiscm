@@ -1,13 +1,12 @@
 # TODO
 
-* remove node in register allocation?
+* increase RSP if using more than 128 bytes
 * 1d-array plus 2d-array
 * benchmark
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * linear-scan register allocator
 * http://www.cs.cornell.edu/courses/cs412/2008sp/lectures/lec33.pdf
 * https://www.gnu.org/software/guile/manual/html_node/Arrays.html#Arrays
-* increase RSP if using more than 128 bytes
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * document motivation: vector instructions, compose array functions and calls,
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
