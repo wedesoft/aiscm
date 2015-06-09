@@ -836,7 +836,7 @@
 (ok (equal? (list (MOV ECX 42) (RET))
             (register-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
     "Allocate a single register using custom list of registers")
-(ok (equal? (list (MOV EAX 1) (MOV ECX 2) (ADD EAX ECX) (MOV ECX EAX) (RET))
+(ok (equal? (list (MOV ECX 1) (MOV EAX 2) (ADD ECX EAX) (MOV EAX ECX) (RET))
             (register-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
     "Allocate multiple registers")
 (ok (equal? (list (MOV ECX 1) (ADD ECX ESI) (MOV EAX ECX) (RET))

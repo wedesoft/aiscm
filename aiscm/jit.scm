@@ -477,21 +477,20 @@
          (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
          (conflicts  (live-intervals live all-vars))
-         ;(conflicts  (interference-graph live))
          (colors     (color-intervals overlap assq-remove conflicts vars registers #:predefined predefined))
-         ;(colors     (color-intervals adjacent remove-node conflicts vars registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(participants ((overlap conflicts) (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
-             (location     (if (and (index var parameters) (<= 6 (index var parameters)))
+             (stack-param? (and (index var parameters) (<= 6 (index var parameters))))
+             (location     (if stack-param?
                              (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
-                             (ptr (typecode var) RSP offset)))]
+                            (ptr (typecode var) RSP offset)))]
         (register-allocate (spill-variable var location prog)
                            #:predefined (assq-set predefined var location)
                            #:registers registers
                            #:parameters parameters
-                           #:offset (- offset 8))); TODO: only change offset if necessary
+                           #:offset (if stack-param? offset (- offset 8))))
       (save-and-use-registers prog colors parameters offset))))
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
