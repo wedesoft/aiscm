@@ -11,3 +11,12 @@
              (aiscm jit)
              (aiscm op)
              (aiscm int))
+
+(define a (make <var> #:type <int> #:symbol 'a))
+(define b (make <var> #:type <int> #:symbol 'b))
+(define c (make <var> #:type <int> #:symbol 'c))
+
+(define prog (list (MOV a 0) (NOP) (MOV b a) (RET)))
+(define live (live-analysis prog))
+(define intervals (live-intervals live (variables prog)))
+(assq-remove intervals a)

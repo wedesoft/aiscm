@@ -79,8 +79,7 @@
     "add two 3D arrays")
 (skip (equal? '((3 4 5) (7 8 9)) (multiarray->list (+ (list->multiarray '(0 1)) (list->multiarray '((3 4 5) (6 7 8))))))
     "add 1D and 2D array")
-(skip (equal? '((((1 1) (1 1)) ((1 1) (1 1))) (((1 1) (1 1)) ((1 1) (1 1))))
-            (multiarray->list (+ 1 (list->multiarray '((((0 0) (0 0)) ((0 0) (0 0))) (((0 0) (0 0)) ((0 0) (0 0)))))))); TODO: test with integer array
+(todo (equal? (fill <int> '(2 2 2 2) 2) (multiarray->list (+ 1 (fill <int> '(2 2 2 2) 1))))
     "add 1 to 4D array")
 (ok (equal? '((2 4) (6 8)) (multiarray->list (* 2 (list->multiarray '((1 2) (3 4))))))
     "scalar-array multiplication")
