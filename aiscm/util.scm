@@ -9,7 +9,7 @@
   #:export (toplevel-define! malloc destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
-            pair->list nodes adjacent color-intervals union difference fixed-point
+            pair->list nodes adjacent remove-node color-intervals union difference fixed-point
             first-index last-index compact)
   #:export-syntax (def-once expand))
 (define (toplevel-define! name val)
@@ -75,13 +75,14 @@
 (define (difference . args) (apply lset-difference (cons eq? args)))
 (define (pair->list pair) (list (car pair) (cdr pair)))
 (define (nodes graph) (delete-duplicates (append (map car graph) (map cdr graph))))
-(define ((adjacent graph) node)
-  (nodes (filter (compose (cut memv node <>) pair->list) graph)))
-(define* (color-intervals conflicts nodes colors #:key (predefined '()))
+(define (has-node? node) (compose (cut memv node <>) pair->list))
+(define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
+(define (remove-node graph node) (filter (compose not (has-node? node)) graph))
+(define* (color-intervals adjacent conflicts nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
-    (let* [(target    (argmin (compose length conflicts) nodes))
-           (coloring  (color-intervals conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
-           (blocked   (map (cut assq-ref coloring <>) (conflicts target)))
+    (let* [(target    (argmin (compose length (adjacent conflicts)) nodes))
+           (coloring  (color-intervals adjacent conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
+           (blocked   (map (cut assq-ref coloring <>) ((adjacent conflicts) target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
 (define (first-index pred lst)
