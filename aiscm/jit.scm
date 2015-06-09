@@ -478,7 +478,7 @@
          (vars       (difference (variables prog) (map car predefined)))
          (conflicts  (live-intervals live all-vars))
          ;(conflicts  (adjacent (interference-graph live)))
-         (colors     (color-intervals overlap conflicts vars registers #:predefined predefined))
+         (colors     (color-intervals overlap assq-remove conflicts vars registers #:predefined predefined))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(participants ((overlap conflicts) (car unassigned)))

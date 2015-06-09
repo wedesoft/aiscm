@@ -78,10 +78,10 @@
 (define (has-node? node) (compose (cut memv node <>) pair->list))
 (define ((adjacent graph) node) (nodes (filter (has-node? node) graph)))
 (define (remove-node graph node) (filter (compose not (has-node? node)) graph))
-(define* (color-intervals adjacent conflicts nodes colors #:key (predefined '()))
+(define* (color-intervals adjacent without conflicts nodes colors #:key (predefined '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (adjacent conflicts)) nodes))
-           (coloring  (color-intervals adjacent conflicts (delete target nodes) colors #:predefined predefined)); TODO: remove target from conflicts
+           (coloring  (color-intervals adjacent without (without conflicts target) (delete target nodes) colors #:predefined predefined))
            (blocked   (map (cut assq-ref coloring <>) ((adjacent conflicts) target)))
            (available (find (negate (cut memv <> blocked)) colors))]
       (cons (cons target available) coloring))))
