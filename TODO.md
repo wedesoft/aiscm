@@ -1,6 +1,6 @@
 # TODO
 
-* increase RSP if using more than 128 bytes
+* increase RSP if using more than 128 bytes; (ptr <int> RSP offset -8)
 * benchmark
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * linear-scan register allocator
