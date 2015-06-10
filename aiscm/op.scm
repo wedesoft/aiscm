@@ -68,7 +68,7 @@
         ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
         (op r b)))
     (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op); TODO: fix this one
+(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op)
   (env [(r (typecode r_))]
     ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
        MOV
@@ -89,6 +89,10 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) (project (rebase *a a_)) b_ op)
                   (ADD *a a+))))
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <pointer<>>) op)
+  (env [(b (typecode b_))]
+    (MOV b (ptr (typecode b_) (get-value b_)))
+    (binary-op r_ a_ b op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>) op)
   (env [(*b  <long>)
         (b+  <long>)]
@@ -98,6 +102,10 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) a_ (project (rebase *b b_)) op)
                   (ADD *b b+))))
+(define-method (binary-op (r_ <sequence<>>) (a_ <pointer<>>) (b_ <sequence<>>) op)
+  (env [(a (typecode a_))]
+    (MOV a (ptr (typecode a_) (get-value a_)))
+    (binary-op r_ a b_ op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>) op)
   (env [(*a  <long>)
         (a+  <long>)
@@ -160,7 +168,7 @@
 (define-binary-op - SUB)
 (define-binary-op * IMUL)
 
-(define (fill type shape value); TODO: n-dimensional arrays; replace with tensor operation
+(define (fill type shape value); TODO: replace with tensor operation
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))

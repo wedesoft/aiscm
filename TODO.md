@@ -1,7 +1,6 @@
 # TODO
 
 * increase RSP if using more than 128 bytes
-* 1d-array plus 2d-array
 * benchmark
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * linear-scan register allocator
