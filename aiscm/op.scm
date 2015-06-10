@@ -20,11 +20,11 @@
         (delta <long>)
         (stop  <long>)
         (incr  <long>)]
-    (IMUL incr step (size-of type))
     (MOV delta n)
-    (IMUL delta incr)
+    (IMUL delta step)
     (LEA stop (ptr type start delta))
     (MOV p start)
+    (IMUL incr step (size-of type))
     (until (CMP p stop)
            body ...
            (ADD p incr))) )

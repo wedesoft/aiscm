@@ -2,5 +2,5 @@
              (aiscm int)
              (aiscm op)
              (oop goops))
-(define p (make (sequence <int>) #:size 100))
+(define p (make (sequence <int>) #:size 1000000))
 (+ p 42)
