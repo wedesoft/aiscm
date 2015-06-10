@@ -1,0 +1,6 @@
+(use-modules (aiscm sequence)
+             (aiscm int)
+             (aiscm op)
+             (oop goops))
+(define p (make (sequence <int>) #:size 100))
+(+ p 42)

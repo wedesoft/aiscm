@@ -86,6 +86,7 @@ debug mode                           : $enable_debug"
 AC_OUTPUT(Makefile
           aiscm/Makefile
           tests/Makefile
+          bench/Makefile
           doc/Makefile
           doc/index.md
           doc/installation.md,
