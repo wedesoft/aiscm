@@ -1,3 +1,7 @@
+2015-06-11  Jan Wedekind <jan@wedesoft.de> 0.1.7
+	* aiscm/util.scm: register allocation using coloring of intervals
+	* aiscm/sequence.scm: printing of arrays
+
 2014-08-09  Jan Wedekind <jan@wedesoft.de> 0.1.6
 	- using <int> instead of <reg<32>> or <ptr<32>>
 	- using register pool to implement operations
