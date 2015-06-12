@@ -2,5 +2,8 @@
              (aiscm int)
              (aiscm op)
              (oop goops))
+(load-extension "libguile-bench" "init_bench")
 (define p (make (sequence <int>) #:size 1000000))
 (+ p 42)
+(array+scalar)
+(display "Done\n")
