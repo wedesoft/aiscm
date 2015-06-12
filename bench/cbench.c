@@ -1,17 +1,14 @@
 #include <libguile.h>
 
-SCM array_plus_scalar(void)
+SCM allocation(SCM scm_size)
 {
-  int *r = malloc(1000000 * sizeof(int));
-  int *p = r;
-  int i;
-  for (i=0; i<1000000; i++)
-    *p++ += 42;
+  int n = scm_to_int(scm_size);
+  int *r = malloc(n * sizeof(int));
   free(r);
   return SCM_UNDEFINED;
 }
 
 void init_bench(void)
 {
-  scm_c_define_gsubr("array+scalar", 0, 0, 0, array_plus_scalar);
+  scm_c_define_gsubr("allocation", 1, 0, 0, allocation);
 }

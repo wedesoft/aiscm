@@ -1,4 +1,4 @@
-SUBDIRS = aiscm tests bench doc
+SUBDIRS = aiscm tests doc bench
 
 ACLOCAL_AMFLAGS = -I m4
 
