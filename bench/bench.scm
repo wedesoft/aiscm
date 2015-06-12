@@ -1,7 +1,9 @@
-(use-modules (aiscm sequence)
+(use-modules (oop goops)
+             (aiscm element)
              (aiscm int)
+             (aiscm sequence)
              (aiscm op)
-             (oop goops))
+             (aiscm util))
 
 (load-extension "libguile-bench" "init_bench")
 
@@ -18,6 +20,15 @@
         (/ (* 1.0e-9 (+ user system)) n)
         (/ (* 1.0e-9 clock) n)))))
 
+(define n 400)
+(define size 1000000)
+(define ptr (malloc (* (size-of <int>) n)))
+(define s (make (sequence <int>) #:size n))
+(- s)
+
 (format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
-(run "Guile make sequence" 100 (make (sequence <int>) #:size 1000000))
-(run "C allocate memory" 100 (allocation 1000000))
+
+(run "Guile make sequence" n (make (sequence <int>) #:size size))
+(run "C allocate memory" n (allocation size))
+(run "Guile negate sequence" n (- s))
+(run "C negate sequence" n (negate ptr size))
