@@ -246,7 +246,7 @@ SCM videodev2_grab(SCM scm_self)
   int height = self->format.fmt.pix.height;
   if (self->io == IO_READ) {
     int size = self->format.fmt.pix.sizeimage;
-    void *buf = scm_gc_malloc_pointerless(size, "frame");
+    void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
     if (read(self->fd, buf, size) == -1) scm_syserror("videodev2_read");
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                         scm_from_int(width),

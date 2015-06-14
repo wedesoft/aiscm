@@ -5,10 +5,15 @@ site_SCRIPTS = mem.scm element.scm bool.scm int.scm pointer.scm sequence.scm \
 	op.scm jit.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-jit.la libguile-image.la libguile-v4l2.la libguile-xorg.la
+extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-image.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_SCRIPTS:.scm=.go)
+
+libguile_util_la_SOURCES = util.c
+libguile_util_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_util_la_LDFLAGS = -no-undefined
+libguile_util_la_LIBADD = $(GUILE_LIBS)
 
 libguile_jit_la_SOURCES = jit.c
 libguile_jit_la_CFLAGS = $(GUILE_CFLAGS)

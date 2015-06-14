@@ -4,14 +4,14 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 curried-definitions)
-  #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
-  #:export (toplevel-define! malloc destroy attach index all-but-last
+  #:export (toplevel-define! gc-malloc-pointerless destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact)
   #:export-syntax (def-once expand))
+(load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val))
 (define-syntax-rule (def-once name value)
@@ -19,7 +19,6 @@
     (if (not (defined? sym (current-module)))
       (toplevel-define! sym value))
     (primitive-eval sym)))
-(define (malloc size) (bytevector->pointer (make-bytevector size)))
 (define-generic destroy)
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index a b)

@@ -123,7 +123,7 @@
   (type #:init-keyword #:type #:getter typecode)
   (args #:init-keyword #:args #:getter get-args))
 (define-method (write (self <ptr>) port)
-  (write (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
+  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
 (define (is-ptr? value) (is-a? value <ptr>))
 (define-method (substitute-variables self alist) self)
 (define-method (substitute-variables (self <var>) alist)

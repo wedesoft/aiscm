@@ -17,7 +17,7 @@
   (let-keywords initargs #f (memory base size)
     (if base
       (next-method self (list #:memory (or memory base) #:base base #:size size))
-      (let [(ptr (malloc size))]
+      (let [(ptr (gc-malloc-pointerless size))]
         (next-method self (list #:memory ptr #:base ptr #:size size))))))
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))

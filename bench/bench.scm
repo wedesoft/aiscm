@@ -1,5 +1,4 @@
 (use-modules (oop goops)
-             (rnrs bytevectors)
              (aiscm element)
              (aiscm int)
              (aiscm sequence)
@@ -26,14 +25,14 @@
 
 (define n 1000)
 (define size 250000)
-(define ptr (malloc (* (size-of <int>) n)))
-(define s (make (sequence <int>) #:size size))
-(- s)
+(define ptr (gc-malloc-pointerless (* (size-of <int>) size)))
+(define <sequence<int>> (sequence <int>))
+(define s (make <sequence<int>> #:size size))
 
 (format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
 
-(run "Guile make byte vector" n (make-bytevector (* (size-of <int>) size)))
-(run "Guile make sequence" n (make (sequence <int>) #:size size))
+(run "Guile allocate memory" n (gc-malloc-pointerless (* (size-of <int>) size)))
+(run "Guile make sequence" n (make <sequence<int>> #:size size))
 (run "C allocate memory" n (allocation size))
 (run "Guile negate sequence" n (- s))
-(run "C negate sequence" n (negate ptr size))
+(run "C negate sequence" n (negate ptr 1 size))

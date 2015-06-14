@@ -10,14 +10,15 @@ SCM allocation(SCM scm_size)
   return SCM_UNDEFINED;
 }
 
-SCM negate(SCM scm_ptr, SCM scm_size)
+SCM negate(SCM scm_ptr, SCM scm_stride, SCM scm_size)
 {
   int *p = (int *)scm_to_pointer(scm_ptr);
+  int s = scm_to_int(scm_stride);
   int n = scm_to_int(scm_size);
   ret = malloc(n * sizeof(int));
   int *rend = ret + n;
   int *r;
-  for (r=ret; r!=rend; r++, p++)
+  for (r=ret; r!=rend; r+=s, p+=s)
     *r = -*p;
   free(ret);
   return SCM_UNDEFINED;
@@ -26,5 +27,5 @@ SCM negate(SCM scm_ptr, SCM scm_size)
 void init_bench(void)
 {
   scm_c_define_gsubr("allocation", 1, 0, 0, allocation);
-  scm_c_define_gsubr("negate", 2, 0, 0, negate);
+  scm_c_define_gsubr("negate", 3, 0, 0, negate);
 }
