@@ -27,13 +27,16 @@
 (define size 250000)
 (define ptr (gc-malloc-pointerless (* (size-of <int>) size)))
 (define <sequence<int>> (sequence <int>))
+(define empty (make <sequence<int>> #:size 0))
 (define s (make <sequence<int>> #:size size))
 
 (format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
 
-(run "Guile allocate memory" n (gc-malloc-pointerless (* (size-of <int>) size)))
-(run "C allocate memory" n (allocation size))
 (run "Guile make empty sequence" n (make <sequence<int>> #:size 0))
+(run "Guile allocate memory" n (gc-malloc-pointerless (* (size-of <int>) size)))
+(run "Guile negate empty sequence" n (- empty))
 (run "Guile make sequence" n (make <sequence<int>> #:size size))
 (run "Guile negate sequence" n (- s))
+(run "C allocate memory" n (allocation size))
+(run "C negate empty sequence" n (negate ptr 1 0))
 (run "C negate sequence" n (negate ptr 1 size))
