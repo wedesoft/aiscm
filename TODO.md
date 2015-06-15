@@ -1,5 +1,6 @@
 # TODO
 
+* until -> while, make condition customisable
 * separate assembler
 * linear-scan register allocator
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)

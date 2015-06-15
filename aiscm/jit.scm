@@ -505,5 +505,5 @@
 
 (define-syntax-rule (until condition body ...); TODO: for loop, export, and test, use 'JNE'
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
-(define-syntax-rule (for [(type i) init condition] body ...)
-  (env [(i type)] init (until condition body ...)))
+(define-syntax-rule (for [(index type) init condition step] body ...)
+  (env [(index type)] init (until condition body ... step)))

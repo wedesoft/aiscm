@@ -13,18 +13,14 @@
 (define ctx (make <jit-context>))
 
 (define-syntax-rule (element-wise (type p start n step) body ...)
-  (env [(p     <long>)
-        (delta <long>)
+  (env [(delta <long>)
         (stop  <long>)
         (incr  <long>)]
     (MOV delta n)
     (IMUL delta step)
     (LEA stop (ptr type start delta))
-    (MOV p start)
     (IMUL incr step (size-of type))
-    (until (CMP p stop)
-           body ...
-           (ADD p incr))) )
+    (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
 
 (define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
   (env [(r (typecode r_))]
