@@ -32,7 +32,8 @@
 (format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
 
 (run "Guile allocate memory" n (gc-malloc-pointerless (* (size-of <int>) size)))
-(run "Guile make sequence" n (make <sequence<int>> #:size size))
 (run "C allocate memory" n (allocation size))
+(run "Guile make empty sequence" n (make <sequence<int>> #:size 0))
+(run "Guile make sequence" n (make <sequence<int>> #:size size))
 (run "Guile negate sequence" n (- s))
 (run "C negate sequence" n (negate ptr 1 size))

@@ -12,9 +12,6 @@
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
-(define-syntax-rule (until condition body ...); TODO: for loop, export, and test
-  (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
-
 (define-syntax-rule (element-wise (type p start n step) body ...)
   (env [(p     <long>)
         (delta <long>)

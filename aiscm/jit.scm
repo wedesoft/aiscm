@@ -29,7 +29,7 @@
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
             collate wrap idle-live fetch-parameters spill-parameters)
-  #:export-syntax (env))
+  #:export-syntax (env until for))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -502,3 +502,8 @@
                          (virtual-registers result-type arg-types
                            (lambda args (apply proc (collate (append result-types arg-classes) args))))))]
     (lambda params (apply code (concatenate (map content params))))))
+
+(define-syntax-rule (until condition body ...); TODO: for loop, export, and test, use 'JNE'
+  (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
+(define-syntax-rule (for [(type i) init condition] body ...)
+  (env [(i type)] init (until condition body ...)))
