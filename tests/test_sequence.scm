@@ -6,7 +6,7 @@
              (aiscm jit)
              (aiscm util)
              (guile-tap))
-(planned-tests 63)
+(planned-tests 64)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
@@ -29,6 +29,8 @@
     "Query shape of sequence")
 (ok (equal? '(2 3 5) (multiarray->list s1))
     "Convert sequence to list")
+(ok (make (sequence <int>) #:size 0)
+    "Make empty sequence")
 (ok (equal? "<sequence<int<16,signed>>>" (class-name (sequence <sint>)))
     "Class name of 16-bit integer sequence")
 (ok (equal? "#<sequence<int<32,signed>>>:\n()"
