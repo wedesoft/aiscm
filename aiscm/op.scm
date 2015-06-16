@@ -15,8 +15,6 @@
 (define-method (dereference (self <var>)) self)
 (define-method (dereference (self <pointer<>>)) (ptr (typecode self) (get-value self)))
 
-(define-method (dereference (self <var>)) self)
-(define-method (dereference (self <ptr>)) )
 (define-syntax-rule (element-wise (type p start n step) body ...)
   (env [(delta <long>)
         (stop  <long>)
