@@ -12,7 +12,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (<jit-context> <jit-function> <jcc> <cmd> <ptr> <operand> <register> <address> <var>
+  #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NEG SUB IMUL CMP
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE

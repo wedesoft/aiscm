@@ -12,6 +12,11 @@
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
+(define-method (dereference (self <var>)) self)
+(define-method (dereference (self <pointer<>>)) (ptr (typecode self) (get-value self)))
+
+(define-method (dereference (self <var>)) self)
+(define-method (dereference (self <ptr>)) )
 (define-syntax-rule (element-wise (type p start n step) body ...)
   (env [(delta <long>)
         (stop  <long>)
@@ -22,11 +27,11 @@
     (IMUL incr step (size-of type))
     (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
 
-(define-method (unary-op (r_ <pointer<>>) (a_ <pointer<>>) op)
+(define-method (unary-op (r_ <pointer<>>) a_ op)
   (env [(r (typecode r_))]
-    (MOV r (ptr (typecode a_) (get-value a_)))
+    (MOV r (dereference a_))
     (op r)
-    (MOV (ptr (typecode r_) (get-value r_)) r)))
+    (MOV (dereference r_) r)))
 (define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>) op)
   (env [(*a  <long>)
         (a+  <long>)]
@@ -37,42 +42,18 @@
                   (unary-op (project (rebase *r r_)) (project (rebase *a a_)) op)
                   (ADD *a a+))))
 
-(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <var>) op)
+(define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (env [(r (typecode r_))]
     ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
-     r (ptr (typecode a_) (get-value a_)))
+     r (dereference a_))
     (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
-      (op r b_)
+      (op r (dereference b_))
       (env [(b (typecode r_))]
-        ((if (signed? (typecode b_)) MOVSX MOVZX) b b_)
+        ((if (signed? (typecode b_)) MOVSX MOVZX) b (dereference b_))
         (op r b)))
-    (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-op (r_ <pointer<>>) (a_ <var>) (b_ <pointer<>>) op)
-  (env [(r (typecode r_))]
-    ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
-       MOV
-       (if (signed? (typecode a_)) MOVSX MOVZX))
-     r a_)
-    (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
-      (op r (ptr (typecode b_) (get-value b_)))
-      (env [(b (typecode r_))]
-        ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
-        (op r b)))
-    (MOV (ptr (typecode r_) (get-value r_)) r)))
-(define-method (binary-op (r_ <pointer<>>) (a_ <pointer<>>) (b_ <pointer<>>) op)
-  (env [(r (typecode r_))]
-    ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
-       MOV
-       (if (signed? (typecode a_)) MOVSX MOVZX))
-     r (ptr (typecode a_) (get-value a_)))
-    (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
-      (op r (ptr (typecode b_) (get-value b_)))
-      (env [(b (typecode r_))]
-        ((if (signed? (typecode b_)) MOVSX MOVZX) b (ptr (typecode b_) (get-value b_)))
-        (op r b)))
-    (MOV (ptr (typecode r_) (get-value r_)) r)))
+    (MOV (dereference r_) r)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <var>) op)
   (env [(*a  <long>)
         (a+  <long>)]
@@ -84,7 +65,7 @@
                   (ADD *a a+))))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <pointer<>>) op)
   (env [(b (typecode b_))]
-    (MOV b (ptr (typecode b_) (get-value b_)))
+    (MOV b (dereference b_))
     (binary-op r_ a_ b op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>) op)
   (env [(*b  <long>)
@@ -97,7 +78,7 @@
                   (ADD *b b+))))
 (define-method (binary-op (r_ <sequence<>>) (a_ <pointer<>>) (b_ <sequence<>>) op)
   (env [(a (typecode a_))]
-    (MOV a (ptr (typecode a_) (get-value a_)))
+    (MOV a (dereference a_))
     (binary-op r_ a b_ op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>)  (b_ <sequence<>>) op)
   (env [(*a  <long>)

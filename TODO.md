@@ -1,14 +1,15 @@
 # TODO
 
-* until -> while, make condition customisable
+* simplify binary-op
+* element-wise type conversions
 * separate assembler
 * linear-scan register allocator
+* floating point numbers
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * REPL docs: (help ...)
-* element-wise type conversions
 * GOOPS monkey patching
 * increase RSP if using more than 128 bytes; (ptr <int> RSP offset -8)
 * https://www.gnu.org/software/guile/manual/html_node/Arrays.html#Arrays
