@@ -3,7 +3,7 @@ Maintainer: Jan Wedekind <jan@wedesoft.de>
 Section: lisp
 Priority: optional
 Homepage: http://www.wedesoft.de/aiscm/
-Standards-Version: 3.9.2
+Standards-Version: 3.9.6
 Build-Depends: guile-2.0-dev (>= 2.0.9), linux-libc-dev, libmjpegtools-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswscale-dev, pandoc, debhelper (>= 9)
 
 Package: aiscm
