@@ -1,6 +1,7 @@
 (define-module (aiscm op)
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
   #:use-module (aiscm mem)
@@ -152,9 +153,14 @@
 
 (define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
   (multiarray target (dimension self)))
-(define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
+(define-method (to-type (self <sequence<>>) (target <meta<int<>>>)); TODO: instantiate methods
   (cond ((equal? (typecode self) target)
          self)
+        ((= (bits (typecode self)) (bits target))
+         (make (to-type (class-of self) target)
+               #:shape (shape self)
+               #:strides (strides self)
+               #:value (get-value self)))
         ((< (bits (typecode self)) (bits target))
          (let* [(result-type (to-type (class-of self) target))
                 (fun         (wrap ctx <null>
@@ -163,8 +169,8 @@
                 (r           (make result-type #:shape (shape self)))]
            (fun r self)
            r))
-        ((= (bits (typecode self)) (bits target))
+        (else
          (make (to-type (class-of self) target)
                #:shape (shape self)
-               #:strides (strides self)
-               #:value (get-value self))))); TODO: create views on integers (view first byte of each integer)
+               #:strides (map (cut * (/ (bits (typecode self)) (bits target)) <>) (strides self))
+               #:value (get-value self)))))
