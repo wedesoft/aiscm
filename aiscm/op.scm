@@ -103,13 +103,14 @@
 
 (define-syntax-rule (define-unary-op name op)
   (define-method (name (a <element>))
-    (let [(fun (wrap ctx <null> (list (class-of a) (class-of a))
-                 (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
+    (let [(result-type (class-of a))
+          (fun         (wrap ctx <null> (list (class-of a) (class-of a))
+                         (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of a))
                          #:procedure (lambda (a)
-                                       (let [(r (make (class-of a) #:shape (shape a)))]
+                                       (let [(r (make result-type #:shape (shape a)))]
                                          (fun r a)
                                          r)))))
     (name a)))
@@ -130,8 +131,7 @@
                      (make <method>
                            #:specializers (list (class-of a) (class-of b))
                            #:procedure (lambda (a b)
-                                         (let [(r (make (coerce (class-of a) (class-of b))
-                                                        #:shape (coerce-shapes a b)))]
+                                         (let [(r (make result-type #:shape (coerce-shapes a b)))]
                                            (fun r (get a) (get b))
                                            r)))))
       (name a b))
