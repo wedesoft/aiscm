@@ -114,7 +114,7 @@
                                          r)))))
     (name a)))
 
-(define-method (shape a b)
+(define (coerce-shapes a b)
   (let [(shape-a (shape a))
         (shape-b (shape b))]
     (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
@@ -130,7 +130,8 @@
                      (make <method>
                            #:specializers (list (class-of a) (class-of b))
                            #:procedure (lambda (a b)
-                                         (let [(r (make (coerce (class-of a) (class-of b)) #:shape (shape a b)))]
+                                         (let [(r (make (coerce (class-of a) (class-of b))
+                                                        #:shape (coerce-shapes a b)))]
                                            (fun r (get a) (get b))
                                            r)))))
       (name a b))
