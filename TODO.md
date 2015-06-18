@@ -1,6 +1,6 @@
 # TODO
 
-* element-wise type conversions
+* monkey patching?
 * complete coverage of operations
 * separate assembler
 * linear-scan register allocator

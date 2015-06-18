@@ -155,23 +155,34 @@
 (define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
   (multiarray target (dimension self)))
 (define-method (to-type (self <sequence<>>) (target <meta<int<>>>)); TODO: instantiate methods
-  (cond ((equal? (typecode self) target)
-         self)
-        ((= (bits (typecode self)) (bits target))
-         (make (to-type (class-of self) target)
-               #:shape (shape self)
-               #:strides (strides self)
-               #:value (get-value self)))
-        ((< (bits (typecode self)) (bits target))
-         (let* [(result-type (to-type (class-of self) target))
-                (fun         (wrap ctx <null>
+  (let* [(result-type (to-type (class-of self) target))
+         (proc
+           (cond ((equal? (typecode self) target)
+                  (lambda (self target) self))
+                 ((= (bits (typecode self)) (bits target))
+                  (lambda (self target)
+                    (make result-type
+                          #:shape (shape self)
+                          #:strides (strides self)
+                          #:value (get-value self))))
+                 ((< (bits (typecode self)) (bits target))
+                  (let [(fun (wrap ctx <null>
                                    (list result-type (class-of self))
-                                   (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))
-                (r           (make result-type #:shape (shape self)))]
-           (fun r self)
-           r))
-        (else
-         (make (to-type (class-of self) target)
-               #:shape (shape self)
-               #:strides (map (cut * (/ (bits (typecode self)) (bits target)) <>) (strides self))
-               #:value (get-value self)))))
+                                   (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))]
+                    (lambda (self target)
+                      (let [(r (make result-type #:shape (shape self)))]
+                        (fun r self)
+                        r))))
+                 (else
+                  (lambda (self target)
+                    (make result-type
+                          #:shape (shape self)
+                          #:strides (map (cut * (/ (bits (typecode self))
+                                                         (bits target)) <>)
+                                         (strides self))
+                          #:value (get-value self))))))]
+    (add-method! to-type
+                 (make <method>
+                       #:specializers (list (class-of self) (class-of target))
+                       #:procedure proc))
+    (to-type self target)))
