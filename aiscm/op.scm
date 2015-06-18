@@ -153,10 +153,18 @@
 (define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
   (multiarray target (dimension self)))
 (define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
-  (let* [(result-type (to-type (class-of self) target))
-         (fun         (wrap ctx <null>
-                            (list result-type (class-of self))
-                            (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))
-         (r           (make result-type #:shape (shape self)))]
-    (fun r self)
-    r)); TODO: create views on integers (view first byte of each integer), typecast for unsigned/signed conversion
+  (cond ((equal? (typecode self) target)
+         self)
+        ((< (bits (typecode self)) (bits target))
+         (let* [(result-type (to-type (class-of self) target))
+                (fun         (wrap ctx <null>
+                                   (list result-type (class-of self))
+                                   (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))
+                (r           (make result-type #:shape (shape self)))]
+           (fun r self)
+           r))
+        ((= (bits (typecode self)) (bits target))
+         (make (to-type (class-of self) target)
+               #:shape (shape self)
+               #:strides (strides self)
+               #:value (get-value self))))); TODO: create views on integers (view first byte of each integer)
