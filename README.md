@@ -11,7 +11,7 @@ See [**AIscm homepage**][1] for documentation.
 ## See also
 
 * [AIscm homepage][1]
-* [AIscm packages](https://build.opensuse.org/package/show/home:wedesoft/aiscm)
+* [AIscm packages](http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm)
 
 ## External links
 

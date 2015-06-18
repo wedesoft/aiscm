@@ -1,9 +1,12 @@
 # TODO
 
-* simplify binary-op
 * element-wise type conversions
+* complete coverage of operations
 * separate assembler
 * linear-scan register allocator
+* reader (e.g. #vu8(1 2))
+* better reporting in test suite (expect ... to be)
+* tensor operations
 * floating point numbers
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * matching for lists?

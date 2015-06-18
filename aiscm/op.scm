@@ -8,7 +8,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate)
+  #:export (fill duplicate to-type)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -27,7 +27,10 @@
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (env [(r (typecode r_))]
-    (MOV r (dereference a_))
+    ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
+       MOV
+       (if (signed? (typecode a_)) MOVSX MOVZX))
+     r (dereference a_))
     (op r)
     (MOV (dereference r_) r)))
 (define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>) op)
@@ -133,7 +136,9 @@
     (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
     (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
 
-(define-unary-op duplicate (const '()))
+(define noop (const '()))
+
+(define-unary-op duplicate noop)
 (define-unary-op - NEG)
 
 (define-binary-op + ADD)
@@ -144,3 +149,14 @@
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
+
+(define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
+  (multiarray target (dimension self)))
+(define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
+  (let* [(result-type (to-type (class-of self) target))
+         (fun         (wrap ctx <null>
+                            (list result-type (class-of self))
+                            (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))
+         (r           (make result-type #:shape (shape self)))]
+    (fun r self)
+    r)); TODO: create views on integers (view first byte of each integer), typecast for unsigned/signed conversion
