@@ -41,6 +41,8 @@ install-data-hook:
 .scm.go:
 	LD_LIBRARY_PATH=$(srcdir)/.libs:$(LD_LIBRARY_PATH) $(GUILE_TOOLS) compile $< -L$(top_builddir) -o $@
 
+$(cache_DATA): $(extension_LTLIBRARIES)
+
 EXTRA_DIST = $(site_SCRIPTS)
 
 CLEANFILES = *~ *.tmp *.go*
