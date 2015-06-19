@@ -1,6 +1,6 @@
 # TODO
 
-* use =
+* make -j 4 -> README.md
 * monkey patching?
 * complete coverage of operations
 * separate assembler

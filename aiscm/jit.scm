@@ -216,9 +216,9 @@
   (or (get-disp x) (if (memv (get-reg x) (list RBP R13)) 0 #f)))
 
 (define (opcode code reg) (list (logior code (bits3 reg))))
-(define (if8 reg a b) (list (if (eqv? (get-bits reg) 8) a b)))
+(define (if8 reg a b) (list (if (= (get-bits reg) 8) a b)))
 (define (opcode-if8 reg code1 code2) (opcode (car (if8 reg code1 code2)) reg))
-(define-method (op16 (x <integer>)) (if (eqv? x 16) (list #x66) '()))
+(define-method (op16 (x <integer>)) (if (= x 16) (list #x66) '()))
 (define-method (op16 (x <operand>)) (op16 (get-bits x)))
 
 (define-method (mod (r/m <boolean>)) #b00)
@@ -237,7 +237,7 @@
 
 (define (need-rex? r) (member r (list SPL BPL SIL DIL)))
 (define (REX W r r/m)
-  (let [(flags (logior (ash (if (eqv? (get-bits W) 64) 1 0) 3)
+  (let [(flags (logior (ash (if (= (get-bits W) 64) 1 0) 3)
                        (ash (bit4 r) 2)
                        (ash (bit4 (get-index r/m)) 1)
                        (bit4 r/m)))]

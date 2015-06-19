@@ -34,7 +34,7 @@
         (ord-y (index (car y) format-order))
         (size-x (apply * (cdr x)))
         (size-y (apply * (cdr y)))]
-    (or (< ord-x ord-y) (and (eqv? ord-x ord-y) (< size-x size-y)))))
+    (or (< ord-x ord-y) (and (= ord-x ord-y) (< size-x size-y)))))
 (define-method (initialize (self <v4l2>) initargs)
   (let-keywords initargs #f (device channel select)
     (let* [(device    (or device "/dev/video0"))

@@ -28,7 +28,7 @@
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (env [(r (typecode r_))]
-    ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
+    ((if (= (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (dereference a_))
@@ -46,11 +46,11 @@
 
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (env [(r (typecode r_))]
-    ((if (eqv? (bits (typecode r_)) (bits (typecode a_)))
+    ((if (= (bits (typecode r_)) (bits (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (dereference a_))
-    (if (eqv? (bits (typecode r_)) (bits (typecode b_)))
+    (if (= (bits (typecode r_)) (bits (typecode b_)))
       (op r (dereference b_))
       (env [(b (typecode r_))]
         ((if (signed? (typecode b_)) MOVSX MOVZX) b (dereference b_))

@@ -124,7 +124,7 @@
                    (print-rows (project self) #t (string-append infix " ") (last (shape (project self))) height port)
                    (begin
                      (print-columns (project self) #t " " (car (shape self)) (- 80 2) port)
-                     (if (eqv? height 1) (display "\n ..." port))
+                     (if (= height 1) (display "\n ..." port))
                      (1- height))))]
           (print-rows (dump 1 self) #f infix (1- count) h port)))
       height)))
