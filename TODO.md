@@ -1,5 +1,6 @@
 # TODO
 
+* use =
 * monkey patching?
 * complete coverage of operations
 * separate assembler

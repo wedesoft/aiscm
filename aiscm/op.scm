@@ -154,7 +154,7 @@
 
 (define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
   (multiarray target (dimension self)))
-(define-method (to-type (self <sequence<>>) (target <meta<int<>>>)); TODO: instantiate methods
+(define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
   (let* [(result-type (to-type (class-of self) target))
          (proc
            (cond ((equal? (typecode self) target)
