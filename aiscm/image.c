@@ -46,7 +46,8 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   struct SwsContext *sws_context = sws_getContext(width, height, format,
                                                   dest_width, dest_height, dest_format,
                                                   SWS_FAST_BILINEAR, 0, 0, 0);
-  sws_scale(sws_context, source_data, source_pitches, 0, height, dest_data, dest_pitches);
+  sws_scale(sws_context, (const uint8_t * const *)source_data, source_pitches, 0, height,
+            dest_data, dest_pitches);
 
   sws_freeContext(sws_context);
   return SCM_UNDEFINED;
