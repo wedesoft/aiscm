@@ -9,7 +9,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type)
+  #:export (fill duplicate to-type !)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -142,6 +142,7 @@
 
 (define-unary-op duplicate noop)
 (define-unary-op - NEG)
+(define-unary-op ! NOT)
 
 (define-binary-op + ADD)
 (define-binary-op - SUB)
