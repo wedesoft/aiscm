@@ -9,7 +9,7 @@ of a JIT compiler.
 ## Dependencies
 
 ```Shell
-sudo aptitude install guile-2.0-dev linux-libc-dev libmjpegtools-dev libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
+sudo aptitude install colorgcc guile-2.0-dev linux-libc-dev libmjpegtools-dev libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
 ```
 
 ## Installation
@@ -19,7 +19,7 @@ Download [most recent release from Github][4].
 ```Shell
 tar xzf aiscm-*.tar.gz
 cd aiscm-*
-./configure
+./configure CC=colorgcc
 make -j 4
 make -j 4 check
 sudo make install
