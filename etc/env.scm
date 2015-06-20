@@ -20,3 +20,9 @@
 (define live (live-analysis prog))
 (define intervals (live-intervals live (variables prog)))
 (assq-remove intervals a)
+
+(use-modules (oop goops))
+(define-class <x> ())
+(define x (make <x>))
+(define-method (- (x <x>)) (list '- x))
+(define-method (+ (x <x>)) (list '+ x))

@@ -1,7 +1,6 @@
 # TODO
 
 * monkey patching?
-* make -j 4 -> README.md
 * complete coverage of operations
 * separate assembler
 * linear-scan register allocator

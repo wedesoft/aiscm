@@ -6,12 +6,29 @@ of a JIT compiler.
 
 ![](construction.gif "Under construction")
 
-See [**AIscm homepage**][1] for documentation.
+## Dependencies
+
+```Shell
+sudo aptitude install guile-2.0-dev linux-libc-dev libmjpegtools-dev libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
+```
+
+## Installation
+
+Download [most recent release from Github][4].
+
+```Shell
+tar xzf aiscm-*.tar.gz
+cd aiscm-*
+./configure
+make -j 4
+make -j 4 check
+sudo make install
+```
 
 ## See also
 
 * [AIscm homepage][1]
-* [AIscm packages](http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm)
+* [AIscm packages for Debian 8.0][3]
 
 ## External links
 
@@ -22,3 +39,5 @@ See [**AIscm homepage**][1] for documentation.
 
 [1]: http://www.wedesoft.de/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
+[3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm
+[4]: https://github.com/wedesoft/aiscm/releases
