@@ -10,7 +10,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type ~ is-zero?)
+  #:export (fill duplicate to-type bitwise-not is-zero? is-nonzero?)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -27,14 +27,30 @@
     (IMUL incr step (size-of type))
     (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
 
-(define-method (unary-op (r_ <pointer<>>) a_ op)
-  (env [(r (typecode r_))]
-    ((if (= (size-of (typecode r_)) (size-of (typecode a_)))
+(define (movx a b)
+  ((if (= (size-of (typecode a)) (size-of (typecode b)))
        MOV
-       (if (signed? (typecode a_)) MOVSX MOVZX))
-     r (dereference a_))
-    (op r)
+       (if (signed? (typecode b)) MOVSX MOVZX))
+   a b))
+
+(define (copy-op r_ a_)
+  (env [(r (typecode r_))]
+    (movx r (dereference a_))
     (MOV (dereference r_) r)))
+(define (destructive-op op)
+  (lambda (r_ a_)
+    (env [(r (typecode r_))]
+      (MOV r (dereference a_))
+      (op r)
+      (MOV (dereference r_) r))))
+(define (copying-op op)
+  (lambda (r_ a_)
+    (env [(r (typecode r_))]
+      (op r (dereference a_))
+      (MOV (dereference r_) r))))
+
+(define-method (unary-op (r_ <pointer<>>) a_ op)
+  (op r_ a_))
 (define-method (unary-op (r_ <sequence<>>) (a_ <sequence<>>) op)
   (env [(*a  <long>)
         (a+  <long>)]
@@ -47,14 +63,11 @@
 
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (env [(r (typecode r_))]
-    ((if (= (size-of (typecode r_)) (size-of (typecode a_)))
-       MOV
-       (if (signed? (typecode a_)) MOVSX MOVZX))
-     r (dereference a_))
+    (movx r (dereference a_))
     (if (= (size-of (typecode r_)) (size-of (typecode b_)))
       (op r (dereference b_))
       (env [(b (typecode r_))]
-        ((if (signed? (typecode b_)) MOVSX MOVZX) b (dereference b_))
+        (movx b (dereference b_))
         (op r b)))
     (MOV (dereference r_) r)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <var>) op)
@@ -139,15 +152,12 @@
     (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
     (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
 
-(define noop (const '()))
+(define-unary-op duplicate copy-op identity)
+(define-unary-op - (destructive-op NEG) identity)
+(define-unary-op bitwise-not (destructive-op NOT) identity)
+(define-unary-op is-zero? (copying-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
+(define-unary-op is-nonzero? (copying-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
 
-(define-unary-op duplicate noop identity)
-(define-unary-op - NEG identity)
-(define-unary-op ~ NOT identity)
-(define-unary-op is-zero? (lambda (r) (list (CMP r 0) (SETE r))) (cut to-type <> <bool>))
-
-; TODO: define-unary-op :zero?, :bool
-; TODO: define-unary-op :nonzero?, :bool
 ; TODO: define-unary-op :not, :bool
 ; TODO: define-unary-op :conj
 ; TODO: define-unary-op :abs, :scalar
@@ -201,7 +211,7 @@
                  ((< (size-of (typecode self)) (size-of target))
                   (let [(fun (wrap ctx <null>
                                    (list result-type (class-of self))
-                                   (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))]
+                                   (lambda (r_ a_) (list (unary-op r_ a_ copy-op) (RET)))))]
                     (lambda (self target)
                       (let [(r (make result-type #:shape (shape self)))]
                         (fun r self)

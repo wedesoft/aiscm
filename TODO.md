@@ -1,6 +1,5 @@
 # TODO
 
-* unary operation with different-type output: CMP RAX, SETE AL (not SETE RAX)
 * DIV, IDIV, CWD, CDQ, CQO
 * complete coverage of operations
 * monkey patching?
