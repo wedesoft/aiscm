@@ -1,7 +1,9 @@
 # TODO
 
-* monkey patching?
+* unary operation with different-type output: CMP RAX, SETE AL (not SETE RAX)
+* DIV, IDIV, CWD, CDQ, CQO
 * complete coverage of operations
+* monkey patching?
 * separate assembler
 * linear-scan register allocator
 * reader (e.g. #vu8(1 2))

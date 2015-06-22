@@ -21,7 +21,7 @@ tar xzf aiscm-*.tar.gz
 cd aiscm-*
 ./configure CC=colorgcc
 make -j 4
-make -j 4 check
+make check -j 4
 sudo make install
 ```
 

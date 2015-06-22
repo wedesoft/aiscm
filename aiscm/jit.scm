@@ -181,15 +181,15 @@
 
 (define-method (get-bits (self <address>)) (* 8 (size-of (get-type self))))
 
-(define-method (ptr (type <meta<int<>>>) . args)
+(define-method (ptr (type <meta<element>>) . args)
   (make <ptr> #:type type #:args args))
-(define-method (ptr (type <meta<int<>>>) (reg <register>))
+(define-method (ptr (type <meta<element>>) (reg <register>))
   (make <address> #:type type #:reg reg))
-(define-method (ptr (type <meta<int<>>>) (reg <register>) (disp <integer>))
+(define-method (ptr (type <meta<element>>) (reg <register>) (disp <integer>))
   (make <address> #:type type #:reg reg #:disp disp))
-(define-method (ptr (type <meta<int<>>>) (reg <register>) (index <register>))
+(define-method (ptr (type <meta<element>>) (reg <register>) (index <register>))
   (make <address> #:type type #:reg reg #:index index))
-(define-method (ptr (type <meta<int<>>>) (reg <register>) (index <register>) (disp <integer>))
+(define-method (ptr (type <meta<element>>) (reg <register>) (index <register>) (disp <integer>))
   (make <address> #:type type #:reg reg #:index index #:disp disp))
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())

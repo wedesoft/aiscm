@@ -7,9 +7,10 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
+  #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type !)
+  #:export (fill duplicate to-type ~ is-zero?)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -28,7 +29,7 @@
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (env [(r (typecode r_))]
-    ((if (= (bits (typecode r_)) (bits (typecode a_)))
+    ((if (= (size-of (typecode r_)) (size-of (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (dereference a_))
@@ -46,11 +47,11 @@
 
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (env [(r (typecode r_))]
-    ((if (= (bits (typecode r_)) (bits (typecode a_)))
+    ((if (= (size-of (typecode r_)) (size-of (typecode a_)))
        MOV
        (if (signed? (typecode a_)) MOVSX MOVZX))
      r (dereference a_))
-    (if (= (bits (typecode r_)) (bits (typecode b_)))
+    (if (= (size-of (typecode r_)) (size-of (typecode b_)))
       (op r (dereference b_))
       (env [(b (typecode r_))]
         ((if (signed? (typecode b_)) MOVSX MOVZX) b (dereference b_))
@@ -101,11 +102,11 @@
                   (ADD *a a+)
                   (ADD *b b+))))
 
-(define-syntax-rule (define-unary-op name op)
+(define-syntax-rule (define-unary-op name op conversion)
   (define-method (name (a <element>))
-    (let [(result-type (class-of a))
-          (fun         (wrap ctx <null> (list (class-of a) (class-of a))
-                         (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
+    (let* [(result-type (conversion (class-of a)))
+           (fun         (wrap ctx <null> (list result-type (class-of a))
+                              (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of a))
@@ -140,33 +141,64 @@
 
 (define noop (const '()))
 
-(define-unary-op duplicate noop)
-(define-unary-op - NEG)
-(define-unary-op ! NOT)
+(define-unary-op duplicate noop identity)
+(define-unary-op - NEG identity)
+(define-unary-op ~ NOT identity)
+(define-unary-op is-zero? (lambda (r) (list (CMP r 0) (SETE r))) (cut to-type <> <bool>))
+
+; TODO: define-unary-op :zero?, :bool
+; TODO: define-unary-op :nonzero?, :bool
+; TODO: define-unary-op :not, :bool
+; TODO: define-unary-op :conj
+; TODO: define-unary-op :abs, :scalar
+; TODO: define-unary-op :arg, :float-scalar
+; TODO: define-unary-op :floor
+; TODO: define-unary-op :ceil
+; TODO: define-unary-op :round
 
 (define-binary-op + ADD)
 (define-binary-op - SUB)
 (define-binary-op * IMUL)
+
+; TODO: define-binary-op :**, :coercion-maxint
+; TODO: define-binary-op :/
+; TODO: define-binary-op :%
+; TODO: define-binary-op :fmod
+; TODO: define-binary-op :and, :coercion-bool
+; TODO: define-binary-op :or, :coercion-bool
+; TODO: define-binary-op :&
+; TODO: define-binary-op :|
+; TODO: define-binary-op :^
+; TODO: define-binary-op :<<
+; TODO: define-binary-op :>>
+; TODO: define-binary-op :eq, :coercion-bool
+; TODO: define-binary-op :ne, :coercion-bool
+; TODO: define-binary-op :<=, :coercion-bool
+; TODO: define-binary-op :<, :coercion-bool
+; TODO: define-binary-op :>=, :coercion-bool
+; TODO: define-binary-op :>, :coercion-bool
+; TODO: define-binary-op :minor
+; TODO: define-binary-op :major
 
 (define (fill type shape value); TODO: replace with tensor operation
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
 
-(define-method (to-type (self <meta<sequence<>>>) (target <meta<int<>>>))
+(define-method (to-type (self <meta<sequence<>>>) (target <meta<element>>))
   (multiarray target (dimension self)))
 (define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
   (let* [(result-type (to-type (class-of self) target))
          (proc
            (cond ((equal? (typecode self) target)
                   (lambda (self target) self))
-                 ((= (bits (typecode self)) (bits target))
+                 ((= (size-of (typecode self)) (size-of target))
                   (lambda (self target)
                     (make result-type
                           #:shape (shape self)
                           #:strides (strides self)
                           #:value (get-value self))))
-                 ((< (bits (typecode self)) (bits target))
+                 ((< (size-of (typecode self)) (size-of target))
                   (let [(fun (wrap ctx <null>
                                    (list result-type (class-of self))
                                    (lambda (r_ a_) (list (unary-op r_ a_ noop) (RET)))))]
@@ -178,8 +210,8 @@
                   (lambda (self target)
                     (make result-type
                           #:shape (shape self)
-                          #:strides (map (cut * (/ (bits (typecode self))
-                                                         (bits target)) <>)
+                          #:strides (map (cut * (/ (size-of (typecode self))
+                                                   (size-of target)) <>)
                                          (strides self))
                           #:value (get-value self))))))]
     (add-method! to-type

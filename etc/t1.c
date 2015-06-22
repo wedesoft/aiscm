@@ -1,6 +1,6 @@
 void other(int a);
 
-short int test(short int i, char j)
+int test(int a, int b)
 {
-  return i - j;
+  return a / b;
 }
