@@ -37,13 +37,13 @@
   (env [(r (typecode r_))]
     (movx r (dereference a_))
     (MOV (dereference r_) r)))
-(define (destructive-op op)
+(define (destructive-unary-op op)
   (lambda (r_ a_)
     (env [(r (typecode r_))]
       (MOV r (dereference a_))
       (op r)
       (MOV (dereference r_) r))))
-(define (copying-op op)
+(define (copying-unary-op op)
   (lambda (r_ a_)
     (env [(r (typecode r_))]
       (op r (dereference a_))
@@ -153,10 +153,10 @@
     (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
 
 (define-unary-op duplicate copy-op identity)
-(define-unary-op - (destructive-op NEG) identity)
-(define-unary-op bitwise-not (destructive-op NOT) identity)
-(define-unary-op is-zero? (copying-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
-(define-unary-op is-nonzero? (copying-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
+(define-unary-op - (destructive-unary-op NEG) identity)
+(define-unary-op bitwise-not (destructive-unary-op NOT) identity)
+(define-unary-op is-zero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
+(define-unary-op is-nonzero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
 
 ; TODO: define-unary-op :not, :bool
 ; TODO: define-unary-op :conj
