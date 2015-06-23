@@ -61,15 +61,19 @@
                   (unary-op (project (rebase *r r_)) (project (rebase *a a_)) op)
                   (ADD *a a+))))
 
+(define (destructive-binary-op op)
+  (lambda (r_ a_ b_)
+    (env [(r (typecode r_))]
+      (movx r (dereference a_))
+      (if (= (size-of (typecode r_)) (size-of (typecode b_)))
+        (op r (dereference b_))
+        (env [(b (typecode r_))]
+          (movx b (dereference b_))
+          (op r b)))
+      (MOV (dereference r_) r))))
+
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
-  (env [(r (typecode r_))]
-    (movx r (dereference a_))
-    (if (= (size-of (typecode r_)) (size-of (typecode b_)))
-      (op r (dereference b_))
-      (env [(b (typecode r_))]
-        (movx b (dereference b_))
-        (op r b)))
-    (MOV (dereference r_) r)))
+  (op r_ a_ b_))
 (define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <var>) op)
   (env [(*a  <long>)
         (a+  <long>)]
@@ -79,10 +83,6 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) (project (rebase *a a_)) b_ op)
                   (ADD *a a+))))
-(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <pointer<>>) op)
-  (env [(b (typecode b_))]
-    (MOV b (dereference b_))
-    (binary-op r_ a_ b op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <var>) (b_ <sequence<>>) op)
   (env [(*b  <long>)
         (b+  <long>)]
@@ -92,6 +92,10 @@
     (element-wise ((typecode r_) *r (get-value r_) (last (shape r_)) (last (strides r_)))
                   (binary-op (project (rebase *r r_)) a_ (project (rebase *b b_)) op)
                   (ADD *b b+))))
+(define-method (binary-op (r_ <sequence<>>) (a_ <sequence<>>) (b_ <pointer<>>) op)
+  (env [(b (typecode b_))]
+    (MOV b (dereference b_))
+    (binary-op r_ a_ b op)))
 (define-method (binary-op (r_ <sequence<>>) (a_ <pointer<>>) (b_ <sequence<>>) op)
   (env [(a (typecode a_))]
     (MOV a (dereference a_))
@@ -166,9 +170,9 @@
 ; TODO: define-unary-op :ceil
 ; TODO: define-unary-op :round
 
-(define-binary-op + ADD)
-(define-binary-op - SUB)
-(define-binary-op * IMUL)
+(define-binary-op + (destructive-binary-op ADD))
+(define-binary-op - (destructive-binary-op SUB))
+(define-binary-op * (destructive-binary-op IMUL))
 
 ; TODO: define-binary-op :**, :coercion-maxint
 ; TODO: define-binary-op :/

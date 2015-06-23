@@ -2,7 +2,7 @@
 
 * DIV, IDIV, CWD, CDQ, CQO
 * complete coverage of operations
-* monkey patching?
+* monkey patching? Guile reader? duplicate binding handler?
 * separate assembler
 * linear-scan register allocator
 * reader (e.g. #vu8(1 2))
