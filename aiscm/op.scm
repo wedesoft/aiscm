@@ -44,10 +44,7 @@
       (op r)
       (MOV (dereference r_) r))))
 (define (copying-unary-op op)
-  (lambda (r_ a_)
-    (env [(r (typecode r_))]
-      (op r (dereference a_))
-      (MOV (dereference r_) r))))
+  (lambda (r_ a_) (op (dereference r_) (dereference a_))))
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (op r_ a_))

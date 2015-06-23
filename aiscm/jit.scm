@@ -14,7 +14,7 @@
   #:use-module (aiscm sequence)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
-            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL CMP
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL CMP TEST
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -366,6 +366,16 @@
   (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 7 r/m) (raw imm (min 32 (get-bits r/m)))))
 (define-method (CMP (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r/m #x3a #x3b) (postfixes r r/m)))
+
+(define-method (TEST arg1 arg2) (make <cmd> #:op TEST #:in (list arg1 arg2)))
+(define-method (TEST (r <register>) (imm <integer>))
+  (if (equal? (get-code r) 0)
+    (append (prefixes r) (if8 r #xa8 #xa9) (raw imm (min 32 (get-bits r))))
+    (next-method)))
+(define-method (TEST (r/m <operand>) (imm <integer>))
+  (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 0 r/m) (raw imm (min 32 (get-bits r/m)))))
+(define-method (TEST (r/m <operand>) (r <register>))
+  (append (prefixes r r/m) (if8 r/m #x84 #x85) (postfixes r r/m)))
 
 (define (SETcc code r/m)
   (append (prefixes r/m) (list #x0f code) (postfixes 0 r/m)))

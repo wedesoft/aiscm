@@ -1,6 +1,4 @@
-void other(int a);
-
-int test(int a, int b)
+int test(int a)
 {
-  return a / b;
+  return a == 0;
 }
