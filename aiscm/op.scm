@@ -10,7 +10,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type bitwise-not is-zero? is-nonzero?)
+  #:export (fill duplicate to-type bitwise-not is-zero? is-nonzero? do-not)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -158,6 +158,7 @@
 (define-unary-op bitwise-not (destructive-unary-op NOT) identity)
 (define-unary-op is-zero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
 (define-unary-op is-nonzero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
+(define do-not is-zero?)
 
 ; TODO: define-unary-op :not, :bool
 ; TODO: define-unary-op :conj
