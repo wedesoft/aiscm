@@ -2,6 +2,7 @@
              (oop goops)
              (aiscm sequence)
              (aiscm element)
+             (aiscm bool)
              (aiscm int)
              (aiscm jit)
              (aiscm util)

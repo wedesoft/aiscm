@@ -68,6 +68,13 @@
           (movx b (dereference b_))
           (op r b)))
       (MOV (dereference r_) r))))
+(define (copying-binary-op op)
+  (lambda (r_ a_ b_)
+    (env [(a (coerce (typecode a_) (typecode b_)))
+          (b (coerce (typecode a_) (typecode b_)))]
+      (movx a (dereference a_))
+      (movx b (dereference b_))
+      (op (dereference r_) a b))))
 
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (op r_ a_ b_))
@@ -170,6 +177,7 @@
 (define-binary-op + (destructive-binary-op ADD) coerce)
 (define-binary-op - (destructive-binary-op SUB) coerce)
 (define-binary-op * (destructive-binary-op IMUL) coerce)
+(define-binary-op = (copying-binary-op (lambda (r a b) (list (CMP a b) (SETE r)))) (compose (cut to-type <> <bool>) coerce))
 
 ; TODO: define-binary-op :**, :coercion-maxint
 ; TODO: define-binary-op :/
