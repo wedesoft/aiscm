@@ -1,5 +1,8 @@
 # TODO
 
+* element-wise equal
+  copying binary op
+  type conversion for binary op
 * DIV, IDIV, CWD, CDQ, CQO
 * complete coverage of operations
 * monkey patching? Guile reader? duplicate binding handler?

@@ -10,7 +10,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type bitwise-not is-zero? is-nonzero? do-not)
+  #:export (fill duplicate to-type ~ =0 !=0 !)
   #:re-export (+ - *))
 (define ctx (make <jit-context>))
 
@@ -135,10 +135,10 @@
         (shape-b (shape b))]
     (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
 
-(define-syntax-rule (define-binary-op name op)
+(define-syntax-rule (define-binary-op name op coercion)
   (begin
     (define-method (name (a <element>) (b <element>))
-      (let* [(result-type (coerce (class-of a) (class-of b)))
+      (let* [(result-type (coercion (class-of a) (class-of b)))
              (fun         (wrap ctx <null>
                                 (list result-type (class-of a) (class-of b))
                                 (lambda (r_ a_ b_) (list (binary-op r_ a_ b_ op) (RET)))))]
@@ -155,12 +155,11 @@
 
 (define-unary-op duplicate copy-op identity)
 (define-unary-op - (destructive-unary-op NEG) identity)
-(define-unary-op bitwise-not (destructive-unary-op NOT) identity)
-(define-unary-op is-zero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
-(define-unary-op is-nonzero? (copying-unary-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
-(define do-not is-zero?)
+(define-unary-op ~ (destructive-unary-op NOT) identity)
+(define-unary-op =0 (copying-unary-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
+(define-unary-op !=0 (copying-unary-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
+(define ! =0)
 
-; TODO: define-unary-op :not, :bool
 ; TODO: define-unary-op :conj
 ; TODO: define-unary-op :abs, :scalar
 ; TODO: define-unary-op :arg, :float-scalar
@@ -168,9 +167,9 @@
 ; TODO: define-unary-op :ceil
 ; TODO: define-unary-op :round
 
-(define-binary-op + (destructive-binary-op ADD))
-(define-binary-op - (destructive-binary-op SUB))
-(define-binary-op * (destructive-binary-op IMUL))
+(define-binary-op + (destructive-binary-op ADD) coerce)
+(define-binary-op - (destructive-binary-op SUB) coerce)
+(define-binary-op * (destructive-binary-op IMUL) coerce)
 
 ; TODO: define-binary-op :**, :coercion-maxint
 ; TODO: define-binary-op :/
