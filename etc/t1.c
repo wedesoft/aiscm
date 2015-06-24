@@ -1,4 +1,4 @@
-int test(int a)
+char test(unsigned char a, unsigned char b)
 {
-  return a == 0;
+  return a < b;
 }
