@@ -1,9 +1,8 @@
 # TODO
 
-* &&, ||, ^, minor, major
+* &&, ||, minor, major
 * signed-unsigned comparison, signed-signed comparison
 * DIV, IDIV, CWD, CDQ, CQO
-* complete coverage of operations
 * monkey patching? Guile reader? duplicate binding handler?
 * separate assembler
 * linear-scan register allocator

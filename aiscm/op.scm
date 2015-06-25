@@ -10,7 +10,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type ~ =0 !=0 ! != & |)
+  #:export (fill duplicate to-type ~ =0 !=0 ! != & | ^)
   #:re-export (+ - * = < <= > >=))
 (define ctx (make <jit-context>))
 
@@ -179,6 +179,7 @@
 (define-binary-op * (destructive-binary-op IMUL) coerce)
 (define-binary-op & (destructive-binary-op AND) coerce)
 (define-binary-op | (destructive-binary-op OR) coerce)
+(define-binary-op ^ (destructive-binary-op XOR) coerce)
 (define-binary-op = (copying-binary-op (lambda (r a b) (list (CMP a b) (SETE r)))) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op != (copying-binary-op (lambda (r a b) (list (CMP a b) (SETNE r)))) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op < (copying-binary-op (lambda (r a b) (list (CMP a b) (SETB r)))) (compose (cut to-type <> <bool>) coerce))
@@ -192,9 +193,6 @@
 ; TODO: define-binary-op :fmod
 ; TODO: define-binary-op :and, :coercion-bool
 ; TODO: define-binary-op :or, :coercion-bool
-; TODO: define-binary-op :&
-; TODO: define-binary-op :|
-; TODO: define-binary-op :^
 ; TODO: define-binary-op :<<
 ; TODO: define-binary-op :>>
 ; TODO: define-binary-op :minor
