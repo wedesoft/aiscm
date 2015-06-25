@@ -11,7 +11,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type ~ =0 !=0 ! != & | ^)
+  #:export (fill duplicate to-type ~ =0 !=0 ! != & | ^ && ||)
   #:re-export (+ - * = < <= > >=))
 (define ctx (make <jit-context>))
 
@@ -35,7 +35,11 @@
    a b))
 
 (define ((cmp-setcc setcc) r a b) (list (CMP a b) (setcc r)))
-(define ((cmp-0-setcc setcc) r a) (list (CMP a 0) (setcc r)))
+(define ((test-setcc setcc) r a) (list (TEST a a) (setcc r)))
+(define ((test-booleans comb) r a b)
+  (env [(r1 (typecode r))
+        (r2 (typecode r))]
+    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (comb r1 r2) (MOV r r1))))
 
 (define (copy-op r_ a_)
   (env [(r (typecode r_))]
@@ -47,7 +51,9 @@
     (op r)
     (MOV (dereference r_) r)))
 (define ((copying-unary-op op) r_ a_)
-  (op (dereference r_) (dereference a_)))
+  (env [(a (typecode a_))]
+    (MOV a (dereference a_))
+    (op (dereference r_) a)))
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (op r_ a_))
@@ -162,8 +168,8 @@
 (define-unary-op duplicate copy-op identity)
 (define-unary-op - (destructive-unary-op NEG) identity)
 (define-unary-op ~ (destructive-unary-op NOT) identity)
-(define-unary-op =0 (copying-unary-op (cmp-0-setcc SETE)) (cut to-type <> <bool>))
-(define-unary-op !=0 (copying-unary-op (cmp-0-setcc SETNE)) (cut to-type <> <bool>))
+(define-unary-op =0 (copying-unary-op (test-setcc SETE)) (cut to-type <> <bool>))
+(define-unary-op !=0 (copying-unary-op (test-setcc SETNE)) (cut to-type <> <bool>))
 (define ! =0)
 
 ; TODO: define-unary-op :conj
@@ -185,6 +191,8 @@
 (define-binary-op <= (copying-binary-op (cmp-setcc SETBE)) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op > (copying-binary-op (cmp-setcc SETNBE)) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op >= (copying-binary-op (cmp-setcc SETNB)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op && (copying-binary-op (test-booleans AND)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op || (copying-binary-op (test-booleans OR)) (compose (cut to-type <> <bool>) coerce))
 
 ; TODO: define-binary-op :**, :coercion-maxint
 ; TODO: define-binary-op :/
