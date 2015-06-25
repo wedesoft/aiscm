@@ -1,4 +1,4 @@
-char test(unsigned char a, unsigned char b)
+char test(char a)
 {
-  return a | b;
+  return a | 5;
 }

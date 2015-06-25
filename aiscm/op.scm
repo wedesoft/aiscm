@@ -10,7 +10,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate to-type ~ =0 !=0 ! != &)
+  #:export (fill duplicate to-type ~ =0 !=0 ! != & |)
   #:re-export (+ - * = < <= > >=))
 (define ctx (make <jit-context>))
 
@@ -178,6 +178,7 @@
 (define-binary-op - (destructive-binary-op SUB) coerce)
 (define-binary-op * (destructive-binary-op IMUL) coerce)
 (define-binary-op & (destructive-binary-op AND) coerce)
+(define-binary-op | (destructive-binary-op OR) coerce)
 (define-binary-op = (copying-binary-op (lambda (r a b) (list (CMP a b) (SETE r)))) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op != (copying-binary-op (lambda (r a b) (list (CMP a b) (SETNE r)))) (compose (cut to-type <> <bool>) coerce))
 (define-binary-op < (copying-binary-op (lambda (r a b) (list (CMP a b) (SETB r)))) (compose (cut to-type <> <bool>) coerce))
