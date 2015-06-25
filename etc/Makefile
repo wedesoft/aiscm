@@ -3,6 +3,7 @@
 CFLAGS = -O
 
 all: t1.s t1.txt
+	cat t1.txt
 
 .o.txt:
 	objdump -d -M intel -S $< > $@

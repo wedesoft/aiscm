@@ -14,8 +14,9 @@
   #:use-module (aiscm sequence)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
-            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL CMP TEST
-            SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL
+            AND
+            CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
@@ -354,6 +355,18 @@
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
 (define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
   (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
+
+(define-method (AND arg1 arg2) (make <cmd> #:op AND #:io (list arg1) #:in (list arg2)))
+(define-method (AND (m <address>) (r <register>))
+  (append (prefixes r m) (if8 m #x20 #x21) (postfixes r m)))
+(define-method (AND (r <register>) (imm <integer>))
+  (if (equal? (get-code r) 0)
+    (append (prefixes r) (if8 r #x24 #x25) (raw imm (min 32 (get-bits r))))
+    (next-method)))
+(define-method (AND (r/m <operand>) (imm <integer>))
+  (append (prefixes r/m) (if8 r/m #x80 #x81) (postfixes 4 r/m) (raw imm (min 32 (get-bits r/m)))))
+(define-method (AND (r <register>) (r/m <operand>))
+  (append (prefixes r r/m) (if8 r #x22 #x23) (postfixes r r/m)))
 
 (define-method (CMP arg1 arg2) (make <cmd> #:op CMP #:in (list arg1 arg2)))
 (define-method (CMP (m <address>) (r <register>))
