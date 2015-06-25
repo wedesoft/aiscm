@@ -1,4 +1,4 @@
-char test(char a)
+int test(int a, int b)
 {
-  return a | 5;
+  return a > b ? a : b;
 }

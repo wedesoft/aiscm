@@ -1,5 +1,6 @@
 (define-module (aiscm op)
   #:use-module (oop goops)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
@@ -33,18 +34,20 @@
        (if (signed? (typecode b)) MOVSX MOVZX))
    a b))
 
+(define ((cmp-setcc setcc) r a b) (list (CMP a b) (setcc r)))
+(define ((cmp-0-setcc setcc) r a) (list (CMP a 0) (setcc r)))
+
 (define (copy-op r_ a_)
   (env [(r (typecode r_))]
     (movx r (dereference a_))
     (MOV (dereference r_) r)))
-(define (destructive-unary-op op)
-  (lambda (r_ a_)
-    (env [(r (typecode r_))]
-      (MOV r (dereference a_))
-      (op r)
-      (MOV (dereference r_) r))))
-(define (copying-unary-op op)
-  (lambda (r_ a_) (op (dereference r_) (dereference a_))))
+(define ((destructive-unary-op op) r_ a_)
+  (env [(r (typecode r_))]
+    (MOV r (dereference a_))
+    (op r)
+    (MOV (dereference r_) r)))
+(define ((copying-unary-op op) r_ a_)
+  (op (dereference r_) (dereference a_)))
 
 (define-method (unary-op (r_ <pointer<>>) a_ op)
   (op r_ a_))
@@ -58,23 +61,19 @@
                   (unary-op (project (rebase *r r_)) (project (rebase *a a_)) op)
                   (ADD *a a+))))
 
-(define (destructive-binary-op op)
-  (lambda (r_ a_ b_)
-    (env [(r (typecode r_))]
-      (movx r (dereference a_))
-      (if (= (size-of (typecode r_)) (size-of (typecode b_)))
-        (op r (dereference b_))
-        (env [(b (typecode r_))]
-          (movx b (dereference b_))
-          (op r b)))
-      (MOV (dereference r_) r))))
-(define (copying-binary-op op)
-  (lambda (r_ a_ b_)
-    (env [(a (coerce (typecode a_) (typecode b_)))
-          (b (coerce (typecode a_) (typecode b_)))]
-      (movx a (dereference a_))
-      (movx b (dereference b_))
-      (op (dereference r_) a b))))
+(define ((destructive-binary-op op) r_ a_ b_)
+  (env [(r (typecode r_))
+        (b (typecode r_))]
+    (movx r (dereference a_))
+    (movx b (dereference b_))
+    (op r b)
+    (MOV (dereference r_) r)))
+(define ((copying-binary-op op) r_ a_ b_)
+  (env [(a (coerce (typecode a_) (typecode b_)))
+        (b (coerce (typecode a_) (typecode b_)))]
+    (movx a (dereference a_))
+    (movx b (dereference b_))
+    (op (dereference r_) a b)))
 
 (define-method (binary-op (r_ <pointer<>>) a_ b_ op)
   (op r_ a_ b_))
@@ -163,8 +162,8 @@
 (define-unary-op duplicate copy-op identity)
 (define-unary-op - (destructive-unary-op NEG) identity)
 (define-unary-op ~ (destructive-unary-op NOT) identity)
-(define-unary-op =0 (copying-unary-op (lambda (r a) (list (CMP a 0) (SETE r)))) (cut to-type <> <bool>))
-(define-unary-op !=0 (copying-unary-op (lambda (r a) (list (CMP a 0) (SETNE r)))) (cut to-type <> <bool>))
+(define-unary-op =0 (copying-unary-op (cmp-0-setcc SETE)) (cut to-type <> <bool>))
+(define-unary-op !=0 (copying-unary-op (cmp-0-setcc SETNE)) (cut to-type <> <bool>))
 (define ! =0)
 
 ; TODO: define-unary-op :conj
@@ -180,12 +179,12 @@
 (define-binary-op & (destructive-binary-op AND) coerce)
 (define-binary-op | (destructive-binary-op OR) coerce)
 (define-binary-op ^ (destructive-binary-op XOR) coerce)
-(define-binary-op = (copying-binary-op (lambda (r a b) (list (CMP a b) (SETE r)))) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op != (copying-binary-op (lambda (r a b) (list (CMP a b) (SETNE r)))) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op < (copying-binary-op (lambda (r a b) (list (CMP a b) (SETB r)))) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op <= (copying-binary-op (lambda (r a b) (list (CMP a b) (SETBE r)))) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op > (copying-binary-op (lambda (r a b) (list (CMP a b) (SETNBE r)))) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op >= (copying-binary-op (lambda (r a b) (list (CMP a b) (SETNB r)))) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op = (copying-binary-op (cmp-setcc SETE)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op != (copying-binary-op (cmp-setcc SETNE)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op < (copying-binary-op (cmp-setcc SETB)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op <= (copying-binary-op (cmp-setcc SETBE)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op > (copying-binary-op (cmp-setcc SETNBE)) (compose (cut to-type <> <bool>) coerce))
+(define-binary-op >= (copying-binary-op (cmp-setcc SETNB)) (compose (cut to-type <> <bool>) coerce))
 
 ; TODO: define-binary-op :**, :coercion-maxint
 ; TODO: define-binary-op :/
@@ -195,8 +194,7 @@
 ; TODO: define-binary-op :or, :coercion-bool
 ; TODO: define-binary-op :<<
 ; TODO: define-binary-op :>>
-; TODO: define-binary-op :minor
-; TODO: define-binary-op :major
+; TODO: conditional -> minor, major
 
 (define (fill type shape value); TODO: replace with tensor operation
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
