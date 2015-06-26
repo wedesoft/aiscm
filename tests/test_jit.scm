@@ -958,7 +958,7 @@
     "'wrap' handles pointer arguments")
 (ok (equal?
       '(0 2 3)
-      (let [(s (list->multiarray '(1 2 3)))]
+      (let [(s (seq 1 2 3))]
         ((wrap ctx <null> (list (sequence <ubyte>))
            (lambda (s) (list (MOV (ptr <ubyte> (get-value s)) 0) (RET)))) s)
         (multiarray->list s)))

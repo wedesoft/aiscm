@@ -10,7 +10,8 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence multiarray multiarray->list list->multiarray
-            dump crop project rebase roll unroll downsample))
+            dump crop project rebase roll unroll downsample)
+  #:export-syntax (seq arr))
 (define-generic element-type)
 (define-class <meta<sequence<>>> (<meta<element>>))
 (define-class <sequence<>> (<element>)
@@ -95,6 +96,9 @@
          (retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval lst)
     retval))
+
+(define-syntax-rule (seq args ...) (list->multiarray (list args ...)))
+(define-syntax-rule (arr args ...) (list->multiarray '(args ...)))
 
 (define (print-columns self first infix count width port)
   (if (zero? count)

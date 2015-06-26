@@ -1,9 +1,11 @@
 # TODO
 
-* &&, ||, minor, major (cmovge)
+* monkey patching? Guile reader? duplicate binding handler?
+  #:replace, #:duplicates
+* slimv
+* minor, major (cmovge)
 * signed-unsigned comparison, signed-signed comparison
 * DIV, IDIV, CWD, CDQ, CQO
-* monkey patching? Guile reader? duplicate binding handler?
 * separate assembler
 * linear-scan register allocator
 * reader (e.g. #vu8(1 2))
@@ -15,7 +17,6 @@
 * document motivation: vector instructions, compose array functions and calls,
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * REPL docs: (help ...)
-* GOOPS monkey patching
 * increase RSP if using more than 128 bytes; (ptr <int> RSP offset -8)
 * https://www.gnu.org/software/guile/manual/html_node/Arrays.html#Arrays
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
