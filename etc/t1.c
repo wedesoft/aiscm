@@ -1,4 +1,4 @@
-char test(char a, int b)
+int test(int a, int b)
 {
-  return a && b;
+  return a / b;
 }

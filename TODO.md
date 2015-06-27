@@ -1,10 +1,10 @@
 # TODO
 
-* monkey patching? Guile reader? duplicate binding handler?
+* DIV, IDIV, CWD, CDQ, CQO
+* signed-unsigned comparison, signed-signed comparison
+* monkey patching? duplicate binding handler?
   #:replace, #:duplicates
 * slimv
-* signed-unsigned comparison, signed-signed comparison
-* DIV, IDIV, CWD, CDQ, CQO
 * separate assembler
 * linear-scan register allocator
 * better reporting in test suite (expect ... to be)
