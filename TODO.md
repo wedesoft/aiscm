@@ -3,15 +3,15 @@
 * monkey patching? Guile reader? duplicate binding handler?
   #:replace, #:duplicates
 * slimv
-* minor, major (cmovge)
 * signed-unsigned comparison, signed-signed comparison
 * DIV, IDIV, CWD, CDQ, CQO
 * separate assembler
 * linear-scan register allocator
-* reader (e.g. #vu8(1 2))
 * better reporting in test suite (expect ... to be)
 * tensor operations
+* seq.int, arr.int, to-int, to-list
 * floating point numbers
+* minor, major (cmovge)
 * RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,

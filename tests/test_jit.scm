@@ -961,7 +961,7 @@
       (let [(s (seq 1 2 3))]
         ((wrap ctx <null> (list (sequence <ubyte>))
            (lambda (s) (list (MOV (ptr <ubyte> (get-value s)) 0) (RET)))) s)
-        (multiarray->list s)))
+        (to-list s)))
   "'wrap' passes pointer variables for sequence data")
 (ok (eqv? 3 ((wrap ctx <int> '()  (lambda (r)
                                     (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))

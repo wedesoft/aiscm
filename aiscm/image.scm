@@ -10,8 +10,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
-            get-format get-mem convert
-            image->multiarray multiarray->image))
+            get-format get-mem convert to-image))
 (load-extension "libguile-image" "init_image")
 (define-class <meta<image>> (<class>))
 (define-class <image> ()
@@ -138,19 +137,19 @@
   (convert self format (shape self)))
 (define-method (write (self <image>) port)
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
-(define (image->multiarray self)
+(define-method (to-array (self <image>))
   (case (get-format self)
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (get-pitches self))
                    (size    (image-size 'GRAY (get-pitches self) (cadr shape)))
                    (mem     (get-mem self))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
-    (else   (image->multiarray (convert self 'GRAY))))); TODO: conversion of color images
-(define (multiarray->image self); TODO: convert arrays other than UBYTE, compact image if strides not 1
+    (else   (to-array (convert self 'GRAY))))); TODO: conversion of color images
+(define (to-image self); TODO: convert arrays other than UBYTE, compact image if strides not 1
   (if (= (car (strides self)) 1)
     (make <image> #:format 'GRAY
                   #:shape (shape self)
                   #:mem (get-value self)
                   #:offsets '(0)
                   #:pitches (list (cadr (strides self))))
-    (multiarray->image (duplicate self))))
+    (to-image (duplicate self))))

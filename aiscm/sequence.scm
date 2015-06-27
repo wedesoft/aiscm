@@ -9,7 +9,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
-            sequence multiarray multiarray->list list->multiarray
+            sequence multiarray to-list to-array
             dump crop project rebase roll unroll downsample)
   #:export-syntax (seq arr))
 (define-generic element-type)
@@ -85,20 +85,20 @@
   (store (project self) (car value))
   (store (dump 1 self) (cdr value))
   value)
-(define-method (multiarray->list self) self)
-(define-method (multiarray->list (self <sequence<>>))
-  (map (compose multiarray->list (cut get self <>)) (iota (last (shape self)))))
+(define-method (to-list self) self)
+(define-method (to-list (self <sequence<>>))
+  (map (compose to-list (cut get self <>)) (iota (last (shape self)))))
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (attach (shape (car self)) (length self)))
-(define (list->multiarray lst)
+(define-method (to-array (lst <list>))
   (let* [(type   (reduce coerce #f (map match (flatten lst))))
          (shape  (shape lst))
          (retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval lst)
     retval))
 
-(define-syntax-rule (seq args ...) (list->multiarray (list args ...)))
-(define-syntax-rule (arr args ...) (list->multiarray '(args ...)))
+(define-syntax-rule (seq args ...) (to-array (list args ...)))
+(define-syntax-rule (arr args ...) (to-array '(args ...)))
 
 (define (print-columns self first infix count width port)
   (if (zero? count)
