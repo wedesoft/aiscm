@@ -7,7 +7,7 @@
              (aiscm jit)
              (aiscm util)
              (guile-tap))
-(planned-tests 67)
+(planned-tests 68)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
@@ -61,6 +61,8 @@
     "Convert list of boleans to multiarray and back")
 (ok (equal? '(2 3 5) (to-list (seq 2 3 (+ 2 3))))
     "Short form for specifying sequences")
+(todo (equal? '(-1 128) (to-list (seq -1 128)))
+    "Selection of fitting datatype for signed-unsigned combinations")
 (ok (equal? '((2 3) (5 7)) (to-list (arr (2 3) (5 7))))
     "Short form for specifying arrays")
 (ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"

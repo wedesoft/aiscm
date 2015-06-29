@@ -34,7 +34,8 @@
        (if (signed? (typecode b)) MOVSX MOVZX))
    a b))
 
-(define ((cmp-setcc setcc) r a b) (list (CMP a b) (setcc r)))
+(define ((cmp-setcc setcc-signed setcc-unsigned) r a b)
+  (list (CMP a b) ((if (or (signed? (typecode a)) (signed? (typecode b))) setcc-signed setcc-unsigned) r)))
 (define ((test-setcc setcc) r a) (list (TEST a a) (setcc r)))
 (define ((test-booleans comb) r a b)
   (env [(r1 (typecode r))
@@ -74,9 +75,9 @@
     (movx b (dereference b_))
     (op r b)
     (MOV (dereference r_) r)))
-(define ((copying-binary-op op) r_ a_ b_)
-  (env [(a (coerce (typecode a_) (typecode b_)))
-        (b (coerce (typecode a_) (typecode b_)))]
+(define ((copying-binary-op intermediate op) r_ a_ b_)
+  (env [(a (intermediate (typecode a_) (typecode b_)))
+        (b (intermediate (typecode a_) (typecode b_)))]
     (movx a (dereference a_))
     (movx b (dereference b_))
     (op (dereference r_) a b)))
@@ -165,45 +166,6 @@
     (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
     (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
 
-(define-unary-op duplicate copy-op identity)
-(define-unary-op - (destructive-unary-op NEG) identity)
-(define-unary-op ~ (destructive-unary-op NOT) identity)
-(define-unary-op =0 (copying-unary-op (test-setcc SETE)) (cut to-type <> <bool>))
-(define-unary-op !=0 (copying-unary-op (test-setcc SETNE)) (cut to-type <> <bool>))
-(define ! =0)
-
-; TODO: define-unary-op :conj
-; TODO: define-unary-op :abs, :scalar
-; TODO: define-unary-op :arg, :float-scalar
-; TODO: define-unary-op :floor
-; TODO: define-unary-op :ceil
-; TODO: define-unary-op :round
-
-(define-binary-op + (destructive-binary-op ADD) coerce)
-(define-binary-op - (destructive-binary-op SUB) coerce)
-(define-binary-op * (destructive-binary-op IMUL) coerce)
-(define-binary-op & (destructive-binary-op AND) coerce)
-(define-binary-op | (destructive-binary-op OR) coerce)
-(define-binary-op ^ (destructive-binary-op XOR) coerce)
-(define-binary-op = (copying-binary-op (cmp-setcc SETE)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op != (copying-binary-op (cmp-setcc SETNE)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op < (copying-binary-op (cmp-setcc SETB)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op <= (copying-binary-op (cmp-setcc SETBE)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op > (copying-binary-op (cmp-setcc SETNBE)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op >= (copying-binary-op (cmp-setcc SETNB)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op && (copying-binary-op (test-booleans AND)) (compose (cut to-type <> <bool>) coerce))
-(define-binary-op || (copying-binary-op (test-booleans OR)) (compose (cut to-type <> <bool>) coerce))
-
-; TODO: define-binary-op :**, :coercion-maxint
-; TODO: define-binary-op :/
-; TODO: define-binary-op :%
-; TODO: define-binary-op :fmod
-; TODO: define-binary-op :and, :coercion-bool
-; TODO: define-binary-op :or, :coercion-bool
-; TODO: define-binary-op :<<
-; TODO: define-binary-op :>>
-; TODO: conditional -> minor, major
-
 (define (fill type shape value); TODO: replace with tensor operation
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
@@ -243,3 +205,49 @@
                        #:specializers (list (class-of self) (class-of target))
                        #:procedure proc))
     (to-type self target)))
+
+(define to-bool (cut to-type <> <bool>))
+(define (sign-space a b)
+  (let [(t (coerce a b))]
+  (if (eq? (signed? (typecode a)) (signed? (typecode b)))
+    t
+    (integer (max 32 (bits t)) (if (signed? t) signed unsigned)))))
+
+(define-unary-op duplicate copy-op identity)
+(define-unary-op - (destructive-unary-op NEG) identity)
+(define-unary-op ~ (destructive-unary-op NOT) identity)
+(define-unary-op =0 (copying-unary-op (test-setcc SETE)) to-bool)
+(define-unary-op !=0 (copying-unary-op (test-setcc SETNE)) to-bool)
+(define ! =0)
+
+; TODO: unary operation conj
+; TODO: unary operation abs (scalar)
+; TODO: unary operation arg (float-scalar)
+; TODO: unary operation floor
+; TODO: unary operation ceil
+; TODO: unary operation round
+
+(define-binary-op + (destructive-binary-op ADD) coerce)
+(define-binary-op - (destructive-binary-op SUB) coerce)
+(define-binary-op * (destructive-binary-op IMUL) coerce)
+(define-binary-op & (destructive-binary-op AND) coerce)
+(define-binary-op | (destructive-binary-op OR) coerce)
+(define-binary-op ^ (destructive-binary-op XOR) coerce)
+(define-binary-op = (copying-binary-op coerce (cmp-setcc SETE SETE)) (compose to-bool coerce))
+(define-binary-op != (copying-binary-op coerce (cmp-setcc SETNE SETNE)) (compose to-bool coerce))
+(define-binary-op < (copying-binary-op sign-space (cmp-setcc SETL SETB)) (compose to-bool coerce))
+(define-binary-op <= (copying-binary-op sign-space (cmp-setcc SETLE SETBE)) (compose to-bool coerce)); TODO: int32+ (with test)
+(define-binary-op > (copying-binary-op sign-space (cmp-setcc SETNLE SETNBE)) (compose to-bool coerce))
+(define-binary-op >= (copying-binary-op sign-space (cmp-setcc SETNL SETNB)) (compose to-bool coerce))
+(define-binary-op && (copying-binary-op coerce (test-booleans AND)) (compose to-bool coerce))
+(define-binary-op || (copying-binary-op coerce (test-booleans OR)) (compose to-bool coerce))
+
+; TODO: binary operation ** (coercion-maxint)
+; TODO: binary operation /
+; TODO: binary operation %
+; TODO: binary operation fmod
+; TODO: binary operation and (coercion-bool)
+; TODO: binary operation or (coercion-bool)
+; TODO: binary operation <<
+; TODO: binary operation >>
+; TODO: conditional -> minor, major

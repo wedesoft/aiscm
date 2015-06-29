@@ -1,5 +1,6 @@
 # TODO
 
+* fit values
 * DIV, IDIV, CWD, CDQ, CQO
 * signed-unsigned comparison, signed-signed comparison
 * monkey patching? duplicate binding handler?
