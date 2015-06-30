@@ -15,6 +15,6 @@
 (define-method (coerce (a <meta<bool>>) (b <meta<bool>>)) <bool>)
 (define-method (write (self <bool>) port)
   (format port "#<<bool> ~a>" (get-value self)))
-(define-method (match (b <boolean>)) <bool>)
+(define-method (match (b <boolean>) . args) <bool>)
 (define-method (types (self <meta<bool>>)) (list <ubyte>))
 (define-method (content (self <boolean>)) (list (if self 1 0)))
