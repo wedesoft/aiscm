@@ -17,6 +17,6 @@ install:
 - export LD_LIBRARY_PATH=/usr/local/lib
 - make -f Makefile.dist
 - ./configure
-- make
+- make -j 2
 script:
-- make check
+  - make check -j 2
