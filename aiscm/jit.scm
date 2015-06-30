@@ -15,7 +15,7 @@
   #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address>
             asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV
-            AND OR XOR
+            AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             AL CL DL BL SPL BPL SIL DIL
@@ -293,6 +293,14 @@
          (opcode (case bits (( 8) (list #x0f #xb6))
                             ((16) (list #x0f #xb7))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
+
+(define (CBW) '(#x66 #x98))
+(define (CWDE) '(#x98))
+(define (CDQE) '(#x48 #x98))
+
+(define (CWD) '(#x66 #x99))
+(define (CDQ) '(#x99))
+(define (CQO) '(#x48 #x99))
 
 (define-method (LEA arg1 arg2) (make <cmd> #:op LEA #:out (list arg1) #:in (list arg2)))
 (define-method (LEA (r <register>) (m <address>))
