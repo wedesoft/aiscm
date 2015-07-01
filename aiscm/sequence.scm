@@ -91,7 +91,7 @@
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (attach (shape (car self)) (length self)))
 (define-method (to-array (lst <list>))
-  (let* [(type   (reduce coerce #f (map match (flatten lst))))
+  (let* [(type   (apply match (flatten lst)))
          (shape  (shape lst))
          (retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval lst)

@@ -61,7 +61,7 @@
     "Convert list of boleans to multiarray and back")
 (ok (equal? '(2 3 5) (to-list (seq 2 3 (+ 2 3))))
     "Short form for specifying sequences")
-(todo (equal? '(-1 128) (to-list (seq -1 128)))
+(ok (equal? '(-1 128) (to-list (seq -1 128)))
     "Selection of fitting datatype for signed-unsigned combinations")
 (ok (equal? '((2 3) (5 7)) (to-list (arr (2 3) (5 7))))
     "Short form for specifying arrays")

@@ -1,9 +1,10 @@
 # TODO
 
-* /, i/o of CDQ? block/unblock?
-* code fragments: code, return value(s), predefined
-* separate assembler
+* block/unblock?
+* /
+* code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables
+* separate assembler
 * monkey patching? duplicate binding handler?
   #:replace, #:duplicates
 * linear-scan register allocator/block-wise coloring
