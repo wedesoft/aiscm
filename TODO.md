@@ -1,6 +1,6 @@
 # TODO
 
-* block/unblock?
+* block/unblock? add live intervals?
 * /
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables

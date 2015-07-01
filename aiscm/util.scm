@@ -77,17 +77,25 @@
   (map
     (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
     variables))
+(define ((overlap-interval intervals) interval)
+  (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
+                                    (<= (cadr x) (cdr interval)))) intervals)))
 (define ((overlap intervals) var)
   (let [(interval (assq-ref intervals var))]
-    (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
-                                      (<= (cadr x) (cdr interval)))) intervals))))
-(define* (color-intervals intervals nodes colors #:key (predefined '()))
+    ((overlap-interval intervals) interval)))
+(define* (color-intervals intervals nodes colors #:key (predefined '()) (blocked '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (overlap intervals)) nodes))
-           (coloring  (color-intervals (assq-remove intervals target) (delete target nodes) colors #:predefined predefined))
-           (blocked   (map (cut assq-ref coloring <>) ((overlap intervals) target)))
-           (available (find (negate (cut memv <> blocked)) colors))]
-      (cons (cons target available) coloring))))
+           (color-map (color-intervals (assq-remove intervals target)
+                                       (delete target nodes)
+                                       colors
+                                       #:predefined predefined
+                                       #:blocked blocked))
+           (adjacent  ((overlap intervals) target))
+           (busy      (append (map (cut assq-ref color-map <>) adjacent)
+                              ((overlap-interval blocked) (assq-ref intervals target))))
+           (available (find (negate (cut memv <> busy)) colors))]
+      (cons (cons target available) color-map))))
 (define (first-index pred lst)
   (if (null? lst) #f
     (if (pred (car lst)) 0
