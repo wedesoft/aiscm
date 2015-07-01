@@ -1,10 +1,12 @@
 # TODO
 
-* /
+* /, i/o of CDQ? block/unblock?
+* code fragments: code, return value(s), predefined
+* separate assembler
+* coalesce variables
 * monkey patching? duplicate binding handler?
   #:replace, #:duplicates
-* separate assembler
-* linear-scan register allocator
+* linear-scan register allocator/block-wise coloring
 * better reporting in test suite (expect ... to be)
 * tensor operations
 * seq.int, arr.int, to-int, to-list
