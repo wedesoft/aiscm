@@ -554,7 +554,7 @@
          (result-regs  (map cons result-vars (list RAX)))
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
-         (prog         (flatten-code (relabel (append '() (apply proc vars)))))]
+         (prog         (flatten-code (relabel (apply proc vars))))]
     (register-allocate prog #:predefined predefined #:registers registers #:parameters arg-vars)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
