@@ -30,7 +30,7 @@
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
             collate wrap idle-live fetch-parameters spill-parameters
-            filter-blocks)
+            filter-blocks blocked-intervals)
   #:export-syntax (env blocked until for))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -590,3 +590,17 @@
     ((is-a? prog <block>) (filter-blocks (get-code prog)))
     ((list? prog)         (map filter-blocks prog))
     (else                 prog)))
+(define ((bump-interval offset) interval)
+  (cons (car interval) (cons (+ (cadr interval) offset) (+ (cddr interval) offset))))
+(define code-length (compose length flatten-code filter-blocks))
+(define (blocked-intervals prog)
+  (cond
+    ((is-a? prog <block>)
+     (cons (cons (get-reg prog) (cons 0 (1- (code-length (get-code prog)))))
+           (blocked-intervals (get-code prog))))
+    ((pair? prog)
+     (append (blocked-intervals (car prog))
+             (map (bump-interval (code-length (list (car prog))))
+                  (blocked-intervals (cdr prog)))))
+    (else
+     '())))
