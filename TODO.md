@@ -1,6 +1,6 @@
 # TODO
 
-* block/unblock? add live intervals?
+* (block EAX ...), extract blocked intervals before flattening code
 * /
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables

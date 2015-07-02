@@ -12,8 +12,8 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address>
-            asm obj resolve-jumps get-code get-bits ptr get-disp get-index get-target retarget
+  #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address> <block>
+            asm obj resolve-jumps get-code get-reg get-bits ptr get-disp get-index get-target retarget
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
@@ -30,7 +30,7 @@
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
             collate wrap idle-live fetch-parameters spill-parameters)
-  #:export-syntax (env until for))
+  #:export-syntax (env blocked until for))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -493,6 +493,7 @@
                       (if (and (list? x) (not (every integer? x)))
                         (flatten-code x)
                         (list x))) prog)))
+
 (define ((insert-temporary var) cmd)
   (let [(temporary (make <var> #:type (typecode var)))]
     (compact
@@ -505,6 +506,7 @@
   (substitute-variables
     (insert-temporaries var prog)
     (list (cons var location))))
+
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define ((spill-parameters parameters) colors)
@@ -526,7 +528,12 @@
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
             (list (RET)))))
-(define* (register-allocate prog #:key (predefined '()) (registers default-registers) (parameters '()) (offset -8))
+
+(define* (register-allocate prog
+                            #:key (predefined '())
+                                  (registers default-registers)
+                                  (parameters '())
+                                  (offset -8))
   (let* [(live       (live-analysis prog))
          (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
@@ -546,6 +553,7 @@
                            #:parameters parameters
                            #:offset (if stack-param? offset (- offset 8))))
       (save-and-use-registers prog colors parameters offset))))
+
 (define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
@@ -570,3 +578,9 @@
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 (define-syntax-rule (for [(index type) init condition step] body ...)
   (env [(index type)] init (until condition body ... step)))
+
+(define-class <block> ()
+  (reg #:init-keyword #:reg #:getter get-reg)
+  (code #:init-keyword #:code #:getter get-code))
+(define-syntax-rule (blocked reg body ...)
+  (make <block> #:reg reg #:code (list body ...)))
