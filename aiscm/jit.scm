@@ -29,7 +29,8 @@
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
-            collate wrap idle-live fetch-parameters spill-parameters)
+            collate wrap idle-live fetch-parameters spill-parameters
+            filter-blocks)
   #:export-syntax (env blocked until for))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -584,3 +585,8 @@
   (code #:init-keyword #:code #:getter get-code))
 (define-syntax-rule (blocked reg body ...)
   (make <block> #:reg reg #:code (list body ...)))
+(define (filter-blocks prog)
+  (cond
+    ((is-a? prog <block>) (filter-blocks (get-code prog)))
+    ((list? prog)         (map filter-blocks prog))
+    (else                 prog)))
