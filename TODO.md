@@ -1,10 +1,12 @@
 # TODO
 
-* (block EAX ...), extract blocked intervals before flattening code
 * /
+* spill predefined variable if blocked?
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables
 * separate assembler
+* RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
+  (e.g. (block EAX (MOV r x)) (RET))
 * monkey patching? duplicate binding handler?
   #:replace, #:duplicates
 * linear-scan register allocator/block-wise coloring
@@ -13,7 +15,6 @@
 * seq.int, arr.int, to-int, to-list
 * floating point numbers
 * minor, major (cmovge)
-* RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
 * RGB
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,

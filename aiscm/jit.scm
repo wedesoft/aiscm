@@ -532,6 +532,7 @@
 
 (define* (register-allocate prog
                             #:key (predefined '())
+                                  (blocked '())
                                   (registers default-registers)
                                   (parameters '())
                                   (offset -8))
@@ -539,7 +540,11 @@
          (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
          (intervals  (live-intervals live all-vars))
-         (colors     (color-intervals intervals vars registers #:predefined predefined))
+         (colors     (color-intervals intervals
+                                      vars
+                                      registers
+                                      #:predefined predefined
+                                      #:blocked blocked))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(participants ((overlap intervals) (car unassigned)))
@@ -550,6 +555,7 @@
                             (ptr (typecode var) RSP offset)))]
         (register-allocate (spill-variable var location prog)
                            #:predefined (assq-set predefined var location)
+                           #:blocked blocked
                            #:registers registers
                            #:parameters parameters
                            #:offset (if stack-param? offset (- offset 8))))
@@ -563,8 +569,14 @@
          (result-regs  (map cons result-vars (list RAX)))
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
-         (prog         (flatten-code (relabel (apply proc vars))))]
-    (register-allocate prog #:predefined predefined #:registers registers #:parameters arg-vars)))
+         (intermediate (apply proc vars))
+         (blocked      (blocked-intervals intermediate))
+         (prog         (flatten-code (relabel (filter-blocks intermediate))))]
+    (register-allocate prog
+                        #:predefined predefined
+                        #:blocked blocked
+                        #:registers registers
+                        #:parameters arg-vars)))
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
 (define (wrap ctx result-type arg-classes proc)
