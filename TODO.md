@@ -1,6 +1,6 @@
 # TODO
 
-* /
+* (+ (seq 10000000000000000000) (seq 9999999))
 * spill predefined variable if blocked?
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables

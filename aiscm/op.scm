@@ -12,7 +12,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (fill duplicate to-type ~ =0 !=0 ! != & | ^ && ||)
-  #:re-export (+ - * = < <= > >=))
+  #:re-export (+ - * / = < <= > >=))
 (define ctx (make <jit-context>))
 
 (define-method (dereference (self <var>)) self)
@@ -41,6 +41,20 @@
   (env [(r1 (typecode r))
         (r2 (typecode r))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (comb r1 r2) (MOV r r1))))
+
+(define (divide r a b)
+  (let* [(size (size-of (typecode r)))
+         (ax   (reg size 0))]
+    (blocked RAX
+      (MOV ax a)
+      (blocked RDX; TODO: not needed for byte division
+        (case size
+          ((1) (CBW))
+          ((2) (CWD))
+          ((4) (CDQ))
+          ((8) (CQO)))
+        (IDIV b)
+        (MOV r ax)))))
 
 (define (copy-op r_ a_)
   (env [(r (typecode r_))]
@@ -233,6 +247,7 @@
 (define-binary-op & (destructive-binary-op AND) coerce)
 (define-binary-op | (destructive-binary-op OR) coerce)
 (define-binary-op ^ (destructive-binary-op XOR) coerce)
+(define-binary-op / (copying-binary-op coerce divide) coerce)
 (define-binary-op = (copying-binary-op coerce (cmp-setcc SETE SETE)) (compose to-bool coerce))
 (define-binary-op != (copying-binary-op coerce (cmp-setcc SETNE SETNE)) (compose to-bool coerce))
 (define-binary-op < (copying-binary-op sign-space (cmp-setcc SETL SETB)) (compose to-bool coerce))
@@ -243,7 +258,6 @@
 (define-binary-op || (copying-binary-op coerce (test-booleans OR)) (compose to-bool coerce))
 
 ; TODO: binary operation ** (coercion-maxint)
-; TODO: binary operation /
 ; TODO: binary operation %
 ; TODO: binary operation fmod
 ; TODO: binary operation and (coercion-bool)

@@ -30,7 +30,7 @@
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
             collate wrap idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals)
+            filter-blocks blocked-intervals reg)
   #:export-syntax (env blocked until for))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
