@@ -1,29 +1,19 @@
-char test1(char a, char b)
+unsigned char test1(unsigned char *a, unsigned char *b)
 {
-  return a / b;
+  return *a / *b;
 }
 
-char test2(unsigned char a, char b)
+unsigned short int test2(unsigned short int *a, unsigned short int *b)
 {
-  return a / b;
+  return *a / *b;
 }
 
-unsigned char test3(unsigned char a, unsigned char b)
+unsigned int test3(unsigned int *a, unsigned int *b)
 {
-  return a / b;
+  return *a / *b;
 }
 
-short int test4(short int a, short int b)
+unsigned long int test4(unsigned long int *a, unsigned long int *b)
 {
-  return a / b;
-}
-
-int test5(int a, int b)
-{
-  return a / b;
-}
-
-long test6(long a, long b)
-{
-  return a / b;
+  return *a / *b;
 }

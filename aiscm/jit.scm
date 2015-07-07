@@ -14,7 +14,7 @@
   #:use-module (aiscm sequence)
   #:export (<jit-context> <jit-function> <jcc> <cmd> <var> <ptr> <operand> <register> <address> <block>
             asm obj resolve-jumps get-code get-reg get-bits ptr get-disp get-index get-target retarget
-            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV DIV
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -368,6 +368,10 @@
 (define-method (IDIV arg) (make <cmd> #:op IDIV #:io (list arg)))
 (define-method (IDIV (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 7 r/m)))
+
+(define-method (DIV arg) (make <cmd> #:op DIV #:io (list arg)))
+(define-method (DIV (r/m <operand>))
+  (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 6 r/m)))
 
 (define-method (AND arg1 arg2) (make <cmd> #:op AND #:io (list arg1) #:in (list arg2)))
 (define-method (AND (m <address>) (r <register>))

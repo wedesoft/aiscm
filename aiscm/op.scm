@@ -44,17 +44,33 @@
 
 (define (divide r a b)
   (let* [(size (size-of (typecode r)))
-         (ax   (reg size 0))]
+         (ax   (reg size 0))
+         (dx   (reg size 2))]
     (blocked RAX
-      (MOV ax a)
-      (blocked RDX; TODO: not needed for byte division
-        (case size
-          ((1) (CBW))
-          ((2) (CWD))
-          ((4) (CDQ))
-          ((8) (CQO)))
-        (IDIV b)
-        (MOV r ax)))))
+      (if (signed? (typecode r))
+        (if (= size 1)
+          (list
+            (MOV AL a)
+            (CBW)
+            (IDIV b)
+            (MOV r AL))
+          (list
+            (MOV ax a)
+            (blocked RDX
+              (case size ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))
+              (IDIV b)
+              (MOV r ax))))
+        (if (= size 1)
+          (list
+            (MOVZX AX a)
+            (DIV b)
+            (MOV r AL))
+          (list
+            (MOV ax a)
+            (blocked RDX
+              (MOV dx 0)
+              (DIV b)
+              (MOV r ax))))))))
 
 (define (copy-op r_ a_)
   (env [(r (typecode r_))]
