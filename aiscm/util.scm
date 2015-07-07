@@ -9,7 +9,7 @@
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
-            first-index last-index compact)
+            first-index last-index compact index-groups update-intervals)
   #:export-syntax (def-once expand))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -107,3 +107,14 @@
       (if idx (1+ idx)
         (if (pred (car lst)) 0 #f)))))
 (define (compact . args) (filter identity args))
+(define (index-groups lst)
+  (let* [(length-list       (map length lst))
+         (integrated-length (integral length-list))
+         (start-points      (cons 0 (all-but-last integrated-length)))
+         (end-points        (map 1- integrated-length))]
+    (map cons start-points end-points)))
+(define (update-intervals intervals groups)
+  (map (lambda (pair)
+         (cons (car pair)
+               (cons (car (list-ref groups (cadr pair)))
+                     (cdr (list-ref groups (cddr pair)))))) intervals))

@@ -501,12 +501,8 @@
       (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
       (and (memv var (output cmd)) (MOV var temporary)))))
-(define (insert-temporaries var prog)
-  (concatenate (map (insert-temporary var) prog)))
 (define (spill-variable var location prog)
-  (substitute-variables
-    (insert-temporaries var prog)
-    (list (cons var location))))
+  (substitute-variables (map (insert-temporary var) prog) (list (cons var location))))
 
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
@@ -552,10 +548,11 @@
              (stack-param? (and (index var parameters) (<= 6 (index var parameters))))
              (location     (if stack-param?
                              (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
-                            (ptr (typecode var) RSP offset)))]
-        (register-allocate (spill-variable var location prog)
+                            (ptr (typecode var) RSP offset)))
+             (spill-code   (spill-variable var location prog))]
+        (register-allocate (flatten-code spill-code)
                            #:predefined (assq-set predefined var location)
-                           #:blocked blocked
+                           #:blocked (update-intervals blocked (index-groups spill-code))
                            #:registers registers
                            #:parameters parameters
                            #:offset (if stack-param? offset (- offset 8))))

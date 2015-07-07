@@ -997,7 +997,7 @@
                                     (list (MOV r 0) (JMP 'a) (list 'a (MOV r 2)) 'a (ADD r 3) (RET))))))
     "'wrap' creates separate namespaces for labels")
 (ok (equal? (list (MOV EAX 42) 'x (RET))
-            (spill-variable a (ptr <int> RSP -8) (list (MOV EAX 42) 'x (RET))))
+            (flatten-code (spill-variable a (ptr <int> RSP -8) (list (MOV EAX 42) 'x (RET)))))
     "Variable spilling ignores machine code and labels ")
 (ok (equal? (list (MOV EAX 0) (MOV (ptr <int> RSP -8) EAX) (RET))
             (virtual-registers <null> '() (lambda () (spill-variable a (ptr <int> RSP -8) (list (MOV a 0) (RET))))))

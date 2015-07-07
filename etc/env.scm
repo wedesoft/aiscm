@@ -17,9 +17,10 @@
 (define c (make <var> #:type <int> #:symbol 'c))
 
 (define prog (list (MOV a 0) (NOP) (MOV b a) (RET)))
-(define live (live-analysis prog))
-(define intervals (live-intervals live (variables prog)))
-(assq-remove intervals a)
+(define l (live-intervals (live-analysis prog) (variables prog)))
+(define s (spill-variable a (ptr <int> RSP 8) prog))
+(update-intervals l (index-groups s))
+(length (flatten-code s))
 
 (use-modules (oop goops))
 (define-class <x> ())
