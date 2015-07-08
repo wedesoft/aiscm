@@ -1,20 +1,18 @@
 # TODO
 
-* (+ (seq 10000000000000000000) (seq 9999999))
-* floating point exception
+* separate assembler
+* floating point numbers
+* tensor operations
+
+* update live intervals instead of recomputing
 * spill predefined variable if blocked?
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables
-* separate assembler
-* RET keeps return value and callee-saved stuff alive (EAX is predefined variable?)
-  (e.g. (block EAX (MOV r x)) (RET))
-* monkey patching? duplicate binding handler?
-  #:replace, #:duplicates
+* RET keeps return value and callee-saved stuff alive
+* floating point exception (SIGFPE)
 * linear-scan register allocator/block-wise coloring
 * better reporting in test suite (expect ... to be)
-* tensor operations
 * seq.int, arr.int, to-int, to-list
-* floating point numbers
 * minor, major (cmovge)
 * RGB
 * matching for lists?

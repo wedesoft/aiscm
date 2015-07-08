@@ -24,6 +24,15 @@
 
 (use-modules (oop goops))
 (define-class <x> ())
+(define-method (test (x <x>)) 'test)
+
+(class-slots <x>)
+(define m (car (generic-function-methods test)))
+((method-procedure m) x)
+(slot-ref test 'methods)
+;(sort-applicable-methods test (compute-applicable-methods test (list x)) (list x))
+(equal? (map class-of (list x)) (method-specializers m))
 (define x (make <x>))
-(define-method (- (x <x>)) (list '- x))
-(define-method (+ (x <x>)) (list '+ x))
+(test x)
+(define-method (test (x <x>)) 'test2)
+(test x)
