@@ -31,8 +31,9 @@
 (define (movx a b)
   ((if (= (size-of (typecode a)) (size-of (typecode b)))
        MOV
-       (if (signed? (typecode b)) MOVSX MOVZX))
-   a b))
+       (if (signed? (typecode b))
+           MOVSX
+           (if (>= (size-of (typecode b)) 4) MOV MOVZX))) a b))
 
 (define ((cmp-setcc setcc-signed setcc-unsigned) r a b)
   (list (CMP a b) ((if (or (signed? (typecode a)) (signed? (typecode b))) setcc-signed setcc-unsigned) r)))
