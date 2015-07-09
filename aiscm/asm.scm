@@ -47,7 +47,7 @@
 (define (reg-list bytes lst)
   (map (lambda (sym code) (make <register> #:bits (ash bytes 3) #:code code #:symbol sym)) lst (iota #x10)))
 (define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) register-symbols))
-(define (reg size code) (list-ref (assq-ref regs size) code)); TODO: test this
+(define (reg size code) (list-ref (assq-ref regs size) code))
 (for-each
   (lambda (pair)
     (for-each
