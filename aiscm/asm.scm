@@ -24,7 +24,7 @@
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
-            get-code8 get-code32)); TODO: need to export this?
+            conditional?))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -300,6 +300,7 @@
 (define-method (instruction-length (self <list>)) (length self))
 (define-method (Jcc target code8 code32)
   (make <jcc> #:target target #:code8 code8 #:code32 code32))
+(define (conditional? self) (not (= #xeb (get-code8 self))))
 (define-method (Jcc (target <integer>) code8 code32)
   (append (if (disp8? target) (list code8) code32) (raw target (if (disp8? target) 8 32))))
 (define (retarget jcc target) (Jcc target (get-code8 jcc) (get-code32 jcc)))

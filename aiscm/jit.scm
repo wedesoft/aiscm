@@ -116,7 +116,7 @@
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
-    (if (eq? #xeb (get-code8 cmd)) (list target) (list (1+ k) target))))
+    (if (conditional? cmd) (list (1+ k) target) (list target))))
 (define (live-analysis prog)
   (letrec* [(inputs    (map input prog))
             (outputs   (map output prog))
