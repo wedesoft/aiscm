@@ -2,7 +2,7 @@ SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
 site_SCRIPTS = mem.scm element.scm bool.scm int.scm pointer.scm sequence.scm \
-	op.scm jit.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
+	asm.scm jit.scm op.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-image.la libguile-v4l2.la libguile-xorg.la

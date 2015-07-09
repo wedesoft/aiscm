@@ -1,9 +1,7 @@
 # TODO
 
-* separate assembler
 * floating point numbers
 * tensor operations
-
 * update live intervals instead of recomputing
 * spill predefined variable if blocked?
 * code fragments: code, return value(s), predefined (i/o of CDQ? RET?)

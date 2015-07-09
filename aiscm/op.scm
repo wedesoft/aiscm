@@ -4,6 +4,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
+  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
