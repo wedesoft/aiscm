@@ -7,10 +7,40 @@ which supports calling foreign functions with up to 127 arguments.
 
 ## Installation
 
-You can install AIscm from an archive as follows:
+### With binaries
+
+There are [64-bit binaries for Debian Jessie][2].
+
+To install the software, you have to add the AIscm repository to your list of repositories and install via apt-get. To do this, paste the following lines into your terminal:
+
+```
+echo 'deb http://download.opensuse.org/repositories/home:/wedesoft/Debian_8.0/ /' | sudo tee /etc/apt/sources.list.d/aiscm.list 
+wget -qO- http://download.opensuse.org/repositories/home:wedesoft/Debian_8.0/Release.key | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install aiscm
+```
+
+### Compile from source
+
+#### Install dependencies
+
+First you need to install the dependencies:
+
+```
+sudo apt-get install guile-2.0-dev linux-libc-dev libmjpegtools-dev xorg-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
+```
+
+#### Get the source code
+
+You need to download the source package:
 
 ```
 wget https://github.com/wedesoft/aiscm/releases/download/v@VERSION@/aiscm-@VERSION@.tar.xz
+```
+
+#### Build AIscm
+
+```
 tar xf aiscm-@VERSION@.tar.xz
 cd aiscm-@VERSION@
 ./configure
@@ -27,3 +57,4 @@ make check
 ```
 
 [1]: http://www.gnu.org/software/guile/
+[2]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm

@@ -1,10 +1,16 @@
 # TODO
 
+## Ready
+
+* tensor operations (code fragments: code, return value(s), predefined (i/o of CDQ? RET?))
+* rename write (for window) -> show?
 * floating point numbers
-* tensor operations
+* Scheme objects
+
+## Planned
+
 * update live intervals instead of recomputing
 * spill predefined variable if blocked?
-* code fragments: code, return value(s), predefined (i/o of CDQ? RET?)
 * coalesce variables
 * RET keeps return value and callee-saved stuff alive
 * floating point exception (SIGFPE)

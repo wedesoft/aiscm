@@ -18,8 +18,6 @@
             filter-blocks blocked-intervals)
   #:export-syntax (env blocked until for))
 
-
-
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
