@@ -7,7 +7,7 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit=
-            show hide title= resize write IO-XIMAGE IO-OPENGL IO-XVIDEO))
+            show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO))
 (load-extension "libguile-xorg" "init_xorg")
 (define-class <meta<xdisplay>> (<class>))
 (define-class <xdisplay> ()
@@ -58,6 +58,5 @@
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
 (define-method (resize (self <xwindow>) (shape <list>))
   (window-resize (get-window self) (car shape) (cadr shape)))
-; TOOD: rename write
-(define-method (write (self <xwindow>) (image <image>))
+(define-method (show (self <xwindow>) (image <image>))
   (window-write (get-window self) image))

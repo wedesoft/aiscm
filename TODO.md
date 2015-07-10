@@ -3,7 +3,6 @@
 ## Ready
 
 * tensor operations (code fragments: code, return value(s), predefined (i/o of CDQ? RET?))
-* rename write (for window) -> show?
 * floating point numbers
 * Scheme objects
 

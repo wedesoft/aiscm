@@ -67,7 +67,7 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 (define w (make <xwindow> #:display d #:shape '(640 480) #:io IO-XVIDEO))
 (title= w "Test")
 (show w)
-(do () ((quit? d)) (write w (grab v)) (process-events d))
+(do () ((quit? d)) (show w (grab v)) (process-events d))
 (quit= d #f)
 (hide w)
 (destroy d)
