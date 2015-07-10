@@ -100,7 +100,7 @@
 (define-method (XOR arg1 arg2) (make <cmd> #:op XOR #:io (list arg1) #:in (list arg2)))
 (define-method (CMP arg1 arg2) (make <cmd> #:op CMP #:in (list arg1 arg2)))
 (define-method (TEST arg1 arg2) (make <cmd> #:op TEST #:in (list arg1 arg2)))
-(define-method (SETB   arg) (make <cmd> #:op SETB   #:out (list arg))); TODO: test this
+(define-method (SETB   arg) (make <cmd> #:op SETB   #:out (list arg)))
 (define-method (SETNB  arg) (make <cmd> #:op SETNB  #:out (list arg)))
 (define-method (SETE   arg) (make <cmd> #:op SETE   #:out (list arg)))
 (define-method (SETNE  arg) (make <cmd> #:op SETNE  #:out (list arg)))

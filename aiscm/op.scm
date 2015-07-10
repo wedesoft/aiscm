@@ -269,7 +269,7 @@
 (define-binary-op = (copying-binary-op coerce (cmp-setcc SETE SETE)) (compose to-bool coerce))
 (define-binary-op != (copying-binary-op coerce (cmp-setcc SETNE SETNE)) (compose to-bool coerce))
 (define-binary-op < (copying-binary-op sign-space (cmp-setcc SETL SETB)) (compose to-bool coerce))
-(define-binary-op <= (copying-binary-op sign-space (cmp-setcc SETLE SETBE)) (compose to-bool coerce)); TODO: int32+ (with test)
+(define-binary-op <= (copying-binary-op sign-space (cmp-setcc SETLE SETBE)) (compose to-bool coerce))
 (define-binary-op > (copying-binary-op sign-space (cmp-setcc SETNLE SETNBE)) (compose to-bool coerce))
 (define-binary-op >= (copying-binary-op sign-space (cmp-setcc SETNL SETNB)) (compose to-bool coerce))
 (define-binary-op && (copying-binary-op coerce (test-booleans AND)) (compose to-bool coerce))
