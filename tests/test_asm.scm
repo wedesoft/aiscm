@@ -6,7 +6,7 @@
              (aiscm pointer)
              (guile-tap))
 (planned-tests 320)
-(define ctx (make <jit-context>))
+(define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))

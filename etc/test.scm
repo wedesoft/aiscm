@@ -7,7 +7,7 @@
 ;(use-modules (aiscm int))
 ;(use-modules (aiscm jit))
 ;(use-modules (system foreign))
-;(define c (make <jit-context>))
+;(define c (make <context>))
 
 ;(define-method (+ (a <int>) (b <int>))
 ;  (let ((f (asm c int (list (MOV EAX EDI) (ADD EAX ESI) (RET)) int int)))

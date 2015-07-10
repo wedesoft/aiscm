@@ -8,7 +8,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
-  #:export (<jit-context> <jit-function> <operand> <register> <address> <jcc>
+  #:export (<context> <jit-function> <operand> <register> <address> <jcc>
             reg get-code get-bits
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
@@ -28,7 +28,7 @@
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
-(define-class <jit-context> () (binaries #:init-value '())); TODO: rename
+(define-class <context> () (binaries #:init-value '()))
 
 (define-class <operand> ())
 

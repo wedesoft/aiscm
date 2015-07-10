@@ -14,7 +14,7 @@
   #:use-module (aiscm sequence)
   #:export (fill duplicate to-type ~ =0 !=0 ! != & | ^ && ||)
   #:re-export (+ - * / = < <= > >=))
-(define ctx (make <jit-context>))
+(define ctx (make <context>))
 
 (define-method (dereference (self <var>)) self)
 (define-method (dereference (self <pointer<>>)) (ptr (typecode self) (get-value self)))
