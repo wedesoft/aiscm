@@ -11,5 +11,6 @@ Architecture: amd64
 Depends: guile-2.0 (>= 2.0.9), liblavjpeg-2.1-0, libx11-6, libxext6, libxv1, libxmu6, libxi6, libglu1-mesa | libglu1, libgl1-mesa-glx | libgl1, libswscale3, ${shlibs:Depends}, ${misc:Depends}
 Pre-Depends: ${misc:Pre-Depends}
 Description: Guile computer vision extension
- AIscm is a real-time computer vision extension for the Guile programming language.
- Performance in Scheme is achieved by means of a JIT compiler.
+ AIscm is a real-time computer vision extension for the
+ Guile programming language. Performance in Scheme is
+ achieved by means of a JIT compiler.

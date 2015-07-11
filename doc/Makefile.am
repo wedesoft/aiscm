@@ -1,7 +1,7 @@
-doc_DATA = index.html installation.html assembler.html io.html jit.html \
+doc_DATA = index.html installation.html assembler.html io.html \
 					 aiscm.gif construction.gif
 
-EXTRA_DIST = index.md.in installation.md.in assembler.md io.md jit.md construction.gif aiscm.gif
+EXTRA_DIST = index.md.in installation.md.in assembler.md io.md construction.gif aiscm.gif
 
 CLEANFILES = *~ *.html
 

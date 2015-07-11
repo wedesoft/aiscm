@@ -6,7 +6,6 @@ which is a real-time computer vision extension for the Guile programming languag
 
 * [Getting started](installation.html "Getting started")
 * [Built-in assembler](assembler.html "Built-in assembler")
-* [Just-in-time compilation](jit.html "Just-in-time compilation")
 * [Input/output](io.html "Input/output")
 
 ![Under construction](construction.gif "Under construction")

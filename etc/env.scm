@@ -12,6 +12,14 @@
              (aiscm op)
              (aiscm int))
 
+
+; return value, code, predefined
+
+(define-class <fragment> ()
+  (code #:init-keyword #:code #:getter get-code)
+)
+
+
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
@@ -25,6 +33,19 @@
 (use-modules (oop goops))
 (define-class <x> ())
 (define-method (test (x <x>)) 'test)
+
+(make-array 0 2 3)
+(make-typed-array 'u8 0 2 3)
+#vu8(1 2 3)
+#2((1 2 3) (4 5 6))
+
+#2u32((1 2 3) (4 5 6))
+(define m #2s8((1 -2 3) (4 5 6)))
+(array-ref m 1 0)
+(array-shape m)
+(array-dimensions m)
+(array-rank m)
+(array->list m)
 
 (class-slots <x>)
 (define m (car (generic-function-methods test)))
