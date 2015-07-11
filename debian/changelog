@@ -1,3 +1,12 @@
+aiscm (0.1.8-1) UNRELEASED; urgency=low
+
+  * IDIV and DIV using blocked registers
+  * Shortcuts 'seq' and 'arr'
+  * Boolean operations for arrays
+  * Added benchmark
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 11 Jul 2015 21:21:00 +0100
+
 aiscm (0.1.7-1) UNRELEASED; urgency=low
 
   * Packaging new version
