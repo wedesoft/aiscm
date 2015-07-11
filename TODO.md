@@ -3,14 +3,15 @@
 ## Ready
 
 * tensor operations (code fragments: code, return value(s), predefined)
-* RGB
 * floating point numbers
+* RGB
 * Scheme objects
 * RET keeps return value and callee-saved stuff alive
 * update live intervals instead of recomputing
 
 ## Planned
 
+* faster loading and storing of integers
 * seq.int, arr.int, to-int
 * <-> Guile 6.7.5 Arrays
 * spill predefined variable if blocked? spill into register?

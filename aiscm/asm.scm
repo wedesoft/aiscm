@@ -75,7 +75,7 @@
 
 (define-method (raw (imm <boolean>) (bits <integer>)) '())
 (define-method (raw (imm <integer>) (bits <integer>))
-  (bytevector->u8-list (pack (make (integer bits unsigned) #:value imm))))
+  (bytevector->u8-list (pack (make (integer bits (if (negative? imm) signed unsigned)) #:value imm))))
 (define-method (raw (imm <mem>) (bits <integer>))
   (raw (pointer-address (get-memory imm)) bits))
 

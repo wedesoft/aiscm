@@ -108,7 +108,7 @@
     (let* [(text      (call-with-output-string (cut display (get-value (fetch (project self))) <>)))
            (remaining (- width (string-length text) 1))]
       (display (if first "(" infix) port)
-      (if (> remaining 0)
+      (if (positive? remaining)
         (begin
           (display text port)
           (print-columns (dump 1 self) #f infix (1- count) remaining port))
@@ -119,7 +119,7 @@
   (if (zero? count)
     (begin
       (if first (display "(" port))
-      (if (> height 0) (display ")" port))
+      (if (positive? height) (display ")" port))
       height)
     (if (> height 0)
       (begin

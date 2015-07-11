@@ -22,7 +22,7 @@
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
-    (if (< offset 0)
+    (if (negative? offset)
       (scm-error 'out-of-range
                  '+
                  "Offset not be lower than zero but was ~a"

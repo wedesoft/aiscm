@@ -59,27 +59,16 @@
 (define-method (foreign-type (t   <meta<int<32,signed>>>))  int32)
 (define-method (foreign-type (t <meta<int<64,unsigned>>>)) uint64)
 (define-method (foreign-type (t   <meta<int<64,signed>>>))  int64)
-(define (int->u8-list i n)
-  (if (> n 0)
-    (cons (logand #xff i) (int->u8-list (ash i -8) (1- n)))
-    '()))
-(define (u8-list->int lst)
-  (if (null? lst)
-    #x00
-    (logior (car lst) (ash (u8-list->int (cdr lst)) 8))))
-(define-method (raw-negative (self <int<>>))
-  (make (class-of self)
-        #:value (- (get-value self) (expt 2 (bits (class-of self))))))
 (define-method (pack (self <int<>>))
-  (u8-list->bytevector
-    (int->u8-list
-      (get-value self)
-      (size-of (class-of self)))))
+  (let* [(typecode (class-of self))
+         (retval   (make-bytevector (size-of typecode)))
+         (setter   (if (signed? typecode) bytevector-sint-set! bytevector-uint-set!))]
+    (setter retval 0 (get-value self) (endianness little) (size-of typecode))
+    retval))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
-  (let [(value (u8-list->int (bytevector->u8-list packed)))]
-    (if (and (signed? self) (>= value (expt 2 (1- (bits self)))))
-      (raw-negative (make self #:value value))
-      (make self #:value value))))
+  (let* [(ref   (if (signed? self) bytevector-sint-ref bytevector-uint-ref))
+         (value (ref packed 0 (endianness little) (size-of self)))]
+    (make self #:value value)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   (integer (max (bits a) (bits b)) (if (or (signed? a) (signed? b)) signed unsigned)))
 (define-method (match (i <integer>) . args)
