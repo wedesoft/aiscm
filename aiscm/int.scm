@@ -23,19 +23,20 @@
 (define unsigned 'unsigned)
 (define-class <meta<int<>>> (<meta<element>>))
 (define-class <int<>> (<element>)
-              #:metaclass <meta<int<>>>) (define-generic bits)
+              #:metaclass <meta<int<>>>)
 (define-method (write (self <int<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic signed?)
+(define-generic bits)
 (define (integer nbits sgn)
-  (let* [(name (format #f "<int<~a,~a>>" nbits sgn))
-         (metaname (format #f "<meta~a>" name))
+  (let* [(name      (format #f "<int<~a,~a>>" nbits sgn))
+         (metaname  (format #f "<meta~a>" name))
          (metaclass (def-once metaname (make <class>
                                              #:dsupers (list <meta<int<>>>)
                                              #:name metaname)))
-         (retval (def-once name (make metaclass
-                                      #:dsupers (list <int<>>)
-                                      #:name name)))]
+         (retval    (def-once name (make metaclass
+                                         #:dsupers (list <int<>>)
+                                         #:name name)))]
     (define-method (bits (self metaclass)) nbits)
     (define-method (signed? (self metaclass)) (eq? sgn 'signed))
     retval))
