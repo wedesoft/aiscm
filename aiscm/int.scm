@@ -64,11 +64,11 @@
   (let* [(typecode (class-of self))
          (retval   (make-bytevector (size-of typecode)))
          (setter   (if (signed? typecode) bytevector-sint-set! bytevector-uint-set!))]
-    (setter retval 0 (get-value self) (endianness little) (size-of typecode))
+    (setter retval 0 (get-value self) (native-endianness) (size-of typecode))
     retval))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
   (let* [(ref   (if (signed? self) bytevector-sint-ref bytevector-uint-ref))
-         (value (ref packed 0 (endianness little) (size-of self)))]
+         (value (ref packed 0 (native-endianness) (size-of self)))]
     (make self #:value value)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   (integer (max (bits a) (bits b)) (if (or (signed? a) (signed? b)) signed unsigned)))

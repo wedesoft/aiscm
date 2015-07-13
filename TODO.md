@@ -5,6 +5,8 @@
 * tensor operations (code fragments: code, return value(s), predefined)
 * floating point numbers
 * RGB
+* autoreconf -i?
+* red-cyan, 3d display (bino, libglewmx, libavdevice)
 * Scheme objects
 * RET keeps return value and callee-saved stuff alive
 * update live intervals instead of recomputing
