@@ -4,6 +4,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm element)
+  #:use-module (aiscm float)
   #:use-module (aiscm util)
   #:export (signed
             unsigned
@@ -73,6 +74,8 @@
     (make self #:value value)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   (integer (max (bits a) (bits b)) (if (or (signed? a) (signed? b)) signed unsigned)))
+(define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>)) b)
+(define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>)) a)
 (define-method (match (i <integer>) . args)
   (if (every integer? args)
     (let [(lower (apply min (cons i args)))

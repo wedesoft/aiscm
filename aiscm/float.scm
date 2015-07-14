@@ -46,6 +46,8 @@
   (let* [(ref   (if (double? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))
          (value (ref packed 0))]
     (make self #:value value)))
+(define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
+  (floating-point (if (or (double? a) (double? b)) double-precision single-precision)))
 (define-method (match (i <real>) . args) <double>)
 (define-method (types (self <meta<float<>>>)) (list self))
 (define-method (content (self <real>)) (list self))
