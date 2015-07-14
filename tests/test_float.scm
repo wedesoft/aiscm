@@ -1,8 +1,9 @@
 (use-modules (oop goops)
              (aiscm element)
              (aiscm float)
+             (aiscm jit)
              (guile-tap))
-(planned-tests 13)
+(planned-tests 19)
 (ok (equal? (float single) (float single))
     "equality of classes")
 (ok (eq? single (precision (float single)))
@@ -32,10 +33,18 @@
 (ok (equal? (make <double> #:value 3.14) (unpack <double> #vu8(#x1f #x85 #xeb #x51 #xb8 #x1e #x09 #x40)))
     "unpack double-precision floating point number")
 ; TODO: coerce
-; TODO: equal
+; TODO: foreign-type
 ; TODO: match
-; TODO: set
-; TODO: get
-; TODO: types
-; TODO: content
-; TODO: param
+(ok (eqv? 1.25 (get (make <float> #:value 1.25)))
+    "get value of floating point number")
+(ok (eqv? 1.25 (let [(i (make <float> #:value 0))] (set i 1.25) (get-value i)))
+    "set value of floating point number")
+(ok (eqv? 1.25 (set (make <float> #:value 0) 1.25))
+    "return-value of setting floating point number")
+(ok (equal? (list <float>) (types <float>))
+    "'types' returns the type itself")
+(ok (equal? '(1.25) (content 1.25))
+    "'content' returns floating point values")
+(ok (let [(v (make <var> #:type <float> #:symbol 'v))]
+      (equal? v (param <float> (list v))))
+    "'param' passes floating point variables through")

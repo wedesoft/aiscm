@@ -43,3 +43,5 @@
   (let* [(ref   (if (double? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))
          (value (ref packed 0))]
     (make self #:value value)))
+(define-method (types (self <meta<float<>>>)) (list self))
+(define-method (content (self <real>)) (list self))
