@@ -203,15 +203,15 @@
     (store retval value)
     retval))
 
-(define-method (to-type (self <meta<sequence<>>>) (target <meta<element>>))
+(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimension self)))
-(define-method (to-type (self <sequence<>>) (target <meta<int<>>>))
-  (let* [(result-type (to-type (class-of self) target))
+(define-method (to-type (target <meta<int<>>>) (self <sequence<>>))
+  (let* [(result-type (to-type target (class-of self)))
          (proc
            (cond ((equal? (typecode self) target)
-                  (lambda (self target) self))
+                  (lambda (target self) self))
                  ((= (size-of (typecode self)) (size-of target))
-                  (lambda (self target)
+                  (lambda (target self)
                     (make result-type
                           #:shape (shape self)
                           #:strides (strides self)
@@ -220,12 +220,12 @@
                   (let [(fun (wrap ctx <null>
                                    (list result-type (class-of self))
                                    (lambda (r_ a_) (list (unary-op r_ a_ copy-op) (RET)))))]
-                    (lambda (self target)
+                    (lambda (target self)
                       (let [(r (make result-type #:shape (shape self)))]
                         (fun r self)
                         r))))
                  (else
-                  (lambda (self target)
+                  (lambda (target self)
                     (make result-type
                           #:shape (shape self)
                           #:strides (map (cut * (/ (size-of (typecode self))
@@ -234,11 +234,11 @@
                           #:value (get-value self))))))]
     (add-method! to-type
                  (make <method>
-                       #:specializers (list (class-of self) (class-of target))
+                       #:specializers (list (class-of target) (class-of self))
                        #:procedure proc))
-    (to-type self target)))
+    (to-type target self)))
 
-(define to-bool (cut to-type <> <bool>))
+(define to-bool (cut to-type <bool> <>))
 (define (sign-space a b)
   (let [(t (coerce a b))]
   (if (eq? (signed? (typecode a)) (signed? (typecode b)))

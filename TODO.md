@@ -2,10 +2,11 @@
 
 ## Ready
 
-* tensor operations (code fragments: code, return value(s), predefined)
-* floating point numbers
+* map, tensor operations (code fragments: code, return value(s), predefined)
+    (tensor [i j]) (* (s i) (s j)))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * RGB
-* autoreconf -i?
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * Scheme objects
 * RET keeps return value and callee-saved stuff alive
@@ -14,7 +15,6 @@
 ## Planned
 
 * faster loading and storing of integers
-* seq.int, arr.int, to-int
 * <-> Guile 6.7.5 Arrays
 * spill predefined variable if blocked? spill into register?
 * coalesce variables

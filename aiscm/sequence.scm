@@ -90,15 +90,16 @@
   (map (compose to-list (cut get self <>)) (iota (last (shape self)))))
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (attach (shape (car self)) (length self)))
-(define-method (to-array (lst <list>))
-  (let* [(type   (apply match (flatten lst)))
-         (shape  (shape lst))
-         (retval (make (multiarray type (length shape)) #:shape shape))]
+(define-method (to-array (lst <list>)) (to-array (apply match (flatten lst)) lst))
+(define-method (to-array (typecode <meta<element>>) (lst <list>))
+  (let* [(shape  (shape lst))
+         (retval (make (multiarray typecode (length shape)) #:shape shape))]
     (store retval lst)
     retval))
-
-(define-syntax-rule (seq args ...) (to-array (list args ...)))
-(define-syntax-rule (arr args ...) (to-array '(args ...)))
+(define-syntax-rule (seq arg1 args ...)
+  (if (is-a? arg1 <meta<element>>) (to-array arg1 (list args ...)) (to-array (list arg1 args ...))))
+(define-syntax-rule (arr arg1 args ...)
+  (if (is-a? (quote arg1) <symbol>) (to-array arg1 '(args ...)) (to-array '(arg1 args ...))))
 
 (define (print-columns self first infix count width port)
   (if (zero? count)
