@@ -3,7 +3,7 @@
 ## Ready
 
 * map, tensor operations (code fragments: code, return value(s), predefined)
-    (tensor [i j]) (* (s i) (s j)))
+    (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * RGB
