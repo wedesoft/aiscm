@@ -9,7 +9,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:export (<context> <jit-function> <operand> <register> <address> <jcc>
-            reg get-code get-bits
+            reg get-code get-bits xmm
             AL CL DL BL SPL BPL SIL DIL
             R8L R9L R10L R11L R12L R13L R14L R15L
             AX CX DX BX SP BP SI DI
@@ -18,6 +18,8 @@
             R8D R9D R10D R11D R12D R13D R14D R15D
             RAX RCX RDX RBX RSP RBP RSI RDI
             R8 R9 R10 R11 R12 R13 R14 R15
+            XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7
+            XMM8 XMM9 XMM10 XMM11 XMM12 XMM13 XMM14 XMM15
             resolve-jumps get-target retarget
             asm obj ptr get-reg get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV DIV
@@ -37,22 +39,30 @@
   (code   #:init-keyword #:code #:getter get-code)
   (symbol #:init-keyword #:symbol))
 (define-method (write (self <register>) port) (format port "~a" (slot-ref self 'symbol)))
-
-(define register-symbols
+(define reg-symbols
   '((1 AL  CL  DL  BL  SPL BPL SIL DIL R8L R9L R10L R11L R12L R13L R14L R15L)
     (2 AX  CX  DX  BX  SP  BP  SI  DI  R8W R9W R10W R11W R12W R13W R14W R15W)
     (4 EAX ECX EDX EBX ESP EBP ESI EDI R8D R9D R10D R11D R12D R13D R14D R15D)
     (8 RAX RCX RDX RBX RSP RBP RSI RDI R8  R9  R10  R11  R12  R13  R14  R15)))
-
 (define (reg-list bytes lst)
   (map (lambda (sym code) (make <register> #:bits (ash bytes 3) #:code code #:symbol sym)) lst (iota #x10)))
-(define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) register-symbols))
+(define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) reg-symbols))
 (define (reg size code) (list-ref (assq-ref regs size) code))
 (for-each
   (lambda (pair)
     (for-each
       (lambda (sym code) (toplevel-define! sym (reg (car pair) code))) (cdr pair) (iota #x10)))
-  register-symbols)
+  reg-symbols)
+
+(define-class <xmm> (<operand>)
+  (code   #:init-keyword #:code #:getter get-code)
+  (symbol #:init-keyword #:symbol))
+(define-method (write (self <xmm>) port) (format port "~a" (slot-ref self 'symbol)))
+(define xmm-symbols
+  '(XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7 XMM8 XMM9 XMM10 XMM11 XMM12 XMM13 XMM14 XMM15))
+(define xmms (map (lambda (sym code) (make <xmm> #:code code #:symbol sym)) xmm-symbols (iota #x10)))
+(define (xmm code) (list-ref xmms code))
+(for-each (lambda (sym code) (toplevel-define! sym (xmm code))) xmm-symbols (iota #x10))
 
 (define-class <address> (<operand>)
   (type  #:init-keyword #:type  #:getter get-type)
