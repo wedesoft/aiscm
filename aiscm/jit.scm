@@ -13,8 +13,9 @@
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers
-            spill-variable save-and-use-registers register-allocate virtual-registers flatten-code relabel
-            collate wrap idle-live fetch-parameters spill-parameters
+            spill-variable save-and-use-registers register-allocate
+            pass-parameter-variables virtual-variables flatten-code relabel
+            collate compile idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals)
   #:export-syntax (env blocked until for))
 
@@ -217,29 +218,33 @@
                            #:offset (if stack-param? offset (- offset 8))))
       (save-and-use-registers prog colors parameters offset))))
 
-(define* (virtual-registers result-type arg-types proc #:key (registers default-registers))
-  (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
-         (arg-vars     (map (cut make <var> #:type <>) arg-types))
-         (result-vars  (map (cut make <var> #:type <>) result-types))
+(define* (virtual-variables result-vars arg-vars proc #:key (registers default-registers))
+  (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
-         (result-regs  (map cons result-vars (list RAX)))
          (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
          (intermediate (apply proc vars))
          (blocked      (blocked-intervals intermediate))
          (prog         (flatten-code (relabel (filter-blocks intermediate))))]
     (register-allocate prog
-                        #:predefined predefined
-                        #:blocked blocked
-                        #:registers registers
-                        #:parameters arg-vars)))
+                       #:predefined predefined
+                       #:blocked blocked
+                       #:registers registers
+                       #:parameters arg-vars)))
+
+(define* (pass-parameter-variables result-type arg-types proc #:key (registers default-registers))
+  (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
+         (arg-vars     (map (cut make <var> #:type <>) arg-types))
+         (result-vars  (map (cut make <var> #:type <>) result-types))]
+    (virtual-variables result-vars arg-vars proc #:registers registers)))
+
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
-(define (wrap ctx result-type arg-classes proc)
+(define (compile ctx result-type arg-classes proc); TODO: rename
   (let* [(arg-types    (concatenate (map types arg-classes)))
          (result-types (if (eq? result-type <null>) '() (list result-type)))
          (code         (asm ctx result-type arg-types
-                         (virtual-registers result-type arg-types
+                         (pass-parameter-variables result-type arg-types
                            (lambda args (apply proc (collate (append result-types arg-classes) args))))))]
     (lambda params (apply code (concatenate (map content params))))))
 

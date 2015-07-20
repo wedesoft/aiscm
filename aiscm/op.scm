@@ -164,8 +164,8 @@
 (define-syntax-rule (define-unary-op name op conversion)
   (define-method (name (a <element>))
     (let* [(result-type (conversion (class-of a)))
-           (fun         (wrap ctx <null> (list result-type (class-of a))
-                              (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
+           (fun         (compile ctx <null> (list result-type (class-of a))
+                                 (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of a))
@@ -184,9 +184,9 @@
   (begin
     (define-method (name (a <element>) (b <element>))
       (let* [(result-type (coercion (class-of a) (class-of b)))
-             (fun         (wrap ctx <null>
-                                (list result-type (class-of a) (class-of b))
-                                (lambda (r_ a_ b_) (list (binary-op r_ a_ b_ op) (RET)))))]
+             (fun         (compile ctx <null>
+                                   (list result-type (class-of a) (class-of b))
+                                   (lambda (r_ a_ b_) (list (binary-op r_ a_ b_ op) (RET)))))]
         (add-method! name
                      (make <method>
                            #:specializers (list (class-of a) (class-of b))
@@ -217,9 +217,9 @@
                           #:strides (strides self)
                           #:value (get-value self))))
                  ((< (size-of (typecode self)) (size-of target))
-                  (let [(fun (wrap ctx <null>
-                                   (list result-type (class-of self))
-                                   (lambda (r_ a_) (list (unary-op r_ a_ copy-op) (RET)))))]
+                  (let [(fun (compile ctx <null>
+                                      (list result-type (class-of self))
+                                      (lambda (r_ a_) (list (unary-op r_ a_ copy-op) (RET)))))]
                     (lambda (target self)
                       (let [(r (make result-type #:shape (shape self)))]
                         (fun r self)

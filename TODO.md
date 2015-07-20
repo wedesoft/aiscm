@@ -2,6 +2,9 @@
 
 ## Ready
 
+* code fragments: +, -, ...
+  (compile (list <int> <int>) (+ x y))
+* macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
