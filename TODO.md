@@ -2,8 +2,9 @@
 
 ## Ready
 
-* code fragments: +, -, ...
-  (compile (list <int> <int>) (+ x y))
+* coercions for 'plus' (MOVSX)
+* code fragments for sequences
+* port (aiscm op) to new jit
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)
     (tensor [i j] (* (s i) (s j)))
@@ -37,3 +38,6 @@
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
 * ffmpeg input, fftw3, pulse-audio, hypercomplex, kinect, linalg, opencv, qt4, rmagick
+
+(define-syntax-rule (timeit s x)
+  (begin (format #t "~a ..." s) (let [(retval x)] (format #t " done~&") retval)))

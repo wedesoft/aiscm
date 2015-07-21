@@ -1,23 +1,34 @@
-(use-modules (oop goops)
-             (srfi srfi-1)
-             (srfi srfi-26)
-             (ice-9 optargs)
-             (ice-9 curried-definitions)
-             (aiscm util)
-             (aiscm element)
-             (aiscm pointer)
-             (aiscm mem)
-             (aiscm sequence)
-             (aiscm jit)
-             (aiscm op)
-             (aiscm int))
+(use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float))
+
+(define ctx (make <context>))
+
+; (tensor [i j] (* (s i) (s j)))
+; (code (* (s i) (s j)) target) = (append (code (s i) a) (code (s j) b) (mov target a) (imul target b))
+; (type (* (s i) (s j))) = (coerce (type (s i)) (type (s j)))
+
+(define-syntax tensor-list
+  (syntax-rules ()
+    ((_ arg args ...) (cons (tensor arg) (tensor-list args ...)))
+    ((_) '())))
+
+(define-syntax tensor
+  (syntax-rules (*)
+    ((_ (* args ...)) (cons '* (tensor-list args ...)))
+    ((_ arg)          arg)))
+
+(define s (seq 1 2 3 4))
+(define-syntax-rule (tensor sym args ...)
+  (if (is-a? sym <element>) (get sym args ...) (sym args ...)))
+(tensor + s 1)
+(tensor s 1)
+(tensor (seq 1 2 3 4) 1)
+(tensor + (s 1) 1)
 
 
 ; return value, code, predefined
 
-(define-class <fragment> ()
-  (code #:init-keyword #:code #:getter get-code)
-)
+(define-syntax-rule (expr fun . args)
+  (fun 1 2 3))
 
 
 (define a (make <var> #:type <int> #:symbol 'a))

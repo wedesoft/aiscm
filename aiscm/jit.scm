@@ -16,7 +16,7 @@
             spill-variable save-and-use-registers register-allocate
             pass-parameter-variables virtual-variables flatten-code relabel
             collate compile idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals fragment build)
+            filter-blocks blocked-intervals fragment build jit)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -287,6 +287,11 @@
           #:value (make target #:value result)
           #:code (append (get-code a) (get-code b)
                  (list (MOV result (get-value (get-value a))) (ADD result (get-value (get-value b))))))))
-(define (build args frag)
+(define (build vars frag)
   (let [(retval (get-value (get-value frag)))]
-    (virtual-variables (list retval) args (append (get-code frag) (list (RET))))))
+    (virtual-variables (list retval) vars (append (get-code frag) (list (RET))))))
+(define (jit ctx types proc)
+  (let* [(vars   (map (cut make <var> #:type <>) types))
+         (frag   (apply proc (map fragment vars)))
+         (retval (get-value (get-value frag)))]
+    (asm ctx (typecode retval) types (build vars frag))))
