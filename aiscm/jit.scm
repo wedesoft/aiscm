@@ -16,7 +16,7 @@
             spill-variable save-and-use-registers register-allocate
             pass-parameter-variables virtual-variables flatten-code relabel
             collate compile idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals)
+            filter-blocks blocked-intervals fragment build)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -218,12 +218,10 @@
                            #:offset (if stack-param? offset (- offset 8))))
       (save-and-use-registers prog colors parameters offset))))
 
-(define* (virtual-variables result-vars arg-vars proc #:key (registers default-registers))
+(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
-         (vars         (append result-vars arg-vars))
          (predefined   (append result-regs arg-regs))
-         (intermediate (apply proc vars))
          (blocked      (blocked-intervals intermediate))
          (prog         (flatten-code (relabel (filter-blocks intermediate))))]
     (register-allocate prog
@@ -235,8 +233,10 @@
 (define* (pass-parameter-variables result-type arg-types proc #:key (registers default-registers))
   (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
          (arg-vars     (map (cut make <var> #:type <>) arg-types))
-         (result-vars  (map (cut make <var> #:type <>) result-types))]
-    (virtual-variables result-vars arg-vars proc #:registers registers)))
+         (result-vars  (map (cut make <var> #:type <>) result-types))
+         (vars         (append result-vars arg-vars))
+         (intermediate (apply proc vars))]
+    (virtual-variables result-vars arg-vars intermediate #:registers registers)))
 
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
@@ -268,12 +268,25 @@
 (define code-length (compose length flatten-code filter-blocks))
 (define (blocked-intervals prog)
   (cond
-    ((is-a? prog <block>)
-     (cons (cons (get-reg prog) (cons 0 (1- (code-length (get-code prog)))))
-           (blocked-intervals (get-code prog))))
-    ((pair? prog)
-     (append (blocked-intervals (car prog))
-             (map (bump-interval (code-length (list (car prog))))
-                  (blocked-intervals (cdr prog)))))
-    (else
-     '())))
+    ((is-a? prog <block>) (cons (cons (get-reg prog) (cons 0 (1- (code-length (get-code prog)))))
+                            (blocked-intervals (get-code prog))))
+    ((pair? prog) (append (blocked-intervals (car prog))
+                    (map (bump-interval (code-length (list (car prog))))
+                         (blocked-intervals (cdr prog)))))
+    (else '())))
+
+(define-class <fragment> ()
+  (value #:init-keyword #:value #:getter get-value)
+  (code #:init-keyword #:code #:getter get-code))
+(define (fragment var)
+  (make <fragment> #:value (make (typecode var) #:value var) #:code '()))
+(define-method (+ (a <fragment>) (b <fragment>))
+  (let* [(target (coerce (typecode (get-value a)) (typecode (get-value b))))
+         (result (make <var> #:type target))]
+    (make <fragment>
+          #:value (make target #:value result)
+          #:code (append (get-code a) (get-code b)
+                 (list (MOV result (get-value (get-value a))) (ADD result (get-value (get-value b))))))))
+(define (build args frag)
+  (let [(retval (get-value (get-value frag)))]
+    (virtual-variables (list retval) args (append (get-code frag) (list (RET))))))
