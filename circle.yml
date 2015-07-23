@@ -1,0 +1,10 @@
+dependencies:
+  pre:
+    - sudo apt-get update
+    - sudo apt-get install autoconf automake libtool colorgcc pandoc libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libreadline-dev libmjpegtools-dev guile-2.0-dev
+
+test:
+  override:
+    - make -f Makefile.dist
+    - ./configure
+    - make check -j 2
