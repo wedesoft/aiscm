@@ -2,8 +2,8 @@
 
 ## Ready
 
-* coercions for 'plus' (MOVSX)
-* code fragments for sequences
+* code fragments for sequences (dispatch (+ frag1 frag2) -> (binary + t1 t2))
+  fragment code accepting target variable
 * port (aiscm op) to new jit
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)
