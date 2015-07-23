@@ -1,4 +1,4 @@
-# AIscm [![Travis](https://img.shields.io/travis/wedesoft/aiscm.svg)](https://travis-ci.org/wedesoft/aiscm) [![CircleCI](https://img.shields.io/circleci/project/wedesoft/aiscm.png)](https://circleci.com/gh/wedesoft/aiscm) [![GitHub release](https://img.shields.io/github/release/wedesoft/aiscm.svg)](https://github.com/wedesoft/aiscm/releases) [![GitHub license](https://img.shields.io/github/license/wedesoft/aiscm.svg)](https://www.gnu.org/copyleft/gpl.html)
+# AIscm [![CircleCI](https://img.shields.io/circleci/project/wedesoft/aiscm.png)](https://circleci.com/gh/wedesoft/aiscm) [![GitHub release](https://img.shields.io/github/release/wedesoft/aiscm.svg)](https://github.com/wedesoft/aiscm/releases) [![GitHub license](https://img.shields.io/github/license/wedesoft/aiscm.svg)](https://www.gnu.org/copyleft/gpl.html)
 
 [**AIscm**][1] is a **real-time computer vision extension** for the
 [**Guile programming language**][2]. Performance in Scheme is achieved by means
