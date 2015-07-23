@@ -16,7 +16,7 @@
             spill-variable save-and-use-registers register-allocate
             pass-parameter-variables virtual-variables flatten-code relabel
             collate compile idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals fragment build jit)
+            filter-blocks blocked-intervals fragment build jit typecast)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -280,13 +280,25 @@
   (code #:init-keyword #:code #:getter get-code))
 (define (fragment var)
   (make <fragment> #:value (make (typecode var) #:value var) #:code '()))
-(define-method (+ (a <fragment>) (b <fragment>))
-  (let* [(target (coerce (typecode (get-value a)) (typecode (get-value b))))
-         (result (make <var> #:type target))]
+(define (typecast target a)
+  (let [(result (make <var> #:type target))
+        (mov    (if (= (size-of (typecode (get-value a))) (size-of target))
+                    MOV
+                    (if (signed? (typecode (get-value a)))
+                        MOVSX
+                        (if (>= (size-of (typecode (get-value a))) 4) MOV MOVZX))))]
     (make <fragment>
           #:value (make target #:value result)
-          #:code (append (get-code a) (get-code b)
-                 (list (MOV result (get-value (get-value a))) (ADD result (get-value (get-value b))))))))
+          #:code (append (get-code a) (list (mov result (get-value (get-value a))))))))
+(define-method (+ (a <fragment>) (b <fragment>))
+  (let* [(target (coerce (typecode (get-value a)) (typecode (get-value b))))
+         (result (make <var> #:type target))
+         (a~     (typecast target a))
+         (b~     (typecast target b))]
+    (make <fragment>
+          #:value (make target #:value result)
+          #:code (append (get-code a~) (get-code b~)
+                 (list (MOV result (get-value (get-value a~))) (ADD result (get-value (get-value b~))))))))
 (define (build vars frag)
   (let [(retval (get-value (get-value frag)))]
     (virtual-variables (list retval) vars (append (get-code frag) (list (RET))))))
