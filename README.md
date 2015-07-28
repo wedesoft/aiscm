@@ -1,5 +1,7 @@
 # AIscm [![CircleCI](https://img.shields.io/circleci/project/wedesoft/aiscm.png)](https://circleci.com/gh/wedesoft/aiscm) [![GitHub release](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![GitHub license](https://img.shields.io/github/license/wedesoft/aiscm.png)](https://www.gnu.org/copyleft/gpl.html) [![Gitter](https://badges.gitter.im/Join%20Chat.png)](https://gitter.im/wedesoft/aiscm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+[![Join the chat at https://gitter.im/wedesoft/aiscm](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wedesoft/aiscm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [**AIscm**][1] is a **real-time computer vision extension** for the
 [**Guile programming language**][2]. Performance in Scheme is achieved by means
 of a JIT compiler.
