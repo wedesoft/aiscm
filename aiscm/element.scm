@@ -1,15 +1,14 @@
 (define-module (aiscm element)
   #:use-module (oop goops)
+  #:use-module (aiscm util)
   #:use-module (system foreign)
   #:export (<element>
             <meta<element>>
             get-value size-of foreign-type pack unpack
             typecode size shape strides dimension coerce match get set get-size
             types content param))
-(define-class <meta<element>> (<class>))
-(define-class <element> ()
-              (value #:init-keyword #:value #:getter get-value)
-              #:metaclass <meta<element>>)
+(define-class* <element> (<object>) <meta<element>> (<class>)
+               (value #:init-keyword #:value #:getter get-value))
 (define-generic size-of)
 (define-method (foreign-type (t <class>)) void)
 (define-generic pack)

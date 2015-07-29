@@ -2,8 +2,12 @@
 
 ## Ready
 
-* code fragments for sequences (dispatch (+ frag1 frag2) -> (binary + t1 t2))
+* predefined values for fragment
+  code fragments for sequences (dispatch (+ frag1 frag2) -> (binary + t1 t2))
   fragment code accepting target variable
+* pretty printing for <int>, ...
+  (param (sequence <int>) (list a b c)) not printable
+* use MOV when typecasting to smaller integer
 * port (aiscm op) to new jit
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)

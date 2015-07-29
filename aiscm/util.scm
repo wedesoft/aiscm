@@ -10,10 +10,14 @@
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals)
-  #:export-syntax (def-once expand))
+  #:export-syntax (define-class* def-once))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
-  (module-define! (current-module) name val))
+  (module-define! (current-module) name val) val)
+(define-syntax-rule (define-class* name super metaname metasuper slots ...)
+  (begin
+    (define-class metaname metasuper)
+    (define-class name super slots ...  #:metaclass metaname)))
 (define-syntax-rule (def-once name value)
   (let [(sym (string->symbol name))]
     (if (not (defined? sym (current-module)))
@@ -29,7 +33,6 @@
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
 (define (take-up-to lst n)
   (if (zero? n) '() (if (null? lst) lst (cons (car lst) (take-up-to (cdr lst) (1- n))))))
-(define-syntax-rule (expand n expr) (map (lambda (tmp) expr) (iota n)))
 (define (flatten x)
   (cond ((null? x) x)
         ((pair? x) (append (flatten (car x)) (flatten (cdr x))))

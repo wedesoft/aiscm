@@ -12,8 +12,7 @@
             pointer
             fetch
             store))
-(define-class <meta<pointer<>>> (<meta<element>>))
-(define-class <pointer<>> (<element>) #:metaclass <meta<pointer<>>>)
+(define-class* <pointer<>> (<element>) <meta<pointer<>>> (<meta<element>>))
 (define-method (pointer targetclass)
   (let* [(name (format #f "<pointer~a>" (class-name targetclass)))
          (metaname (format #f "<meta~a>" name))
