@@ -10,7 +10,7 @@
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals)
-  #:export-syntax (define-class* def-once))
+  #:export-syntax (define-class* def-once template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val) val)
@@ -23,6 +23,22 @@
     (if (not (defined? sym (current-module)))
       (toplevel-define! sym value))
     (primitive-eval sym)))
+(define-method (member-string x) (format #f "~a" x))
+(define-method (member-string (x <class>))
+  (let [(name (format #f "~a" (class-name x)))]
+    (xsubstring name 1 (1- (string-length name)))))
+(define-syntax-rule (template-class (base args ...) (super) finaliser ...)
+  (let* [(members  (map member-string (list args ...)))
+         (name     (string->symbol (format #f "<~a<~a>>" (quote base) (string-join members ","))))
+         (metaname (string->symbol (format #f "<meta~a>" name)))]
+    (if (not (defined? name (current-module)))
+      (let* [(metaclass (make <class> #:dsupers (list (class-of super)) #:name metaname))
+             (class     (make metaclass #:dsupers (list super) #:name name))]
+        (toplevel-define! metaname metaclass)
+        (toplevel-define! name class)
+        (for-each (lambda (fun) (fun class metaclass)) (list finaliser ...))
+        class)
+      (primitive-eval name))))
 (define-generic destroy)
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index a b)
