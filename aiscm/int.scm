@@ -29,17 +29,10 @@
 (define-generic signed?)
 (define-generic bits)
 (define (integer nbits sgn)
-  (let* [(name      (format #f "<int<~a,~a>>" nbits sgn))
-         (metaname  (format #f "<meta~a>" name))
-         (metaclass (def-once metaname (make <class>
-                                             #:dsupers (list <meta<int<>>>)
-                                             #:name metaname)))
-         (retval    (def-once name (make metaclass
-                                         #:dsupers (list <int<>>)
-                                         #:name name)))]
-    (define-method (bits (self metaclass)) nbits)
-    (define-method (signed? (self metaclass)) (eq? sgn 'signed))
-    retval))
+  (template-class (int nbits sgn) (<int<>>)
+    (lambda (class metaclass)
+      (define-method (bits (self metaclass)) nbits)
+      (define-method (signed? (self metaclass)) (eq? sgn 'signed)))))
 (define-method (size-of (self <meta<int<>>>))
   (quotient (+ (bits self) 7) 8))
 (define native-bits (* (sizeof '*) 8))

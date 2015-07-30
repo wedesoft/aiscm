@@ -15,16 +15,9 @@
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic precision)
 (define (floating-point prec)
-  (let* [(name      (format #f "<float<~a>>" prec))
-         (metaname  (format #f "<meta~a>" name))
-         (metaclass (def-once metaname (make <class>
-                                             #:dsupers (list <meta<float<>>>)
-                                             #:name metaname)))
-         (retval    (def-once name (make metaclass
-                                         #:dsupers (list <float<>>)
-                                         #:name name)))]
-    (define-method (precision (self metaclass)) prec)
-    retval))
+  (template-class (float prec) (<float<>>)
+    (lambda (class metaclass)
+      (define-method (precision (self metaclass)) prec) )))
 (define <float>  (floating-point single-precision))
 (define <double> (floating-point double-precision))
 (define-method (foreign-type (t  <meta<float<single>>>)) float)

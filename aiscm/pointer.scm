@@ -13,22 +13,14 @@
             fetch
             store))
 (define-class* <pointer<>> (<element>) <meta<pointer<>>> (<meta<element>>))
-(define-method (pointer targetclass)
-  (let* [(name (format #f "<pointer~a>" (class-name targetclass)))
-         (metaname (format #f "<meta~a>" name))
-         (metaclass (def-once metaname
-                              (make <class>
-                                    #:dsupers (list <meta<pointer<>>>)
-                                    #:name metaname)))
-         (retval (def-once name (make metaclass
-                                      #:dsupers (list <pointer<>>)
-                                      #:name name)))]
-    (define-method (initialize (self retval) initargs)
-      (let-keywords initargs #t (value)
-        (let [(value (or value (make <mem> #:size (size-of targetclass))))]
-          (next-method self (list #:value value)))))
-    (define-method (typecode (self metaclass)) targetclass)
-    retval))
+(define-method (pointer target)
+  (template-class (pointer target) (<pointer<>>)
+    (lambda (class metaclass)
+      (define-method (initialize (self class) initargs)
+        (let-keywords initargs #t (value)
+          (let [(value (or value (make <mem> #:size (size-of target))))]
+            (next-method self (list #:value value)))))
+      (define-method (typecode (self metaclass)) target))))
 (define-method (fetch (self <pointer<>>))
   (let [(t (typecode self))]
     (unpack t (read-bytes (get-value self) (size-of t)))))

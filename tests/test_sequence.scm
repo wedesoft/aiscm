@@ -32,7 +32,7 @@
     "Convert sequence to list")
 (ok (make (sequence <int>) #:size 0)
     "Make empty sequence")
-(ok (equal? "<sequence<int<16,signed>>>" (class-name (sequence <sint>)))
+(ok (equal? '<sequence<int<16,signed>>> (class-name (sequence <sint>)))
     "Class name of 16-bit integer sequence")
 (ok (equal? "#<sequence<int<32,signed>>>:\n()"
       (call-with-output-string (lambda (port) (write (make (sequence <int>) #:size 0) port))))
@@ -77,22 +77,22 @@
     "Convert list of integers to integer array")
 (ok (equal? '(1 2 3) (to-list (to-array <int> '(1 2 3))))
     "Convert list of integers to integer array and back")
-(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1 2 3)\n (4 5 6))"
+(ok (equal? "#<sequence<sequence<int<8,unsigned>>>>:\n((1 2 3)\n (4 5 6))"
       (call-with-output-string (lambda (port) (write (arr (1 2 3) (4 5 6)) port))))
     "Write 2D array")
-(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
+(ok (equal? "#<sequence<sequence<int<8,unsigned>>>>:\n((100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...))"
       (call-with-output-string (lambda (port) (write (to-array (list (make-list 40 100))) port))))
     "Write 2D array with large first dimension")
-(ok (equal? "#<multiarray<int<8,unsigned>>,2>:\n((1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n ..."
+(ok (equal? "#<sequence<sequence<int<8,unsigned>>>>:\n((1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n ..."
       (call-with-output-string (lambda (port) (write (to-array (make-list 11 '(1))) port))))
     "Write 2D array with large second dimension")
-(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1))\n ((1 1)\n  (1 1)))"
+(ok (equal? "#<sequence<sequence<sequence<int<8,unsigned>>>>>:\n(((1 1)\n  (1 1))\n ((1 1)\n  (1 1)))"
       (call-with-output-string (lambda (port) (write (to-array (make-list 2 (make-list 2 '(1 1)))) port))))
     "Write 3D array")
-(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
+(ok (equal? "#<sequence<sequence<sequence<int<8,unsigned>>>>>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
       (call-with-output-string (lambda (port) (write (to-array (make-list 4 (make-list 3 '(1 1)))) port))))
     "Write 4x3x2 array")
-(ok (equal? "#<multiarray<int<8,unsigned>>,3>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
+(ok (equal? "#<sequence<sequence<sequence<int<8,unsigned>>>>>:\n(((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n  (1 1)\n  (1 1))\n ((1 1)\n ..."
       (call-with-output-string (lambda (port) (write (to-array (make-list 5 (make-list 3 '(1 1)))) port))))
     "Write  5x3x2 array")
 (ok (equal? (sequence <int>) (coerce <int> (sequence <sint>)))
@@ -103,7 +103,7 @@
     "Coercion of sequences")
 (ok (equal? (multiarray <int> 2) (coerce (multiarray <int> 2) <int>))
     "Coercion of multi-dimensional arrays")
-(ok (equal? "<multiarray<int<16,signed>>,2>" (class-name (sequence (sequence <sint>))))
+(ok (equal? '<sequence<sequence<int<16,signed>>>> (class-name (sequence (sequence <sint>))))
     "Class name of 16-bit integer 2D array")
 (ok (equal? (multiarray <sint> 2) (sequence (sequence (integer 16 signed))))
     "Multi-dimensional array is the same as a sequence of sequences")
