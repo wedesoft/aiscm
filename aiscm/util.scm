@@ -23,7 +23,7 @@
 (define-method (member-string (x <class>))
   (let [(name (format #f "~a" (class-name x)))]
     (xsubstring name 1 (1- (string-length name)))))
-(define-syntax-rule (template-class (base args ...) (super) finaliser ...)
+(define-syntax-rule (template-class (base args ...) super finaliser ...)
   (let* [(members  (map member-string (list args ...)))
          (name     (string->symbol (format #f "<~a<~a>>" (quote base) (string-join members ","))))
          (metaname (string->symbol (format #f "<meta~a>" name)))]

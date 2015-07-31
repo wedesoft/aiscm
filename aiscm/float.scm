@@ -15,7 +15,7 @@
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic precision)
 (define (floating-point prec)
-  (template-class (float prec) (<float<>>)
+  (template-class (float prec) <float<>>
     (lambda (class metaclass)
       (define-method (precision (self metaclass)) prec) )))
 (define <float>  (floating-point single-precision))

@@ -29,7 +29,7 @@
 (define-generic signed?)
 (define-generic bits)
 (define (integer nbits sgn)
-  (template-class (int nbits sgn) (<int<>>)
+  (template-class (int nbits sgn) <int<>>
     (lambda (class metaclass)
       (define-method (bits (self metaclass)) nbits)
       (define-method (signed? (self metaclass)) (eq? sgn 'signed)))))

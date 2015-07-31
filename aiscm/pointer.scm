@@ -14,7 +14,7 @@
             store))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-method (pointer target)
-  (template-class (pointer target) (<pointer<>>)
+  (template-class (pointer target) <pointer<>>
     (lambda (class metaclass)
       (define-method (initialize (self class) initargs)
         (let-keywords initargs #t (value)

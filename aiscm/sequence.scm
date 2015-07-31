@@ -19,7 +19,7 @@
 (define (default-strides shape)
   (map (compose (cut apply * <>) (cut take shape <>)) (iota (length shape))))
 (define (sequence type)
-  (template-class (sequence type) (<sequence<>>)
+  (template-class (sequence type) <sequence<>>
     (lambda (class metaclass)
       (define-method (initialize (self class) initargs)
         (let-keywords initargs #f (shape size value strides)
