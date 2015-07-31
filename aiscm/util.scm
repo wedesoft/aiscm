@@ -5,7 +5,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
-  #:export (toplevel-define! gc-malloc-pointerless destroy attach index all-but-last
+  #:export (toplevel-define! super gc-malloc-pointerless destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
@@ -14,6 +14,7 @@
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val) val)
+(define (super class) (car (class-direct-supers class)))
 (define-syntax-rule (define-class* name super metaname metasuper slots ...)
   (begin
     (define-class metaname metasuper)
