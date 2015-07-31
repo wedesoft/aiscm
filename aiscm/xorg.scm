@@ -34,7 +34,7 @@
   (let* [(display (make <xdisplay>))
          (window  (make <xwindow> #:display display #:shape (shape self) #:io IO-XIMAGE))]
     (title= window "AIscm")
-    (write window self)
+    (show window self)
     (show window)
     (event-loop display)
     (hide window)
@@ -44,9 +44,9 @@
          (display (make <xdisplay>))
          (window  (make <xwindow> #:display display #:shape (shape img) #:io IO-XVIDEO))]
     (title= window "AIscm")
-    (write window img)
+    (show window img)
     (show window)
-    (do () ((quit? display)) (write window (self)) (process-events display))
+    (do () ((quit? display)) (show window (self)) (process-events display))
     (hide window)
     (destroy display)))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
