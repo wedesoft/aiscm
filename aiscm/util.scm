@@ -17,8 +17,8 @@
 (define (super class) (car (class-direct-supers class)))
 (define-syntax-rule (define-class* name super metaname metasuper slots ...)
   (begin
-    (define-class metaname metasuper)
-    (define-class name super slots ...  #:metaclass metaname)))
+    (define-class metaname (metasuper))
+    (define-class name (super) slots ...  #:metaclass metaname)))
 (define-method (member-string x) (format #f "~a" x))
 (define-method (member-string (x <class>))
   (let [(name (format #f "~a" (class-name x)))]

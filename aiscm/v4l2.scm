@@ -10,7 +10,7 @@
   #:use-module (system foreign)
   #:export (<v4l2> <meta<v4l2>> grab))
 (load-extension "libguile-v4l2" "init_v4l2")
-(define-class* <v4l2> (<object>) <meta<v4l2>> (<class>)
+(define-class* <v4l2> <object> <meta<v4l2>> <class>
                (videodev2 #:init-keyword #:videodev2 #:getter get-videodev2))
 (define formats
   (list (cons 'RGB  V4L2_PIX_FMT_RGB24)

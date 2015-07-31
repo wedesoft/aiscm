@@ -9,7 +9,7 @@
             process-events event-loop quit? quit=
             show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO))
 (load-extension "libguile-xorg" "init_xorg")
-(define-class* <xdisplay> (<object>) <meta<xdisplay>> (<class>)
+(define-class* <xdisplay> <object> <meta<xdisplay>> <class>
   (display #:init-keyword #:display #:getter get-display))
 (define-method (initialize (self <xdisplay>) initargs)
   (let-keywords initargs #f (name)
@@ -23,7 +23,7 @@
 (define-method (destroy (self <xdisplay>)) (display-destroy (get-display self)))
 (define-method (quit? (self <xdisplay>)) (display-quit? (get-display self)))
 (define-method (quit= (self <xdisplay>) (value <boolean>)) (display-quit= (get-display self) value))
-(define-class <xwindow> (<object>) <meta<xwindow>> (<class>)
+(define-class* <xwindow> <object> <meta<xwindow>> <class>
               (window #:init-keyword #:window #:getter get-window))
 (define-method (initialize (self <xwindow>) initargs)
   (let-keywords initargs #f (display shape io)

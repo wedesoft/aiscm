@@ -4,7 +4,7 @@
              (guile-tap))
 (planned-tests 53)
 (toplevel-define! 'a 0)
-(define-class* <test<>> (<object>) <meta<test<>>> (<class>)
+(define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
 (template-class (test 32) (<test<>>))
 (template-class (test 8) (<test<>>)

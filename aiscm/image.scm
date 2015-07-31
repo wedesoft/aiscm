@@ -12,7 +12,7 @@
   #:export (<image> <meta<image>>
             get-format get-mem convert to-image))
 (load-extension "libguile-image" "init_image")
-(define-class* <image> (<object>) <meta<image>> (<class>)
+(define-class* <image> <object> <meta<image>> <class>
               (format #:init-keyword #:format #:getter get-format)
               (shape #:init-keyword #:shape #:getter shape)
               (offsets #:init-keyword #:offsets #:getter get-offsets)

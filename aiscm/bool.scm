@@ -6,7 +6,7 @@
   #:use-module (aiscm int)
   #:export (<bool>
             <meta<bool>>))
-(define-class* <bool> (<element>) <meta<bool>> (<meta<element>>))
+(define-class* <bool> <element> <meta<bool>> <meta<element>>)
 (define-method (size-of (self <meta<bool>>)) 1)
 (define-method (pack (self <bool>))
   (u8-list->bytevector (list (if (get-value self) 1 0))))

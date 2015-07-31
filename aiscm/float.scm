@@ -10,7 +10,7 @@
             <double> <float<double>> <meta<float<double>>>))
 (define single-precision 'single)
 (define double-precision 'double)
-(define-class* <float<>> (<element>) <meta<float<>>> (<meta<element>>))
+(define-class* <float<>> <element> <meta<float<>>> <meta<element>>)
 (define-method (write (self <float<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic precision)

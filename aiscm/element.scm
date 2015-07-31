@@ -7,7 +7,7 @@
             get-value size-of foreign-type pack unpack
             typecode size shape strides dimension coerce match get set get-size
             types content param))
-(define-class* <element> (<object>) <meta<element>> (<class>)
+(define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter get-value))
 (define-generic size-of)
 (define-method (foreign-type (t <class>)) void)

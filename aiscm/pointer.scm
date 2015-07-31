@@ -12,7 +12,7 @@
             pointer
             fetch
             store))
-(define-class* <pointer<>> (<element>) <meta<pointer<>>> (<meta<element>>))
+(define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-method (pointer target)
   (template-class (pointer target) (<pointer<>>)
     (lambda (class metaclass)

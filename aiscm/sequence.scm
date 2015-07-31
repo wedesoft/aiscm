@@ -13,7 +13,7 @@
             dump crop project rebase roll unroll downsample)
   #:export-syntax (seq arr))
 (define-generic element-type)
-(define-class* <sequence<>> (<element>) <meta<sequence<>>> (<meta<element>>)
+(define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))
 (define (default-strides shape)

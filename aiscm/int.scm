@@ -23,7 +23,7 @@
             <native-int>))
 (define signed 'signed)
 (define unsigned 'unsigned)
-(define-class* <int<>> (<element>) <meta<int<>>> (<meta<element>>))
+(define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
 (define-method (write (self <int<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-generic signed?)
