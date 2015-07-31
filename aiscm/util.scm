@@ -10,7 +10,7 @@
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals)
-  #:export-syntax (define-class* def-once template-class))
+  #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val) val)
@@ -18,11 +18,6 @@
   (begin
     (define-class metaname metasuper)
     (define-class name super slots ...  #:metaclass metaname)))
-(define-syntax-rule (def-once name value)
-  (let [(sym (string->symbol name))]
-    (if (not (defined? sym (current-module)))
-      (toplevel-define! sym value))
-    (primitive-eval sym)))
 (define-method (member-string x) (format #f "~a" x))
 (define-method (member-string (x <class>))
   (let [(name (format #f "~a" (class-name x)))]
