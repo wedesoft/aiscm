@@ -13,24 +13,14 @@
 (define q (make <var> #:type <long> #:symbol 'q))
 
 
-;(template-class)
-; typed fragments?
-
 (define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
               (value #:init-keyword #:value #:getter get-value)
               (code #:init-keyword #:code #:getter get-code))
 
-(define (fragment t); TODO: specify meta-class?
+(define (fragment t)
   (template-class (fragment t) (fragment (super t))
     (lambda (class metaclass)
       (define-method (type (self metaclass)) t))))
-
-;(define-class <fragment> ()
-;  (type #:init-keyword #:type #:getter type)
-;  (value #:init-keyword #:value #:getter get-value)
-;  (code #:init-keyword #:code #:getter get-code))
-
-; template method
 
 (define-method (parameter s)
   (make (fragment (class-of s))
@@ -85,6 +75,7 @@
 (strides s)
 
 (parameter s)
+(parameter (project s))
 
 (define-method (+ (a <fragment<pointer<>>>) (b <fragment<element>>))
   (let* [(tmp  (make <var> #:type (typecode (type (class-of a)))))
@@ -114,8 +105,17 @@
     (make (fragment target)
           #:value #f
           #:code (lambda (result)
-                         ((get-code (+ (parameter (project (get-value a))) b))
-                          (project result))))))
+                         (env [(*a <long>)
+                               (a+ <long>)]
+                              (MOV *a (get-value (get-value a)))
+                              (MOV a+ (last (strides (get-value a))))
+                              (IMUL a+ a+ (size-of (typecode (get-value a))))
+                              (element-wise ((typecode result) *r
+                                            (get-value result) (last (shape result))
+                                            (last (strides result)))
+                                      ((get-code (+ (parameter (project (rebase *a (get-value a)))) b))
+                                       (project (rebase *r result)))
+                                      (ADD *a a+)))))))
 
 ((get-code (+ (parameter s) (parameter a))) r)
 
