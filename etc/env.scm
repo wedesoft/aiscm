@@ -49,6 +49,7 @@
 
 ((get-code (typecast <int> (parameter u))) a)
 
+; ------- bookmark -------
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]

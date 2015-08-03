@@ -2,9 +2,8 @@
 
 ## Ready
 
-* predefined values for fragment
-  code fragments for sequences (dispatch (+ frag1 frag2) -> (binary + t1 t2))
-  fragment code accepting target variable
+* tests for code-fragment implementation
+* integrate fragments with parametrisation code
 * pretty printing for <int>, ...
   (param (sequence <int>) (list a b c)) not printable
 * use MOV when typecasting to smaller integer
