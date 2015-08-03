@@ -15,8 +15,8 @@
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate
             pass-parameter-variables virtual-variables flatten-code relabel
-            collate compile idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals fragment build jit typecast)
+            collate translate idle-live fetch-parameters spill-parameters
+            filter-blocks blocked-intervals)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -240,7 +240,7 @@
 
 (define (collate classes vars)
   (map param classes (gather (map (compose length types) classes) vars)))
-(define (compile ctx result-type arg-classes proc); TODO: rename
+(define (translate ctx result-type arg-classes proc)
   (let* [(arg-types    (concatenate (map types arg-classes)))
          (result-types (if (eq? result-type <null>) '() (list result-type)))
          (code         (asm ctx result-type arg-types

@@ -13,12 +13,12 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (fragment type <fragment<element>> <meta<fragment<element>>>
-            parameter get-code typecast
+            parameter code typecast
             fill duplicate to-type ~ =0 !=0 ! != & | ^ && ||)
   #:re-export (+ - * / = < <= > >=))
 (define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
               (value #:init-keyword #:value #:getter get-value)
-              (code #:init-keyword #:code #:getter get-code))
+              (code #:init-keyword #:code #:getter code))
 (define-generic type)
 (define (fragment t)
   (template-class (fragment t) (fragment (super t))
@@ -44,15 +44,15 @@
     (make (fragment target)
           #:value #f
           #:code (lambda (result)
-                         (append ((get-code frag) tmp) (list (mov result tmp)))))))
+                         (append ((code frag) tmp) (list (mov result tmp)))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]
    (make (fragment target)
          #:value #f
          #:code (lambda (result)
-                        (append ((get-code (typecast target a)) result)
-                                ((get-code (typecast target b)) tmp)
+                        (append ((code (typecast target a)) result)
+                                ((code (typecast target b)) tmp)
                         (list (ADD result tmp)))))))
 
 ; ----- old code ------
@@ -206,7 +206,7 @@
 (define-syntax-rule (define-unary-op name op conversion)
   (define-method (name (a <element>))
     (let* [(result-type (conversion (class-of a)))
-           (fun         (compile ctx <null> (list result-type (class-of a))
+           (fun         (translate ctx <null> (list result-type (class-of a))
                                  (lambda (r_ a_) (list (unary-op r_ a_ op) (RET)))))]
       (add-method! name
                    (make <method>
@@ -226,7 +226,7 @@
   (begin
     (define-method (name (a <element>) (b <element>))
       (let* [(result-type (coercion (class-of a) (class-of b)))
-             (fun         (compile ctx <null>
+             (fun         (translate ctx <null>
                                    (list result-type (class-of a) (class-of b))
                                    (lambda (r_ a_ b_) (list (binary-op r_ a_ b_ op) (RET)))))]
         (add-method! name
@@ -259,7 +259,7 @@
                           #:strides (strides self)
                           #:value (get-value self))))
                  ((< (size-of (typecode self)) (size-of target))
-                  (let [(fun (compile ctx <null>
+                  (let [(fun (translate ctx <null>
                                       (list result-type (class-of self))
                                       (lambda (r_ a_) (list (unary-op r_ a_ copy-op) (RET)))))]
                     (lambda (target self)
