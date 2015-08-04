@@ -277,32 +277,6 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-;(define-class <fragment> ()
-;  (value #:init-keyword #:value #:getter get-value)
-;  (code #:init-keyword #:code #:getter get-code))
-;(define (fragment var)
-;  (make <fragment> #:value (make (typecode var) #:value var) #:code '()))
-;(define-method (typecast (target <meta<element>>) (a <fragment>)); TODO: rename to 'to-type', port tests over
-;  (let [(result (make <var> #:type target))
-;        (mov    (if (= (size-of (typecode a)) (size-of target))
-;                    MOV
-;                    (if (signed? (typecode a))
-;                        MOVSX
-;                        (if (>= (size-of (typecode a)) 4) MOV MOVZX))))]
-;    (make <fragment>
-;          #:value (make target #:value result)
-;          #:code (append (get-code a) (list (mov result (get-value a)))))))
-;(define-method (typecode (a <fragment>)) (typecode (slot-ref a 'value)))
-;(define-method (get-value (a <fragment>)) (get-value (slot-ref a 'value)))
-;(define-method (+ (a <fragment>) (b <fragment>))
-;  (let* [(target (coerce (typecode a) (typecode b)))
-;         (result (make <var> #:type target))
-;         (a~     (typecast target a))
-;         (b~     (typecast target b))]
-;    (make <fragment>
-;          #:value (make target #:value result)
-;          #:code (append (get-code a~) (get-code b~)
-;                 (list (MOV result (get-value a~)) (ADD result (get-value b~)))))))
 ;(define (build vars frag)
 ;  (let [(retval (get-value frag))]
 ;    (virtual-variables (list retval) vars (append (get-code frag) (list (RET))))))
@@ -328,7 +302,7 @@
         #:value var
         #:code (lambda (result) '())))
 (define (temporary frag)
-  (or (get-value frag) (make <var> #:type (type frag))))
+  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
 (define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
   (let [(tmp (temporary frag))
         (mov (if (>= (size-of (type (class-of frag))) (size-of target))
