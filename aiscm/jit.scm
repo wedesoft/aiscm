@@ -18,7 +18,7 @@
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
             fragment type <fragment<element>> <meta<fragment<element>>>
-            parameter code typecast type)
+            parameter code typecast type build)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -277,14 +277,6 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-;(define (build vars frag)
-;  (let [(retval (get-value frag))]
-;    (virtual-variables (list retval) vars (append (get-code frag) (list (RET))))))
-;(define (jit ctx types proc)
-;  (let* [(vars   (map (cut make <var> #:type <>) types))
-;         (frag   (apply proc (map fragment vars)))
-;         (retval (get-value frag))]
-;    (asm ctx (typecode retval) types (build vars frag))))
 (define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
               (value #:init-keyword #:value #:getter get-value)
               (code #:init-keyword #:code #:getter code))
@@ -323,3 +315,17 @@
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
                         (list (ADD result tmp)))))))
+;(define (build vars frag)
+;  (let [(retval (get-value frag))]
+;    (virtual-variables (list retval) vars (append (get-code frag) (list (RET))))))
+;(define (jit ctx types proc)
+;  (let* [(vars   (map (cut make <var> #:type <>) types))
+;         (frag   (apply proc (map fragment vars)))
+;         (retval (get-value frag))]
+;    (asm ctx (typecode retval) types (build vars frag))))
+
+(define (build types proc)
+  (let* [(vars     (map (cut make <var> #:type <>) types))
+         (fragment (apply proc (map parameter vars)))
+         (retval   (temporary fragment))]
+    (virtual-variables (list retval) vars (append ((code fragment) retval) (list (RET))))))
