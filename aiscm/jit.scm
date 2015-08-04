@@ -16,7 +16,9 @@
             spill-variable save-and-use-registers register-allocate
             pass-parameter-variables virtual-variables flatten-code relabel
             collate translate idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals)
+            filter-blocks blocked-intervals
+            fragment type <fragment<element>> <meta<fragment<element>>>
+            parameter code typecast type)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -309,3 +311,41 @@
 ;         (frag   (apply proc (map fragment vars)))
 ;         (retval (get-value frag))]
 ;    (asm ctx (typecode retval) types (build vars frag))))
+(define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
+              (value #:init-keyword #:value #:getter get-value)
+              (code #:init-keyword #:code #:getter code))
+(define-generic type)
+(define (fragment t)
+  (template-class (fragment t) (fragment (super t))
+    (lambda (class metaclass)
+      (define-method (type (self metaclass)) t))))
+;(define-method (parameter s)
+;  (make (fragment (class-of s))
+;        #:value s
+;        #:code (lambda (result) '())))
+(define-method (parameter (var <var>))
+  (make (fragment (typecode var))
+        #:value var
+        #:code (lambda (result) '())))
+(define (temporary frag)
+  (or (get-value frag) (make <var> #:type (type frag))))
+(define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
+  (let [(tmp (temporary frag))
+        (mov (if (>= (size-of (type (class-of frag))) (size-of target))
+                 MOV
+                 (if (signed? (type (class-of frag)))
+                     MOVSX
+                     (if (>= (size-of (type (class-of frag))) 4) MOV MOVZX))))]
+    (make (fragment target)
+          #:value #f
+          #:code (lambda (result)
+                         (append ((code frag) tmp) (list (mov result tmp)))))))
+(define-method (+ (a <fragment<element>>) (b <fragment<element>>))
+   (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
+          (tmp     (make <var> #:type target))]
+   (make (fragment target)
+         #:value #f
+         #:code (lambda (result)
+                        (append ((code (typecast target a)) result)
+                                ((code (typecast target b)) tmp)
+                        (list (ADD result tmp)))))))
