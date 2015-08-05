@@ -52,6 +52,7 @@
 (define o (make <var> #:type <sint> #:symbol 'w))
 (define p (make <var> #:type <long> #:symbol 'p))
 (define q (make <var> #:type <long> #:symbol 'q))
+(define r (make <var> #:type <long> #:symbol 'q))
 
 (ok (equal? (list b) (input (MOV a b)))
     "Get input variables of MOV")

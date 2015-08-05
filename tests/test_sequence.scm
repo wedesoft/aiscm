@@ -7,11 +7,16 @@
              (aiscm jit)
              (aiscm util)
              (guile-tap))
-(planned-tests 74)
+(planned-tests 75)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
 (set s1 0 2) (set s1 1 3) (set s1 2 5)
+(define a (make <var> #:type <long> #:symbol 'a))
+(define b (make <var> #:type <long> #:symbol 'b))
+(define c (make <var> #:type <long> #:symbol 'c))
+(define d (make <var> #:type <long> #:symbol 'd))
+(define e (make <var> #:type <long> #:symbol 'e))
 (ok (equal? <sint> (typecode (sequence <sint>)))
     "Query element type of sequence class")
 (ok (equal? (sequence <sint>) (sequence <sint>))
@@ -167,17 +172,13 @@
     "'types' for a 2D array should allow for a pointer, shape, and strides argument")
 (ok (equal? '(4 6 6 1) (take (content (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'content' for a 2D array should return shape and strides")
-(ok (let* [(a (make <var> #:type <long> #:symbol 'a))
-           (b (make <var> #:type <long> #:symbol 'b))
-           (c (make <var> #:type <long> #:symbol 'c))
-           (s (param (sequence <byte>) (list a b c)))]
+(ok (let [(s (param (sequence <byte>) (list a b c)))]
       (equal? (list a b c) (append (shape s) (strides s) (list (get-value s)))))
     "'param' constructs sequences")
-(ok (let* [(a (make <var> #:type <long> #:symbol 'a))
-           (b (make <var> #:type <long> #:symbol 'b))
-           (c (make <var> #:type <long> #:symbol 'c))
-           (d (make <var> #:type <long> #:symbol 'd))
-           (e (make <var> #:type <long> #:symbol 'e))
-           (m (param (multiarray <byte> 2) (list a b c d e)))]
+(ok (let* [(m (param (multiarray <byte> 2) (list a b c d e)))]
       (equal? (list c a d b e) (append (shape m) (strides m) (list (get-value m)))))
     "'param' constructs 2D arrays")
+(ok (equal? "#<sequence<int<16,signed>> c (a) (b)"
+      (let [(s (param (sequence <byte>) (list a b c)))]
+        (call-with-output-string (lambda (port) (write s port)))))
+    "Write sequence object")

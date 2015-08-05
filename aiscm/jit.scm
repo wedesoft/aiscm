@@ -314,7 +314,7 @@
          #:code (lambda (result)
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
-                        (list (ADD result tmp)))))))
+                                (list (ADD result tmp)))))))
 (define (assemble retval vars fragment)
   (virtual-variables (list retval) vars (append ((code fragment) retval) (list (RET)))))
 (define (jit ctx types proc)
