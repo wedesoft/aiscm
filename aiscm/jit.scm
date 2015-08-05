@@ -8,6 +8,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
@@ -17,7 +18,9 @@
             pass-parameter-variables virtual-variables flatten-code relabel
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type <fragment<element>> <meta<fragment<element>>>
+            fragment type
+            <fragment<element>> <meta<fragment<element>>>
+            <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             parameter code typecast type assemble jit)
   #:export-syntax (env blocked until for))
 
@@ -285,10 +288,10 @@
   (template-class (fragment t) (fragment (super t))
     (lambda (class metaclass)
       (define-method (type (self metaclass)) t))))
-;(define-method (parameter s)
-;  (make (fragment (class-of s))
-;        #:value s
-;        #:code (lambda (result) '())))
+(define-method (parameter s)
+  (make (fragment (class-of s))
+        #:value s
+        #:code (lambda (result) '())))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
         #:value var
@@ -306,6 +309,15 @@
           #:value #f
           #:code (lambda (result)
                          (append ((code frag) tmp) (list (mov result tmp)))))))
+(define <fragment<pointer<>> (fragment <pointer<>>))
+(define-method (fetch (p <fragment<pointer<>>>))
+  (let [(target (typecode (type (class-of p))))
+        (tmp    (temporary p))]
+    (make (fragment target)
+          #:value #f
+          #:code (lambda (result)
+                         (append ((code p) tmp))
+                                 (list (MOV result (ptr target (get-value tmp))))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]
@@ -315,8 +327,10 @@
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
                                 (list (ADD result tmp)))))))
+(define-method (decompose (self <var>)) (list self))
+(define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: distribute to other source files?
 (define (assemble retval vars fragment)
-  (virtual-variables (list retval) vars (append ((code fragment) retval) (list (RET)))))
+  (virtual-variables (list retval) (concatenate (map decompose vars)) (append ((code fragment) retval) (list (RET)))))
 (define (jit ctx types proc)
   (let* [(vars     (map (cut make <var> #:type <>) types))
          (fragment (apply proc (map parameter vars)))

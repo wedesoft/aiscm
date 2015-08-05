@@ -2,12 +2,11 @@
 
 ## Ready
 
-* tests for code-fragment implementation
+* print pointers (with variable or address)
 * integrate fragments with parametrisation code
-* pretty printing for <int>, ...
-  (param (sequence <int>) (list a b c)) not printable
-* use MOV when typecasting to smaller integer
 * port (aiscm op) to new jit
+* use MOV when typecasting to smaller integer
+* wrap variables instead of storing type information in them?
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)
     (tensor [i j] (* (s i) (s j)))
