@@ -128,7 +128,7 @@
   (if (is-a? (get-value self) <mem>)
     (begin (format port "#~a:~&" (class-name (class-of self)))
            (print-elements self port))
-    (format port "<~a ~a ~a ~a>" (class-name (class-of self))
+    (format port "#<~a ~a ~a ~a>" (class-name (class-of self))
                  (get-value self) (shape self) (strides self))))
 (define-method (coerce (a <meta<sequence<>>>) (b <meta<element>>))
   (multiarray (coerce (typecode a) b) (dimension a)))

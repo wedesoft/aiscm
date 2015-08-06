@@ -212,8 +212,8 @@
              (var          (argmax (idle-live prog live) participants))
              (stack-param? (and (index var parameters) (<= 6 (index var parameters))))
              (location     (if stack-param?
-                             (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
-                            (ptr (typecode var) RSP offset)))
+                               (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
+                               (ptr (typecode var) RSP offset)))
              (spill-code   (spill-variable var location prog))]
         (register-allocate (flatten-code spill-code)
                            #:predefined (assq-set predefined var location)
@@ -330,7 +330,9 @@
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: distribute to other source files?
 (define (assemble retval vars fragment)
-  (virtual-variables (list retval) (concatenate (map decompose vars)) (append ((code fragment) retval) (list (RET)))))
+  (virtual-variables (list retval)
+                     (concatenate (map decompose vars))
+                     (append ((code fragment) retval) (list (RET)))))
 (define (jit ctx types proc)
   (let* [(vars     (map (cut make <var> #:type <>) types))
          (fragment (apply proc (map parameter vars)))
