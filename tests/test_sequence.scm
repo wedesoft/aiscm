@@ -48,6 +48,10 @@
 (ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
       (call-with-output-string (lambda (port) (write (to-array (make-list 40 100)) port))))
     "Write longer sequence object")
+(ok (equal? "#<<sequence<int<8,signed>>> c (a) (b)>"
+      (let [(s (param (sequence <byte>) (list a b c)))]
+        (call-with-output-string (lambda (port) (write s port)))))
+    "Write sequence object made from variables")
 (ok (equal? <ubyte> (typecode (to-array '(1 2 3))))
     "Typecode of converted list of unsigned bytes")
 (ok (equal? <byte> (typecode (to-array '(1 -1))))
@@ -178,7 +182,3 @@
 (ok (let* [(m (param (multiarray <byte> 2) (list a b c d e)))]
       (equal? (list c a d b e) (append (shape m) (strides m) (list (get-value m)))))
     "'param' constructs 2D arrays")
-(ok (equal? "#<sequence<int<16,signed>> c (a) (b)"
-      (let [(s (param (sequence <byte>) (list a b c)))]
-        (call-with-output-string (lambda (port) (write s port)))))
-    "Write sequence object")

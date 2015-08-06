@@ -21,6 +21,12 @@
           (let [(value (or value (make <mem> #:size (size-of target))))]
             (next-method self (list #:value value)))))
       (define-method (typecode (self metaclass)) target))))
+(define-method (write (self <pointer<>>) port)
+  (if (is-a? (get-value self) <mem>)
+    (format port "#<~a #x~16,'0x>"
+                 (class-name (class-of self))
+                 (pointer-address (get-memory (get-value self))))
+    (format port "#<~a ~a>" (class-name (class-of self)) (get-value self))))
 (define-method (fetch (self <pointer<>>))
   (let [(t (typecode self))]
     (unpack t (read-bytes (get-value self) (size-of t)))))
