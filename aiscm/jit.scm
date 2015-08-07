@@ -329,10 +329,17 @@
                                 (list (ADD result tmp)))))))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: distribute to other source files?
-(define (assemble retval vars fragment)
+(define-method (assemble (retval <var>) vars fragment)
   (virtual-variables (list retval)
                      (concatenate (map decompose vars))
                      (append ((code fragment) retval) (list (RET)))))
+(define-method (assemble (retval <pointer<>>) vars fragment)
+  (let* [(target (typecode (class-of retval)))
+         (tmp    (make <var> #:type target))]
+    (virtual-variables '()
+                       (concatenate (map decompose (cons retval vars)))
+                       (append ((code fragment) tmp)
+                               (list (MOV (ptr target (get-value retval)) tmp) (RET))))))
 (define (jit ctx types proc)
   (let* [(vars     (map (cut make <var> #:type <>) types))
          (fragment (apply proc (map parameter vars)))

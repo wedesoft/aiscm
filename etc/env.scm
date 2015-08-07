@@ -12,6 +12,19 @@
 (define p (make <var> #:type <long> #:symbol 'p))
 (define q (make <var> #:type <long> #:symbol 'q))
 
+(define *p (make (pointer <int>) #:value p))
+(define *q (make (pointer <int>) #:value q))
+
+(define-method (assemble (retval <pointer<>>) vars fragment)
+  (let* [(target (typecode (class-of retval)))
+         (tmp    (make <var> #:type target))]
+    (virtual-variables '()
+                       (concatenate (map decompose (cons retval vars)))
+                       (append ((code fragment) tmp)
+                               (list (MOV (ptr target (get-value retval)) tmp) (RET))))))
+
+
+
 
 (define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
               (value #:init-keyword #:value #:getter get-value)
@@ -49,7 +62,6 @@
 
 ((get-code (typecast <int> (parameter u))) a)
 
-; ------- bookmark -------
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]
@@ -122,7 +134,6 @@
 
 
 
-(a+ (parameter s) (parameter a))
 
 
 ; --------------------------------------------------------------------------------

@@ -2,10 +2,8 @@
 
 ## Ready
 
-* print pointers (with variable or address)
-* integrate fragments with parametrisation code
+* parameter passing for sequences
 * port (aiscm op) to new jit
-* use MOV when typecasting to smaller integer
 * wrap variables instead of storing type information in them?
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * map, tensor operations (code fragments: code, return value(s), predefined)
