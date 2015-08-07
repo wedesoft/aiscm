@@ -18,7 +18,7 @@
             pass-parameter-variables virtual-variables flatten-code relabel
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type
+            fragment type compose-from decompose
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             parameter code typecast type assemble jit)
@@ -327,8 +327,12 @@
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
                                 (list (ADD result tmp)))))))
+(define-method (compose-from (self <meta<element>>) vars) (car vars))
+(define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
 (define-method (decompose (self <var>)) (list self))
-(define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: distribute to other source files?
+(define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
+(define (skel self)
+  (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
 (define-method (assemble (retval <var>) vars fragment)
   (virtual-variables (list retval)
                      (concatenate (map decompose vars))
@@ -340,8 +344,12 @@
                        (concatenate (map decompose (cons retval vars)))
                        (append ((code fragment) tmp)
                                (list (MOV (ptr target (get-value retval)) tmp) (RET))))))
-(define (jit ctx types proc)
-  (let* [(vars     (map (cut make <var> #:type <>) types))
+(define (jit ctx classes proc)
+  (let* [(vars     (map skel classes))
          (fragment (apply proc (map parameter vars)))
-         (retval   (temporary fragment))]
-      (asm ctx (type (class-of fragment)) types (assemble retval vars fragment))))
+         (retval   (temporary fragment))
+         (fun      (asm ctx
+                        (type (class-of fragment))
+                        (concatenate (map types classes))
+                        (assemble retval vars fragment)))]
+      (lambda args (apply fun (concatenate (map content args))))))
