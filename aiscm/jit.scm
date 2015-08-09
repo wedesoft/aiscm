@@ -320,10 +320,11 @@
                                  (list (MOV result (ptr target (get-value tmp)))))))))
 (define-method (store (p <fragment<pointer<>>>) (a <fragment<element>>))
   (let [(target (typecode (type (class-of p))))
-        (tmp    (temporary a))]
-    (make (class-of p)
-          #:value (temporary p)
-          #:code (lambda (result)
+        (tmp    (temporary a))
+        (result (temporary p))]
+    (make (class-of p); TODO: return type should be fragment<null>
+          #:value '()
+          #:code (lambda (null)
                          (append ((code a) tmp)
                                  (list (MOV (ptr target (get-value result)) tmp)))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
@@ -340,13 +341,9 @@
 (define-method (compose-from (self <meta<sequence<>>>) vars) (param self vars))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
-; TODO: store shouldn't return anything
 (define (skel self)
   (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
 (define (assemble retval vars fragment); TODO: operation for overriding return value of fragment?
-  ;(display retval); TODO: do not return 'store' pointer!!!
-  ;(display vars)
-  ;(display fragment)
   (virtual-variables (if (null? retval) '() (list retval))
                      (concatenate (map decompose vars))
                      (append ((code fragment) (if (null? retval) (temporary fragment) retval)) (list (RET)))))
@@ -355,7 +352,7 @@
          (fragment (apply proc (map parameter vars)))
          (retval   (temporary fragment))
          (fun      (asm ctx
-                        (type (class-of fragment))
+                        (if (null? retval) <null> (type (class-of fragment)))
                         (concatenate (map types classes))
                         (assemble retval vars fragment)))]
       (lambda args (apply fun (concatenate (map content args))))))

@@ -448,11 +448,6 @@
                                 (make (pointer <int>) #:value (idata)) 42)
                  (get-value (fetch iptr)))); TODO: fetch should return integer value 
     "Compile and run code for storing data at a pointer location")
-;(ok (equal? (list (MOV EAX (ptr <int> RSI)) (MOV (ptr <int> RDI) EAX) (RET))
-;            (assemble *p (list *q) (fetch (parameter *q))))
-;    "Store result at pointer location")
-;(ok (assemble r (list s) (typecast <int> (parameter s)))
-;    "Trivial typecast for sequence")
 (ok (equal? p (get-value (compose-from (sequence <int>) (list x y p))))
     "Pointer of sequence composed from variables")
 (ok (equal? (list x) (shape (compose-from (sequence <int>) (list x y p))))
