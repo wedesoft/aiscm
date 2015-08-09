@@ -3,7 +3,7 @@
 ## Ready
 
 * parameter passing for sequences
-* second branch: use integer of variable instead of variable of integer
+* second branch: use integer of variable instead of variable of integer, e.g. (jit fetch) should return integer object
 * port (aiscm op) to new jit
 * wrap variables instead of storing type information in them?
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))

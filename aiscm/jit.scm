@@ -316,8 +316,16 @@
     (make (fragment target)
           #:value #f
           #:code (lambda (result)
-                         (append ((code p) tmp))
-                                 (list (MOV result (ptr target (get-value tmp))))))))
+                         (append ((code p) tmp)
+                                 (list (MOV result (ptr target (get-value tmp)))))))))
+(define-method (store (p <fragment<pointer<>>>) (a <fragment<element>>))
+  (let [(target (typecode (type (class-of p))))
+        (tmp    (temporary a))]
+    (make (class-of p)
+          #:value (temporary p)
+          #:code (lambda (result)
+                         (append ((code a) tmp)
+                                 (list (MOV (ptr target (get-value result)) tmp)))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]
@@ -327,23 +335,21 @@
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
                                 (list (ADD result tmp)))))))
-(define-method (compose-from (self <meta<element>>) vars) (car vars))
+(define-method (compose-from (self <meta<element>>) vars) (car vars)); TODO: <-> param
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
+(define-method (compose-from (self <meta<sequence<>>>) vars) (param self vars))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
+; TODO: store shouldn't return anything
 (define (skel self)
   (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
-(define-method (assemble (retval <var>) vars fragment)
-  (virtual-variables (list retval)
+(define (assemble retval vars fragment); TODO: operation for overriding return value of fragment?
+  ;(display retval); TODO: do not return 'store' pointer!!!
+  ;(display vars)
+  ;(display fragment)
+  (virtual-variables (if (null? retval) '() (list retval))
                      (concatenate (map decompose vars))
-                     (append ((code fragment) retval) (list (RET)))))
-(define-method (assemble (retval <pointer<>>) vars fragment)
-  (let* [(target (typecode (class-of retval)))
-         (tmp    (make <var> #:type target))]
-    (virtual-variables '()
-                       (concatenate (map decompose (cons retval vars)))
-                       (append ((code fragment) tmp)
-                               (list (MOV (ptr target (get-value retval)) tmp) (RET))))))
+                     (append ((code fragment) (if (null? retval) (temporary fragment) retval)) (list (RET)))))
 (define (jit ctx classes proc)
   (let* [(vars     (map skel classes))
          (fragment (apply proc (map parameter vars)))

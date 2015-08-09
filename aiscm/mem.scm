@@ -46,8 +46,7 @@
   (bytevector-copy!
     bv 0
     (pointer->bytevector (get-memory self) (get-size self)) 0
-    (bytevector-length bv))
-  bv)
+    (bytevector-length bv)))
 (define-method (write (self <mem>) port)
   (format port "#<<mem> #x~x ~a>"
           (pointer-address (get-memory self)) (get-size self)))

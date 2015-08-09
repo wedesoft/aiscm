@@ -31,9 +31,7 @@
   (let [(t (typecode self))]
     (unpack t (read-bytes (get-value self) (size-of t)))))
 (define-method (store (self <pointer<>>) value)
-  (begin
-    (write-bytes (get-value self) (pack (make (typecode self) #:value value)))
-    value))
+  (write-bytes (get-value self) (pack (make (typecode self) #:value value))))
 (define-method (+ (self <pointer<>>) (offset <integer>))
   (make (class-of self)
         #:value (+ (get-value self)
