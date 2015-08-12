@@ -3,10 +3,9 @@
 ## Ready
 
 * parameter passing for sequences
-* second branch: use integer of variable instead of variable of integer, e.g. (jit fetch) should return integer object
 * port (aiscm op) to new jit
-* wrap variables instead of storing type information in them?
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
+* wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * map, tensor operations (code fragments: code, return value(s), predefined)
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))

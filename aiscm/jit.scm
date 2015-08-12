@@ -19,6 +19,7 @@
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
             fragment type compose-from decompose
+            <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             parameter code typecast type assemble jit)
@@ -280,7 +281,7 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-(define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
+(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (value #:init-keyword #:value #:getter get-value)
               (code #:init-keyword #:code #:getter code))
 (define-generic type)
@@ -288,6 +289,7 @@
   (template-class (fragment t) (fragment (super t))
     (lambda (class metaclass)
       (define-method (type (self metaclass)) t))))
+(fragment <element>)
 (define-method (parameter s)
   (make (fragment (class-of s))
         #:value s
@@ -309,7 +311,7 @@
           #:value #f
           #:code (lambda (result)
                          (append ((code frag) tmp) (list (mov result tmp)))))))
-(define <fragment<pointer<>> (fragment <pointer<>>))
+(fragment <pointer<>>)
 (define-method (fetch (p <fragment<pointer<>>>))
   (let [(target (typecode (type (class-of p))))
         (tmp    (temporary p))]
@@ -322,7 +324,7 @@
   (let [(target (typecode (type (class-of p))))
         (tmp    (temporary a))
         (result (temporary p))]
-    (make (class-of p); TODO: return type should be fragment<null>
+    (make (fragment <null>)
           #:value '()
           #:code (lambda (null)
                          (append ((code a) tmp)
@@ -352,7 +354,7 @@
          (fragment (apply proc (map parameter vars)))
          (retval   (temporary fragment))
          (fun      (asm ctx
-                        (if (null? retval) <null> (type (class-of fragment)))
+                        (type (class-of fragment))
                         (concatenate (map types classes))
                         (assemble retval vars fragment)))]
       (lambda args (apply fun (concatenate (map content args))))))
