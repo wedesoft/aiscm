@@ -338,9 +338,8 @@
                         (append ((code (typecast target a)) result)
                                 ((code (typecast target b)) tmp)
                                 (list (ADD result tmp)))))))
-(define-method (compose-from (self <meta<element>>) vars) (car vars)); TODO: <-> param
+(define-method (compose-from (self <meta<element>>) vars) (param self vars)); TODO: <-> param
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
-(define-method (compose-from (self <meta<sequence<>>>) vars) (param self vars))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
 (define (skel self)

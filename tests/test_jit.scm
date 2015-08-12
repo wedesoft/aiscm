@@ -446,7 +446,7 @@
 (ok (equal? 42 (begin
                  ((jit ctx (list (pointer <int>) <int>) store)
                                 (make (pointer <int>) #:value (idata)) 42)
-                 (get-value (fetch iptr)))); TODO: fetch should return integer value 
+                 (get-value (fetch iptr))))
     "Compile and run code for storing data at a pointer location")
 (ok (equal? p (get-value (compose-from (sequence <int>) (list x y p))))
     "Pointer of sequence composed from variables")
