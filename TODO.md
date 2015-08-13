@@ -2,13 +2,18 @@
 
 ## Ready
 
-* parameter passing for sequences
-* port (aiscm op) to new jit
-* macros: (compile (test (x <int>) (y <float>)) (+ x y))
-* wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
-* map, tensor operations (code fragments: code, return value(s), predefined)
+* parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
+    code: store object -> machine code
+    #:code (lambda (store) (store ...))
+    store: make result var, call code
+    store: loop (initialise, rebase, project), make result var, call code, write to memory
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] (get m i 1))
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+* macros: (compile (test (x <int>) (y <float>)) (+ x y))
+* wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * RGB
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
