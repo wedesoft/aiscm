@@ -320,15 +320,6 @@
           #:code (lambda (result)
                          (append ((code p) tmp)
                                  (list (MOV result (ptr target (get-value tmp)))))))))
-(define-method (store (p <fragment<pointer<>>>) (a <fragment<element>>))
-  (let [(target (typecode (type (class-of p))))
-        (tmp    (temporary a))
-        (result (temporary p))]
-    (make (fragment <null>)
-          #:value '()
-          #:code (lambda (null)
-                         (append ((code a) tmp)
-                                 (list (MOV (ptr target (get-value result)) tmp)))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
    (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
           (tmp     (make <var> #:type target))]
@@ -344,10 +335,19 @@
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
 (define (skel self)
   (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
-(define (assemble retval vars fragment); TODO: operation for overriding return value of fragment?
-  (virtual-variables (if (null? retval) '() (list retval))
+(define-method (store (a <var>) (b <fragment<element>>))
+  ((code b) a))
+(define-method (store (p <pointer<>>) (a <fragment<element>>))
+  (let [(tmp (temporary a))]
+    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
+(define-method (assemble retval vars fragment)
+  (virtual-variables (list retval)
                      (concatenate (map decompose vars))
-                     (append ((code fragment) (if (null? retval) (temporary fragment) retval)) (list (RET)))))
+                     (append (store retval fragment) (list (RET)))))
+(define-method (assemble vars fragment)
+  (virtual-variables '()
+                     (concatenate (map decompose vars))
+                     (append (store (car vars) fragment) (list (RET)))))
 (define (jit ctx classes proc)
   (let* [(vars     (map skel classes))
          (fragment (apply proc (map parameter vars)))

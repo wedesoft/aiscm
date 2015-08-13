@@ -5,143 +5,52 @@
 (define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
-(define u (make <var> #:type <byte> #:symbol 'u))
-(define v (make <var> #:type <byte> #:symbol 'v))
 (define x (make <var> #:type <long> #:symbol 'x))
 (define y (make <var> #:type <long> #:symbol 'y))
-(define z (make <var> #:type <long> #:symbol 'z))
-(define o (make <var> #:type <long> #:symbol 'o))
 (define p (make <var> #:type <long> #:symbol 'p))
 (define q (make <var> #:type <long> #:symbol 'q))
 
 (define *p (make (pointer <int>) #:value p))
 (define *q (make (pointer <int>) #:value q))
 
-(define-method (assemble (retval <pointer<>>) vars fragment)
-  (let* [(target (typecode (class-of retval)))
-         (tmp    (make <var> #:type target))]
-    (virtual-variables '()
-                       (concatenate (map decompose (cons retval vars)))
-                       (append ((code fragment) tmp)
-                               (list (MOV (ptr target (get-value retval)) tmp) (RET))))))
-
-
-
-
-(define-class* <fragment<element>> <object> <meta<fragment<element>>> <class>
-              (value #:init-keyword #:value #:getter get-value)
-              (code #:init-keyword #:code #:getter get-code))
-
-(define (fragment t)
-  (template-class (fragment t) (fragment (super t))
-    (lambda (class metaclass)
-      (define-method (type (self metaclass)) t))))
-
-(define-method (parameter s)
-  (make (fragment (class-of s))
-        #:value s
-        #:code (lambda (result) '())))
-(define-method (parameter (var <var>))
-  (make (fragment (typecode var))
-        #:value var
-        #:code (lambda (result) '())))
-; TODO: use <element>, <int>, ...?
+; (assemble c (list a b c) (+ (parameter a) (parameter b)))
 
 (define (temporary frag)
-  (or (get-value frag) (make <var> #:type (type frag))))
+  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
+(define-method (assemble retval vars fragment)
+  (virtual-variables (list retval)
+                     (concatenate (map decompose vars))
+                     (append (store retval fragment) (list (RET)))))
+(define-method (assemble vars fragment)
+  (virtual-variables '()
+                     (concatenate (map decompose vars))
+                     (append (store (car vars) fragment) (list (RET)))))
 
-(define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
-  (let [(tmp (temporary frag))
-        (mov (if (>= (size-of (type (class-of frag))) (size-of target))
-                 MOV
-                 (if (signed? (type (class-of frag)))
-                     MOVSX
-                     (if (>= (size-of (type (class-of frag))) 4) MOV MOVZX))))]
-    (make (fragment target)
-          #:value #f
-          #:code (lambda (result)
-                         (append ((get-code frag) tmp) (list (mov result tmp)))))))
+(assemble c (list a b c) (+ (parameter a) (parameter b)))
 
-((get-code (typecast <int> (parameter u))) a)
+(define-method (store (a <var>) (b <fragment<element>>))
+  ((code b) a))
+(store a (typecast <int> (parameter b)))
 
-(define-method (+ (a <fragment<element>>) (b <fragment<element>>))
-   (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
-          (tmp     (make <var> #:type target))]
-   (make (fragment target)
-         #:value #f
-         #:code (lambda (result)
-                        (append ((get-code (typecast target a)) result)
-                                ((get-code (typecast target b)) tmp)
-                        (list (ADD result tmp)))))))
+(define-method (store (p <pointer<>>) (a <fragment<element>>))
+  (let [(tmp (temporary a))]
+    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
+(store *p (parameter a))
 
-((get-code (+ (parameter u) (parameter b))) a)
+(assemble (list *p a) (parameter a))
 
-; (define-method (dereference (self <var>)) self)
-; (define-method (dereference (self <pointer<>>)) (ptr (typecode self) (get-value self)))
+((jit ctx (list <int> <int>) +) 2 3)
 
-(types (sequence <int>))
-
-(define a (make <var> #:type <int> #:symbol 'a))
-(define s (param (sequence <int>) (list x y z)))
-(define r (param (sequence <int>) (list o p q)))
-
-(get-value s)
-(shape s)
-(strides s)
-
-(parameter s)
-(parameter (project s))
-
-(define-method (+ (a <fragment<pointer<>>>) (b <fragment<element>>))
-  (let* [(tmp  (make <var> #:type (typecode (type (class-of a)))))
-         (body (+ (parameter tmp) b))
-         (r    (make <var> #:type (type (class-of body))))]
-    (make (class-of a)
-          #:value #f
-          #:code (lambda (result)
-                         (append (list (MOV tmp (get-value a)))
-                                 ((get-code body) r)
-                                 (list (MOV result r)))))))
-
-((get-code (+ (parameter (project s)) (parameter a))) (project r))
-
-(define-syntax-rule (element-wise (type p start n step) body ...)
-  (env [(delta <long>)
-        (stop  <long>)
-        (incr  <long>)]
-    (MOV delta n)
-    (IMUL delta step)
-    (LEA stop (ptr type start delta))
-    (IMUL incr step (size-of type))
-    (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
-
-(define-method (+ (a <fragment<sequence<>>>) (b <fragment<element>>))
-  (let* [(target (coerce (type (class-of a)) (type (class-of b))))]
-    (make (fragment target)
-          #:value #f
-          #:code (lambda (result)
-                         (env [(*a <long>)
-                               (a+ <long>)]
-                              (MOV *a (get-value (get-value a)))
-                              (MOV a+ (last (strides (get-value a))))
-                              (IMUL a+ a+ (size-of (typecode (get-value a))))
-                              (element-wise ((typecode result) *r
-                                            (get-value result) (last (shape result))
-                                            (last (strides result)))
-                                      ((get-code (+ (parameter (project (rebase *a (get-value a)))) b))
-                                       (project (rebase *r result)))
-                                      (ADD *a a+)))))))
-
-((get-code (+ (parameter s) (parameter a))) r)
-
-
-
-
-
-; --------------------------------------------------------------------------------
+; code: store object -> machine code
+; #:code (lambda (store) (store (lambda (result) ... )))
+; store: make result var, call code
+; store: loop (initialise, rebase, project), make result var, call code, write to memory
+; (accessors s) -> ((pointer stride count) ...) which pointer?
+; (tensor [i] ((roll m) i))
+; (tensor [i] (get m i 1))
 ; (tensor [i j] (* (s i) (s j)))
-; (code (* (s i) (s j)) target) = (append (code (s i) a) (code (s j) b) (mov target a) (imul target b))
-; (type (* (s i) (s j))) = (coerce (type (s i)) (type (s j)))
+; (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+
 
 (define-syntax tensor-list
   (syntax-rules ()

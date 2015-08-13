@@ -3,8 +3,9 @@
 ## Ready
 
 * parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
+    rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
     code: store object -> machine code
-    #:code (lambda (store) (store ...))
+    #:code (lambda (store) (store (lambda (result) ... )))
     store: make result var, call code
     store: loop (initialise, rebase, project), make result var, call code, write to memory
     (accessors s) -> ((pointer stride count) ...) which pointer?
@@ -12,6 +13,7 @@
     (tensor [i] (get m i 1))
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+    (tensor [i j] (* (s i) (s j)))
 * macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
