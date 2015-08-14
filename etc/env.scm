@@ -12,34 +12,35 @@
 
 (define *p (make (pointer <int>) #:value p))
 (define *q (make (pointer <int>) #:value q))
+(define s (param (sequence <int>) (list x y p)))
+(define r (param (sequence <int>) (list x y q)))
 
-; (assemble c (list a b c) (+ (parameter a) (parameter b)))
+; rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
 
 (define (temporary frag)
   (or (get-value frag) (make <var> #:type (type (class-of frag)))))
-(define-method (assemble retval vars fragment)
-  (virtual-variables (list retval)
-                     (concatenate (map decompose vars))
-                     (append (store retval fragment) (list (RET)))))
-(define-method (assemble vars fragment)
-  (virtual-variables '()
-                     (concatenate (map decompose vars))
-                     (append (store (car vars) fragment) (list (RET)))))
 
-(assemble c (list a b c) (+ (parameter a) (parameter b)))
-
-(define-method (store (a <var>) (b <fragment<element>>))
-  ((code b) a))
-(store a (typecast <int> (parameter b)))
-
-(define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (let [(tmp (temporary a))]
-    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (store *p (parameter a))
 
-(assemble (list *p a) (parameter a))
+;(define-method (store (p <pointer<>>) (a <fragment<element>>))
+;  (let [(tmp (temporary a))]
+;    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 
-((jit ctx (list <int> <int>) +) 2 3)
+
+(define-method (parameter s)
+  (make (fragment (class-of s))
+        #:value s
+        #:project (parameter (project s))
+        #:code (lambda (result) '())))
+
+(define (project2 fragment)
+  (parameter (project (get-value fragment))))
+
+(fragment <sequence<>>)
+(define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
+  (store (project r) (project2 a)))
+
+(store r (parameter s))
 
 ; code: store object -> machine code
 ; #:code (lambda (store) (store (lambda (result) ... )))
@@ -51,6 +52,15 @@
 ; (tensor [i j] (* (s i) (s j)))
 ; (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 
+(define-syntax-rule (element-wise (type p start n step) body ...)
+  (env [(delta <long>)
+        (stop  <long>)
+        (incr  <long>)]
+    (MOV delta n)
+    (IMUL delta step)
+    (LEA stop (ptr type start delta))
+    (IMUL incr step (size-of type))
+    (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
 
 (define-syntax tensor-list
   (syntax-rules ()

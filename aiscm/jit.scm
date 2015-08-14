@@ -340,6 +340,8 @@
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
   (let [(tmp (temporary a))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
+(define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
+  (store p (fetch a)))
 (define-method (assemble retval vars fragment)
   (virtual-variables (list retval)
                      (concatenate (map decompose vars))
