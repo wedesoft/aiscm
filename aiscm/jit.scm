@@ -18,11 +18,12 @@
             pass-parameter-variables virtual-variables flatten-code relabel
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type compose-from decompose
+            fragment type compose-from decompose skel
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
-            parameter code typecast type assemble jit)
+            <fragment<sequence<>>> <meta<fragment<sequence<>>>>
+            parameter code get-args get-op typecast type assemble jit)
   #:export-syntax (env blocked until for))
 
 (define-method (get-args self) '())
@@ -282,7 +283,9 @@
     (else '())))
 
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
-              (value #:init-keyword #:value #:getter get-value)
+              (value #:init-keyword #:value #:getter get-value); TODO: do not use value
+              (op #:init-keyword #:op #:getter get-op)
+              (args #:init-keyword #:args #:getter get-args)
               (code #:init-keyword #:code #:getter code))
 (define-generic type)
 (define (fragment t)
@@ -293,10 +296,14 @@
 (define-method (parameter s)
   (make (fragment (class-of s))
         #:value s
+        #:args (list s)
+        #:op parameter
         #:code (lambda (result) '())))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
         #:value var
+        #:args (list var)
+        #:op parameter
         #:code (lambda (result) '())))
 (define (temporary frag)
   (or (get-value frag) (make <var> #:type (type (class-of frag)))))
@@ -309,32 +316,44 @@
                      (if (>= (size-of (type (class-of frag))) 4) MOV MOVZX))))]
     (make (fragment target)
           #:value #f
+          #:args (list target frag)
+          #:op typecast
           #:code (lambda (result)
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
+(fragment <sequence<>>)
 (define-method (fetch (p <fragment<pointer<>>>))
   (let [(target (typecode (type (class-of p))))
         (tmp    (temporary p))]
     (make (fragment target)
           #:value #f
+          #:args (list p)
+          #:op fetch
           #:code (lambda (result)
                          (append ((code p) tmp)
                                  (list (MOV result (ptr target (get-value tmp)))))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
-   (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
-          (tmp     (make <var> #:type target))]
-   (make (fragment target)
-         #:value #f
-         #:code (lambda (result)
-                        (append ((code (typecast target a)) result)
-                                ((code (typecast target b)) tmp)
-                                (list (ADD result tmp)))))))
+  (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
+         (tmp     (make <var> #:type target))]
+    (make (fragment target)
+          #:value #f
+          #:args (list a b)
+          #:op +
+          #:code (lambda (result)
+                         (append ((code (typecast target a)) result)
+                                 ((code (typecast target b)) tmp)
+                                 (list (ADD result tmp)))))))
 (define-method (compose-from (self <meta<element>>) vars) (param self vars)); TODO: <-> param
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
+(define-method (decompose (self <sequence<>>))
+  (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (skel self)
-  (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
+  (compose-from self (map (cut make <var> #:type <>) (types self))))
+(define-method (project self) self)
+(define-method (project (self <fragment<sequence<>>>))
+  (apply (get-op self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
   ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))

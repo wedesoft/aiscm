@@ -22,25 +22,28 @@
 
 (store *p (parameter a))
 
-;(define-method (store (p <pointer<>>) (a <fragment<element>>))
-;  (let [(tmp (temporary a))]
-;    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
-
-
-(define-method (parameter s)
-  (make (fragment (class-of s))
-        #:value s
-        #:project (parameter (project s))
-        #:code (lambda (result) '())))
-
-(define (project2 fragment)
-  (parameter (project (get-value fragment))))
-
-(fragment <sequence<>>)
 (define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
-  (store (project r) (project2 a)))
+  (store (project r) (project a)))
+
+(define (skel self)
+  (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
 
 (store r (parameter s))
+
+(assemble (list r s) (parameter s))
+
+(define (jit2 ctx classes proc)
+  (let* [(vars     (map skel classes))
+         (fragment (apply proc (map parameter vars)))
+         (rettype  (type (class-of fragment)))
+         (retval   (skel rettype))
+         (fun      (asm ctx
+                        <null>
+                        (concatenate (map types (cons rettype classes)))
+                        (assemble (cons retval vars) fragment)))]
+      (lambda args
+        (let [(retval (make rettype #:shape (shape (car args))))]
+          (apply fun (concatenate (map content (cons retval args))))))))
 
 ; code: store object -> machine code
 ; #:code (lambda (store) (store (lambda (result) ... )))

@@ -36,7 +36,7 @@
 (define (multiarray type dimension)
   (if (zero? dimension) (pointer type) (multiarray (sequence type) (1- dimension))))
 (define-method (size (self <sequence<>>)) (apply * (shape self)))
-(define (project self)
+(define-method (project (self <sequence<>>))
   (make (element-type (class-of self))
         #:value   (get-value self)
         #:shape   (all-but-last (shape self))
