@@ -17,20 +17,22 @@
 
 ; rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
 
-(define (temporary frag)
-  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
+;(define (temporary frag)
+;  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
 
 (store *p (parameter a))
 
 (define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
   (store (project r) (project a)))
 
-(define (skel self)
-  (compose-from self (map (cut make <var> #:type <>) (types self)))); TODO: test this
-
 (store r (parameter s))
 
 (assemble (list r s) (parameter s))
+
+(define classes (list (sequence <int>)))
+(define vars (map skel classes))
+(define fragment (apply identity (map parameter vars)))
+(define retval (skel (type (class-of fragment))))
 
 (define (jit2 ctx classes proc)
   (let* [(vars     (map skel classes))
@@ -54,6 +56,11 @@
 ; (tensor [i] (get m i 1))
 ; (tensor [i j] (* (s i) (s j)))
 ; (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+
+(define (coerce-shapes a b)
+  (let [(shape-a (shape a))
+        (shape-b (shape b))]
+    (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
 
 (define-syntax-rule (element-wise (type p start n step) body ...)
   (env [(delta <long>)

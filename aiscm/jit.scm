@@ -361,20 +361,18 @@
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
-(define-method (assemble retval vars fragment)
-  (virtual-variables (list retval)
-                     (concatenate (map decompose vars))
-                     (append (store retval fragment) (list (RET)))))
-(define-method (assemble vars fragment)
-  (virtual-variables '()
-                     (concatenate (map decompose vars))
-                     (append (store (car vars) fragment) (list (RET)))))
+(define (assemble retval vars fragment)
+  (let [(returnable? (is-a? retval <var>))]
+    (virtual-variables (if returnable? (list retval) '())
+                       (concatenate (map decompose (if returnable? vars (cons retval vars))))
+                       (append (store retval fragment) (list (RET))))))
 (define (jit ctx classes proc)
-  (let* [(vars     (map skel classes))
-         (fragment (apply proc (map parameter vars)))
-         (retval   (temporary fragment))
-         (fun      (asm ctx
-                        (type (class-of fragment))
-                        (concatenate (map types classes))
-                        (assemble retval vars fragment)))]
-      (lambda args (apply fun (concatenate (map content args))))))
+  (let* [(vars        (map skel classes))
+         (fragment    (apply proc (map parameter vars)))
+         (return-type (type (class-of fragment)))
+         (retval      (skel return-type))
+         (fun         (asm ctx
+                           return-type
+                           (concatenate (map types classes))
+                           (assemble retval vars fragment)))]
+    (lambda args (apply fun (concatenate (map content args))))))
