@@ -15,6 +15,13 @@
 (define s (param (sequence <int>) (list x y p)))
 (define r (param (sequence <int>) (list x y q)))
 
+(define (rebased self)
+  (let [(*p (make <var> #:type <long> #:symbol '*p))])
+    (list (project (rebase self *p))
+          *p
+          (last (shape self))
+          (last (strides self))))
+
 ; rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
 
 ;(define (temporary frag)
@@ -23,28 +30,36 @@
 (store *p (parameter a))
 
 (define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
-  (store (project r) (project a)))
+  (store (project p) (project a)))
 
 (store r (parameter s))
 
 (assemble (list r s) (parameter s))
 
 (define classes (list (sequence <int>)))
+(define proc identity)
 (define vars (map skel classes))
-(define fragment (apply identity (map parameter vars)))
-(define retval (skel (type (class-of fragment))))
+(define fragment (apply proc (map parameter vars)))
+(define return-type (type (class-of fragment)))
+(define retval (skel return-type))
+
+(assemble retval vars fragment)
+
+(asm ctx <null> (concatenate (map types (cons return-type classes))) (list (RET)))
+
+(define f (jit ctx (list (sequence <int>)) identity))
 
 (define (jit2 ctx classes proc)
   (let* [(vars     (map skel classes))
          (fragment (apply proc (map parameter vars)))
-         (rettype  (type (class-of fragment)))
-         (retval   (skel rettype))
+         (return-type  (type (class-of fragment)))
+         (retval   (skel return-type))
          (fun      (asm ctx
                         <null>
-                        (concatenate (map types (cons rettype classes)))
-                        (assemble (cons retval vars) fragment)))]
+                        (concatenate (map types (cons return-type classes)))
+                        (assemble retval vars fragment)))]
       (lambda args
-        (let [(retval (make rettype #:shape (shape (car args))))]
+        (let [(retval (make return-type #:shape (shape (car args))))]
           (apply fun (concatenate (map content (cons retval args))))))))
 
 ; code: store object -> machine code

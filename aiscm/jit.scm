@@ -361,18 +361,28 @@
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
+(define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
+  (store (project p) (project a))); TODO: test and finish
+(define (returnable? value) (is-a? value <var>))
 (define (assemble retval vars fragment)
-  (let [(returnable? (is-a? retval <var>))]
-    (virtual-variables (if returnable? (list retval) '())
-                       (concatenate (map decompose (if returnable? vars (cons retval vars))))
-                       (append (store retval fragment) (list (RET))))))
+  (virtual-variables (if (returnable? retval) (list retval) '())
+                     (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
+                     (append (store retval fragment) (list (RET)))))
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (fragment    (apply proc (map parameter vars)))
          (return-type (type (class-of fragment)))
          (retval      (skel return-type))
          (fun         (asm ctx
-                           return-type
-                           (concatenate (map types classes))
+                           (if (returnable? retval) return-type <null>); TODO: test with sequence
+                           (concatenate (map types (if (returnable? retval)
+                                                       classes
+                                                       (cons return-type classes))))
                            (assemble retval vars fragment)))]
-    (lambda args (apply fun (concatenate (map content args))))))
+    (if (returnable? retval)
+        (lambda args
+                (apply fun (concatenate (map content args))))
+        (lambda args
+                (let [(result (make return-type #:shape (shape (car args))))]
+                  (apply fun (concatenate (map content (cons result args))))
+                  result)))))
