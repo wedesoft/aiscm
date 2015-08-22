@@ -9,7 +9,6 @@
 (define y (make <var> #:type <long> #:symbol 'y))
 (define p (make <var> #:type <long> #:symbol 'p))
 (define q (make <var> #:type <long> #:symbol 'q))
-
 (define *p (make (pointer <int>) #:value p))
 (define *q (make (pointer <int>) #:value q))
 (define s (param (sequence <int>) (list x y p)))
@@ -27,40 +26,36 @@
 ;(define (temporary frag)
 ;  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
 
-(store *p (parameter a))
+;(define-class <loop> ()
+;  (setup #:init-keyword #:setup #:getter get-setup)
+;  (condition #:init-keyword #:conditiona #:getter get-condition)
+;  (afterthought #:init-keyword #:afterthought #:getter get-afterthought))
 
-(define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
-  (store (project p) (project a)))
+
+(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
+  (env [(delta <long>)
+        (stop <long>)
+        (incr <long>)
+        (p    <long>)]
+    (MOV delta (last (shape s)))
+    (IMUL delta (last (strides s)))
+    (LEA stop (ptr (typecode s) (get-value s) delta))
+    (IMUL incr (last (strides s)) (size-of (typecode s)))
+    (MOV p (get-value s))
+    'begin
+    (CMP p stop)
+    (JE 'end)
+    (store (project (rebase p s)) (project a))
+    (ADD p incr)
+    (JMP 'begin)
+    'end))
+
 
 (store r (parameter s))
 
-(assemble (list r s) (parameter s))
+(assemble r (list s) (parameter s))
 
-(define classes (list (sequence <int>)))
-(define proc identity)
-(define vars (map skel classes))
-(define fragment (apply proc (map parameter vars)))
-(define return-type (type (class-of fragment)))
-(define retval (skel return-type))
-
-(assemble retval vars fragment)
-
-(asm ctx <null> (concatenate (map types (cons return-type classes))) (list (RET)))
-
-(define f (jit ctx (list (sequence <int>)) identity))
-
-(define (jit2 ctx classes proc)
-  (let* [(vars     (map skel classes))
-         (fragment (apply proc (map parameter vars)))
-         (return-type  (type (class-of fragment)))
-         (retval   (skel return-type))
-         (fun      (asm ctx
-                        <null>
-                        (concatenate (map types (cons return-type classes)))
-                        (assemble retval vars fragment)))]
-      (lambda args
-        (let [(retval (make return-type #:shape (shape (car args))))]
-          (apply fun (concatenate (map content (cons retval args))))))))
+((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))
 
 ; code: store object -> machine code
 ; #:code (lambda (store) (store (lambda (result) ... )))
@@ -71,6 +66,11 @@
 ; (tensor [i] (get m i 1))
 ; (tensor [i j] (* (s i) (s j)))
 ; (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+
+;(env [(*p <long>)]
+;  (store (project (rebase *p s)) (project ...)))
+
+(project s)
 
 (define (coerce-shapes a b)
   (let [(shape-a (shape a))

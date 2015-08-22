@@ -301,10 +301,10 @@
         #:code (lambda (result) '())))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
-        #:value var
+        #:value #f
         #:args (list var)
         #:op parameter
-        #:code (lambda (result) '())))
+        #:code (lambda (result) (list (MOV result var)))))
 (define (temporary frag)
   (or (get-value frag) (make <var> #:type (type (class-of frag)))))
 (define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
@@ -374,15 +374,14 @@
          (return-type (type (class-of fragment)))
          (retval      (skel return-type))
          (fun         (asm ctx
-                           (if (returnable? retval) return-type <null>); TODO: test with sequence
-                           (concatenate (map types (if (returnable? retval)
-                                                       classes
-                                                       (cons return-type classes))))
+                           (if (returnable? retval) return-type <null>)
+                           (concatenate
+                             (map types (if (returnable? retval) classes (cons return-type classes))))
                            (assemble retval vars fragment)))]
     (if (returnable? retval)
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
-                (let [(result (make return-type #:shape (shape (car args))))]
+                (let [(result (make return-type #:shape (shape (car args))))]; TODO: infer shape properly
                   (apply fun (concatenate (map content (cons result args))))
                   result)))))
