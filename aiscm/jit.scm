@@ -283,7 +283,6 @@
     (else '())))
 
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
-              (value #:init-keyword #:value #:getter get-value); TODO: do not use value
               (op #:init-keyword #:op #:getter get-op)
               (args #:init-keyword #:args #:getter get-args)
               (code #:init-keyword #:code #:getter code))
@@ -295,24 +294,21 @@
 (fragment <element>)
 (define-method (parameter s)
   (make (fragment (class-of s))
-        #:value s
         #:args (list s)
         #:op parameter
         #:code (lambda (result) '())))
 (define-method (parameter (p <pointer<>>))
   (make (fragment (typecode (class-of p)))
-        #:value #f
         #:args (list p)
         #:op parameter
         #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
-        #:value #f
         #:args (list var)
         #:op parameter
         #:code (lambda (result) (list (MOV result var)))))
 (define (temporary frag)
-  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
+  (make <var> #:type (type (class-of frag))))
 (define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
   (let [(tmp (temporary frag))
         (mov (if (>= (size-of (type (class-of frag))) (size-of target))
@@ -321,7 +317,6 @@
                      MOVSX
                      (if (>= (size-of (type (class-of frag))) 4) MOV MOVZX))))]
     (make (fragment target)
-          #:value #f
           #:args (list target frag)
           #:op typecast
           #:code (lambda (result)
@@ -332,7 +327,6 @@
   (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
          (tmp     (make <var> #:type target))]
     (make (fragment target)
-          #:value #f
           #:args (list a b)
           #:op +
           #:code (lambda (result)
