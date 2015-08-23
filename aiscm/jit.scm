@@ -299,6 +299,12 @@
         #:args (list s)
         #:op parameter
         #:code (lambda (result) '())))
+(define-method (parameter (p <pointer<>>))
+  (make (fragment (typecode (class-of p)))
+        #:value #f
+        #:args (list p)
+        #:op parameter
+        #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
         #:value #f
@@ -322,16 +328,6 @@
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
-(define-method (fetch (p <fragment<pointer<>>>))
-  (let [(target (typecode (type (class-of p))))
-        (tmp    (temporary p))]
-    (make (fragment target)
-          #:value #f
-          #:args (list p)
-          #:op fetch
-          #:code (lambda (result)
-                         (append ((code p) tmp)
-                                 (list (MOV result (ptr target (get-value tmp)))))))))
 (define-method (+ (a <fragment<element>>) (b <fragment<element>>))
   (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
          (tmp     (make <var> #:type target))]
