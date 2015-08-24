@@ -351,8 +351,44 @@
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
-(define-method (store (p <sequence<>>) (a <fragment<sequence<>>>))
-  (store (project p) (project a))); TODO: test and finish
+
+(define-method (elem-wise (s <sequence<>>))
+  (let [(delta (make <var> #:type <long> #:symbol 'delta))
+        (stop  (make <var> #:type <long> #:symbol 'stop))
+        (incr  (make <var> #:type <long> #:symbol 'incr))
+        (p     (make <var> #:type <long> #:symbol 'p))]
+    (list (list (MOV delta (last (shape s)))
+                (IMUL delta (last (strides s)))
+                (LEA stop (ptr (typecode s) (get-value s) delta))
+                (IMUL incr (last (strides s)) (size-of (typecode s)))
+                (MOV p (get-value s)))
+          (list (CMP p stop))
+          (list (ADD p incr))
+          (project (rebase p s)))))
+(define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple arguments
+  (let [(loop (elem-wise (car (get-args self))))]
+    (list (init loop)
+          (condition loop)
+          (incr loop)
+          ((get-op self) (body loop)))))
+(define init car)
+(define condition cadr)
+(define incr caddr)
+(define body cadddr)
+(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
+  (let [(loop (elem-wise s))
+        (loop2 (elem-wise a))]
+    (list (init loop)
+          (init loop2)
+          'begin; TODO: should be part of loop
+          (condition loop)
+          (JE 'end)
+          (store (body loop) (body loop2))
+          (incr loop)
+          (incr loop2)
+          (JMP 'begin)
+          'end)))
+
 (define (returnable? value) (is-a? value <var>))
 (define (assemble retval vars fragment)
   (virtual-variables (if (returnable? retval) (list retval) '())

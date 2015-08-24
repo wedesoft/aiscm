@@ -2,6 +2,7 @@
 
 ## Ready
 
+* "env" not returning list
 * parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
     rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
     code: store object -> machine code
@@ -10,6 +11,7 @@
     store: loop (initialise, rebase, project), make result var, call code, write to memory
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
     (tensor [i] (get m i 1))
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))

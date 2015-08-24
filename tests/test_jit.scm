@@ -462,5 +462,5 @@
     "Function returning sequence allocates return value")
 (ok (equal? '(3) (shape ((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))))
     "Function returning sequence determines shape of result")
-(todo (equal? '(1 2 3) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))))
+(ok (equal? '(1 2 3) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))))
     "Storing a sequence copies each element")

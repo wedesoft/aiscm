@@ -32,26 +32,18 @@
 ;  (afterthought #:init-keyword #:afterthought #:getter get-afterthought))
 
 
-(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
-  (env [(delta <long>)
-        (stop <long>)
-        (incr <long>)
-        (p    <long>)]
-    (MOV delta (last (shape s)))
-    (IMUL delta (last (strides s)))
-    (LEA stop (ptr (typecode s) (get-value s) delta))
-    (IMUL incr (last (strides s)) (size-of (typecode s)))
-    (MOV p (get-value s))
-    'begin
-    (CMP p stop)
-    (JE 'end)
-    (store (project (rebase p s)) (project a))
-    (ADD p incr)
-    (JMP 'begin)
-    'end))
+(define-method (elem-wise (self <fragment<sequence<>>>))
+  (let [(loop (elem-wise (car (get-args self))))]
+    (list (init loop)
+          (condition loop)
+          (incr loop)
+          ((get-op self) (body loop)))))
+
 
 
 (store r (parameter s))
+
+((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))
 
 (assemble r (list s) (parameter s))
 
