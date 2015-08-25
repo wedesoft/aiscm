@@ -257,8 +257,8 @@
 
 (define-syntax-rule (until condition body ...); TODO: for loop, export, and test, use 'JNE'
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
-(define-syntax-rule (for [(index type) init condition step] body ...)
-  (env [(index type)] init (until condition body ... step)))
+(define-syntax-rule (for [(index type) setup condition step] body ...)
+  (env [(index type)] setup (until condition body ... step)))
 
 (define-class <block> ()
   (reg #:init-keyword #:reg #:getter get-reg)
@@ -307,10 +307,8 @@
         #:args (list var)
         #:op parameter
         #:code (lambda (result) (list (MOV result var)))))
-(define (temporary frag)
-  (make <var> #:type (type (class-of frag))))
 (define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
-  (let [(tmp (temporary frag))
+  (let [(tmp (make <var> #:type (type (class-of frag))))
         (mov (if (>= (size-of (type (class-of frag))) (size-of target))
                  MOV
                  (if (signed? (type (class-of frag)))
@@ -347,7 +345,7 @@
 (define-method (store (a <var>) (b <fragment<element>>))
   ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (let [(tmp (temporary a))]
+  (let [(tmp (make <var> #:type (type (class-of a))))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
@@ -373,23 +371,23 @@
           (project (rebase p s)))))
 (define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple arguments
   (let [(loop (elem-wise (car (get-args self))))]
-    (list (init loop)
+    (list (setup loop)
           (control loop)
-          (incr loop)
+          (increment loop)
           ((get-op self) (body loop)))))
-(define init car)
+(define setup car)
 (define control cadr)
-(define incr caddr)
+(define increment caddr)
 (define body cadddr)
 (define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
-  (let [(loop (elem-wise s))
-        (loop2 (elem-wise a))]
-    (list (init loop)
-          (init loop2)
-          ((control loop)
-             (append (store (body loop) (body loop2))
-                     (incr loop)
-                     (incr loop2))))))
+  (let [(destination (elem-wise s))
+        (source      (elem-wise a))]
+    (list (setup destination)
+          (setup source)
+          ((control destination)
+             (append (store (body destination) (body source))
+                     (increment destination)
+                     (increment source))))))
 
 (define (returnable? value) (is-a? value <var>))
 (define (assemble retval vars fragment)

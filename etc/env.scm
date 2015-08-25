@@ -23,23 +23,6 @@
 
 ; rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
 
-;(define (temporary frag)
-;  (or (get-value frag) (make <var> #:type (type (class-of frag)))))
-
-;(define-class <loop> ()
-;  (setup #:init-keyword #:setup #:getter get-setup)
-;  (condition #:init-keyword #:conditiona #:getter get-condition)
-;  (afterthought #:init-keyword #:afterthought #:getter get-afterthought))
-
-
-(define-method (elem-wise (self <fragment<sequence<>>>))
-  (let [(loop (elem-wise (car (get-args self))))]
-    (list (init loop)
-          (condition loop)
-          (incr loop)
-          ((get-op self) (body loop)))))
-
-
 
 (store r (parameter s))
 
