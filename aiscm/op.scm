@@ -175,10 +175,7 @@
                                          r)))))
     (name a)))
 
-(define (coerce-shapes a b)
-  (let [(shape-a (shape a))
-        (shape-b (shape b))]
-    (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
+(define (coerce-shapes a b) (argmax length (map shape (list a b))))
 
 (define-syntax-rule (define-binary-op name op coercion)
   (begin

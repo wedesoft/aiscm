@@ -354,7 +354,6 @@
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
-
 (define-method (elem-wise s)
   (list '() '() '() s))
 (define-method (elem-wise (s <sequence<>>))
@@ -395,7 +394,6 @@
              (append (store (body destination) (body source))
                      (increment destination)
                      (increment source))))))
-
 (define (returnable? value) (is-a? value <var>))
 (define (assemble retval vars fragment)
   (virtual-variables (if (returnable? retval) (list retval) '())
@@ -415,6 +413,6 @@
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
-                (let [(result (make return-type #:shape (shape (car args))))]; TODO: infer shape properly
+                (let [(result (make return-type #:shape (argmax length (map shape args))))]
                   (apply fun (concatenate (map content (cons result args))))
                   result)))))
