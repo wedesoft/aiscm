@@ -14,17 +14,7 @@
 (define s (param (sequence <int>) (list x y p)))
 (define r (param (sequence <int>) (list x y q)))
 
-(define (rebased self)
-  (let [(*p (make <var> #:type <long> #:symbol '*p))])
-    (list (project (rebase self *p))
-          *p
-          (last (shape self))
-          (last (strides self))))
-
-; rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
-
-
-(store r (parameter s))
+(store r (typecast <int> (parameter s)))
 
 ((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))
 

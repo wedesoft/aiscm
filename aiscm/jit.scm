@@ -307,14 +307,19 @@
         #:args (list var)
         #:op parameter
         #:code (lambda (result) (list (MOV result var)))))
-(define-method (typecast (target <meta<element>>) (frag <fragment<element>>))
-  (let [(tmp (make <var> #:type (type (class-of frag))))
-        (mov (if (>= (size-of (type (class-of frag))) (size-of target))
-                 MOV
-                 (if (signed? (type (class-of frag)))
-                     MOVSX
-                     (if (>= (size-of (type (class-of frag))) 4) MOV MOVZX))))]
-    (make (fragment target)
+(define-method (typecast (target <meta<element>>) (self <meta<element>>))
+  target); TODO: test
+(define-method (typecast (target <meta<element>>) (self <meta<sequence<>>>))
+  (multiarray target (dimension self))); TODO: test
+(define-method (typecast (target <meta<element>>) (frag <fragment<element>>)); TODO: rename to to-type
+  (let* [(source (typecode (type (class-of frag))))
+         (tmp    (make <var> #:type source))
+         (mov    (if (>= (size-of source) (size-of target))
+                     MOV
+                     (if (signed? source)
+                         MOVSX
+                         (if (>= (size-of source) 4) MOV MOVZX))))]
+    (make (fragment (typecast target (type (class-of frag))))
           #:args (list target frag)
           #:op typecast
           #:code (lambda (result)
@@ -350,6 +355,8 @@
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
 
+(define-method (elem-wise s)
+  (list '() '() '() s))
 (define-method (elem-wise (s <sequence<>>))
   (let [(delta (make <var> #:type <long> #:symbol 'delta))
         (stop  (make <var> #:type <long> #:symbol 'stop))
@@ -358,7 +365,7 @@
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (lambda (body)
-                  (list (MOV delta (last (shape s)))
+                  (list (MOV delta (last (shape s))); TODO: just use for loop in 'store'
                         (IMUL delta (last (strides s)))
                         (LEA stop (ptr (typecode s) (get-value s) delta))
                         'begin
@@ -369,12 +376,12 @@
                         'end))
           (list (ADD p incr))
           (project (rebase p s)))))
-(define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple arguments
-  (let [(loop (elem-wise (car (get-args self))))]
-    (list (setup loop)
-          (control loop)
-          (increment loop)
-          ((get-op self) (body loop)))))
+(define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple recursive arguments
+  (let [(loops (map elem-wise (get-args self)))]
+    (list (map setup loops)
+          '()
+          (map increment loops)
+          (apply (get-op self) (map body loops)))))
 (define setup car)
 (define control cadr)
 (define increment caddr)
