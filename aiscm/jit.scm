@@ -23,7 +23,8 @@
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code get-args get-op typecast type assemble jit)
+            parameter code get-args get-op typecast type assemble jit
+            & | ^)
   #:export-syntax (env blocked until for repeat))
 
 (define-method (get-args self) '())
@@ -329,16 +330,23 @@
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
-(define-method (+ (a <fragment<element>>) (b <fragment<element>>))
-  (let* [(target  (coerce (type (class-of a)) (type (class-of b))))
-         (tmp     (make <var> #:type target))]
-    (make (fragment target)
-          #:args (list a b)
-          #:op +
-          #:code (lambda (result)
-                         (append ((code (typecast target a)) result)
-                                 ((code (typecast target b)) tmp)
-                                 (list (ADD result tmp)))))))
+(define-syntax-rule (binary-op name op)
+  (define-method (name (a <fragment<element>>) (b <fragment<element>>))
+    (let* [(target (coerce (type (class-of a)) (type (class-of b))))
+           (tmp    (make <var> #:type target))]
+      (make (fragment target)
+            #:args (list a b)
+            #:op name
+            #:code (lambda (result)
+                           (append ((code (typecast target a)) result)
+                                   ((code (typecast target b)) tmp)
+                                   (list (op result tmp))))))))
+(binary-op + ADD)
+(binary-op - SUB)
+(binary-op * IMUL)
+(binary-op & AND)
+(binary-op | OR)
+(binary-op ^ XOR)
 (define-method (compose-from (self <meta<element>>) vars) (param self vars)); TODO: <-> param
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
 (define-method (decompose (self <var>)) (list self))
