@@ -1,15 +1,8 @@
-int f(float x) {
-  return (int)x;
-}
-
-float g(int x) {
-  return (float)x;
-}
-
-int fs(double x) {
-  return (int)x;
-}
-
-double gs(int x) {
-  return (double)x;
+int test(int n)
+{
+  int i;
+  int retval = 0;
+  for (i=0; i<n; i++)
+    retval += i;
+  return retval;
 }

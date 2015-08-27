@@ -2,6 +2,9 @@
 
 ## Ready
 
+* use 'times' loop in 'store'
+* remove body from elem-wise
+* generalise '+'
 * "env" not returning list
 * parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
     rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)

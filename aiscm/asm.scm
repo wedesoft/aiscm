@@ -22,7 +22,7 @@
             XMM8 XMM9 XMM10 XMM11 XMM12 XMM13 XMM14 XMM15
             resolve-jumps get-target retarget
             asm obj ptr get-reg get-disp get-index
-            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG SUB IMUL IDIV DIV
+            ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG INC SUB IMUL IDIV DIV
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
@@ -226,6 +226,9 @@
 
 (define-method (NEG (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 3 r/m)))
+
+(define-method (INC (r/m <operand>))
+  (append (prefixes r/m) (if8 r/m #xfe #xff) (postfixes 0 r/m)))
 
 (define-method (SUB (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x28 #x29) (postfixes r m)))

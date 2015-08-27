@@ -97,6 +97,7 @@
 (define-method (POP arg) (make <cmd> #:op POP #:out (list arg)))
 (define-method (NOT arg) (make <cmd> #:op NOT #:io (list arg)))
 (define-method (NEG arg) (make <cmd> #:op NEG #:io (list arg)))
+(define-method (INC arg) (make <cmd> #:op INC #:io (list arg)))
 (define-method (SUB arg1 arg2) (make <cmd> #:op SUB #:io (list arg1) #:in (list arg2)))
 (define-method (IMUL arg1 . args) (make <cmd> #:op IMUL #:io (list arg1) #:in args))
 (define-method (IDIV arg) (make <cmd> #:op IDIV #:io (list arg)))
@@ -357,20 +358,20 @@
 (define-method (elem-wise s)
   (list '() '() '() s))
 (define-method (elem-wise (s <sequence<>>))
-  (let [(delta (make <var> #:type <long> #:symbol 'delta))
-        (stop  (make <var> #:type <long> #:symbol 'stop))
+  (let [(n     (make <var> #:type <long> #:symbol 'n))
+        (i     (make <var> #:type <long> #:symbol 'i))
         (incr  (make <var> #:type <long> #:symbol 'incr))
         (p     (make <var> #:type <long> #:symbol 'p))]
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (lambda (body)
-                  (list (MOV delta (last (shape s))); TODO: just use for loop in 'store'
-                        (IMUL delta (last (strides s)))
-                        (LEA stop (ptr (typecode s) (get-value s) delta))
+                  (list (MOV n (last (shape s))); TODO: create for loop-method, move this to 'store', remove 'control'
+                        (MOV i 0)
                         'begin
-                        (CMP p stop)
+                        (CMP i n)
                         (JE 'end)
                         body
+                        (INC i)
                         (JMP 'begin)
                         'end))
           (list (ADD p incr))
