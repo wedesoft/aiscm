@@ -24,7 +24,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op typecast type assemble jit)
-  #:export-syntax (env blocked until for))
+  #:export-syntax (env blocked until for repeat))
 
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -256,10 +256,12 @@
                            (lambda args (apply proc (collate (append result-types arg-classes) args))))))]
     (lambda params (apply code (concatenate (map content params))))))
 
-(define-syntax-rule (until condition body ...); TODO: for loop, export, and test, use 'JNE'
+(define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 (define-syntax-rule (for [(index type) setup condition step] body ...)
   (env [(index type)] setup (until condition body ... step)))
+(define-syntax-rule (repeat n body ...)
+  (for [(i (typecode n)) (MOV i 0) (CMP i n) (INC i)] body ...))
 
 (define-class <block> ()
   (reg #:init-keyword #:reg #:getter get-reg)
@@ -365,15 +367,8 @@
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (lambda (body)
-                  (list (MOV n (last (shape s))); TODO: create for loop-method, move this to 'store', remove 'control'
-                        (MOV i 0)
-                        'begin
-                        (CMP i n)
-                        (JE 'end)
-                        body
-                        (INC i)
-                        (JMP 'begin)
-                        'end))
+                  (list (MOV n (last (shape s))); TODO: move this to 'store', remove 'control'
+                        (repeat n body)))
           (list (ADD p incr))
           (project (rebase p s)))))
 (define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple recursive arguments
