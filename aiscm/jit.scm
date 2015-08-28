@@ -9,6 +9,7 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
+  #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
@@ -23,8 +24,8 @@
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code get-args get-op typecast type assemble jit
-            ~ & | ^)
+            parameter code get-args get-op get-name typecast type assemble jit
+            ~ & | ^ =0 !=0)
   #:export-syntax (env blocked until for repeat))
 
 (define-method (get-args self) '())
@@ -287,7 +288,7 @@
     (else '())))
 
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
-              (op #:init-keyword #:op #:getter get-op)
+              (name #:init-keyword #:name #:getter get-name)
               (args #:init-keyword #:args #:getter get-args)
               (code #:init-keyword #:code #:getter code))
 (define-generic type)
@@ -299,17 +300,17 @@
 (define-method (parameter s)
   (make (fragment (class-of s))
         #:args (list s)
-        #:op parameter
+        #:name parameter
         #:code (lambda (result) '())))
 (define-method (parameter (p <pointer<>>))
   (make (fragment (typecode (class-of p)))
         #:args (list p)
-        #:op parameter
+        #:name parameter
         #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
         #:args (list var)
-        #:op parameter
+        #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
 (define-method (typecast (target <meta<element>>) (self <meta<element>>))
   target); TODO: test
@@ -325,30 +326,34 @@
                          (if (>= (size-of source) 4) MOV MOVZX))))]
     (make (fragment (typecast target (type (class-of frag))))
           #:args (list target frag)
-          #:op typecast
+          #:name typecast
           #:code (lambda (result)
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
-; unary: -, ~
-(define-syntax-rule (unary-op name op)
+(define (mutable-unary op a)
+  (lambda (result) (append ((code a) result) (list (op result)))))
+(define (immutable-unary op a)
+  (let [(tmp (make <var> #:type (type (class-of a))))]
+    (lambda (result) (append ((code a) tmp) (list (op result tmp))))))
+(define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
-    (let* [(target (type (class-of a)))]
+    (let* [(target (conversion (type (class-of a))))]
       (make (fragment target)
             #:args (list a)
-            #:op name
-            #:code (lambda (result)
-                           (append ((code (typecast target a)) result)
-                                   (list (op result))))))))
-(unary-op - NEG)
-(unary-op ~ NOT)
+            #:name name
+            #:code (mode op a)))))
+(unary-op - mutable-unary NEG identity)
+(unary-op ~ mutable-unary NOT identity)
+(unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut typecast <bool> <>))
+(unary-op !=0 immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut typecast <bool> <>))
 (define-syntax-rule (binary-op name op)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(target (coerce (type (class-of a)) (type (class-of b))))
            (tmp    (make <var> #:type target))]
       (make (fragment target)
             #:args (list a b)
-            #:op name
+            #:name name
             #:code (lambda (result)
                            (append ((code (typecast target a)) result)
                                    ((code (typecast target b)) tmp)
@@ -369,7 +374,7 @@
   (compose-from self (map (cut make <var> #:type <>) (types self))))
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
-  (apply (get-op self) (map project (get-args self))))
+  (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
   ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
@@ -390,7 +395,7 @@
   (let [(loops (map elem-wise (get-args self)))]
     (list (map setup loops)
           (map increment loops)
-          (apply (get-op self) (map body loops)))))
+          (apply (get-name self) (map body loops)))))
 (define setup car)
 (define increment cadr)
 (define body caddr)
