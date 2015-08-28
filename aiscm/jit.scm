@@ -24,7 +24,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op typecast type assemble jit
-            & | ^)
+            ~ & | ^)
   #:export-syntax (env blocked until for repeat))
 
 (define-method (get-args self) '())
@@ -330,6 +330,18 @@
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
+; unary: -, ~
+(define-syntax-rule (unary-op name op)
+  (define-method (name (a <fragment<element>>))
+    (let* [(target (type (class-of a)))]
+      (make (fragment target)
+            #:args (list a)
+            #:op name
+            #:code (lambda (result)
+                           (append ((code (typecast target a)) result)
+                                   (list (op result))))))))
+(unary-op - NEG)
+(unary-op ~ NOT)
 (define-syntax-rule (binary-op name op)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(target (coerce (type (class-of a)) (type (class-of b))))
