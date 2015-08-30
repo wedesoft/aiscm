@@ -25,7 +25,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op get-name typecast type assemble jit
-            ~ & | ^ =0 !=0)
+            ~ & | ^ =0 !=0 != && ||)
   #:export-syntax (env blocked until for repeat))
 
 (define-method (get-args self) '())
@@ -286,7 +286,10 @@
                     (map (bump-interval (code-length (list (car prog))))
                          (blocked-intervals (cdr prog)))))
     (else '())))
-
+(define ((binary-bool op) r a b)
+  (env [(r1 <bool>)
+        (r2 <bool>)]
+    (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1)))
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name #:init-keyword #:name #:getter get-name)
               (args #:init-keyword #:args #:getter get-args)
@@ -347,11 +350,23 @@
 (unary-op ~ mutable-unary NOT identity)
 (unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut typecast <bool> <>))
 (unary-op !=0 immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut typecast <bool> <>))
+; TODO: unary operation conj
+; TODO: unary operation abs (scalar)
+; TODO: unary operation arg (float-scalar)
+; TODO: unary operation floor
+; TODO: unary operation ceil
+; TODO: unary operation round
 (define (mutable-binary op intermediate a b)
   (let [(tmp (make <var> #:type intermediate))]
     (lambda (result) (append ((code (typecast intermediate a)) result)
                              ((code (typecast intermediate b)) tmp)
                              (list (op result tmp))))))
+(define (immutable-binary op intermediate a b)
+  (let [(tmp1 (make <var> #:type intermediate))
+        (tmp2 (make <var> #:type intermediate))]
+    (lambda (result) (append ((code (typecast intermediate a)) tmp1)
+                             ((code (typecast intermediate b)) tmp2)
+                             (list (op result tmp1 tmp2))))))
 (define-syntax-rule (binary-op name mode op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coerce (type (class-of a)) (type (class-of b))))
@@ -366,6 +381,25 @@
 (binary-op & mutable-binary AND identity)
 (binary-op | mutable-binary OR identity)
 (binary-op ^ mutable-binary XOR identity)
+;(define-binary-op / (copying-binary-op coerce divide) coerce)
+(binary-op = immutable-binary (lambda (r a b) (list (CMP a b) (SETE r))) (cut typecast <bool> <>))
+(binary-op != immutable-binary (lambda (r a b) (list (CMP a b) (SETNE r))) (cut typecast <bool> <>))
+;(define-binary-op < (copying-binary-op sign-space (cmp-setcc SETL SETB)) (compose to-bool coerce))
+;(define-binary-op <= (copying-binary-op sign-space (cmp-setcc SETLE SETBE)) (compose to-bool coerce))
+;(define-binary-op > (copying-binary-op sign-space (cmp-setcc SETNLE SETNBE)) (compose to-bool coerce))
+;(define-binary-op >= (copying-binary-op sign-space (cmp-setcc SETNL SETNB)) (compose to-bool coerce))
+;(define-binary-op && (copying-binary-op coerce (test-booleans AND)) (compose to-bool coerce))
+(binary-op && immutable-binary (binary-bool AND) (cut typecast <bool> <>))
+;(define-binary-op || (copying-binary-op coerce (test-booleans OR)) (compose to-bool coerce))
+(binary-op || immutable-binary (binary-bool OR) (cut typecast <bool> <>))
+; TODO: binary operation ** (coercion-maxint)
+; TODO: binary operation %
+; TODO: binary operation fmod
+; TODO: binary operation and (coercion-bool)
+; TODO: binary operation or (coercion-bool)
+; TODO: binary operation <<
+; TODO: binary operation >>
+; TODO: conditional -> minor, major
 (define-method (compose-from (self <meta<element>>) vars) (param self vars)); TODO: <-> param
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
 (define-method (decompose (self <var>)) (list self))
@@ -415,7 +449,7 @@
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
                      (append (store retval fragment) (list (RET)))))
-(define (jit ctx classes proc)
+(define (jit ctx classes proc); TODO: how to return boolean?
   (let* [(vars        (map skel classes))
          (fragment    (apply proc (map parameter vars)))
          (return-type (type (class-of fragment)))

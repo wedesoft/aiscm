@@ -240,7 +240,7 @@
   (let [(t (coerce a b))]
   (if (eq? (signed? (typecode a)) (signed? (typecode b)))
     t
-    (integer (max 32 (bits t)) (if (signed? t) signed unsigned)))))
+    (integer (max 32 (bits t)) signed))))
 
 (define-unary-op duplicate copy-op identity)
 (define-unary-op - (destructive-unary-op NEG) identity)
@@ -248,13 +248,6 @@
 (define-unary-op =0 (copying-unary-op (test-setcc SETE)) to-bool)
 (define-unary-op !=0 (copying-unary-op (test-setcc SETNE)) to-bool)
 (define ! =0)
-
-; TODO: unary operation conj
-; TODO: unary operation abs (scalar)
-; TODO: unary operation arg (float-scalar)
-; TODO: unary operation floor
-; TODO: unary operation ceil
-; TODO: unary operation round
 
 (define-binary-op + (destructive-binary-op ADD) coerce)
 (define-binary-op - (destructive-binary-op SUB) coerce)
@@ -271,12 +264,3 @@
 (define-binary-op >= (copying-binary-op sign-space (cmp-setcc SETNL SETNB)) (compose to-bool coerce))
 (define-binary-op && (copying-binary-op coerce (test-booleans AND)) (compose to-bool coerce))
 (define-binary-op || (copying-binary-op coerce (test-booleans OR)) (compose to-bool coerce))
-
-; TODO: binary operation ** (coercion-maxint)
-; TODO: binary operation %
-; TODO: binary operation fmod
-; TODO: binary operation and (coercion-bool)
-; TODO: binary operation or (coercion-bool)
-; TODO: binary operation <<
-; TODO: binary operation >>
-; TODO: conditional -> minor, major
