@@ -292,6 +292,35 @@
   (env [(r1 <bool>)
         (r2 <bool>)]
     (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1)))
+(define (divide r a b)
+  (let* [(size (size-of (typecode r)))
+         (ax   (reg size 0))
+         (dx   (reg size 2))]
+    (blocked RAX
+      (if (signed? (typecode r))
+        (if (= size 1)
+          (list
+            (MOV AL a)
+            (CBW)
+            (IDIV b)
+            (MOV r AL))
+          (list
+            (MOV ax a)
+            (blocked RDX
+              (case size ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))
+              (IDIV b)
+              (MOV r ax))))
+        (if (= size 1)
+          (list
+            (MOVZX AX a)
+            (DIV b)
+            (MOV r AL))
+          (list
+            (MOV ax a)
+            (blocked RDX
+              (MOV dx 0)
+              (DIV b)
+              (MOV r ax))))))))
 (define (sign-space a b)
   (let [(coerced (coerce a b))]
     (if (eq? (signed? (typecode a)) (signed? (typecode b)))
@@ -388,7 +417,7 @@
 (binary-op & mutable-binary coerce AND identity)
 (binary-op | mutable-binary coerce OR identity)
 (binary-op ^ mutable-binary coerce XOR identity)
-;(define-binary-op / (copying-binary-op coerce divide) coerce)
+(binary-op / immutable-binary coerce divide identity)
 (binary-op = immutable-binary coerce (binary-cmp SETE SETE) (cut typecast <bool> <>))
 (binary-op != immutable-binary coerce (binary-cmp SETNE SETNE) (cut typecast <bool> <>))
 (binary-op < immutable-binary sign-space (binary-cmp SETL SETB) (cut typecast <bool> <>))
