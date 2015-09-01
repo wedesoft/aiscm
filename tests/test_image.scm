@@ -5,6 +5,7 @@
              (aiscm element)
              (aiscm sequence)
              (aiscm image)
+             (aiscm jit)
              (guile-tap))
 (define l '((2 3 5 7 11 13 17 19)))
 (define m (to-array l))

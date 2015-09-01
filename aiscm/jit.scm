@@ -24,7 +24,7 @@
             <fragment<element>> <meta<fragment<element>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code get-args get-op get-name typecast type assemble jit
+            parameter code get-args get-op get-name to-type type assemble jit
             ~ & | ^ =0 !=0 != && ||)
   #:export-syntax (env blocked until for repeat))
 
@@ -325,7 +325,7 @@
   (let [(coerced (coerce a b))]
     (if (eq? (signed? (typecode a)) (signed? (typecode b)))
       coerced
-      (typecast (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
+      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name #:init-keyword #:name #:getter get-name)
               (args #:init-keyword #:args #:getter get-args)
@@ -351,11 +351,11 @@
         #:args (list var)
         #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
-(define-method (typecast (target <meta<element>>) (self <meta<element>>))
-  target); TODO: test
-(define-method (typecast (target <meta<element>>) (self <meta<sequence<>>>))
-  (multiarray target (dimension self))); TODO: test
-(define-method (typecast (target <meta<element>>) (frag <fragment<element>>)); TODO: rename to to-type
+(define-method (to-type (target <meta<element>>) (self <meta<element>>))
+  target)
+(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
+  (multiarray target (dimension self)))
+(define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
   (let* [(source (typecode (type (class-of frag))))
          (tmp    (make <var> #:type source))
          (mov    (if (>= (size-of source) (size-of target))
@@ -363,9 +363,9 @@
                      (if (signed? source)
                          MOVSX
                          (if (>= (size-of source) 4) MOV MOVZX))))]
-    (make (fragment (typecast target (type (class-of frag))))
+    (make (fragment (to-type target (type (class-of frag))))
           #:args (list target frag)
-          #:name typecast
+          #:name to-type
           #:code (lambda (result)
                          (append ((code frag) tmp) (list (mov result tmp)))))))
 (fragment <pointer<>>)
@@ -384,8 +384,8 @@
             #:code (mode op a)))))
 (unary-op - mutable-unary NEG identity)
 (unary-op ~ mutable-unary NOT identity)
-(unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut typecast <bool> <>))
-(unary-op !=0 immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut typecast <bool> <>))
+(unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
+(unary-op !=0 immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
 ; TODO: unary operation conj
 ; TODO: unary operation abs (scalar)
 ; TODO: unary operation arg (float-scalar)
@@ -394,14 +394,14 @@
 ; TODO: unary operation round
 (define (mutable-binary op intermediate a b)
   (let [(tmp (make <var> #:type intermediate))]
-    (lambda (result) (append ((code (typecast intermediate a)) result)
-                             ((code (typecast intermediate b)) tmp)
+    (lambda (result) (append ((code (to-type intermediate a)) result)
+                             ((code (to-type intermediate b)) tmp)
                              (list (op result tmp))))))
 (define (immutable-binary op intermediate a b)
   (let [(tmp1 (make <var> #:type intermediate))
         (tmp2 (make <var> #:type intermediate))]
-    (lambda (result) (append ((code (typecast intermediate a)) tmp1)
-                             ((code (typecast intermediate b)) tmp2)
+    (lambda (result) (append ((code (to-type intermediate a)) tmp1)
+                             ((code (to-type intermediate b)) tmp2)
                              (list (op result tmp1 tmp2))))))
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
@@ -418,14 +418,14 @@
 (binary-op | mutable-binary coerce OR identity)
 (binary-op ^ mutable-binary coerce XOR identity)
 (binary-op / immutable-binary coerce divide identity)
-(binary-op = immutable-binary coerce (binary-cmp SETE SETE) (cut typecast <bool> <>))
-(binary-op != immutable-binary coerce (binary-cmp SETNE SETNE) (cut typecast <bool> <>))
-(binary-op < immutable-binary sign-space (binary-cmp SETL SETB) (cut typecast <bool> <>))
-(binary-op <= immutable-binary sign-space (binary-cmp SETLE SETBE) (cut typecast <bool> <>))
-(binary-op > immutable-binary sign-space (binary-cmp SETNLE SETNBE) (cut typecast <bool> <>))
-(binary-op >= immutable-binary sign-space (binary-cmp SETNL SETNB) (cut typecast <bool> <>))
-(binary-op && immutable-binary coerce (binary-bool AND) (cut typecast <bool> <>))
-(binary-op || immutable-binary coerce (binary-bool OR) (cut typecast <bool> <>))
+(binary-op = immutable-binary coerce (binary-cmp SETE SETE) (cut to-type <bool> <>))
+(binary-op != immutable-binary coerce (binary-cmp SETNE SETNE) (cut to-type <bool> <>))
+(binary-op < immutable-binary sign-space (binary-cmp SETL SETB) (cut to-type <bool> <>))
+(binary-op <= immutable-binary sign-space (binary-cmp SETLE SETBE) (cut to-type <bool> <>))
+(binary-op > immutable-binary sign-space (binary-cmp SETNLE SETNBE) (cut to-type <bool> <>))
+(binary-op >= immutable-binary sign-space (binary-cmp SETNL SETNB) (cut to-type <bool> <>))
+(binary-op && immutable-binary coerce (binary-bool AND) (cut to-type <bool> <>))
+(binary-op || immutable-binary coerce (binary-bool OR) (cut to-type <bool> <>))
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: binary operation %
 ; TODO: binary operation fmod
@@ -461,7 +461,7 @@
                 (MOV p (get-value s)))
           (list (ADD p incr))
           (project (rebase p s)))))
-(define-method (elem-wise (self <fragment<sequence<>>>)); TODO: generalise for multiple recursive arguments
+(define-method (elem-wise (self <fragment<sequence<>>>))
   (let [(loops (map elem-wise (get-args self)))]
     (list (map setup loops)
           (map increment loops)
