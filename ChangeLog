@@ -1,3 +1,10 @@
+2015-09-02  Jan Wedekind <jan@wedesoft.de> 0.2.1
+	* aiscm/jit.scm: code fragments
+	* aiscm/op.scm: array operators based on code fragments
+	- block regions for reserving registers
+	- integer division
+	- boolean operations
+
 2015-06-11  Jan Wedekind <jan@wedesoft.de> 0.1.7
 	* aiscm/util.scm: register allocation using coloring of intervals
 	* aiscm/sequence.scm: printing of arrays

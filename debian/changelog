@@ -1,3 +1,13 @@
+aiscm (0.2.1-1) UNRELEASED; urgency=low
+
+  * aiscm/jit.scm: code fragments
+  * aiscm/op.scm: array operators based on code fragments
+  - block regions for reserving registers
+  - integer division
+  - boolean operations
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 2 Sep 2015 18:02:33 +0100
+
 aiscm (0.1.8-1) UNRELEASED; urgency=low
 
   * IDIV and DIV using blocked registers
