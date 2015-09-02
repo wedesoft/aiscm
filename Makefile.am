@@ -17,4 +17,4 @@ MAINTAINERCLEANFILES = aclocal.m4 configure Makefile.in mkinstalldirs \
 	m4/libtool.m4 m4/lt~obsolete.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
 
 maintainer-clean-local:
-	rm -Rf build-aux
+	rm -Rf build-aux pkg
