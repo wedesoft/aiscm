@@ -2,7 +2,7 @@
 
 ## Ready
 
-* "env" not returning list
+* replace 'make <var>' with 'env'
 * parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
     rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
     code: store object -> machine code

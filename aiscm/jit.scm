@@ -81,7 +81,7 @@
      (let [(name (make <var> #:type type #:symbol (quote name)))]
        (env [vars ...] body ...)))
     ((env [] body ...)
-     (list body ...))))
+     (begin body ...))))
 
 (define-method (ptr (type <meta<element>>) . args)
   (make <ptr> #:type type #:args args))
@@ -261,7 +261,7 @@
 (define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 (define-syntax-rule (for [(index type) setup condition step] body ...)
-  (env [(index type)] setup (until condition body ... step)))
+  (env [(index type)] (list setup (until condition body ... step))))
 (define-syntax-rule (repeat n body ...)
   (for [(i (typecode n)) (MOV i 0) (CMP i n) (INC i)] body ...))
 
@@ -291,7 +291,7 @@
 (define ((binary-bool op) r a b)
   (env [(r1 <bool>)
         (r2 <bool>)]
-    (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1)))
+    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (divide r a b)
   (let* [(size (size-of (typecode r)))
          (ax   (reg size 0))
