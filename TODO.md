@@ -2,7 +2,7 @@
 
 ## Ready
 
-* rename 'env' to 'let-vars'
+* macros: (jit-method [(x <int>) (y <float>)] (+ x y))
 * parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
     rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
     code: store object -> machine code
@@ -16,7 +16,6 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
-* macros: (compile (test (x <int>) (y <float>)) (+ x y))
 * wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * RGB

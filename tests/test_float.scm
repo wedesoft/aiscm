@@ -55,5 +55,5 @@
     "'types' returns the type itself")
 (ok (equal? '(1.25) (content 1.25))
     "'content' returns floating point values")
-(ok (env [(v <float>)] (equal? v (param <float> (list v))))
+(ok (let-vars [(v <float>)] (equal? v (param <float> (list v))))
     "'param' passes floating point variables through")

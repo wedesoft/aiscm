@@ -1,56 +1,9 @@
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float))
 
+
 (define ctx (make <context>))
 
-(define a (make <var> #:type <int> #:symbol 'a))
-(define b (make <var> #:type <int> #:symbol 'b))
-(define c (make <var> #:type <int> #:symbol 'c))
-(define x (make <var> #:type <long> #:symbol 'x))
-(define y (make <var> #:type <long> #:symbol 'y))
-(define p (make <var> #:type <long> #:symbol 'p))
-(define q (make <var> #:type <long> #:symbol 'q))
-(define *p (make (pointer <int>) #:value p))
-(define *q (make (pointer <int>) #:value q))
-(define s (param (sequence <int>) (list x y p)))
-(define r (param (sequence <int>) (list x y q)))
-
-(store r (typecast <int> (parameter s)))
-
-((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))
-
-(assemble r (list s) (parameter s))
-
-((jit ctx (list (sequence <int>)) identity) (seq <int> 1 2 3))
-
-; code: store object -> machine code
-; #:code (lambda (store) (store (lambda (result) ... )))
-; store: make result var, call code
-; store: loop (initialise, rebase, project), make result var, call code, write to memory
-; (accessors s) -> ((pointer stride count) ...) which pointer?
-; (tensor [i] ((roll m) i))
-; (tensor [i] (get m i 1))
-; (tensor [i j] (* (s i) (s j)))
-; (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-
-;(env [(*p <long>)]
-;  (store (project (rebase *p s)) (project ...)))
-
-(project s)
-
-(define (coerce-shapes a b)
-  (let [(shape-a (shape a))
-        (shape-b (shape b))]
-    (if (>= (length shape-a) (length shape-b)) shape-a shape-b)))
-
-(define-syntax-rule (element-wise (type p start n step) body ...)
-  (env [(delta <long>)
-        (stop  <long>)
-        (incr  <long>)]
-    (MOV delta n)
-    (IMUL delta step)
-    (LEA stop (ptr type start delta))
-    (IMUL incr step (size-of type))
-    (for [(p <long>) (MOV p start) (CMP p stop) (ADD p incr)] body ...)))
+; macros: (jit-method [(x <int>) (y <float>)] (+ x y))
 
 (define-syntax tensor-list
   (syntax-rules ()
