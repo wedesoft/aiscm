@@ -57,6 +57,5 @@
     "Memory is allocated if no value is specified")
 (ok (equal? (list <long>) (types (pointer <sint>)))
     "'types' for a pointer returns a long integer")
-(ok (let [(v (make <var> #:type <long> #:symbol 'v))]
-      (equal? v (param (pointer <byte>) (list v))))
+(ok (env [(v <long>)] (equal? v (param (pointer <byte>) (list v))))
     "'param' passes address variables through")

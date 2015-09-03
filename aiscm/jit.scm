@@ -81,7 +81,7 @@
      (let [(name (make <var> #:type type #:symbol (quote name)))]
        (env [vars ...] body ...)))
     ((env [] body ...)
-     (list body ...))))
+     (begin body ...))))
 
 (define-method (ptr (type <meta<element>>) . args)
   (make <ptr> #:type type #:args args))
@@ -166,7 +166,7 @@
                         (list x))) prog)))
 
 (define ((insert-temporary var) cmd)
-  (let [(temporary (make <var> #:type (typecode var)))]
+  (env [(temporary (typecode var))]
     (compact
       (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
@@ -261,7 +261,7 @@
 (define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 (define-syntax-rule (for [(index type) setup condition step] body ...)
-  (env [(index type)] setup (until condition body ... step)))
+  (env [(index type)] (list setup (until condition body ... step))))
 (define-syntax-rule (repeat n body ...)
   (for [(i (typecode n)) (MOV i 0) (CMP i n) (INC i)] body ...))
 
@@ -291,7 +291,7 @@
 (define ((binary-bool op) r a b)
   (env [(r1 <bool>)
         (r2 <bool>)]
-    (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1)))
+    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (divide r a b)
   (let* [(size (size-of (typecode r)))
          (ax   (reg size 0))
@@ -373,7 +373,7 @@
 (define (mutable-unary op a)
   (lambda (result) (append ((code a) result) (list (op result)))))
 (define (immutable-unary op a)
-  (let [(tmp (make <var> #:type (type (class-of a))))]
+  (env [(tmp (type (class-of a)))]
     (lambda (result) (append ((code a) tmp) (list (op result tmp))))))
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
@@ -393,13 +393,13 @@
 ; TODO: unary operation ceil
 ; TODO: unary operation round
 (define (mutable-binary op intermediate a b)
-  (let [(tmp (make <var> #:type intermediate))]
+  (env [(tmp intermediate)]
     (lambda (result) (append ((code (to-type intermediate a)) result)
                              ((code (to-type intermediate b)) tmp)
                              (list (op result tmp))))))
 (define (immutable-binary op intermediate a b)
-  (let [(tmp1 (make <var> #:type intermediate))
-        (tmp2 (make <var> #:type intermediate))]
+  (env [(tmp1 intermediate)
+        (tmp2 intermediate)]
     (lambda (result) (append ((code (to-type intermediate a)) tmp1)
                              ((code (to-type intermediate b)) tmp2)
                              (list (op result tmp1 tmp2))))))
@@ -448,15 +448,15 @@
 (define-method (store (a <var>) (b <fragment<element>>))
   ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (let [(tmp (make <var> #:type (type (class-of a))))]
+  (env [(tmp (type (class-of a)))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
   (store p (fetch a)))
 (define-method (elem-wise s)
   (list '() '() s))
 (define-method (elem-wise (s <sequence<>>))
-  (let [(incr  (make <var> #:type <long> #:symbol 'incr))
-        (p     (make <var> #:type <long> #:symbol 'p))]
+  (env [(incr  <long>)
+        (p     <long>)]
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (list (ADD p incr))
