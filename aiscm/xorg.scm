@@ -3,6 +3,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm sequence)
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
@@ -38,15 +39,17 @@
     (show window)
     (event-loop display)
     (hide window)
-    (destroy display)))
+    (destroy display))
+    self)
+(define-method (show (self <sequence<>>)) (show (to-image self)) self)
 (define-method (show (self <procedure>))
-  (let* [(img     (self))
+  (let* [(img     (to-image (self)))
          (display (make <xdisplay>))
          (window  (make <xwindow> #:display display #:shape (shape img) #:io IO-XVIDEO))]
     (title= window "AIscm")
     (show window img)
     (show window)
-    (do () ((quit? display)) (show window (self)) (process-events display))
+    (do () ((quit? display)) (show window (to-image (self))) (process-events display))
     (hide window)
     (destroy display)))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))

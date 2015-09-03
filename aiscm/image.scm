@@ -143,7 +143,8 @@
                    (mem     (get-mem self))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
     (else   (to-array (convert self 'GRAY))))); TODO: conversion of color images
-(define (to-image self); TODO: convert arrays other than UBYTE, compact image if strides not 1
+(define-method (to-image (self <image>)) self)
+(define-method (to-image (self <sequence<>>)); TODO: convert arrays other than UBYTE, compact image if strides not 1
   (if (= (car (strides self)) 1)
     (make <image> #:format 'GRAY
                   #:shape (shape self)
