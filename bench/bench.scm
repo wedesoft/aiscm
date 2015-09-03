@@ -2,6 +2,7 @@
              (aiscm element)
              (aiscm int)
              (aiscm sequence)
+             (aiscm jit)
              (aiscm op)
              (aiscm util))
 
