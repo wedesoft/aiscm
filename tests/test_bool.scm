@@ -65,6 +65,5 @@
     "'content' returns 0 for false")
 (ok (equal? '(1) (content #t))
     "'content' returns 1 for true")
-(ok (let [(v (make <var> #:type <ubyte> #:symbol 'v))]
-      (equal? v (param <bool> (list v))))
+(ok (env [(v <ubyte>)] (equal? v (param <bool> (list v))))
     "'param' passes unsigned byte variables through")

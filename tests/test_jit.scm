@@ -74,8 +74,7 @@
 (ok (equal? (list a 0) (get-args (MOV a 0)))
     "Get arguments of command")
 (ok (equal? (list (MOV ECX 42))
-            (let [(v (make <var> #:type <int> #:symbol 'v))]
-              (substitute-variables (list (MOV v 42)) (list (cons v RCX)))))
+            (env [(v <int>)] (substitute-variables (list (MOV v 42)) (list (cons v RCX)))))
     "Substitute integer variable with register")
 (ok (equal? (list (MOV RCX (ptr <long> RAX)))
             (substitute-variables (list (MOV p (ptr <long> RAX))) (list (cons p RCX))))
@@ -179,8 +178,7 @@
             (flatten-code (list (list (JMP 1) 'a) (NOP) (RET))))
     "'flatten-code' should flatten nested environments")
 (ok (equal? (list (MOV EAX 0) (RET))
-            (pass-parameter-variables <null> '() (lambda () (let [(v (make <var> #:type <int> #:symbol 'v))]
-                                                              (list (list (MOV v 0)) (RET))))))
+            (pass-parameter-variables <null> '() (lambda () (env [(v <int>)] (list (list (MOV v 0)) (RET))))))
     "'pass-parameter-variables' handles nested code blocks")
 (ok (equal? (list (MOV ECX (ptr <int> RSP 8)) (MOV EAX ECX) (RET))
             (pass-parameter-variables <int> (make-list 7 <int>)
@@ -209,15 +207,12 @@
 (ok (equal? (list (MOV (ptr <long> RSP #x-10) R12) (MOV R12D 0) (MOV R12 (ptr <long> RSP #x-10)) (RET))
             (save-and-use-registers (list (MOV a 0) (RET)) (list (cons a R12)) '() -16))
     "'save-and-use-registers' should use the specified offset for saving callee-saved registers")
-(ok (let [(b (make <var> #:type <int> #:symbol 'b))
-          (i (make <var> #:type <ubyte> #:symbol 'i))]
+(ok (env [(b <int>) (i <ubyte>)]
       (equal? (list i b) (collate (list <int> <bool>) (list i b))))
     "'collate' passes through integer- and boolean-variables")
-(ok (let* [(p (make <var> #:type <long> #:symbol 'p))
-           (l (make <var> #:type <long> #:symbol 'l))
-           (i (make <var> #:type <long> #:symbol 'i))
-           (s (car (collate (list (sequence <byte>)) (list l i p))))]
-      (equal? (list p l i) (list (get-value s) (car (shape s)) (car (strides s)))))
+(ok (env [(p <long>) (l <long>) (i <long>)]
+      (let [(s (car (collate (list (sequence <byte>)) (list l i p))))]
+        (equal? (list p l i) (list (get-value s) (car (shape s)) (car (strides s))))))
     "'collate' constructs sequences")
 (ok (unspecified? ((translate ctx <null> '() (lambda () (list (RET))))))
     "'translate' can create an empty function")
