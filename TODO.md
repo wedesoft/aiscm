@@ -2,12 +2,8 @@
 
 ## Ready
 
-* parameter passing for sequences, map, tensor operations (code fragments: code, return value(s), predefined)
-    rebase/1 -> rebased (and projected?) seq., pointer, stride (length?)
-    code: store object -> machine code
-    #:code (lambda (store) (store (lambda (result) ... )))
-    store: make result var, call code
-    store: loop (initialise, rebase, project), make result var, call code, write to memory
+* RGB
+* parameter passing for sequences, map, tensor operations
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
     (tensor [i] ((roll (+ m s) i))
@@ -17,7 +13,6 @@
     (tensor [i j] (* (s i) (s j)))
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
-* RGB
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * Scheme objects
 * RET keeps return value and callee-saved stuff alive
