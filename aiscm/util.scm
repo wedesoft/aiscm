@@ -1,5 +1,6 @@
 (define-module (aiscm util)
   #:use-module (oop goops)
+  #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
@@ -9,7 +10,8 @@
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
-            first-index last-index compact index-groups update-intervals)
+            first-index last-index compact index-groups update-intervals
+            bytevector-sub)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -133,3 +135,7 @@
          (cons (car pair)
                (cons (car (list-ref groups (cadr pair)))
                      (cdr (list-ref groups (cddr pair)))))) intervals))
+(define (bytevector-sub bv offset len)
+  (let [(retval (make-bytevector len))]
+    (bytevector-copy! bv offset retval 0 len)
+    retval))

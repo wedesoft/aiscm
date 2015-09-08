@@ -43,10 +43,7 @@
     retval))
 (define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
   (let* [(size    (size-of (type self)))
-         (vectors (map (cut make-bytevector <>) (make-list 3 size)))]
-    (for-each (lambda (vec offset) (bytevector-copy! packed offset vec 0 size))
-              vectors
-              (map (cut * size <>) (iota 3)))
+         (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 3))))]
     (make self #:red   (get (unpack (type self) (car vectors)))
                #:green (get (unpack (type self) (cadr vectors)))
                #:blue  (get (unpack (type self) (caddr vectors))))))

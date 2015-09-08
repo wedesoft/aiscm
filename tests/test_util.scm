@@ -1,8 +1,9 @@
 (use-modules (srfi srfi-1)
              (oop goops)
+             (rnrs bytevectors)
              (aiscm util)
              (guile-tap))
-(planned-tests 53)
+(planned-tests 54)
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
@@ -137,3 +138,5 @@
 (ok (equal? '((a 0 . 0) (b 3 . 6))
             (update-intervals '((a 0 . 0) (b 2 . 3)) '((0 . 0) (1 . 2) (3 . 5) (6 . 6))))
     "Enlarging intervals according to list of consecutive ranges")
+(ok (equal? #vu8(3 5) (bytevector-sub #vu8(2 3 5 7 11) 1 2))
+    "Extract part of byte vector")
