@@ -5,8 +5,8 @@
              (aiscm int)
              (aiscm float)
              (guile-tap))
-(planned-tests 10)
-(define c (make <ubytergb> #:red 1 #:green 2 #:blue 3))
+(planned-tests 12)
+(define c (make <ubytergb> #:value (rgb 1 2 3)))
 (ok (equal? "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))
     "display untyped RGB value")
 (ok (equal? (rgb (integer 8 unsigned)) (rgb (integer 8 unsigned)))
@@ -17,9 +17,9 @@
     "storage size of single-precision floating-point RGB")
 (ok (eq? <int> (type <intrgb>))
     "type of RGB channel")
-(ok (equal? c (make <ubytergb> #:red 1 #:green 2 #:blue 3))
+(ok (equal? (rgb 1 2 3) (rgb 1 2 3))
     "equal RGB objects")
-(ok (not (equal? c (make <ubytergb> #:red 1 #:green 4 #:blue 3)))
+(ok (not (equal? (rgb 1 2 3) (rgb 1 4 3)))
     "unequal RGB objects")
 (ok (equal? #vu8(#x01 #x02 #x03) (pack c))
     "pack RGB value")
@@ -27,5 +27,10 @@
     "unpack RGB value")
 (ok (null? (shape c))
     "RGB has no dimensions")
-; TODO: display, write
-; TODO: coercion, value, types, conent, param
+(ok (equal? "#<<rgb<int<16,signed>>> (rgb 1 2 3)>"
+            (call-with-output-string (lambda (port) (display (make <sintrgb> #:value (rgb 1 2 3)) port))))
+    "display short integer RGB object")
+(ok (equal? "#<<rgb<int<16,signed>>> (rgb 1 2 3)>"
+            (call-with-output-string (lambda (port) (write (make <sintrgb> #:value (rgb 1 2 3)) port))))
+    "write short integer RGB object")
+; TODO: coercion, value, types, content, param
