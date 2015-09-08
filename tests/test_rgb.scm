@@ -5,7 +5,7 @@
              (aiscm int)
              (aiscm float)
              (guile-tap))
-(planned-tests 7)
+(planned-tests 8)
 (define c (make <ubytergb> #:red 1 #:green 2 #:blue 3))
 (ok (equal? (rgb (integer 8 unsigned)) (rgb (integer 8 unsigned)))
     "equality of RGB types")
@@ -22,6 +22,7 @@
     "unequal RGB objects")
 (ok (equal? #vu8(#x01 #x02 #x03) (pack c))
     "pack RGB value")
-; TODO: unpack
+(ok (equal? c (unpack <ubytergb> #vu8(#x01 #x02 #x03)))
+    "unpack RGB value")
 ; TODO: shape, display, write
 ; TODO: coercion, value, types, conent, param

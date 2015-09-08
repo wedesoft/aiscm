@@ -26,13 +26,22 @@
   (let-keywords initargs #f (red green blue)
     (next-method self (list #:value (list red green blue)))) )
 (define-method (pack (self <rgb<>>))
-  (let [(channels (map (cut make (type (class-of self)) #:value <>) (get-value self)))
-        (l        (size-of (type (class-of self))))
-        (retval   (make-bytevector (size-of (class-of self))))]
-    (for-each (lambda (channel offset)
-      (bytevector-copy! (pack channel) 0 retval offset l) )
-      channels (map (cut * l <>) (iota 3)) )
+  (let* [(channels (map (cut make (type (class-of self)) #:value <>) (get-value self)))
+         (size     (size-of (type (class-of self))))
+         (retval   (make-bytevector (size-of (class-of self))))]
+    (for-each (lambda (channel offset) (bytevector-copy! (pack channel) 0 retval offset size))
+              channels
+              (map (cut * size <>) (iota 3)) )
     retval))
+(define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
+  (let* [(size    (size-of (type self)))
+         (vectors (map (cut make-bytevector <>) (make-list 3 size)))]
+    (for-each (lambda (vec offset) (bytevector-copy! packed offset vec 0 size))
+              vectors
+              (map (cut * size <>) (iota 3)))
+    (make self #:red   (get (unpack (type self) (car vectors)))
+               #:green (get (unpack (type self) (cadr vectors)))
+               #:blue  (get (unpack (type self) (caddr vectors))))))
 (define <ubytergb> (rgb <ubyte>))
 (define <bytergb> (rgb <byte>))
 (define <usintrgb> (rgb <usint>))
