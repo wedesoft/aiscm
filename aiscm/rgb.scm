@@ -35,12 +35,8 @@
     (next-method self (list #:value (list red green blue)))) )
 (define-method (pack (self <rgb<>>))
   (let* [(channels (map (cut make (type (class-of self)) #:value <>) (get-value self)))
-         (size     (size-of (type (class-of self))))
-         (retval   (make-bytevector (size-of (class-of self))))]
-    (for-each (lambda (channel offset) (bytevector-copy! (pack channel) 0 retval offset size))
-              channels
-              (map (cut * size <>) (iota 3)) )
-    retval))
+         (size     (size-of (type (class-of self))))]
+    (bytevector-concat (map pack channels))))
 (define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
   (let* [(size    (size-of (type self)))
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 3))))]

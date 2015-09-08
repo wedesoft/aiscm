@@ -11,7 +11,7 @@
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
-            bytevector-sub)
+            bytevector-sub bytevector-concat)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -138,4 +138,12 @@
 (define (bytevector-sub bv offset len)
   (let [(retval (make-bytevector len))]
     (bytevector-copy! bv offset retval 0 len)
+    retval))
+(define (bytevector-concat lst)
+  (let* [(lengths (map bytevector-length lst))
+         (steps   (integral lengths))
+         (offsets (cons 0 (all-but-last steps)))
+         (retval  (make-bytevector (last steps)))]
+    (for-each (lambda (arg offset len) (bytevector-copy! arg 0 retval offset len))
+              lst offsets lengths)
     retval))
