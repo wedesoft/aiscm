@@ -3,7 +3,7 @@ TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PAT
 SCM_LOG_COMPILE = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(srcdir)
 SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 
-TESTS = test_mem.scm test_bool.scm test_int.scm test_float.scm test_pointer.scm \
+TESTS = test_mem.scm test_bool.scm test_int.scm test_float.scm test_rgb.scm test_pointer.scm \
 				test_sequence.scm test_asm.scm test_jit.scm test_op1.scm test_op2.scm test_util.scm \
 				test_compile.scm test_image.scm
 

@@ -32,9 +32,8 @@
   (template-class (int nbits sgn) <int<>>
     (lambda (class metaclass)
       (define-method (bits (self metaclass)) nbits)
-      (define-method (signed? (self metaclass)) (eq? sgn 'signed)))))
-(define-method (size-of (self <meta<int<>>>))
-  (quotient (+ (bits self) 7) 8))
+      (define-method (signed? (self metaclass)) (eq? sgn 'signed))
+      (define-method (size-of (self metaclass)) (quotient (+ nbits 7) 8)))))
 (define native-bits (* (sizeof '*) 8))
 (define <ubyte> (integer  8 unsigned))
 (define <byte>  (integer  8 signed  ))
