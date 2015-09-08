@@ -7,6 +7,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm util)
   #:export (rgb type
+            <rgb> reg green blue
             <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<integer<8,unsigned>>>  <rgb<integer<8,unsigned>>>
             <bytergb>  <rgb<integer<8,signed>>>    <rgb<integer<8,signed>>>
@@ -16,8 +17,15 @@
             <intrgb>   <rgb<integer<32,signed>>>   <rgb<integer<32,signed>>>
             <ulonggb>  <rgb<integer<64,unsigned>>> <rgb<integer<64,unsigned>>>
             <longrgb>  <rgb<integer<64,signed>>>   <rgb<integer<64,signed>>>))
+(define-class <rgb> ()
+  (red   #:init-keyword #:red   #:getter red)
+  (green #:init-keyword #:green #:getter green)
+  (blue  #:init-keyword #:blue  #:getter blue))
+(define-method (rgb (r <real>) (g <real>) (b <real>)) (make <rgb> #:red r #:green g #:blue b))
+(define-method (write (self <rgb>) port)
+  (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
-(define (rgb t)
+(define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
     (lambda (class metaclass)
       (define-method (type (self metaclass))t); TODO: rename this
