@@ -5,7 +5,7 @@
              (aiscm int)
              (aiscm float)
              (guile-tap))
-(planned-tests 12)
+(planned-tests 14)
 (define c (make <ubytergb> #:value (rgb 1 2 3)))
 (ok (equal? "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))
     "display untyped RGB value")
@@ -33,4 +33,8 @@
 (ok (equal? "#<<rgb<int<16,signed>>> (rgb 1 2 3)>"
             (call-with-output-string (lambda (port) (write (make <sintrgb> #:value (rgb 1 2 3)) port))))
     "write short integer RGB object")
-; TODO: coercion, value, types, content, param
+(ok (equal? <ubytergb> (coerce <ubytergb> <ubyte>))
+    "coerce RGB and scalar type")
+(ok (equal? <ubytergb> (coerce <ubyte> <ubytergb>))
+    "coerce scalar type and RGB")
+; TODO: value, types, content, param

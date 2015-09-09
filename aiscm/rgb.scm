@@ -9,14 +9,14 @@
   #:export (rgb type
             <rgb> reg green blue
             <rgb<>> <meta<rgb<>>>
-            <ubytergb> <rgb<integer<8,unsigned>>>  <rgb<integer<8,unsigned>>>
-            <bytergb>  <rgb<integer<8,signed>>>    <rgb<integer<8,signed>>>
-            <usintrgb> <rgb<integer<16,unsigned>>> <rgb<integer<16,unsigned>>>
-            <sintrgb>  <rgb<integer<16,signed>>>   <rgb<integer<16,signed>>>
-            <uintrgb>  <rgb<integer<32,unsigned>>> <rgb<integer<32,unsigned>>>
-            <intrgb>   <rgb<integer<32,signed>>>   <rgb<integer<32,signed>>>
-            <ulonggb>  <rgb<integer<64,unsigned>>> <rgb<integer<64,unsigned>>>
-            <longrgb>  <rgb<integer<64,signed>>>   <rgb<integer<64,signed>>>))
+            <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
+            <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
+            <usintrgb> <rgb<int<16,unsigned>>> <meta<rgb<int<16,unsigned>>>>
+            <sintrgb>  <rgb<int<16,signed>>>   <meta<rgb<int<16,signed>>>>
+            <uintrgb>  <rgb<int<32,unsigned>>> <meta<rgb<int<32,unsigned>>>>
+            <intrgb>   <rgb<int<32,signed>>>   <meta<rgb<int<32,signed>>>>
+            <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
+            <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>))
 (define-class <rgb> ()
   (red   #:init-keyword #:red   #:getter red)
   (green #:init-keyword #:green #:getter green)
@@ -44,10 +44,12 @@
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 3))))]
     (make self #:value (apply rgb (map (lambda (vec) (get (unpack (type self) vec))) vectors)))))
 (define <ubytergb> (rgb <ubyte>))
-(define <bytergb> (rgb <byte>))
+(define <bytergb>  (rgb <byte>))
 (define <usintrgb> (rgb <usint>))
-(define <sintrgb> (rgb <sint>))
-(define <uintrgb> (rgb <uint>))
-(define <intrgb> (rgb <int>))
+(define <sintrgb>  (rgb <sint>))
+(define <uintrgb>  (rgb <uint>))
+(define <intrgb>   (rgb <int>))
 (define <ulongrgb> (rgb <ulong>))
-(define <longrgb> (rgb <long>))
+(define <longrgb>  (rgb <long>))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (type a) b)))
+(define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (type b))))
