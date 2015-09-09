@@ -53,3 +53,4 @@
 (define <longrgb>  (rgb <long>))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (type a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (type b))))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (type a) (type b))))

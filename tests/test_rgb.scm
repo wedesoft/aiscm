@@ -5,7 +5,7 @@
              (aiscm int)
              (aiscm float)
              (guile-tap))
-(planned-tests 14)
+(planned-tests 15)
 (define c (make <ubytergb> #:value (rgb 1 2 3)))
 (ok (equal? "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))
     "display untyped RGB value")
@@ -37,4 +37,6 @@
     "coerce RGB and scalar type")
 (ok (equal? <ubytergb> (coerce <ubyte> <ubytergb>))
     "coerce scalar type and RGB")
+(ok (equal? <intrgb> (coerce <uintrgb> <bytergb>))
+    "coerce different RGB types")
 ; TODO: value, types, content, param
