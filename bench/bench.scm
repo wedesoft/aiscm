@@ -42,6 +42,6 @@
 (run "Guile negate empty sequence" n (- empty))
 (run "Guile make sequence" n (make <sequence<int>> #:size size))
 (run "Guile negate sequence" n (- s))
-(run "C allocate memory" n (allocation size))
+(run "C allocate memory" n (allocation (* (size-of <int>) size)))
 (run "C negate empty sequence" n (negate ptr 1 0))
 (run "C negate sequence" n (negate ptr 1 size))
