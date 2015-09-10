@@ -1,8 +1,7 @@
 SUFFIXES = .c .scm
 
-BENCH_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(top_builddir)/bench/.libs:$(LD_LIBRARY_PATH) \
+BENCH_ENVIRONMENT = LD_LIBRARY_PATH=$(srcdir)/.libs:$(LD_LIBRARY_PATH) \
 	GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y
-BENCH_RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 
 EXTRA_LTLIBRARIES = libguile-bench.la
 
@@ -14,7 +13,7 @@ libguile_bench_la_LIBADD = $(GUILE_LIBS)
 noinst_SCRIPTS = bench.scm
 
 bench-local: bench.scm libguile-bench.la
-	$(BENCH_ENVIRONMENT) $(BENCH_RUN) bench.scm
+	$(BENCH_ENVIRONMENT) $(GUILE) bench.scm
 
 EXTRA_DIST = bench.scm
 

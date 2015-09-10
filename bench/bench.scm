@@ -31,12 +31,12 @@
 (define empty (make <sequence<int>> #:size 0))
 (define s (make <sequence<int>> #:size size))
 (define-class <c> ())
-(define-method (- (self <c>)) self)
+(define-method (neg (self <c>)) self)
 (define c (make <c>))
 
 (format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
 
-(run "Guile GOOPS method dispatch" n (- c))
+(run "Guile GOOPS method dispatch" n (neg c))
 (run "Guile make empty sequence" n (make <sequence<int>> #:size 0))
 (run "Guile allocate memory" n (gc-malloc-pointerless (* (size-of <int>) size)))
 (run "Guile negate empty sequence" n (- empty))
