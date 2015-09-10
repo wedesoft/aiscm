@@ -2,7 +2,8 @@
 
 ## Ready
 
-* RGB
+* RGB parameters
+* make type matching extendable
 * parameter passing for sequences, map, tensor operations
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))

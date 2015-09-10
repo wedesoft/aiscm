@@ -1,12 +1,13 @@
 (define-module (aiscm rgb)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (rnrs bytevectors)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm util)
-  #:export (rgb type
+  #:export (rgb base
             <rgb> reg green blue
             <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
@@ -21,28 +22,27 @@
   (red   #:init-keyword #:red   #:getter red)
   (green #:init-keyword #:green #:getter green)
   (blue  #:init-keyword #:blue  #:getter blue))
-(define-method (rgb (r <real>) (g <real>) (b <real>)) (make <rgb> #:red r #:green g #:blue b))
+(define-method (rgb r g b) (make <rgb> #:red r #:green g #:blue b))
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
-(define-method (equal? (a <rgb>) (b <rgb>))
-  (and (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
+(define-method (equal? (a <rgb>) (b <rgb>)) (equal? (content a) (content b)))
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
     (lambda (class metaclass)
-      (define-method (type (self metaclass))t); TODO: rename this
+      (define-method (base (self metaclass))t); TODO: rename this
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
 (define-method (pack (self <rgb<>>))
-  (let* [(vals     (list (red (get-value self)) (green (get-value self)) (blue (get-value self))))
-         (channels (map (cut make (type (class-of self)) #:value <>) vals))
-         (size     (size-of (type (class-of self))))]
+  (let* [(vals     (content (get-value self)))
+         (channels (map (cut make (base (class-of self)) #:value <>) vals))
+         (size     (size-of (base (class-of self))))]
     (bytevector-concat (map pack channels))))
 (define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
-  (let* [(size    (size-of (type self)))
+  (let* [(size    (size-of (base self)))
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 3))))]
-    (make self #:value (apply rgb (map (lambda (vec) (get (unpack (type self) vec))) vectors)))))
+    (make self #:value (apply rgb (map (lambda (vec) (get (unpack (base self) vec))) vectors)))))
 (define <ubytergb> (rgb <ubyte>))
 (define <bytergb>  (rgb <byte>))
 (define <usintrgb> (rgb <usint>))
@@ -51,6 +51,15 @@
 (define <intrgb>   (rgb <int>))
 (define <ulongrgb> (rgb <ulong>))
 (define <longrgb>  (rgb <long>))
-(define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (type a) b)))
-(define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (type b))))
-(define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (type a) (type b))))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (base a) b)))
+(define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (base b))))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
+(define-method (match (c <rgb>) . args)
+  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
+    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
+(define-method (match (c <number>) . args)
+  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
+    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
+(define-method (types (self <meta<rgb<>>>)) (make-list 3 (base self)))
+(define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
+(define-method (param (self <meta<rgb<>>>) lst) (apply rgb (take lst 3)))

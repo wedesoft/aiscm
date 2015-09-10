@@ -6,6 +6,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:use-module (aiscm op)
