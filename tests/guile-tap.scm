@@ -1,9 +1,11 @@
 (define-module (guile-tap)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-26)
-  #:export (planned-tests)
+  #:export (planned-tests diagnostics)
   #:export-syntax (ok skip todo throws?))
 (define (planned-tests num) (format #t "1..~a~&~!" num))
+
+(define (diagnostics msg) (format #t "# ~a~&" msg))
 
 (define test-counter 0)
 (define (incr-counter) (set! test-counter (+ test-counter 1)))
