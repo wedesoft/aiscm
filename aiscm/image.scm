@@ -140,10 +140,15 @@
   (case (get-format self)
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (get-pitches self))
-                   (size    (image-size 'GRAY (get-pitches self) (cadr shape)))
+                   (size    (image-size 'GRAY pitches (cadr shape)))
                    (mem     (get-mem self))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
-    (else   (to-array (convert self 'GRAY))))); TODO: conversion of color images
+    ((BGR)  (let* [(shape   (shape self))
+                   (pitches (get-pitches self))
+                   (size    (image-size 'BGR pitches (cadr shape)))
+                   (mem     (get-mem self))]
+              (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
+    (else   (to-array (convert self 'BGR)))))
 (define-method (to-image (self <image>)) self)
 (define-method (to-image (self <sequence<>>)); TODO: convert arrays other than UBYTE, compact image if strides not 1
   (if (= (car (strides self)) 1)
