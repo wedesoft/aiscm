@@ -26,6 +26,9 @@
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
 (define-method (equal? (a <rgb>) (b <rgb>)) (equal? (content a) (content b)))
+(define-method (red (self <number>)) self)
+(define-method (green (self <number>)) self)
+(define-method (blue (self <number>)) self)
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
