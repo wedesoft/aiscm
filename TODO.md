@@ -2,6 +2,7 @@
 
 ## Ready
 
+* to-image for RGB images
 * RGB parameters
 * make type matching extendable
 * parameter passing for sequences, map, tensor operations

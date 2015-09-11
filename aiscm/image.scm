@@ -9,6 +9,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
+  #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
             get-format get-mem convert to-image))
@@ -150,11 +151,15 @@
               (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
     (else   (to-array (convert self 'BGR)))))
 (define-method (to-image (self <image>)) self)
-(define-method (to-image (self <sequence<>>)); TODO: convert arrays other than UBYTE, compact image if strides not 1
-  (if (= (car (strides self)) 1)
-    (make <image> #:format 'GRAY
-                  #:shape (shape self)
-                  #:mem (get-value self)
-                  #:offsets '(0)
-                  #:pitches (list (cadr (strides self))))
-    (to-image (duplicate self))))
+(define-method (to-image (self <sequence<>>))
+  (cond ((equal? <ubyte> (typecode self))
+         (if (= (car (strides self)) 1)
+           (make <image> #:format 'GRAY
+                         #:shape (shape self)
+                         #:mem (get-value self)
+                         #:offsets '(0)
+                         #:pitches (list (cadr (strides self))))
+           (to-image (duplicate self))))
+        ((is-a? (typecode self) <meta<int<>>>)
+         (to-image (to-type <ubyte> self)))
+        (else (next-method))))
