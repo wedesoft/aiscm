@@ -8,7 +8,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm util)
   #:export (rgb base
-            <rgb> reg green blue
+            <rgb> red green blue
             <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
