@@ -2,7 +2,8 @@
 
 ## Ready
 
-* to-image for RGB images
+* construct (arr <intrgb> (rgb 1 2 3))
+* to-image for integer RGB images
 * RGB parameters
 * make type matching extendable
 * parameter passing for sequences, map, tensor operations
