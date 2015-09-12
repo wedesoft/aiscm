@@ -2,9 +2,9 @@
 
 ## Ready
 
-* construct (arr <intrgb> (rgb 1 2 3))
+* RGB type conversion
 * to-image for integer RGB images
-* RGB parameters
+* RGB operations
 * make type matching extendable
 * parameter passing for sequences, map, tensor operations
     (accessors s) -> ((pointer stride count) ...) which pointer?
