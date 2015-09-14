@@ -16,7 +16,11 @@
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val) val)
-(define (super class) (car (class-direct-supers class)))
+(define (super class)
+  (let [(supers (class-direct-supers class))]
+    (if (null? supers)
+      (scm-error 'no-super-class 'super "Class ~a has no super class" (list class) #f)
+      (car supers))))
 (define-syntax-rule (define-class* name super metaname metasuper slots ...)
   (begin
     (define-class metaname (metasuper))

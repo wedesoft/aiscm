@@ -2,6 +2,8 @@
 
 ## Ready
 
+* RGB-pointer parameter
+* store RGB value
 * RGB type conversion
 * to-image for integer RGB images
 * RGB operations

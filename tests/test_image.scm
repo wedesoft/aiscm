@@ -4,6 +4,7 @@
              (srfi srfi-1)
              (aiscm mem)
              (aiscm element)
+             (aiscm pointer)
              (aiscm int)
              (aiscm rgb)
              (aiscm sequence)

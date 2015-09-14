@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (aiscm util)
              (aiscm element)
+             (aiscm pointer)
              (aiscm int)
              (aiscm asm)
              (aiscm jit)

@@ -9,12 +9,15 @@
   #:use-module (rnrs bytevectors)
   #:export (<pointer<>>
             <meta<pointer<>>>
+            <pointer<element>>
+            <meta<pointer<element>>>
             pointer
             fetch
             store))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
+(define-class* <pointer<element>> <pointer<>> <meta<pointer<element>>> <meta<pointer<>>>)
 (define-method (pointer target)
-  (template-class (pointer target) <pointer<>>
+  (template-class (pointer target) (pointer (super target))
     (lambda (class metaclass)
       (define-method (initialize (self class) initargs)
         (let-keywords initargs #t (value)

@@ -4,6 +4,7 @@
              (aiscm element)
              (aiscm bool)
              (aiscm int)
+             (aiscm pointer)
              (aiscm jit)
              (aiscm util)
              (guile-tap))
