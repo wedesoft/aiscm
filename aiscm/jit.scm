@@ -336,21 +336,21 @@
     (lambda (class metaclass)
       (define-method (type (self metaclass)) t))))
 (fragment <element>)
-(define-method (parameter s)
-  (make (fragment (class-of s))
-        #:args (list s)
-        #:name parameter
-        #:code (lambda (result) '())))
-(define-method (parameter (p <pointer<>>))
-  (make (fragment (typecode (class-of p)))
-        #:args (list p)
-        #:name parameter
-        #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
         #:args (list var)
         #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
+(define-method (parameter (p <pointer<>>))
+  (make (fragment (typecode (class-of p)))
+        #:args (list p)
+        #:name parameter
+        #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
+(define-method (parameter (s <sequence<>>))
+  (make (fragment (class-of s))
+        #:args (list s)
+        #:name parameter
+        #:code (lambda (result) '())))
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
