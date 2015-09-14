@@ -450,19 +450,17 @@
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
   (let-vars [(tmp (type (class-of a)))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
-(define-method (store (p <pointer<>>) (a <fragment<pointer<>>>))
-  (store p (fetch a)))
-(define-method (elem-wise s)
+(define-method (element-wise s)
   (list '() '() s))
-(define-method (elem-wise (s <sequence<>>))
+(define-method (element-wise (s <sequence<>>))
   (let-vars [(incr  <long>)
              (p     <long>)]
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (list (ADD p incr))
           (project (rebase p s)))))
-(define-method (elem-wise (self <fragment<sequence<>>>))
-  (let [(loops (map elem-wise (get-args self)))]
+(define-method (element-wise (self <fragment<sequence<>>>))
+  (let [(loops (map element-wise (get-args self)))]
     (list (map setup loops)
           (map increment loops)
           (apply (get-name self) (map body loops)))))
@@ -470,8 +468,8 @@
 (define increment cadr)
 (define body caddr)
 (define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
-  (let [(destination (elem-wise s))
-        (source      (elem-wise a))]
+  (let [(destination (element-wise s))
+        (source      (element-wise a))]
     (list (setup destination)
           (setup source)
           (repeat (last (shape s))

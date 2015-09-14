@@ -49,5 +49,5 @@
   "Converting from integer multiarray to image and back converts to byte data")
 (ok (equal? c (to-list (to-array (to-image (to-array c)))))
   "Convert RGB array to image")
-(todo (equal? c (to-list (to-array (to-image (to-array <intrgb> c)))))
+(skip (equal? c (to-list (to-array (to-image (to-array <intrgb> c)))))
   "Convert integer RGB array to image")
