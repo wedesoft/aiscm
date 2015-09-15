@@ -337,7 +337,8 @@
 (define (fragment t)
   (template-class (fragment t) (fragment (super t))
     (lambda (class metaclass)
-      (define-method (type (self metaclass)) t))))
+      (define-method (type (self metaclass)) t)
+      (define-method (type (self class)) t))))
 (fragment <element>)
 (define-method (parameter (var <var>))
   (make (fragment (typecode var))
@@ -367,14 +368,14 @@
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimension self)))
 (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
-  (let* [(source (typecode (type (class-of frag))))
+  (let* [(source (typecode (type frag)))
          (tmp    (make <var> #:type source))
          (mov    (if (>= (size-of source) (size-of target))
                      MOV
                      (if (signed? source)
                          MOVSX
                          (if (>= (size-of source) 4) MOV MOVZX))))]
-    (make (fragment (to-type target (type (class-of frag))))
+    (make (fragment (to-type target (type frag)))
           #:args (list target frag)
           #:name to-type
           #:code (lambda (result)
@@ -384,11 +385,11 @@
 (define (mutable-unary op a)
   (lambda (result) (append ((code a) result) (list (op result)))))
 (define (immutable-unary op a)
-  (let-vars [(tmp (type (class-of a)))]
+  (let-vars [(tmp (type a))]
     (lambda (result) (append ((code a) tmp) (list (op result tmp))))))
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
-    (let* [(target (conversion (type (class-of a))))]
+    (let* [(target (conversion (type a)))]
       (make (fragment target)
             #:args (list a)
             #:name name
@@ -416,7 +417,7 @@
                              (list (op result tmp1 tmp2))))))
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
-    (let* [(intermediate (coercion (type (class-of a)) (type (class-of b))))
+    (let* [(intermediate (coercion (type a) (type b)))
            (target       (conversion intermediate))]
       (make (fragment target)
             #:args (list a b)
@@ -462,7 +463,7 @@
 (define-method (store (a <rgb>) (b <fragment<rgb<>>>))
   ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (let-vars [(tmp (type (class-of a)))]
+  (let-vars [(tmp (type a))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
   (let [(tmp (skel (typecode p)))]
@@ -503,7 +504,7 @@
 (define (jit ctx classes proc); TODO: how to return boolean?
   (let* [(vars        (map skel classes))
          (fragment    (apply proc (map parameter vars)))
-         (return-type (type (class-of fragment)))
+         (return-type (type fragment))
          (retval      (skel return-type))
          (fun         (asm ctx
                            (if (returnable? retval) return-type <null>)

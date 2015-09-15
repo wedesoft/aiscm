@@ -2,7 +2,6 @@
 
 ## Ready
 
-* (type (class-of ...)) -> (type ...), (dimension, base)
 * RGB type conversion
 * to-image for integer RGB images
 * RGB parameters
