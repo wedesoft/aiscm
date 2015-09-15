@@ -24,18 +24,8 @@
   (let [(tmp (skel (typecode p)))]
     (append (store tmp a) (list (MOV (ptr (base (typecode p)) (get-value p)) (red tmp))))))
 
-(store retval frag)
 
-(virtual-variables '() (concatenate (map decompose (list retval arg))) (append code (list (RET))))
-
-(skel <intrgb>)
-
-(project (skel (sequence <intrgb>)))
-
-;(define-method (store ))
-
-(define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
-(to-list (to-array (to-image (to-array <intrgb> c))))
+((jit ctx (list (sequence <bytergb>)) identity) (seq (rgb 1 2 3)))
 
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<rgb<>>>))
   (make (fragment (to-type target))

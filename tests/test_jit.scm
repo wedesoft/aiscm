@@ -11,8 +11,9 @@
              (aiscm pointer)
              (aiscm sequence)
              (aiscm bool)
+             (aiscm rgb)
              (guile-tap))
-(planned-tests 184)
+(planned-tests 185)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -551,3 +552,6 @@
     "element-wise unsigned integer division")
 (ok (equal? 1428571428 ((jit ctx (list <ulong> <ubyte>) /) 10000000000 7))
     "element-wise unsigned long integer division")
+(ok (let [(c (list (rgb 2 3 5) (rgb 3 5 7)))]
+      (equal? c (to-list ((jit ctx (list (sequence <ubytergb>)) identity) (to-array c)))))
+    "duplicate RGB array")

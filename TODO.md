@@ -3,10 +3,9 @@
 ## Ready
 
 * (type (class-of ...)) -> (type ...), (dimension, base)
-* RGB-pointer parameter
-* store RGB value
 * RGB type conversion
 * to-image for integer RGB images
+* RGB parameters
 * RGB operations
 * make type matching extendable
 * parameter passing for sequences, map, tensor operations

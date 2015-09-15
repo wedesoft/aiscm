@@ -11,6 +11,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
+  #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
@@ -20,8 +21,10 @@
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
             fragment type compose-from decompose skel
+            <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
+            <fragment<rgb<>>> <meta<fragment<rgb<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op get-name to-type type assemble jit
@@ -341,6 +344,14 @@
         #:args (list var)
         #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
+(pointer <rgb<>>)
+(define-method (parameter (p <pointer<rgb<>>>))
+  (make (fragment (typecode p))
+        #:args (list p)
+        #:name parameter
+        #:code (lambda (result) (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)  ))
+                                      (MOV (green result) (ptr (base (typecode p)) (get-value p) 1))
+                                      (MOV (blue  result) (ptr (base (typecode p)) (get-value p) 2))))))
 (define-method (parameter (p <pointer<>>))
   (make (fragment (typecode p))
         #:args (list p)
@@ -447,9 +458,17 @@
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
   ((code b) a))
+(fragment <rgb<>>)
+(define-method (store (a <rgb>) (b <fragment<rgb<>>>))
+  ((code b) a))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
   (let-vars [(tmp (type (class-of a)))]
     (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
+(define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
+  (let [(tmp (skel (typecode p)))]
+    (append (store tmp a) (list (MOV (ptr (base (typecode p)) (get-value p)  ) (red   tmp))
+                                (MOV (ptr (base (typecode p)) (get-value p) 1) (green tmp))
+                                (MOV (ptr (base (typecode p)) (get-value p) 2) (blue  tmp))))))
 (define-method (element-wise s)
   (list '() '() s))
 (define-method (element-wise (s <sequence<>>))
