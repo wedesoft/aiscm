@@ -4,21 +4,27 @@
 
 ;((jit ctx (list (sequence <intrgb>)) identity) (seq <intrgb> (rgb 1 2 3)))
 
-(pointer <rgb<>>)
-
 (define retval (skel (sequence <intrgb>)))
 (define arg (skel (sequence <intrgb>)))
-(define fragment (parameter arg))
+(define frag (parameter arg))
 (define code (store retval fragment))
 
-
 (define-method (parameter (p <pointer<rgb<>>>))
-  (make (fragment (typecode (class-of p)))
+  (make (fragment (typecode p))
         #:args (list p)
         #:name parameter
-        #:code (lambda (result) (list (NOP) (NOP) (MOV (red result) (ptr (type (typecode (class-of p))) (get-value p)))))))
+        #:code (lambda (result) (list (NOP) (NOP) (MOV (red result) (ptr (base (typecode p)) (get-value p)))))))
 
-(store retval fragment)
+(fragment <rgb<>>)
+
+(define-method (store (a <rgb>) (b <fragment<rgb<>>>))
+  ((code b) a))
+
+(define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
+  (let [(tmp (skel (typecode p)))]
+    (append (store tmp a) (list (MOV (ptr (base (typecode p)) (get-value p)) (red tmp))))))
+
+(store retval frag)
 
 (virtual-variables '() (concatenate (map decompose (list retval arg))) (append code (list (RET))))
 

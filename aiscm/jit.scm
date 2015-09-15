@@ -342,10 +342,10 @@
         #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
 (define-method (parameter (p <pointer<>>))
-  (make (fragment (typecode (class-of p)))
+  (make (fragment (typecode p))
         #:args (list p)
         #:name parameter
-        #:code (lambda (result) (list (MOV result (ptr (typecode (class-of p)) (get-value p)))))))
+        #:code (lambda (result) (list (MOV result (ptr (typecode p) (get-value p)))))))
 (define-method (parameter (s <sequence<>>))
   (make (fragment (class-of s))
         #:args (list s)

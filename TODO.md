@@ -2,6 +2,7 @@
 
 ## Ready
 
+* (type (class-of ...)) -> (type ...), (dimension, base)
 * RGB-pointer parameter
 * store RGB value
 * RGB type conversion
