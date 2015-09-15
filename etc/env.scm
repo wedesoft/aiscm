@@ -7,7 +7,6 @@
 (define retval (skel (sequence <intrgb>)))
 (define arg (skel (sequence <intrgb>)))
 (define frag (parameter arg))
-(define code (store retval fragment))
 
 (define-method (parameter (p <pointer<rgb<>>>))
   (make (fragment (typecode p))
@@ -25,6 +24,8 @@
     (append (store tmp a) (list (MOV (ptr (base (typecode p)) (get-value p)) (red tmp))))))
 
 (store retval frag)
+
+(define code (store retval frag))
 
 (virtual-variables '() (concatenate (map decompose (list retval arg))) (append code (list (RET))))
 
