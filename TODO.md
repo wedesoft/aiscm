@@ -2,12 +2,15 @@
 
 ## Ready
 
-* fragment: name args code result
-* RGB type conversion
+(show window array)
+* fragment: name args code result (no result for projection)
+* RGB type conversion (can use red, green, blue functions on fragment)
 * to-image for integer RGB images
 * RGB parameters
 * RGB operations
 * make type matching extendable
+* pulse audio (see python bindings?)
+* use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * parameter passing for sequences, map, tensor operations
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
@@ -43,7 +46,6 @@
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * array stack/unstack/record arrays
 * slimv, tcp/ip, attach
-* use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
 * ffmpeg input, fftw3, pulse-audio, hypercomplex, kinect, linalg, opencv, qt4, rmagick
 
