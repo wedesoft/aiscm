@@ -58,5 +58,5 @@
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
 (define-method (resize (self <xwindow>) (shape <list>))
   (window-resize (get-window self) (car shape) (cadr shape)))
-(define-method (show (self <xwindow>) (image <image>))
-  (window-write (get-window self) image))
+(define-method (show (self <xwindow>) (image <image>)) (window-write (get-window self) image))
+(define-method (show (self <xwindow>) (arr <sequence<>>)) (show self (to-image arr)) arr)
