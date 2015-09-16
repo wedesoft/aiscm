@@ -2,27 +2,14 @@
 
 (define ctx (make <context>))
 
-((jit ctx (list (sequence <bytergb>)) identity) (seq (rgb 1 2 3)))
+(define-method (red (frag <fragment<rgb<>>>))
+  (let [(tmp (skel (type frag)))]
+    (make (fragment (base (type frag)))
+          #:args (list frag)
+          #:name red
+          #:code (lambda (result) (MOV result (red tmp))))))
 
-(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<rgb<>>>))
-  (make (fragment (to-type target))
-        #:args
-        #:name to-type
-        #:code (lambda (result) result)))
-
-(define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
-  (let* [(source (typecode (type (class-of frag))))
-         (tmp    (make <var> #:type source))
-         (mov    (if (>= (size-of source) (size-of target))
-                     MOV
-                     (if (signed? source)
-                         MOVSX
-                         (if (>= (size-of source) 4) MOV MOVZX))))]
-    (make (fragment (to-type target (type (class-of frag))))
-          #:args (list target frag)
-          #:name to-type
-          #:code (lambda (result)
-                         (append ((code frag) tmp) (list (mov result tmp)))))))
+((jit ctx (list <bytergb>) red) (rgb 1 2 3))
 
 
 ; macros: (jit-method [(x <int>) (y <float>)] (+ x y))
@@ -35,13 +22,6 @@
 ;    ((let-vars [] body ...)
 ;     (begin body ...))))
 
-
-(define-syntax test
-  (syntax-rules ()
-    ((test ((a b) args ...))
-     (cons b (test (args ...))))
-    ((test  ())
-     '())))
 
 (define-syntax test
   (syntax-rules ()

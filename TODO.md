@@ -2,6 +2,7 @@
 
 ## Ready
 
+* fragment: name args code result
 * RGB type conversion
 * to-image for integer RGB images
 * RGB parameters

@@ -345,6 +345,11 @@
         #:args (list var)
         #:name parameter
         #:code (lambda (result) (list (MOV result var)))))
+(define-method (parameter (p <pointer<>>))
+  (make (fragment (typecode p))
+        #:args (list p)
+        #:name parameter
+        #:code (lambda (result) (list (MOV result (ptr (typecode p) (get-value p)))))))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
   (make (fragment (typecode p))
@@ -353,11 +358,6 @@
         #:code (lambda (result) (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)  ))
                                       (MOV (green result) (ptr (base (typecode p)) (get-value p) 1))
                                       (MOV (blue  result) (ptr (base (typecode p)) (get-value p) 2))))))
-(define-method (parameter (p <pointer<>>))
-  (make (fragment (typecode p))
-        #:args (list p)
-        #:name parameter
-        #:code (lambda (result) (list (MOV result (ptr (typecode p) (get-value p)))))))
 (define-method (parameter (s <sequence<>>))
   (make (fragment (class-of s))
         #:args (list s)
