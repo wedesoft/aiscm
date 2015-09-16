@@ -144,12 +144,12 @@
                    (size    (image-size 'GRAY pitches (cadr shape)))
                    (mem     (get-mem self))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
-    ((BGR)  (let* [(shape   (shape self))
+    ((RGB)  (let* [(shape   (shape self))
                    (pitches (get-pitches self))
                    (size    (image-size 'BGR pitches (cadr shape)))
                    (mem     (get-mem self))]
               (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
-    (else   (to-array (convert self 'BGR)))))
+    (else   (to-array (convert self 'RGB)))))
 (define-method (to-image (self <image>)) self)
 (define-method (to-image (self <sequence<>>))
   (cond ((equal? <ubyte> (typecode self))
@@ -164,7 +164,7 @@
          (to-image (to-type <ubyte> self)))
         ((equal? <ubytergb> (typecode self))
          (if (= (car (strides self)) 1)
-           (make <image> #:format 'BGR
+           (make <image> #:format 'RGB
                          #:shape (shape self)
                          #:mem (get-value self)
                          #:offsets '(0)
