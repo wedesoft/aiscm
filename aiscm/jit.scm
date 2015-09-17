@@ -332,7 +332,8 @@
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name #:init-keyword #:name #:getter get-name)
               (args #:init-keyword #:args #:getter get-args)
-              (code #:init-keyword #:code #:getter code))
+              (code #:init-keyword #:code #:getter code)
+              (value #:init-keyword #:value #:getter get-value))
 (define-generic type)
 (define (fragment t)
   (template-class (fragment t) (fragment (super t))
@@ -344,32 +345,38 @@
   (make (fragment (typecode var))
         #:args (list var)
         #:name parameter
-        #:code (lambda (result) (list (MOV result var)))))
+        #:code '()
+        #:value var))
 (define-method (parameter (p <pointer<>>))
-  (make (fragment (typecode p))
-        #:args (list p)
-        #:name parameter
-        #:code (lambda (result) (list (MOV result (ptr (typecode p) (get-value p)))))))
+  (let-vars [(result (typecode p))]
+    (make (fragment (typecode p))
+          #:args (list p)
+          #:name parameter
+          #:code (list (MOV result (ptr (typecode p) (get-value p))))
+          #:value result)))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
-  (make (fragment (typecode p))
-        #:args (list p)
-        #:name parameter
-        #:code (lambda (result) (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)  ))
-                                      (MOV (green result) (ptr (base (typecode p)) (get-value p) 1))
-                                      (MOV (blue  result) (ptr (base (typecode p)) (get-value p) 2))))))
+  (let [(result (skel (typecode p)))]; TODO: why does let-vars not work?
+    (make (fragment (typecode p))
+          #:args (list p)
+          #:name parameter
+          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)  ))
+                       (MOV (green result) (ptr (base (typecode p)) (get-value p) 1))
+                       (MOV (blue  result) (ptr (base (typecode p)) (get-value p) 2)))
+          #:value result)))
 (define-method (parameter (s <sequence<>>))
   (make (fragment (class-of s))
         #:args (list s)
         #:name parameter
-        #:code (lambda (result) '())))
+        #:code '()
+        #:value s))
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimension self)))
 (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
   (let* [(source (typecode (type frag)))
-         (tmp    (make <var> #:type source))
+         (result (skel (typecode target)))
          (mov    (if (>= (size-of source) (size-of target))
                      MOV
                      (if (signed? source)
@@ -378,22 +385,23 @@
     (make (fragment (to-type target (type frag)))
           #:args (list target frag)
           #:name to-type
-          #:code (lambda (result)
-                         (append ((code frag) tmp) (list (mov result tmp)))))))
+          #:code (append (code frag) (list (mov result (get-value frag))))
+          #:value result)))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
-(define (mutable-unary op a)
-  (lambda (result) (append ((code a) result) (list (op result)))))
-(define (immutable-unary op a)
-  (let-vars [(tmp (type a))]
-    (lambda (result) (append ((code a) tmp) (list (op result tmp))))))
+(define (mutable-unary op result a)
+  (append (code a) (list (MOV result (get-value a)) (op result))))
+(define (immutable-unary op result a)
+  (append (code a) (list (op result (get-value a)))))
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
-    (let* [(target (conversion (type a)))]
+    (let* [(target (conversion (type a)))
+           (result (skel (typecode target)))]
       (make (fragment target)
             #:args (list a)
             #:name name
-            #:code (mode op a)))))
+            #:code (mode op result a)
+            #:value result))))
 (unary-op - mutable-unary NEG identity)
 (unary-op ~ mutable-unary NOT identity)
 (unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
@@ -404,25 +412,29 @@
 ; TODO: unary operation floor
 ; TODO: unary operation ceil
 ; TODO: unary operation round
-(define (mutable-binary op intermediate a b)
-  (let-vars [(tmp intermediate)]
-    (lambda (result) (append ((code (to-type intermediate a)) result)
-                             ((code (to-type intermediate b)) tmp)
-                             (list (op result tmp))))))
-(define (immutable-binary op intermediate a b)
-  (let-vars [(tmp1 intermediate)
-             (tmp2 intermediate)]
-    (lambda (result) (append ((code (to-type intermediate a)) tmp1)
-                             ((code (to-type intermediate b)) tmp2)
-                             (list (op result tmp1 tmp2))))))
+(define (mutable-binary op result intermediate a b)
+  (let [(a~  (to-type intermediate a))
+        (b~  (to-type intermediate b))
+        (tmp (skel intermediate))]; TODO: use let-vars
+    (append (code a~) (code b~)
+            (list (MOV result (get-value a~))
+                  (MOV tmp    (get-value b~))
+                  (op result tmp)))))
+(define (immutable-binary op result intermediate a b)
+  (let [(a~ (to-type intermediate a))
+        (b~ (to-type intermediate b))]
+    (append (code a~) (code b~)
+            (list (op result (get-value a~) (get-value b~))))))
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
-           (target       (conversion intermediate))]
+           (target       (conversion intermediate))
+           (result       (skel (typecode target)))]
       (make (fragment target)
             #:args (list a b)
             #:name name
-            #:code (mode op intermediate a b)))))
+            #:code (mode op result (typecode intermediate) a b)
+            #:value result))))
 (binary-op + mutable-binary coerce ADD identity)
 (binary-op - mutable-binary coerce SUB identity)
 (binary-op * mutable-binary coerce IMUL identity)
@@ -458,18 +470,21 @@
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
-  ((code b) a))
+  (append (code b) (list (MOV a (get-value b)))))
 (fragment <rgb<>>)
 (define-method (store (a <rgb>) (b <fragment<rgb<>>>))
-  ((code b) a))
+  (append (code b)
+          (list (MOV (red   a) (red   (get-value b)))
+                (MOV (green a) (green (get-value b)))
+                (MOV (blue  a) (blue  (get-value b))))))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (let-vars [(tmp (type a))]
-    (append (store tmp a) (list (MOV (ptr (typecode p) (get-value p)) tmp)))))
+  (append (code a)
+          (list (MOV (ptr (typecode p) (get-value p)) (get-value a)))))
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
-  (let [(tmp (skel (typecode p)))]
-    (append (store tmp a) (list (MOV (ptr (base (typecode p)) (get-value p)  ) (red   tmp))
-                                (MOV (ptr (base (typecode p)) (get-value p) 1) (green tmp))
-                                (MOV (ptr (base (typecode p)) (get-value p) 2) (blue  tmp))))))
+  (append (code a)
+          (list (MOV (ptr (base (typecode p)) (get-value p)  ) (red   (get-value a))); TODO: (store (+ p 0) (red a))
+                (MOV (ptr (base (typecode p)) (get-value p) 1) (green (get-value a)))
+                (MOV (ptr (base (typecode p)) (get-value p) 2) (blue  (get-value a))))))
 (define-method (element-wise s)
   (list '() '() s))
 (define-method (element-wise (s <sequence<>>))
@@ -479,14 +494,14 @@
                 (MOV p (get-value s)))
           (list (ADD p incr))
           (project (rebase p s)))))
+(define setup car)
+(define increment cadr)
+(define body caddr)
 (define-method (element-wise (self <fragment<sequence<>>>))
   (let [(loops (map element-wise (get-args self)))]
     (list (map setup loops)
           (map increment loops)
           (apply (get-name self) (map body loops)))))
-(define setup car)
-(define increment cadr)
-(define body caddr)
 (define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
   (let [(destination (element-wise s))
         (source      (element-wise a))]
@@ -497,20 +512,20 @@
                           (increment destination)
                           (increment source))))))
 (define (returnable? value) (is-a? value <var>))
-(define (assemble retval vars fragment)
+(define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
-                     (append (store retval fragment) (list (RET)))))
+                     (append (store retval frag) (list (RET)))))
 (define (jit ctx classes proc); TODO: how to return boolean?
   (let* [(vars        (map skel classes))
-         (fragment    (apply proc (map parameter vars)))
-         (return-type (type fragment))
-         (retval      (skel return-type))
+         (frag        (apply proc (map parameter vars)))
+         (return-type (type frag))
+         (retval      (skel return-type)); TODO: should be (get-value frag)
          (fun         (asm ctx
                            (if (returnable? retval) return-type <null>)
                            (concatenate
                              (map types (if (returnable? retval) classes (cons return-type classes))))
-                           (assemble retval vars fragment)))]
+                           (assemble retval vars frag)))]
     (if (returnable? retval)
         (lambda args
                 (apply fun (concatenate (map content args))))

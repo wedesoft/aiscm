@@ -11,6 +11,10 @@
 
 ((jit ctx (list <bytergb>) red) (rgb 1 2 3))
 
+(use-modules (rnrs bytevectors) (ice-9 binary-ports))
+(define (dump code) (let [(filename (tmpnam))]
+  (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
+  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
 
 ; macros: (jit-method [(x <int>) (y <float>)] (+ x y))
 
