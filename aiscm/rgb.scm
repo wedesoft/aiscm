@@ -4,9 +4,10 @@
   #:use-module (srfi srfi-26)
   #:use-module (rnrs bytevectors)
   #:use-module (ice-9 optargs)
+  #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
-  #:use-module (aiscm util)
+  #:use-module (aiscm sequence)
   #:export (rgb base
             <rgb> red green blue
             <rgb<>> <meta<rgb<>>>
@@ -26,9 +27,9 @@
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
 (define-method (equal? (a <rgb>) (b <rgb>)) (equal? (content a) (content b)))
-(define-method (red (self <number>)) self)
-(define-method (green (self <number>)) self)
-(define-method (blue (self <number>)) self)
+(define-method (red self) self)
+(define-method (green self) self)
+(define-method (blue self) self)
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
@@ -37,6 +38,8 @@
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
+(define-method (base self) self)
+(define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
 (define-method (pack (self <rgb<>>))
   (let* [(vals     (content (get-value self)))
          (channels (map (cut make (base (class-of self)) #:value <>) vals))
