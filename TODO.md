@@ -2,7 +2,6 @@
 
 ## Ready
 
-* fragment: name args code result (no result for projection)
 * RGB type conversion (can use red, green, blue functions on fragment)
 * to-image for integer RGB images
 * RGB parameters
