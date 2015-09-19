@@ -2,7 +2,6 @@
 
 ## Ready
 
-* fragment.code should be method returning list?
 * rgb type conversions
 * to-image for integer RGB images
 * RGB parameters

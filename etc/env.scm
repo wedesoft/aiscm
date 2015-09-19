@@ -2,12 +2,9 @@
 
 (define ctx (make <context>))
 
-(define-method (red (frag <fragment<rgb<>>>))
-  (let [(tmp (skel (type frag)))]
-    (make (fragment (base (type frag)))
-          #:args (list frag)
-          #:name red
-          #:code (lambda (result) (MOV result (red tmp))))))
+
+
+
 
 ((jit ctx (list <bytergb>) red) (rgb 1 2 3))
 
