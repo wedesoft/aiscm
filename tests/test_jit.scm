@@ -548,7 +548,7 @@
 (ok (equal? 1428571428 ((jit ctx (list <ulong> <ubyte>) /) 10000000000 7))
     "element-wise unsigned long integer division")
 (ok (let [(c (list (rgb 2 3 5) (rgb 3 5 7)))]
-      (equal? c (to-list ((jit ctx (list (sequence <ubytergb>)) identity) (to-array c)))))
+      (equal? c (to-list ((jit ctx (list (sequence <sintrgb>)) identity) (to-array <sintrgb> c)))))
     "duplicate RGB array")
 (ok (equal? 2 ((jit ctx (list <ubytergb>) red) (rgb 2 3 5)))
     "extract red channel of RGB value")
@@ -568,5 +568,6 @@
     "extract green channel of scalar array")
 (ok (equal? '(2 3) (to-list ((jit ctx (list (sequence <ubyte>)) blue) (seq 2 3))))
     "extract blue channel of scalar array")
-(ok (equal? (list (rgb 2 3 5)) (to-list ((jit ctx (list (sequence <ubyte>)) (cut to-type <intrgb>)) (seq  (rgb 2 3 5)))))
+(ok (equal? (list (rgb 2 3 5)) (to-list ((jit ctx (list (sequence <sintrgb>)) (cut to-type <intrgb> <>))
+                                         (seq <sintrgb> (rgb 2 3 5)))))
     "convert byte RGB to integer RGB")

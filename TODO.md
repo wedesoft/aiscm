@@ -2,9 +2,9 @@
 
 ## Ready
 
-* rgb type conversions
+* rgb type conversions to smaller type
 * to-image for integer RGB images
-* RGB parameters
+* RGB return values
 * RGB operations
 * make type matching extendable
 * pulse audio (see python bindings?)

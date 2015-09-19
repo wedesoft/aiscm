@@ -2,9 +2,16 @@
 
 (define ctx (make <context>))
 
+(define target <intrgb>)
+(define frag (to-type target (parameter (skel (sequence <bytergb>)))))
 
+(define classes (list (sequence <bytergb>)))
+(define vars (map skel classes))
+(define frag (apply (cut to-type <intrgb> <>) (map parameter vars)))
+(define return-type (type frag))
+(define retval (skel return-type))
 
-
+(store (skel (sequence <intrgb>)) (to-type target frag))
 
 ((jit ctx (list <bytergb>) red) (rgb 1 2 3))
 
