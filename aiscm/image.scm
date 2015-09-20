@@ -170,4 +170,4 @@
                          #:offsets '(0)
                          #:pitches (list (* 3 (cadr (strides self)))))
            (to-image (duplicate self))))
-        (else (next-method))))
+        (else (to-image (to-type <ubytergb> self)))))

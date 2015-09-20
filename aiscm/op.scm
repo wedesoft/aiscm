@@ -17,17 +17,9 @@
   #:re-export (+ - * / = < <= > >=))
 (define ctx (make <context>))
 
-(define-method (to-type (target <meta<int<>>>) (self <sequence<>>))
-  (let [(proc
-          (if (>= (size-of (typecode self)) (size-of target))
-              (let [(ratio (/ (size-of (typecode self)) (size-of target)))]
-                (lambda (target self)
-                  (make (to-type target (class-of self))
-                        #:shape (shape self)
-                        #:strides (map (cut * ratio <>) (strides self))
-                        #:value (get-value self))))
-              (let [(fun (jit ctx (list (class-of self)) (cut to-type target <>)))]
-                (lambda (target self) (fun self)))))]
+(define-method (to-type (target <meta<element>>) (self <sequence<>>))
+  (let [(proc (let [(fun (jit ctx (list (class-of self)) (cut to-type target <>)))]
+                (lambda (target self) (fun self))))]
     (add-method! to-type
                  (make <method>
                        #:specializers (list (class-of target) (class-of self))

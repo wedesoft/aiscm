@@ -2,8 +2,6 @@
 
 ## Ready
 
-* rgb type conversions to smaller type
-* to-image for integer RGB images
 * RGB return values
 * RGB operations
 * make type matching extendable
@@ -27,13 +25,12 @@
 
 ## Planned
 
-* faster loading and storing of integers
 * <-> Guile 6.7.5 Arrays
 * spill predefined variable if blocked? spill into register?
 * coalesce variables
 * floating point exception (SIGFPE)
 * linear-scan register allocator/block-wise coloring
-* better reporting in test suite (expect ... to be)
+* mocking in test suite
 * minor, major (cmovge)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,
