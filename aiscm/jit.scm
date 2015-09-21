@@ -28,7 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op get-name to-type type assemble jit
-            ~ & | ^ =0 !=0 != && ||)
+            ~ & | ^ << >> =0 !=0 != && ||)
   #:export-syntax (let-vars blocked until for repeat))
 
 (define-method (get-args self) '())
@@ -93,10 +93,10 @@
 (define-method (MOVSX arg1 arg2) (make <cmd> #:op MOVSX #:out (list arg1) #:in (list arg2)))
 (define-method (MOVZX arg1 arg2) (make <cmd> #:op MOVZX #:out (list arg1) #:in (list arg2)))
 (define-method (LEA arg1 arg2) (make <cmd> #:op LEA #:out (list arg1) #:in (list arg2)))
-(define-method (SHL arg) (make <cmd> #:op SHL #:io (list arg)))
-(define-method (SHR arg) (make <cmd> #:op SHR #:io (list arg)))
-(define-method (SAL arg) (make <cmd> #:op SAL #:io (list arg)))
-(define-method (SAR arg) (make <cmd> #:op SAR #:io (list arg)))
+(define-method (SHL . args) (make <cmd> #:op SHL #:io (list (car args)) #:in (cdr args)))
+(define-method (SHR . args) (make <cmd> #:op SHR #:io (list (car args)) #:in (cdr args)))
+(define-method (SAL . args) (make <cmd> #:op SAL #:io (list (car args)) #:in (cdr args)))
+(define-method (SAR . args) (make <cmd> #:op SAR #:io (list (car args)) #:in (cdr args)))
 (define-method (ADD arg1 arg2) (make <cmd> #:op ADD #:io (list arg1) #:in (list arg2)))
 (define-method (PUSH arg) (make <cmd> #:op PUSH #:in (list arg)))
 (define-method (POP arg) (make <cmd> #:op POP #:out (list arg)))
@@ -329,6 +329,8 @@
     (if (eq? (signed? (typecode a)) (signed? (typecode b)))
       coerced
       (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
+(define (shl r x) (blocked RCX (MOV CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
+(define (shr r x) (blocked RCX (MOV CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name  #:init-keyword #:name  #:getter get-name)
               (args  #:init-keyword #:args  #:getter get-args)
@@ -447,6 +449,8 @@
         (b~ (to-type intermediate b))]
     (append ((code a~)) ((code b~))
             (list (op result (get-value a~) (get-value b~))))))
+(define (shift-binary op result intermediate a b)
+  (append ((code a)) ((code b)) (list (MOV result (get-value a)) (op result (get-value b)))))
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
@@ -463,6 +467,8 @@
 (binary-op & mutable-binary coerce AND identity)
 (binary-op | mutable-binary coerce OR identity)
 (binary-op ^ mutable-binary coerce XOR identity)
+(binary-op << shift-binary coerce shl identity)
+(binary-op >> shift-binary coerce shr identity)
 (binary-op / immutable-binary coerce divide identity)
 (binary-op = immutable-binary coerce (binary-cmp SETE SETE) (cut to-type <bool> <>))
 (binary-op != immutable-binary coerce (binary-cmp SETNE SETNE) (cut to-type <bool> <>))

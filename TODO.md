@@ -5,6 +5,7 @@
 * RGB return values
 * RGB operations
 * make type matching extendable
+* jit type checks
 * pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * parameter passing for sequences, map, tensor operations
