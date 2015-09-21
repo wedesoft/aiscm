@@ -196,14 +196,23 @@
 (define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
+; TODO: Sxx r/m imm
 (define-method (SHL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
+(define-method (SHL (r/m <operand>) (r <register>)); TODO: check that r == CL
+  (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 4 r/m)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
+(define-method (SHR (r/m <operand>) (r <register>)); TODO: check that r == CL
+  (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 5 r/m)))
 (define-method (SAL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
+(define-method (SAL (r/m <operand>) (r <register>)); TODO: check that r == CL
+  (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 4 r/m)))
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
+(define-method (SAR (r/m <operand>) (r <register>)); TODO: check that r == CL
+  (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 7 r/m)))
 
 (define-method (ADD (m <address>) (r <register>))
   (append (prefixes r m) (if8 m #x00 #x01) (postfixes r m)))
