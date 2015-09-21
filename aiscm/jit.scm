@@ -475,8 +475,6 @@
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: binary operation %
 ; TODO: binary operation fmod
-; TODO: binary operation and (coercion-bool)
-; TODO: binary operation or (coercion-bool)
 ; TODO: binary operation <<
 ; TODO: binary operation >>
 ; TODO: conditional -> minor, major
@@ -580,7 +578,7 @@
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
          (return-type (type frag))
-         (retval      (skel return-type)); TODO: should be (get-value frag)
+         (retval      (skel return-type))
          (fun         (asm ctx
                            (if (returnable? retval) return-type <null>)
                            (concatenate
