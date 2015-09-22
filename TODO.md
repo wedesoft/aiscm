@@ -2,6 +2,7 @@
 
 ## Ready
 
+* spill predefined variable (parameter) if blocked? spill into register?
 * RGB return values
 * RGB operations
 * make type matching extendable
@@ -27,7 +28,6 @@
 ## Planned
 
 * <-> Guile 6.7.5 Arrays
-* spill predefined variable if blocked? spill into register?
 * coalesce variables
 * floating point exception (SIGFPE)
 * linear-scan register allocator/block-wise coloring
