@@ -103,7 +103,7 @@
 (define-method (SAR    . args) (mutable-op       SAR    args))
 (define-method (ADD    . args) (mutable-op       ADD    args))
 (define-method (PUSH   . args) (state-setting-op PUSH   args))
-(define-method (POP    . args) (state-reading-op PUSH   args))
+(define-method (POP    . args) (state-reading-op POP    args))
 (define-method (NOT    . args) (mutable-op       NOT    args))
 (define-method (NEG    . args) (mutable-op       NEG    args))
 (define-method (INC    . args) (mutable-op       INC    args))
