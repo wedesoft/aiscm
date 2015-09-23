@@ -399,7 +399,7 @@
 (ok (equal? (list (MOVSX ECX DIL) (MOV EAX ECX) (RET))
             (assemble a (list v) (to-type <int> (parameter v))))
     "Signed type conversion")
-(todo (equal? (list (MOV CL DIL) (MOV AL CL) (RET))
+(ok (equal? (list (MOV CL DIL) (MOV AL CL) (RET))
             (assemble v (list a) (to-type <byte> (parameter a))))
     "Typecast integer to byte")
 (ok (equal? 42 ((jit ctx (list <int>) (cut to-type <int> <>)) 42))
