@@ -20,7 +20,7 @@
             pass-parameter-variables virtual-variables flatten-code relabel
             collate translate idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type compose-from decompose skel
+            fragment type compose-from decompose skel mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
@@ -127,6 +127,10 @@
 (define-method (SETLE  . args) (state-reading-op SETLE  args))
 (define-method (SETNLE . args) (state-reading-op SETNLE args))
 
+(define-method (mov-part (r <register>) (r/m <register>))
+   (MOV r (reg (/ (get-bits r) 8) (get-code r/m))))
+(define-method (mov-part . args) (immutable-op mov-part args))
+
 (define (variables prog) (delete-duplicates (filter is-var? (concatenate (map get-args prog)))))
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -222,7 +226,7 @@
     (if unassigned
       (let* [(participants ((overlap intervals) (car unassigned)))
              (var          (argmax (idle-live prog live) participants))
-             (stack-param? (and (index var parameters) (<= 6 (index var parameters))))
+             (stack-param? (and (index var parameters) (>= (index var parameters) 6)))
              (location     (if stack-param?
                                (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
                                (ptr (typecode var) RSP offset)))
@@ -333,8 +337,8 @@
     (if (eq? (signed? (typecode a)) (signed? (typecode b)))
       coerced
       (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (shl r x) (blocked RCX (MOV CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
-(define (shr r x) (blocked RCX (MOV CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
+(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
+(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name  #:init-keyword #:name  #:getter get-name)
               (args  #:init-keyword #:args  #:getter get-args)
@@ -391,7 +395,7 @@
   (let* [(source (typecode (type frag)))
          (result (skel target))
          (mov    (if (>= (size-of source) (size-of target))
-                     MOV
+                     mov-part
                      (if (signed? source)
                          MOVSX
                          (if (>= (size-of source) 4) MOV MOVZX))))]

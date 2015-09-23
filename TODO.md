@@ -6,6 +6,7 @@
 * RGB return values
 * RGB operations
 * make type matching extendable
+* mocking in test suite
 * jit type checks
 * pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
@@ -31,7 +32,6 @@
 * coalesce variables
 * floating point exception (SIGFPE)
 * linear-scan register allocator/block-wise coloring
-* mocking in test suite
 * minor, major (cmovge)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,

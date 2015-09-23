@@ -135,7 +135,7 @@
                        (ash (bit4 r) 2)
                        (ash (bit4 (get-index r/m)) 1)
                        (bit4 r/m)))]
-    (if (or (not (zero? flags)) (need-rex? r) (need-rex? (get-index r/m)) (need-rex? r/m))
+    (if (or (not (zero? flags)) (need-rex? r) (need-rex? r/m))
       (list (logior (ash #b0100 4) flags)) '())))
 
 (define (scale s) (index s '(1 2 4 8)))

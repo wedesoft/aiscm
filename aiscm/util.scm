@@ -4,6 +4,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 binary-ports)
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
   #:export (toplevel-define! super gc-malloc-pointerless destroy attach index all-but-last
@@ -11,7 +12,7 @@
             assq-set assq-remove product sort-by argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
-            bytevector-sub bytevector-concat)
+            bytevector-sub bytevector-concat objdump)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -151,3 +152,6 @@
     (for-each (lambda (arg offset len) (bytevector-copy! arg 0 retval offset len))
               lst offsets lengths)
     retval))
+(define (objdump code) (let [(filename (tmpnam))]
+  (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
+  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
