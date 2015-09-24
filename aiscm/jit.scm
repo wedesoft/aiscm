@@ -17,8 +17,8 @@
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers
             spill-variable save-and-use-registers register-allocate
-            pass-parameter-variables virtual-variables flatten-code relabel
-            collate translate idle-live fetch-parameters spill-parameters
+            virtual-variables flatten-code relabel
+            idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
             fragment type compose-from decompose skel mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
@@ -260,24 +260,6 @@
                        #:blocked blocked
                        #:registers registers
                        #:parameters arg-vars)))
-
-(define* (pass-parameter-variables result-type arg-types proc #:key (registers default-registers))
-  (let* [(result-types (if (eq? result-type <null>) '() (list result-type)))
-         (arg-vars     (map (cut make <var> #:type <>) arg-types))
-         (result-vars  (map (cut make <var> #:type <>) result-types))
-         (vars         (append result-vars arg-vars))
-         (intermediate (apply proc vars))]
-    (virtual-variables result-vars arg-vars intermediate #:registers registers)))
-
-(define (collate classes vars)
-  (map param classes (gather (map (compose length types) classes) vars)))
-(define (translate ctx result-type arg-classes proc)
-  (let* [(arg-types    (concatenate (map types arg-classes)))
-         (result-types (if (eq? result-type <null>) '() (list result-type)))
-         (code         (asm ctx result-type arg-types
-                         (pass-parameter-variables result-type arg-types
-                           (lambda args (apply proc (collate (append result-types arg-classes) args))))))]
-    (lambda params (apply code (concatenate (map content params))))))
 
 (define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
