@@ -357,9 +357,7 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
          (mapped (make-mmap code))]
-    ;(let [(filename (tmpnam))]
-    ;  (call-with-output-file filename (cut put-bytevector <> code))
-    ;  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename)))
+    ;(objdump (bytevector->u8-list code))
     (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address mapped))

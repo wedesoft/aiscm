@@ -189,7 +189,7 @@
   (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
-    (let [(value (assq-ref colors parameter))]; TODO: do type conversion elsewhere
+    (let [(value (assq-ref colors parameter))]
       (if (is-a? value <address>) (MOV value (reg (size-of (typecode parameter)) (get-code register))) #f)))
     parameters (list RDI RSI RDX RCX R8 R9)))
 (define ((fetch-parameters parameters) colors)
@@ -206,6 +206,12 @@
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
             (list (RET)))))
+
+(define* (with-spilled-variable var location prog predefined blocked fun)
+  (let* [(spill-code (spill-variable var location prog))]
+    (fun (flatten-code spill-code)
+         (assq-set predefined var location)
+         (update-intervals blocked (index-groups spill-code)))))
 
 (define* (register-allocate prog
                             #:key (predefined '())
@@ -229,14 +235,15 @@
              (stack-param? (and (index var parameters) (>= (index var parameters) 6)))
              (location     (if stack-param?
                                (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
-                               (ptr (typecode var) RSP offset)))
-             (spill-code   (spill-variable var location prog))]
-        (register-allocate (flatten-code spill-code)
-                           #:predefined (assq-set predefined var location)
-                           #:blocked (update-intervals blocked (index-groups spill-code))
-                           #:registers registers
-                           #:parameters parameters
-                           #:offset (if stack-param? offset (- offset 8))))
+                               (ptr (typecode var) RSP offset)))]
+        (with-spilled-variable var location prog predefined blocked
+          (lambda (prog predefined blocked)
+            (register-allocate prog
+                               #:predefined predefined
+                               #:blocked blocked
+                               #:registers registers
+                               #:parameters parameters
+                               #:offset (if stack-param? offset (- offset 8))))))
       (save-and-use-registers prog colors parameters offset))))
 
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))

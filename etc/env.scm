@@ -2,34 +2,17 @@
 
 (define ctx (make <context>))
 
-(define target <intrgb>)
-(define frag (to-type target (parameter (skel (sequence <bytergb>)))))
+(define a (make <var> #:type <int> #:symbol 'a))
+(define b (make <var> #:type <int> #:symbol 'b))
+(define c (make <var> #:type <int> #:symbol 'c))
+(define u (make <var> #:type <ubyte> #:symbol 'u))
 
-(define classes (list (sequence <bytergb>)))
-(define vars (map skel classes))
-(define frag (apply (cut to-type <intrgb> <>) (map parameter vars)))
-(define return-type (type frag))
-(define retval (skel return-type))
+; spill with callback
 
-(store (skel (sequence <intrgb>)) (to-type target frag))
+(define prog (list (MOV CL u) (SHL a CL) (RET)))
 
-((jit ctx (list <bytergb>) red) (rgb 1 2 3))
-
-(use-modules (rnrs bytevectors) (ice-9 binary-ports))
-(define (dump code) (let [(filename (tmpnam))]
-  (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
-  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
-
-; macros: (jit-method [(x <int>) (y <float>)] (+ x y))
-
-;(define-syntax let-vars
-;  (syntax-rules ()
-;    ((let-vars [(name type) vars ...] body ...)
-;     (let [(name (make <var> #:type type #:symbol (quote name)))]
-;       (let-vars [vars ...] body ...)))
-;    ((let-vars [] body ...)
-;     (begin body ...))))
-
+(define deconflict register-allocate)
+(objdump (deconflict prog #:predefined (list (cons a RCX)) #:blocked (list (cons RCX '(0 . 1)))))
 
 (define-syntax test
   (syntax-rules ()
