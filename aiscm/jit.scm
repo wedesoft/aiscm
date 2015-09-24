@@ -207,7 +207,11 @@
             (load-registers need-saving offset)
             (list (RET)))))
 
-(define* (with-spilled-variable var location prog predefined blocked fun)
+(define (adjacent intervals var) ((overlap intervals) var))
+
+(define (spill-candidate prog live lst) (argmax (idle-live prog live) lst))
+
+(define (with-spilled-variable var location prog predefined blocked fun)
   (let* [(spill-code (spill-variable var location prog))]
     (fun (flatten-code spill-code)
          (assq-set predefined var location)
@@ -230,8 +234,7 @@
                                       #:blocked blocked))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
-      (let* [(participants ((overlap intervals) (car unassigned)))
-             (var          (argmax (idle-live prog live) participants))
+      (let* [(var          (spill-candidate prog live (adjacent intervals (car unassigned))))
              (stack-param? (and (index var parameters) (>= (index var parameters) 6)))
              (location     (if stack-param?
                                (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
