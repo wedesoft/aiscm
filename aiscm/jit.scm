@@ -16,7 +16,7 @@
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers
-            spill-variable save-and-use-registers register-allocate
+            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
@@ -249,17 +249,45 @@
                                #:offset (if stack-param? offset (- offset 8))))))
       (save-and-use-registers prog colors parameters offset))))
 
+(define (blocked-predefined blocked predefined)
+  (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
+
+(define* (spill-blocked-predefines prog
+                                   #:key (predefined '())
+                                         (blocked '())
+                                         (registers default-registers)
+                                         (parameters '())
+                                         (offset -8))
+  (let [(conflict (blocked-predefined blocked predefined))]
+    (if conflict
+      (let* [(var       (car conflict))
+             (location (ptr (typecode var) RSP offset))]
+      (with-spilled-variable var location prog predefined blocked; TODO: copy to other variable instead of spilling it
+        (lambda (prog predefined blocked)
+          (spill-blocked-predefines prog
+                                    #:predefined predefined
+                                    #:blocked blocked
+                                    #:registers registers
+                                    #:parameters parameters
+                                    #:offset (- offset 8)))))
+    (register-allocate prog
+                       #:predefined predefined
+                       #:blocked blocked
+                       #:registers registers
+                       #:parameters parameters
+                       #:offset offset))))
+
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
          (predefined   (append result-regs arg-regs))
          (blocked      (blocked-intervals intermediate))
          (prog         (flatten-code (relabel (filter-blocks intermediate))))]
-    (register-allocate prog
-                       #:predefined predefined
-                       #:blocked blocked
-                       #:registers registers
-                       #:parameters arg-vars)))
+    (spill-blocked-predefines prog
+                              #:predefined predefined
+                              #:blocked blocked
+                              #:registers registers
+                              #:parameters arg-vars)))
 
 (define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))

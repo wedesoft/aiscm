@@ -2,7 +2,6 @@
 
 ## Ready
 
-* spill predefined variable (parameter) if blocked? spill into register?
 * RGB return values
 * RGB operations
 * make type matching extendable

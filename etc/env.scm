@@ -1,19 +1,5 @@
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float) (aiscm rgb))
 
-(define ctx (make <context>))
-
-(define a (make <var> #:type <int> #:symbol 'a))
-(define b (make <var> #:type <int> #:symbol 'b))
-(define c (make <var> #:type <int> #:symbol 'c))
-(define u (make <var> #:type <ubyte> #:symbol 'u))
-
-; spill with callback
-
-(define prog (list (MOV CL u) (SHL a CL) (RET)))
-
-(define deconflict register-allocate)
-(objdump (deconflict prog #:predefined (list (cons a RCX)) #:blocked (list (cons RCX '(0 . 1)))))
-
 (define-syntax test
   (syntax-rules ()
     ((test ((a b) args ...))
