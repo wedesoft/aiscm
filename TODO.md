@@ -4,6 +4,7 @@
 
 * RGB return values
 * RGB operations
+* weird error when including sequence but not pointer
 * make type matching extendable
 * mocking in test suite
 * jit type checks
