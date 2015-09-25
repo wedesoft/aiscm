@@ -4,7 +4,7 @@
 [**Guile programming language**][2]. Performance in Scheme is achieved by means
 of a JIT compiler.
 
-![](construction.gif "Under construction")
+![](doc/aiscm.gif "AIscm")
 
 ## Dependencies
 

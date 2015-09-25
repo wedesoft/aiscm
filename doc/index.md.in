@@ -8,8 +8,6 @@ which is a real-time computer vision extension for the Guile programming languag
 * [Built-in assembler](assembler.html "Built-in assembler")
 * [Input/output](io.html "Input/output")
 
-![Under construction](construction.gif "Under construction")
-
 ## External Links
 
 * [Github page](https://github.com/wedesoft/aiscm)
