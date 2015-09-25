@@ -2,6 +2,7 @@
 
 ## Ready
 
+* put copyright into /usr/share/doc/package/copyright https://www.debian.org/doc/debian-policy/ch-docs.html#s-copyrightfile
 * RGB return values
 * RGB operations
 * weird error when including sequence but not pointer
