@@ -1,3 +1,12 @@
+aiscm (0.2.2-1) UNRELEASED; urgency=low
+
+  * aiscm/xorg.scm: convert array to image before displaying
+  * aiscm/rgb.scm: support for RGB values
+  * aiscm/jit.scm: spill predefined registers if they are blocked
+  - changed garbage collector settings for benchmark
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 26 Sep 2015 21:22:56 +0100
+
 aiscm (0.2.1-1) UNRELEASED; urgency=low
 
   * aiscm/jit.scm: code fragments
