@@ -371,18 +371,12 @@
       (define-method (type (self metaclass)) t)
       (define-method (type (self class)) t))))
 (fragment <element>)
-(define-method (parameter (var <var>))
-  (make (fragment (typecode var))
-        #:args (list var)
+(define-method (parameter self)
+  (make (fragment (typecode self))
+        #:args (list self)
         #:name parameter
         #:code (const '())
-        #:value var))
-(define-method (parameter (c <rgb>))
-  (make (fragment (rgb (typecode (red c))))
-        #:args (list c)
-        #:name parameter
-        #:code (const '())
-        #:value c))
+        #:value self))
 (define-method (parameter (p <pointer<>>))
   (let [(result (skel (typecode p)))]
     (make (fragment (typecode p))

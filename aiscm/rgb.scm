@@ -9,7 +9,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (rgb base
-            <rgb> red green blue
+            <rgb>
+            red green blue
             <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
@@ -69,3 +70,5 @@
 (define-method (types (self <meta<rgb<>>>)) (make-list 3 (base self)))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (param (self <meta<rgb<>>>) lst) (apply rgb (take lst 3)))
+(define-method (typecode (self <rgb>))
+  (rgb (reduce coerce #f (map typecode (content self)))))
