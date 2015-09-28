@@ -142,5 +142,5 @@
     "'types' returns the type itself")
 (ok (equal? '(42) (content 42))
     "'content' returns integer values")
-(ok (let-vars [(v <int>)] (equal? v (param <int> (list v))))
+(ok (let [(v (skel <int>))] (equal? v (param <int> (list v))))
     "'param' passes integer variables through")

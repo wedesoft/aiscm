@@ -57,5 +57,5 @@
     "Memory is allocated if no value is specified")
 (ok (equal? (list <long>) (types (pointer <sint>)))
     "'types' for a pointer returns a long integer")
-(ok (let-vars [(v <long>)] (equal? v (param (pointer <byte>) (list v))))
+(ok (let [(v (skel <long>))] (equal? v (param (pointer <byte>) (list v))))
     "'param' passes address variables through")

@@ -15,7 +15,7 @@
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers
+            callee-saved save-registers load-registers blocked
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
@@ -29,7 +29,7 @@
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op get-name to-type type assemble jit
             ~ & | ^ << >> =0 !=0 != && ||)
-  #:export-syntax (let-vars blocked until for repeat))
+  #:export-syntax (until for repeat))
 
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -77,14 +77,6 @@
 (define-method (substitute-variables (self <cmd>) alist)
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
-
-(define-syntax let-vars
-  (syntax-rules ()
-    ((let-vars [(name type) vars ...] body ...)
-     (let [(name (make <var> #:type type #:symbol (quote name)))]
-       (let-vars [vars ...] body ...)))
-    ((let-vars [] body ...)
-     (begin body ...))))
 
 (define-method (ptr (type <meta<element>>) . args)
   (make <ptr> #:type type #:args args))
@@ -182,7 +174,7 @@
                         (list x))) prog)))
 
 (define ((insert-temporary var) cmd)
-  (let-vars [(temporary (typecode var))]
+  (let [(temporary (skel (typecode var)))]
     (compact
       (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
@@ -297,15 +289,15 @@
 (define-syntax-rule (until condition body ...)
   (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
 (define-syntax-rule (for [(index type) setup condition step] body ...)
-  (let-vars [(index type)] (list setup (until condition body ... step))))
+  (let [(index (skel type))] (list setup (until condition body ... step))))
 (define-syntax-rule (repeat n body ...)
   (for [(i (typecode n)) (MOV i 0) (CMP i n) (INC i)] body ...))
 
 (define-class <block> ()
   (reg  #:init-keyword #:reg  #:getter get-reg)
   (code #:init-keyword #:code #:getter get-code))
-(define-syntax-rule (blocked reg body ...)
-  (make <block> #:reg reg #:code (list body ...)))
+(define (blocked reg . body)
+  (make <block> #:reg reg #:code body))
 (define (filter-blocks prog)
   (cond
     ((is-a? prog <block>) (filter-blocks (get-code prog)))
@@ -325,8 +317,8 @@
 (define ((binary-cmp set1 set2) r a b)
   (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 (define ((binary-bool op) r a b)
-  (let-vars [(r1 <bool>)
-             (r2 <bool>)]
+  (let[(r1 (skel <bool>))
+       (r2 (skel <bool>))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (divide r a b)
   (let* [(size (size-of (typecode r)))
@@ -389,7 +381,7 @@
         #:code (const '())
         #:value c))
 (define-method (parameter (p <pointer<>>))
-  (let-vars [(result (typecode p))]
+  (let [(result (skel (typecode p)))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
@@ -585,8 +577,8 @@
 (define-method (element-wise s)
   (list '() '() s))
 (define-method (element-wise (s <sequence<>>))
-  (let-vars [(incr  <long>)
-             (p     <long>)]
+  (let [(incr (skel <long>))
+        (p    (skel <long>))]
     (list (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                 (MOV p (get-value s)))
           (list (ADD p incr))

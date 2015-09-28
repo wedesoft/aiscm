@@ -2,9 +2,10 @@
 
 ## Ready
 
-* put copyright into /usr/share/doc/package/copyright https://www.debian.org/doc/debian-policy/ch-docs.html#s-copyrightfile
-* RGB return values
+* remove for and until, make repeat simpler
+* refactoring
 * RGB operations
+* RGB return values
 * weird error when including sequence but not pointer
 * make type matching extendable
 * mocking in test suite
