@@ -89,7 +89,7 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(immutable-op MOV)
+(immutable-op MOV); TODO: make more compact
 (immutable-op MOVSX)
 (immutable-op MOVZX)
 (immutable-op LEA)
@@ -354,7 +354,7 @@
               (MOV r ax))))))))
 (define (sign-space a b)
   (let [(coerced (coerce a b))]
-    (if (eq? (signed? (typecode a)) (signed? (typecode b)))
+    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
       coerced
       (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
@@ -395,7 +395,7 @@
                               (MOV (green result) (ptr (base (typecode p)) (get-value p) size))
                               (MOV (blue  result) (ptr (base (typecode p)) (get-value p) (* 2 size)))))
           #:value result)))
-(define-method (parameter (s <sequence<>>))
+(define-method (parameter (s <sequence<>>)); TODO: simplify
   (make (fragment (class-of s))
         #:args (list s)
         #:name parameter
@@ -572,9 +572,9 @@
             (store p size (green a))
             (store p (* 2 size) (blue  a)))))
 (define-class <elementwise> ()
-  (setup     #:init-keyword #:setup     #:getter setup)
-  (increment #:init-keyword #:increment #:getter increment)
-  (body      #:init-keyword #:body      #:getter body))
+  (setup     #:init-keyword #:setup     #:getter get-setup)
+  (increment #:init-keyword #:increment #:getter get-increment)
+  (body      #:init-keyword #:body      #:getter get-body))
 (define-method (element-wise self)
   (make <elementwise> #:setup '() #:increment '() #:body self))
 (define-method (element-wise (s <sequence<>>))
@@ -588,18 +588,18 @@
 (define-method (element-wise (self <fragment<sequence<>>>))
   (let [(loops (map element-wise (get-args self)))]
     (make <elementwise>
-          #:setup (map setup loops)
-          #:increment (map increment loops)
-          #:body (apply (get-name self) (map body loops)))))
+          #:setup (map get-setup loops)
+          #:increment (map get-increment loops)
+          #:body (apply (get-name self) (map get-body loops)))))
 (define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
   (let [(destination (element-wise s))
         (source      (element-wise a))]
-    (list (setup destination)
-          (setup source)
+    (list (get-setup destination)
+          (get-setup source)
           (repeat (last (shape s))
-                  (append (store (body destination) (body source))
-                          (increment destination)
-                          (increment source))))))
+                  (append (store (get-body destination) (get-body source))
+                          (get-increment destination)
+                          (get-increment source))))))
 (define (returnable? value) (is-a? value <var>))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
