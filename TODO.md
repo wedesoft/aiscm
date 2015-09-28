@@ -3,6 +3,7 @@
 ## Ready
 
 * remove for and until, make repeat simpler
+* make instantiation of fragments easier
 * refactoring
 * RGB operations
 * RGB return values

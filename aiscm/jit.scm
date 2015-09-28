@@ -15,7 +15,7 @@
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers blocked
+            callee-saved save-registers load-registers blocked repeat
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
@@ -28,8 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-args get-op get-name to-type type assemble jit
-            ~ & | ^ << >> =0 !=0 != && ||)
-  #:export-syntax (until for repeat))
+            ~ & | ^ << >> =0 !=0 != && ||))
 
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -286,12 +285,16 @@
                               #:registers registers
                               #:parameters arg-vars)))
 
-(define-syntax-rule (until condition body ...)
-  (list 'begin condition (JE 'end) body ... (JMP 'begin) 'end))
-(define-syntax-rule (for [(index type) setup condition step] body ...)
-  (let [(index (skel type))] (list setup (until condition body ... step))))
-(define-syntax-rule (repeat n body ...)
-  (for [(i (typecode n)) (MOV i 0) (CMP i n) (INC i)] body ...))
+(define (repeat n . body)
+  (let [(i (skel (typecode n)))]
+    (list (MOV i 0)
+          'begin
+          (CMP i n)
+          (JE 'end)
+          (INC i)
+          body
+          (JMP 'begin)
+          'end)))
 
 (define-class <block> ()
   (reg  #:init-keyword #:reg  #:getter get-reg)
