@@ -162,13 +162,13 @@
 
 (define-method (MOV (m <address>) (r <register>))
   (append (prefixes r m) (if8 r #x88 #x89) (postfixes r m)))
-(define-method (MOV (r <register>) (imm <integer>)); TODO: fix redundancy
+(define-method (MOV (r <register>) (imm <integer>))
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
-(define-method (MOV (m <address>) (imm <integer>)); TODO: fix redundancy
+(define-method (MOV (m <address>) (imm <integer>))
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
-(define-method (MOV (r <register>) (imm <mem>)); TODO: fix redundancy
+(define-method (MOV (r <register>) (imm <mem>))
   (append (prefixes r) (opcode-if8 r #xb0 #xb8) (raw imm (get-bits r))))
-(define-method (MOV (m <address>) (imm <mem>)); TODO: fix redundancy
+(define-method (MOV (m <address>) (imm <mem>))
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw imm (min 32 (get-bits m)))))
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))

@@ -2,14 +2,12 @@
 
 ## Ready
 
-* make instantiation of fragments easier
-* refactoring
+* redundant: ((get-value)), ((get-code))
+* parametrised tests, mocks
 * RGB operations
 * RGB return values
+* complex numbers, extendable type matching
 * weird error when including sequence but not pointer
-* make type matching extendable
-* mocking in test suite
-* jit type checks
 * pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * parameter passing for sequences, map, tensor operations

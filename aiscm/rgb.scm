@@ -8,7 +8,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (rgb base
+  #:export (rgb
             <rgb>
             red green blue
             <rgb<>> <meta<rgb<>>>
@@ -39,7 +39,6 @@
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
-(define-method (base self) self)
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
 (define-method (pack (self <rgb<>>))
   (let* [(vals     (content (get-value self)))
