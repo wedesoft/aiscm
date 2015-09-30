@@ -35,7 +35,7 @@
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
     (lambda (class metaclass)
-      (define-method (base (self metaclass))t); TODO: rename this
+      (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))

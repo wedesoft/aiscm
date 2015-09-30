@@ -3,8 +3,10 @@
 ## Ready
 
 * refactoring (do/remove TODOs)
+* how to return boolean return values
 * RGB operations
 * RGB return values
+* copy blocked predefined variables instead of spilling them
 * parametrised tests, mocks
 * complex numbers, extendable type matching
 * weird error when including sequence but not pointer

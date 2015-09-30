@@ -70,7 +70,7 @@
 (define-binary-op >= >=)
 (define-binary-op && &&)
 (define-binary-op || ||)
-(define-method (red (self <sequence<>>)); TODO: move to aiscm rgb
+(define-method (red (self <sequence<>>))
   (make (to-type (base (typecode self)) (class-of self))
         #:shape (shape self)
         #:strides (map (cut * 3 <>) (strides self))

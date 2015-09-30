@@ -88,7 +88,7 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(immutable-op MOV); TODO: make more compact
+(immutable-op MOV)
 (immutable-op MOVSX)
 (immutable-op MOVZX)
 (immutable-op LEA)
@@ -257,7 +257,7 @@
     (if conflict
       (let* [(var       (car conflict))
              (location (ptr (typecode var) RSP offset))]
-      (with-spilled-variable var location prog predefined blocked; TODO: copy to other variable instead of spilling it
+      (with-spilled-variable var location prog predefined blocked
         (lambda (prog predefined blocked)
           (spill-blocked-predefines prog
                                     #:predefined predefined
@@ -370,12 +370,9 @@
       (define-method (type (self metaclass)) t)
       (define-method (type (self class)) t))))
 (fragment <element>)
-(define-method (parameter self)
-  (make (fragment (typecode self))
-        #:args (list self)
-        #:name parameter
-        #:code '()
-        #:value self))
+(define (to-fragment type self)
+  (make (fragment type) #:args (list self) #:name parameter #:code '() #:value self))
+(define-method (parameter self) (to-fragment (typecode self) self))
 (define-method (parameter (p <pointer<>>))
   (let [(result (skel (typecode p)))]
     (make (fragment (typecode p))
@@ -394,12 +391,7 @@
                        (MOV (green result) (ptr (base (typecode p)) (get-value p) size))
                        (MOV (blue  result) (ptr (base (typecode p)) (get-value p) (* 2 size))))
           #:value result)))
-(define-method (parameter (s <sequence<>>)); TODO: simplify
-  (make (fragment (class-of s))
-        #:args (list s)
-        #:name parameter
-        #:code '()
-        #:value s))
+(define-method (parameter (self <sequence<>>)) (to-fragment (class-of self) self))
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
@@ -523,7 +515,7 @@
         #:args (list self)
         #:name red
         #:code (code self)
-        #:value ((protect self red) (get-value self)))); TODO: convert back to simple (red of pointer)
+        #:value ((protect self red) (get-value self))))
 (define-method (green (self <fragment<element>>))
   (make (fragment (base (type self)))
         #:args (list self)
@@ -585,7 +577,7 @@
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
                      (append (store retval frag) (list (RET)))))
-(define (jit ctx classes proc); TODO: how to return boolean?
+(define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
          (return-type (type frag))
