@@ -196,22 +196,21 @@
 (define-method (LEA (r <register>) (m <address>))
   (append (prefixes r m) (list #x8d) (postfixes r m)))
 
-; TODO: Sxx r/m imm
 (define-method (SHL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
-(define-method (SHL (r/m <operand>) (r <register>)); TODO: check that r == CL
+(define-method (SHL (r/m <operand>) (r <register>))
   (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 4 r/m)))
 (define-method (SHR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 5 r/m)))
-(define-method (SHR (r/m <operand>) (r <register>)); TODO: check that r == CL
+(define-method (SHR (r/m <operand>) (r <register>))
   (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 5 r/m)))
 (define-method (SAL (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 4 r/m)))
-(define-method (SAL (r/m <operand>) (r <register>)); TODO: check that r == CL
+(define-method (SAL (r/m <operand>) (r <register>))
   (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 4 r/m)))
 (define-method (SAR (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xd0 #xd1) (postfixes 7 r/m)))
-(define-method (SAR (r/m <operand>) (r <register>)); TODO: check that r == CL
+(define-method (SAR (r/m <operand>) (r <register>))
   (append (prefixes r/m) (if8 r/m #xd2 #xd3) (postfixes 7 r/m)))
 
 (define-method (ADD (m <address>) (r <register>))
@@ -225,7 +224,7 @@
 (define-method (ADD (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
-(define-method (PUSH (r <register>)); TODO: PUSH r/m, PUSH imm
+(define-method (PUSH (r <register>))
   (append (prefixes r) (opcode #x50 r)))
 (define-method (POP (r <register>))
   (append (prefixes r) (opcode #x58 r)))
@@ -252,8 +251,10 @@
 
 (define-method (IMUL (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (list #x0f #xaf) (postfixes r r/m)))
-(define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>)); TODO: imm for more than 8 bit
-  (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8)))
+(define-method (IMUL (r <register>) (r/m <operand>) (imm <integer>))
+  (if (and (< imm 128) (>= imm -128))
+    (append (prefixes r r/m) (list #x6b) (postfixes r r/m) (raw imm 8))
+    (append (prefixes r r/m) (list #x69) (postfixes r r/m) (raw imm (get-bits r/m)))))
 
 (define-method (IDIV (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 7 r/m)))

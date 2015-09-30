@@ -2,10 +2,10 @@
 
 ## Ready
 
-* redundant: ((get-value)), ((get-code))
-* parametrised tests, mocks
+* refactoring (do/remove TODOs)
 * RGB operations
 * RGB return values
+* parametrised tests, mocks
 * complex numbers, extendable type matching
 * weird error when including sequence but not pointer
 * pulse audio (see python bindings?)

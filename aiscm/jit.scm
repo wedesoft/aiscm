@@ -68,7 +68,7 @@
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
     (if (is-a? target <register>)
-      (reg (size-of (typecode self)) (get-code target)); TODO: do type conversion elsewhere
+      (reg (size-of (typecode self)) (get-code target))
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
