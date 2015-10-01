@@ -11,7 +11,7 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence multiarray to-list to-array
-            dump crop project rebase roll unroll downsample)
+            dump crop project rebase roll unroll downsample element-type)
   #:export-syntax (seq arr))
 (define-generic element-type)
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
@@ -159,9 +159,3 @@
   (append (list <long> <long>) (types (element-type self))))
 (define-method (content (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (content (project self))))
-(define-method (param (self <meta<sequence<>>>) lst)
-  (let [(slice (param (element-type self) (cddr lst)))]
-    (make self
-          #:value   (if (is-a? slice <sequence<>>) (get-value slice) slice)
-          #:shape   (attach (shape slice) (car lst))
-          #:strides (attach (strides slice) (cadr lst)))))

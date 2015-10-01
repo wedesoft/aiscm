@@ -2,6 +2,7 @@
 
 ## Ready
 
+* replace param and content with compose-from and decompose
 * refactoring (do/remove TODOs)
 * how to return boolean return values
 * RGB operations

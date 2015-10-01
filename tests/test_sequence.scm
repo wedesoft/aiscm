@@ -25,6 +25,8 @@
 (ok (eqv? 3 (size s1))
     "Query size of sequence")
 (ok (equal? <sint> (typecode s1))
+    "Query typecode of sequence")
+(ok (equal? (pointer <sint>) (element-type (sequence <sint>)))
     "Query element type of sequence")
 (ok (eqv? 9 (begin (set s2 2 9) (get s2 2)))
     "Write value to sequence")
@@ -48,7 +50,7 @@
       (call-with-output-string (lambda (port) (write (to-array (make-list 40 100)) port))))
     "Write longer sequence object")
 (ok (equal? "#<<sequence<int<8,signed>>> c (a) (b)>"
-      (let [(s (param (sequence <byte>) (list a b c)))]
+      (let [(s (compose-from (sequence <byte>) (list a b c)))]
         (call-with-output-string (lambda (port) (write s port)))))
     "Write sequence object made from variables")
 (ok (equal? <ubyte> (typecode (to-array '(1 2 3))))
@@ -115,6 +117,8 @@
     "Class name of 16-bit integer 2D array")
 (ok (equal? (multiarray <sint> 2) (sequence (sequence (integer 16 signed))))
     "Multi-dimensional array is the same as a sequence of sequences")
+(ok (equal? (sequence <sint>) (element-type (multiarray <sint> 2)))
+    "Get element-type of 2D array")
 (ok (null? (shape 1))
     "Shape of arbitrary object is empty list")
 (ok (equal? '(3) (shape '(1 2 3)))
@@ -175,9 +179,3 @@
     "'types' for a 2D array should allow for a pointer, shape, and strides argument")
 (ok (equal? '(4 6 6 1) (take (content (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'content' for a 2D array should return shape and strides")
-(ok (let [(s (param (sequence <byte>) (list a b c)))]
-      (equal? (list a b c) (append (shape s) (strides s) (list (get-value s)))))
-    "'param' constructs sequences")
-(ok (let* [(m (param (multiarray <byte> 2) (list a b c d e)))]
-      (equal? (list c a d b e) (append (shape m) (strides m) (list (get-value m)))))
-    "'param' constructs 2D arrays")

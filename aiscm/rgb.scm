@@ -68,6 +68,5 @@
     (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
 (define-method (types (self <meta<rgb<>>>)) (make-list 3 (base self)))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
-(define-method (param (self <meta<rgb<>>>) lst) (apply rgb (take lst 3)))
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))

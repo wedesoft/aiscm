@@ -494,8 +494,15 @@
 ; TODO: binary operation <<
 ; TODO: binary operation >>
 ; TODO: conditional -> minor, major
-(define-method (compose-from (self <meta<element>>) vars) (param self vars)); TODO: <-> param
+(define-method (compose-from (self <meta<element>>) vars) (car vars))
+(define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
+(define-method (compose-from (self <meta<sequence<>>>) lst)
+  (let [(slice (compose-from (element-type self) (cddr lst)))]
+    (make self
+          #:value   (get-value slice)
+          #:shape   (attach (shape slice) (car lst))
+          #:strides (attach (strides slice) (cadr lst)))))
 (define-method (decompose (self <var>)) (list self))
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (decompose (self <pointer<>>)) (list (get-value self))); TODO: <-> content
