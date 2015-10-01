@@ -409,7 +409,7 @@
     "Storing a sequence copies each element")
 (ok (equal? -42 ((jit ctx (list <int>) -) 42))
     "Negate integer")
-(ok (equal? '(253 252 250) (to-list ((jit ctx (list (sequence <ubyte>)) ~) (seq 2 3 5)))); TODO: minimal set of array tests
+(ok (equal? '(253 252 250) (to-list ((jit ctx (list (sequence <ubyte>)) ~) (seq 2 3 5))))
     "Bitwise not of sequence")
 (ok (equal? '(-1 2 -3) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 1 -2 3))))
     "Negate sequence of integers")

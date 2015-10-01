@@ -6,13 +6,14 @@
 * how to return boolean return values
 * RGB operations
 * RGB return values
+* xorg: fast rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them
-* parametrised tests, mocks
+* parametrised tests (e.g. array ops), mocks
 * complex numbers, extendable type matching
 * weird error when including sequence but not pointer
 * pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
-* parameter passing for sequences, map, tensor operations
+* parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
     (tensor [i] ((roll (+ m s) i))

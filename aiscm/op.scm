@@ -26,7 +26,7 @@
                        #:procedure proc))
     (to-type target self)))
 
-(define (fill type shape value); TODO: replace with tensor operation
+(define (fill type shape value)
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))

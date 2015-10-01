@@ -37,7 +37,7 @@
     "add integer sequences")
 (ok (equal? '(4 4 4) (to-list (+ (fill <byte> '(3) 1) (fill <sint> '(3) 3))))
     "add byte and short integer sequences")
-(ok (equal? '(4 4 4) (to-list (+ (fill <sint> '(3) 1) (fill <byte> '(3) 3)))); TODO: move tests to test_jit.scm
+(ok (equal? '(4 4 4) (to-list (+ (fill <sint> '(3) 1) (fill <byte> '(3) 3))))
     "add short integer and byte sequences")
 (ok (equal? '(255 254 253) (to-list (+ (seq -1 -2 -3) 256)))
     "sign-expand negative values when adding byte sequence and short integer")

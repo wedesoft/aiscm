@@ -534,7 +534,6 @@ void window_paint(struct window_t *self, int x11_event)
           height = scm_to_int(scm_cadr(shape));
         char *data = image_data(self->scm_converted);
         glPixelZoom((float)self->width / width, -(float)self->height / height);
-        // TODO: fast rendering of grayscale images
         glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
         glEnable(GL_DITHER);
         glFinish();
