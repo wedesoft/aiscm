@@ -2,9 +2,9 @@
 
 ## Ready
 
-* replace param and content with compose-from and decompose
-* refactoring (do/remove TODOs)
-* how to return boolean return values
+* record arrays (see numpy.recarray)
+* recursive RGB fragment stuff
+* how to return boolean return values (opposite of content?)
 * RGB operations
 * RGB return values
 * xorg: fast rendering of grayscale images (glDrawPixels)
