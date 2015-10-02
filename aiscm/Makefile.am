@@ -1,14 +1,14 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_SCRIPTS = mem.scm element.scm bool.scm int.scm float.scm rgb.scm pointer.scm sequence.scm \
+site_DATA = mem.scm element.scm bool.scm int.scm float.scm rgb.scm pointer.scm sequence.scm \
 	asm.scm jit.scm op.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-image.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
-cache_DATA = $(site_SCRIPTS:.scm=.go)
+cache_DATA = $(site_DATA:.scm=.go)
 
 libguile_util_la_SOURCES = util.c
 libguile_util_la_CFLAGS = $(GUILE_CFLAGS)
@@ -43,7 +43,7 @@ install-data-hook:
 
 $(cache_DATA): $(extension_LTLIBRARIES)
 
-EXTRA_DIST = $(site_SCRIPTS)
+EXTRA_DIST = $(site_DATA)
 
 CLEANFILES = *~ *.tmp *.go*
 

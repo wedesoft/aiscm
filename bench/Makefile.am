@@ -10,7 +10,7 @@ libguile_bench_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_bench_la_LDFLAGS = -no-undefined -rpath /nowhere
 libguile_bench_la_LIBADD = $(GUILE_LIBS)
 
-noinst_SCRIPTS = bench.scm
+noinst_DATA = bench.scm
 
 bench-local: bench.scm libguile-bench.la
 	$(BENCH_ENVIRONMENT) $(GUILE) bench.scm
