@@ -413,9 +413,9 @@
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
   (let* [(result (skel target))
          (tmp    (parameter (get-value frag)))
-         (r      (to-type (base target) (red tmp)))
+         (r      (to-type (base target) (red   tmp)))
          (g      (to-type (base target) (green tmp)))
-         (b      (to-type (base target) (blue tmp)))]
+         (b      (to-type (base target) (blue  tmp)))]
     (make (fragment (to-type target (type frag)))
           #:args (list target frag)
           #:name to-type
@@ -494,6 +494,84 @@
 ; TODO: binary operation <<
 ; TODO: binary operation >>
 ; TODO: conditional -> minor, major
+(define-method (+ (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (+ (red   u) (red   v)))
+         (y   (+ (green u) (green v)))
+         (z   (+ (blue  u) (blue  v)))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name +
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-method (+ (a <fragment<rgb<>>>) (b <fragment<element>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (+ (red   u) v))
+         (y   (+ (green u) v))
+         (z   (+ (blue  u) v))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name +
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-method (+ (a <fragment<element>>) (b <fragment<rgb<>>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (+ u (red   v)))
+         (y   (+ u (green v)))
+         (z   (+ u (blue  v)))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name +
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-method (- (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (- (red   u) (red   v)))
+         (y   (- (green u) (green v)))
+         (z   (- (blue  u) (blue  v)))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name -
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-method (- (a <fragment<rgb<>>>) (b <fragment<element>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (- (red   u) v))
+         (y   (- (green u) v))
+         (z   (- (blue  u) v))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name -
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-method (- (a <fragment<element>>) (b <fragment<rgb<>>>))
+  (let* [(target (coerce (type a) (type b)))
+         (u   (parameter (get-value a)))
+         (v   (parameter (get-value b)))
+         (x   (- u (red   v)))
+         (y   (- u (green v)))
+         (z   (- u (blue  v)))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name -
+          #:code (append (code a) (code b)
+                         (code x) (code y) (code z))
+          #:value (rgb (get-value x) (get-value y) (get-value z)))))
 (define-method (compose-from (self <meta<element>>) vars) (car vars))
 (define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))

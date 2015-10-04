@@ -2,15 +2,17 @@
 
 ## Ready
 
-* record arrays (see numpy.recarray)
-* recursive RGB fragment stuff
-* how to return boolean return values (opposite of content?)
+* refactor rgb operations plus and minus
+* (+ (seq (rgb 2 3 4)) -1)
+  (+ (seq (rgb 2 3 4)) -2)
 * RGB operations
 * RGB return values
+* record arrays (see numpy.recarray)
+* complex numbers, extendable type matching
+* how to return boolean return values (opposite of content?)
 * xorg: fast rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them
 * parametrised tests (e.g. array ops), mocks
-* complex numbers, extendable type matching
 * weird error when including sequence but not pointer
 * pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
@@ -25,7 +27,6 @@
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
 * wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
-* Scheme objects
 * RET keeps return value and callee-saved stuff alive
 * update live intervals instead of recomputing
 * macros: (jit-method [(x <int>) (y <float>)] (+ x y))
