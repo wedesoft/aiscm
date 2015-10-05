@@ -4,6 +4,7 @@
 
 * RGB operations
 * RGB return values
+* (sequence (rgb 1 2 3))
 * record arrays (see numpy.recarray)
 * complex numbers, extendable type matching
 * how to return boolean return values (opposite of content?)
