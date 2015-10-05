@@ -2,9 +2,6 @@
 
 ## Ready
 
-* (+ (seq (rgb 2 3 4)) -1)
-  (+ (seq (rgb 2 3 4)) -2)
-* unary RGB operations
 * RGB operations
 * RGB return values
 * record arrays (see numpy.recarray)

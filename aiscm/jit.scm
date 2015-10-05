@@ -494,6 +494,20 @@
 ; TODO: binary operation <<
 ; TODO: binary operation >>
 ; TODO: conditional -> minor, major
+(define (do-unary-rgb-op op a)
+  (let* [(u (parameter (get-value a)))
+         (x (op (red   u)))
+         (y (op (green u)))
+         (z (op (blue  u)))]
+  (make (fragment (type a))
+        #:args (list a)
+        #:name op
+        #:code (append (code a) (code x) (code y) (code z))
+        #:value (rgb (get-value x) (get-value y) (get-value z)))))
+(define-syntax-rule (unary-rgb-op op)
+  (define-method (op (a <fragment<rgb<>>>))
+    (do-unary-rgb-op op a)))
+(unary-rgb-op -)
 (define (do-binary-rgb-op op a b)
   (let* [(target (coerce (type a) (type b)))
          (u   (parameter (get-value a)))
