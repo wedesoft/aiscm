@@ -10,29 +10,37 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
-            sequence multiarray to-list to-array
+            sequence seq multiarray to-list to-array
             dump crop project rebase roll unroll downsample element-type)
-  #:export-syntax (seq arr))
+  #:export-syntax (arr))
 (define-generic element-type)
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))
 (define (default-strides shape)
   (map (compose (cut apply * <>) (cut take shape <>)) (iota (length shape))))
-(define (sequence type)
-  (template-class (sequence type) <sequence<>>
-    (lambda (class metaclass)
-      (define-method (initialize (self class) initargs)
-        (let-keywords initargs #f (shape size value strides)
-          (let* [(value   (or value (make <mem>
-                                     #:size (* (size-of (typecode type))
-                                               (or size (apply * shape))))))
-                 (shape   (or shape (list size)))
-                 (strides (or strides (default-strides shape)))]
-            (next-method self (list #:value value #:shape shape #:strides strides)))))
-      (define-method (element-type (self metaclass)) (pointer type))
-      (define-method (dimension (self metaclass)) (1+ (dimension type)))
-      (define-method (typecode (self metaclass)) (typecode type)))))
+(define (sequence type . args)
+  (if (is-a? type <meta<element>>)
+    (if (null? args)
+      (template-class (sequence type) <sequence<>>
+        (lambda (class metaclass)
+          (define-method (initialize (self class) initargs)
+            (let-keywords initargs #f (shape size value strides)
+              (let* [(value   (or value (make <mem>
+                                         #:size (* (size-of (typecode type))
+                                                   (or size (apply * shape))))))
+                     (shape   (or shape (list size)))
+                     (strides (or strides (default-strides shape)))]
+                (next-method self (list #:value value #:shape shape #:strides strides)))))
+          (define-method (element-type (self metaclass)) (pointer type))
+          (define-method (dimension (self metaclass)) (1+ (dimension type)))
+          (define-method (typecode (self metaclass)) (typecode type))))
+      (to-array type args))
+    (to-array (cons type args))))
+(define seq sequence)
+(define-syntax-rule (arr arg1 args ...)
+  (if (is-a? (quote arg1) <symbol>) (to-array arg1 '(args ...)) (to-array '(arg1 args ...))))
+
 (define-method (pointer (target-class <meta<sequence<>>>)) target-class)
 (define (multiarray type dimension)
   (if (zero? dimension) (pointer type) (multiarray (sequence type) (1- dimension))))
@@ -84,11 +92,6 @@
          (retval (make (multiarray typecode (length shape)) #:shape shape))]
     (store retval lst)
     retval))
-(define-syntax-rule (seq arg1 args ...)
-  (if (is-a? arg1 <meta<element>>) (to-array arg1 (list args ...)) (to-array (list arg1 args ...))))
-(define-syntax-rule (arr arg1 args ...)
-  (if (is-a? (quote arg1) <symbol>) (to-array arg1 '(args ...)) (to-array '(arg1 args ...))))
-
 (define (print-columns self first infix count width port)
   (if (zero? count)
     (begin

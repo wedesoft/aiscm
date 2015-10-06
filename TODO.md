@@ -2,11 +2,11 @@
 
 ## Ready
 
-* RGB operations
 * RGB return values
-* (sequence (rgb 1 2 3))
+* RGB operations
 * record arrays (see numpy.recarray)
 * complex numbers, extendable type matching
+* types composed of Scheme objects
 * how to return boolean return values (opposite of content?)
 * xorg: fast rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them
@@ -34,7 +34,6 @@
 * <-> Guile 6.7.5 Arrays
 * coalesce variables
 * floating point exception (SIGFPE)
-* linear-scan register allocator/block-wise coloring
 * minor, major (cmovge)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,
