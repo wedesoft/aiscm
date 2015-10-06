@@ -33,6 +33,7 @@ sudo make install
 ## External links
 
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
+* [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
