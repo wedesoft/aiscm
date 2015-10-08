@@ -2,8 +2,6 @@
 
 ## Ready
 
-* keep output value alive for intrgb pointer
-* RGB return values
 * RGB operations
 * how to return boolean return values (opposite of content?)
 * display multiple images or videos using X.Org
