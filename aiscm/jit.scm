@@ -633,8 +633,6 @@
                           (get-increment destination)
                           (get-increment source))))))
 (define (returnable? value) (is-a? value <var>))
-(define-method (reference type args) (make type)); TODO: refactor
-(define-method (reference (type <meta<sequence<>>>) args) (make type #:shape (argmax length (map shape args))))
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
 (define (assemble retval vars frag)
@@ -655,6 +653,6 @@
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
-                (let [(result (reference return-type args))]
+                (let [(result (make return-type #:shape (argmax length (map shape args))))]
                   (apply fun (concatenate (map content (cons result args))))
                   (get (fetch result)))))))
