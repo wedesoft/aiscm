@@ -510,7 +510,7 @@
   (define-method (op (a <fragment<rgb<>>>))
     (do-unary-rgb-op op a)))
 (unary-rgb-op -)
-; TODO: RGB ~
+(unary-rgb-op ~)
 ; TODO: RGB =0
 ; TODO: RGB !=0
 ; TODO: RGB floor
@@ -539,9 +539,9 @@
       (do-binary-rgb-op op a b))) )
 (binary-rgb-op +)
 (binary-rgb-op -)
-;TODO: RGB *
-;TODO: RGB &
-;TODO: RGB |
+(binary-rgb-op *)
+(binary-rgb-op &)
+(binary-rgb-op |)
 ;TODO: RGB ^
 ;TODO: RGB <<
 ;TODO: RGB >>
