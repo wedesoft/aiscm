@@ -633,7 +633,7 @@
                           (get-increment destination)
                           (get-increment source))))))
 (define (returnable? value) (is-a? value <var>))
-(define-method (reference type args) (make (pointer type))); TODO: refactor
+(define-method (reference type args) (make type)); TODO: refactor
 (define-method (reference (type <meta<sequence<>>>) args) (make type #:shape (argmax length (map shape args))))
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
@@ -646,12 +646,12 @@
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
-         (return-type (type frag))
-         (retval      (skel (wrap return-type))); TODO: retval not used in some cases!
+         (return-type (wrap (type frag)))
+         (retval      (skel return-type))
          (fun         (asm ctx
                            (if (returnable? retval) return-type <null>)
                            (concatenate
-                             (map types (if (returnable? retval) classes (cons (wrap return-type) classes))))
+                             (map types (if (returnable? retval) classes (cons return-type classes))))
                            (assemble retval vars frag)))]
     (if (returnable? retval)
         (lambda args
