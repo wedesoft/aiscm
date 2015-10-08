@@ -637,8 +637,6 @@
 (define-method (reference (type <meta<sequence<>>>) args) (make type #:shape (argmax length (map shape args))))
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
-(define-method (unwrap self) self)
-(define-method (unwrap (self <pointer<>>)) (get-value (fetch self)))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -659,4 +657,4 @@
         (lambda args
                 (let [(result (reference return-type args))]
                   (apply fun (concatenate (map content (cons result args))))
-                  (unwrap result))))))
+                  (get (fetch result)))))))
