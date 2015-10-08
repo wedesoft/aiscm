@@ -2,12 +2,14 @@
 
 ## Ready
 
+* keep output value alive for intrgb pointer
 * RGB return values
 * RGB operations
+* how to return boolean return values (opposite of content?)
+* display multiple images or videos using X.Org
 * record arrays (see numpy.recarray)
 * complex numbers, extendable type matching
 * types composed of Scheme objects
-* how to return boolean return values (opposite of content?)
 * xorg: fast rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them
 * parametrised tests (e.g. array ops), mocks

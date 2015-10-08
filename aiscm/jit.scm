@@ -27,7 +27,7 @@
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code get-args get-op get-name to-type type assemble jit
+            parameter code get-op get-name to-type type assemble jit
             ~ & | ^ << >> =0 !=0 != && ||))
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -126,7 +126,11 @@
    (MOV r (reg (/ (get-bits r) 8) (get-code r/m))))
 (immutable-op mov-part)
 
-(define (variables prog) (delete-duplicates (filter is-var? (concatenate (map get-args prog)))))
+(define-method (variables self) '())
+(define-method (variables (self <cmd>))
+  (filter is-var?  (concatenate (cons (get-args self) (map get-args (filter is-ptr? (get-args self)))))))
+(define-method (variables (self <list>))
+  (delete-duplicates (concatenate (map variables self))))
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
@@ -181,7 +185,7 @@
   (substitute-variables (map (insert-temporary var) prog) (list (cons var location))))
 
 (define ((idle-live prog live) var)
-  (count (lambda (cmd active) (and (not (memv var (get-args cmd))) (memv var active))) prog live))
+  (count (lambda (cmd active) (and (not (memv var (variables cmd))) (memv var active))) prog live))
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
     (let [(value (assq-ref colors parameter))]
@@ -489,10 +493,8 @@
 (binary-op && immutable-binary coerce     (binary-bool AND)          (cut to-type <bool> <>))
 (binary-op || immutable-binary coerce     (binary-bool OR)           (cut to-type <bool> <>))
 ; TODO: binary operation ** (coercion-maxint)
-; TODO: binary operation %
+; TODO: binary operation %, fmod
 ; TODO: binary operation fmod
-; TODO: binary operation <<
-; TODO: binary operation >>
 ; TODO: conditional -> minor, major
 (define (do-unary-rgb-op op a)
   (let* [(u (parameter (get-value a)))
@@ -508,6 +510,12 @@
   (define-method (op (a <fragment<rgb<>>>))
     (do-unary-rgb-op op a)))
 (unary-rgb-op -)
+; TODO: RGB ~
+; TODO: RGB =0
+; TODO: RGB !=0
+; TODO: RGB floor
+; TODO: RGB ceil
+; TODO: RGB round
 (define (do-binary-rgb-op op a b)
   (let* [(target (coerce (type a) (type b)))
          (u   (parameter (get-value a)))
@@ -531,6 +539,24 @@
       (do-binary-rgb-op op a b))) )
 (binary-rgb-op +)
 (binary-rgb-op -)
+;TODO: RGB *
+;TODO: RGB &
+;TODO: RGB |
+;TODO: RGB ^
+;TODO: RGB <<
+;TODO: RGB >>
+;TODO: RGB /
+;TODO: RGB =
+;TODO: RGB !=
+;TODO: RGB <
+;TODO: RGB <=
+;TODO: RGB >
+;TODO: RGB >=
+;TODO: RGB &&
+;TODO: RGB ||
+;TODO: RGB ** (coercion-maxint)
+;TODO: RGB %, fmod
+;TODO: RGB minor, major
 (define-method (compose-from (self <meta<element>>) vars) (car vars))
 (define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
 (define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
@@ -574,9 +600,9 @@
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
-            (list (MOV (ptr (typecode p) (get-value p)           ) (red   (get-value a)))
-                  (MOV (ptr (typecode p) (get-value p)       size) (green (get-value a)))
-                  (MOV (ptr (typecode p) (get-value p) (* 2 size)) (blue  (get-value a)))))))
+            (list (MOV (ptr (base (typecode p)) (get-value p)           ) (red   (get-value a)))
+                  (MOV (ptr (base (typecode p)) (get-value p)       size) (green (get-value a)))
+                  (MOV (ptr (base (typecode p)) (get-value p) (* 2 size)) (blue  (get-value a)))))))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
@@ -607,6 +633,12 @@
                           (get-increment destination)
                           (get-increment source))))))
 (define (returnable? value) (is-a? value <var>))
+(define-method (reference type args) (make (pointer type))); TODO: refactor
+(define-method (reference (type <meta<sequence<>>>) args) (make type #:shape (argmax length (map shape args))))
+(define-method (wrap type) type)
+(define-method (wrap (type <meta<rgb<>>>)) (pointer type))
+(define-method (unwrap self) self)
+(define-method (unwrap (self <pointer<>>)) (get-value (fetch self)))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -615,16 +647,16 @@
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
          (return-type (type frag))
-         (retval      (skel return-type))
+         (retval      (skel (wrap return-type))); TODO: retval not used in some cases!
          (fun         (asm ctx
                            (if (returnable? retval) return-type <null>)
                            (concatenate
-                             (map types (if (returnable? retval) classes (cons return-type classes))))
+                             (map types (if (returnable? retval) classes (cons (wrap return-type) classes))))
                            (assemble retval vars frag)))]
     (if (returnable? retval)
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
-                (let [(result (make return-type #:shape (argmax length (map shape args))))]
+                (let [(result (reference return-type args))]
                   (apply fun (concatenate (map content (cons result args))))
-                  result)))))
+                  (unwrap result))))))
