@@ -2,11 +2,11 @@
 
 ## Ready
 
-* RGB operations
+* RGB operations, map, inject?
 * how to return boolean return values (opposite of content?)
+* parametrised tests, Clojure Midje
 * display multiple images or videos using X.Org
-* record arrays (see numpy.recarray)
-* complex numbers, extendable type matching
+* complex numbers, fractions, record arrays, extendable type matching
 * types composed of Scheme objects
 * xorg: fast rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them

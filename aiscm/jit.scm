@@ -542,10 +542,10 @@
 (binary-rgb-op *)
 (binary-rgb-op &)
 (binary-rgb-op |)
-;TODO: RGB ^
-;TODO: RGB <<
-;TODO: RGB >>
-;TODO: RGB /
+(binary-rgb-op ^)
+(binary-rgb-op <<)
+(binary-rgb-op >>)
+(binary-rgb-op /)
 ;TODO: RGB =
 ;TODO: RGB !=
 ;TODO: RGB <
