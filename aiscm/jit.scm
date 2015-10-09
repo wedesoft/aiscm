@@ -28,7 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-op get-name to-type type assemble jit
-            ~ & | ^ << >> =0 !=0 != && ||))
+            ~ & | ^ << >> =0 !=0 != && || %))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -326,7 +326,7 @@
   (let[(r1 (skel <bool>))
        (r2 (skel <bool>))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
-(define (divide r a b)
+(define (div r a b)
   (let* [(size (size-of (typecode r)))
          (ax   (reg size 0))
          (dx   (reg size 2))]
@@ -355,6 +355,22 @@
               (MOV dx 0)
               (DIV b)
               (MOV r ax))))))))
+(define (mod r a b)
+  (let* [(size (size-of (typecode r)))
+         (ax   (reg size 0))
+         (dx   (reg size 2))]
+  (blocked RAX
+    (if (= size 1)
+      (list
+        (MOVZX AX a)
+        (DIV b)
+        (MOV r AH))
+      (list
+        (MOV ax a)
+        (blocked RDX
+          (MOV dx 0)
+          (DIV b)
+          (MOV r dx)))))))
 (define (sign-space a b)
   (let [(coerced (coerce a b))]
     (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
@@ -483,7 +499,8 @@
 (binary-op ^  mutable-binary   coerce     XOR identity)
 (binary-op << shift-binary     coerce     shl identity)
 (binary-op >> shift-binary     coerce     shr identity)
-(binary-op /  immutable-binary coerce     divide identity)
+(binary-op /  immutable-binary coerce     div identity)
+(binary-op %  immutable-binary coerce     mod identity)
 (binary-op =  immutable-binary coerce     (binary-cmp SETE SETE)     (cut to-type <bool> <>))
 (binary-op != immutable-binary coerce     (binary-cmp SETNE SETNE)   (cut to-type <bool> <>))
 (binary-op <  immutable-binary sign-space (binary-cmp SETL SETB)     (cut to-type <bool> <>))
