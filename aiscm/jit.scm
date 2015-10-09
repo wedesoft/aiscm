@@ -58,6 +58,7 @@
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
 (define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
 (define (is-var? value) (is-a? value <var>))
+(define-method (size-of (self <var>)) (size-of (typecode self)))
 (define-class <ptr> ()
   (type #:init-keyword #:type #:getter typecode)
   (args #:init-keyword #:args #:getter get-args))
@@ -68,7 +69,7 @@
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
     (if (is-a? target <register>)
-      (reg (size-of (typecode self)) (get-code target))
+      (reg (size-of self) (get-code target))
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
@@ -189,12 +190,12 @@
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <address>) (MOV value (reg (size-of (typecode parameter)) (get-code register))) #f)))
+      (if (is-a? value <address>) (MOV value (reg (size-of parameter) (get-code register))) #f)))
     parameters (list RDI RSI RDX RCX R8 R9)))
 (define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <register>) (MOV (reg (size-of (typecode parameter)) (get-code value))
+      (if (is-a? value <register>) (MOV (reg (size-of parameter) (get-code value))
                                         (ptr (typecode parameter) RSP offset)) #f)))
     parameters (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
@@ -326,51 +327,21 @@
   (let[(r1 (skel <bool>))
        (r2 (skel <bool>))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
-(define (div r a b)
-  (let* [(size (size-of (typecode r)))
+(define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
+(define (div/mod r a b finalise)
+  (let* [(size (size-of r))
          (ax   (reg size 0))
          (dx   (reg size 2))]
     (blocked RAX
+      (MOV ax a)
       (if (signed? (typecode r))
         (if (= size 1)
-          (list
-            (MOV AL a)
-            (CBW)
-            (IDIV b)
-            (MOV r AL))
-          (list
-            (MOV ax a)
-            (blocked RDX
-              (case size ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))
-              (IDIV b)
-              (MOV r ax))))
+          (list (expand ax) (IDIV b)) (list (blocked RDX (expand ax) (IDIV b))))
         (if (= size 1)
-          (list
-            (MOVZX AX a)
-            (DIV b)
-            (MOV r AL))
-          (list
-            (MOV ax a)
-            (blocked RDX
-              (MOV dx 0)
-              (DIV b)
-              (MOV r ax))))))))
-(define (mod r a b)
-  (let* [(size (size-of (typecode r)))
-         (ax   (reg size 0))
-         (dx   (reg size 2))]
-  (blocked RAX
-    (if (= size 1)
-      (list
-        (MOVZX AX a)
-        (DIV b)
-        (MOV r AH))
-      (list
-        (MOV ax a)
-        (blocked RDX
-          (MOV dx 0)
-          (DIV b)
-          (MOV r dx)))))))
+          (list (MOV AH 0) (DIV b))   (list (blocked RDX (MOV dx 0) (DIV b)))))
+      finalise)))
+(define (div r a b) (div/mod r a b (MOV r (reg (size-of r) 0))))
+(define (mod r a b) (div/mod r a b (if (= (size-of r) 1) (MOV r AH) (MOV r (reg (size-of r) 2)))))
 (define (sign-space a b)
   (let [(coerced (coerce a b))]
     (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
@@ -563,6 +534,7 @@
 (binary-rgb-op <<)
 (binary-rgb-op >>)
 (binary-rgb-op /)
+(binary-rgb-op %)
 ;TODO: RGB =
 ;TODO: RGB !=
 ;TODO: RGB <
