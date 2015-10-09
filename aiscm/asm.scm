@@ -10,7 +10,7 @@
   #:use-module (aiscm int)
   #:export (<context> <operand> <register> <address> <jcc>
             reg get-code get-bits xmm
-            AL CL DL BL SPL BPL SIL DIL
+            AL CL DL BL SPL BPL SIL DIL AH CH DH BH
             R8L R9L R10L R11L R12L R13L R14L R15L
             AX CX DX BX SP BP SI DI
             R8W R9W R10W R11W R12W R13W R14W R15W
@@ -53,6 +53,10 @@
     (for-each
       (lambda (sym code) (toplevel-define! sym (reg (car pair) code))) (cdr pair) (iota #x10)))
   reg-symbols)
+(define AH (make <register> #:bits 8 #:code 4 #:symbol 'AH))
+(define CH (make <register> #:bits 8 #:code 5 #:symbol 'CH))
+(define DH (make <register> #:bits 8 #:code 6 #:symbol 'DH))
+(define BH (make <register> #:bits 8 #:code 7 #:symbol 'BH))
 
 (define-class <xmm> (<operand>)
   (code   #:init-keyword #:code #:getter get-code)
