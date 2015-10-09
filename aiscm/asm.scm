@@ -133,7 +133,7 @@
     (ModR/M (mod r/m) reg/opcode #b100)
     (ModR/M (mod r/m) reg/opcode (get-reg r/m))))
 
-(define (need-rex? r) (member r (list SPL BPL SIL DIL)))
+(define (need-rex? r) (member r (list SPL BPL SIL DIL))); need REX to differentiate from AH, CH, DH, and BH
 (define (REX W r r/m)
   (let [(flags (logior (ash (if (= (get-bits W) 64) 1 0) 3)
                        (ash (bit4 r) 2)
