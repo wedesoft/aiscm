@@ -14,7 +14,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
   #:export (fill duplicate !)
-  #:re-export (+ - * / = < <= > >=))
+  #:re-export (+ - * / % = < <= > >=))
 (define ctx (make <context>))
 
 (define-method (to-type (target <meta<element>>) (self <sequence<>>))
@@ -62,6 +62,7 @@
 (define-binary-op | |)
 (define-binary-op ^ ^)
 (define-binary-op / /)
+(define-binary-op % %)
 (define-binary-op = =)
 (define-binary-op != !=)
 (define-binary-op < <)
