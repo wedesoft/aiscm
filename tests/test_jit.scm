@@ -577,5 +577,5 @@
     "right-shift bits of RGB value")
 (ok (equal? (rgb 1 2 3) ((jit ctx (list <ubytergb> <ubyte>) /) (rgb 3 6 9) 3))
     "divide RGB values")
-(todo (equal? (rgb 1 2 0) ((jit ctx (list <ubytergb> <ubyte>) %) (rgb 4 5 6) 3))
+(ok (equal? (rgb 1 2 0) ((jit ctx (list <ubytergb> <ubyte>) %) (rgb 4 5 6) 3))
     "modulo RGB values")

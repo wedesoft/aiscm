@@ -328,20 +328,22 @@
        (r2 (skel <bool>))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
-(define (div/mod r a b finalise)
-  (let* [(size (size-of r))
-         (ax   (reg size 0))
-         (dx   (reg size 2))]
+(define (div/mod r a b pick)
+  (let* [(size   (size-of r))
+         (ax     (reg size 0))
+         (dx     (reg size 2))
+         (result (pick (cons ax dx)))]
     (blocked RAX
       (MOV ax a)
       (if (signed? (typecode r))
         (if (= size 1)
-          (list (expand ax) (IDIV b)) (list (blocked RDX (expand ax) (IDIV b))))
+          (list (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+          (list (blocked RDX (expand ax) (IDIV b) (MOV r result))))
         (if (= size 1)
-          (list (MOV AH 0) (DIV b))   (list (blocked RDX (MOV dx 0) (DIV b)))))
-      finalise)))
-(define (div r a b) (div/mod r a b (MOV r (reg (size-of r) 0))))
-(define (mod r a b) (div/mod r a b (if (= (size-of r) 1) (MOV r AH) (MOV r (reg (size-of r) 2)))))
+          (list (MOV AH 0) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+          (list (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
+(define (div r a b) (div/mod r a b car))
+(define (mod r a b) (div/mod r a b cdr))
 (define (sign-space a b)
   (let [(coerced (coerce a b))]
     (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
