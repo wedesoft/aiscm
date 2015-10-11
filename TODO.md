@@ -2,7 +2,6 @@
 
 ## Ready
 
-* modulo
 * RGB operations, map, inject?
 * how to return boolean return values (opposite of content?)
 * parametrised tests, Clojure Midje

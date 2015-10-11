@@ -334,14 +334,13 @@
          (dx     (reg size 2))
          (result (pick (cons ax dx)))]
     (blocked RAX
-      (MOV ax a)
       (if (signed? (typecode r))
         (if (= size 1)
-          (list (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-          (list (blocked RDX (expand ax) (IDIV b) (MOV r result))))
+          (list (MOV ax a) (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+          (list (MOV ax a) (blocked RDX (expand ax) (IDIV b) (MOV r result))))
         (if (= size 1)
-          (list (MOV AH 0) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-          (list (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
+          (list (MOVZX AX a) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+          (list (MOV ax a) (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
 (define (div r a b) (div/mod r a b car))
 (define (mod r a b) (div/mod r a b cdr))
 (define (sign-space a b)
@@ -454,6 +453,8 @@
             (list (op result (get-value a~) (get-value b~))))))
 (define (shift-binary op result intermediate a b)
   (append (code a) (code b) (list (MOV result (get-value a)) (op result (get-value b)))))
+(define-method (protect-binary self fun) fun); TODO: refactor
+(define-method (protect-binary (self <meta<sequence<>>>) fun) list)
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
@@ -462,7 +463,7 @@
       (make (fragment target)
             #:args (list a b)
             #:name name
-            #:code (mode op result (typecode intermediate) a b)
+            #:code ((protect-binary intermediate mode) op result (typecode intermediate) a b); TODO: do not instantiate for sequences
             #:value result))))
 (binary-op +  mutable-binary   coerce     ADD identity)
 (binary-op -  mutable-binary   coerce     SUB identity)
@@ -569,14 +570,14 @@
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
   (append (code b) (list (MOV a (get-value b)))))
-(define-method (protect self fun) fun)
-(define-method (protect (self <fragment<sequence<>>>) fun) identity)
+(define-method (protect-unary self fun) fun); TODO: refactor
+(define-method (protect-unary (self <fragment<sequence<>>>) fun) identity)
 (define (component self name)
   (make (fragment (base (type self)))
           #:args (list self)
           #:name name
           #:code (code self)
-          #:value ((protect self name) (get-value self))))
+          #:value ((protect-unary self name) (get-value self))))
 (define-method (red   (self <fragment<element>>)) (component self red  ))
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
