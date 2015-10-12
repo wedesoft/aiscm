@@ -2,13 +2,16 @@
 
 ## Ready
 
-* RGB operations, map, inject?
-* how to return boolean return values (opposite of content?)
-* parametrised tests, Clojure Midje
+* show multiple videos
+* duplicate image
 * display multiple images or videos using X.Org
+* how to return boolean return values (parameter (skel <bool>)),
+  wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
+* RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
+* parametrised tests, Clojure Midje
 * types composed of Scheme objects
-* xorg: fast rendering of grayscale images (glDrawPixels)
+* xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * copy blocked predefined variables instead of spilling them
 * parametrised tests (e.g. array ops), mocks
 * weird error when including sequence but not pointer
@@ -23,7 +26,6 @@
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
-* wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * update live intervals instead of recomputing
