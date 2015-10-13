@@ -2,11 +2,9 @@
 
 ## Ready
 
-* show multiple videos
-* duplicate image
-* display multiple images or videos using X.Org
 * how to return boolean return values (parameter (skel <bool>)),
   wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
+* duplicate image
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
 * parametrised tests, Clojure Midje

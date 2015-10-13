@@ -484,8 +484,6 @@
 (binary-op && immutable-binary coerce     (binary-bool AND)          (cut to-type <bool> <>))
 (binary-op || immutable-binary coerce     (binary-bool OR)           (cut to-type <bool> <>))
 ; TODO: binary operation ** (coercion-maxint)
-; TODO: binary operation %, fmod
-; TODO: binary operation fmod
 ; TODO: conditional -> minor, major
 (define (do-unary-rgb-op op a)
   (let* [(u (parameter (get-value a)))
@@ -581,8 +579,7 @@
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (append (code a)
-          (list (MOV (ptr (typecode p) (get-value p)) (get-value a)))))
+  (append (code a) (list (MOV (ptr (typecode p) (get-value p)) (get-value a)))))
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
