@@ -177,7 +177,7 @@
                         (list x))) prog)))
 
 (define ((insert-temporary var) cmd)
-  (let [(temporary (skel (typecode var)))]
+  (let [(temporary (make <var> #:type (typecode var) #:symbol 'temporary))]
     (compact
       (and (memv var (input cmd)) (MOV temporary var))
       (substitute-variables cmd (list (cons var temporary)))
@@ -290,7 +290,7 @@
                               #:parameters arg-vars)))
 
 (define (repeat n . body)
-  (let [(i (skel (typecode n)))]
+  (let [(i (make <var> #:type (typecode n) #:symbol 'i))]
     (list (MOV i 0)
           'begin
           (CMP i n)
@@ -324,8 +324,8 @@
 (define ((binary-cmp set1 set2) r a b)
   (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 (define ((binary-bool op) r a b)
-  (let[(r1 (skel <bool>))
-       (r2 (skel <bool>))]
+  (let [(r1 (make <var> #:type <byte> #:symbol 'r1))
+        (r2 (make <var> #:type <byte> #:symbol 'r2))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
 (define (div/mod r a b pick)
@@ -362,11 +362,10 @@
       (define-method (type (self metaclass)) t)
       (define-method (type (self class)) t))))
 (fragment <element>)
-(define (to-fragment type self)
-  (make (fragment type) #:args (list self) #:name parameter #:code '() #:value self))
-(define-method (parameter self) (to-fragment (typecode self) self))
+(define-method (parameter self)
+  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get-value self)))
 (define-method (parameter (p <pointer<>>))
-  (let [(result (skel (typecode p)))]
+  (let [(result (get-value (skel (typecode p))))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
@@ -383,14 +382,15 @@
                        (MOV (green result) (ptr (base (typecode p)) (get-value p)       size))
                        (MOV (blue  result) (ptr (base (typecode p)) (get-value p) (* 2 size))))
           #:value result)))
-(define-method (parameter (self <sequence<>>)) (to-fragment (class-of self) self))
+(define-method (parameter (self <sequence<>>))
+  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimension self)))
 (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
   (let* [(source (typecode (type frag)))
-         (result (skel target))
+         (result (make <var> #:type target))
          (mov    (if (>= (size-of source) (size-of target))
                      mov-part
                      (if (signed? source)
@@ -422,7 +422,7 @@
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
     (let* [(target (conversion (type a)))
-           (result (skel (typecode target)))]
+           (result (get-value (skel (typecode target))))]; TODO: refactor: get-value skel
       (make (fragment target)
             #:args (list a)
             #:name name
@@ -443,9 +443,9 @@
         (b~  (to-type intermediate b))
         (tmp (skel intermediate))]
     (append (code a~) (code b~)
-            (list (MOV result (get-value a~))
-                  (MOV tmp    (get-value b~))
-                  (op result tmp)))))
+            (list (MOV result          (get-value a~))
+                  (MOV (get-value tmp) (get-value b~))
+                  (op result (get-value tmp))))))
 (define (immutable-binary op result intermediate a b)
   (let [(a~ (to-type intermediate a))
         (b~ (to-type intermediate b))]
@@ -459,7 +459,7 @@
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
            (target       (conversion intermediate))
-           (result       (skel (typecode target)))]
+           (result       (get-value (skel (typecode target))))]
       (make (fragment target)
             #:args (list a b)
             #:name name
@@ -546,18 +546,17 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define-method (compose-from (self <meta<element>>) vars) (car vars))
-(define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
-(define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
+(define-method (compose-from (self <meta<element>>) vars) (make self #:value (car vars)))
+(define-method (compose-from (self <meta<rgb<>>>) vars) (make self #:value (apply rgb (take vars 3))))
 (define-method (compose-from (self <meta<sequence<>>>) lst)
   (let [(slice (compose-from (element-type self) (cddr lst)))]
     (make self
           #:value   (get-value slice)
           #:shape   (attach (shape slice) (car lst))
           #:strides (attach (strides slice) (cadr lst)))))
-(define-method (decompose (self <var>)) (list self))
+(define-method (decompose (self <element>)) (decompose (get-value self)))
+(define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
-(define-method (decompose (self <pointer<>>)) (list (get-value self)))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (skel self)
@@ -593,8 +592,8 @@
 (define-method (element-wise self)
   (make <elementwise> #:setup '() #:increment '() #:body self))
 (define-method (element-wise (s <sequence<>>))
-  (let [(incr (skel <long>))
-        (p    (skel <long>))]
+  (let [(incr (get-value (skel <long>)))
+        (p    (get-value (skel <long>)))]
     (make <elementwise>
           #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                         (MOV p (get-value s)))
@@ -615,7 +614,7 @@
                   (append (store (get-body destination) (get-body source))
                           (get-increment destination)
                           (get-increment source))))))
-(define (returnable? value) (is-a? value <var>))
+(define (returnable? self) (is-a? self <var>))
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
 (define (assemble retval vars frag)
@@ -628,11 +627,11 @@
          (return-type (wrap (type frag)))
          (retval      (skel return-type))
          (fun         (asm ctx
-                           (if (returnable? retval) return-type <null>)
+                           (if (returnable? (get retval)) return-type <null>)
                            (concatenate
-                             (map types (if (returnable? retval) classes (cons return-type classes))))
-                           (assemble retval vars frag)))]
-    (if (returnable? retval)
+                             (map types (if (returnable? (get retval)) classes (cons return-type classes))))
+                           (assemble (get retval) (map get vars) frag)))]
+    (if (returnable? (get retval))
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
