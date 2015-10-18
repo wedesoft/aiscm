@@ -373,13 +373,13 @@
           #:value result)))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
-  (let [(result (skel (typecode p)))
+  (let [(result (get-value (skel (typecode p))))
         (size   (size-of (base (typecode p))))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
           #:code (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)           ))
-                       (MOV (green result) (ptr (base (typecode p)) (get-value p)       size))
+                       (MOV (green result) (ptr (base (typecode p)) (get-value p)      size))
                        (MOV (blue  result) (ptr (base (typecode p)) (get-value p) (* 2 size))))
           #:value result)))
 (define-method (parameter (self <sequence<>>))
@@ -403,8 +403,7 @@
           #:value result)))
 (fragment <rgb<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
-  (let* [(result (skel target))
-         (tmp    (parameter (get-value frag)))
+  (let* [(tmp    (parameter (get-value frag)))
          (r      (to-type (base target) (red   tmp)))
          (g      (to-type (base target) (green tmp)))
          (b      (to-type (base target) (blue  tmp)))]
