@@ -613,7 +613,10 @@
                   (append (store (get-body destination) (get-body source))
                           (get-increment destination)
                           (get-increment source))))))
-(define (returnable? self) (is-a? self <var>))
+(define-method (returnable? self) #f)
+(define-method (returnable? (self <var>)) #t); TODO: change 'assemble' and remove this?
+(define-method (returnable? (self <meta<bool>>)) #t)
+(define-method (returnable? (self <meta<int<>>>)) #t)
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
 (define-method (unwrap retval) (get retval))
@@ -630,14 +633,14 @@
          (return-type (wrap (type frag)))
          (retval      (skel return-type))
          (fun         (asm ctx
-                           (if (returnable? (unwrap retval)) (car (types return-type)) <null>)
+                           (if (returnable? (type frag)) (car (types return-type)) <null>)
                            (concatenate
-                             (map types (if (returnable? (unwrap retval)) classes (cons return-type classes))))
+                             (map types (if (returnable? (type frag)) classes (cons return-type classes))))
                            (assemble (unwrap retval) (map get vars) frag)))]
-    (if (returnable? (unwrap retval))
+    (if (returnable? (type frag))
         (lambda args
                 (elevate return-type (apply fun (concatenate (map content args)))))
-        (lambda args
+        (lambda args; TODO: retval not used here
                 (let [(result (make return-type #:shape (argmax length (map shape args))))]
                   (apply fun (concatenate (map content (cons result args))))
                   (get (fetch result)))))))
