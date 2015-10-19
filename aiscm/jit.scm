@@ -631,16 +631,15 @@
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
          (return-type (wrap (type frag)))
-         (retval      (skel return-type))
          (fun         (asm ctx
                            (if (returnable? (type frag)) (car (types return-type)) <null>)
                            (concatenate
                              (map types (if (returnable? (type frag)) classes (cons return-type classes))))
-                           (assemble (unwrap retval) (map get vars) frag)))]
+                           (assemble (unwrap (skel return-type)) (map get vars) frag)))]
     (if (returnable? (type frag))
         (lambda args
                 (elevate return-type (apply fun (concatenate (map content args)))))
-        (lambda args; TODO: retval not used here
+        (lambda args
                 (let [(result (make return-type #:shape (argmax length (map shape args))))]
                   (apply fun (concatenate (map content (cons result args))))
                   (get (fetch result)))))))
