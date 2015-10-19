@@ -403,7 +403,7 @@
           #:value result)))
 (fragment <rgb<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
-  (let* [(tmp    (parameter (get-value frag)))
+  (let* [(tmp    (parameter (make (type frag) #:value (get-value frag))))
          (r      (to-type (base target) (red   tmp)))
          (g      (to-type (base target) (green tmp)))
          (b      (to-type (base target) (blue  tmp)))]
@@ -485,7 +485,7 @@
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: conditional -> minor, major
 (define (do-unary-rgb-op op a)
-  (let* [(u (parameter (get-value a)))
+  (let* [(u (parameter (make (type a) #:value (get-value a))))
          (x (op (red   u)))
          (y (op (green u)))
          (z (op (blue  u)))]
@@ -506,8 +506,8 @@
 ; TODO: RGB round
 (define (do-binary-rgb-op op a b)
   (let* [(target (coerce (type a) (type b)))
-         (u   (parameter (get-value a)))
-         (v   (parameter (get-value b)))
+         (u   (parameter (make (type a) #:value (get-value a))))
+         (v   (parameter (make (type b) #:value (get-value b))))
          (x   (op (red   u) (red   v)))
          (y   (op (green u) (green v)))
          (z   (op (blue  u) (blue  v)))]
@@ -616,6 +616,8 @@
 (define (returnable? self) (is-a? self <var>))
 (define-method (wrap type) type)
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
+(define-method (unwrap retval) (get retval))
+(define-method (unwrap (retval <pointer<>>)) retval)
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -628,9 +630,9 @@
          (fun         (asm ctx
                            (if (returnable? (get retval)) return-type <null>)
                            (concatenate
-                             (map types (if (returnable? (get retval)) classes (cons return-type classes))))
-                           (assemble (get retval) (map get vars) frag)))]
-    (if (returnable? (get retval))
+                             (map types (if (returnable? (unwrap retval)) classes (cons return-type classes))))
+                           (assemble (unwrap retval) (map get vars) frag)))]
+    (if (returnable? (unwrap retval))
         (lambda args
                 (apply fun (concatenate (map content args))))
         (lambda args
