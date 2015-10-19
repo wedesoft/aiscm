@@ -1,4 +1,4 @@
-# AIscm[![GPLv3](https://img.shields.io/badge/license-GPLv3-red.png)](https://www.gnu.org/copyleft/gpl.html) [![](https://img.shields.io/circleci/project/wedesoft/aiscm/master.png)](https://circleci.com/gh/wedesoft/aiscm)
+# AIscm [![GPLv3](https://img.shields.io/badge/license-GPLv3-red.png)](https://www.gnu.org/copyleft/gpl.html) [![](https://img.shields.io/circleci/project/wedesoft/aiscm/master.png)](https://circleci.com/gh/wedesoft/aiscm)
 
 [**AIscm**][1] is a **real-time computer vision extension** for the
 [**Guile programming language**][2]. Performance in Scheme is achieved by means
