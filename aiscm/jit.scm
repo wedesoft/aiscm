@@ -618,6 +618,8 @@
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
 (define-method (unwrap retval) (get retval))
 (define-method (unwrap (retval <pointer<>>)) retval)
+(define-method (elevate type value) value)
+(define-method (elevate (type <meta<bool>>) value) (not (zero? value)))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -628,13 +630,13 @@
          (return-type (wrap (type frag)))
          (retval      (skel return-type))
          (fun         (asm ctx
-                           (if (returnable? (get retval)) return-type <null>)
+                           (if (returnable? (unwrap retval)) (car (types return-type)) <null>)
                            (concatenate
                              (map types (if (returnable? (unwrap retval)) classes (cons return-type classes))))
                            (assemble (unwrap retval) (map get vars) frag)))]
     (if (returnable? (unwrap retval))
         (lambda args
-                (apply fun (concatenate (map content args))))
+                (elevate return-type (apply fun (concatenate (map content args)))))
         (lambda args
                 (let [(result (make return-type #:shape (argmax length (map shape args))))]
                   (apply fun (concatenate (map content (cons result args))))

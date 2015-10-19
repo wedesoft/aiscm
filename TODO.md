@@ -2,8 +2,7 @@
 
 ## Ready
 
-* how to return boolean return values (parameter (skel <bool>)),
-  wrap variables instead of storing type information in them? e.g. (jit fetch) should return integer object
+* refactoring, use wrapped values more often and in (aiscm op)?
 * close camera on error
 * duplicate image
 * RGB =, map, inject?
