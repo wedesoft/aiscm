@@ -365,7 +365,7 @@
 (define-method (parameter self)
   (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get-value self)))
 (define-method (parameter (p <pointer<>>))
-  (let [(result (get-value (skel (typecode p))))]
+  (let [(result (basic (typecode p)))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
@@ -373,7 +373,7 @@
           #:value result)))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
-  (let [(result (get-value (skel (typecode p))))
+  (let [(result (basic (typecode p)))
         (size   (size-of (base (typecode p))))]
     (make (fragment (typecode p))
           #:args (list p)
@@ -421,7 +421,7 @@
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
     (let* [(target (conversion (type a)))
-           (result (get-value (skel (typecode target))))]; TODO: refactor: get-value skel
+           (result (basic (typecode target)))]
       (make (fragment target)
             #:args (list a)
             #:name name
@@ -458,7 +458,7 @@
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
            (target       (conversion intermediate))
-           (result       (get-value (skel (typecode target))))]
+           (result       (basic (typecode target)))]
       (make (fragment target)
             #:args (list a b)
             #:name name
@@ -545,7 +545,7 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define-method (compose-from (self <meta<element>>) vars) (make self #:value (car vars)))
+(define-method (compose-from (self <meta<element>>) vars) (make self #:value (car vars))); TODO: compose-from<->skel, refactor?
 (define-method (compose-from (self <meta<rgb<>>>) vars) (make self #:value (apply rgb (take vars 3))))
 (define-method (compose-from (self <meta<sequence<>>>) lst)
   (let [(slice (compose-from (element-type self) (cddr lst)))]
@@ -560,6 +560,7 @@
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (skel self)
   (compose-from self (map (cut make <var> #:type <>) (types self))))
+(define (basic self) (get (skel self))); TOOD: rename, base directly on compose-from?
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
@@ -591,8 +592,8 @@
 (define-method (element-wise self)
   (make <elementwise> #:setup '() #:increment '() #:body self))
 (define-method (element-wise (s <sequence<>>))
-  (let [(incr (get-value (skel <long>)))
-        (p    (get-value (skel <long>)))]
+  (let [(incr (basic <long>))
+        (p    (basic <long>))]
     (make <elementwise>
           #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                         (MOV p (get-value s)))
