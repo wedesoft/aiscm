@@ -545,27 +545,22 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define-method (compose-from (self <meta<element>>) vars) (car vars)); TODO: remove compose-from
-(define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
-(define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
-(define-method (compose-from (self <meta<sequence<>>>) lst)
-  (let [(slice (compose-from (element-type self) (cddr lst)))]
-    (make self
-          #:value   (get-value slice)
-          #:shape   (attach (shape slice) (car lst))
-          #:strides (attach (strides slice) (cadr lst)))))
+(define (var type) (make <var> #:type type))
+(define (vars type) (map var (types type)))
 (define-method (decompose (self <element>)) (decompose (get-value self)))
 (define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
-(define-method (skel self)
-  (make self #:value (compose-from self (map (cut make <var> #:type <>) (types self)))))
-(define-method (skel (self <meta<pointer<>>>))
-  (compose-from self (map (cut make <var> #:type <>) (types self))))
+(define-method (skel (self <meta<element>>)) (make self #:value (car (vars self))))
+(define-method (skel (self <meta<rgb<>>>)) (make self #:value (apply rgb (vars self))))
 (define-method (skel (self <meta<sequence<>>>))
-  (compose-from self (map (cut make <var> #:type <>) (types self))))
-(define (basic self) (get (skel self))); TOOD: rename, base directly on compose-from?
+  (let [(slice (skel (element-type self)))]
+    (make self
+          #:value   (get-value slice)
+          #:shape   (cons (var <long>) (shape   slice))
+          #:strides (cons (var <long>) (strides slice)))))
+(define (basic self) (get (skel self))); TOOD: rename
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
