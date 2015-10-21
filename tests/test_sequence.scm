@@ -50,7 +50,7 @@
       (call-with-output-string (lambda (port) (write (to-array (make-list 40 100)) port))))
     "Write longer sequence object")
 (ok (equal? "#<<sequence<int<8,signed>>> c (a) (b)>"
-      (let [(s (compose-from (sequence <byte>) (list a b c)))]
+      (let [(s (make (sequence <byte>) #:value c #:shape (list a) #:strides (list b)))]
         (call-with-output-string (lambda (port) (write s port)))))
     "Write sequence object made from variables")
 (ok (equal? <ubyte> (typecode (to-array '(1 2 3))))
