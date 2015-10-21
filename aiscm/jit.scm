@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type compose-from decompose skel mov-part
+            fragment type decompose skel mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
@@ -545,8 +545,9 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define-method (compose-from (self <meta<element>>) vars) (make self #:value (car vars))); TODO: compose-from<->skel, refactor?
-(define-method (compose-from (self <meta<rgb<>>>) vars) (make self #:value (apply rgb (take vars 3))))
+(define-method (compose-from (self <meta<element>>) vars) (car vars)); TODO: remove compose-from
+(define-method (compose-from (self <meta<rgb<>>>) vars) (apply rgb (take vars 3)))
+(define-method (compose-from (self <meta<pointer<>>>) vars) (make self #:value (car vars)))
 (define-method (compose-from (self <meta<sequence<>>>) lst)
   (let [(slice (compose-from (element-type self) (cddr lst)))]
     (make self
@@ -558,7 +559,11 @@
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
-(define (skel self)
+(define-method (skel self)
+  (make self #:value (compose-from self (map (cut make <var> #:type <>) (types self)))))
+(define-method (skel (self <meta<pointer<>>>))
+  (compose-from self (map (cut make <var> #:type <>) (types self))))
+(define-method (skel (self <meta<sequence<>>>))
   (compose-from self (map (cut make <var> #:type <>) (types self))))
 (define (basic self) (get (skel self))); TOOD: rename, base directly on compose-from?
 (define-method (project self) self)
