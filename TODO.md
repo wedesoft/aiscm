@@ -2,7 +2,6 @@
 
 ## Ready
 
-* element-type -> projected-type
 * refactoring, use wrapped values more often and in (aiscm op)?
 * close camera on error
 * duplicate image

@@ -11,9 +11,8 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence seq multiarray to-list to-array
-            dump crop project rebase roll unroll downsample element-type)
+            dump crop project rebase roll unroll downsample)
   #:export-syntax (arr))
-(define-generic element-type)
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))
@@ -32,7 +31,7 @@
                      (shape   (or shape (list size)))
                      (strides (or strides (default-strides shape)))]
                 (next-method self (list #:value value #:shape shape #:strides strides)))))
-          (define-method (element-type (self metaclass)) (pointer type))
+          (define-method (project (self metaclass)) (pointer type))
           (define-method (dimension (self metaclass)) (1+ (dimension type)))
           (define-method (typecode (self metaclass)) (typecode type))))
       (to-array type args))
@@ -46,7 +45,7 @@
   (if (zero? dimension) (pointer type) (multiarray (sequence type) (1- dimension))))
 (define-method (size (self <sequence<>>)) (apply * (shape self)))
 (define-method (project (self <sequence<>>))
-  (make (element-type (class-of self))
+  (make (project (class-of self))
         #:value   (get-value self)
         #:shape   (all-but-last (shape self))
         #:strides (all-but-last (strides self))))
@@ -159,6 +158,6 @@
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
 (define-method (types (self <meta<sequence<>>>))
-  (append (list <long> <long>) (types (element-type self))))
+  (append (list <long> <long>) (types (project self))))
 (define-method (content (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (content (project self))))

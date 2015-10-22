@@ -324,7 +324,7 @@
 (ok (eq? <int> (to-type <int> <byte>))
     "typecast for scalar type")
 (ok (eq? <int> (typecode (to-type <int> (sequence <byte>))))
-    "typecast element-type to integer")
+    "typecast element type to integer")
 (ok (eq? 1 (dimension (to-type <int> (sequence <byte>))))
     "maintain dimension when typecasting")
 (ok (equal? <sint> (type (class-of (to-type <sint> (parameter (skel <ubyte>))))))

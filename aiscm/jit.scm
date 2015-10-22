@@ -555,7 +555,7 @@
 (define-method (skel (self <meta<element>>)) (make self #:value (car (vars self))))
 (define-method (skel (self <meta<rgb<>>>)) (make self #:value (apply rgb (vars self))))
 (define-method (skel (self <meta<sequence<>>>))
-  (let [(slice (skel (element-type self)))]
+  (let [(slice (skel (project self)))]
     (make self
           #:value   (get-value slice)
           #:shape   (cons (var <long>) (shape   slice))
