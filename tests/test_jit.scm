@@ -44,7 +44,7 @@
                   (store lptr       l1)
                   (store (+ lptr 1) l2)
                   mem))
-(define a (make <var> #:type <int> #:symbol 'a)); TODO: use skeleton of <int>?
+(define a (make <var> #:type <int> #:symbol 'a))
 (define b (make <var> #:type <int> #:symbol 'b))
 (define c (make <var> #:type <int> #:symbol 'c))
 (define d (make <var> #:type <int> #:symbol 'd))

@@ -452,8 +452,8 @@
             (list (op result (get-value a~) (get-value b~))))))
 (define (shift-binary op result intermediate a b)
   (append (code a) (code b) (list (MOV result (get-value a)) (op result (get-value b)))))
-(define-method (protect-binary self fun) fun); TODO: refactor
-(define-method (protect-binary (self <meta<sequence<>>>) fun) list)
+(define-method (protect self fun) fun); TODO: refactor
+(define-method (protect (self <meta<sequence<>>>) fun) list)
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
@@ -462,7 +462,7 @@
       (make (fragment target)
             #:args (list a b)
             #:name name
-            #:code ((protect-binary intermediate mode) op result (typecode intermediate) a b)
+            #:code ((protect intermediate mode) op result intermediate a b)
             #:value result))))
 (binary-op +  mutable-binary   coerce     ADD  identity)
 (binary-op -  mutable-binary   coerce     SUB  identity)
@@ -566,14 +566,13 @@
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <var>) (b <fragment<element>>))
   (append (code b) (list (MOV a (get-value b)))))
-(define-method (protect-unary self fun) fun); TODO: refactor
-(define-method (protect-unary (self <fragment<sequence<>>>) fun) identity)
+(define-method (protect (self <fragment<sequence<>>>) fun) list)
 (define (component self name)
   (make (fragment (base (type self)))
           #:args (list self)
           #:name name
           #:code (code self)
-          #:value ((protect-unary self name) (get-value self))))
+          #:value ((protect self name) (get-value self))))
 (define-method (red   (self <fragment<element>>)) (component self red  ))
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
