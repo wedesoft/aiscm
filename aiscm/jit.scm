@@ -546,7 +546,7 @@
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
 (define (var type) (make <var> #:type type))
-(define (vars type) (map var (types type))); TODO: test 'vars'
+(define (vars type) (map var (types type)))
 (define-method (decompose (self <element>)) (decompose (get-value self)))
 (define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))

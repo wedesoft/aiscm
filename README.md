@@ -24,7 +24,7 @@ sudo aptitude install colorgcc guile-2.0-dev linux-libc-dev libmjpegtools-dev li
 
 ## Installation
 
-Finally you can install the stuff
+Finally you can install the software as follows
 
 ```Shell
 tar xzf aiscm-*.tar.gz
