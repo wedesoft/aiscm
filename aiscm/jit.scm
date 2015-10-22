@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type decompose skel mov-part
+            fragment type decompose var vars skel mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
@@ -176,12 +176,12 @@
                         (flatten-code x)
                         (list x))) prog)))
 
-(define ((insert-temporary var) cmd)
-  (let [(temporary (make <var> #:type (typecode var) #:symbol 'temporary))]
+(define ((insert-temporary target) cmd)
+  (let [(temporary (var (typecode target)))]
     (compact
-      (and (memv var (input cmd)) (MOV temporary var))
-      (substitute-variables cmd (list (cons var temporary)))
-      (and (memv var (output cmd)) (MOV var temporary)))))
+      (and (memv target (input cmd)) (MOV temporary target))
+      (substitute-variables cmd (list (cons target temporary)))
+      (and (memv target (output cmd)) (MOV target temporary)))))
 (define (spill-variable var location prog)
   (substitute-variables (map (insert-temporary var) prog) (list (cons var location))))
 
@@ -290,7 +290,7 @@
                               #:parameters arg-vars)))
 
 (define (repeat n . body)
-  (let [(i (make <var> #:type (typecode n) #:symbol 'i))]
+  (let [(i (var (typecode n)))]
     (list (MOV i 0)
           'begin
           (CMP i n)
@@ -324,8 +324,8 @@
 (define ((binary-cmp set1 set2) r a b)
   (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 (define ((binary-bool op) r a b)
-  (let [(r1 (make <var> #:type <byte> #:symbol 'r1))
-        (r2 (make <var> #:type <byte> #:symbol 'r2))]
+  (let [(r1 (var <byte>))
+        (r2 (var <byte>))]
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
 (define (div/mod r a b pick)
@@ -390,7 +390,7 @@
   (multiarray target (dimension self)))
 (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
   (let* [(source (typecode (type frag)))
-         (result (make <var> #:type target))
+         (result (var target))
          (mov    (if (>= (size-of source) (size-of target))
                      mov-part
                      (if (signed? source)
@@ -546,7 +546,7 @@
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
 (define (var type) (make <var> #:type type))
-(define (vars type) (map var (types type)))
+(define (vars type) (map var (types type))); TODO: test 'vars'
 (define-method (decompose (self <element>)) (decompose (get-value self)))
 (define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
@@ -623,7 +623,7 @@
 (define-method (unwrap retval) (get retval))
 (define-method (unwrap (retval <pointer<>>)) retval)
 (define-method (elevate type value) value)
-(define-method (elevate (type <meta<bool>>) value) (not (zero? value)))
+(define-method (elevate (type <meta<bool>>) value) (not (zero? value))); TODO: put next to bool's 'content' method
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))

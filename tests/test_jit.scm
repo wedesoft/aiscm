@@ -13,7 +13,7 @@
              (aiscm bool)
              (aiscm rgb)
              (guile-tap))
-(planned-tests 213)
+(planned-tests 215)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -172,7 +172,7 @@
             (virtual-variables (list a) (list b) (list (list (MOV a b)) (RET))))
     "'pass-parameter-variables' handles nested code blocks")
 (ok (equal? (list (MOV ECX (ptr <int> RSP 8)) (MOV EAX ECX) (RET))
-            (let [(args (map (compose get-value skel) (make-list 7 <int>)))]
+            (let [(args (map var (make-list 7 <int>)))]
                (virtual-variables (list a) args (list (MOV a (last args)) (RET)))))
     "'virtual-variables' maps the 7th integer parameter correctly")
 (ok (equal? (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
@@ -309,6 +309,10 @@
     "Type of code fragment")
 (ok (eq? <fragment<int<>>> (super (fragment <int>)))
     "Super of code fragment wraps super of target type")
+(ok (eq? <var> (class-of (var <int>)))
+    "Shortcut for creating variables creates variables")
+(ok (eq? <byte> (typecode (var <byte>)))
+    "Shortcut for  creating variables uses specified type")
 (ok (eq? <int> (type (class-of (parameter (skel <int>)))))
     "Check type of basic fragment wrapping variable")
 (ok (null? (code (parameter (skel <int>))))
