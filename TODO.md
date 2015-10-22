@@ -2,6 +2,7 @@
 
 ## Ready
 
+* 'build' value from pointer (fetch); what about sequences (see 'jit')?
 * refactoring, use wrapped values more often and in (aiscm op)?
 * close camera on error
 * duplicate image

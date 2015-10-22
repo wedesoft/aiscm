@@ -42,4 +42,5 @@
   (floating-point (if (or (double? a) (double? b)) double-precision single-precision)))
 (define-method (match (i <real>) . args) (if (every real? args) <double> (next-method)))
 (define-method (types (self <meta<float<>>>)) (list self))
+(define-method (build (self <meta<float<>>>) value) (make self #:value value))
 (define-method (content (self <real>)) (list self))

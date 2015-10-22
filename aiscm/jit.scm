@@ -621,8 +621,6 @@
 (define-method (wrap (type <meta<rgb<>>>)) (pointer type))
 (define-method (unwrap retval) (get retval))
 (define-method (unwrap (retval <pointer<>>)) retval)
-(define-method (elevate type value) value)
-(define-method (elevate (type <meta<bool>>) value) (not (zero? value))); TODO: put next to bool's 'content' method
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -637,9 +635,8 @@
                              (map types (if (returnable? (type frag)) classes (cons return-type classes))))
                            (assemble (unwrap (skel return-type)) (map get vars) frag)))]
     (if (returnable? (type frag))
+        (lambda args (get (build return-type (apply fun (concatenate (map content args))))))
         (lambda args
-                (elevate return-type (apply fun (concatenate (map content args)))))
-        (lambda args
-                (let [(result (make return-type #:shape (argmax length (map shape args))))]
-                  (apply fun (concatenate (map content (cons result args))))
-                  (get (fetch result)))))))
+          (let [(result (make return-type #:shape (argmax length (map shape args))))]
+            (apply fun (concatenate (map content (cons result args))))
+            (get (fetch result)))))))

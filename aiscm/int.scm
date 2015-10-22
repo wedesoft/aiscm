@@ -84,4 +84,5 @@
                 (else (next-method))))))
     (next-method)))
 (define-method (types (self <meta<int<>>>)) (list self))
+(define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
