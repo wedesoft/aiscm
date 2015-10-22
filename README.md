@@ -6,7 +6,17 @@ of a JIT compiler.
 
 ![](doc/aiscm.gif "AIscm")
 
+## Download
+
+You can download and unpack the current version like this
+
+```Shell
+wget https://github.com/wedesoft/aiscm/archive/master.tar.gz -O aiscm-master.tar.gz
+```
+
 ## Dependencies
+
+The dependencies can be installed like this
 
 ```Shell
 sudo aptitude install colorgcc guile-2.0-dev linux-libc-dev libmjpegtools-dev libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
@@ -14,7 +24,7 @@ sudo aptitude install colorgcc guile-2.0-dev linux-libc-dev libmjpegtools-dev li
 
 ## Installation
 
-Download [most recent release from Github][4].
+Finally you can install the stuff
 
 ```Shell
 tar xzf aiscm-*.tar.gz
