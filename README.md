@@ -8,10 +8,10 @@ of a JIT compiler.
 
 ## Download
 
-You can download and unpack the current version like this
+You can download and unpack the latest release like this
 
 ```Shell
-wget https://github.com/wedesoft/aiscm/archive/master.tar.gz -O aiscm-master.tar.gz
+wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep gz | cut -d '"' -f 4`
 ```
 
 ## Dependencies

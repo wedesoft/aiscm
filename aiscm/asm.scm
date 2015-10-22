@@ -362,7 +362,7 @@
 (define (asm ctx return-type arg-types commands)
   (let* [(code   (obj commands))
          (mapped (make-mmap code))]
-    (objdump (bytevector->u8-list code))
+    ;(objdump (bytevector->u8-list code))
     (slot-set! ctx 'binaries (cons mapped (slot-ref ctx 'binaries)))
     (pointer->procedure (foreign-type return-type)
                         (make-pointer (mmap-address mapped))
