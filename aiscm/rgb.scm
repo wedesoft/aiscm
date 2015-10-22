@@ -6,6 +6,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (rgb
@@ -68,6 +69,7 @@
   (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
     (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
 (define-method (types (self <meta<rgb<>>>)) (make-list 3 (base self)))
+(define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))

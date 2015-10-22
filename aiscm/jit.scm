@@ -635,8 +635,8 @@
                              (map types (if (returnable? (type frag)) classes (cons return-type classes))))
                            (assemble (unwrap (skel return-type)) (map get vars) frag)))]
     (if (returnable? (type frag))
-        (lambda args (get (build return-type (apply fun (concatenate (map content args))))))
+        (lambda args (get (build (type frag) (apply fun (concatenate (map content args))))))
         (lambda args
           (let [(result (make return-type #:shape (argmax length (map shape args))))]
             (apply fun (concatenate (map content (cons result args))))
-            (get (fetch result)))))))
+            (get (build (type frag) result)))))))

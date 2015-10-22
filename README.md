@@ -30,8 +30,8 @@ Finally you can install the software as follows
 tar xzf aiscm-*.tar.gz
 cd aiscm-*
 ./configure CC=colorgcc
-make -j 4
-make check -j 4
+make -j
+make check -j
 sudo make install
 ```
 
