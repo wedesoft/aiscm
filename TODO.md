@@ -2,7 +2,6 @@
 
 ## Ready
 
-* 'build' value from pointer (fetch); what about sequences (see 'jit')?
 * refactoring, use wrapped values more often and in (aiscm op)?
 * close camera on error
 * duplicate image
@@ -28,7 +27,6 @@
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * update live intervals instead of recomputing
-* macros: (jit-method [(x <int>) (y <float>)] (+ x y))
 
 ## Planned
 

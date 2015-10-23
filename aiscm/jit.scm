@@ -45,12 +45,8 @@
                             #:output (append io out)))))
 
 (define-method (input (self <cmd>))
-  (delete-duplicates
-    (filter is-var?
-            (concatenate (cons (get-input self)
-                               (map get-args
-                                    (filter is-ptr? (get-args self))))))))
-(define-method (output (self <cmd>)) (delete-duplicates (filter is-var? (get-output self))))
+  (delete-duplicates (variables (append (get-input self) (filter is-ptr? (get-args self))))))
+(define-method (output (self <cmd>)) (variables (get-output self)))
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
 (define-class <var> ()
@@ -77,8 +73,7 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
-(define-method (ptr (type <meta<element>>) . args)
-  (make <ptr> #:type type #:args args))
+(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
 
 (define-syntax-rule (mutable-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -128,10 +123,10 @@
 (immutable-op mov-part)
 
 (define-method (variables self) '())
-(define-method (variables (self <cmd>))
-  (filter is-var?  (concatenate (cons (get-args self) (map get-args (filter is-ptr? (get-args self)))))))
-(define-method (variables (self <list>))
-  (delete-duplicates (concatenate (map variables self))))
+(define-method (variables (self <var>)) (list self))
+(define-method (variables (self <cmd>)) (variables (get-args self)))
+(define-method (variables (self <ptr>)) (variables (get-args self)))
+(define-method (variables (self <list>)) (delete-duplicates (concatenate (map variables self))))
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
