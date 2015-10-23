@@ -3,7 +3,7 @@
              (rnrs bytevectors)
              (aiscm util)
              (guile-tap))
-(planned-tests 55)
+(planned-tests 56)
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
@@ -142,3 +142,5 @@
     "Extract part of byte vector")
 (ok (equal? #vu8(2 3 5 7 11 13) (bytevector-concat (list #vu8(2 3) #vu8(5 7 11) #vu8(13))))
     "concatenate byte vectors")
+(ok (equal? '(1 -2 3 -4 5) (map-if even? - + '(1 2 3 4 5)))
+    "conditional map")

@@ -2,9 +2,8 @@
 
 (use-modules (ice-9 optargs))
 
-(define (test . args)
-  (let-keywords args #t [(x 1) (y 2)]
-    args))
+(define* (test #:key (x 1) (y 2) #:allow-other-keys #:rest r)
+  (list x y r))
 
 
 

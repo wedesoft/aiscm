@@ -171,10 +171,8 @@
              (else            x)))
          prog)))
 (define (flatten-code prog)
-  (concatenate (map (lambda (x)
-                      (if (and (list? x) (not (every integer? x)))
-                        (flatten-code x)
-                        (list x))) prog)))
+  (let [(instruction? (lambda (x) (and (list? x) (not (every integer? x)))))]
+    (concatenate (map-if instruction? flatten-code list prog))))
 
 (define ((insert-temporary target) cmd)
   (let [(temporary (var (typecode target)))]
@@ -260,9 +258,9 @@
                          (offset -8)]
     (let [(conflict (blocked-predefined blocked predefined))]
       (if conflict
-        (let* [(var       (car conflict))
-               (location (ptr (typecode var) RSP offset))]
-        (with-spilled-variable var location prog predefined blocked
+        (let* [(spill-candidate (car conflict))
+               (location        (ptr (typecode spill-candidate) RSP offset))]
+        (with-spilled-variable spill-candidate location prog predefined blocked
           (lambda (prog predefined blocked)
             (spill-blocked-predefines prog
                                       #:predefined predefined
