@@ -283,14 +283,7 @@
 
 (define (repeat n . body)
   (let [(i (var (typecode n)))]
-    (list (MOV i 0)
-          'begin
-          (CMP i n)
-          (JE 'end)
-          (INC i)
-          body
-          (JMP 'begin)
-          'end)))
+    (list (MOV i 0) 'begin (CMP i n) (JE 'end) (INC i) body (JMP 'begin) 'end)))
 
 (define-class <block> ()
   (reg  #:init-keyword #:reg  #:getter get-reg)
