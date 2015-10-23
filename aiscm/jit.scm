@@ -274,13 +274,10 @@
 
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
-         (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))
-         (predefined   (append result-regs arg-regs))
-         (blocked      (blocked-intervals intermediate))
-         (prog         (flatten-code (relabel (filter-blocks intermediate))))]
-    (spill-blocked-predefines prog
-                              #:predefined predefined
-                              #:blocked blocked
+         (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))]
+    (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
+                              #:predefined (append result-regs arg-regs)
+                              #:blocked (blocked-intervals intermediate)
                               #:registers registers
                               #:parameters arg-vars)))
 
