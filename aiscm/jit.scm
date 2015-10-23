@@ -252,30 +252,25 @@
 (define (blocked-predefined blocked predefined)
   (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
 
-(define* (spill-blocked-predefines prog
-                                   #:key (predefined '())
-                                         (blocked '())
-                                         (registers default-registers)
-                                         (parameters '())
-                                         (offset -8))
-  (let [(conflict (blocked-predefined blocked predefined))]
-    (if conflict
-      (let* [(var       (car conflict))
-             (location (ptr (typecode var) RSP offset))]
-      (with-spilled-variable var location prog predefined blocked
-        (lambda (prog predefined blocked)
-          (spill-blocked-predefines prog
-                                    #:predefined predefined
-                                    #:blocked blocked
-                                    #:registers registers
-                                    #:parameters parameters
-                                    #:offset (- offset 8)))))
-    (register-allocate prog
-                       #:predefined predefined
-                       #:blocked blocked
-                       #:registers registers
-                       #:parameters parameters
-                       #:offset offset))))
+(define (spill-blocked-predefines prog . args)
+  (let-keywords args #f [(predefined '())
+                         (blocked '())
+                         (registers default-registers)
+                         (parameters '())
+                         (offset -8)]
+    (let [(conflict (blocked-predefined blocked predefined))]
+      (if conflict
+        (let* [(var       (car conflict))
+               (location (ptr (typecode var) RSP offset))]
+        (with-spilled-variable var location prog predefined blocked
+          (lambda (prog predefined blocked)
+            (spill-blocked-predefines prog
+                                      #:predefined predefined
+                                      #:blocked blocked
+                                      #:registers registers
+                                      #:parameters parameters
+                                      #:offset (- offset 8)))))
+      (apply register-allocate (cons prog args))))))
 
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))

@@ -1,13 +1,12 @@
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float) (aiscm rgb))
 
-(define a (skel (pointer <byte>)))
-(define b (skel <byte>))
+(use-modules (ice-9 optargs))
 
-(live-analysis (list (MOV b 42) (MOV (ptr <byte> a) b) (RET)))
+(define (test . args)
+  (let-keywords args #t [(x 1) (y 2)]
+    args))
 
-(output (MOV b 42))
-(input (MOV (ptr <byte> a) b))
-(output (MOV (ptr <byte> a) b))
+
 
 (define-syntax test
   (syntax-rules ()
