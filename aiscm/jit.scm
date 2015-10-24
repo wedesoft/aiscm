@@ -592,10 +592,8 @@
 (define-method (returnable? (self <var>)) #t); TODO: change 'assemble' and remove this?
 (define-method (returnable? (self <meta<bool>>)) #t)
 (define-method (returnable? (self <meta<int<>>>)) #t)
-(define-method (wrap type) type)
-(define-method (wrap (type <meta<rgb<>>>)) (pointer type))
-(define-method (unwrap retval) (get retval))
-(define-method (unwrap (retval <pointer<>>)) retval)
+(define-method (wrapped type) (get (skel type)))
+(define-method (wrapped (type <meta<rgb<>>>)) (skel (pointer type))); TODO: change 'assemble' and remove this?
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -607,7 +605,7 @@
                            (if (returnable? (type frag)) (car (types (type frag))) <null>)
                            (concatenate
                              (map types (if (returnable? (type frag)) classes (cons (pointer (type frag)) classes))))
-                           (assemble (unwrap (skel (wrap (type frag)))) (map get vars) frag)))]; TODO: make this simpler?
+                           (assemble (wrapped (type frag)) (map get vars) frag)))]; TODO: make this simpler?
     (if (returnable? (type frag))
         (lambda args (get (build (type frag) (apply fun (concatenate (map content args))))))
         (lambda args
