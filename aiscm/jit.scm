@@ -55,6 +55,7 @@
   (args #:init-keyword #:args #:getter get-args))
 (define-method (write (self <ptr>) port)
   (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
+(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
 (define-method (variables self) '())
 (define-method (variables (self <var>)) (list self))
 (define-method (variables (self <cmd>)) (variables (get-args self)))
@@ -74,8 +75,6 @@
 (define-method (substitute-variables (self <cmd>) alist)
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
-
-(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
 
 (define-syntax-rule (mutable-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -588,6 +587,7 @@
                   (append (store (get-body destination) (get-body source))
                           (get-increment destination)
                           (get-increment source))))))
+
 (define-method (returnable? self) #f)
 (define-method (returnable? (self <var>)) #t); TODO: change 'assemble' and remove this?
 (define-method (returnable? (self <meta<bool>>)) #t)
@@ -603,15 +603,14 @@
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
-         (return-type (wrap (type frag)))
          (fun         (asm ctx
-                           (if (returnable? (type frag)) (car (types return-type)) <null>)
+                           (if (returnable? (type frag)) (car (types (type frag))) <null>)
                            (concatenate
-                             (map types (if (returnable? (type frag)) classes (cons return-type classes))))
-                           (assemble (unwrap (skel return-type)) (map get vars) frag)))]
+                             (map types (if (returnable? (type frag)) classes (cons (pointer (type frag)) classes))))
+                           (assemble (unwrap (skel (wrap (type frag)))) (map get vars) frag)))]; TODO: make this simpler?
     (if (returnable? (type frag))
         (lambda args (get (build (type frag) (apply fun (concatenate (map content args))))))
         (lambda args
-          (let [(result (make return-type #:shape (argmax length (map shape args))))]
+          (let [(result (make (pointer (type frag)) #:shape (argmax length (map shape args))))]
             (apply fun (concatenate (map content (cons result args))))
             (get (build (type frag) result)))))))
