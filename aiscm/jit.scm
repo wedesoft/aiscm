@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type decompose var vars skel mov-part
+            fragment type var decompose var vars skel mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
