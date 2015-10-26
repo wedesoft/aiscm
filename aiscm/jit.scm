@@ -606,7 +606,7 @@
                            (assemble (skel ((if (returnable? target) identity pointer) target)) vars frag)))]
     (if (returnable? target)
         (lambda args
-           (let [(result (apply fun (concatentate (map content args))))]
+           (let [(result (apply fun (concatenate (map content args))))]
              (get (build target result))))
         (lambda args
           (let [(result (make (pointer target) #:shape (argmax length (map shape args))))]
