@@ -589,13 +589,12 @@
                           (get-increment source))))))
 
 (define-method (returnable? self) #f)
-(define-method (returnable? (self <var>)) #t); TODO: change 'assemble' and remove this?
 (define-method (returnable? (self <meta<bool>>)) #t)
 (define-method (returnable? (self <meta<int<>>>)) #t)
 (define (assemble retval vars frag)
-  (virtual-variables (if (returnable? retval) (list retval) '())
-                     (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
-                     (append (store retval frag) (list (RET)))))
+  (virtual-variables (if (returnable? (class-of retval)) (list (get retval)) '())
+                     (concatenate (map decompose (if (returnable? (class-of retval)) vars (cons retval vars))))
+                     (append (store (get retval) frag) (list (RET)))))
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
@@ -604,10 +603,11 @@
                            (if (returnable? target) (car (types target)) <null>)
                            (concatenate
                              (map types (if (returnable? target) classes (cons (pointer target) classes))))
-                           (assemble (get (skel ((if (returnable? target) identity pointer) target)))
-                                     (map get vars) frag)))]
+                           (assemble (skel ((if (returnable? target) identity pointer) target)) vars frag)))]
     (if (returnable? target)
-        (lambda args (get (build target (apply fun (concatenate (map content args))))))
+        (lambda args
+           (let [(result (apply fun (concatentate (map content args))))]
+             (get (build target result))))
         (lambda args
           (let [(result (make (pointer target) #:shape (argmax length (map shape args))))]
             (apply fun (concatenate (map content (cons result args))))
