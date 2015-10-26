@@ -2,6 +2,7 @@
 
 ## Ready
 
+* default 'get' should return self
 * refactoring, use wrapped values more often and in (aiscm op)?
 * close camera on error
 * duplicate image

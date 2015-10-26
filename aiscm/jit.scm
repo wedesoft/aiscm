@@ -592,8 +592,6 @@
 (define-method (returnable? (self <var>)) #t); TODO: change 'assemble' and remove this?
 (define-method (returnable? (self <meta<bool>>)) #t)
 (define-method (returnable? (self <meta<int<>>>)) #t)
-(define-method (wrapped type) (get (skel type)))
-(define-method (wrapped (type <meta<rgb<>>>)) (skel (pointer type))); TODO: change 'assemble' and remove this?
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable? retval) (list retval) '())
                      (concatenate (map decompose (if (returnable? retval) vars (cons retval vars))))
@@ -601,14 +599,16 @@
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
+         (target      (type frag))
          (fun         (asm ctx
-                           (if (returnable? (type frag)) (car (types (type frag))) <null>)
+                           (if (returnable? target) (car (types target)) <null>)
                            (concatenate
-                             (map types (if (returnable? (type frag)) classes (cons (pointer (type frag)) classes))))
-                           (assemble (wrapped (type frag)) (map get vars) frag)))]; TODO: make this simpler?
-    (if (returnable? (type frag))
-        (lambda args (get (build (type frag) (apply fun (concatenate (map content args))))))
+                             (map types (if (returnable? target) classes (cons (pointer target) classes))))
+                           (assemble (get (skel ((if (returnable? target) identity pointer) target)))
+                                     (map get vars) frag)))]
+    (if (returnable? target)
+        (lambda args (get (build target (apply fun (concatenate (map content args))))))
         (lambda args
-          (let [(result (make (pointer (type frag)) #:shape (argmax length (map shape args))))]
+          (let [(result (make (pointer target) #:shape (argmax length (map shape args))))]
             (apply fun (concatenate (map content (cons result args))))
-            (get (build (type frag) result)))))))
+            (get (build target result)))))))
