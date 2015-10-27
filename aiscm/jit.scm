@@ -598,17 +598,19 @@
 (define (jit ctx classes proc)
   (let* [(vars        (map skel classes))
          (frag        (apply proc (map parameter vars)))
-         (target      (type frag))
-         (fun         (asm ctx
-                           (if (returnable? target) (car (types target)) <null>)
-                           (concatenate
-                             (map types (if (returnable? target) classes (cons (pointer target) classes))))
-                           (assemble (skel ((if (returnable? target) identity pointer) target)) vars frag)))]
-    (if (returnable? target)
+         (result-type (type frag))
+         (return?     (returnable? result-type))
+         (target      (if return? result-type (pointer result-type)))
+         (code        (asm ctx
+                           (if return? (car (types target)) <null>)
+                           (concatenate (map types (if return? classes (cons target classes))))
+                           (assemble (skel target) vars frag)))
+         (fun         (lambda header (apply code (concatenate (map content header)))))]
+    (if return?
         (lambda args
-           (let [(result (apply fun (concatenate (map content args))))]
-             (get (build target result))))
+           (let [(result (apply fun args))]
+             (get (build result-type result))))
         (lambda args
-          (let [(result (make (pointer target) #:shape (argmax length (map shape args))))]
-            (apply fun (concatenate (map content (cons result args))))
-            (get (build target result)))))))
+          (let [(result (make target #:shape (argmax length (map shape args))))]
+            (apply fun (cons result args))
+            (get (build result-type result)))))))
