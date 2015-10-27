@@ -2,12 +2,10 @@
 
 ## Ready
 
-* default 'get' should return self
-* refactoring, use wrapped values more often and in (aiscm op)?
-* close camera on error
-* duplicate image
+* simpler definition of RGB methods (RGB of fragments?)
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
+* duplicate image
 * parametrised tests, Clojure Midje
 * types composed of Scheme objects
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)

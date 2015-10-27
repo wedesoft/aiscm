@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type var decompose var vars skel mov-part
+            fragment type var decompose var vars skeleton mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
@@ -414,7 +414,7 @@
 (define (mutable-binary op result intermediate a b)
   (let [(a~  (to-type intermediate a))
         (b~  (to-type intermediate b))
-        (tmp (skel intermediate))]
+        (tmp (skeleton intermediate))]
     (append (code a~) (code b~)
             (list (MOV result          (get-value a~))
                   (MOV (get-value tmp) (get-value b~))
@@ -526,15 +526,15 @@
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
-(define-method (skel (self <meta<element>>)) (make self #:value (car (vars self))))
-(define-method (skel (self <meta<rgb<>>>)) (make self #:value (apply rgb (vars self))))
-(define-method (skel (self <meta<sequence<>>>))
-  (let [(slice (skel (project self)))]
+(define-method (skeleton (self <meta<element>>)) (make self #:value (car (vars self))))
+(define-method (skeleton (self <meta<rgb<>>>)) (make self #:value (apply rgb (vars self))))
+(define-method (skeleton (self <meta<sequence<>>>))
+  (let [(slice (skeleton (project self)))]
     (make self
           #:value   (get-value slice)
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
-(define (basic self) (get (skel self))); TOOD: rename
+(define (basic self) (get (skeleton self))); TOOD: rename
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
@@ -595,21 +595,21 @@
   (virtual-variables (if (returnable? (class-of retval)) (list (get retval)) '())
                      (concatenate (map decompose (if (returnable? (class-of retval)) vars (cons retval vars))))
                      (append (store retval frag) (list (RET)))))
-(define (jit ctx classes proc)
-  (let* [(vars        (map skel classes))
+(define (jit context classes proc)
+  (let* [(vars        (map skeleton classes))
          (frag        (apply proc (map parameter vars)))
          (result-type (type frag))
          (return?     (returnable? result-type))
          (target      (if return? result-type (pointer result-type)))
-         (code        (asm ctx
+         (code        (asm context
                            (if return? (car (types target)) <null>)
                            (concatenate (map types (if return? classes (cons target classes))))
-                           (assemble (skel target) vars frag)))
+                           (assemble (skeleton target) vars frag)))
          (fun         (lambda header (apply code (concatenate (map content header)))))]
     (if return?
         (lambda args
-           (let [(result (apply fun args))]
-             (get (build result-type result))))
+          (let [(result (apply fun args))]
+            (get (build result-type result))))
         (lambda args
           (let [(result (make target #:shape (argmax length (map shape args))))]
             (apply fun (cons result args))
