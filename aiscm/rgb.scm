@@ -20,7 +20,8 @@
             <uintrgb>  <rgb<int<32,unsigned>>> <meta<rgb<int<32,unsigned>>>>
             <intrgb>   <rgb<int<32,signed>>>   <meta<rgb<int<32,signed>>>>
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
-            <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>))
+            <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>)
+  #:re-export (-))
 (define-class <rgb> ()
   (red   #:init-keyword #:red   #:getter red)
   (green #:init-keyword #:green #:getter green)
@@ -73,3 +74,5 @@
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))
+(define-method (- (self <rgb>)) (rgb (- (red self) ) (- (green self)) (- (blue self))))
+(define-method (~ (self <rgb>)) (rgb (~ (red self) ) (~ (green self)) (~ (blue self))))

@@ -20,7 +20,8 @@
             <int>   <int<32,signed>>   <meta<int<32,signed>>>
             <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
             <long>  <int<64,signed>>   <meta<int<64,signed>>>
-            <native-int>))
+            <native-int>
+            ~))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
@@ -86,3 +87,4 @@
 (define-method (types (self <meta<int<>>>)) (list self))
 (define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
+(define-method (~ (self <integer>)) (lognot self))

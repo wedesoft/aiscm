@@ -28,7 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-op get-name to-type type assemble jit
-            ~ & | ^ << >> =0 !=0 != && || %))
+            & | ^ << >> =0 !=0 != && || %))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -458,16 +458,17 @@
 (binary-op || immutable-binary coerce     (binary-bool OR)           (cut to-type <bool> <>))
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: conditional -> minor, major
-(define (do-unary-rgb-op op a)
-  (let* [(u (parameter (make (type a) #:value (get-value a))))
-         (x (op (red   u)))
-         (y (op (green u)))
-         (z (op (blue  u)))]
-  (make (fragment (type a))
-        #:args (list a)
+(define (do-unary-rgb-op op self)
+  (let* [(memoized (parameter (make (type self) #:value (get-value self))))
+         (r        (red   memoized))
+         (g        (green memoized))
+         (b        (blue  memoized))
+         (result   (op (make <rgb> #:red r #:green g #:blue b)))]
+  (make (fragment (type self))
+        #:args (list self)
         #:name op
-        #:code (append (code a) (code x) (code y) (code z))
-        #:value (rgb (get-value x) (get-value y) (get-value z)))))
+        #:code (append (code self) (code (red result)) (code (green result)) (code (blue result)))
+        #:value (rgb (get-value (red result)) (get-value (green result)) (get-value (blue result))))))
 (define-syntax-rule (unary-rgb-op op)
   (define-method (op (a <fragment<rgb<>>>))
     (do-unary-rgb-op op a)))

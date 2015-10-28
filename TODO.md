@@ -2,7 +2,7 @@
 
 ## Ready
 
-* simpler definition of RGB methods (RGB of fragments?)
+* simpler definition of binary RGB methods
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
 * duplicate image

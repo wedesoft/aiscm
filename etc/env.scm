@@ -1,23 +1,6 @@
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float) (aiscm rgb))
 
 (use-modules (ice-9 optargs))
-
-(define ctx (make <context>))
-
-(define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
-  (make (fragment (rgb (type r)))
-        #:args (list r g b)
-        #:name rgb
-        #:code (append (code r) (code g) (code b))
-        #:value (rgb (get-value r) (get-value g) (get-value b))))
-
-(define (f x) (rgb x x x))
-(f 5)
-
-(define fc (jit ctx (list <int>) f))
-(fc 5)
-
-
 (define* (test #:key (x 1) (y 2) #:allow-other-keys #:rest r)
   (list x y r))
 
