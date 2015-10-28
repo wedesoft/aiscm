@@ -21,7 +21,7 @@
             <intrgb>   <rgb<int<32,signed>>>   <meta<rgb<int<32,signed>>>>
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>)
-  #:re-export (-))
+  #:re-export (+ -))
 (define-class <rgb> ()
   (red   #:init-keyword #:red   #:getter red)
   (green #:init-keyword #:green #:getter green)
@@ -74,5 +74,26 @@
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))
-(define-method (- (self <rgb>)) (rgb (- (red self) ) (- (green self)) (- (blue self))))
-(define-method (~ (self <rgb>)) (rgb (~ (red self) ) (~ (green self)) (~ (blue self))))
+(define-syntax-rule (unary-rgb-op op)
+  (define-method (op (a <rgb>))
+    (rgb (op (red a)) (op (green a)) (op (blue a)))))
+(unary-rgb-op -)
+(unary-rgb-op ~)
+(define-syntax-rule (binary-rgb-op op)
+  (begin
+    (define-method (op (a <rgb>) b)
+      (rgb (op (red a) b) (op (green a) b) (op (blue a) b)))
+    (define-method (op a (b <rgb>))
+      (rgb (op a (red b)) (op a (green b)) (op a (blue b))))
+    (define-method (op (a <rgb>) (b <rgb>))
+      (rgb (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b))))))
+(binary-rgb-op +)
+(binary-rgb-op -)
+(binary-rgb-op *)
+(binary-rgb-op &); TODO: test this
+(binary-rgb-op |); TODO: test this
+(binary-rgb-op ^); TODO: test this
+(binary-rgb-op <<); TODO: test this
+(binary-rgb-op >>); TODO: test this
+(binary-rgb-op /); TODO: test this
+(binary-rgb-op %); TODO: test this

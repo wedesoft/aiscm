@@ -21,7 +21,7 @@
             <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
             <long>  <int<64,signed>>   <meta<int<64,signed>>>
             <native-int>
-            ~))
+            ~ & | ^ << >> %))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
@@ -88,3 +88,9 @@
 (define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
 (define-method (~ (self <integer>)) (lognot self))
+(define-method (& (a <integer>) (b <integer>)) (logand a b)); TODO: test this
+(define-method (| (a <integer>) (b <integer>)) (logior a b)); TODO: test this
+(define-method (^ (a <integer>) (b <integer>)) (logxor a b)); TODO: test this
+(define-method (<< (a <integer>) (b <integer>)) (ash a b)); TODO: test this
+(define-method (>> (a <integer>) (b <integer>)) (ash a (- b))); TODO: test this
+(define-method (% (a <integer>) (b <integer>)) (modulo a b)); TODO: test this

@@ -2,7 +2,8 @@
 
 ## Ready
 
-* simpler definition of binary RGB methods
+* test integer and RGB operations
+* construct RGB values in compiled code
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
 * duplicate image

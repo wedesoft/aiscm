@@ -28,7 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-op get-name to-type type assemble jit
-            & | ^ << >> =0 !=0 != && || %))
+            =0 !=0 != && ||))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -375,9 +375,10 @@
           #:name to-type
           #:code (append (code frag) (list (mov result (get-value frag))))
           #:value result)))
+(define (strip-code frag) (parameter (make (type frag) #:value (get-value frag))))
 (fragment <rgb<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
-  (let* [(tmp    (parameter (make (type frag) #:value (get-value frag))))
+  (let* [(tmp    (strip-code frag))
          (r      (to-type (base target) (red   tmp)))
          (g      (to-type (base target) (green tmp)))
          (b      (to-type (base target) (blue  tmp)))]
@@ -458,12 +459,11 @@
 (binary-op || immutable-binary coerce     (binary-bool OR)           (cut to-type <bool> <>))
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: conditional -> minor, major
+(define-method (peel (self <fragment<element>>)) self)
+(define-method (peel (self <fragment<rgb<>>>))
+  (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
 (define (do-unary-rgb-op op self)
-  (let* [(memoized (parameter (make (type self) #:value (get-value self))))
-         (r        (red   memoized))
-         (g        (green memoized))
-         (b        (blue  memoized))
-         (result   (op (make <rgb> #:red r #:green g #:blue b)))]
+  (let [(result (op (peel (strip-code self))))]
   (make (fragment (type self))
         #:args (list self)
         #:name op
@@ -480,18 +480,14 @@
 ; TODO: RGB ceil
 ; TODO: RGB round
 (define (do-binary-rgb-op op a b)
-  (let* [(target (coerce (type a) (type b)))
-         (u   (parameter (make (type a) #:value (get-value a))))
-         (v   (parameter (make (type b) #:value (get-value b))))
-         (x   (op (red   u) (red   v)))
-         (y   (op (green u) (green v)))
-         (z   (op (blue  u) (blue  v)))]
+  (let [(target (coerce (type a) (type b)))
+        (result (op (peel (strip-code a)) (peel (strip-code b))))]
     (make (fragment target)
           #:args (list a b)
           #:name op
           #:code (append (code a) (code b)
-                         (code x) (code y) (code z))
-          #:value (rgb (get-value x) (get-value y) (get-value z)))))
+                         (code (red result)) (code (green result)) (code (blue result)))
+          #:value (rgb (get-value (red result)) (get-value (green result)) (get-value (blue result)))))); TODO: separate method
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))
