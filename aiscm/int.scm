@@ -88,9 +88,9 @@
 (define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
 (define-method (~ (self <integer>)) (lognot self))
-(define-method (& (a <integer>) (b <integer>)) (logand a b)); TODO: test this
-(define-method (| (a <integer>) (b <integer>)) (logior a b)); TODO: test this
-(define-method (^ (a <integer>) (b <integer>)) (logxor a b)); TODO: test this
-(define-method (<< (a <integer>) (b <integer>)) (ash a b)); TODO: test this
-(define-method (>> (a <integer>) (b <integer>)) (ash a (- b))); TODO: test this
-(define-method (% (a <integer>) (b <integer>)) (modulo a b)); TODO: test this
+(define-method (& (a <integer>) (b <integer>)) (logand a b))
+(define-method (| (a <integer>) (b <integer>)) (logior a b))
+(define-method (^ (a <integer>) (b <integer>)) (logxor a b))
+(define-method (<< (a <integer>) (b <integer>)) (ash a b))
+(define-method (>> (a <integer>) (b <integer>)) (ash a (- b)))
+(define-method (% (a <integer>) (b <integer>)) (modulo a b))
