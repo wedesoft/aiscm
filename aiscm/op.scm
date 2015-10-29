@@ -44,6 +44,10 @@
 (define-unary-op =0 =0)
 (define-unary-op !=0 !=0)
 (define ! =0)
+(define-syntax-rule (capture-binary-argument name type)
+  (begin
+    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
+    (define-method (name (a type) (b <element>)) (name (make (match a) #:value a) b))))
 (define-syntax-rule (define-binary-op name op)
   (begin
     (define-method (name (a <element>) (b <element>))
@@ -53,8 +57,10 @@
                            #:specializers (list (class-of a) (class-of b))
                            #:procedure (lambda (a b) (f (get a) (get b))))))
       (name a b))
-    (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
-    (define-method (name a (b <element>)) (name (make (match a) #:value a) b))))
+    (capture-binary-argument name <boolean>)
+    (capture-binary-argument name <integer>)
+    (capture-binary-argument name <real>)
+    (capture-binary-argument name <rgb>)))
 (define-binary-op +  +)
 (define-binary-op -  -)
 (define-binary-op *  *)
