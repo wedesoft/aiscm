@@ -94,10 +94,10 @@
 (binary-rgb-op +)
 (binary-rgb-op -)
 (binary-rgb-op *)
-(binary-rgb-op &); TODO: test this
-(binary-rgb-op |); TODO: test this
-(binary-rgb-op ^); TODO: test this
-(binary-rgb-op <<); TODO: test this
-(binary-rgb-op >>); TODO: test this
-(binary-rgb-op /); TODO: test this
-(binary-rgb-op %); TODO: test this
+(binary-rgb-op &)
+(binary-rgb-op |)
+(binary-rgb-op ^)
+(binary-rgb-op <<)
+(binary-rgb-op >>)
+(binary-rgb-op /)
+(binary-rgb-op %)
