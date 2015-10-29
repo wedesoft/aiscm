@@ -82,9 +82,13 @@
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <rgb>) b)
-      (rgb (op (red a) b) (op (green a) b) (op (blue a) b)))
+      (if (is-a? b <element>)
+        (next-method); TODO: how to better prioritise x + array over rgb + y
+        (rgb (op (red a) b) (op (green a) b) (op (blue a) b))))
     (define-method (op a (b <rgb>))
-      (rgb (op a (red b)) (op a (green b)) (op a (blue b))))
+      (if (is-a? a <element>)
+        (next-method)
+        (rgb (op a (red b)) (op a (green b)) (op a (blue b)))))
     (define-method (op (a <rgb>) (b <rgb>))
       (rgb (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b))))))
 (binary-rgb-op +)
