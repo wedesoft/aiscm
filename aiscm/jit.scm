@@ -362,41 +362,44 @@
   target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimension self)))
-(define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
-  (let* [(source (typecode (type frag)))
-         (result (var target))
-         (mov    (if (>= (size-of source) (size-of target))
-                     mov-part
-                     (if (signed? source)
-                         MOVSX
-                         (if (>= (size-of source) 4) MOV MOVZX))))]
-    (make (fragment (to-type target (type frag)))
-          #:args (list target frag)
-          #:name to-type
-          #:code (append (code frag) (list (mov result (get-value frag))))
-          #:value result)))
+  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
+    (let [(source (typecode (type frag)))]
+      (if (eq? target source)
+          frag
+          (let [(result (var target))
+                (mov    (if (>= (size-of source) (size-of target))
+                            mov-part
+                            (if (signed? source)
+                                MOVSX
+                                (if (>= (size-of source) 4) MOV MOVZX))))]
+            (make (fragment (to-type target (type frag)))
+                  #:args (list target frag)
+                  #:name to-type
+                  #:code (append (code frag) (list (mov result (get-value frag))))
+                  #:value result)))))
 (define (strip-code frag) (parameter (make (type frag) #:value (get-value frag))))
 (fragment <rgb<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
   (let* [(tmp    (strip-code frag))
          (r      (to-type (base target) (red   tmp)))
          (g      (to-type (base target) (green tmp)))
-         (b      (to-type (base target) (blue  tmp)))]
+         (b      (to-type (base target) (blue  tmp)))
+         (result (rgb r g b))]
     (make (fragment (to-type target (type frag)))
           #:args (list target frag)
           #:name to-type
-          #:code (append (code frag) (code r) (code g) (code b))
-          #:value (rgb (get-value r) (get-value g) (get-value b)))))
+          #:code (append (code frag) (code result))
+          #:value (get-value result))))
 (define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
   (let* [(target (reduce coerce #f (map type (list r g b))))
-         (r~     (to-type target r))
-         (g~     (to-type target g))
-         (b~     (to-type target b))]
+         (r~     (to-type (typecode target) r))
+         (g~     (to-type (typecode target) g))
+         (b~     (to-type (typecode target) b))]
      (make (fragment (rgb target))
            #:args (list r g b)
            #:name rgb
            #:code (append (code r~) (code g~) (code b~))
-           #:value (rgb (get-value r~) (get-value g~) (get-value b~)))))
+           #:value (make <rgb> #:red (get-value r~) #:green (get-value g~) #:blue (get-value b~)))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
 (define (mutable-unary op result a)
@@ -477,8 +480,8 @@
   (make (fragment (type self))
         #:args (list self)
         #:name op
-        #:code (append (code self) (code (red result)) (code (green result)) (code (blue result)))
-        #:value (rgb (get-value (red result)) (get-value (green result)) (get-value (blue result))))))
+        #:code (append (code self) (code result))
+        #:value (get-value result))))
 (define-syntax-rule (unary-rgb-op op)
   (define-method (op (a <fragment<rgb<>>>))
     (do-unary-rgb-op op a)))
@@ -495,9 +498,8 @@
     (make (fragment target)
           #:args (list a b)
           #:name op
-          #:code (append (code a) (code b)
-                         (code (red result)) (code (green result)) (code (blue result)))
-          #:value (rgb (get-value (red result)) (get-value (green result)) (get-value (blue result)))))); TODO: separate method
+          #:code (append (code a) (code b) (code result))
+          #:value (get-value result))))
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))

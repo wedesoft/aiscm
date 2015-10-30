@@ -57,7 +57,7 @@
                            #:specializers (list (class-of a) (class-of b))
                            #:procedure (lambda (a b) (f (get a) (get b))))))
       (name a b))
-    (capture-binary-argument name <boolean>)
+    (capture-binary-argument name <boolean>); TODO: better way to do this?
     (capture-binary-argument name <integer>)
     (capture-binary-argument name <real>)
     (capture-binary-argument name <rgb>)))

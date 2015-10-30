@@ -3,7 +3,6 @@
 ## Ready
 
 * use thumbnail images to illustrate examples
-* construct RGB values in compiled code
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
 * duplicate image
