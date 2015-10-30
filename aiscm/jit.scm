@@ -387,6 +387,16 @@
           #:name to-type
           #:code (append (code frag) (code r) (code g) (code b))
           #:value (rgb (get-value r) (get-value g) (get-value b)))))
+(define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
+  (let* [(target (reduce coerce #f (map type (list r g b))))
+         (r~     (to-type target r))
+         (g~     (to-type target g))
+         (b~     (to-type target b))]
+     (make (fragment (rgb target))
+           #:args (list r g b)
+           #:name rgb
+           #:code (append (code r~) (code g~) (code b~))
+           #:value (rgb (get-value r~) (get-value g~) (get-value b~)))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
 (define (mutable-unary op result a)
