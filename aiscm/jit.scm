@@ -125,7 +125,7 @@
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
-(define-method (var (self <meta<pointer<>>>)) (make <var> #:type <long>))
+(define-method (var (self <meta<pointer<>>>)) (var <long>))
 (define-method (var (self <meta<rgb<>>>)) (apply rgb (map var (types self))))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -598,25 +598,25 @@
                           (get-increment destination)
                           (get-increment source))))))
 
-(define-method (returnable? self) #f)
-(define-method (returnable? (self <meta<bool>>)) #t)
-(define-method (returnable? (self <meta<int<>>>)) #t)
+(define-method (returnable self) #f)
+(define-method (returnable (self <meta<bool>>)) <ubyte>)
+(define-method (returnable (self <meta<int<>>>)) self)
 (define (assemble retval vars frag)
-  (virtual-variables (if (returnable? (class-of retval)) (list (get retval)) '())
-                     (concatenate (map decompose (if (returnable? (class-of retval)) vars (cons retval vars))))
+  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
+                     (concatenate (map decompose (if (returnable (class-of retval)) vars (cons retval vars))))
                      (append (store retval frag) (list (RET)))))
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (frag        (apply proc (map parameter vars)))
          (result-type (type frag))
-         (return?     (returnable? result-type))
-         (target      (if return? result-type (pointer result-type)))
+         (return-type (returnable result-type))
+         (target      (or return-type (pointer result-type)))
          (code        (asm context
-                           (if return? (car (types target)) <null>)
-                           (concatenate (map types (if return? classes (cons target classes))))
+                           (or return-type <null>)
+                           (concatenate (map types (if return-type classes (cons target classes))))
                            (assemble (skeleton target) vars frag)))
          (fun         (lambda header (apply code (concatenate (map content header)))))]
-    (if return?
+    (if return-type
         (lambda args
           (let [(result (apply fun args))]
             (get (build result-type result))))

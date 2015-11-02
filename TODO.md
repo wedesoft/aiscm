@@ -2,6 +2,7 @@
 
 ## Ready
 
+* remove 'types'?
 * var, skeleton, ... redundant with types and decompose/compose?
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
