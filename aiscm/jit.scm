@@ -29,6 +29,7 @@
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code get-op get-name to-type type assemble jit
             =0 !=0 != && ||))
+
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -45,36 +46,6 @@
                             #:output (append io out)))))
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
-(define-class <var> ()
-  (type   #:init-keyword #:type   #:getter typecode)
-  (symbol #:init-keyword #:symbol #:init-form (gensym)))
-(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
-(define-method (size-of (self <var>)) (size-of (typecode self)))
-(define-class <ptr> ()
-  (type #:init-keyword #:type #:getter typecode)
-  (args #:init-keyword #:args #:getter get-args))
-(define-method (write (self <ptr>) port)
-  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
-(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
-(define-method (variables self) '())
-(define-method (variables (self <var>)) (list self))
-(define-method (variables (self <cmd>)) (variables (get-args self)))
-(define-method (variables (self <ptr>)) (variables (get-args self)))
-(define-method (variables (self <list>)) (delete-duplicates (concatenate (map variables self))))
-(define-method (input (self <cmd>))
-  (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
-(define-method (output (self <cmd>)) (variables (get-output self)))
-(define-method (substitute-variables self alist) self)
-(define-method (substitute-variables (self <var>) alist)
-  (let [(target (assq-ref alist self))]
-    (if (is-a? target <register>)
-      (reg (size-of self) (get-code target))
-      (or target self))))
-(define-method (substitute-variables (self <ptr>) alist)
-  (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
-(define-method (substitute-variables (self <cmd>) alist)
-  (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
-(define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define-syntax-rule (mutable-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -85,6 +56,9 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
+(define-method (mov-part (r <register>) (r/m <register>))
+  (MOV r (reg (/ (get-bits r) 8) (get-code r/m))))
+(immutable-op mov-part)
 (immutable-op     MOV)
 (immutable-op     MOVSX)
 (immutable-op     MOVZX)
@@ -119,9 +93,36 @@
 (state-reading-op SETLE)
 (state-reading-op SETNLE)
 
-(define-method (mov-part (r <register>) (r/m <register>))
-   (MOV r (reg (/ (get-bits r) 8) (get-code r/m))))
-(immutable-op mov-part)
+(define-class <var> ()
+  (type   #:init-keyword #:type   #:getter typecode)
+  (symbol #:init-keyword #:symbol #:init-form (gensym)))
+(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
+(define-method (size-of (self <var>)) (size-of (typecode self)))
+(define-class <ptr> ()
+  (type #:init-keyword #:type #:getter typecode)
+  (args #:init-keyword #:args #:getter get-args))
+(define-method (write (self <ptr>) port)
+  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
+(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
+(define-method (variables self) '())
+(define-method (variables (self <var>)) (list self))
+(define-method (variables (self <cmd>)) (variables (get-args self)))
+(define-method (variables (self <ptr>)) (variables (get-args self)))
+(define-method (variables (self <list>)) (delete-duplicates (concatenate (map variables self))))
+(define-method (input (self <cmd>))
+  (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
+(define-method (output (self <cmd>)) (variables (get-output self)))
+(define-method (substitute-variables self alist) self)
+(define-method (substitute-variables (self <var>) alist)
+  (let [(target (assq-ref alist self))]
+    (if (is-a? target <register>)
+      (reg (size-of self) (get-code target))
+      (or target self))))
+(define-method (substitute-variables (self <ptr>) alist)
+  (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
+(define-method (substitute-variables (self <cmd>) alist)
+  (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
+(define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -196,10 +197,6 @@
             (load-registers need-saving offset)
             (list (RET)))))
 
-(define (adjacent intervals var) ((overlap intervals) var))
-
-(define (spill-candidate prog live lst) (argmax (idle-live prog live) lst))
-
 (define (with-spilled-variable var location prog predefined blocked fun)
   (let* [(spill-code (spill-variable var location prog))]
     (fun (flatten-code spill-code)
@@ -216,6 +213,7 @@
          (all-vars   (variables prog))
          (vars       (difference (variables prog) (map car predefined)))
          (intervals  (live-intervals live all-vars))
+         (adjacent   (overlap intervals))
          (colors     (color-intervals intervals
                                       vars
                                       registers
@@ -223,12 +221,12 @@
                                       #:blocked blocked))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
-      (let* [(var          (spill-candidate prog live (adjacent intervals (car unassigned))))
-             (stack-param? (and (index var parameters) (>= (index var parameters) 6)))
+      (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
+             (stack-param? (and (index target parameters) (>= (index target parameters) 6)))
              (location     (if stack-param?
-                               (ptr (typecode var) RSP (* 8 (- (index var parameters) 5)))
-                               (ptr (typecode var) RSP offset)))]
-        (with-spilled-variable var location prog predefined blocked
+                               (ptr (typecode target) RSP (* 8 (- (index target parameters) 5)))
+                               (ptr (typecode target) RSP offset)))]
+        (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
             (register-allocate prog
                                #:predefined predefined
@@ -249,9 +247,9 @@
                          (offset -8)]
     (let [(conflict (blocked-predefined blocked predefined))]
       (if conflict
-        (let* [(spill-candidate (car conflict))
-               (location        (ptr (typecode spill-candidate) RSP offset))]
-        (with-spilled-variable spill-candidate location prog predefined blocked
+        (let* [(target   (car conflict))
+               (location (ptr (typecode target) RSP offset))]
+        (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
             (spill-blocked-predefines prog
                                       #:predefined predefined
