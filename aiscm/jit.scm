@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type var decompose var vars skeleton mov-part
+            fragment type var decompose var skeleton mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
@@ -123,6 +123,17 @@
 (define-method (substitute-variables (self <cmd>) alist)
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
+
+(define-method (var (self <meta<element>>)) (make <var> #:type self))
+(define-method (var (self <meta<pointer<>>>)) (make <var> #:type <long>))
+(define-method (var (self <meta<rgb<>>>)) (apply rgb (map var (types self))))
+(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
+(define-method (skeleton (self <meta<sequence<>>>))
+  (let [(slice (skeleton (project self)))]
+    (make self
+          #:value   (get-value slice)
+          #:shape   (cons (var <long>) (shape   slice))
+          #:strides (cons (var <long>) (strides slice)))))
 
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -293,6 +304,7 @@
                     (map (bump-interval (code-length (list (car prog))))
                          (blocked-intervals (cdr prog)))))
     (else '())))
+
 (define ((binary-cmp set1 set2) r a b)
   (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 (define ((binary-bool op) r a b)
@@ -322,6 +334,7 @@
       (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
+
 (define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
               (name  #:init-keyword #:name  #:getter get-name)
               (args  #:init-keyword #:args  #:getter get-args)
@@ -337,7 +350,7 @@
 (define-method (parameter self)
   (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get-value self)))
 (define-method (parameter (p <pointer<>>))
-  (let [(result (basic (typecode p)))]
+  (let [(result (var (typecode p)))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
@@ -345,7 +358,7 @@
           #:value result)))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
-  (let [(result (basic (typecode p)))
+  (let [(result (var (typecode p)))
         (size   (size-of (base (typecode p))))]
     (make (fragment (typecode p))
           #:args (list p)
@@ -407,7 +420,7 @@
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
     (let* [(target (conversion (type a)))
-           (result (basic (typecode target)))]
+           (result (var (typecode target)))]
       (make (fragment target)
             #:args (list a)
             #:name name
@@ -444,7 +457,7 @@
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
     (let* [(intermediate (coercion (type a) (type b)))
            (target       (conversion intermediate))
-           (result       (basic (typecode target)))]
+           (result       (var (typecode target)))]
       (make (fragment target)
             #:args (list a b)
             #:name name
@@ -526,22 +539,12 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define (var type) (make <var> #:type type))
-(define (vars type) (map var (types type)))
 (define-method (decompose (self <element>)) (decompose (get-value self)))
 (define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
 (define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
-(define-method (skeleton (self <meta<element>>)) (make self #:value (car (vars self))))
-(define-method (skeleton (self <meta<rgb<>>>)) (make self #:value (apply rgb (vars self))))
-(define-method (skeleton (self <meta<sequence<>>>))
-  (let [(slice (skeleton (project self)))]
-    (make self
-          #:value   (get-value slice)
-          #:shape   (cons (var <long>) (shape   slice))
-          #:strides (cons (var <long>) (strides slice)))))
-(define (basic self) (get (skeleton self))); TOOD: rename
+
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
@@ -572,8 +575,8 @@
 (define-method (element-wise self)
   (make <elementwise> #:setup '() #:increment '() #:body self))
 (define-method (element-wise (s <sequence<>>))
-  (let [(incr (basic <long>))
-        (p    (basic <long>))]
+  (let [(incr (var <long>))
+        (p    (var <long>))]
     (make <elementwise>
           #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
                         (MOV p (get-value s)))
