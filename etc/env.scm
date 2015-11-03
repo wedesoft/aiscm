@@ -1,16 +1,5 @@
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float) (aiscm rgb))
 
-(define context (make <context>))
-(define classes (list <bool>))
-(define proc =0)
-(define vars        (map skeleton classes))
-(define frag        (apply proc (map parameter vars)))
-(define result-type (type frag))
-(define return-type (returnable result-type))
-(define target      (if return-type result-type (pointer result-type)))
-(define retval      (skeleton target))
-(define args        (if return-type vars (cons retval vars)))
-
 (use-modules (ice-9 optargs))
 (define* (test #:key (x 1) (y 2) #:allow-other-keys #:rest r)
   (list x y r))
