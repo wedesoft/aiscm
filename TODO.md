@@ -2,6 +2,7 @@
 
 ## Ready
 
+* (typecode (get-value (skeleton <bool>))) should be <ubyte>
 * remove 'types'?
 * var, skeleton, ... redundant with types and decompose/compose?
 * RGB =, map, inject?

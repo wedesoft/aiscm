@@ -125,8 +125,9 @@
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
+(define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
-(define-method (var (self <meta<rgb<>>>)) (apply rgb (map var (types self))))
+(define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -610,11 +611,13 @@
          (frag        (apply proc (map parameter vars)))
          (result-type (type frag))
          (return-type (returnable result-type))
-         (target      (or return-type (pointer result-type)))
+         (target      (if return-type result-type (pointer result-type)))
+         (retval      (skeleton target))
+         (args        (if return-type vars (cons retval vars)))
          (code        (asm context
                            (or return-type <null>)
-                           (concatenate (map types (if return-type classes (cons target classes))))
-                           (assemble (skeleton target) vars frag)))
+                           (map typecode (concatenate (map decompose args)))
+                           (assemble retval vars frag)))
          (fun         (lambda header (apply code (concatenate (map content header)))))]
     (if return-type
         (lambda args
