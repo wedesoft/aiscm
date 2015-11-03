@@ -157,8 +157,6 @@
 (define-method (downsample (n <null>) (self <sequence<>>)) self)
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
-(define-method (types (self <meta<sequence<>>>))
-  (append (list <long> <long>) (types (project self))))
 (define-method (build (self <meta<sequence<>>>) value) value)
 (define-method (content (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (content (project self))))
