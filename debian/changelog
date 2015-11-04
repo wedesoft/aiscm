@@ -1,3 +1,14 @@
+aiscm (0.2.3-1) UNRELEASED; urgency=low
+
+  * aiscm/jit.scm: refactored code
+  * aiscm/asm.scm: support for AH, CH, DH, and BH
+  * aiscm/xorg.scm: display lists of images and videos with multiple channels
+  - wrap variables in order to support boolean
+  - integer remainder of division
+  - RGB operations
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 4 Sep 2015 21:57:15 +0100
+
 aiscm (0.2.2-1) UNRELEASED; urgency=low
 
   * aiscm/xorg.scm: convert array to image before displaying

@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.2.2], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.2.3], [jan@wedesoft.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
