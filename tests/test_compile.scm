@@ -22,5 +22,5 @@
     "expr->method creates method definition")
 (ok (equal? (expr->descr '(+ i j)) (caadr (expr->method '(+ i j))))
     "expr->method uses descriptor as method name")
-(ok (eqv? 5 (get-value (comp (+ i j))))
+(ok (eqv? 5 (get (comp (+ i j))))
     "compiling method generates and calls it")

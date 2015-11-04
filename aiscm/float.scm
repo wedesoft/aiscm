@@ -13,7 +13,7 @@
 (define double-precision 'double)
 (define-class* <float<>> <element> <meta<float<>>> <meta<element>>)
 (define-method (write (self <float<>>) port)
-  (format port "#<~a ~a>" (class-name (class-of self)) (get-value self)))
+  (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-generic precision)
 (define (floating-point prec)
   (template-class (float prec) <float<>>
@@ -32,7 +32,7 @@
          (setter   (if (double? typecode)
                        bytevector-ieee-double-native-set!
                        bytevector-ieee-single-native-set!))]
-    (setter retval 0 (get-value self))
+    (setter retval 0 (get self))
     retval))
 (define-method (unpack (self <meta<float<>>>) (packed <bytevector>))
   (let* [(ref   (if (double? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))

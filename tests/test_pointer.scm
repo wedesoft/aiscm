@@ -42,10 +42,10 @@
 (ok (equal? (make <sint> #:value #x0201)
             (begin (store p2-sint #x0201) (fetch p2-sint)))
     "storing and fetching back short int")
-(ok (equal? (+ m2 2) (get-value (+ p2-sint 1)))
+(ok (equal? (+ m2 2) (get (+ p2-sint 1)))
     "pointer operations are aware of size of element")
 (ok (eqv? (pointer-address (get-memory m1))
-          (get-value (unpack <native-int> (pack p1-byte))))
+          (get (unpack <native-int> (pack p1-byte))))
     "convert pointer to bytevector containing raw data")
 (ok (string-match "^#<<pointer<int<16,signed>>> .*>$"
                   (call-with-output-string (lambda (port) (write p1-sint port))))
@@ -53,5 +53,5 @@
 (ok (string-match "^#<<pointer<int<16,signed>>> .*>$"
                   (call-with-output-string (lambda (port) (display p1-sint port))))
     "display pointer object")
-(ok (eqv? 4 (get-size (get-value (make (pointer <int>)))))
+(ok (eqv? 4 (get-size (get (make (pointer <int>)))))
     "Memory is allocated if no value is specified")

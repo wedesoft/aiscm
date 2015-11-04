@@ -2,7 +2,6 @@
 
 ## Ready
 
-* get-value -> get
 * RGB =, map, inject?
 * complex numbers, fractions, record arrays, extendable type matching
 * separate register allocation for better testing (<-> RSpec, Clojure Midje?),

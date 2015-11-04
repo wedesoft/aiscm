@@ -15,7 +15,7 @@
 (define l '((2 3 5 7) (11 13 17 19)))
 (define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
 (define m (to-array <ubyte> l))
-(define mem (get-value m))
+(define mem (slot-ref m 'value))
 (define img (make <image> #:format 'GRAY #:shape '(8 1) #:mem mem))
 (diagnostics "following test only works with recent version of libswscale")
 (skip (equal? #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))

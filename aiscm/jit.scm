@@ -132,7 +132,7 @@
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
     (make self
-          #:value   (get-value slice)
+          #:value   (slot-ref slice 'value)
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
 
@@ -442,9 +442,9 @@
         (b~  (to-type intermediate b))
         (tmp (skeleton intermediate))]
     (append (code a~) (code b~)
-            (list (MOV result          (get-value a~))
-                  (MOV (get-value tmp) (get-value b~))
-                  (op result (get-value tmp))))))
+            (list (MOV result    (get-value a~))
+                  (MOV (get tmp) (get-value b~))
+                  (op result (get tmp))))))
 (define (immutable-binary op result intermediate a b)
   (let [(a~ (to-type intermediate a))
         (b~ (to-type intermediate b))]
@@ -545,7 +545,7 @@
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <element>) (b <fragment<element>>))
-  (append (code b) (list (MOV (get-value a) (get-value b)))))
+  (append (code b) (list (MOV (get a) (get-value b)))))
 (define-method (protect (self <fragment<sequence<>>>) fun) list)
 (define (component self name)
   (make (fragment (base (type self)))
@@ -557,13 +557,13 @@
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (append (code a) (list (MOV (ptr (typecode p) (get-value p)) (get-value a)))))
+  (append (code a) (list (MOV (ptr (typecode p) (get p)) (get-value a)))))
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
-            (list (MOV (ptr (base (typecode p)) (get-value p)           ) (red   (get-value a)))
-                  (MOV (ptr (base (typecode p)) (get-value p)       size) (green (get-value a)))
-                  (MOV (ptr (base (typecode p)) (get-value p) (* 2 size)) (blue  (get-value a)))))))
+            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (get-value a)))
+                  (MOV (ptr (base (typecode p)) (get p)       size) (green (get-value a)))
+                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (get-value a)))))))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
@@ -575,7 +575,7 @@
         (p    (var <long>))]
     (make <elementwise>
           #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
-                        (MOV p (get-value s)))
+                        (MOV p (slot-ref s 'value)))
           #:increment (list (ADD p incr))
           #:body (project (rebase p s)))))
 (define-method (element-wise (self <fragment<sequence<>>>))
@@ -597,7 +597,7 @@
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
 (define-method (returnable (self <meta<int<>>>)) self)
-(define-method (decompose (self <element>)) (list (get-value self)))
+(define-method (decompose (self <element>)) (list (get self)))
 (define-method (decompose (self <rgb<>>)) (let [(v (get self))] (list (red v) (green v) (blue v))))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))

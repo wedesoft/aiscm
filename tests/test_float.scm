@@ -47,7 +47,7 @@
     "type matching for 1.5")
 (ok (eqv? 1.25 (get (make <float> #:value 1.25)))
     "get value of floating point number")
-(ok (eqv? 1.25 (let [(i (make <float> #:value 0))] (set i 1.25) (get-value i)))
+(ok (eqv? 1.25 (let [(i (make <float> #:value 0))] (set i 1.25) (get i)))
     "set value of floating point number")
 (ok (eqv? 1.25 (set (make <float> #:value 0) 1.25))
     "return-value of setting floating point number")
