@@ -27,7 +27,7 @@
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code get-op get-name to-type type assemble jit
+            parameter code value get-op get-name to-type type assemble jit
             =0 !=0 != && ||))
 
 (define-method (get-args self) '())
@@ -340,7 +340,7 @@
               (name  #:init-keyword #:name  #:getter get-name)
               (args  #:init-keyword #:args  #:getter get-args)
               (code  #:init-keyword #:code  #:getter code)
-              (value #:init-keyword #:value #:getter get-value))
+              (value #:init-keyword #:value #:getter value))
 (define-generic type)
 (define (fragment t)
   (template-class (fragment t) (fragment (super t))
@@ -387,9 +387,9 @@
             (make (fragment (to-type target (type frag)))
                   #:args (list target frag)
                   #:name to-type
-                  #:code (append (code frag) (list (mov result (get-value frag))))
+                  #:code (append (code frag) (list (mov result (value frag))))
                   #:value result)))))
-(define (strip-code frag) (parameter (make (type frag) #:value (get-value frag))))
+(define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
 (fragment <rgb<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
   (let* [(tmp    (strip-code frag))
@@ -401,7 +401,7 @@
           #:args (list target frag)
           #:name to-type
           #:code (append (code frag) (code result))
-          #:value (get-value result))))
+          #:value (value result))))
 (define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
   (let* [(target (reduce coerce #f (map type (list r g b))))
          (r~     (to-type (typecode target) r))
@@ -411,13 +411,13 @@
            #:args (list r g b)
            #:name rgb
            #:code (append (code r~) (code g~) (code b~))
-           #:value (make <rgb> #:red (get-value r~) #:green (get-value g~) #:blue (get-value b~)))))
+           #:value (make <rgb> #:red (value r~) #:green (value g~) #:blue (value b~)))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
 (define (mutable-unary op result a)
-  (append (code a) (list (MOV result (get-value a)) (op result))))
+  (append (code a) (list (MOV result (value a)) (op result))))
 (define (immutable-unary op result a)
-  (append (code a) (list (op result (get-value a)))))
+  (append (code a) (list (op result (value a)))))
 (define-syntax-rule (unary-op name mode op conversion)
   (define-method (name (a <fragment<element>>))
     (let* [(target (conversion (type a)))
@@ -442,16 +442,16 @@
         (b~  (to-type intermediate b))
         (tmp (skeleton intermediate))]
     (append (code a~) (code b~)
-            (list (MOV result    (get-value a~))
-                  (MOV (get tmp) (get-value b~))
+            (list (MOV result    (value a~))
+                  (MOV (get tmp) (value b~))
                   (op result (get tmp))))))
 (define (immutable-binary op result intermediate a b)
   (let [(a~ (to-type intermediate a))
         (b~ (to-type intermediate b))]
     (append (code a~) (code b~)
-            (list (op result (get-value a~) (get-value b~))))))
+            (list (op result (value a~) (value b~))))))
 (define (shift-binary op result intermediate a b)
-  (append (code a) (code b) (list (MOV result (get-value a)) (op result (get-value b)))))
+  (append (code a) (code b) (list (MOV result (value a)) (op result (value b)))))
 (define-method (protect self fun) fun); TODO: refactor
 (define-method (protect (self <meta<sequence<>>>) fun) list)
 (define-syntax-rule (binary-op name mode coercion op conversion)
@@ -493,7 +493,7 @@
         #:args (list self)
         #:name op
         #:code (append (code self) (code result))
-        #:value (get-value result))))
+        #:value (value result))))
 (define-syntax-rule (unary-rgb-op op)
   (define-method (op (a <fragment<rgb<>>>))
     (do-unary-rgb-op op a)))
@@ -511,7 +511,7 @@
           #:args (list a b)
           #:name op
           #:code (append (code a) (code b) (code result))
-          #:value (get-value result))))
+          #:value (value result))))
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))
@@ -545,25 +545,25 @@
 (define-method (project (self <fragment<sequence<>>>))
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <element>) (b <fragment<element>>))
-  (append (code b) (list (MOV (get a) (get-value b)))))
+  (append (code b) (list (MOV (get a) (value b)))))
 (define-method (protect (self <fragment<sequence<>>>) fun) list)
 (define (component self name)
   (make (fragment (base (type self)))
           #:args (list self)
           #:name name
           #:code (code self)
-          #:value ((protect self name) (get-value self))))
+          #:value ((protect self name) (value self))))
 (define-method (red   (self <fragment<element>>)) (component self red  ))
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (append (code a) (list (MOV (ptr (typecode p) (get p)) (get-value a)))))
+  (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
 (define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
-            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (get-value a)))
-                  (MOV (ptr (base (typecode p)) (get p)       size) (green (get-value a)))
-                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (get-value a)))))))
+            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (value a)))
+                  (MOV (ptr (base (typecode p)) (get p)       size) (green (value a)))
+                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (value a)))))))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
