@@ -349,13 +349,13 @@
       (define-method (type (self class)) t))))
 (fragment <element>)
 (define-method (parameter self)
-  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get-value self)))
+  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
 (define-method (parameter (p <pointer<>>))
   (let [(result (var (typecode p)))]
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
-          #:code (list (MOV result (ptr (typecode p) (get-value p))))
+          #:code (list (MOV result (ptr (typecode p) (get p))))
           #:value result)))
 (pointer <rgb<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
@@ -364,9 +364,9 @@
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
-          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get-value p)           ))
-                       (MOV (green result) (ptr (base (typecode p)) (get-value p)      size))
-                       (MOV (blue  result) (ptr (base (typecode p)) (get-value p) (* 2 size))))
+          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)           ))
+                       (MOV (green result) (ptr (base (typecode p)) (get p)      size))
+                       (MOV (blue  result) (ptr (base (typecode p)) (get p) (* 2 size))))
           #:value result)))
 (define-method (parameter (self <sequence<>>))
   (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
