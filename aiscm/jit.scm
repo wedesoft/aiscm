@@ -540,11 +540,6 @@
 ;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
-(define-method (decompose (self <element>)) (decompose (get-value self)))
-(define-method (decompose (self <var>)) (list self)); TODO: decompose for var still needed?
-(define-method (decompose (self <rgb>)) (list (red self) (green self) (blue self)))
-(define-method (decompose (self <sequence<>>))
-  (append (map last (list (shape self) (strides self))) (decompose (project self))))
 
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
@@ -602,6 +597,10 @@
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
 (define-method (returnable (self <meta<int<>>>)) self)
+(define-method (decompose (self <element>)) (list (get-value self)))
+(define-method (decompose (self <rgb<>>)) (let [(v (get self))] (list (red v) (green v) (blue v))))
+(define-method (decompose (self <sequence<>>))
+  (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
                      (concatenate (map decompose (if (returnable (class-of retval)) vars (cons retval vars))))
