@@ -4,6 +4,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm element)
+  #:use-module (aiscm bool)
   #:use-module (aiscm float)
   #:use-module (aiscm util)
   #:export (signed
@@ -93,3 +94,4 @@
 (define-method (<< (a <integer>) (b <integer>)) (ash a b))
 (define-method (>> (a <integer>) (b <integer>)) (ash a (- b)))
 (define-method (% (a <integer>) (b <integer>)) (modulo a b))
+(define-method (!= (a <integer>) (b <integer>)) (not (= a b)))

@@ -17,7 +17,7 @@ bench-local: bench.scm libguile-bench.la
 
 EXTRA_DIST = bench.scm
 
-CLEANFILES = *~ *.tmp *.go*
+CLEANFILES = *~ *.tmp *.go* *.la
 
 DISTCLEANFILES = .*.un~ .*.swp
 

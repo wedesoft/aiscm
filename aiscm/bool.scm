@@ -3,9 +3,10 @@
   #:use-module (rnrs bytevectors)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
-  #:use-module (aiscm int)
   #:export (<bool>
-            <meta<bool>>))
+            <meta<bool>>
+            && || !=)
+  #:re-export (=))
 (define-class* <bool> <element> <meta<bool>> <meta<element>>)
 (define-method (size-of (self <meta<bool>>)) 1)
 (define-method (pack (self <bool>))
@@ -18,3 +19,7 @@
 (define-method (match (b <boolean>) . args) <bool>)
 (define-method (build (self <meta<bool>>) value) (make self #:value (not (zero? value))))
 (define-method (content (self <boolean>)) (list (if self 1 0)))
+(define-method (&& (a <boolean>) (b <boolean>)) (and a b))
+(define-method (|| (a <boolean>) (b <boolean>)) (or a b))
+(define-generic !=)
+(define-generic =)

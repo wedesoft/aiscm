@@ -2,8 +2,10 @@
 
 ## Ready
 
-* RGB =, map, inject?
-* complex numbers, fractions, record arrays, extendable type matching
+* compare RGB with scalar
+* n-ary operations (&&, ||, ...)
+* complex numbers, fractions, record arrays, extendable type matching, map?, inject?
+* x11 display: error handling for 'show', timing
 * separate register allocation for better testing (<-> RSpec, Clojure Midje?),
   copy blocked predefined variables instead of spilling them
 * duplicate image

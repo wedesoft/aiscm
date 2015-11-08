@@ -28,8 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code value get-op get-name to-type type assemble jit
-            =0 !=0 != && ||))
-
+            =0 !=0))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -504,32 +503,34 @@
 ; TODO: RGB floor
 ; TODO: RGB ceil
 ; TODO: RGB round
-(define (do-binary-rgb-op op a b)
-  (let [(target (coerce (type a) (type b)))
+(define (do-binary-rgb-op op a b coercion)
+  (let [(target (coercion (type a) (type b)))
         (result (op (peel (strip-code a)) (peel (strip-code b))))]
     (make (fragment target)
           #:args (list a b)
           #:name op
           #:code (append (code a) (code b) (code result))
           #:value (value result))))
-(define-syntax-rule (binary-rgb-op op)
+(define-syntax-rule (binary-rgb-op op coercion)
   (begin
     (define-method (op (a <fragment<rgb<>>>) (b <fragment<rgb<>>>))
-      (do-binary-rgb-op op a b))
+      (do-binary-rgb-op op a b coercion))
     (define-method (op (a <fragment<rgb<>>>) (b <fragment<element>>))
-      (do-binary-rgb-op op a b))
+      (do-binary-rgb-op op a b coercion))
     (define-method (op (a <fragment<element>>) (b <fragment<rgb<>>>))
-      (do-binary-rgb-op op a b))) )
-(binary-rgb-op +)
-(binary-rgb-op -)
-(binary-rgb-op *)
-(binary-rgb-op &)
-(binary-rgb-op |)
-(binary-rgb-op ^)
-(binary-rgb-op <<)
-(binary-rgb-op >>)
-(binary-rgb-op /)
-(binary-rgb-op %)
+      (do-binary-rgb-op op a b coercion))))
+(binary-rgb-op +  coerce)
+(binary-rgb-op -  coerce)
+(binary-rgb-op *  coerce)
+(binary-rgb-op &  coerce)
+(binary-rgb-op |  coerce)
+(binary-rgb-op ^  coerce)
+(binary-rgb-op << coerce)
+(binary-rgb-op >> coerce)
+(binary-rgb-op /  coerce)
+(binary-rgb-op %  coerce)
+(binary-rgb-op =  (const <bool>))
+(binary-rgb-op != (const <bool>))
 ;TODO: RGB =
 ;TODO: RGB !=
 ;TODO: RGB <

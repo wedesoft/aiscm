@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (aiscm util)
              (aiscm element)
+             (aiscm bool)
              (aiscm int)
              (aiscm rgb)
              (aiscm pointer)
