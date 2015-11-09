@@ -498,8 +498,6 @@
     (do-unary-rgb-op op a)))
 (unary-rgb-op -)
 (unary-rgb-op ~)
-; TODO: RGB =0
-; TODO: RGB !=0
 ; TODO: RGB floor
 ; TODO: RGB ceil
 ; TODO: RGB round
@@ -531,14 +529,6 @@
 (binary-rgb-op %  coerce)
 (binary-rgb-op =  (const <bool>))
 (binary-rgb-op != (const <bool>))
-;TODO: RGB =
-;TODO: RGB !=
-;TODO: RGB <
-;TODO: RGB <=
-;TODO: RGB >
-;TODO: RGB >=
-;TODO: RGB &&
-;TODO: RGB ||
 ;TODO: RGB ** (coercion-maxint)
 ;TODO: RGB minor, major
 
