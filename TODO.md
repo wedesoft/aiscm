@@ -2,7 +2,6 @@
 
 ## Ready
 
-* compare RGB with scalar
 * n-ary operations (&&, ||, ...)
 * complex numbers, fractions, record arrays, extendable type matching, map?, inject?
 * x11 display: error handling for 'show', timing
