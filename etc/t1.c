@@ -1,4 +1,4 @@
-unsigned char test(unsigned char n, unsigned char m)
+int f(int x, int y)
 {
-  return n % m;
+  return y > x ? y : x;
 }

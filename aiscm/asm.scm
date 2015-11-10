@@ -26,6 +26,7 @@
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO
             CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
+            CMOVB CMOVNB
             conditional?))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -380,3 +381,8 @@
 (define-method (SETNL  (r/m <operand>)) (SETcc #x9d r/m))
 (define-method (SETLE  (r/m <operand>)) (SETcc #x9e r/m))
 (define-method (SETNLE (r/m <operand>)) (SETcc #x9f r/m))
+
+(define (CMOVcc code r r/m)
+  (append (prefixes r r/m) (list #x0f code) (postfixes r r/m)))
+(define-method (CMOVB  (r <register>) (r/m <operand>)) (CMOVcc #x42 r r/m))
+(define-method (CMOVNB (r <register>) (r/m <operand>)) (CMOVcc #x43 r r/m))
