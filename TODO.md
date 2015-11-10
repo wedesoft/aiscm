@@ -2,7 +2,7 @@
 
 ## Ready
 
-* major, minor (CMOVxx)
+* minor, major for bytes
 * n-ary operations (&&, ||, ...)
 * complex numbers, fractions, record arrays, extendable type matching, map?, inject?
 * \*\*

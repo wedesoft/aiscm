@@ -23,10 +23,10 @@
             resolve-jumps get-target retarget
             asm obj ptr get-reg get-disp get-index
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG INC SUB IMUL IDIV DIV
-            AND OR XOR CBW CWDE CDQE CWD CDQ CQO
-            CMP TEST SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
+            AND OR XOR CBW CWDE CDQE CWD CDQ CQO CMP TEST
+            SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
-            CMOVB CMOVNB
+            CMOVB CMOVNB CMOVE CMOVNE CMOVBE CMOVNBE CMOVL CMOVNL CMOVLE CMOVNLE
             conditional?))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
@@ -384,5 +384,13 @@
 
 (define (CMOVcc code r r/m)
   (append (prefixes r r/m) (list #x0f code) (postfixes r r/m)))
-(define-method (CMOVB  (r <register>) (r/m <operand>)) (CMOVcc #x42 r r/m))
-(define-method (CMOVNB (r <register>) (r/m <operand>)) (CMOVcc #x43 r r/m))
+(define-method (CMOVB   (r <register>) (r/m <operand>)) (CMOVcc #x42 r r/m))
+(define-method (CMOVNB  (r <register>) (r/m <operand>)) (CMOVcc #x43 r r/m))
+(define-method (CMOVE   (r <register>) (r/m <operand>)) (CMOVcc #x44 r r/m))
+(define-method (CMOVNE  (r <register>) (r/m <operand>)) (CMOVcc #x45 r r/m))
+(define-method (CMOVBE  (r <register>) (r/m <operand>)) (CMOVcc #x46 r r/m))
+(define-method (CMOVNBE (r <register>) (r/m <operand>)) (CMOVcc #x47 r r/m))
+(define-method (CMOVL   (r <register>) (r/m <operand>)) (CMOVcc #x4c r r/m))
+(define-method (CMOVNL  (r <register>) (r/m <operand>)) (CMOVcc #x4d r r/m))
+(define-method (CMOVLE  (r <register>) (r/m <operand>)) (CMOVcc #x4e r r/m))
+(define-method (CMOVNLE (r <register>) (r/m <operand>)) (CMOVcc #x4f r r/m))

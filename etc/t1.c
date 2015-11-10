@@ -1,4 +1,4 @@
-int f(int x, int y)
+char f(char x, char y)
 {
   return y > x ? y : x;
 }
