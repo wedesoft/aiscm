@@ -13,7 +13,7 @@
              (aiscm bool)
              (aiscm rgb)
              (guile-tap))
-(planned-tests 232)
+(planned-tests 233)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -656,3 +656,9 @@
     "get major number of two signed integers")
 (ok (equal? 32768 ((jit ctx (list <sint> <usint>) major) -1 32768))
     "get major number of signed and unsigned short integers")
+(let [(r (skeleton <byte>))
+      (a (skeleton <byte>))
+      (b (skeleton <byte>))]
+  (todo (equal? (list (CMP DIL SIL) (MOVSX CX DIL) (CMOVL CX SI) (MOV AL CL))
+              (assemble r (list a b) (major (parameter a) (parameter b))))
+      "handle lack of support for 8-bit conditional move"))
