@@ -28,7 +28,7 @@
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code value get-op get-name to-type type assemble jit
-            =0 !=0 major minor))
+            =0 !=0 minor major))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -493,8 +493,8 @@
 (binary-op >=    immutable-binary sign-space (binary-cmp SETNL SETNB)      (cut to-type <bool> <>))
 (binary-op &&    immutable-binary coerce     (binary-bool AND)             (cut to-type <bool> <>))
 (binary-op ||    immutable-binary coerce     (binary-bool OR)              (cut to-type <bool> <>))
-(binary-op major immutable-binary coerce     (binary-cmov CMOVL CMOVB)     identity)
 (binary-op minor immutable-binary coerce     (binary-cmov CMOVNLE CMOVNBE) identity)
+(binary-op major immutable-binary coerce     (binary-cmov CMOVL CMOVB)     identity)
 ; TODO: binary operation ** (coercion-maxint)
 ; TODO: conditional -> minor, major
 (define-method (peel (self <fragment<element>>)) self)
