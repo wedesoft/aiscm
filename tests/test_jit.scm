@@ -656,10 +656,10 @@
     "get major number of two signed integers")
 (ok (equal? 32768 ((jit ctx (list <sint> <usint>) major) -1 32768))
     "get major number of signed and unsigned short integers")
-(let [(r (skeleton <byte>))
-      (a (skeleton <byte>))
-      (b (skeleton <byte>))]
-  (todo (equal? (list (CMP DIL SIL) (MOVSX CX DIL) (CMOVL CX SI) (MOV AL CL))
+(let [(r (skeleton <ubyte>))
+      (a (skeleton <ubyte>))
+      (b (skeleton <ubyte>))]
+  (ok (equal? (list (CMP DIL SIL) (MOV CL DIL) (MOV DL SIL) (CMOVB CX DX) (MOV AL CL) (RET))
               (assemble r (list a b) (major (parameter a) (parameter b))))
       "handle lack of support for 8-bit conditional move"))
 (ok (equal? (list (rgb 2 2 3)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) major)

@@ -1,4 +1,5 @@
-char f(char x, char y)
+char f(char x, char y, char z)
 {
-  return y > x ? y : x;
+  char s = x + y;
+  return z > s ? z : s;
 }

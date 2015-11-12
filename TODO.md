@@ -2,6 +2,11 @@
 
 ## Ready
 
+(let [(r (skeleton <ubyte>))
+      (a (skeleton <ubyte>))
+      (b (skeleton <ubyte>))]
+      (objdump (assemble r (list a b) (major (parameter a) (parameter b)))))
+
 * minor, major for bytes (rename to min, max?)
 * n-ary operations (&&, ||, ...)
 * complex numbers, record arrays, extendable type matching, map?, inject?
