@@ -2,7 +2,7 @@
 
 ## Ready
 
-* minor, major for bytes (and aiscm/op operations)
+* minor, major for bytes and RGB
 * n-ary operations (&&, ||, ...)
 * complex numbers, record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
