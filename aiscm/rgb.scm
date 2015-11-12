@@ -97,6 +97,8 @@
 (binary-rgb-op >>)
 (binary-rgb-op /)
 (binary-rgb-op %)
+(binary-rgb-op major)
+(binary-rgb-op minor)
 (define-syntax-rule (binary-rgb-cmp op f)
   (begin
     (define-method (op (a <rgb>) b)
