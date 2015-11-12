@@ -2,7 +2,7 @@
 
 ## Ready
 
-* minor, major for bytes and RGB
+* minor, major for bytes and RGB (rename to min, max?)
 * n-ary operations (&&, ||, ...)
 * complex numbers, record arrays, extendable type matching, map?, inject?
 * fractions, \*\*

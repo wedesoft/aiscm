@@ -27,8 +27,7 @@
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
-            parameter code value get-op get-name to-type type assemble jit
-            minor major))
+            parameter code value get-op get-name to-type type assemble jit))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
