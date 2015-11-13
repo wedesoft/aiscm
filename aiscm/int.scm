@@ -22,7 +22,7 @@
             <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
             <long>  <int<64,signed>>   <meta<int<64,signed>>>
             <native-int>
-            ~ & | ^ << >> % =0 !=0 minor major))
+            ~ & | ^ << >> % =0 !=0))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
@@ -97,5 +97,3 @@
 (define-method (>> (a <integer>) (b <integer>)) (ash a (- b)))
 (define-method (% (a <integer>) (b <integer>)) (modulo a b))
 (define-method (!= (a <integer>) (b <integer>)) (not (= a b)))
-(define-method (major (a <integer>) (b <integer>)) (max a b))
-(define-method (minor (a <integer>) (b <integer>)) (min a b))

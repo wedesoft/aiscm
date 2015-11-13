@@ -2,9 +2,9 @@
 
 ## Ready
 
-* rename to min, max?
 * n-ary operations (&&, ||, ...)
-* complex numbers, record arrays, extendable type matching, map?, inject?
+* complex numbers, conj, abs, arg
+* record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing
 * separate register allocation for better testing (<-> RSpec, Clojure Midje?),
@@ -24,7 +24,7 @@
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
 * update live intervals instead of recomputing
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps)
+* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * weird error when including sequence but not pointer
