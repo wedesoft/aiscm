@@ -339,7 +339,7 @@
     (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 (define ((binary-cmov op1 op2) r a b)
   (if (= (size-of r) 1)
-    (list (CMP a b) (MOV r a) (op2 r b))
+    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
     (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
 (define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
 (define (div/mod r a b pick)
