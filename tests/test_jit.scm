@@ -659,7 +659,7 @@
 (let [(r (skeleton <ubyte>))
       (a (skeleton <ubyte>))
       (b (skeleton <ubyte>))]
-  (ok (equal? (list (CMP DIL SIL) (MOV CL DIL) (MOV DL SIL) (CMOVB CX DX) (MOV AL CL) (RET))
+  (ok (equal? (list (CMP DIL SIL) (MOV CL DIL) (CMOVB CX SI) (MOV AL CL) (RET))
               (assemble r (list a b) (major (parameter a) (parameter b))))
       "handle lack of support for 8-bit conditional move"))
 (ok (equal? (list (rgb 2 2 3)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) major)
