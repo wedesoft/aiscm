@@ -2,7 +2,7 @@
 
 ## Ready
 
-* n-ary operations (&&, ||, ...)
+* n-ary operations (&&, ||, ...) involving arrays
 * complex numbers, conj, abs, arg
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
