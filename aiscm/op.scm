@@ -51,10 +51,10 @@
 (define-syntax-rule (define-binary-op name op)
   (begin
     (define-method (name (a <element>) (b <element>))
-      (let [(f (jit ctx (list (class-of a) (class-of b)) op))]
+      (let [(f (jit ctx (map class-of (list a b)) op))]
         (add-method! name
                      (make <method>
-                           #:specializers (list (class-of a) (class-of b))
+                           #:specializers (map class-of (list a b))
                            #:procedure (lambda (a b) (f (get a) (get b))))))
       (name a b))
     (capture-binary-argument name <boolean>); TODO: better way to do this?
