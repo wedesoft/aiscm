@@ -1,4 +1,5 @@
 (define-module (aiscm complex)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm element)
@@ -11,7 +12,7 @@
   (template-class (complex t) <complex<>>
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
-      (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
+      (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
 (define-method (pack (self <complex<>>))
   (let* [(vals       (content (get self)))
          (components (map (cut make (base (class-of self)) #:value <>) vals))
@@ -26,3 +27,7 @@
 (define-method (coerce (a <meta<element>>) (b <meta<complex<>>>)) (complex (coerce a (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
+(define-method (match (c <complex>) . args)
+  (let [(decompose-complex (lambda (x) (if (is-a? x <complex>) (content x) (list x))))]
+    (complex (apply match (concatenate (map decompose-complex (cons c args)))))))
+(define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
