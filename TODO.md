@@ -3,6 +3,7 @@
 ## Ready
 
 * complex numbers, conj, abs, arg
+* red -> red-part, ...
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing

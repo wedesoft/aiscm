@@ -60,10 +60,10 @@
 (define <intrgb>   (rgb <int>))
 (define <ulongrgb> (rgb <ulong>))
 (define <longrgb>  (rgb <long>))
-(define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
 (define-method (match (c <rgb>) . args)
   (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
     (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
