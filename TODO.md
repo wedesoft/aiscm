@@ -2,6 +2,7 @@
 
 ## Ready
 
+* type matching for scalar and RGB value (stack overflow)
 * complex numbers, conj, abs, arg
 * red -> red-part, ...
 * record arrays, extendable type matching, map?, inject?

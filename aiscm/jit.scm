@@ -12,6 +12,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm rgb)
+  #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
             substitute-variables variables get-args input output labels next-indices live-analysis
@@ -25,6 +26,7 @@
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
+            <fragment<complex<>>> <meta<fragment<complex<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
             parameter code value get-op get-name to-type type assemble jit))
@@ -153,6 +155,7 @@
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
 (define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
+(define-method (var (self <meta<complex<>>>)) (let [(t (base self))] (list (var t) (var t))))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -387,6 +390,7 @@
           #:code (list (MOV result (ptr (typecode p) (get p))))
           #:value result)))
 (pointer <rgb<>>)
+(pointer <complex<>>)
 (define-method (parameter (p <pointer<rgb<>>>))
   (let [(result (var (typecode p)))
         (size   (size-of (base (typecode p))))]
@@ -420,6 +424,7 @@
                   #:value result)))))
 (define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
 (fragment <rgb<>>)
+(fragment <complex<>>)
 (define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
   (let* [(tmp    (strip-code frag))
          (r      (to-type (base target) (red   tmp)))
@@ -570,12 +575,17 @@
 (define-method (blue  (self <fragment<element>>)) (component self blue ))
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
   (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
-(define-method (store (p <pointer<rgb<>>>) (a <fragment<rgb<>>>))
+(define-method (store (p <pointer<>>) (a <fragment<rgb<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
             (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (value a)))
                   (MOV (ptr (base (typecode p)) (get p)       size) (green (value a)))
                   (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (value a)))))))
+(define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
+  (let [(size (size-of (base (typecode p))))]
+    (append (code a)
+            (list (MOV (ptr (base (typecode p)) (get p)           ) (car  (value a)))
+                  (MOV (ptr (base (typecode p)) (get p)       size) (cadr (value a)))))))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
@@ -611,6 +621,7 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define-method (decompose (self <element>)) (list (get self)))
 (define-method (decompose (self <rgb<>>)) (let [(v (get self))] (list (red v) (green v) (blue v))))
+(define-method (decompose (self <complex<>>)) (let [(v (get self))] v)); TODO: use internalcomplex
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (assemble retval vars frag)

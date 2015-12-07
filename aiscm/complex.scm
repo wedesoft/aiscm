@@ -3,6 +3,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:export (complex
@@ -30,4 +31,5 @@
 (define-method (match (c <complex>) . args)
   (let [(decompose-complex (lambda (x) (if (is-a? x <complex>) (content x) (list x))))]
     (complex (apply match (concatenate (map decompose-complex (cons c args)))))))
+(define-method (build (self <meta<complex<>>>) value) (fetch value))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
