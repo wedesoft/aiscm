@@ -9,7 +9,7 @@
   #:use-module (system foreign)
   #:export (toplevel-define! super gc-malloc-pointerless destroy attach index all-but-last
             drop-up-to take-up-to flatten cycle uncycle integral alist-invert
-            assq-set assq-remove product sort-by argmin argmax gather
+            assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if)
@@ -77,6 +77,7 @@
 (define (assq-remove alist key) (filter (compose not (cut eq? key <>) car) alist))
 (define (product lst1 lst2) (concatenate (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
 (define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
+(define (sort-by-pred lst pred) (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
 (define (argop op fun lst)
   (let* [(vals  (map fun lst))
          (opval (apply op vals))]
@@ -156,3 +157,4 @@
   (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
   (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
 (define (map-if pred fun1 fun2 lst) (map (lambda (x) ((if (pred x) fun1 fun2) x)) lst))
+(define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))

@@ -40,6 +40,9 @@
     (make self #:value value)))
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
   (floating-point (if (or (double? a) (double? b)) double-precision single-precision)))
-(define-method (match (i <real>) . args) (if (every real? args) <double> (next-method)))
+(define-method (match (i <real>) . args)
+  (if (every real? args)
+      <double>
+      (apply match (sort-by-pred (cons i args) real?))))
 (define-method (build (self <meta<float<>>>) value) (make self #:value value))
 (define-method (content (self <real>)) (list self))

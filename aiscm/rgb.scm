@@ -67,9 +67,9 @@
 (define-method (match (c <rgb>) . args)
   (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
     (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
-(define-method (match (c <number>) . args)
-  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
-    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
+;(define-method (match (c <number>) . args)
+;  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
+;    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))

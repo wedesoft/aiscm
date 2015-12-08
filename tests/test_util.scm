@@ -3,7 +3,7 @@
              (rnrs bytevectors)
              (aiscm util)
              (guile-tap))
-(planned-tests 56)
+(planned-tests 57)
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
@@ -79,6 +79,8 @@
     "'product' should create a product set of two lists")
 (ok (equal? '((a . 1) (b . 2) (c . 3)) (sort-by '((c . 3) (a . 1) (b . 2)) cdr))
     "'sort-by' should sort arguments by the values of the supplied function")
+(ok (equal? '(1 3 5 0 2 4) (sort-by-pred (iota 6) even?))
+    "'sort-by-pred' sorts by boolean result of predicate")
 (ok (equal? '(a . 1) (argmin cdr '((c . 3) (a . 1) (b . 2))))
     "Get element with minimum of argument")
 (ok (equal? '(c . 3) (argmax cdr '((c . 3) (a . 1) (b . 2))))

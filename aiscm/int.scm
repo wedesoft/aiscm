@@ -84,7 +84,7 @@
                 ((< nlower (ash 1 31))  <int>)
                 ((< nlower (ash 1 63)) <long>)
                 (else (next-method))))))
-    (next-method)))
+    (apply match (sort-by-pred (cons i args) integer?))))
 (define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
 (define-method (~ (self <integer>)) (lognot self))
