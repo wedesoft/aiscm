@@ -2,7 +2,6 @@
 
 * matching for booleans only
 * match for rgb: use partition?
-* type matching for scalar and RGB value (stack overflow), (match 1 2 2+i) -> (match 2+i 1 2)
 * complex numbers, conj, abs, arg
 * red -> red-part, ...
 * record arrays, extendable type matching, map?, inject?

@@ -155,7 +155,7 @@
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
 (define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
-(define-method (var (self <meta<complex<>>>)) (let [(t (base self))] (list (var t) (var t))))
+(define-method (var (self <meta<complex<>>>)) (let [(t (base self))] (make <internalcomplex> #:real (var t) #:imag (var t))))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -584,8 +584,8 @@
 (define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
   (let [(size (size-of (base (typecode p))))]
     (append (code a)
-            (list (MOV (ptr (base (typecode p)) (get p)           ) (car  (value a)))
-                  (MOV (ptr (base (typecode p)) (get p)       size) (cadr (value a)))))))
+            (list (MOV (ptr (base (typecode p)) (get p)     ) (real (value a)))
+                  (MOV (ptr (base (typecode p)) (get p) size) (imag (value a)))))))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
@@ -621,7 +621,7 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define-method (decompose (self <element>)) (list (get self)))
 (define-method (decompose (self <rgb<>>)) (let [(v (get self))] (list (red v) (green v) (blue v))))
-(define-method (decompose (self <complex<>>)) (let [(v (get self))] v)); TODO: use internalcomplex
+(define-method (decompose (self <complex<>>)) (let [(v (get self))] (list (real v) (imag v))))
 (define-method (decompose (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (assemble retval vars frag)
