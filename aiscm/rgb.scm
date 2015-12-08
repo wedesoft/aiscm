@@ -100,12 +100,9 @@
 (binary-rgb-op max)
 (binary-rgb-op min)
 (define-syntax-rule (binary-rgb-cmp op f)
-  (begin
-    (define-method (op (a <rgb>) b)
-      (f (op (red a) b) (f (op (green a) b) (op (blue a) b))))
-    (define-method (op a (b <rgb>))
-      (f (op a (red b)) (f (op a (green b)) (op a (blue b)))))
-    (define-method (op (a <rgb>) (b <rgb>))
-      (f (op (red a) (red b)) (f (op (green a) (green b)) (op (blue a) (blue b)))))))
+  (let [(cmp (lambda (a b) (f (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b)))))]
+    (define-method (op (a <rgb>) b) (cmp a b))
+    (define-method (op a (b <rgb>)) (cmp a b))
+    (define-method (op (a <rgb>) (b <rgb>)) (cmp a b))))
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
