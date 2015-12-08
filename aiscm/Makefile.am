@@ -1,7 +1,7 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_DATA = mem.scm element.scm bool.scm int.scm float.scm rgb.scm pointer.scm sequence.scm \
+site_DATA = mem.scm element.scm bool.scm int.scm pointer.scm rgb.scm complex.scm float.scm sequence.scm \
 	asm.scm jit.scm op.scm compile.scm util.scm image.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
