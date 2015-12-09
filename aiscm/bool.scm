@@ -17,7 +17,7 @@
 (define-method (coerce (a <meta<bool>>) (b <meta<bool>>)) <bool>)
 (define-method (write (self <bool>) port)
   (format port "#<<bool> ~a>" (get self)))
-(define-method (match (b <boolean>) . args) <bool>)
+(define-method (match (b <boolean>) . args) (if (every boolean? args) <bool> (next-method)))
 (define-method (build (self <meta<bool>>) value) (make self #:value (not (zero? value))))
 (define-method (content (self <boolean>)) (list (if self 1 0)))
 (define-method (&& a) a)

@@ -1,6 +1,5 @@
 ## Ready
 
-* matching for booleans only
 * match for rgb: use partition?
 * complex numbers, conj, abs, arg
 * red -> red-part, ...
