@@ -6,12 +6,13 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
-  #:export (complex real imag
+  #:export (complex
             <internalcomplex>
-            <complex<>> <meta<complex<>>>))
+            <complex<>> <meta<complex<>>>)
+  #:re-export (real-part imag-part))
 (define-class <internalcomplex> ()
-  (real #:init-keyword #:real #:getter real)
-  (imag #:init-keyword #:imag #:getter imag))
+  (real #:init-keyword #:real-part #:getter real-part)
+  (imag #:init-keyword #:imag-part #:getter imag-part))
 (define-class* <complex<>> <element> <meta<complex<>>> <meta<element>>)
 (define-method (complex (t <meta<element>>))
   (template-class (complex t) <complex<>>
