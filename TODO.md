@@ -1,8 +1,11 @@
 ## Ready
 
+* (- (rgb frag frag frag)) -> (frag rgb)???
+* complex -> make-rectangular?
 * match for rgb: use partition?
 * complex numbers, conj, abs, arg
 * red -> red-part, ...
+* imag-part for real numbers
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing

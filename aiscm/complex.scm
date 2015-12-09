@@ -38,3 +38,5 @@
     (complex (apply match (concatenate (map decompose-complex (cons c args)))))))
 (define-method (build (self <meta<complex<>>>) value) (fetch value))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
+(define-method (+ (a <internalcomplex>) (b <internalcomplex>))
+  (complex (+ (real-part a) (real-part b)) (+ (imag-part a) (imag-part b))))

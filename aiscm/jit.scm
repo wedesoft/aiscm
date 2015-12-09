@@ -447,6 +447,15 @@
            #:name rgb
            #:code (append (code r~) (code g~) (code b~))
            #:value (make <rgb> #:red (value r~) #:green (value g~) #:blue (value b~)))))
+(define-method (complex (real <fragment<element>>) (imag <fragment<element>>))
+  (let* [(target (reduce coerce #f (map type (list real imag))))
+         (real~  (to-type (typecode target) real))
+         (imag~  (to-type (typecode target) imag))]
+     (make (fragment (complex target))
+           #:args (list real imag)
+           #:name complex
+           #:code (append (code real~) (code imag~))
+           #:value (make <internalcomplex> #:real-part (value real~) #:imag-part (value imag~)))))
 (fragment <pointer<>>)
 (fragment <sequence<>>)
 (define (mutable-unary op result a)
@@ -516,6 +525,8 @@
 (define-method (peel (self <fragment<element>>)) self)
 (define-method (peel (self <fragment<rgb<>>>))
   (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
+(define-method (peel (self <fragment<complex<>>>)); TODO: do we need this
+  (make <internalcomplex> #:real-part (real-part self) #:imag-part (imag-part self)))
 (define (do-unary-rgb-op op self)
   (let [(result (op (peel (strip-code self))))]
   (make (fragment (type self))
@@ -558,6 +569,15 @@
 (binary-rgb-op !=   (const <bool>))
 (binary-rgb-op max  coerce)
 (binary-rgb-op min  coerce)
+
+(define-method (+ (a <fragment<complex<>>>) (b <fragment<complex<>>>))
+  (let [(target (coerce (type a) (type b)))
+        (result (+ (peel (strip-code a)) (peel (strip-code b))))]
+    (make (fragment target)
+          #:args (list a b)
+          #:name +
+          #:code (append (code a) (code b) (code result))
+          #:value (value result))))
 
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))
