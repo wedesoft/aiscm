@@ -23,6 +23,7 @@
             filter-blocks blocked-intervals
             fragment type var decompose var skeleton mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
+            <pointer<complex<>>> <meta<pointer<complex<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
@@ -398,9 +399,18 @@
     (make (fragment (typecode p))
           #:args (list p)
           #:name parameter
-          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)           ))
+          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)          ))
                        (MOV (green result) (ptr (base (typecode p)) (get p)      size))
                        (MOV (blue  result) (ptr (base (typecode p)) (get p) (* 2 size))))
+          #:value result)))
+(define-method (parameter (p <pointer<complex<>>>))
+  (let [(result (var (typecode p)))
+        (size   (size-of (base (typecode p))))]
+    (make (fragment (typecode p))
+          #:args (list p)
+          #:name parameter
+          #:code (list (MOV (real-part result) (ptr (base (typecode p)) (get p)     ))
+                       (MOV (imag-part result) (ptr (base (typecode p)) (get p) size)))
           #:value result)))
 (define-method (parameter (self <sequence<>>))
   (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
