@@ -447,6 +447,16 @@
           #:name to-type
           #:code (append (code frag) (code result))
           #:value (value result))))
+(define-method (to-type (target <meta<complex<>>>) (frag <fragment<element>>))
+  (let* [(tmp    (strip-code frag))
+         (re     (to-type (base target) (real-part tmp)))
+         (im     (to-type (base target) (imag-part tmp)))
+         (result (complex re im))]
+    (make (fragment (to-type target (type frag)))
+          #:args (list target frag)
+          #:name to-type
+          #:code (append (code frag) (code result))
+          #:value (value result))))
 (define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
   (let* [(target (reduce coerce #f (map type (list r g b))))
          (r~     (to-type (typecode target) r))
