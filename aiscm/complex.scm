@@ -19,11 +19,10 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
+(define-method (real-part (self <complex<>>)) (make (base (class-of self)) #:value (real-part (get self))))
+(define-method (imag-part (self <complex<>>)) (make (base (class-of self)) #:value (imag-part (get self))))
 (define-method (pack (self <complex<>>))
-  (let* [(vals       (content (get self)))
-         (components (map (cut make (base (class-of self)) #:value <>) vals))
-         (size       (size-of (base (class-of self))))]
-    (bytevector-concat (map pack components))))
+  (bytevector-concat (list (pack (real-part self)) (pack (imag-part self)))))
 (define-method (unpack (self <meta<complex<>>>) (packed <bytevector>))
   (let* [(size    (size-of (base self)))
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 2))))]

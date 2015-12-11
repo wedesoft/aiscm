@@ -30,7 +30,6 @@
 (define-method (rgb r g b) (make <rgb> #:red r #:green g #:blue b))
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
-(define-method (equal? (a <rgb>) (b <rgb>)) (equal? (content a) (content b)))
 (define-method (red self) self)
 (define-method (green self) self)
 (define-method (blue self) self)
@@ -40,14 +39,14 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
+(define-method (red   (self <rgb<>>)) (make (base (class-of self)) #:value (red   (get self))))
+(define-method (green (self <rgb<>>)) (make (base (class-of self)) #:value (green (get self))))
+(define-method (blue  (self <rgb<>>)) (make (base (class-of self)) #:value (blue  (get self))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
 (define-method (pack (self <rgb<>>))
-  (let* [(vals     (content (get self)))
-         (channels (map (cut make (base (class-of self)) #:value <>) vals))
-         (size     (size-of (base (class-of self))))]
-    (bytevector-concat (map pack channels))))
+  (bytevector-concat (list (pack (red self)) (pack (green self)) (pack (blue self)))))
 (define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
   (let* [(size    (size-of (base self)))
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 3))))]
@@ -67,9 +66,6 @@
 (define-method (match (c <rgb>) . args)
   (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
     (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
-;(define-method (match (c <number>) . args)
-;  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
-;    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))
@@ -107,5 +103,6 @@
       (f (op a (red b)) (f (op a (green b)) (op a (blue b)))))
     (define-method (op (a <rgb>) (b <rgb>))
       (f (op (red a) (red b)) (f (op (green a) (green b)) (op (blue a) (blue b)))))))
+(binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
