@@ -28,6 +28,7 @@
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 2))))]
     (make self #:value (apply make-rectangular (map (lambda (vec) (get (unpack (base self) vec))) vectors)))))
 (define-method (content (self <complex>)) (map inexact->exact (list (real-part self) (imag-part self))))
+(define-method (content (self <internalcomplex>)) (list (real-part self) (imag-part self)))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<element>>)) (complex (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<complex<>>>)) (complex (coerce a (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))

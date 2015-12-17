@@ -28,5 +28,6 @@
 (define-generic match)
 (define-generic get-size)
 (define-generic build)
-(define-generic content)
+(define-method (content self) (list self))
+(define-method (content (self <element>)) (content (get self)))
 (define-method (base self) self)

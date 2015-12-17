@@ -1,6 +1,6 @@
 ## Ready
 
-* content <-> decompose
+* (content <type> value), simplify pack again
 * (- (rgb frag frag frag)) -> (frag rgb)???
 * complex -> make-rectangular?
 * match for rgb: use partition?

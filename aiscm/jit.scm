@@ -21,7 +21,7 @@
             virtual-variables flatten-code relabel
             idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals
-            fragment type var decompose var skeleton mov-part
+            fragment type var var skeleton mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             <fragment<top>> <meta<fragment<top>>>
@@ -662,14 +662,9 @@
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
 (define-method (returnable (self <meta<int<>>>)) self)
-(define-method (decompose (self <element>)) (list (get self)))
-(define-method (decompose (self <rgb<>>)) (let [(v (get self))] (list (red v) (green v) (blue v))))
-(define-method (decompose (self <complex<>>)) (let [(v (get self))] (list (real-part v) (imag-part v))))
-(define-method (decompose (self <sequence<>>))
-  (append (map last (list (shape self) (strides self))) (decompose (project self))))
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (concatenate (map decompose (if (returnable (class-of retval)) vars (cons retval vars))))
+                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
                      (append (store retval frag) (list (RET)))))
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
@@ -681,7 +676,7 @@
          (args        (if return-type vars (cons retval vars)))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (concatenate (map decompose args)))
+                           (map typecode (concatenate (map content args)))
                            (assemble retval vars frag)))
          (fun         (lambda header (apply code (concatenate (map content header)))))]
     (if return-type
