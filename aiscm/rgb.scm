@@ -64,8 +64,7 @@
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
 (define-method (match (c <rgb>) . args)
-  (let [(decompose-rgb (lambda (x) (if (is-a? x <rgb>) (content x) (list x))))]
-    (rgb (apply match (concatenate (map decompose-rgb (cons c args)))))))
+  (rgb (apply match (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
 (define-method (typecode (self <rgb>))

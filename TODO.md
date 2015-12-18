@@ -1,9 +1,6 @@
 ## Ready
 
-* (content <type> value), simplify pack again
 * (- (rgb frag frag frag)) -> (frag rgb)???
-* complex -> make-rectangular?
-* match for rgb: use partition?
 * complex numbers, conj, abs, arg
 * red -> red-part, ...
 * imag-part for real numbers

@@ -34,8 +34,7 @@
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
 (define-method (match (c <complex>) . args)
-  (let [(decompose-complex (lambda (x) (if (is-a? x <complex>) (content x) (list x))))]
-    (complex (apply match (concatenate (map decompose-complex (cons c args)))))))
+  (complex (apply match (concatenate (map-if (cut is-a? <> <complex>) content list (cons c args))))))
 (define-method (build (self <meta<complex<>>>) value) (fetch value))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
 (define-method (+ (a <internalcomplex>) (b <internalcomplex>))
