@@ -1,7 +1,7 @@
 ## Ready
 
-* (- (rgb frag frag frag)) -> (frag rgb)???
 * complex numbers, conj, abs, arg
+* (- (rgb frag frag frag)) -> (frag rgb)???
 * red -> red-part, ...
 * imag-part for real numbers
 * record arrays, extendable type matching, map?, inject?
