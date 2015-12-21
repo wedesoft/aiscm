@@ -597,6 +597,7 @@
 (binary-struct-op <fragment<complex<>>> + coerce)
 (binary-struct-op <fragment<complex<>>> - coerce)
 (binary-struct-op <fragment<complex<>>> * coerce)
+(binary-struct-op <fragment<complex<>>> / coerce)
 
 (define-method (project self) self)
 (define-method (project (self <fragment<sequence<>>>))

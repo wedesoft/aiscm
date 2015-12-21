@@ -58,3 +58,7 @@
   (complex (* (real-part a) b) (* (imag-part a) b)))
 (define-method (* a (b <internalcomplex>))
   (complex (* a (real-part b)) (* a (imag-part b))))
+(define-method (/ (a <internalcomplex>) (b <internalcomplex>))
+  (let [(denom (+ (* (real-part b) (real-part b)) (* (imag-part b) (imag-part b))))]
+    (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
+             (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
