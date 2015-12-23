@@ -546,7 +546,7 @@
 (define-method (peel (self <fragment<element>>)) self)
 (define-method (peel (self <fragment<rgb<>>>))
   (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
-(define-method (peel (self <fragment<complex<>>>)); TODO: do we need this
+(define-method (peel (self <fragment<complex<>>>))
   (make <internalcomplex> #:real-part (real-part self) #:imag-part (imag-part self)))
 
 (define (do-unary-struct-op op self)
@@ -560,13 +560,13 @@
   (define-method (op (a struct))
     (do-unary-struct-op op a)))
 (define (do-binary-struct-op op a b coercion)
-  (let [(target (coercion (type a) (type b)))
-        (result (op (peel (strip-code a)) (peel (strip-code b))))]
+  (let* [(target (coercion (type a) (type b)))
+         (result ((protect target op) (peel (strip-code a)) (peel (strip-code b))))]
     (make (fragment target)
           #:args (list a b)
           #:name op
-          #:code (append (code a) (code b) (code result))
-          #:value (value result))))
+          #:code (append (code a) (code b) ((protect target code) result))
+          #:value ((protect target value) result))))
 (define-syntax-rule (binary-struct-op struct op coercion)
   (begin
     (define-method (op (a struct) (b struct))
@@ -604,13 +604,12 @@
   (apply (get-name self) (map project (get-args self))))
 (define-method (store (a <element>) (b <fragment<element>>))
   (append (code b) (list (MOV (get a) (value b)))))
-(define-method (protect (self <fragment<sequence<>>>) fun) list)
 (define (component self name)
   (make (fragment (base (type self)))
           #:args (list self)
           #:name name
           #:code (code self)
-          #:value ((protect self name) (value self))))
+          #:value ((protect (type self) name) (value self))))
 (define-method (red   (self <fragment<element>>)) (component self red  ))
 (define-method (green (self <fragment<element>>)) (component self green))
 (define-method (blue  (self <fragment<element>>)) (component self blue ))

@@ -12,6 +12,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm rgb)
+  #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
   #:export (fill duplicate !)
   #:re-export (+ - * / % = < <= > >= min max))
@@ -31,7 +32,7 @@
     (store retval value)
     retval))
 (define-syntax-rule (define-unary-op name op)
-  (define-method (name  (a <element>))
+  (define-method (name (a <element>))
     (let [(f (jit ctx (list (class-of a)) op))]
       (add-method! name
                    (make <method>
@@ -57,10 +58,11 @@
                            #:specializers (map class-of (list a b))
                            #:procedure (lambda (a b) (f (get a) (get b))))))
       (name a b))
-    (capture-binary-argument name <boolean>); TODO: better way to do this?
+    (capture-binary-argument name <boolean>)
     (capture-binary-argument name <integer>)
     (capture-binary-argument name <real>)
-    (capture-binary-argument name <rgb>)))
+    (capture-binary-argument name <rgb>)
+    (capture-binary-argument name <complex>)))
 (define-binary-op +   +)
 (define-binary-op -   -)
 (define-binary-op *   *)
