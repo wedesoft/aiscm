@@ -491,6 +491,7 @@
             #:name name
             #:code (mode op result a)
             #:value result))))
+(define-method (+ (self <fragment<element>>)) self)
 (unary-op - mutable-unary NEG identity)
 (unary-op ~ mutable-unary NOT identity)
 (unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))

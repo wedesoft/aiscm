@@ -1,10 +1,8 @@
 ## Ready
 
 * real-part of integer
-* complex arrays
 * complex numbers, conj, abs, arg
 * (- (rgb frag frag frag)) -> (frag rgb)???
-* unary + for int, rgb, and complex
 * red -> red-part, ...
 * imag-part for real numbers
 * record arrays, extendable type matching, map?, inject?

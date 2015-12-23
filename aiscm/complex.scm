@@ -44,9 +44,9 @@
 (define-syntax-rule (binary-complex-op op)
   (begin
     (define-method (op (a <internalcomplex>) b)
-      (complex (op (real-part a) b) (imag-part a)))
+      (complex (op (real-part a) b) (op (imag-part a))))
     (define-method (op a (b <internalcomplex>))
-      (complex (op a (real-part b)) (imag-part b)))
+      (complex (op a (real-part b)) (op (imag-part b))))
     (define-method (op (a <internalcomplex>) (b <internalcomplex>))
       (complex (op (real-part a) (real-part b)) (op (imag-part a) (imag-part b))))))
 (binary-complex-op +)
