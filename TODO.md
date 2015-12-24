@@ -1,10 +1,11 @@
 ## Ready
 
-* real-part of integer
+* (real-part (seq 1 2 3))
+* base class for composite numbers
+* imag-part for real numbers
 * complex numbers, conj, abs, arg
 * (- (rgb frag frag frag)) -> (frag rgb)???
 * red -> red-part, ...
-* imag-part for real numbers
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing
