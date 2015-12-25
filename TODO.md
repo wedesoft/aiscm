@@ -1,5 +1,6 @@
 ## Ready
 
+* (red (seq 1 2 3))
 * (real-part (seq 1 2 3))
 * base class for composite numbers
 * imag-part for real numbers
