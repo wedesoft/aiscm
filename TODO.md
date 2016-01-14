@@ -1,6 +1,5 @@
 ## Ready
 
-* base class for composite numbers
 * complex numbers, conj, abs, arg
 * (- (rgb frag frag frag)) -> (frag rgb)???
 * red -> red-part, ...
