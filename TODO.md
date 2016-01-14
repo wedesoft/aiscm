@@ -1,7 +1,5 @@
 ## Ready
 
-* (real-part (seq 1 2 3))
-* imag-part for real numbers
 * base class for composite numbers
 * complex numbers, conj, abs, arg
 * (- (rgb frag frag frag)) -> (frag rgb)???
