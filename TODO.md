@@ -1,7 +1,8 @@
 ## Ready
 
-* complex is binary function, rgb is ternary function
-* complex numbers, conj, abs, arg
+* (conj 2+3i) (conj 2)
+* (complex 2 3), (complex (seq 1 2 3) 4)
+* (rgb (seq 1 2) 3 (seq 5 6))
 * (- (rgb frag frag frag)) -> (frag rgb)???
 * red -> red-part, ...
 * record arrays, extendable type matching, map?, inject?
@@ -25,6 +26,7 @@
     (tensor [i j] (* (s i) (s j)))
 * update live intervals instead of recomputing
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* complex abs (magnitude), complex arg (and real)
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * weird error when including sequence but not pointer

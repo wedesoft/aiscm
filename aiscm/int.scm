@@ -7,11 +7,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm float)
   #:use-module (aiscm util)
-  #:export (signed
-            unsigned
-            bits
-            signed?
-            integer
+  #:export (signed unsigned bits signed? integer
             <int<>> <meta<int<>>>
             <ubyte> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <int<8,signed>>    <meta<int<8,signed>>>
@@ -22,7 +18,7 @@
             <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
             <long>  <int<64,signed>>   <meta<int<64,signed>>>
             <native-int>
-            ~ & | ^ << >> % =0 !=0))
+            ~ & | ^ << >> % =0 !=0 conj))
 (define signed 'signed)
 (define unsigned 'unsigned)
 (define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
@@ -103,3 +99,4 @@
 (define-method (>> (a <integer>) (b <integer>)) (ash a (- b)))
 (define-method (% (a <integer>) (b <integer>)) (modulo a b))
 (define-method (!= (a <integer>) (b <integer>)) (not (= a b)))
+(define-method (conj (a <integer>)) a)

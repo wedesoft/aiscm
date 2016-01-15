@@ -493,6 +493,7 @@
             #:code (mode op result a)
             #:value result))))
 (define-method (+ (self <fragment<element>>)) self)
+(define-method (conj (self <fragment<element>>)) self)
 (unary-op - mutable-unary NEG identity)
 (unary-op ~ mutable-unary NOT identity)
 (unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
@@ -596,6 +597,7 @@
 (binary-struct-op <fragment<rgb<>>> min coerce)
 
 (unary-struct-op <fragment<complex<>>> -)
+(unary-struct-op <fragment<complex<>>> conj)
 (binary-struct-op <fragment<complex<>>> + coerce)
 (binary-struct-op <fragment<complex<>>> - coerce)
 (binary-struct-op <fragment<complex<>>> * coerce)

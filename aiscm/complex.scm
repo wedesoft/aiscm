@@ -3,6 +3,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm util)
@@ -10,6 +11,7 @@
             <internalcomplex>
             <complex<>> <meta<complex<>>>)
   #:re-export (real-part imag-part))
+(define-method (conj (self <complex>)) (make-rectangular (real-part self) (- (imag-part self))))
 (define-class <internalcomplex> ()
   (real #:init-keyword #:real-part #:getter real-part)
   (imag #:init-keyword #:imag-part #:getter imag-part))
@@ -49,6 +51,7 @@
       (complex (op a (real-part b)) (op (imag-part b))))
     (define-method (op (a <internalcomplex>) (b <internalcomplex>))
       (complex (op (real-part a) (real-part b)) (op (imag-part a) (imag-part b))))))
+(define-method (conj (a <internalcomplex>)) (complex (real-part a) (- (imag-part a))))
 (binary-complex-op +)
 (binary-complex-op -)
 (define-method (* (a <internalcomplex>) b)
