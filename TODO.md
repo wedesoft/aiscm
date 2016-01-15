@@ -1,5 +1,6 @@
 ## Ready
 
+* complex is binary function, rgb is ternary function
 * complex numbers, conj, abs, arg
 * (- (rgb frag frag frag)) -> (frag rgb)???
 * red -> red-part, ...
@@ -33,7 +34,6 @@
 * <-> Guile 6.7.5 Arrays
 * coalesce variables
 * floating point exception (SIGFPE)
-* minor, major (cmovge)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
