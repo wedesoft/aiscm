@@ -44,6 +44,7 @@
 (define-unary-op ~ ~)
 (define-unary-op =0 =0)
 (define-unary-op !=0 !=0)
+(define-unary-op conj conj)
 (define ! =0)
 (define-syntax-rule (capture-binary-argument name type)
   (begin
