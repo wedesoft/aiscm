@@ -26,6 +26,7 @@
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             <fragment<top>> <meta<fragment<top>>>
             <fragment<element>> <meta<fragment<element>>>
+            <fragment<int<>>> <meta<fragment<int<>>>>
             <fragment<rgb<>>> <meta<fragment<rgb<>>>>
             <fragment<complex<>>> <meta<fragment<complex<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
@@ -494,7 +495,12 @@
             #:value result))))
 (define-method (+ (self <fragment<element>>)) self)
 (define-method (conj (self <fragment<int<>>>)) self)
-;(define-method (conj (self <fragment<sequence<>>>)) self)
+(define-method (conj (self <fragment<sequence<>>>))
+  (make (class-of self)
+        #:args (list self)
+        #:name conj
+        #:code #f
+        #:value #f))
 (unary-op - mutable-unary NEG identity)
 (unary-op ~ mutable-unary NOT identity)
 (unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
@@ -561,8 +567,7 @@
           #:code (append (code self) (code result))
           #:value (value result))))
 (define-syntax-rule (unary-struct-op struct op)
-  (define-method (op (a struct))
-    (do-unary-struct-op op a)))
+  (define-method (op (a struct)) (do-unary-struct-op op a)))
 (define (do-binary-struct-op op a b coercion)
   (let* [(target (coercion (type a) (type b)))
          (result ((protect target op) (peel (strip-code a)) (peel (strip-code b))))]

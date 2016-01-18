@@ -1,6 +1,6 @@
 ## Ready
 
-* (conj 2+3i) (conj 2)
+* separate function for defining operation for array?
 * (complex 2 3), (complex (seq 1 2 3) 4)
 * (rgb (seq 1 2) 3 (seq 5 6))
 * (- (rgb frag frag frag)) -> (frag rgb)???

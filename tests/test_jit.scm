@@ -712,5 +712,5 @@
     "get real part of real number")
 (ok (eqv? 2-3i ((jit ctx (list (complex <int>)) conj) 2+3i))
     "complex conjugate")
-(skip (eqv? 2 ((jit ctx (list <int>) conj) 2))
+(ok (eqv? 2 ((jit ctx (list <int>) conj) 2))
     "conjugate of real number")
