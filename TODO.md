@@ -1,10 +1,12 @@
 ## Ready
 
+* imagemagick bindings
 * separate function for defining operation for array?
+* imaginary part of variable
+* pulse audio (see python bindings?)
 * (complex 2 3), (complex (seq 1 2 3) 4)
 * (rgb (seq 1 2) 3 (seq 5 6))
 * (- (rgb frag frag frag)) -> (frag rgb)???
-* red -> red-part, ...
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing
@@ -13,7 +15,6 @@
 * duplicate image
 * types composed of Scheme objects
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
-* pulse audio (see python bindings?)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * use thumbnail images to illustrate examples
 * parameter passing for sequences, map, tensor operations, replace fill and other?
