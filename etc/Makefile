@@ -2,8 +2,16 @@
 
 CFLAGS = -O
 
-all: t1.s t1.txt
+all: assembler magicktest
+
+assembler: t1.s t1.txt
 	cat t1.txt
+
+magicktest: readimg
+	./readimg
+
+readimg: readimg.c
+	gcc $(shell pkg-config --cflags ImageMagick) -o $@ $< $(shell pkg-config --libs ImageMagick)
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
