@@ -11,6 +11,6 @@
 (define (read-image file-name)
   (let [(picture (magick-read-image file-name))]
     (make <image>
-          #:format 'BGRA
-          #:shape (car picture)
-          #:mem (make <mem> #:base (cadr picture) #:size (caddr picture)))))
+          #:format (car picture)
+          #:shape (cadr picture)
+          #:mem (make <mem> #:base (caddr picture) #:size (cadddr picture)))))

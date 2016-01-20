@@ -1,6 +1,8 @@
 ## Ready
 
-* imagemagick bindings
+* load greyscale images using ImageMagick
+* save images using ImageMagick
+* load/save image sequences using ImageMagick
 * separate function for defining operation for array?
 * imaginary part of variable
 * pulse audio (see python bindings?)
