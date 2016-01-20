@@ -19,7 +19,7 @@ wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep
 The dependencies can be installed like this
 
 ```Shell
-sudo apt-get install autoconf automake libtool colorgcc pandoc libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libmjpegtools-dev guile-2.0-dev libreadline-dev
+sudo aptitude install autoconf automake libtool colorgcc pandoc libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libmjpegtools-dev guile-2.0-dev libreadline-dev
 ```
 
 ## Installation
