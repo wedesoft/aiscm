@@ -14,17 +14,22 @@ SCM magick_read_image(SCM scm_file_name)
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);
     Image *image = RemoveFirstImageFromList(&images);
-    const char *format = "BGRA";
+    char grey = image->colorspace == GRAYColorspace;
+    const char *map = grey ? "I" : "BGRA";
+    const char *format = grey ? "GRAY" : "BGRA";
     int width = image->columns;
     int height = image->rows;
-    int size = width * height * 4;
+    int bytes_per_pixel = grey ? 1 : 4;
+    int size = width * height * bytes_per_pixel;
     void *buf = scm_gc_malloc_pointerless(size, "aiscm magick frame");
-    ExportImagePixels(image, 0, 0, width, height, format, CharPixel, buf, exception_info);
-    if (exception_info->severity < ErrorException)
+    ExportImagePixels(image, 0, 0, width, height, map, CharPixel, buf, exception_info);
+    if (exception_info->severity < ErrorException) {
+      CatchException(exception_info);
       retval = scm_list_4(scm_from_locale_symbol(format),
                           scm_list_2(scm_from_int(width), scm_from_int(height)),
                           scm_from_pointer(buf, NULL),
                           scm_from_int(size));
+    };
     DestroyImage(image);
   };
   SCM scm_reason = exception_info->severity < ErrorException ?
