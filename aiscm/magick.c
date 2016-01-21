@@ -41,8 +41,30 @@ SCM magick_read_image(SCM scm_file_name)
   return retval;
 }
 
+SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_name)
+{
+  int width = scm_to_int(scm_car(scm_shape));
+  int height = scm_to_int(scm_cadr(scm_shape));
+  void *buf = scm_to_pointer(scm_buf);
+  ExceptionInfo *exception_info = AcquireExceptionInfo();
+  ImageInfo *image_info = AcquireImageInfo();
+  GetImageInfo(image_info);
+  Image *image = ConstituteImage(width, height, "I", CharPixel, buf, exception_info);
+  CatchException(exception_info);
+  Image *images = NewImageList();
+  AppendImageToList(&images, image);
+  const char *file_name = scm_to_locale_string(scm_file_name);
+  WriteImages(image_info, images, file_name, exception_info);
+  CatchException(exception_info);
+  DestroyImageList(images);
+  DestroyImageInfo(image_info);
+  DestroyExceptionInfo(exception_info);
+  return SCM_UNDEFINED;
+}
+
 void init_magick(void)
 {
   MagickCoreGenesis("libguile-magick", MagickTrue);
   scm_c_define_gsubr("magick-read-image", 1, 0, 0, magick_read_image);
+  scm_c_define_gsubr("magick-write-image", 4, 0, 0, magick_write_image);
 }

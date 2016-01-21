@@ -6,7 +6,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
   #:use-module (aiscm image)
-  #:export (read-image))
+  #:export (read-image write-image))
 (load-extension "libguile-magick" "init_magick")
 (define (read-image file-name)
   (let [(picture (magick-read-image file-name))]
@@ -14,3 +14,5 @@
           #:format (car picture)
           #:shape (cadr picture)
           #:mem (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
+(define (write-image img file-name)
+  (magick-write-image 'GRAY (shape img) (get-memory (get-mem img)) file-name))
