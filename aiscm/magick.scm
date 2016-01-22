@@ -15,4 +15,5 @@
           #:shape (cadr picture)
           #:mem (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
 (define (write-image img file-name)
-  (magick-write-image 'GRAY (shape img) (get-memory (get-mem img)) file-name))
+  (magick-write-image 'GRAY (shape img) (get-memory (get-mem img)) file-name)
+  img)

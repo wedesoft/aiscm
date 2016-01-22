@@ -1,6 +1,6 @@
 ## Ready
 
-* save images using ImageMagick (content, pitches, colour, error handling)
+* save images using ImageMagick (strides/pitches, colour)
 * load/save image sequences using ImageMagick
 * separate function for defining operation for array?
 * imaginary part of variable

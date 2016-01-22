@@ -50,15 +50,22 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
   Image *image = ConstituteImage(width, height, "I", CharPixel, buf, exception_info);
-  CatchException(exception_info);
-  Image *images = NewImageList();
-  AppendImageToList(&images, image);
-  const char *file_name = scm_to_locale_string(scm_file_name);
-  WriteImages(image_info, images, file_name, exception_info);
-  CatchException(exception_info);
-  DestroyImageList(images);
+  if (exception_info->severity < ErrorException) {
+    CatchException(exception_info);
+    Image *images = NewImageList();
+    AppendImageToList(&images, image);
+    const char *file_name = scm_to_locale_string(scm_file_name);
+    WriteImages(image_info, images, file_name, exception_info);
+    if (exception_info->severity < ErrorException)
+      CatchException(exception_info);
+    DestroyImageList(images);
+  };
+  SCM scm_reason = exception_info->severity < ErrorException ?
+    SCM_UNDEFINED : scm_from_locale_string(exception_info->reason);
   DestroyImageInfo(image_info);
   DestroyExceptionInfo(exception_info);
+  if (scm_reason != SCM_UNDEFINED)
+    scm_misc_error("magick_write_image", "~a", scm_list_1(scm_reason));
   return SCM_UNDEFINED;
 }
 
