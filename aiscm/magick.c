@@ -15,8 +15,8 @@ SCM magick_read_image(SCM scm_file_name)
     CatchException(exception_info);
     Image *image = RemoveFirstImageFromList(&images);
     char grey = image->colorspace == GRAYColorspace;
-    const char *map = grey ? "I" : "BGRA";
-    const char *format = grey ? "GRAY" : "BGRA";
+    const char *map = grey ? "I" : "RGB";
+    const char *format = grey ? "GRAY" : "RGB";
     int width = image->columns;
     int height = image->rows;
     int bytes_per_pixel = grey ? 1 : 4;
@@ -49,7 +49,7 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
-  const char *format = scm_format == scm_from_locale_symbol("BGRA") ? "BGRA" : "I";
+  const char *format = scm_format == scm_from_locale_symbol("RGB") ? "RGB" : "I";
   Image *image = ConstituteImage(width, height, format, CharPixel, buf, exception_info);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);

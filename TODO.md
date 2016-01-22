@@ -1,6 +1,6 @@
 ## Ready
 
-* save images using ImageMagick (colour, colourspace, strides/pitches)
+* save images using ImageMagick (colourspace, strides/pitches)
 * (arr (rgb 1 2 3))
 * load/save image sequences using ImageMagick
 * separate function for defining operation for array?
