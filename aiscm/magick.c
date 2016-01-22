@@ -49,7 +49,8 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
-  Image *image = ConstituteImage(width, height, "I", CharPixel, buf, exception_info);
+  const char *format = scm_format == scm_from_locale_symbol("BGRA") ? "BGRA" : "I";
+  Image *image = ConstituteImage(width, height, format, CharPixel, buf, exception_info);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);
     Image *images = NewImageList();

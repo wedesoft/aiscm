@@ -15,5 +15,7 @@
           #:shape (cadr picture)
           #:mem (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
 (define (write-image img file-name)
-  (magick-write-image 'GRAY (shape img) (get-memory (get-mem img)) file-name)
-  img)
+  (let* [(format    (if (eq? (get-format img) 'GRAY) 'GRAY 'BGRA))
+         (converted (convert img format))]
+    (magick-write-image format (shape converted) (get-memory (get-mem converted)) file-name)
+    img))
