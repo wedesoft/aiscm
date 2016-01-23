@@ -15,6 +15,20 @@
           #:shape (cadr picture)
           #:value (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
 (define (write-image img file-name)
-  (let [(format (if (eq? (typecode img) <ubyte>) 'I 'RGB))]
+  (let [(format (cond ((eq? (typecode img) <ubyte>)    'I)
+                      ((eq? (typecode img) <ubytergb>) 'RGB)
+                      (else #f)))]
+    (if (not format)
+      (scm-error 'unsupported-typecode
+                 'write-image
+                 "Saving of typecode ~a not supported"
+                 (list (typecode img))
+                 #f))
+    (if (not (eqv? (dimension img) 2))
+      (scm-error 'wrong-dimension
+                 'write-image
+                 "Image must have 2 dimensions but had ~a"
+                 (list (dimension img))
+                 #f))
     (magick-write-image format (shape img) (get-memory (slot-ref img 'value)) file-name)
     img))

@@ -1,10 +1,10 @@
 ## Ready
 
-* save image other than <ubyte> or <ubytergb>
+* save/load 16 and 32 bit images
+* pulse audio (see python bindings?)
 * (arr (rgb 1 2 3))
 * separate function for defining operation for array?
 * imaginary part of variable
-* pulse audio (see python bindings?)
 * (complex 2 3), (complex (seq 1 2 3) 4)
 * (rgb (seq 1 2) 3 (seq 5 6))
 * (- (rgb frag frag frag)) -> (frag rgb)???
