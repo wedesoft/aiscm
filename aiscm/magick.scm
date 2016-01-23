@@ -4,18 +4,17 @@
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
   #:use-module (aiscm rgb)
+  #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:use-module (aiscm image)
   #:export (read-image write-image))
 (load-extension "libguile-magick" "init_magick")
 (define (read-image file-name)
-  (let [(picture (magick-read-image file-name))]
-    (make <image>
-          #:format (car picture)
+  (let* [(picture  (magick-read-image file-name))
+         (typecode (if (eq? (car picture) 'I) <ubyte> <ubytergb>))]
+    (make (multiarray typecode 2)
           #:shape (cadr picture)
-          #:mem (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
+          #:value (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
 (define (write-image img file-name)
-  (let* [(format    (if (eq? (get-format img) 'GRAY) 'GRAY 'RGB))
-         (converted (convert img format))]
-    (magick-write-image format (shape converted) (get-memory (get-mem converted)) file-name)
+  (let [(format (if (eq? (typecode img) <ubyte>) 'I 'RGB))]
+    (magick-write-image format (shape img) (get-memory (slot-ref img 'value)) file-name)
     img))

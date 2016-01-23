@@ -15,14 +15,13 @@ SCM magick_read_image(SCM scm_file_name)
     CatchException(exception_info);
     Image *image = RemoveFirstImageFromList(&images);
     char grey = image->colorspace == GRAYColorspace;
-    const char *map = grey ? "I" : "RGB";
-    const char *format = grey ? "GRAY" : "RGB";
+    const char *format = grey ? "I" : "RGB";
     int width = image->columns;
     int height = image->rows;
-    int bytes_per_pixel = grey ? 1 : 4;
+    int bytes_per_pixel = grey ? 1 : 3;
     int size = width * height * bytes_per_pixel;
     void *buf = scm_gc_malloc_pointerless(size, "aiscm magick frame");
-    ExportImagePixels(image, 0, 0, width, height, map, CharPixel, buf, exception_info);
+    ExportImagePixels(image, 0, 0, width, height, format, CharPixel, buf, exception_info);
     if (exception_info->severity < ErrorException) {
       CatchException(exception_info);
       retval = scm_list_4(scm_from_locale_symbol(format),
@@ -49,7 +48,7 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
-  const char *format = scm_format == scm_from_locale_symbol("RGB") ? "RGB" : "I";
+  const char *format = scm_to_locale_string(scm_symbol_to_string(scm_format));
   Image *image = ConstituteImage(width, height, format, CharPixel, buf, exception_info);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);

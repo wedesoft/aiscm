@@ -1,5 +1,6 @@
 ## Ready
 
+* save image other than <ubyte> or <ubytergb>
 * (arr (rgb 1 2 3))
 * separate function for defining operation for array?
 * imaginary part of variable
