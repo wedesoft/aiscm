@@ -1,5 +1,6 @@
 ## Ready
 
+* ensure compact image when saving
 * save/load 16 and 32 bit images
 * pulse audio (see python bindings?)
 * (arr (rgb 1 2 3))
