@@ -2,16 +2,16 @@
 
 CFLAGS = -O
 
-all: assembler magicktest
+all: assembler pacat parec
 
 assembler: t1.s t1.txt
 	cat t1.txt
 
-magicktest: writeimg
-	./writeimg
+pacat: pacat.o
+	gcc -o $@ $< -lpulse-simple -lpulse
 
-writeimg: writeimg.c
-	gcc $(shell pkg-config --cflags ImageMagick) -o $@ $< $(shell pkg-config --libs ImageMagick)
+parec: parec.o
+	gcc -o $@ $< -lpulse-simple -lpulse
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
@@ -23,4 +23,4 @@ writeimg: writeimg.c
 	gcc $(CFLAGS) -fverbose-asm -S $<
 
 clean:
-	rm -f t *.txt *.o *.s
+	rm -f *.txt *.o *.s

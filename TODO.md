@@ -1,8 +1,9 @@
 ## Ready
 
+* pulse audio (see python bindings?)
+  http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
 * align data when loadimg image?
 * save/load 16 and 32 bit images
-* pulse audio (see python bindings?)
 * (arr (rgb 1 2 3))
 * separate function for defining operation for array?
 * imaginary part of variable
@@ -49,4 +50,4 @@
 * array stack/unstack/record arrays
 * slimv, tcp/ip, attach
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
-* ffmpeg input, fftw3, pulse-audio, hypercomplex, kinect, linalg, opencv, qt4, rmagick
+* ffmpeg input, fftw3, hypercomplex, kinect, linalg, opencv, qt4
