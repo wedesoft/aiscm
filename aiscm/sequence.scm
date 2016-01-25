@@ -10,7 +10,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
-            sequence seq multiarray to-list to-array
+            sequence seq multiarray to-list to-array default-strides
             dump crop project rebase roll unroll downsample)
   #:export-syntax (arr))
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
