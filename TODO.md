@@ -1,6 +1,6 @@
 ## Ready
 
-* pulse audio (see python bindings?)
+* pulse audio
   http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
 * align data when loadimg image?
 * save/load 16 and 32 bit images

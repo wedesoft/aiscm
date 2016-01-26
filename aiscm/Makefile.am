@@ -7,7 +7,7 @@ site_DATA = mem.scm element.scm bool.scm int.scm pointer.scm rgb.scm complex.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-image.la libguile-magick.la \
-												libguile-v4l2.la libguile-xorg.la
+												libguile-pulse.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
@@ -31,6 +31,11 @@ libguile_magick_la_SOURCES = magick.c
 libguile_magick_la_CFLAGS = $(GUILE_CFLAGS) $(MAGICK_CFLAGS)
 libguile_magick_la_LDFLAGS = -no-undefined
 libguile_magick_la_LIBADD = $(GUILE_LIBS) $(MAGICK_LIBS)
+
+libguile_pulse_la_SOURCES = pulse.c
+libguile_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS)
+libguile_pulse_la_LDFLAGS = -no-undefined
+libguile_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS)
 
 libguile_v4l2_la_SOURCES = v4l2.c
 libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
