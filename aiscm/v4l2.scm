@@ -11,7 +11,7 @@
   #:export (<v4l2> <meta<v4l2>> grab))
 (load-extension "libguile-v4l2" "init_v4l2")
 (define-class* <v4l2> <object> <meta<v4l2>> <class>
-               (videodev2 #:init-keyword #:videodev2 #:getter get-videodev2))
+               (videodev2 #:init-keyword #:videodev2))
 (define formats
   (list (cons 'RGB  V4L2_PIX_FMT_RGB24)
         (cons 'BGR  V4L2_PIX_FMT_BGR24)
@@ -43,9 +43,9 @@
            (selection (lambda (formats)
                         (encode (select (sort (map decode (filter supported? formats)) format<)))))]
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
-(define-method (destroy (self <v4l2>)) (videodev2-destroy (get-videodev2 self)))
+(define-method (destroy (self <v4l2>)) (videodev2-destroy (slot-ref self 'videodev2)))
 (define-method (grab (self <v4l2>))
-  (let [(picture (videodev2-grab (get-videodev2 self)))]
+  (let [(picture (videodev2-grab (slot-ref self 'videodev2)))]
     (make <image>
           #:format (fmt->sym (car picture))
           #:shape  (cadr picture)

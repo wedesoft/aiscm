@@ -1,0 +1,10 @@
+(define-module (aiscm pulse)
+  #:use-module (oop goops)
+  #:use-module (aiscm util)
+  #:export (<pulseaudio> <meta<pulseaudio>>))
+(load-extension "libguile-pulse" "init_pulse")
+(define-class* <pulseaudio> <object> <meta<pulseaudio>> <class>
+               (pulse #:init-keyword #:pulse))
+(define-method (initialize (self <pulseaudio>) initargs)
+  (next-method self (list #:pulse (make-pulse))))
+(define-method (destroy (self <pulseaudio>)) (pulse-destroy (slot-ref self 'pulse)))
