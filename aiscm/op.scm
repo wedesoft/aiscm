@@ -14,7 +14,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate !)
+  #:export (fill duplicate ! ensure-default-strides)
   #:re-export (+ - * / % = < <= > >= min max))
 (define ctx (make <context>))
 
@@ -84,6 +84,10 @@
 (define-binary-op ||  ||)
 (define-binary-op max max)
 (define-binary-op min min)
+
+(define (ensure-default-strides img)
+  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
+
 (define (slice arr i n)
   (make (to-type (base (typecode arr)) (class-of arr))
         #:shape (shape arr)

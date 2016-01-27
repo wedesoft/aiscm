@@ -16,13 +16,11 @@
     (make (multiarray typecode 2)
           #:shape (cadr picture)
           #:value (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
-(define (ensure-default-strides img)
-  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 (define (write-image img file-name)
-  (let [(format  (cond ((eq? (typecode img) <ubyte>)    'I)
-                       ((eq? (typecode img) <ubytergb>) 'RGB)
-                       (else #f)))
-        (adapted (ensure-default-strides img))]
+  (let [(format    (cond ((eq? (typecode img) <ubyte>)    'I)
+                         ((eq? (typecode img) <ubytergb>) 'RGB)
+                         (else #f)))
+        (compacted (ensure-default-strides img))]
     (if (not format)
       (scm-error 'unsupported-typecode
                  'write-image
@@ -35,5 +33,5 @@
                  "Image must have 2 dimensions but had ~a"
                  (list (dimension img))
                  #f))
-    (magick-write-image format (shape adapted) (get-memory (slot-ref adapted 'value)) file-name)
+    (magick-write-image format (shape compacted) (get-memory (slot-ref compacted 'value)) file-name)
     img))

@@ -240,7 +240,7 @@ SCM videodev2_grab(SCM scm_self)
   SCM retval;
   struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
   if (self->fd <= 0)
-    scm_misc_error("make_videodev2", "Device is not open. Did you call close before?",
+    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
                    SCM_UNDEFINED);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;

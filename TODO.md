@@ -1,5 +1,6 @@
 ## Ready
 
+* size of array
 * pulse audio
   http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
 * align data when loadimg image?
