@@ -73,3 +73,16 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 (destroy d)
 (destroy v)
 ```
+
+## Pulse audio
+
+The following example program creates a sine wave and outputs it to the audio device.
+
+```Scheme
+(use-modules (oop goops) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse))
+(define samples (to-array <sint> (map (lambda (t) (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000))) (iota 441))))
+(define pulse (make <pulse> #:channels 1 #:rate 44100))
+(for-each (lambda (i) (write-samples samples pulse)) (iota 100))
+(drain pulse)
+(destroy pulse)
+```

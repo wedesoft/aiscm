@@ -1,6 +1,5 @@
 ## Ready
 
-* pulse audio tests
 * check type and shape of pulse audio output
 * integration tests, documentation
 * pulse audio input
