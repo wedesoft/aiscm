@@ -6,7 +6,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
-            write-samples))
+            write-samples latency))
 (load-extension "libguile-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulse #:init-keyword #:pulse))
@@ -17,7 +17,7 @@
       (next-method self (list #:pulse (make-pulsedev rate channels))))))
 (define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
 (define (write-samples samples self)
-  (let* [(n         (* (size samples) (size-of (typecode samples))))
-         (compacted (ensure-default-strides samples))
-         (data      (get-memory (slot-ref compacted 'value)))]
-    (pulsedev-write (slot-ref self 'pulse) data n)))
+  (pulsedev-write (slot-ref self 'pulse)
+                  (get-memory (slot-ref (ensure-default-strides samples) 'value))
+                  (size-of samples)))
+(define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))

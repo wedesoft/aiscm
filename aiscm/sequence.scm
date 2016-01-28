@@ -44,6 +44,7 @@
 (define (multiarray type dimension)
   (if (zero? dimension) (pointer type) (multiarray (sequence type) (1- dimension))))
 (define-method (size (self <sequence<>>)) (apply * (shape self)))
+(define-method (size-of (self <sequence<>>)) (* (size self) (size-of (typecode self))))
 (define-method (project (self <sequence<>>))
   (make (project (class-of self))
         #:value   (slot-ref self 'value)

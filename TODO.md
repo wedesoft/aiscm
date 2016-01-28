@@ -1,8 +1,10 @@
 ## Ready
 
-* size of array
-* pulse audio
-  http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
+* pulse audio tests
+* check type and shape of pulse audio output
+* integration tests, documentation
+* pulse audio input
+* add copyright headers
 * align data when loadimg image?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))

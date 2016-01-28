@@ -9,7 +9,7 @@
             build content base))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value))
-(define-generic size-of)
+(define-method (size-of (self <element>)) (size-of (class-of self)))
 (define-method (foreign-type (t <class>)) void)
 (define-generic pack)
 (define-generic unpack)
