@@ -1,12 +1,15 @@
 ## Ready
 
 * check type and shape of pulse audio output
+* 8 and 16 bit audio
 * integration tests, documentation
 * pulse audio input
 * add copyright headers
 * align data when loadimg image?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
+* lexical sort
+* diagonal injection, convolution, median, dilation, ...
 * separate function for defining operation for array?
 * imaginary part of variable
 * (complex 2 3), (complex (seq 1 2 3) 4)
