@@ -3,7 +3,6 @@
 * 8 and 16 bit audio (with type check or conversion)
 * integration tests, documentation
 * pulse audio input
-* more compact error method? (see srfi-37)
 * add copyright headers
 * align data when loadimg image?
 * save/load 16 and 32 bit images

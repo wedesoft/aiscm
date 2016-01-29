@@ -1,5 +1,6 @@
 (define-module (aiscm magick)
   #:use-module (oop goops)
+  #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm pointer)
@@ -22,16 +23,8 @@
                          (else #f)))
         (compacted (ensure-default-strides img))]
     (if (not format)
-      (scm-error 'unsupported-typecode
-                 'misc-error
-                 "Saving of typecode ~a not supported"
-                 (list (typecode img))
-                 #f))
+      (aiscm-error 'write-image "Saving of typecode ~a not supported" (typecode img)))
     (if (not (eqv? (dimension img) 2))
-      (scm-error 'wrong-dimension
-                 'misc-error
-                 "Image must have 2 dimensions but had ~a"
-                 (list (dimension img))
-                 #f))
+      (aiscm-error 'write-image "Image must have 2 dimensions but had ~a" (dimension img)))
     (magick-write-image format (shape compacted) (get-memory (slot-ref compacted 'value)) file-name)
     img))

@@ -23,11 +23,7 @@
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
     (if (negative? offset)
-      (scm-error 'misc-error
-                 '+
-                 "Offset not be lower than zero but was ~a"
-                 (list offset)
-                 #f)
+      (aiscm-error '+ "Offset not be lower than zero but was ~a" offset)
       (make <mem>
             #:memory (make-pointer (+ offset (pointer-address (get-memory self))))
             #:base (slot-ref self 'base)
@@ -36,11 +32,7 @@
   (equal? (get-memory a) (get-memory b)))
 (define-method (read-bytes (self <mem>) (size <integer>))
   (if (> size (get-size self))
-      (scm-error 'misc-error
-                 'read-bytes
-                 "Attempt to read ~a bytes from memory of size ~a"
-                 (list size (get-size self))
-                 #f)
+      (aiscm-error 'read-bytes "Attempt to read ~a bytes from memory of size ~a" size (get-size self))
       (pointer->bytevector (get-memory self) size)))
 (define-method (write-bytes (self <mem>) (bv <bytevector>))
   (bytevector-copy!
