@@ -8,7 +8,8 @@
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
             rate channels
-            write-samples latency drain))
+            write-samples latency drain
+            check-audio-sample-shape))
 (load-extension "libguile-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulse    #:init-keyword #:pulse)
@@ -22,13 +23,33 @@
                               #:rate rate
                               #:channels channels)))))
 (define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
+(define (check-audio-sample-shape shape channels)
+  (case (length shape)
+    ((1) (if (not (eqv? 1 channels))
+             (scm-error 'misc-error
+                         'write-samples
+                         "Audio sample array is one dimensional but audio output has ~a channels"
+                         (list channels)
+                         #f)))
+    ((2) (if (not (eqv? (car shape) channels))
+             (scm-error 'misc-error
+                        'write-samples
+                        "The first dimension of the sample array must match the number of channels ~a (but was ~a)"
+                        (list channels (car shape))
+                        #f)))
+    (else (scm-error 'misc-error
+                     'write-samples
+                     "Audio sample array must not have more than 2 dimensions (but it had ~a)"
+                     (list (length shape))
+                     #f))))
 (define (write-samples samples self)
   (if (not (eq? (typecode samples) <sint>))
-    (scm-error 'wrong-typecode-for-audio
+    (scm-error 'misc-error
                'write-samples
                "Audio samples need to consist of short integers (but was ~a)"
                (list (typecode samples))
                #f))
+  (check-audio-sample-shape (shape samples) (channels self))
   (pulsedev-write (slot-ref self 'pulse)
                   (get-memory (slot-ref (ensure-default-strides samples) 'value))
                   (size-of samples))

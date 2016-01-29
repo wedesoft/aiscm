@@ -23,13 +23,13 @@
         (compacted (ensure-default-strides img))]
     (if (not format)
       (scm-error 'unsupported-typecode
-                 'write-image
+                 'misc-error
                  "Saving of typecode ~a not supported"
                  (list (typecode img))
                  #f))
     (if (not (eqv? (dimension img) 2))
       (scm-error 'wrong-dimension
-                 'write-image
+                 'misc-error
                  "Image must have 2 dimensions but had ~a"
                  (list (dimension img))
                  #f))

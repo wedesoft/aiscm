@@ -20,7 +20,7 @@
 (define (super class)
   (let [(supers (class-direct-supers class))]
     (if (null? supers)
-      (scm-error 'no-super-class 'super "Class ~a has no super class" (list class) #f)
+      (scm-error 'misc-error 'super "Class ~a has no super class" (list class) #f)
       (car supers))))
 (define-syntax-rule (define-class* name super metaname metasuper slots ...)
   (begin

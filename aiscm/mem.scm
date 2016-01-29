@@ -23,7 +23,7 @@
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
     (if (negative? offset)
-      (scm-error 'out-of-range
+      (scm-error 'misc-error
                  '+
                  "Offset not be lower than zero but was ~a"
                  (list offset)
@@ -36,7 +36,7 @@
   (equal? (get-memory a) (get-memory b)))
 (define-method (read-bytes (self <mem>) (size <integer>))
   (if (> size (get-size self))
-      (scm-error 'out-of-range
+      (scm-error 'misc-error
                  'read-bytes
                  "Attempt to read ~a bytes from memory of size ~a"
                  (list size (get-size self))
