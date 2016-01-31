@@ -1,10 +1,11 @@
 ## Ready
 
+* pulse audio input
 * 8 and 16 bit audio (with type check or conversion)
 * integration tests, documentation
-* pulse audio input
 * add copyright headers
-* align data when loadimg image?
+* wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
+* align data when loading image?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort

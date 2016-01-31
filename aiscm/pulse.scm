@@ -7,6 +7,8 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
+            <pulse-play> <meta<pulse-play>>
+            <pulse-record> <meta<pulse-record>>
             rate channels
             write-samples latency drain
             check-audio-sample-type check-audio-sample-shape))
@@ -16,13 +18,19 @@
                (rate     #:init-keyword #:rate     #:getter rate)
                (channels #:init-keyword #:channels #:getter channels))
 (define-method (initialize (self <pulse>) initargs)
-  (let-keywords initargs #f (rate channels)
+  (let-keywords initargs #f (direction rate channels)
     (let [(rate     (or rate 44100))
           (channels (or channels 2))]
-      (next-method self (list #:pulse (make-pulsedev rate channels)
+      (next-method self (list #:pulse (make-pulsedev direction rate channels)
                               #:rate rate
                               #:channels channels)))))
 (define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
+(define-class* <pulse-play> <pulse> <meta<pulse-play>> <meta<pulse>>)
+(define-method (initialize (self <pulse-play>) initargs)
+  (next-method self (append (list #:direction PA_STREAM_PLAYBACK) initargs)))
+(define-class* <pulse-record> <pulse> <meta<pulse-record>> <meta<pulse>>)
+(define-method (initialize (self <pulse-record>) initargs)
+  (next-method self (append (list #:direction PA_STREAM_RECORD) initargs)))
 (define (check-audio-sample-type type)
   (if (not (eq? type <sint>))
       (aiscm-error 'write-samples "Audio samples need to consist of short integers (but was ~a)" type)))
