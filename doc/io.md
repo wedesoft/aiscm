@@ -86,3 +86,13 @@ The following example program creates a sine wave and outputs it to the audio de
 (drain play)
 (destroy play)
 ```
+
+Audio data can be recorded in a similar fashion
+
+```Scheme
+(use-modules (oop goops) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse) (aiscm util))
+(define record (make <pulse-record> #:channels 1 #:rate 44100))
+(define samples (read-samples record 44100))
+(display samples)
+(destroy record)
+```
