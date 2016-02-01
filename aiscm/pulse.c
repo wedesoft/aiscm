@@ -88,6 +88,19 @@ SCM pulsedev_drain(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+SCM pulsedev_flush(SCM scm_self)
+{
+  scm_assert_smob_type(pulsedev_tag, scm_self);
+  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  if (!self->s) device_not_open("pulsedev-flush");
+  int error;
+  pa_simple_flush(self->s, &error);
+  if (error != PA_OK)
+    scm_misc_error("pulsedev-flush", "Error discarding buffered audio samples: ~a",
+                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+  return SCM_UNSPECIFIED;
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -99,4 +112,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-write", 3, 0, 0, pulsedev_write);
   scm_c_define_gsubr("pulsedev-latency", 1, 0, 0, pulsedev_latency);
   scm_c_define_gsubr("pulsedev-drain", 1, 0, 0, pulsedev_drain);
+  scm_c_define_gsubr("pulsedev-flush", 1, 0, 0, pulsedev_flush);
 }

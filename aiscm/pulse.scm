@@ -9,8 +9,7 @@
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
-            rate channels
-            write-samples latency drain
+            rate channels write-samples latency drain flush
             check-audio-sample-type check-audio-sample-shape))
 (load-extension "libguile-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
@@ -50,3 +49,4 @@
   samples)
 (define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulse)) self)
+(define (flush self) (pulsedev-flush (slot-ref self 'pulse)) self)
