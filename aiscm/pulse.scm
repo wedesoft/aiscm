@@ -1,6 +1,8 @@
 (define-module (aiscm pulse)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm pointer)
+  #:use-module (aiscm sequence)
   #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:use-module (aiscm op)
@@ -9,7 +11,7 @@
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
-            rate channels write-samples latency drain flush
+            rate channels write-samples read-samples latency drain flush
             check-audio-sample-type check-audio-sample-shape))
 (load-extension "libguile-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
@@ -47,6 +49,10 @@
                   (get-memory (slot-ref (ensure-default-strides samples) 'value))
                   (size-of samples))
   samples)
+(define (read-samples self n)
+  (let [(retval (make (multiarray <sint> 2) #:shape (list (channels self) n)))]
+    (pulsedev-read (slot-ref self 'pulse) (get-memory (slot-ref retval 'value)) (size-of retval))
+    retval))
 (define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulse)) self)
 (define (flush self) (pulsedev-flush (slot-ref self 'pulse)) self)

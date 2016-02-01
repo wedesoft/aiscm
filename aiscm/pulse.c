@@ -43,7 +43,7 @@ SCM make_pulsedev(SCM scm_direction, SCM scm_rate, SCM scm_channels)
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
   int error;
-  self->s = pa_simple_new(NULL, "aiscm", PA_STREAM_PLAYBACK, NULL, "stream", &sample_spec, NULL, NULL, &error);
+  self->s = pa_simple_new(NULL, "aiscm", scm_to_int(scm_direction), NULL, "stream", &sample_spec, NULL, NULL, &error);
   if (!self->s)
     scm_misc_error("make-pulsedev", "Error initialising Pulse audio: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(error))));
@@ -58,6 +58,18 @@ SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)
   int error;
   if (pa_simple_write(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
     scm_misc_error("pulsedev-write", "Error writing audio samples: ~a",
+                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+  return SCM_UNSPECIFIED;
+}
+
+SCM pulsedev_read(SCM scm_self, SCM scm_data, SCM scm_bytes)
+{
+  scm_assert_smob_type(pulsedev_tag, scm_self);
+  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  if (!self->s) device_not_open("pulsedev-read");
+  int error;
+  if (pa_simple_read(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
+    scm_misc_error("pulsedev-read", "Error reading audio samples: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(error))));
   return SCM_UNSPECIFIED;
 }
@@ -107,10 +119,11 @@ void init_pulse(void)
   scm_set_smob_free(pulsedev_tag, free_pulsedev);
   scm_c_define("PA_STREAM_PLAYBACK", scm_from_int(PA_STREAM_PLAYBACK));
   scm_c_define("PA_STREAM_RECORD", scm_from_int(PA_STREAM_RECORD));
-  scm_c_define_gsubr("make-pulsedev", 3, 0, 0, make_pulsedev);
+  scm_c_define_gsubr("make-pulsedev"   , 3, 0, 0, make_pulsedev);
   scm_c_define_gsubr("pulsedev-destroy", 1, 0, 0, pulsedev_destroy);
-  scm_c_define_gsubr("pulsedev-write", 3, 0, 0, pulsedev_write);
+  scm_c_define_gsubr("pulsedev-write"  , 3, 0, 0, pulsedev_write);
+  scm_c_define_gsubr("pulsedev-read"   , 3, 0, 0, pulsedev_read);
   scm_c_define_gsubr("pulsedev-latency", 1, 0, 0, pulsedev_latency);
-  scm_c_define_gsubr("pulsedev-drain", 1, 0, 0, pulsedev_drain);
-  scm_c_define_gsubr("pulsedev-flush", 1, 0, 0, pulsedev_flush);
+  scm_c_define_gsubr("pulsedev-drain"  , 1, 0, 0, pulsedev_drain);
+  scm_c_define_gsubr("pulsedev-flush"  , 1, 0, 0, pulsedev_flush);
 }
