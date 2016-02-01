@@ -36,7 +36,7 @@ SCM magick_read_image(SCM scm_file_name)
   DestroyImageInfo(image_info);
   DestroyExceptionInfo(exception_info);
   if (scm_reason != SCM_UNDEFINED)
-    scm_misc_error("magick_read_image", "~a", scm_list_1(scm_reason));
+    scm_misc_error("magick-read-image", "~a", scm_list_1(scm_reason));
   return retval;
 }
 
@@ -65,7 +65,7 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_
   DestroyImageInfo(image_info);
   DestroyExceptionInfo(exception_info);
   if (scm_reason != SCM_UNDEFINED)
-    scm_misc_error("magick_write_image", "~a", scm_list_1(scm_reason));
+    scm_misc_error("magick-write-image", "~a", scm_list_1(scm_reason));
   return SCM_UNDEFINED;
 }
 

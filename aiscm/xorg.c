@@ -78,7 +78,7 @@ SCM make_display(SCM scm_name)
   struct display_t *self;
   const char *name = scm_to_locale_string(scm_name);
   Display *display = XOpenDisplay(*name == '\0' ? (const char *)NULL : name);
-  if (!display) scm_syserror("make_display");
+  if (!display) scm_syserror("make-display");
   self = (struct display_t *)scm_gc_calloc(sizeof(struct display_t), "display");
   SCM_NEWSMOB(retval, display_tag, self);
   self->scm_windows = SCM_EOL;
@@ -287,7 +287,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
       if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
                             24, TrueColor, self->visual_info))
-        scm_syserror("make_window");
+        scm_syserror("make-window");
       break;
     case IO_OPENGL: {
       int attributes[] = {GLX_RGBA,
@@ -297,7 +297,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                           GLX_DEPTH_SIZE, 0, None};
       self->visual_info = glXChooseVisual(display->display, DefaultScreen(display->display),
                                           attributes);
-      if (!self->visual_info) scm_syserror("make_window");
+      if (!self->visual_info) scm_syserror("make-window");
       break;}
     case IO_XVIDEO: {
       XWindowAttributes attributes;
@@ -316,15 +316,15 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
       if (!XMatchVisualInfo(display->display, DefaultScreen(display->display),
                             depth, TrueColor, self->visual_info))
-        scm_syserror("make_window");
+        scm_syserror("make-window");
       unsigned int ver, rel, req, ev, err;
       if (XvQueryExtension(display->display, &ver, &rel, &req, &ev, &err) != Success)
-        scm_misc_error("make_xwindow", "Failure requesting X video extension", SCM_EOL);
+        scm_misc_error("make-xwindow", "Failure requesting X video extension", SCM_EOL);
       unsigned int numAdaptors;
       XvAdaptorInfo *adaptorInfo = NULL;
       if (XvQueryAdaptors(display->display, DefaultRootWindow(display->display),
                           &numAdaptors, &adaptorInfo) != Success)
-        scm_misc_error("make_xwindow", "Error requesting information about X video adaptors", SCM_EOL);
+        scm_misc_error("make-xwindow", "Error requesting information about X video adaptors", SCM_EOL);
       int i;
       for (i=0; i<(signed)numAdaptors; i++) {
         int mask = XvInputMask | XvImageMask;
@@ -344,12 +344,12 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       };
       XvFreeAdaptorInfo(adaptorInfo);
       if (self->port == 0)
-        scm_misc_error("make_xwindow", "Could not find a free port for X video output", SCM_EOL);
+        scm_misc_error("make-xwindow", "Could not find a free port for X video output", SCM_EOL);
       Atom xvColorKey = findAtom(display->display, self->port, "XV_COLORKEY");
       if (xvColorKey != None) {
         self->require_color_key = 1;
         if (XvGetPortAttribute(display->display, self->port, xvColorKey, &self->color_key) != Success)
-          scm_misc_error("make_xwindow", "Error reading value of color-key", SCM_EOL);
+          scm_misc_error("make-xwindow", "Error reading value of color-key", SCM_EOL);
         Atom xvAutoPaint = findAtom(display->display, self->port, "XV_AUTOPAINT_COLORKEY");
         if (xvAutoPaint != None) XvSetPortAttribute(display->display, self->port, xvAutoPaint, 0);
       };
@@ -357,7 +357,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
   };
   self->color_map = XCreateColormap(display->display, DefaultRootWindow(display->display),
                                     self->visual_info->visual, AllocNone);
-  if (!self->color_map) scm_syserror("make_window");
+  if (!self->color_map) scm_syserror("make-window");
   XSetWindowAttributes attributes;
   attributes.colormap = self->color_map;
   attributes.event_mask = KeyPressMask | ExposureMask | StructureNotifyMask;
@@ -365,10 +365,10 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                                0, 0, self->width, self->height,
                                0, self->visual_info->depth, InputOutput, self->visual_info->visual,
                                CWColormap | CWEventMask, &attributes);
-  if (!self->window) scm_syserror("make_window");
+  if (!self->window) scm_syserror("make-window");
   XGCValues xgcv;
   self->gc = XCreateGC(display->display, self->window, 0L, &xgcv);
-  if (!self->gc) scm_syserror("make_window");
+  if (!self->gc) scm_syserror("make-window");
   self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
@@ -505,7 +505,7 @@ void window_paint(struct window_t *self, int x11_event)
         XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
                                    24, ZPixmap, 0, data, self->width, self->height,
                                    32, self->width * 4);
-        if (!img) scm_syserror("window_paint");
+        if (!img) scm_syserror("window-paint");
         img->byte_order = LSBFirst;
         XPutImage(self->display->display, self->window, self->gc,
                   img, 0, 0, 0, 0, self->width, self->height);
@@ -520,8 +520,8 @@ void window_paint(struct window_t *self, int x11_event)
         GLXContext context =
           glXCreateContext(self->display->display,
                            self->visual_info, 0, GL_TRUE);
-        if (!context) gl_error("window_paint");
-        if (!glXMakeCurrent(self->display->display, self->window, context)) gl_error("window_paint");
+        if (!context) gl_error("window-paint");
+        if (!glXMakeCurrent(self->display->display, self->window, context)) gl_error("window-paint");
         glLoadIdentity();
         glViewport(0, 0, self->width, self->height);
         glOrtho(0, self->width, self->height, 0, -1.0, 1.0);

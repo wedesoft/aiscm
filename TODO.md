@@ -4,7 +4,7 @@
 * integration tests, documentation
 * add copyright headers
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
-* align data when loading image?
+* align data when loading image? (when constructing image?)
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort

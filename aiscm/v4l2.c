@@ -68,28 +68,28 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   struct stat st;
   int i;
   const char *name = scm_to_locale_string(scm_name);
-  if (stat(name, &st)) scm_syserror("make_videodev2");
-  if (!S_ISCHR(st.st_mode)) scm_misc_error("make_videodev2", "'~a' is not a device", scm_list_1(scm_name));
+  if (stat(name, &st)) scm_syserror("make-videodev2");
+  if (!S_ISCHR(st.st_mode)) scm_misc_error("make-videodev2", "'~a' is not a device", scm_list_1(scm_name));
   self = (struct videodev2_t *)scm_gc_calloc(sizeof(struct videodev2_t), "v4l2");
   SCM_NEWSMOB(retval, videodev2_tag, self);
   self->fd = -1;
   self->map[0] = MAP_FAILED;
   self->map[1] = MAP_FAILED;
   self->fd = open(name, O_RDWR, 0);
-  if (self->fd == -1) scm_syserror("make_videodev2");
+  if (self->fd == -1) scm_syserror("make-videodev2");
   struct v4l2_capability cap;
   if (xioctl(self->fd, VIDIOC_QUERYCAP, &cap)) {
     videodev2_destroy(retval);
-    scm_misc_error("make_videodev2", "Error querying capabilities of device '~a'", scm_list_1(scm_name));
+    scm_misc_error("make-videodev2", "Error querying capabilities of device '~a'", scm_list_1(scm_name));
   };
   if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE == 0) {
     videodev2_destroy(retval);
-    scm_misc_error("make_videodev2", "'~a' is not a video capture device", scm_list_1(scm_name));
+    scm_misc_error("make-videodev2", "'~a' is not a video capture device", scm_list_1(scm_name));
   };
   int c = scm_to_int(scm_channel);
   if (xioctl(self->fd, VIDIOC_S_INPUT, &c)) {
     videodev2_destroy(retval);
-    scm_misc_error("make_videodev2", "Error selecting channel ~a for device '~a'",
+    scm_misc_error("make-videodev2", "Error selecting channel ~a for device '~a'",
                    scm_list_2(scm_channel, scm_name));
   };
   SCM scm_selection = SCM_EOL;
@@ -140,7 +140,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   self->format.fmt.pix.field = V4L2_FIELD_ANY;
   if (xioctl(self->fd, VIDIOC_S_FMT, &self->format)) {
     videodev2_destroy(retval);
-    scm_misc_error("make_videodev2", "Error switching device '~a' to selected format",
+    scm_misc_error("make-videodev2", "Error switching device '~a' to selected format",
                    scm_list_1(scm_name));
   };
   if (cap.capabilities & V4L2_CAP_STREAMING) {
@@ -151,7 +151,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
       self->req.memory = V4L2_MEMORY_USERPTR;
       if (xioctl(self->fd, VIDIOC_REQBUFS, &self->req)) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Failed to set up memory mapped and user pointer I/O for device '~a'",
+        scm_misc_error("make-videodev2", "Failed to set up memory mapped and user pointer I/O for device '~a'",
                        scm_list_1(scm_name));
       };
       int page_size = getpagesize();
@@ -160,7 +160,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
       self->user[1] = memalign(page_size, buffer_size);
       if (self->user[0] == NULL || self->user[1] == NULL) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Could not allocate memory for user pointer I/O for device '~a'",
+        scm_misc_error("make-videodev2", "Could not allocate memory for user pointer I/O for device '~a'",
                        scm_list_1(scm_name));
       };
       for (i=0; i<2; i++) {
@@ -173,14 +173,14 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
       for (i=0; i<2; i++) {
         if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
           videodev2_destroy(retval);
-          scm_misc_error("make_videodev2", "Error enqueuing user memory buffer ~a for device '~a'",
+          scm_misc_error("make-videodev2", "Error enqueuing user memory buffer ~a for device '~a'",
                          scm_list_2(scm_from_int(i), scm_name));
         };
       };
       enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
       if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Error starting user pointer capture process for device '~a'",
+        scm_misc_error("make-videodev2", "Error starting user pointer capture process for device '~a'",
                          scm_list_1(scm_name));
       };
       self->capture = 1;
@@ -188,7 +188,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
     } else {
       if (self->req.count < 2) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Insufficient buffer memory on device '~a'",
+        scm_misc_error("make-videodev2", "Insufficient buffer memory on device '~a'",
                        scm_list_1(scm_name));
       };
       for (i=0; i<2; i++) {
@@ -197,28 +197,28 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
         self->buf[i].index = i;
         if (xioctl(self->fd, VIDIOC_QUERYBUF, &self->buf[i])) {
           videodev2_destroy(retval);
-          scm_misc_error("make_videodev2", "Error querying buffer ~a for device '~a'",
+          scm_misc_error("make-videodev2", "Error querying buffer ~a for device '~a'",
                          scm_list_2(scm_from_int(i), scm_name));
         };
         self->map[i] = mmap(NULL, self->buf[i].length, PROT_READ | PROT_WRITE,
                             MAP_SHARED, self->fd, self->buf[i].m.offset);
         if (self->map[i] == MAP_FAILED) {
           videodev2_destroy(retval);
-          scm_misc_error("make_videodev2", "Error mapping capture buffer ~a for device '~a'",
+          scm_misc_error("make-videodev2", "Error mapping capture buffer ~a for device '~a'",
                          scm_list_2(scm_from_int(i), scm_name));
         };
       }
       for (i=0; i<2; i++) {
         if (xioctl(self->fd, VIDIOC_QBUF, &self->buf[i])) {
           videodev2_destroy(retval);
-          scm_misc_error("make_videodev2", "Error enqueuing buffer ~a for device '~a'",
+          scm_misc_error("make-videodev2", "Error enqueuing buffer ~a for device '~a'",
                          scm_list_2(scm_from_int(i), scm_name));
         };
       };
       enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
       if (xioctl(self->fd, VIDIOC_STREAMON, &type)) {
         videodev2_destroy(retval);
-        scm_misc_error("make_videodev2", "Error starting memory-mapped capture process for device '~a'",
+        scm_misc_error("make-videodev2", "Error starting memory-mapped capture process for device '~a'",
                        scm_list_1(scm_name));
       };
       self->capture = 1;
@@ -228,7 +228,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
     self->io = IO_READ;
   } else {
     videodev2_destroy(retval);
-    scm_misc_error("make_videodev2", "Device '~a' neither supports streaming nor reading from device",
+    scm_misc_error("make-videodev2", "Device '~a' neither supports streaming nor reading from device",
                    scm_list_1(scm_name));
   };
   return retval;
@@ -247,20 +247,20 @@ SCM videodev2_grab(SCM scm_self)
   if (self->io == IO_READ) {
     int size = self->format.fmt.pix.sizeimage;
     void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
-    if (read(self->fd, buf, size) == -1) scm_syserror("videodev2_read");
+    if (read(self->fd, buf, size) == -1) scm_syserror("videodev2-read");
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                         scm_from_int(width),
                         scm_from_int(height),
                         scm_from_pointer(buf, NULL));
   } else {
     if (self->frame_used) {
-      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("videodev2_read");
+      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("videodev2-read");
       self->frame_used = 0;
     };
     memset(&self->frame, 0, sizeof(struct v4l2_buffer));
     self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
-    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("videodev2_read");
+    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("videodev2-read");
     self->frame_used = 1;
     void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
