@@ -11,18 +11,24 @@
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
+            PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE
             rate channels write-samples read-samples latency drain flush
-            check-audio-sample-type check-audio-sample-shape))
+            check-audio-sample-type check-audio-sample-shape
+            type->pulse-type pulse-type->type))
 (load-extension "libguile-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulse    #:init-keyword #:pulse)
+               (type     #:init-keyword #:type)
                (rate     #:init-keyword #:rate     #:getter rate)
                (channels #:init-keyword #:channels #:getter channels))
 (define-method (initialize (self <pulse>) initargs)
-  (let-keywords initargs #f (direction rate channels)
-    (let [(rate     (or rate 44100))
-          (channels (or channels 2))]
-      (next-method self (list #:pulse (make-pulsedev direction rate channels)
+  (let-keywords initargs #f (direction rate channels type)
+    (let* [(rate       (or rate 44100))
+           (channels   (or channels 2))
+           (type       (or type <sint>))
+           (pulse-type (type->pulse-type type))]
+      (next-method self (list #:pulse (make-pulsedev direction pulse-type rate channels)
+                              #:type type
                               #:rate rate
                               #:channels channels)))))
 (define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
@@ -32,9 +38,9 @@
 (define-class* <pulse-record> <pulse> <meta<pulse-record>> <meta<pulse>>)
 (define-method (initialize (self <pulse-record>) initargs)
   (next-method self (append (list #:direction PA_STREAM_RECORD) initargs)))
-(define (check-audio-sample-type type)
-  (if (not (eq? type <sint>))
-      (aiscm-error 'write-samples "Audio samples need to consist of short integers (but was ~a)" type)))
+(define (check-audio-sample-type type expected)
+  (if (not (eq? type expected))
+      (aiscm-error 'write-samples "Audio data needs to be of type ~a (but was ~a)" expected type)))
 (define (check-audio-sample-shape shape channels)
   (case (length shape)
     ((1) (if (not (eqv? 1 channels))
@@ -43,16 +49,21 @@
              (aiscm-error 'write-samples "The samples should have ~a channels (but had ~a)" channels (car shape))))
     (else (aiscm-error 'write-samples "Audio sample array must not have more than 2 dimensions (but it had ~a)" (length shape)))))
 (define (write-samples samples self)
-  (check-audio-sample-type (typecode samples))
+  (check-audio-sample-type (typecode samples) (slot-ref self 'type))
   (check-audio-sample-shape (shape samples) (channels self))
   (pulsedev-write (slot-ref self 'pulse)
                   (get-memory (slot-ref (ensure-default-strides samples) 'value))
                   (size-of samples))
   samples)
 (define (read-samples self n)
-  (let [(retval (make (multiarray <sint> 2) #:shape (list (channels self) n)))]
+  (let [(retval (make (multiarray (slot-ref self 'type) 2) #:shape (list (channels self) n)))]
     (pulsedev-read (slot-ref self 'pulse) (get-memory (slot-ref retval 'value)) (size-of retval))
     retval))
 (define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulse)) self)
 (define (flush self) (pulsedev-flush (slot-ref self 'pulse)) self)
+(define typemap (list (cons <ubyte> PA_SAMPLE_U8) (cons <sint> PA_SAMPLE_S16LE) (cons <int> PA_SAMPLE_S32LE)))
+(define (type->pulse-type type)
+  (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
+(define (pulse-type->type pulse-type)
+  (assq-ref (alist-invert typemap) pulse-type))

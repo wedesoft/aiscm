@@ -1,6 +1,5 @@
 ## Ready
 
-* 8 and 16 bit audio (with type check or conversion)
 * integration tests, documentation
 * add copyright headers
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>

@@ -33,11 +33,11 @@ size_t free_pulsedev(SCM scm_self)
   return 0;
 }
 
-SCM make_pulsedev(SCM scm_direction, SCM scm_rate, SCM scm_channels)
+SCM make_pulsedev(SCM scm_direction, SCM scm_type, SCM scm_rate, SCM scm_channels)
 {
   SCM retval;
   pa_sample_spec sample_spec;
-  sample_spec.format = PA_SAMPLE_S16LE;
+  sample_spec.format = scm_to_int(scm_type);
   sample_spec.rate = scm_to_int(scm_rate);
   sample_spec.channels = scm_to_int(scm_channels);
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
@@ -122,7 +122,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S32LE", scm_from_int(PA_SAMPLE_S32LE));
   scm_c_define("PA_STREAM_PLAYBACK", scm_from_int(PA_STREAM_PLAYBACK));
   scm_c_define("PA_STREAM_RECORD", scm_from_int(PA_STREAM_RECORD));
-  scm_c_define_gsubr("make-pulsedev"   , 3, 0, 0, make_pulsedev);
+  scm_c_define_gsubr("make-pulsedev"   , 4, 0, 0, make_pulsedev);
   scm_c_define_gsubr("pulsedev-destroy", 1, 0, 0, pulsedev_destroy);
   scm_c_define_gsubr("pulsedev-write"  , 3, 0, 0, pulsedev_write);
   scm_c_define_gsubr("pulsedev-read"   , 3, 0, 0, pulsedev_read);
