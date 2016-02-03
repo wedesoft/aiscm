@@ -6,6 +6,8 @@ dependencies:
 
 test:
   override:
+    - mkdir build-aux
+    - touch build-aux/config.rpath
     - make -f Makefile.dist
     - ./configure
     - make check -j
