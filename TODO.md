@@ -1,5 +1,6 @@
 ## Ready
 
+* X.Org show video with timeout?
 * integration tests, documentation
 * add copyright headers
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
