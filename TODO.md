@@ -1,7 +1,7 @@
 ## Ready
 
-* X.Org show video with timeout?
-* integration tests, documentation
+* X.Org show video with width, height, and timeout?
+* load integration-tested stuff into documentation
 * add copyright headers
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
 * align data when loading image? (when constructing image?)
