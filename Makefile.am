@@ -6,7 +6,10 @@ EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING
 
 repl: all
 	LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y \
-  $(GUILE) --no-auto-compile -L $(top_builddir)
+  $(GUILE) --no-auto-compile -L $(srcdir)
+
+integration: all
+	cd tests && $(MAKE) $@ && cd ..
 
 CLEANFILES = *~ *.html
 
