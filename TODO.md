@@ -1,6 +1,7 @@
 ## Ready
 
-* X.Org show video with width, height, and timeout?
+* ImageMagick tests and documentation
+* X.Org window with width, height, and timeout?
 * load integration-tested stuff into documentation
 * add copyright headers
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>

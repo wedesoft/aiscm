@@ -1,3 +1,5 @@
+SUBDIRS = fixtures
+
 TEST_EXTENSIONS = .scm
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
 SCM_LOG_COMPILE = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(srcdir)

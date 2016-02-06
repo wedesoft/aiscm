@@ -1,3 +1,14 @@
+aiscm (0.3.1-1) UNRELEASED; urgency=low
+
+  * aiscm/asm.scm: support for CMOVcc
+  * aiscm/jit.scm: major and minor number, =0, !=0, &&, ||
+  * aiscm/complex.scm: support for complex numbers
+  * aiscm/magick.scm: loading and saving of images via ImageMagick
+  * aiscm/pulse.scm: Pulse audio I/O
+  - n-ary operations &&, ||
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 6 Feb 2016 17:21:00 +0000
+
 aiscm (0.2.3-1) UNRELEASED; urgency=low
 
   * aiscm/jit.scm: refactored code

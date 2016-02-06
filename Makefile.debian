@@ -1,4 +1,4 @@
-VERSION=0.2.3
+VERSION=$(shell grep PACKAGE_VERSION config.h | sed -e "s/.*\"\(.*\)\"/\1/")
 
 # https://wiki.debian.org/IntroDebianPackaging
 # https://en.opensuse.org/openSUSE:Build_Service_Tutorial

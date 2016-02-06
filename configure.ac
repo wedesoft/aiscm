@@ -2,7 +2,7 @@ dnl Run `make -f Makefile.dist` to generate a configure script.
 dnl Then run ./configure to generate a Makefile.
 dnl Finally run make to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.2.3], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.3.1], [jan@wedesoft.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
@@ -99,6 +99,7 @@ debug mode                           : $enable_debug"
 AC_OUTPUT(Makefile
           aiscm/Makefile
           tests/Makefile
+          tests/fixtures/Makefile
           bench/Makefile
           doc/Makefile
           doc/index.md

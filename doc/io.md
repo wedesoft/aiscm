@@ -73,6 +73,8 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 (destroy v)
 ```
 
+## Loading/saving images using ImageMagick
+
 ## Pulse audio
 
 The following example program creates a sine wave and outputs it to the audio device.
