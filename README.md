@@ -11,7 +11,7 @@ of a JIT compiler.
 You can download and unpack the latest release like this
 
 ```Shell
-wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep gz | cut -d '"' -f 4`
+wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep xz | cut -d '"' -f 4`
 ```
 
 ## Dependencies
