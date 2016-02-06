@@ -8,4 +8,4 @@ package::
 	cp aiscm-$(VERSION).tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
 	tar xzf aiscm-$(VERSION).tar.gz -C pkg
 	cp -a debian pkg/aiscm-$(VERSION)
-	cd pkg/aiscm-$(VERSION) && debuild -us -uc && cd ../..
+	cd pkg/aiscm-$(VERSION) && debuild -us -uc -j4 && cd ../..

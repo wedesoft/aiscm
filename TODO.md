@@ -1,5 +1,6 @@
 ## Ready
 
+* update ImageMagick dependencies in debian/control
 * ImageMagick tests and documentation
 * X.Org window with width, height, and timeout?
 * load integration-tested stuff into documentation
