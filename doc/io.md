@@ -75,6 +75,20 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 
 ## Loading/saving images using ImageMagick
 
+An image can be read from disk using *read-image* which uses the ImageMagick library to load the image.
+
+```Scheme
+(use-modules (oop goops) (aiscm magick) (aiscm sequence) (aiscm pointer) (aiscm xorg))
+(show (read-image "tests/fixtures/index.png"))
+```
+
+Analogous *write-image* writes an image to disk.
+
+```Scheme
+(use-modules (oop goops) (aiscm magick) (aiscm sequence) (aiscm pointer) (aiscm xorg))
+(write-image (arr (1 2 3 4) (5 6 7 8)) "/tmp/test.png")
+```
+
 ## Pulse audio
 
 The following example program creates a sine wave and outputs it to the audio device.

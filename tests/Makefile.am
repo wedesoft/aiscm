@@ -12,7 +12,8 @@ TESTS = test_mem.scm test_bool.scm test_int.scm test_float.scm test_rgb.scm test
 
 INTEGRATION_TESTS = integration_grab.scm integration_camera_channel.scm integration_camera_mode.scm \
 										integration_xorg_image.scm integration_xorg_video.scm integration_xorg_window.scm \
-										integration_pulse_out.scm integration_pulse_in.scm integration_asm.scm
+										integration_pulse_out.scm integration_pulse_in.scm integration_asm.scm \
+										integration_read_image.scm integration_write_image.scm
 
 integration:
 	@for f in $(INTEGRATION_TESTS); do \
