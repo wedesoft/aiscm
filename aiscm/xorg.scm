@@ -4,7 +4,9 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
@@ -32,10 +34,9 @@
     (let [(io (or io IO-XIMAGE))]
       (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
-(define-method (show (self <image>)) (show self -1))
-(define-method (show (self <image>) (timeout <real>)) (show (list self) timeout) self)
-(define-method (show (self <list>)) (show self -1))
-(define-method (show (self <list>) (timeout <real>))
+(define-method (show (self <image>)) (show (list self)) self)
+(define-method (show (self <sequence<>>)) (show (list self)) self)
+(define-method (show (self <list>))
   (let* [(dsp     (make <xdisplay>))
          (images  (map to-image self))
          (shapes  (map shape images))
@@ -44,7 +45,7 @@
     (for-each (cut title= <> "AIscm") windows)
     (for-each show windows images)
     (for-each show windows)
-    (event-loop dsp timeout)
+    (event-loop dsp -1)
     (for-each hide windows)
     (destroy dsp)
     self))

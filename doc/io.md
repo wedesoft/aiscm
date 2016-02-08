@@ -12,17 +12,7 @@ You can open a camera and grab a frame as follows.
 (destroy v)
 ```
 
-The video device and channel can be specified like this.
-
-```Scheme
-(use-modules (oop goops) (aiscm v4l2) (aiscm util))
-(define v (make <v4l2> #:device "/dev/video0" #:channel 0))
-(grab v)
-; #<<image> YUY2 (640 480)>
-(destroy v)
-```
-
-It is also possible to specify a closure for selecting the video mode.
+It is also possible to specify the device, a channel, and a closure for selecting the video mode.
 
 ```Scheme
 (use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2) (aiscm util))
@@ -31,7 +21,7 @@ It is also possible to specify a closure for selecting the video mode.
             (iota (length formats))
             formats)
   (format #t "> ") (list-ref formats (string->number (read-line (current-input-port)))))
-(define v (make <v4l2> #:select select))
+(define v (make <v4l2> #:device "/dev/video0" #:channel 0 #:select select))
 (grab v)
 (destroy v)
 ```
@@ -47,12 +37,31 @@ You can capture an image from a camera and display it using *show* as follows:
 (destroy v)
 ```
 
+One can also display a list of images:
+
+```Scheme
+(use-modules (oop goops) (aiscm v4l2) (aiscm sequence) (aiscm pointer) (aiscm jit) (aiscm rgb) (aiscm xorg) (aiscm util))
+(define v (make <v4l2>))
+(define img (to-array (grab v)))
+(show (list (red img) (green img) (blue img)))
+(destroy v)
+```
+
 It is also possible to display a video using the *show* command:
 
 ```Scheme
 (use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm util))
 (define v (make <v4l2>))
 (show (lambda () (grab v)))
+(destroy v)
+```
+
+A function returning lists of images can be used to display multiple videos synchronously.
+
+```Scheme
+(use-modules (oop goops) (aiscm v4l2) (aiscm sequence) (aiscm pointer) (aiscm jit) (aiscm rgb) (aiscm xorg) (aiscm util))
+(define v (make <v4l2>))
+(show (lambda () (let [(img (to-array (grab v)))] (list (red img) (green img) (blue img)))))
 (destroy v)
 ```
 

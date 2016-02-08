@@ -4,6 +4,6 @@
             (iota (length formats))
             formats)
   (format #t "> ") (list-ref formats (string->number (read-line (current-input-port)))))
-(define v (make <v4l2> #:select select))
+(define v (make <v4l2> #:device "/dev/video0" #:channel 0 #:select select))
 (grab v)
 (destroy v)
