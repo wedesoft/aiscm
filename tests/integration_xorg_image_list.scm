@@ -1,5 +1,3 @@
-(use-modules (oop goops) (aiscm v4l2) (aiscm sequence) (aiscm pointer) (aiscm jit) (aiscm rgb) (aiscm xorg) (aiscm util))
-(define v (make <v4l2>))
-(define img (to-array (grab v)))
-(show (list (red img) (green img) (blue img)))
-(destroy v)
+(use-modules (aiscm magick) (aiscm xorg) (aiscm rgb) (aiscm op) (aiscm jit))
+(define img (read-image "fubk.png"))
+(show (list (* (rgb 1 0 0) img) (* (rgb 0 1 0) img) (* (rgb 0 0 1) img)))

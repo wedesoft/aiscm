@@ -1,13 +1,23 @@
 ## Ready
 
-* multiple window example
-* X.Org window with width, height, and timeout?
-* add copyright headers
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
+    (tensor [i] (get m i 1))
+    (tensor [i j] (* (s i) (s j)))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+    (tensor [i j] (* (s i) (s j)))
+* Pandoc stylesheets?
+* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* complex abs (magnitude), complex arg (and real)
+* X.Org window with width and height?
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
 * align data when loading image? (when constructing image?)
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort
+* NArray-like reshaping
 * diagonal injection, convolution, median, dilation, ...
 * separate function for defining operation for array?
 * imaginary part of variable
@@ -24,17 +34,7 @@
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * use thumbnail images to illustrate examples
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * update live intervals instead of recomputing
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* complex abs (magnitude), complex arg (and real)
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * weird error when including sequence but not pointer

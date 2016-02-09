@@ -18,8 +18,9 @@ Analogous *write-image* writes an image to disk.
 ![](scaled-pattern.png "Output image")
 
 ## Xorg display
+### Images
 
-As shown above, you can display images using *show* as follows:
+As shown above, you can display images using the method *show* as follows:
 
 ```Scheme
 @../tests/integration_read_image.scm@
@@ -31,7 +32,9 @@ One can also display a list of images:
 @../tests/integration_xorg_image_list.scm@
 ```
 
-It is also possible to display a video using the *show* command:
+### Videos
+
+It is also possible to display a video using the *show* method:
 
 ```Scheme
 @../tests/integration_xorg_video.scm@
@@ -52,7 +55,7 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 
 ## Video for Linux version 2 (V4L2)
 
-You can open a camera and grab a frame as follows.
+As shown above already, you can open a camera and grab a frame as follows.
 
 ```Scheme
 @../tests/integration_grab.scm@
