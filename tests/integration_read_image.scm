@@ -1,2 +1,2 @@
-(use-modules (oop goops) (aiscm magick) (aiscm sequence) (aiscm pointer) (aiscm xorg))
-(show (read-image "fixtures/index.png"))
+(use-modules (aiscm magick) (aiscm xorg))
+(show (read-image "fubk.png"))

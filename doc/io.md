@@ -1,25 +1,28 @@
 # Input/output
+## Loading/saving images using ImageMagick
 
-## Video for Linux version 2 (V4L2)
+An image can be read from disk using *read-image* which uses the ImageMagick library to load the image.
 
-You can open a camera and grab a frame as follows.
-
-```Scheme
-@../tests/integration_grab.scm@
-```
-
-It is also possible to specify the device, a channel, and a closure for selecting the video mode.
+![](fubk.png "Test input image")
 
 ```Scheme
-@../tests/integration_camera_mode.scm@
+@../tests/integration_read_image.scm@
 ```
+
+Analogous *write-image* writes an image to disk.
+
+```Scheme
+@../tests/integration_write_image.scm@
+```
+
+![](scaled-pattern.png "Output image")
 
 ## Xorg display
 
-You can capture an image from a camera and display it using *show* as follows:
+As shown above, you can display images using *show* as follows:
 
 ```Scheme
-@../tests/integration_xorg_image.scm@
+@../tests/integration_read_image.scm@
 ```
 
 One can also display a list of images:
@@ -47,18 +50,18 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 @../tests/integration_xorg_window.scm@
 ```
 
-## Loading/saving images using ImageMagick
+## Video for Linux version 2 (V4L2)
 
-An image can be read from disk using *read-image* which uses the ImageMagick library to load the image.
+You can open a camera and grab a frame as follows.
 
 ```Scheme
-@../tests/integration_read_image.scm@
+@../tests/integration_grab.scm@
 ```
 
-Analogous *write-image* writes an image to disk.
+It is also possible to specify the device, a channel, and a closure for selecting the video mode.
 
 ```Scheme
-@../tests/integration_write_image.scm@
+@../tests/integration_camera_mode.scm@
 ```
 
 ## Pulse audio

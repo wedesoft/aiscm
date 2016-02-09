@@ -20,6 +20,10 @@ AC_CHECK_PROG(PANDOC,pandoc,pandoc,no)
 if test "x$PANDOC" = xno; then
   AC_MSG_ERROR([Could not find 'pandoc' in path.])
 fi
+AC_CHECK_PROG(CONVERT,convert,convert,no)
+if test "x$CONVERT" = xno; then
+  AC_MSG_ERROR([Could not find 'convert' in path.])
+fi
 AC_MSG_CHECKING([wether C compiler works])
 AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C program.])])
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
