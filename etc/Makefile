@@ -2,16 +2,10 @@
 
 CFLAGS = -O
 
-all: assembler pacat parec
+all: assembler
 
 assembler: t1.s t1.txt
 	cat t1.txt
-
-pacat: pacat.o
-	gcc -o $@ $< -lpulse-simple -lpulse
-
-parec: parec.o
-	gcc -o $@ $< -lpulse-simple -lpulse
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
