@@ -18,6 +18,5 @@ pattern.png: ../tests/integration_write_image.scm
 scaled-pattern.png: pattern.png
 	$(CONVERT) $< -scale 320 $@
 
-
 .md.html:
 	$(GUILE) includes.scm < $< | $(PANDOC) -s -c buttondown.css -f markdown -t html > $@
