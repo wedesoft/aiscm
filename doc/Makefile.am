@@ -3,7 +3,7 @@ RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html aiscm.gif fubk.png scaled-pattern.png
 
-EXTRA_DIST = includes.scm index.md.in installation.md.in assembler.md io.md aiscm.gif
+EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md.in assembler.md io.md aiscm.gif
 
 CLEANFILES = *~ *.html
 
@@ -20,4 +20,4 @@ scaled-pattern.png: pattern.png
 
 
 .md.html:
-	$(GUILE) includes.scm < $< | $(PANDOC) -s -f markdown -t html > $@
+	$(GUILE) includes.scm < $< | $(PANDOC) -s -c buttondown.css -f markdown -t html > $@
