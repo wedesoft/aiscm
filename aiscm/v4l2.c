@@ -249,9 +249,9 @@ SCM videodev2_grab(SCM scm_self)
     void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
     if (read(self->fd, buf, size) == -1) scm_syserror("videodev2-read");
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                        scm_from_int(width),
-                        scm_from_int(height),
-                        scm_from_pointer(buf, NULL));
+                        scm_list_2(scm_from_int(width), scm_from_int(height)),// TODO: test this
+                        scm_from_pointer(buf, NULL)
+                        scm_from_int(size));
   } else {
     if (self->frame_used) {
       if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("videodev2-read");
