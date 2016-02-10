@@ -20,13 +20,19 @@ SCM magick_read_image(SCM scm_file_name)
     int height = image->rows;
     int bytes_per_pixel = grey ? 1 : 3;
     int size = width * height * bytes_per_pixel;
-    void *buf = scm_gc_malloc_pointerless(size, "aiscm magick frame");
-    ExportImagePixels(image, 0, 0, width, height, format, CharPixel, buf, exception_info);
+    void *base = scm_gc_malloc_pointerless(size + 15, "aiscm magick frame");
+#if defined __x86_64__
+    void *mem = (void *)(((int64_t)base + 15) & -16);
+#else
+    void *mem = (void *)(((int32_t)base + 15) & -16);
+#endif
+    ExportImagePixels(image, 0, 0, width, height, format, CharPixel, mem, exception_info);
     if (exception_info->severity < ErrorException) {
       CatchException(exception_info);
-      retval = scm_list_4(scm_from_locale_symbol(format),
+      retval = scm_list_5(scm_from_locale_symbol(format),
                           scm_list_2(scm_from_int(width), scm_from_int(height)),
-                          scm_from_pointer(buf, NULL),
+                          scm_from_pointer(base, NULL),
+                          scm_from_pointer(mem, NULL),
                           scm_from_int(size));
     };
     DestroyImage(image);
@@ -40,16 +46,16 @@ SCM magick_read_image(SCM scm_file_name)
   return retval;
 }
 
-SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_buf, SCM scm_file_name)
+SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_mem, SCM scm_file_name)
 {
   int width = scm_to_int(scm_car(scm_shape));
   int height = scm_to_int(scm_cadr(scm_shape));
-  void *buf = scm_to_pointer(scm_buf);
+  void *mem = scm_to_pointer(scm_mem);
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
   const char *format = scm_to_locale_string(scm_symbol_to_string(scm_format));
-  Image *image = ConstituteImage(width, height, format, CharPixel, buf, exception_info);
+  Image *image = ConstituteImage(width, height, format, CharPixel, mem, exception_info);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);
     Image *images = NewImageList();

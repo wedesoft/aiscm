@@ -16,7 +16,9 @@
          (typecode (if (eq? (car picture) 'I) <ubyte> <ubytergb>))]
     (make (multiarray typecode 2)
           #:shape (cadr picture)
-          #:value (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
+          #:value (make <mem> #:base   (caddr picture)
+                              #:memory (cadddr picture)
+                              #:size   (list-ref picture 4)))))
 (define (write-image img file-name)
   (let [(format    (cond ((eq? (typecode img) <ubyte>)    'I)
                          ((eq? (typecode img) <ubytergb>) 'RGB)

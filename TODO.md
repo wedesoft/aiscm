@@ -12,7 +12,6 @@
 * complex abs (magnitude), complex arg (and real)
 * X.Org window with width and height?
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
-* align data when loading image? (when constructing image?)
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort

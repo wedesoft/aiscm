@@ -493,18 +493,6 @@
             #:name name
             #:code (mode op result a)
             #:value result))))
-(define-method (+ (self <fragment<element>>)) self)
-(define-method (conj (self <fragment<int<>>>)) self)
-(define-method (conj (self <fragment<sequence<>>>))
-  (make (class-of self)
-        #:args (list self)
-        #:name conj
-        #:code #f
-        #:value #f))
-(unary-op - mutable-unary NEG identity)
-(unary-op ~ mutable-unary NOT identity)
-(unary-op =0 immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
-(unary-op !=0 immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
 (define (mutable-binary op result intermediate a b)
   (let [(a~  (to-type intermediate a))
         (b~  (to-type intermediate b))
@@ -520,7 +508,7 @@
             (list (op result (value a~) (value b~))))))
 (define (shift-binary op result intermediate a b)
   (append (code a) (code b) (list (MOV result (value a)) (op result (value b)))))
-(define-method (protect self fun) fun); TODO: refactor
+(define-method (protect self fun) fun)
 (define-method (protect (self <meta<sequence<>>>) fun) list)
 (define-syntax-rule (binary-op name mode coercion op conversion)
   (define-method (name (a <fragment<element>>) (b <fragment<element>>))
@@ -532,6 +520,20 @@
             #:name name
             #:code ((protect intermediate mode) op result intermediate a b)
             #:value result))))
+
+(define-method (+ (self <fragment<element>>)) self)
+(define-method (conj (self <fragment<int<>>>)) self)
+(define-method (conj (self <fragment<sequence<>>>))
+  (make (class-of self)
+        #:args (list self)
+        #:name conj
+        #:code #f
+        #:value #f))
+
+(unary-op -      mutable-unary NEG identity)
+(unary-op ~      mutable-unary NOT identity)
+(unary-op =0     immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
+(unary-op !=0    immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
 (binary-op +     mutable-binary   coerce     ADD                               identity)
 (binary-op -     mutable-binary   coerce     SUB                               identity)
 (binary-op *     mutable-binary   coerce     IMUL                              identity)
@@ -585,8 +587,8 @@
     (define-method (op (a <fragment<element>>) (b struct))
       (do-binary-struct-op op a b coercion))))
 
-(unary-struct-op <fragment<rgb<>>> -)
-(unary-struct-op <fragment<rgb<>>> ~)
+(unary-struct-op  <fragment<rgb<>>> -)
+(unary-struct-op  <fragment<rgb<>>> ~)
 (binary-struct-op <fragment<rgb<>>> +   coerce)
 (binary-struct-op <fragment<rgb<>>> -   coerce)
 (binary-struct-op <fragment<rgb<>>> *   coerce)
@@ -602,8 +604,8 @@
 (binary-struct-op <fragment<rgb<>>> max coerce)
 (binary-struct-op <fragment<rgb<>>> min coerce)
 
-(unary-struct-op <fragment<complex<>>> -)
-(unary-struct-op <fragment<complex<>>> conj)
+(unary-struct-op  <fragment<complex<>>> -)
+(unary-struct-op  <fragment<complex<>>> conj)
 (binary-struct-op <fragment<complex<>>> + coerce)
 (binary-struct-op <fragment<complex<>>> - coerce)
 (binary-struct-op <fragment<complex<>>> * coerce)

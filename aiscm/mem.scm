@@ -13,12 +13,13 @@
   (memory #:init-keyword #:memory #:getter get-memory)
   (base #:init-keyword #:base)
   (size #:init-value 0 #:init-keyword #:size #:getter get-size))
+(define (align16 ptr) (make-pointer (logand (+ (pointer-address ptr) #xf) #x-10)))
 (define-method (initialize (self <mem>) initargs)
   (let-keywords initargs #f (memory base size)
     (if base
       (next-method self (list #:memory (or memory base) #:base base #:size size))
-      (let [(ptr (gc-malloc-pointerless size))]
-        (next-method self (list #:memory ptr #:base ptr #:size size))))))
+      (let [(ptr (gc-malloc-pointerless (+ size 15)))]
+        (next-method self (list #:memory (align16 ptr) #:base ptr #:size size))))))
 (define-generic +)
 (define-method (+ (self <mem>) (offset <integer>))
   (let [(size (get-size self))]
