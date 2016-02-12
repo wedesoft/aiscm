@@ -42,6 +42,7 @@ sudo make install
 
 ## External links
 
+* [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
