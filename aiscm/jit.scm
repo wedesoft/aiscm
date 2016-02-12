@@ -15,13 +15,6 @@
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
-            substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers blocked repeat
-            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
-            virtual-variables flatten-code relabel
-            idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals
-            fragment type var var skeleton mov-part
             <pointer<rgb<>>> <meta<pointer<rgb<>>>>
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             <fragment<top>> <meta<fragment<top>>>
@@ -31,6 +24,11 @@
             <fragment<complex<>>> <meta<fragment<complex<>>>>
             <fragment<pointer<>>> <meta<fragment<pointer<>>>>
             <fragment<sequence<>>> <meta<fragment<sequence<>>>>
+            substitute-variables variables get-args input output labels next-indices live-analysis
+            callee-saved save-registers load-registers blocked repeat
+            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
+            virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
+            filter-blocks blocked-intervals fragment type var var skeleton mov-part
             parameter code value get-op get-name to-type type assemble jit))
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -629,6 +627,7 @@
 (define-method (real-part (self <fragment<complex<>>>)) (component self real-part))
 (define-method (real-part (self <fragment<sequence<>>>)) (component self real-part))
 (define-method (imag-part (self <fragment<element>>)) (component self imag-part))
+
 (define-method (store (p <pointer<>>) (a <fragment<element>>))
   (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
 (define-method (store (p <pointer<>>) (a <fragment<rgb<>>>))

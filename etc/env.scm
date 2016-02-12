@@ -1,5 +1,31 @@
 (use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm sequence) (aiscm pointer) (aiscm element) (aiscm int) (aiscm op) (aiscm util) (srfi srfi-1))
 
+(define r (skeleton (sequence <int>)))
+(define s (skeleton (sequence <int>)))
+(define c (skeleton <int>))
+
+(define i (var <int>))
+
+(define-class <lookup> ()
+  (slice  #:init-keyword #:slice  #:getter slice)
+  (index  #:init-keyword #:index  #:getter index)
+  (stride #:init-keyword #:stride #:getter stride))
+(define (lookup slice index stride)
+  (make <lookup> #:slice slice #:index index #:stride stride))
+
+(define-class <tensor> ()
+  (index #:init-keyword #:index #:getter index)
+  (term  #:init-keyword #:term  #:getter term))
+(define (tensor index term)
+  (make <tensor> #:index index #:term term))
+
+(define-method (express (self <sequence<>>))
+  (let [(i <var>)]
+    (tensor i (lookup (project self) i (last (strides self))))))
+
+(express s)
+
+
 (define-method (parameter self)
   (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
 (define-class <elementwise> ()
@@ -32,11 +58,21 @@
                           (get-increment destination)
                           (get-increment source))))))
 
+
 (define-class <lookup> ()
   (body #:init-keyword #:body #:getter get-body)
   (var #:init-keyword #:var #:getter get-var))
 (define-method (get (self <fragment<sequence<>>>) (i <var>))
   (make <lookup> #:body self #:var i))
+;(define-method (get (self <fragment<sequence<>>>) (i <var>))
+;  (make (fragment (project (type self)))
+;        #:args (list self i)
+;        #:name get
+;        #:code '()
+;        #:value self))
+
+(define (index i expr)
+  (get-body expr))
 
 (define ctx (make <context>))
 ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))
@@ -46,12 +82,7 @@
 (define c (parameter (skeleton <int>)))
 
 (define i (var <int>))
-
-
-(get s i)
-
-; (get s i)
-; (tensor i ...)
+(to-list ((jit ctx (list (sequence <int>)) (lambda (s) (index i (get s i)))) (seq <int> 2 3 5)))
 
 
 (use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (ice-9 optargs) (ice-9 curried-definitions) (aiscm util) (aiscm element) (aiscm pointer) (aiscm mem) (aiscm sequence) (aiscm asm) (aiscm jit) (aiscm op) (aiscm int) (aiscm float) (aiscm rgb))
