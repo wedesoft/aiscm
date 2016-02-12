@@ -43,6 +43,7 @@ sudo make install
 ## External links
 
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
+* [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
