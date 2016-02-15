@@ -1,5 +1,5 @@
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
-RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
+RUN = $(GUILE) --no-auto-compile -L $(top_builddir) -L $(top_builddir)/tests
 
 SUBDIRS = aiscm tests doc bench
 

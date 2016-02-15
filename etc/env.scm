@@ -1,17 +1,12 @@
-(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm sequence) (aiscm pointer) (aiscm element) (aiscm int) (aiscm op) (aiscm util) (srfi srfi-1))
-
-(define r (skeleton (sequence <int>)))
-(define s (skeleton (sequence <int>)))
-(define c (skeleton <int>))
-
-(define i (var <int>))
+(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm sequence) (aiscm pointer) (aiscm element) (aiscm int) (aiscm op) (aiscm util) (srfi srfi-1) (guile-tap))
 
 (define-class <lookup> ()
-  (slice  #:init-keyword #:slice  #:getter slice)
+  (term   #:init-keyword #:term   #:getter term)
   (index  #:init-keyword #:index  #:getter index)
-  (stride #:init-keyword #:stride #:getter stride))
-(define (lookup slice index stride)
-  (make <lookup> #:slice slice #:index index #:stride stride))
+  (stride #:init-keyword #:stride #:getter stride)
+  (lshape #:init-keyword #:lshape #:getter lshape))
+(define (lookup term index stride lshape)
+  (make <lookup> #:term term #:index index #:stride stride #:lshape lshape))
 
 (define-class <tensor> ()
   (index #:init-keyword #:index #:getter index)
@@ -19,19 +14,69 @@
 (define (tensor index term)
   (make <tensor> #:index index #:term term))
 
+(define-method (express (self <element>)) self); could be "skeleton" later
 (define-method (express (self <sequence<>>))
   (let [(i <var>)]
-    (tensor i (lookup (project self) i (last (strides self))))))
+    (tensor i (lookup (project self) i (last (strides self)) (last (shape self))))))
 
-(express s)
-
-
-(define-method (parameter self)
-  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
 (define-class <elementwise> ()
   (setup     #:init-keyword #:setup     #:getter get-setup)
   (increment #:init-keyword #:increment #:getter get-increment)
   (body      #:init-keyword #:body      #:getter get-body))
+
+(define-method (element-wise (self <tensor>))
+  (element-wise (term self) (index self)))
+;(define-method (ppp (self <tensor>)) (ppp (term self)))
+(define-method (typecode (self <lookup>)) (typecode (term self)))
+(define-method (ppp (self <lookup>)) (ppp (term self)))
+(define-method (ppp (self <pointer<>>)) self)
+(define-method (lshape (self <tensor>)) (lshape (term self)))
+(define-method (subst (self <pointer<>>) (p <var>))
+  (make (class-of self) #:value p))
+(define-method (element-wise (self <lookup>))
+  (let [(incr (var <long>))
+        (p    (var <long>))]
+    (make <elementwise>
+      #:setup (list (IMUL incr (stride self)) (size-of (typecode self))
+                    (MOV p (ppp self)))
+      #:increment (list (ADD p incr))
+      #:body (subst (term self) p))))
+(define-method (element-wise (self <lookup>) (i <var>))
+  (element-wise self))
+(define-method (element-wise (self <tensor>))
+  (element-wise (term self)))
+
+; tensor/lookup/element-wise <-> code fragments
+(define-method (store (p <pointer<>>) (a <pointer<>>))
+  (let [(result (var (typecode a)))]
+    (list (MOV result (ptr (typecode a) (get a))) (MOV (ptr (typecode p) (get p)) result))))
+(define-method (store (result <tensor>) expr)
+  (let [(destination (element-wise result))
+        (source      (element-wise expr))]
+    (list (get-setup destination)
+          (get-setup source)
+          (repeat (lshape result)
+                  (append (store (get-body destination) (get-body source)))
+                          (get-increment destination)
+                          (get-increment source)))))
+
+(define r (skeleton (sequence <int>)))
+(define s (skeleton (sequence <int>)))
+(define c (skeleton <int>))
+(define i (var <int>))
+
+(element-wise (express s))
+
+(store (express r) (express s))
+
+(ok (eq? c (express c))
+    "Scalar expresses itself")
+(ok (is-a? (express s) <tensor>)
+    "Sequence is expressed as tensor")
+
+
+(define-method (parameter self)
+  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
 (define-method (element-wise self)
   (make <elementwise> #:setup '() #:increment '() #:body self))
 (define-method (element-wise (s <sequence<>>))
