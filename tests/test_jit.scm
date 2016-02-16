@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 258)
+(planned-tests 266)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -334,10 +334,24 @@
 
 (diagnostics "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-
-
-
-
+(let  [(i (skeleton <int>))]
+  (ok (is-a? i <int>)
+      "skeleton of integer is of type integer")
+  (ok (is-a? (slot-ref i 'value) <var>)
+      "value of integer skeleton is a variable")
+  (ok (eq? <int> (typecode (slot-ref i 'value)))
+      "value of integer skeleton is of type integer"))
+(let  [(s (skeleton (sequence <int>)))]
+  (ok (is-a? s <tensor>)
+      "skeleton of a sequence is a tensor")
+  (ok (is-a? (term s) <lookup>)
+      "term of a sequence skeleton is a lookup object")
+  (ok (is-a? (index s) <var>)
+      "index of a sequence skeleton is a variable")
+  (ok (eq? <long> (typecode (index s)))
+      "index of a sequence skeleton is of type long integer")
+  (ok (equal? (index (term s)) (index s))
+      "the index of the tensor and the lookup object match"))
 
 
 

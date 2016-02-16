@@ -14,6 +14,13 @@
 (define (tensor index term)
   (make <tensor> #:index index #:term term))
 
+(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
+(define-method (skeleton (self <meta<sequence<>>>))
+  (let [(slice (skeleton (project self)))]
+    (make self
+          #:value   (slot-ref slice 'value)
+          #:shape   (cons (var <long>) (shape   slice))
+          #:strides (cons (var <long>) (strides slice)))))
 (define-method (express (self <element>)) self); could be "skeleton" or "parameter" later
 (define-method (express (self <sequence<>>))
   (let [(i <var>)]

@@ -28,8 +28,8 @@
       (begin (warn (format #f "Unsupported V4L2 format 0x~x" (car fmt))) #f)))
 (define format-order (map car formats))
 (define (format< x y)
-  (let [(ord-x (index (car x) format-order))
-        (ord-y (index (car y) format-order))
+  (let [(ord-x (index-of (car x) format-order))
+        (ord-y (index-of (car y) format-order))
         (size-x (apply * (cdr x)))
         (size-y (apply * (cdr y)))]
     (or (< ord-x ord-y) (and (= ord-x ord-y) (< size-x size-y)))))

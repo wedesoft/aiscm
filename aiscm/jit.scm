@@ -14,7 +14,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (<block> <cmd> <var> <ptr>
+  #:export (<block> <cmd> <var> <ptr> <tensor> <lookup>
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             ;<fragment<top>> <meta<fragment<top>>>
@@ -29,6 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var
+            skeleton term index term
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -158,13 +159,6 @@
 (define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
 (define-method (var (self <meta<complex<>>>)) (let [(t (base self))]
   (make <internalcomplex> #:real-part (var t) #:imag-part (var t))))
-(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
-(define-method (skeleton (self <meta<sequence<>>>))
-  (let [(slice (skeleton (project self)))]
-    (make self
-          #:value   (slot-ref slice 'value)
-          #:shape   (cons (var <long>) (shape   slice))
-          #:strides (cons (var <long>) (strides slice)))))
 
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -264,9 +258,9 @@
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
-             (stack-param? (and (index target parameters) (>= (index target parameters) 6)))
+             (stack-param? (and (index-of target parameters) (>= (index-of target parameters) 6)))
              (location     (if stack-param?
-                               (ptr (typecode target) RSP (* 8 (- (index target parameters) 5)))
+                               (ptr (typecode target) RSP (* 8 (- (index-of target parameters) 5)))
                                (ptr (typecode target) RSP offset)))]
         (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
@@ -370,7 +364,23 @@
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
-; ------------------------------------------------------------
+; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+(define-class <lookup> ()
+  (index #:init-keyword #:index #:getter index))
+(define-class <tensor> ()
+  (index #:init-keyword #:index #:getter index)
+  (term  #:init-keyword #:term  #:getter term))
+(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
+(define-method (skeleton (self <meta<sequence<>>>))
+  (let [(idx (var <long>))]
+    (make <tensor> #:term (make <lookup> #:index idx) #:index idx)))
+;(define-method (skeleton (self <meta<sequence<>>>))
+;  (let [(slice (skeleton (project self)))]
+;    (make self
+;          #:value   (slot-ref slice 'value)
+;          #:shape   (cons (var <long>) (shape   slice))
+;          #:strides (cons (var <long>) (strides slice)))))
+
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)
 ;              (args  #:init-keyword #:args  #:getter get-args)

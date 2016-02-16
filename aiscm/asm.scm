@@ -143,7 +143,7 @@
     (if (or (not (zero? flags)) (need-rex? r) (need-rex? r/m))
       (list (logior (ash #b0100 4) flags)) '())))
 
-(define (scale s) (index s '(1 2 4 8)))
+(define (scale s) (index-of s '(1 2 4 8)))
 
 (define (SIB r/m)
   (if (get-index r/m)
