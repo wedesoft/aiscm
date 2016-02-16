@@ -15,21 +15,22 @@
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr>
-            <pointer<rgb<>>> <meta<pointer<rgb<>>>>
-            <pointer<complex<>>> <meta<pointer<complex<>>>>
-            <fragment<top>> <meta<fragment<top>>>
-            <fragment<element>> <meta<fragment<element>>>
-            <fragment<int<>>> <meta<fragment<int<>>>>
-            <fragment<rgb<>>> <meta<fragment<rgb<>>>>
-            <fragment<complex<>>> <meta<fragment<complex<>>>>
-            <fragment<pointer<>>> <meta<fragment<pointer<>>>>
-            <fragment<sequence<>>> <meta<fragment<sequence<>>>>
+            ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
+            ;<pointer<complex<>>> <meta<pointer<complex<>>>>
+            ;<fragment<top>> <meta<fragment<top>>>
+            ;<fragment<element>> <meta<fragment<element>>>
+            ;<fragment<int<>>> <meta<fragment<int<>>>>
+            ;<fragment<rgb<>>> <meta<fragment<rgb<>>>>
+            ;<fragment<complex<>>> <meta<fragment<complex<>>>>
+            ;<fragment<pointer<>>> <meta<fragment<pointer<>>>>
+            ;<fragment<sequence<>>> <meta<fragment<sequence<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers blocked repeat
+            callee-saved save-registers load-registers blocked repeat mov-part
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals fragment type var var skeleton mov-part
-            parameter code value get-op get-name to-type type assemble jit))
+            filter-blocks blocked-intervals var
+            ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
+            ))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -369,333 +370,334 @@
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
-(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
-              (name  #:init-keyword #:name  #:getter get-name)
-              (args  #:init-keyword #:args  #:getter get-args)
-              (code  #:init-keyword #:code  #:getter code)
-              (value #:init-keyword #:value #:getter value))
-(define-generic type)
-(define (fragment t)
-  (template-class (fragment t) (fragment (super t))
-    (lambda (class metaclass)
-      (define-method (type (self metaclass)) t)
-      (define-method (type (self class)) t))))
-(fragment <element>)
-(fragment <int<>>)
-(define-method (parameter self)
-  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
-(define-method (parameter (p <pointer<>>))
-  (let [(result (var (typecode p)))]
-    (make (fragment (typecode p))
-          #:args (list p)
-          #:name parameter
-          #:code (list (MOV result (ptr (typecode p) (get p))))
-          #:value result)))
-(pointer <rgb<>>)
-(pointer <complex<>>)
-(define-method (parameter (p <pointer<rgb<>>>))
-  (let [(result (var (typecode p)))
-        (size   (size-of (base (typecode p))))]
-    (make (fragment (typecode p))
-          #:args (list p)
-          #:name parameter
-          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)          ))
-                       (MOV (green result) (ptr (base (typecode p)) (get p)      size))
-                       (MOV (blue  result) (ptr (base (typecode p)) (get p) (* 2 size))))
-          #:value result)))
-(define-method (parameter (p <pointer<complex<>>>))
-  (let [(result (var (typecode p)))
-        (size   (size-of (base (typecode p))))]
-    (make (fragment (typecode p))
-          #:args (list p)
-          #:name parameter
-          #:code (list (MOV (real-part result) (ptr (base (typecode p)) (get p)     ))
-                       (MOV (imag-part result) (ptr (base (typecode p)) (get p) size)))
-          #:value result)))
-(define-method (parameter (self <sequence<>>))
-  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
-(define-method (to-type (target <meta<element>>) (self <meta<element>>))
-  target)
-(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
-  (multiarray target (dimension self)))
-  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
-    (let [(source (typecode (type frag)))]
-      (if (eq? target source)
-          frag
-          (let [(result (var target))
-                (mov    (if (>= (size-of source) (size-of target))
-                            mov-part
-                            (if (signed? source)
-                                MOVSX
-                                (if (>= (size-of source) 4) MOV MOVZX))))]
-            (make (fragment (to-type target (type frag)))
-                  #:args (list target frag)
-                  #:name to-type
-                  #:code (append (code frag) (list (mov result (value frag))))
-                  #:value result)))))
-(define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
-(fragment <rgb<>>)
-(fragment <complex<>>)
-(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
-  (let* [(tmp    (strip-code frag))
-         (r      (to-type (base target) (red   tmp)))
-         (g      (to-type (base target) (green tmp)))
-         (b      (to-type (base target) (blue  tmp)))
-         (result (rgb r g b))]
-    (make (fragment (to-type target (type frag)))
-          #:args (list target frag)
-          #:name to-type
-          #:code (append (code frag) (code result))
-          #:value (value result))))
-(define-method (to-type (target <meta<complex<>>>) (frag <fragment<element>>))
-  (let* [(tmp    (strip-code frag))
-         (re     (to-type (base target) (real-part tmp)))
-         (im     (to-type (base target) (imag-part tmp)))
-         (result (complex re im))]
-    (make (fragment (to-type target (type frag)))
-          #:args (list target frag)
-          #:name to-type
-          #:code (append (code frag) (code result))
-          #:value (value result))))
-(define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
-  (let* [(target (reduce coerce #f (map type (list r g b))))
-         (r~     (to-type (typecode target) r))
-         (g~     (to-type (typecode target) g))
-         (b~     (to-type (typecode target) b))]
-     (make (fragment (rgb target))
-           #:args (list r g b)
-           #:name rgb
-           #:code (append (code r~) (code g~) (code b~))
-           #:value (make <rgb> #:red (value r~) #:green (value g~) #:blue (value b~)))))
-(define-method (complex (real <fragment<element>>) (imag <fragment<element>>))
-  (let* [(target (reduce coerce #f (map type (list real imag))))
-         (real~  (to-type (typecode target) real))
-         (imag~  (to-type (typecode target) imag))]
-     (make (fragment (complex target))
-           #:args (list real imag)
-           #:name complex
-           #:code (append (code real~) (code imag~))
-           #:value (make <internalcomplex> #:real-part (value real~) #:imag-part (value imag~)))))
-(fragment <pointer<>>)
-(fragment <sequence<>>)
-(define (mutable-unary op result a)
-  (append (code a) (list (MOV result (value a)) (op result))))
-(define (immutable-unary op result a)
-  (append (code a) (list (op result (value a)))))
-(define-syntax-rule (unary-op name mode op conversion)
-  (define-method (name (a <fragment<element>>))
-    (let* [(target (conversion (type a)))
-           (result (var (typecode target)))]
-      (make (fragment target)
-            #:args (list a)
-            #:name name
-            #:code (mode op result a)
-            #:value result))))
-(define (mutable-binary op result intermediate a b)
-  (let [(a~  (to-type intermediate a))
-        (b~  (to-type intermediate b))
-        (tmp (skeleton intermediate))]
-    (append (code a~) (code b~)
-            (list (MOV result    (value a~))
-                  (MOV (get tmp) (value b~))
-                  (op result (get tmp))))))
-(define (immutable-binary op result intermediate a b)
-  (let [(a~ (to-type intermediate a))
-        (b~ (to-type intermediate b))]
-    (append (code a~) (code b~)
-            (list (op result (value a~) (value b~))))))
-(define (shift-binary op result intermediate a b)
-  (append (code a) (code b) (list (MOV result (value a)) (op result (value b)))))
-(define-method (protect self fun) fun)
-(define-method (protect (self <meta<sequence<>>>) fun) list)
-(define-syntax-rule (binary-op name mode coercion op conversion)
-  (define-method (name (a <fragment<element>>) (b <fragment<element>>))
-    (let* [(intermediate (coercion (type a) (type b)))
-           (target       (conversion intermediate))
-           (result       (var (typecode target)))]
-      (make (fragment target)
-            #:args (list a b)
-            #:name name
-            #:code ((protect intermediate mode) op result intermediate a b)
-            #:value result))))
-
-(define-method (+ (self <fragment<element>>)) self)
-(define-method (conj (self <fragment<int<>>>)) self)
-(define-method (conj (self <fragment<sequence<>>>))
-  (make (class-of self)
-        #:args (list self)
-        #:name conj
-        #:code #f
-        #:value #f))
-
-(unary-op -      mutable-unary NEG identity)
-(unary-op ~      mutable-unary NOT identity)
-(unary-op =0     immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
-(unary-op !=0    immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
-(binary-op +     mutable-binary   coerce     ADD                               identity)
-(binary-op -     mutable-binary   coerce     SUB                               identity)
-(binary-op *     mutable-binary   coerce     IMUL                              identity)
-(binary-op &     mutable-binary   coerce     AND                               identity)
-(binary-op |     mutable-binary   coerce     OR                                identity)
-(binary-op ^     mutable-binary   coerce     XOR                               identity)
-(binary-op <<    shift-binary     coerce     shl                               identity)
-(binary-op >>    shift-binary     coerce     shr                               identity)
-(binary-op /     immutable-binary coerce     div                               identity)
-(binary-op %     immutable-binary coerce     mod                               identity)
-(binary-op =     immutable-binary coerce     (binary-cmp SETE SETE)            (cut to-type <bool> <>))
-(binary-op !=    immutable-binary coerce     (binary-cmp SETNE SETNE)          (cut to-type <bool> <>))
-(binary-op <     immutable-binary sign-space (binary-cmp SETL SETB)            (cut to-type <bool> <>))
-(binary-op <=    immutable-binary sign-space (binary-cmp SETLE SETBE)          (cut to-type <bool> <>))
-(binary-op >     immutable-binary sign-space (binary-cmp SETNLE SETNBE)        (cut to-type <bool> <>))
-(binary-op >=    immutable-binary sign-space (binary-cmp SETNL SETNB)          (cut to-type <bool> <>))
-(binary-op &&    immutable-binary coerce     (binary-bool AND)                 (cut to-type <bool> <>))
-(binary-op ||    immutable-binary coerce     (binary-bool OR)                  (cut to-type <bool> <>))
-(binary-op min   immutable-binary sign-space (binary-cmov cmovnle16 cmovnbe16) identity)
-(binary-op max   immutable-binary sign-space (binary-cmov cmovl16 cmovb16)     identity)
-
-(define-method (peel (self <fragment<element>>)) self)
-(define-method (peel (self <fragment<rgb<>>>))
-  (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
-(define-method (peel (self <fragment<complex<>>>))
-  (make <internalcomplex> #:real-part (real-part self) #:imag-part (imag-part self)))
-
-(define (do-unary-struct-op op self)
-  (let [(result (op (peel (strip-code self))))]
-    (make (fragment (type self))
-          #:args (list self)
-          #:name op
-          #:code (append (code self) (code result))
-          #:value (value result))))
-(define-syntax-rule (unary-struct-op struct op)
-  (define-method (op (a struct)) (do-unary-struct-op op a)))
-(define (do-binary-struct-op op a b coercion)
-  (let* [(target (coercion (type a) (type b)))
-         (result ((protect target op) (peel (strip-code a)) (peel (strip-code b))))]
-    (make (fragment target)
-          #:args (list a b)
-          #:name op
-          #:code (append (code a) (code b) ((protect target code) result))
-          #:value ((protect target value) result))))
-(define-syntax-rule (binary-struct-op struct op coercion)
-  (begin
-    (define-method (op (a struct) (b struct))
-      (do-binary-struct-op op a b coercion))
-    (define-method (op (a struct) (b <fragment<element>>))
-      (do-binary-struct-op op a b coercion))
-    (define-method (op (a <fragment<element>>) (b struct))
-      (do-binary-struct-op op a b coercion))))
-
-(unary-struct-op  <fragment<rgb<>>> -)
-(unary-struct-op  <fragment<rgb<>>> ~)
-(binary-struct-op <fragment<rgb<>>> +   coerce)
-(binary-struct-op <fragment<rgb<>>> -   coerce)
-(binary-struct-op <fragment<rgb<>>> *   coerce)
-(binary-struct-op <fragment<rgb<>>> &   coerce)
-(binary-struct-op <fragment<rgb<>>> |   coerce)
-(binary-struct-op <fragment<rgb<>>> ^   coerce)
-(binary-struct-op <fragment<rgb<>>> <<  coerce)
-(binary-struct-op <fragment<rgb<>>> >>  coerce)
-(binary-struct-op <fragment<rgb<>>> /   coerce)
-(binary-struct-op <fragment<rgb<>>> %   coerce)
-(binary-struct-op <fragment<rgb<>>> =   (const <bool>))
-(binary-struct-op <fragment<rgb<>>> !=  (const <bool>))
-(binary-struct-op <fragment<rgb<>>> max coerce)
-(binary-struct-op <fragment<rgb<>>> min coerce)
-
-(unary-struct-op  <fragment<complex<>>> -)
-(unary-struct-op  <fragment<complex<>>> conj)
-(binary-struct-op <fragment<complex<>>> + coerce)
-(binary-struct-op <fragment<complex<>>> - coerce)
-(binary-struct-op <fragment<complex<>>> * coerce)
-(binary-struct-op <fragment<complex<>>> / coerce)
-
-(define-method (project self) self)
-(define-method (project (self <fragment<sequence<>>>))
-  (apply (get-name self) (map project (get-args self))))
-(define-method (store (a <element>) (b <fragment<element>>))
-  (append (code b) (list (MOV (get a) (value b)))))
-(define (component self name)
-  (make (fragment (base (type self)))
-          #:args (list self)
-          #:name name
-          #:code (code self)
-          #:value ((protect (type self) name) (value self))))
-(define-method (red   (self <fragment<element>>)) (component self red  ))
-(define-method (green (self <fragment<element>>)) (component self green))
-(define-method (blue  (self <fragment<element>>)) (component self blue ))
-(define-method (real-part (self <fragment<element>>)) self)
-(define-method (real-part (self <fragment<complex<>>>)) (component self real-part))
-(define-method (real-part (self <fragment<sequence<>>>)) (component self real-part))
-(define-method (imag-part (self <fragment<element>>)) (component self imag-part))
-
-(define-method (store (p <pointer<>>) (a <fragment<element>>))
-  (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
-(define-method (store (p <pointer<>>) (a <fragment<rgb<>>>))
-  (let [(size (size-of (base (typecode p))))]
-    (append (code a)
-            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (value a)))
-                  (MOV (ptr (base (typecode p)) (get p)       size) (green (value a)))
-                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (value a)))))))
-(define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
-  (let [(size (size-of (base (typecode p))))]
-    (append (code a)
-            (list (MOV (ptr (base (typecode p)) (get p)     ) (real-part (value a)))
-                  (MOV (ptr (base (typecode p)) (get p) size) (imag-part (value a)))))))
-(define-class <elementwise> ()
-  (setup     #:init-keyword #:setup     #:getter get-setup)
-  (increment #:init-keyword #:increment #:getter get-increment)
-  (body      #:init-keyword #:body      #:getter get-body))
-(define-method (element-wise self)
-  (make <elementwise> #:setup '() #:increment '() #:body self))
-(define-method (element-wise (s <sequence<>>))
-  (let [(incr (var <long>))
-        (p    (var <long>))]
-    (make <elementwise>
-          #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
-                        (MOV p (slot-ref s 'value)))
-          #:increment (list (ADD p incr))
-          #:body (project (rebase p s)))))
-(define-method (element-wise (self <fragment<sequence<>>>))
-  (let [(loops (map element-wise (get-args self)))]
-    (make <elementwise>
-          #:setup (map get-setup loops)
-          #:increment (map get-increment loops)
-          #:body (apply (get-name self) (map get-body loops)))))
-(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
-  (let [(destination (element-wise s))
-        (source      (element-wise a))]
-    (list (get-setup destination)
-          (get-setup source)
-          (repeat (last (shape s))
-                  (append (store (get-body destination) (get-body source))
-                          (get-increment destination)
-                          (get-increment source))))))
-
-(define-method (returnable self) #f)
-(define-method (returnable (self <meta<bool>>)) <ubyte>)
-(define-method (returnable (self <meta<int<>>>)) self)
-(define (assemble retval vars frag)
-  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
-                     (append (store retval frag) (list (RET)))))
-(define (jit context classes proc)
-  (let* [(vars        (map skeleton classes))
-         (frag        (apply proc (map parameter vars)))
-         (result-type (type frag))
-         (return-type (returnable result-type))
-         (target      (if return-type result-type (pointer result-type)))
-         (retval      (skeleton target))
-         (args        (if return-type vars (cons retval vars)))
-         (code        (asm context
-                           (or return-type <null>)
-                           (map typecode (concatenate (map content args)))
-                           (assemble retval vars frag)))
-         (fun         (lambda header (apply code (concatenate (map content header)))))]
-    (if return-type
-        (lambda args
-          (let [(result (apply fun args))]
-            (get (build result-type result))))
-        (lambda args
-          (let [(result (make target #:shape (argmax length (map shape args))))]
-            (apply fun (cons result args))
-            (get (build result-type result)))))))
+; ------------------------------------------------------------
+;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
+;              (name  #:init-keyword #:name  #:getter get-name)
+;              (args  #:init-keyword #:args  #:getter get-args)
+;              (code  #:init-keyword #:code  #:getter code)
+;              (value #:init-keyword #:value #:getter value))
+;(define-generic type)
+;(define (fragment t)
+;  (template-class (fragment t) (fragment (super t))
+;    (lambda (class metaclass)
+;      (define-method (type (self metaclass)) t)
+;      (define-method (type (self class)) t))))
+;(fragment <element>)
+;(fragment <int<>>)
+;(define-method (parameter self)
+;  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
+;(define-method (parameter (p <pointer<>>))
+;  (let [(result (var (typecode p)))]
+;    (make (fragment (typecode p))
+;          #:args (list p)
+;          #:name parameter
+;          #:code (list (MOV result (ptr (typecode p) (get p))))
+;          #:value result)))
+;(pointer <rgb<>>)
+;(pointer <complex<>>)
+;(define-method (parameter (p <pointer<rgb<>>>))
+;  (let [(result (var (typecode p)))
+;        (size   (size-of (base (typecode p))))]
+;    (make (fragment (typecode p))
+;          #:args (list p)
+;          #:name parameter
+;          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)          ))
+;                       (MOV (green result) (ptr (base (typecode p)) (get p)      size))
+;                       (MOV (blue  result) (ptr (base (typecode p)) (get p) (* 2 size))))
+;          #:value result)))
+;(define-method (parameter (p <pointer<complex<>>>))
+;  (let [(result (var (typecode p)))
+;        (size   (size-of (base (typecode p))))]
+;    (make (fragment (typecode p))
+;          #:args (list p)
+;          #:name parameter
+;          #:code (list (MOV (real-part result) (ptr (base (typecode p)) (get p)     ))
+;                       (MOV (imag-part result) (ptr (base (typecode p)) (get p) size)))
+;          #:value result)))
+;(define-method (parameter (self <sequence<>>))
+;  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
+;(define-method (to-type (target <meta<element>>) (self <meta<element>>))
+;  target)
+;(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
+;  (multiarray target (dimension self)))
+;  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
+;    (let [(source (typecode (type frag)))]
+;      (if (eq? target source)
+;          frag
+;          (let [(result (var target))
+;                (mov    (if (>= (size-of source) (size-of target))
+;                            mov-part
+;                            (if (signed? source)
+;                                MOVSX
+;                                (if (>= (size-of source) 4) MOV MOVZX))))]
+;            (make (fragment (to-type target (type frag)))
+;                  #:args (list target frag)
+;                  #:name to-type
+;                  #:code (append (code frag) (list (mov result (value frag))))
+;                  #:value result)))))
+;(define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
+;(fragment <rgb<>>)
+;(fragment <complex<>>)
+;(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
+;  (let* [(tmp    (strip-code frag))
+;         (r      (to-type (base target) (red   tmp)))
+;         (g      (to-type (base target) (green tmp)))
+;         (b      (to-type (base target) (blue  tmp)))
+;         (result (rgb r g b))]
+;    (make (fragment (to-type target (type frag)))
+;          #:args (list target frag)
+;          #:name to-type
+;          #:code (append (code frag) (code result))
+;          #:value (value result))))
+;(define-method (to-type (target <meta<complex<>>>) (frag <fragment<element>>))
+;  (let* [(tmp    (strip-code frag))
+;         (re     (to-type (base target) (real-part tmp)))
+;         (im     (to-type (base target) (imag-part tmp)))
+;         (result (complex re im))]
+;    (make (fragment (to-type target (type frag)))
+;          #:args (list target frag)
+;          #:name to-type
+;          #:code (append (code frag) (code result))
+;          #:value (value result))))
+;(define-method (rgb (r <fragment<element>>) (g <fragment<element>>) (b <fragment<element>>))
+;  (let* [(target (reduce coerce #f (map type (list r g b))))
+;         (r~     (to-type (typecode target) r))
+;         (g~     (to-type (typecode target) g))
+;         (b~     (to-type (typecode target) b))]
+;     (make (fragment (rgb target))
+;           #:args (list r g b)
+;           #:name rgb
+;           #:code (append (code r~) (code g~) (code b~))
+;           #:value (make <rgb> #:red (value r~) #:green (value g~) #:blue (value b~)))))
+;(define-method (complex (real <fragment<element>>) (imag <fragment<element>>))
+;  (let* [(target (reduce coerce #f (map type (list real imag))))
+;         (real~  (to-type (typecode target) real))
+;         (imag~  (to-type (typecode target) imag))]
+;     (make (fragment (complex target))
+;           #:args (list real imag)
+;           #:name complex
+;           #:code (append (code real~) (code imag~))
+;           #:value (make <internalcomplex> #:real-part (value real~) #:imag-part (value imag~)))))
+;(fragment <pointer<>>)
+;(fragment <sequence<>>)
+;(define (mutable-unary op result a)
+;  (append (code a) (list (MOV result (value a)) (op result))))
+;(define (immutable-unary op result a)
+;  (append (code a) (list (op result (value a)))))
+;(define-syntax-rule (unary-op name mode op conversion)
+;  (define-method (name (a <fragment<element>>))
+;    (let* [(target (conversion (type a)))
+;           (result (var (typecode target)))]
+;      (make (fragment target)
+;            #:args (list a)
+;            #:name name
+;            #:code (mode op result a)
+;            #:value result))))
+;(define (mutable-binary op result intermediate a b)
+;  (let [(a~  (to-type intermediate a))
+;        (b~  (to-type intermediate b))
+;        (tmp (skeleton intermediate))]
+;    (append (code a~) (code b~)
+;            (list (MOV result    (value a~))
+;                  (MOV (get tmp) (value b~))
+;                  (op result (get tmp))))))
+;(define (immutable-binary op result intermediate a b)
+;  (let [(a~ (to-type intermediate a))
+;        (b~ (to-type intermediate b))]
+;    (append (code a~) (code b~)
+;            (list (op result (value a~) (value b~))))))
+;(define (shift-binary op result intermediate a b)
+;  (append (code a) (code b) (list (MOV result (value a)) (op result (value b)))))
+;(define-method (protect self fun) fun)
+;(define-method (protect (self <meta<sequence<>>>) fun) list)
+;(define-syntax-rule (binary-op name mode coercion op conversion)
+;  (define-method (name (a <fragment<element>>) (b <fragment<element>>))
+;    (let* [(intermediate (coercion (type a) (type b)))
+;           (target       (conversion intermediate))
+;           (result       (var (typecode target)))]
+;      (make (fragment target)
+;            #:args (list a b)
+;            #:name name
+;            #:code ((protect intermediate mode) op result intermediate a b)
+;            #:value result))))
+;
+;(define-method (+ (self <fragment<element>>)) self)
+;(define-method (conj (self <fragment<int<>>>)) self)
+;(define-method (conj (self <fragment<sequence<>>>))
+;  (make (class-of self)
+;        #:args (list self)
+;        #:name conj
+;        #:code #f
+;        #:value #f))
+;
+;(unary-op -      mutable-unary NEG identity)
+;(unary-op ~      mutable-unary NOT identity)
+;(unary-op =0     immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
+;(unary-op !=0    immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
+;(binary-op +     mutable-binary   coerce     ADD                               identity)
+;(binary-op -     mutable-binary   coerce     SUB                               identity)
+;(binary-op *     mutable-binary   coerce     IMUL                              identity)
+;(binary-op &     mutable-binary   coerce     AND                               identity)
+;(binary-op |     mutable-binary   coerce     OR                                identity)
+;(binary-op ^     mutable-binary   coerce     XOR                               identity)
+;(binary-op <<    shift-binary     coerce     shl                               identity)
+;(binary-op >>    shift-binary     coerce     shr                               identity)
+;(binary-op /     immutable-binary coerce     div                               identity)
+;(binary-op %     immutable-binary coerce     mod                               identity)
+;(binary-op =     immutable-binary coerce     (binary-cmp SETE SETE)            (cut to-type <bool> <>))
+;(binary-op !=    immutable-binary coerce     (binary-cmp SETNE SETNE)          (cut to-type <bool> <>))
+;(binary-op <     immutable-binary sign-space (binary-cmp SETL SETB)            (cut to-type <bool> <>))
+;(binary-op <=    immutable-binary sign-space (binary-cmp SETLE SETBE)          (cut to-type <bool> <>))
+;(binary-op >     immutable-binary sign-space (binary-cmp SETNLE SETNBE)        (cut to-type <bool> <>))
+;(binary-op >=    immutable-binary sign-space (binary-cmp SETNL SETNB)          (cut to-type <bool> <>))
+;(binary-op &&    immutable-binary coerce     (binary-bool AND)                 (cut to-type <bool> <>))
+;(binary-op ||    immutable-binary coerce     (binary-bool OR)                  (cut to-type <bool> <>))
+;(binary-op min   immutable-binary sign-space (binary-cmov cmovnle16 cmovnbe16) identity)
+;(binary-op max   immutable-binary sign-space (binary-cmov cmovl16 cmovb16)     identity)
+;
+;(define-method (peel (self <fragment<element>>)) self)
+;(define-method (peel (self <fragment<rgb<>>>))
+;  (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
+;(define-method (peel (self <fragment<complex<>>>))
+;  (make <internalcomplex> #:real-part (real-part self) #:imag-part (imag-part self)))
+;
+;(define (do-unary-struct-op op self)
+;  (let [(result (op (peel (strip-code self))))]
+;    (make (fragment (type self))
+;          #:args (list self)
+;          #:name op
+;          #:code (append (code self) (code result))
+;          #:value (value result))))
+;(define-syntax-rule (unary-struct-op struct op)
+;  (define-method (op (a struct)) (do-unary-struct-op op a)))
+;(define (do-binary-struct-op op a b coercion)
+;  (let* [(target (coercion (type a) (type b)))
+;         (result ((protect target op) (peel (strip-code a)) (peel (strip-code b))))]
+;    (make (fragment target)
+;          #:args (list a b)
+;          #:name op
+;          #:code (append (code a) (code b) ((protect target code) result))
+;          #:value ((protect target value) result))))
+;(define-syntax-rule (binary-struct-op struct op coercion)
+;  (begin
+;    (define-method (op (a struct) (b struct))
+;      (do-binary-struct-op op a b coercion))
+;    (define-method (op (a struct) (b <fragment<element>>))
+;      (do-binary-struct-op op a b coercion))
+;    (define-method (op (a <fragment<element>>) (b struct))
+;      (do-binary-struct-op op a b coercion))))
+;
+;(unary-struct-op  <fragment<rgb<>>> -)
+;(unary-struct-op  <fragment<rgb<>>> ~)
+;(binary-struct-op <fragment<rgb<>>> +   coerce)
+;(binary-struct-op <fragment<rgb<>>> -   coerce)
+;(binary-struct-op <fragment<rgb<>>> *   coerce)
+;(binary-struct-op <fragment<rgb<>>> &   coerce)
+;(binary-struct-op <fragment<rgb<>>> |   coerce)
+;(binary-struct-op <fragment<rgb<>>> ^   coerce)
+;(binary-struct-op <fragment<rgb<>>> <<  coerce)
+;(binary-struct-op <fragment<rgb<>>> >>  coerce)
+;(binary-struct-op <fragment<rgb<>>> /   coerce)
+;(binary-struct-op <fragment<rgb<>>> %   coerce)
+;(binary-struct-op <fragment<rgb<>>> =   (const <bool>))
+;(binary-struct-op <fragment<rgb<>>> !=  (const <bool>))
+;(binary-struct-op <fragment<rgb<>>> max coerce)
+;(binary-struct-op <fragment<rgb<>>> min coerce)
+;
+;(unary-struct-op  <fragment<complex<>>> -)
+;(unary-struct-op  <fragment<complex<>>> conj)
+;(binary-struct-op <fragment<complex<>>> + coerce)
+;(binary-struct-op <fragment<complex<>>> - coerce)
+;(binary-struct-op <fragment<complex<>>> * coerce)
+;(binary-struct-op <fragment<complex<>>> / coerce)
+;
+;(define-method (project self) self)
+;(define-method (project (self <fragment<sequence<>>>))
+;  (apply (get-name self) (map project (get-args self))))
+;(define-method (store (a <element>) (b <fragment<element>>))
+;  (append (code b) (list (MOV (get a) (value b)))))
+;(define (component self name)
+;  (make (fragment (base (type self)))
+;          #:args (list self)
+;          #:name name
+;          #:code (code self)
+;          #:value ((protect (type self) name) (value self))))
+;(define-method (red   (self <fragment<element>>)) (component self red  ))
+;(define-method (green (self <fragment<element>>)) (component self green))
+;(define-method (blue  (self <fragment<element>>)) (component self blue ))
+;(define-method (real-part (self <fragment<element>>)) self)
+;(define-method (real-part (self <fragment<complex<>>>)) (component self real-part))
+;(define-method (real-part (self <fragment<sequence<>>>)) (component self real-part))
+;(define-method (imag-part (self <fragment<element>>)) (component self imag-part))
+;
+;(define-method (store (p <pointer<>>) (a <fragment<element>>))
+;  (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
+;(define-method (store (p <pointer<>>) (a <fragment<rgb<>>>))
+;  (let [(size (size-of (base (typecode p))))]
+;    (append (code a)
+;            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (value a)))
+;                  (MOV (ptr (base (typecode p)) (get p)       size) (green (value a)))
+;                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (value a)))))))
+;(define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
+;  (let [(size (size-of (base (typecode p))))]
+;    (append (code a)
+;            (list (MOV (ptr (base (typecode p)) (get p)     ) (real-part (value a)))
+;                  (MOV (ptr (base (typecode p)) (get p) size) (imag-part (value a)))))))
+;(define-class <elementwise> ()
+;  (setup     #:init-keyword #:setup     #:getter get-setup)
+;  (increment #:init-keyword #:increment #:getter get-increment)
+;  (body      #:init-keyword #:body      #:getter get-body))
+;(define-method (element-wise self)
+;  (make <elementwise> #:setup '() #:increment '() #:body self))
+;(define-method (element-wise (s <sequence<>>))
+;  (let [(incr (var <long>))
+;        (p    (var <long>))]
+;    (make <elementwise>
+;          #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
+;                        (MOV p (slot-ref s 'value)))
+;          #:increment (list (ADD p incr))
+;          #:body (project (rebase p s)))))
+;(define-method (element-wise (self <fragment<sequence<>>>))
+;  (let [(loops (map element-wise (get-args self)))]
+;    (make <elementwise>
+;          #:setup (map get-setup loops)
+;          #:increment (map get-increment loops)
+;          #:body (apply (get-name self) (map get-body loops)))))
+;(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
+;  (let [(destination (element-wise s))
+;        (source      (element-wise a))]
+;    (list (get-setup destination)
+;          (get-setup source)
+;          (repeat (last (shape s))
+;                  (append (store (get-body destination) (get-body source))
+;                          (get-increment destination)
+;                          (get-increment source))))))
+;
+;(define-method (returnable self) #f)
+;(define-method (returnable (self <meta<bool>>)) <ubyte>)
+;(define-method (returnable (self <meta<int<>>>)) self)
+;(define (assemble retval vars frag)
+;  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
+;                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
+;                     (append (store retval frag) (list (RET)))))
+;(define (jit context classes proc)
+;  (let* [(vars        (map skeleton classes))
+;         (frag        (apply proc (map parameter vars)))
+;         (result-type (type frag))
+;         (return-type (returnable result-type))
+;         (target      (if return-type result-type (pointer result-type)))
+;         (retval      (skeleton target))
+;         (args        (if return-type vars (cons retval vars)))
+;         (code        (asm context
+;                           (or return-type <null>)
+;                           (map typecode (concatenate (map content args)))
+;                           (assemble retval vars frag)))
+;         (fun         (lambda header (apply code (concatenate (map content header)))))]
+;    (if return-type
+;        (lambda args
+;          (let [(result (apply fun args))]
+;            (get (build result-type result))))
+;        (lambda args
+;          (let [(result (make target #:shape (argmax length (map shape args))))]
+;            (apply fun (cons result args))
+;            (get (build result-type result)))))))

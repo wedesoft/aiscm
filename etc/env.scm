@@ -14,7 +14,7 @@
 (define (tensor index term)
   (make <tensor> #:index index #:term term))
 
-(define-method (express (self <element>)) self); could be "skeleton" later
+(define-method (express (self <element>)) self); could be "skeleton" or "parameter" later
 (define-method (express (self <sequence<>>))
   (let [(i <var>)]
     (tensor i (lookup (project self) i (last (strides self)) (last (shape self))))))
@@ -27,8 +27,8 @@
 (define-method (element-wise (self <tensor>))
   (element-wise (term self) (index self)))
 (define-method (typecode (self <lookup>)) (typecode (term self)))
-(define-method (ppp (self <lookup>)) (ppp (term self)))
-(define-method (ppp (self <pointer<>>)) (get self))
+(define-method (locator (self <lookup>)) (locator (term self)))
+(define-method (locator (self <pointer<>>)) (get self))
 (define-method (type (self <pointer<>>)) (typecode self))
 (define-method (type (self <lookup>)) (type (term self)))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
@@ -49,7 +49,7 @@
         (p    (var <long>))]
     (make <elementwise>
       #:setup (list (IMUL incr (stride self) (size-of (typecode self)))
-                    (MOV p (ppp self)))
+                    (MOV p (locator self)))
       #:increment (list (ADD p incr))
       #:body (subst (term self) p))))
 (define-method (element-wise (self <lookup>) (i <var>))
@@ -70,13 +70,6 @@
                   (append (store (get-body destination) (get-body source)))
                           (get-increment destination)
                           (get-increment source)))))
-
-(define ctx (make <context>))
-
-(define r (skeleton (sequence <int>)))
-(define s (skeleton (sequence <int>)))
-(define c (skeleton <int>))
-(define i (var <int>))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<int<>>>)) self)
@@ -106,13 +99,34 @@
             (apply fun (cons result args))
             (get (build result-type result)))))))
 
+(define-method (subst (self <lookup>) (i <var>))
+  (lookup (term self) i (stride self) (last-shape self)))
+(define-method (get (self <sequence<>>) (i <var>))
+  (lookup (project self) i (last (strides self)) (last (shape self))))
+(define-method (get (self <tensor>) (i <var>))
+  (subst (term self) i))
+
+(define ctx (make <context>))
+
+(define r (skeleton (sequence <int>)))
+(define s (skeleton (sequence <int>)))
+(define c (skeleton <int>))
+(define i (var <int>))
+
 (element-wise (express s))
 
 (store r (express s))
 
 (assemble r (list s) (express s))
 
+(assemble r (list s) (tensor i (get s i)))
+
+(assemble r (list s) (tensor i (get (express s) i)))
+
 ((jit ctx (list (sequence <int>)) (lambda (s) s)) (seq <int> 2 3 5))
+
+((jit ctx (list (sequence <int>)) (lambda (s) (tensor i (get s i)))) (seq <int> 2 3 5))
+
 
 (ok (eq? c (express c))
     "Scalar expresses itself")
