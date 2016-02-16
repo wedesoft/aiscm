@@ -30,7 +30,7 @@
     "Query element type of sequence")
 (ok (eqv? 9 (begin (set s2 2 9) (get s2 2)))
     "Write value to sequence")
-(ok (eqv? 1 (dimension (sequence <sint>)))
+(ok (eqv? 1 (dimensions (sequence <sint>)))
     "Check number of dimensions of sequence type")
 (ok (equal? '(3) (shape s1))
     "Query shape of sequence")

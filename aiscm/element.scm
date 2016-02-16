@@ -5,7 +5,7 @@
   #:export (<element>
             <meta<element>>
             get set size-of foreign-type pack unpack
-            typecode size shape strides dimension coerce match get-size
+            typecode size shape strides dimensions coerce match get-size
             build content base))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value))
@@ -17,8 +17,8 @@
 (define-method (size (self <element>)) 1)
 (define-method (shape self) '())
 (define-method (strides self) '())
-(define-method (dimension (self <meta<element>>)) 0)
-(define-method (dimension (self <element>)) (dimension (class-of self)))
+(define-method (dimensions (self <meta<element>>)) 0)
+(define-method (dimensions (self <element>)) (dimensions (class-of self)))
 (define-method (typecode (self <meta<element>>)) self)
 (define-method (typecode (self <element>)) (typecode (class-of self)))
 (define-method (get (self <element>)) (slot-ref self 'value))

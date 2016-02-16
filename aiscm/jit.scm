@@ -29,7 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var
-            skeleton term index term
+            skeleton term index term stride dimension tensor
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -366,14 +366,26 @@
 
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 (define-class <lookup> ()
-  (index #:init-keyword #:index #:getter index))
+  (term      #:init-keyword #:term      #:getter term) 
+  (index     #:init-keyword #:index     #:getter index) 
+  (stride    #:init-keyword #:stride    #:getter stride) 
+  (dimension #:init-keyword #:dimension #:getter dimension))
 (define-class <tensor> ()
   (index #:init-keyword #:index #:getter index)
   (term  #:init-keyword #:term  #:getter term))
+(define (tensor index term) (make <tensor> #:term term #:index index))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(idx (var <long>))]
-    (make <tensor> #:term (make <lookup> #:index idx) #:index idx)))
+    (tensor idx
+            (make <lookup> #:term (skeleton (project self))
+                           #:index idx
+                           #:stride (var <long>)
+                           #:dimension (var <long>)))))
+(define-method (subst (self <lookup>) (original <var>) (replacement <var>))
+  (make <lookup> #:term (term self) #:index replacement #:stride (stride self) #:dimension (dimension self)))
+(define-method (get (self <tensor>) (i <var>))
+  (subst (term self) (index self) i))
 ;(define-method (skeleton (self <meta<sequence<>>>))
 ;  (let [(slice (skeleton (project self)))]
 ;    (make self
@@ -429,7 +441,7 @@
 ;(define-method (to-type (target <meta<element>>) (self <meta<element>>))
 ;  target)
 ;(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
-;  (multiarray target (dimension self)))
+;  (multiarray target (dimensions self)))
 ;  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
 ;    (let [(source (typecode (type frag)))]
 ;      (if (eq? target source)
