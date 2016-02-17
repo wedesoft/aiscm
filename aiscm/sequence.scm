@@ -11,7 +11,7 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence seq multiarray to-list to-array default-strides
-            dump crop project rebase roll unroll downsample)
+            dump crop project rebase roll unroll downsample dimension stride)
   #:export-syntax (arr))
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
@@ -43,6 +43,8 @@
 (define-method (pointer (target-class <meta<sequence<>>>)) target-class)
 (define (multiarray type dimensions)
   (if (zero? dimensions) (pointer type) (multiarray (sequence type) (1- dimensions))))
+(define-method (stride (self <sequence<>>)) (last (strides self)))
+(define-method (dimension (self <sequence<>>)) (last (shape self)))
 (define-method (size (self <sequence<>>)) (apply * (shape self)))
 (define-method (size-of (self <sequence<>>)) (* (size self) (size-of (typecode self))))
 (define-method (project (self <sequence<>>))
