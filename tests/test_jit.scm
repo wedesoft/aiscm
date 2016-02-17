@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 99)
+(planned-tests 101)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -355,11 +355,12 @@
       "2D array skeleton consists of five variables")
   (ok (equal? (make-list 5 <long>) (map typecode (content m)))
       "skeleton of 2D array consists of long integer variables"))
-;(let* [(s    (skeleton (sequence <int>)))
-;       (expr (expression s))]
-;  (ok ())
-; 
-;)
+(let* [(s    (skeleton (sequence <int>)))
+       (expr (expression s))]
+  (ok (eq? (slot-ref s 'value) (slot-ref (term (term expr)) 'value))
+      "sequence expression maintains pointer")
+  (ok (eq? (index expr) (index (term expr)))
+      "index of expression and index of expressions content should match"))
 
 ;(let  [(s (skeleton (sequence <int>)))]
 ;  (ok (is-a? s <tensor>)

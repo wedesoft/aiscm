@@ -29,7 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var
-            skeleton term index term stride dimension tensor
+            skeleton expression term stride dimension tensor index
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -365,14 +365,14 @@
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-(define-class <lookup> ()
-  (term   #:init-keyword #:term   #:getter term)
-  (index  #:init-keyword #:index  #:getter index)
-  (stride #:init-keyword #:stride #:getter stride))
-(define-class <tensor> ()
-  (dimension #:init-keyword #:dimension #:getter dimension)
-  (index     #:init-keyword #:index     #:getter index)
-  (term      #:init-keyword #:term      #:getter term))
+;(define-class <lookup> ()
+;  (term   #:init-keyword #:term   #:getter term)
+;  (index  #:init-keyword #:index  #:getter index)
+;  (stride #:init-keyword #:stride #:getter stride))
+;(define-class <tensor> ()
+;  (dimension #:init-keyword #:dimension #:getter dimension)
+;  (index     #:init-keyword #:index     #:getter index)
+;  (term      #:init-keyword #:term      #:getter term))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -381,6 +381,17 @@
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
 
+(define-class <lookup> ()
+  (index  #:init-keyword #:index  #:getter index)
+  (term   #:init-keyword #:term   #:getter term))
+(define (lookup index term) (make <lookup> #:index index #:term term))
+(define-class <tensor> ()
+  (index     #:init-keyword #:index     #:getter index)
+  (term      #:init-keyword #:term      #:getter term))
+(define (tensor index term) (make <tensor> #:index index #:term term))
+(define-method (expression (self <sequence<>>))
+  (let [(idx (var <long>))]
+    (tensor idx (lookup idx (project self)))))
 
 
 ;(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))

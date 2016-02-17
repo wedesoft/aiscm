@@ -1,5 +1,6 @@
 ## Ready
 
+* stride and dimension for arrays
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
