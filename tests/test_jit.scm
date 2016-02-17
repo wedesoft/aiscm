@@ -356,8 +356,10 @@
       "the stride of the lookup object is of type long integer")
   (ok (is-a? (term (term s)) (pointer <int>))
       "the lookup object is based on a pointer")
-  (ok (equal? <long> (typecode (dimension (term s))))
-      "the dimension of the lookup object is of type long integer")
+  (ok (eq? <long> (typecode (dimension s)))
+      "the dimension of the tensor object is of type long integer")
+  (ok (eq? <int> (typecode s))
+      "the tensor expression should maintain the typecode")
   (let [(i (var <long>))]
     (ok (is-a? (get s i) <lookup>)
         "retrieving the element by variable returns a lookup object")
@@ -367,9 +369,7 @@
         "lookup with variable should use the supplied variable as index")
     (ok (eq? (stride (term s)) (stride (get s i)))
         "lookup with variable should maintain the stride")
-    (ok (eq? (dimension (term s)) (dimension (get s i)))
-        "lookup with variable should maintain the dimension")
-    (ok (is-a? (tensor i (get s i)) <tensor>)
+    (ok (is-a? (tensor (var <long>) i (get s i)) <tensor>)
         "create tensor with given index")))
 
 

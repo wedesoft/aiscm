@@ -366,24 +366,26 @@
 
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 (define-class <lookup> ()
-  (term      #:init-keyword #:term      #:getter term) 
-  (index     #:init-keyword #:index     #:getter index) 
-  (stride    #:init-keyword #:stride    #:getter stride) 
-  (dimension #:init-keyword #:dimension #:getter dimension))
+  (term   #:init-keyword #:term   #:getter term)
+  (index  #:init-keyword #:index  #:getter index)
+  (stride #:init-keyword #:stride #:getter stride))
 (define-class <tensor> ()
-  (index #:init-keyword #:index #:getter index)
-  (term  #:init-keyword #:term  #:getter term))
-(define (tensor index term) (make <tensor> #:term term #:index index))
+  (dimension #:init-keyword #:dimension #:getter dimension)
+  (index     #:init-keyword #:index     #:getter index)
+  (term      #:init-keyword #:term      #:getter term))
+(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(idx (var <long>))]
-    (tensor idx
+    (tensor (var <long>)
+            idx
             (make <lookup> #:term (skeleton (project self))
                            #:index idx
-                           #:stride (var <long>)
-                           #:dimension (var <long>)))))
+                           #:stride (var <long>)))))
 (define-method (subst (self <lookup>) (original <var>) (replacement <var>))
-  (make <lookup> #:term (term self) #:index replacement #:stride (stride self) #:dimension (dimension self)))
+  (make <lookup> #:term (term self) #:index replacement #:stride (stride self)))
+(define-method (typecode (self <lookup>)) (typecode (term self)))
+(define-method (typecode (self <tensor>)) (typecode (term self)))
 (define-method (get (self <tensor>) (i <var>))
   (subst (term self) (index self) i))
 ;(define-method (skeleton (self <meta<sequence<>>>))
