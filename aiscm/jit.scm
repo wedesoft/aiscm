@@ -373,27 +373,30 @@
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index)
   (term      #:init-keyword #:term      #:getter term))
-(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
-  (let [(idx (var <long>))]
-    (tensor (var <long>)
-            idx
-            (make <lookup> #:term (skeleton (project self))
-                           #:index idx
-                           #:stride (var <long>)))))
-(define-method (subst (self <lookup>) (original <var>) (replacement <var>))
-  (make <lookup> #:term (term self) #:index replacement #:stride (stride self)))
-(define-method (typecode (self <lookup>)) (typecode (term self)))
-(define-method (typecode (self <tensor>)) (typecode (term self)))
-(define-method (get (self <tensor>) (i <var>))
-  (subst (term self) (index self) i))
+  (let [(slice (skeleton (project self)))]
+    (make self
+          #:value   (slot-ref slice 'value)
+          #:shape   (cons (var <long>) (shape   slice))
+          #:strides (cons (var <long>) (strides slice)))))
+
+
+
+;(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))
 ;(define-method (skeleton (self <meta<sequence<>>>))
-;  (let [(slice (skeleton (project self)))]
-;    (make self
-;          #:value   (slot-ref slice 'value)
-;          #:shape   (cons (var <long>) (shape   slice))
-;          #:strides (cons (var <long>) (strides slice)))))
+;  (let [(idx (var <long>))]
+;    (tensor (var <long>)
+;            idx
+;            (make <lookup> #:term (skeleton (project self))
+;                           #:index idx
+;                           #:stride (var <long>)))))
+;(define-method (subst (self <lookup>) (original <var>) (replacement <var>))
+;  (make <lookup> #:term (term self) #:index replacement #:stride (stride self)))
+;(define-method (typecode (self <lookup>)) (typecode (term self)))
+;(define-method (typecode (self <tensor>)) (typecode (term self)))
+;(define-method (get (self <tensor>) (i <var>))
+;  (subst (term self) (index self) i))
 
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)
