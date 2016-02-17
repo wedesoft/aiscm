@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 98)
+(planned-tests 99)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -342,17 +342,24 @@
   (ok (eq? <int> (typecode (slot-ref i 'value)))
       "value of integer skeleton is of type integer"))
 (let [(s (skeleton (sequence <byte>)))]
-  (ok (eq? <long> (typecode (slot-ref s 'value)))
-      "skeleton of a sequence contains a long pointer")
-  (ok (eq? <long> (typecode (car (shape s))))
-      "skeleton of a sequence should have long integer shape") 
-  (ok (eq? <long> (typecode (car (strides s))))
-      "skeleton of a sequence should have long integer strides"))
+  (ok (is-a? s (sequence <byte>))
+      "skeleton of a sequence is a sequence")
+  (ok (equal? (list <var> <var> <var>) (map class-of (content s)))
+      "sequence skeleton consists of three variables")
+  (ok (equal? (list <long> <long> <long>) (map typecode (content s)))
+      "skeleton of sequence consists of long integer variables"))
 (let [(m (skeleton (multiarray <int> 2)))]
-  (ok (equal? (list <long> <long>) (map typecode (shape m)))
-      "skeleton of 2D array should have two dimensions") 
-  (ok (equal? (list <long> <long>) (map typecode (strides m)))
-      "skeleton of 2D array should have two strides"))
+  (ok (is-a? m (multiarray <int> 2))
+      "skeleton of a 2D array is a 2D array")
+  (ok (equal? (make-list 5 <var>) (map class-of (content m)))
+      "2D array skeleton consists of five variables")
+  (ok (equal? (make-list 5 <long>) (map typecode (content m)))
+      "skeleton of 2D array consists of long integer variables"))
+;(let* [(s    (skeleton (sequence <int>)))
+;       (expr (expression s))]
+;  (ok ())
+; 
+;)
 
 ;(let  [(s (skeleton (sequence <int>)))]
 ;  (ok (is-a? s <tensor>)
