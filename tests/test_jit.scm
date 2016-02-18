@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 104)
+(planned-tests 105)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -332,7 +332,7 @@
 (ok (eq? <ubyte> (typecode (var <bool>)))
     "Boolean values are represented using unsigned byte")
 
-(diagnostics "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+(diagnostics "------------------------------------------------------------")
 
 (let  [(i (skeleton <int>))]
   (ok (is-a? i <int>)
@@ -367,6 +367,11 @@
       "sequence expression should maintain stride")
   (ok (eq? (sequence <int>) (type expr))
       "sequence expression maintains type"))
+
+(let* [(m    (skeleton (multiarray <int> 2)))
+       (expr (expression m))]
+  (ok (equal? (shape m) (shape expr))
+      "2D array expression should maintain the shape"))
 
 ;(let  [(s (skeleton (sequence <int>)))]
 ;  (let [(i (var <long>))]

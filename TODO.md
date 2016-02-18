@@ -8,6 +8,7 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
+* use trs files to run failed tests, count tests automatically
 * Theano expression compiler: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * complex abs (magnitude), complex arg (and real)

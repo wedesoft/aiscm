@@ -364,7 +364,7 @@
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
-; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; ------------------------------------------------------------
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -373,32 +373,30 @@
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
 
-(define-class <lookup> ()
-  (index  #:init-keyword #:index  #:getter index)
-  (term   #:init-keyword #:term   #:getter term)
-  (stride #:init-keyword #:stride #:getter stride))
-(define (lookup index term stride) (make <lookup> #:index index #:term term #:stride stride))
 (define-class <tensor> ()
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index)
   (term      #:init-keyword #:term      #:getter term))
-(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))
+(define (tensor dimension index term)
+  (make <tensor> #:dimension dimension #:index index #:term term))
+(define-class <lookup> ()
+  (index  #:init-keyword #:index  #:getter index)
+  (term   #:init-keyword #:term   #:getter term)
+  (stride #:init-keyword #:stride #:getter stride))
+(define-method (lookup index term stride)
+  (make <lookup> #:index index #:term term #:stride stride))
+(define-method (lookup idx (obj <tensor>) stride)
+  (tensor (dimension obj) (index obj) (lookup idx (term obj) stride)))
 (define-method (type (self <element>)) (typecode self))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
+(define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self)))
+(define-method (expression self) self)
 (define-method (expression (self <sequence<>>))
   (let [(idx (var <long>))]
-    (tensor (dimension self) idx (lookup idx (project self) (stride self)))))
+    (tensor (dimension self) idx (lookup idx (expression (project self)) (stride self)))))
 
 
-;(define (tensor dimension index term) (make <tensor> #:dimension dimension #:index index #:term term))
-;(define-method (skeleton (self <meta<sequence<>>>))
-;  (let [(idx (var <long>))]
-;    (tensor (var <long>)
-;            idx
-;            (make <lookup> #:term (skeleton (project self))
-;                           #:index idx
-;                           #:stride (var <long>)))))
 ;(define-method (subst (self <lookup>) (original <var>) (replacement <var>))
 ;  (make <lookup> #:term (term self) #:index replacement #:stride (stride self)))
 ;(define-method (typecode (self <lookup>)) (typecode (term self)))
