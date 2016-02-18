@@ -29,7 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var
-            skeleton expression term tensor index type
+            skeleton expression term tensor index type subst
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -395,6 +395,11 @@
 (define-method (expression (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self) idx (lookup idx (expression (project self)) (stride self)))))
+(define-method (subst self candidate replacement) self)
+(define-method (subst (self <lookup>) candidate replacement)
+  (lookup (if (eq? (index self) candidate) replacement (index self))
+          (subst (term self) candidate replacement)
+          (stride self)))
 
 
 ;(define-method (subst (self <lookup>) (original <var>) (replacement <var>))

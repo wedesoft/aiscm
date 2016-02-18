@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 105)
+(planned-tests 111)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -366,12 +366,25 @@
   (ok (eq? (stride s) (stride (term expr)))
       "sequence expression should maintain stride")
   (ok (eq? (sequence <int>) (type expr))
-      "sequence expression maintains type"))
-
+      "sequence expression maintains type")
+  (let [(i (var <long>))]
+    (ok (eq? i (index (subst (term expr) (index expr) i)))
+        "substitution should replace the lookup index")))
 (let* [(m    (skeleton (multiarray <int> 2)))
        (expr (expression m))]
   (ok (equal? (shape m) (shape expr))
-      "2D array expression should maintain the shape"))
+      "2D array expression should maintain the shape")
+  (ok (equal? (index expr) (index (term (term expr))))
+      "first index of expression should have a match")
+  (ok (equal? (index (term expr)) (index (term (term (term expr)))))
+      "second index of expression should have a match")
+  (let [(i (var <long>))]
+    (ok (eq? i (index (subst (term (term expr)) (index expr) i)))
+      "subst should allow replacing first index")
+    (ok (eq? i (index (term (subst (term (term expr)) (index (term expr)) i))))
+      "subst should allow replacing second index")
+    (ok (eq? (index expr) (index (subst (term (term expr)) (index (term expr)) i)))
+      "replacing the second index should maintain the first one")))
 
 ;(let  [(s (skeleton (sequence <int>)))]
 ;  (let [(i (var <long>))]
