@@ -28,8 +28,8 @@
             callee-saved save-registers load-registers blocked repeat mov-part
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals var
-            skeleton expression term tensor index type subst
+            filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
+            assemble
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -364,7 +364,6 @@
 (define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
 (define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
-; ------------------------------------------------------------
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -396,18 +395,23 @@
   (let [(idx (var <long>))]
     (tensor (dimension self) idx (lookup idx (expression (project self)) (stride self)))))
 (define-method (subst self candidate replacement) self)
+(define-method (subst (self <tensor>) candidate replacement)
+  (tensor (dimension self) (index self) (subst (term self) candidate replacement)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (term self) candidate replacement)
           (stride self)))
+(define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
 
+(define-method (code (a <element>) (b <element>))
+  (list (MOV (get a) (get b))))
+(define (assemble retval vars expr)
+  (virtual-variables (list (get retval))
+                     (map get vars)
+                     (attach (code retval expr) (RET))))
 
-;(define-method (subst (self <lookup>) (original <var>) (replacement <var>))
-;  (make <lookup> #:term (term self) #:index replacement #:stride (stride self)))
 ;(define-method (typecode (self <lookup>)) (typecode (term self)))
 ;(define-method (typecode (self <tensor>)) (typecode (term self)))
-;(define-method (get (self <tensor>) (i <var>))
-;  (subst (term self) (index self) i))
 
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)

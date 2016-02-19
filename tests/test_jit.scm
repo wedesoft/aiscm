@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 111)
+(planned-tests 115)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -331,9 +331,7 @@
     "Shortcut for  creating variables uses specified type")
 (ok (eq? <ubyte> (typecode (var <bool>)))
     "Boolean values are represented using unsigned byte")
-
 (diagnostics "------------------------------------------------------------")
-
 (let  [(i (skeleton <int>))]
   (ok (is-a? i <int>)
       "skeleton of integer is of type integer")
@@ -355,52 +353,48 @@
       "2D array skeleton consists of five variables")
   (ok (equal? (make-list 5 <long>) (map typecode (content m)))
       "skeleton of 2D array consists of long integer variables"))
-(let* [(s    (skeleton (sequence <int>)))
-       (expr (expression s))]
-  (ok (eq? (slot-ref s 'value) (slot-ref (term (term expr)) 'value))
+(let* [(s  (skeleton (sequence <int>)))
+       (sx (expression s))]
+  (ok (eq? (slot-ref s 'value) (slot-ref (term (term sx)) 'value))
       "sequence expression maintains pointer")
-  (ok (eq? (index expr) (index (term expr)))
+  (ok (eq? (index sx) (index (term sx)))
       "index of expression and index of expressions content should match")
-  (ok (eq? (dimension s) (dimension expr))
+  (ok (eq? (dimension s) (dimension sx))
       "sequence expression should maintain dimension")
-  (ok (eq? (stride s) (stride (term expr)))
+  (ok (eq? (stride s) (stride (term sx)))
       "sequence expression should maintain stride")
-  (ok (eq? (sequence <int>) (type expr))
+  (ok (eq? (sequence <int>) (type sx))
       "sequence expression maintains type")
   (let [(i (var <long>))]
-    (ok (eq? i (index (subst (term expr) (index expr) i)))
-        "substitution should replace the lookup index")))
-(let* [(m    (skeleton (multiarray <int> 2)))
-       (expr (expression m))]
-  (ok (equal? (shape m) (shape expr))
+    (ok (eq? i (index (subst (term sx) (index sx) i)))
+        "substitution should replace the lookup index")
+    (ok (eq? i (index (get sx i)))
+        "retrieving an element by index should replace with the index")))
+(let* [(m  (skeleton (multiarray <int> 2)))
+       (mx (expression m))]
+  (ok (equal? (shape m) (shape mx))
       "2D array expression should maintain the shape")
-  (ok (equal? (index expr) (index (term (term expr))))
+  (ok (equal? (index mx) (index (term (term mx))))
       "first index of expression should have a match")
-  (ok (equal? (index (term expr)) (index (term (term (term expr)))))
+  (ok (equal? (index (term mx)) (index (term (term (term mx)))))
       "second index of expression should have a match")
   (let [(i (var <long>))]
-    (ok (eq? i (index (subst (term (term expr)) (index expr) i)))
+    (ok (eq? i (index (subst (term (term mx)) (index mx) i)))
       "subst should allow replacing first index")
-    (ok (eq? i (index (term (subst (term (term expr)) (index (term expr)) i))))
+    (ok (eq? i (index (term (subst (term (term mx)) (index (term mx)) i))))
       "subst should allow replacing second index")
-    (ok (eq? (index expr) (index (subst (term (term expr)) (index (term expr)) i)))
-      "replacing the second index should maintain the first one")))
-
-;(let  [(s (skeleton (sequence <int>)))]
-;  (let [(i (var <long>))]
-;    (ok (is-a? (get s i) <lookup>)
-;        "retrieving the element by variable returns a lookup object")
-;    (ok (eq? (term (term s)) (term (get s i)))
-;        "lookup with variable should maintain pointer")
-;    (ok (eq? i (index (get s i)))
-;        "lookup with variable should use the supplied variable as index")
-;    (ok (eq? (stride (term s)) (stride (get s i)))
-;        "lookup with variable should maintain the stride")
-;    (ok (is-a? (tensor (var <long>) i (get s i)) <tensor>)
-;        "create tensor with given index")))
-
-
-
+    (ok (eq? (index mx) (index (subst (term (term mx)) (index (term mx)) i)))
+      "replacing the second index should maintain the first one")
+    (ok (eq? i (index (term (get mx i))))
+      "retrieving an element should replace with the index")))
+(let [(i (skeleton <int>))
+      (j (skeleton <int>))]
+  (ok (equal? (list (MOV ECX EAX) (RET))
+              (register-allocate (attach (code i j) (RET))))
+      "generate code for copying an integer")
+  (ok (equal? (list (MOV EAX EDI) (RET))
+              (assemble i (list j) j))
+      "generate code for identity function"))
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
