@@ -29,7 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
-            assemble
+            assemble jit setup increment body
             ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
             ))
 (define-method (get-args self) '())
@@ -48,6 +48,8 @@
                             #:output (append io out)))))
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
+(define-method (equal? (a <cmd>) (b <cmd>))
+  (and (eq? (get-op a) (get-op b)) (equal? (get-args a) (get-args b))))
 
 (define-syntax-rule (mutable-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -403,13 +405,28 @@
           (stride self)))
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
 
-(define-method (code (a <element>) (b <element>))
+(define-method (code (a <element>) b)
   (list (MOV (get a) (get b))))
+
+(define (setup self increment p)
+  (list (IMUL increment (stride self) (size-of (typecode self)))
+        (MOV p (slot-ref self 'value))))
+(define (increment self increment p)
+  (list (ADD p increment)))
+(define (body self p)
+  (project (rebase p self)))
 (define (assemble retval vars expr)
   (virtual-variables (list (get retval))
                      (map get vars)
                      (attach (code retval expr) (RET))))
 
+(define (jit context classes proc)
+  (let* [(vars        (map skeleton classes))
+         (expr        (apply proc (map expression vars)))
+         (target      (type expr))
+         (retval      (skeleton target))
+         (code        (asm context target (map class-of vars) (assemble retval vars expr)))]
+    code))
 ;(define-method (typecode (self <lookup>)) (typecode (term self)))
 ;(define-method (typecode (self <tensor>)) (typecode (term self)))
 

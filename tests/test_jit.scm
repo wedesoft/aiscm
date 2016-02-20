@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 115)
+(planned-tests 120)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -387,14 +387,31 @@
       "replacing the second index should maintain the first one")
     (ok (eq? i (index (term (get mx i))))
       "retrieving an element should replace with the index")))
-(let [(i (skeleton <int>))
-      (j (skeleton <int>))]
-  (ok (equal? (list (MOV ECX EAX) (RET))
-              (register-allocate (attach (code i j) (RET))))
+(let [(out (skeleton <int>))
+      (in  (expression (skeleton <int>)))]
+  (ok (equal? (list (MOV (get out) (get in))) (code out in))
       "generate code for copying an integer")
   (ok (equal? (list (MOV EAX EDI) (RET))
-              (assemble i (list j) j))
+              (assemble out (list in) in))
       "generate code for identity function"))
+(ok (eqv? 42 ((jit ctx (list <int>) identity) 42))
+    "compile and run the identity function")
+(let [(out  (skeleton (sequence <int>)))
+      (incr (var <long>))
+      (p    (var <long>))]
+  (ok (equal? (list (IMUL incr (stride out) (size-of (typecode out)))
+                    (MOV p (slot-ref out 'value)))
+              (setup out incr p))
+      "setup of array loop should define increment and initialise pointer")
+  (ok (equal? (list (ADD p incr))
+              (increment out incr p))
+      "increment of array loop should increment the pointer")
+  (ok (equal? p (slot-ref (body out p) 'value))
+      "body of loop should be rebased to the pointer")
+  (ok (is-a? (body out p) (pointer <int>))
+      "body of array loop should be a pointer object"))
+
+; equality for commands?
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
