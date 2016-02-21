@@ -393,6 +393,7 @@
 (define-method (type (self <element>)) (typecode self))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
+(define-method (typecode (self <tensor>)) (typecode (type self)))
 (define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self)))
 (define-method (expression self) self)
 (define-method (expression (self <sequence<>>))
@@ -414,13 +415,18 @@
 (define-method (code (a <pointer<>>) (b <element>))
   (list (MOV (ptr (typecode a) (get a)) (get b))))
 
-(define (setup self increment p)
+(define-method (setup (self <sequence<>>) increment p)
   (list (IMUL increment (stride self) (size-of (typecode self)))
         (MOV p (slot-ref self 'value))))
-(define (increment self increment p)
+(define (increment increment p)
   (list (ADD p increment)))
 (define (body self p)
   (project (rebase p self)))
+
+(define-method (setup (self <tensor>) increment p)
+  (list (IMUL increment (stride (term self)) (size-of (typecode self)))
+        (MOV p (get (term (term self))))))
+
 (define (assemble retval vars expr)
   (virtual-variables (list (get retval))
                      (map get vars)
