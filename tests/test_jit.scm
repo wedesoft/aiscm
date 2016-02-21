@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 120)
+(planned-tests 123)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -396,6 +396,16 @@
       "generate code for identity function"))
 (ok (eqv? 42 ((jit ctx (list <int>) identity) 42))
     "compile and run the identity function")
+(let [(out (skeleton <int>))
+      (in  (expression (skeleton (pointer <int>))))]
+  (ok (equal? (list (MOV (get out) (ptr <int> (get in))))
+              (code out in))
+      "generate code for reading integer from memory"))
+(let [(out (skeleton (pointer <int>)))
+      (in  (expression (skeleton <int>)))]
+  (ok (equal? (list (MOV (ptr <int> (get out)) (get in)))
+              (code out in))
+      "generate code for writing integer to memory"))
 (let [(out  (skeleton (sequence <int>)))
       (incr (var <long>))
       (p    (var <long>))]
@@ -410,6 +420,11 @@
       "body of loop should be rebased to the pointer")
   (ok (is-a? (body out p) (pointer <int>))
       "body of array loop should be a pointer object"))
+
+
+
+(skip (equal? '(2 3 5) ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5)))
+    "compile and run identity function for array")
 
 ; equality for commands?
 

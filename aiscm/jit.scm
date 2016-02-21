@@ -134,6 +134,8 @@
   (args #:init-keyword #:args #:getter get-args))
 (define-method (write (self <ptr>) port)
   (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
+(define-method (equal? (a <ptr>) (b <ptr>))
+  (and (eq? (typecode a) (typecode b)) (equal? (get-args a) (get-args b))))
 (define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
 (define-method (variables self) '())
 (define-method (variables (self <var>)) (list self))
@@ -405,8 +407,12 @@
           (stride self)))
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
 
-(define-method (code (a <element>) b)
+(define-method (code (a <element>) (b <element>))
   (list (MOV (get a) (get b))))
+(define-method (code (a <element>) (b <pointer<>>))
+  (list (MOV (get a) (ptr (typecode b) (get b)))))
+(define-method (code (a <pointer<>>) (b <element>))
+  (list (MOV (ptr (typecode a) (get a)) (get b))))
 
 (define (setup self increment p)
   (list (IMUL increment (stride self) (size-of (typecode self)))
