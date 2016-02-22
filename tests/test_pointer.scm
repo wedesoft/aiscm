@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm jit)
              (guile-tap))
-(planned-tests 17)
+(planned-tests 18)
 (define p (make <var> #:type <long> #:symbol 'p))
 (define m1 (make <mem> #:size 10))
 (define m2 (make <mem> #:size 4))
@@ -59,3 +59,6 @@
     "Content of pointer is the address as a number")
 (ok (equal? (list p) (content (make (pointer <byte>) #:value p)))
     "Content of pointer variable is variable")
+(let [(v (var <long>))]
+  (ok (equal? v (get (rebase v (make (pointer <byte>) #:value p))))
+      "rebase a pointer"))

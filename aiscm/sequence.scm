@@ -11,7 +11,7 @@
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
             sequence seq multiarray to-list to-array default-strides
-            dump crop project rebase roll unroll downsample dimension stride)
+            dump crop project roll unroll downsample dimension stride)
   #:export-syntax (arr))
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
@@ -60,7 +60,7 @@
 (define-method (crop (n <null>) (self <sequence<>>)) self)
 (define-method (crop (n <pair>) (self <sequence<>>))
   (crop (last n) (roll (crop (all-but-last n) (unroll self)))))
-(define (rebase value self)
+(define-method (rebase value (self <sequence<>>))
   (make (class-of self) #:value value #:shape (shape self) #:strides (strides self)))
 (define-method (dump (offset <integer>) (self <sequence<>>))
   (let [(value (+ (slot-ref self 'value) (* offset (last (strides self)) (size-of (typecode self)))))]

@@ -30,7 +30,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
             assemble jit setup increment body
-            ;fragment type var var skeleton parameter code value get-op get-name to-type assemble jit
+            ;fragment type var skeleton parameter code value get-op get-name to-type
             ))
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -395,6 +395,7 @@
 (define-method (type (self <lookup>)) (type (term self)))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
 (define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self)))
+(define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
 (define-method (expression self) self)
 (define-method (expression (self <sequence<>>))
   (let [(idx (var <long>))]
@@ -406,7 +407,22 @@
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (term self) candidate replacement)
           (stride self)))
+(define-method (rebase value (self <tensor>))
+  (tensor (dimension self) (index self) (rebase value (term self))))
+(define-method (rebase value (self <lookup>))
+  (lookup (index self) (rebase value (term self)) (stride self)))
+(define-method (project (self <tensor>))
+  (term (term self))); TODO: handle n-dimensional cases
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
+
+(define-method (setup (self <sequence<>>) increment p)
+  (list (IMUL increment (stride self) (size-of (typecode self)))
+        (MOV p (slot-ref self 'value))))
+(define-method (setup (self <tensor>) increment p)
+  (list (IMUL increment (stride self) (size-of (typecode self)))
+        (MOV p (get (term (term self)))))); TODO: refactor to make same as above
+(define (increment incr p) (list (ADD p incr)))
+(define (body self p) (project (rebase p self)))
 
 (define-method (code (a <element>) (b <element>))
   (list (MOV (get a) (get b))))
@@ -414,33 +430,48 @@
   (list (MOV (get a) (ptr (typecode b) (get b)))))
 (define-method (code (a <pointer<>>) (b <element>))
   (list (MOV (ptr (typecode a) (get a)) (get b))))
+(define-method (code (a <pointer<>>) (b <pointer<>>))
+  (let [(intermediate (skeleton (typecode a)))]
+    (append (code intermediate b) (code a intermediate))))
+(define-method (code (a <sequence<>>) (b <tensor>))
+  (let [(p  (var <long>))
+        (p+ (var <long>))
+        (q  (var <long>))
+        (q+ (var <long>))]
+    (list (setup a p+ p)
+          (setup b q+ q)
+          (repeat (dimension a)
+                  (append (code (body a p) (body b q))
+                          (increment p+ p)
+                          (increment q+ q))))))
 
-(define-method (setup (self <sequence<>>) increment p)
-  (list (IMUL increment (stride self) (size-of (typecode self)))
-        (MOV p (slot-ref self 'value))))
-(define (increment increment p)
-  (list (ADD p increment)))
-(define (body self p)
-  (project (rebase p self)))
 
-(define-method (setup (self <tensor>) increment p)
-  (list (IMUL increment (stride (term self)) (size-of (typecode self)))
-        (MOV p (get (term (term self))))))
-
-(define (assemble retval vars expr)
-  (virtual-variables (list (get retval))
-                     (map get vars)
+(define-method (returnable self) #f)
+;(define-method (returnable (self <meta<bool>>)) <ubyte>)
+(define-method (returnable (self <meta<int<>>>)) self)
+(define (assemble retval vars expr virtual-variables)
+  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
+                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
                      (attach (code retval expr) (RET))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map expression vars)))
          (target      (type expr))
+         (return-type (returnable target))
          (retval      (skeleton target))
-         (code        (asm context target (map class-of vars) (assemble retval vars expr)))]
-    code))
-;(define-method (typecode (self <lookup>)) (typecode (term self)))
-;(define-method (typecode (self <tensor>)) (typecode (term self)))
+         (args        (if return-type vars (cons retval vars)))
+         (code        (asm context
+                           (or return-type <null>)
+                           (map typecode (concatenate (map content args)))
+                           (assemble retval vars expr virtual-variables)))
+         (fun         (lambda header (apply code (concatenate (map content header)))))]
+    (if return-type
+      fun
+      (lambda args
+        (let [(result (make target #:shape (argmax length (map shape args))))]
+          (apply fun (cons result args))
+          result)))))
 
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)

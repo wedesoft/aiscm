@@ -11,9 +11,7 @@
             <meta<pointer<>>>
             <pointer<element>>
             <meta<pointer<element>>>
-            pointer
-            fetch
-            store))
+            pointer fetch store rebase))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-class* <pointer<element>> <pointer<>> <meta<pointer<element>>> <meta<pointer<>>>)
 (define-method (pointer target)
@@ -43,3 +41,4 @@
   (pack (make <native-int>
               #:value ((compose pointer-address get-memory get) self))))
 (define-method (content (self <mem>)) (list (pointer-address (get-memory self))))
+(define-method (rebase value (self <pointer<>>)) (make (class-of self) #:value value))

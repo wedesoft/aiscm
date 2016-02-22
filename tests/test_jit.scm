@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 126)
+(planned-tests 129)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -388,11 +388,11 @@
     (ok (eq? i (index (term (get mx i))))
       "retrieving an element should replace with the index")))
 (let [(out (skeleton <int>))
-      (in  (expression (skeleton <int>)))]
+      (in  (skeleton <int>))]
   (ok (equal? (list (MOV (get out) (get in))) (code out in))
       "generate code for copying an integer")
-  (ok (equal? (list (MOV EAX EDI) (RET))
-              (assemble out (list in) in))
+  (ok (equal? (list (list (get out)) (list (get in)) (list (MOV (get out) (get in)) (RET)))
+              (assemble out (list in) in list))
       "generate code for identity function"))
 (ok (eqv? 42 ((jit ctx (list <int>) identity) 42))
     "compile and run the identity function")
@@ -430,11 +430,21 @@
   (ok (equal? (list (ADD p incr))
               (increment incr p))
       "increment for tensor expression should increment the pointer")
-  (skip (is-a? (body in p) (pointer <int>))
+  (ok (is-a? (body in p) (pointer <int>))
       "body of array loop for basic tensor expression should be a pointer object"))
-
-
-(skip (equal? '(2 3 5) ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5)))
+(let [(in  (expression (skeleton (pointer <byte>))))
+      (out (skeleton (pointer <byte>)))]
+  (ok (equal? (list (MOV DL (ptr <byte> RCX)) (MOV (ptr <byte> RAX) DL) (RET))
+              (register-allocate (attach (code out in) (RET))))
+      "generate code for copying a byte from one memory location to another"))
+(let [(in  (skeleton (sequence <int>)))
+      (out (skeleton (sequence <int>)))]
+  (ok (list? (code out (expression in)))
+      "generating code for copying an array should run without error")
+  (ok (equal? (list '() (append (content out) (content in)))
+              (take (assemble out (list in) (expression in) list) 2))
+      "generating a method with interface for copying an array should run without error"))
+(ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
     "compile and run identity function for array")
 
 ; equality for commands?
@@ -463,7 +473,7 @@
 ;(skip (equal? <sint> (type (class-of (to-type <sint> (parameter (skeleton <ubyte>))))))
 ;    "Conversion to short integer returns a short integer")
 ;(skip (equal? (list (MOVZX CX AL) (RET))
-;            (register-allocate (append (code (to-type <sint> (parameter (skeleton <ubyte>)))) (list (RET)))))
+;            (register-allocate (attach (code (to-type <sint> (parameter (skeleton <ubyte>)))) (RET))))
 ;    "Type conversion instantiates corresponding code")
 ;(skip (null? (code (to-type <int> (parameter (skeleton <int>)))))
 ;    "Code for trivial type conversion is empty")
