@@ -1,6 +1,6 @@
 ## Ready
 
-* slot-ref .. 'value -> value
+* tensor dimensions
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?

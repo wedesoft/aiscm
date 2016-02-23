@@ -28,5 +28,5 @@
       (aiscm-error 'write-image "Saving of typecode ~a not supported" (typecode img)))
     (if (not (eqv? (dimensions img) 2))
       (aiscm-error 'write-image "Image must have 2 dimensions but had ~a" (dimensions img)))
-    (magick-write-image format (shape compacted) (get-memory (slot-ref compacted 'value)) file-name)
+    (magick-write-image format (shape compacted) (get-memory (value compacted)) file-name)
     img))

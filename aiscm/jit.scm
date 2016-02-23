@@ -372,7 +372,7 @@
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
     (make self
-          #:value   (slot-ref slice 'value)
+          #:value   (value slice)
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
 
@@ -758,7 +758,7 @@
 ;        (p    (var <long>))]
 ;    (make <elementwise>
 ;          #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
-;                        (MOV p (slot-ref s 'value)))
+;                        (MOV p (value s)))
 ;          #:increment (list (ADD p incr))
 ;          #:body (project (rebase p s)))))
 ;(define-method (element-wise (self <fragment<sequence<>>>))

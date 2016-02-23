@@ -157,7 +157,7 @@
          (if (= (car (strides self)) 1)
            (make <image> #:format  'GRAY
                          #:shape   (shape self)
-                         #:mem     (slot-ref self 'value)
+                         #:mem     (value self)
                          #:offsets '(0)
                          #:pitches (list (cadr (strides self))))
            (to-image (duplicate self))))
@@ -167,7 +167,7 @@
          (if (= (car (strides self)) 1)
            (make <image> #:format  'RGB
                          #:shape   (shape self)
-                         #:mem     (slot-ref self 'value)
+                         #:mem     (value self)
                          #:offsets '(0)
                          #:pitches (list (* 3 (cadr (strides self)))))
            (to-image (duplicate self))))

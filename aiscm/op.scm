@@ -92,7 +92,7 @@
   (make (to-type (base (typecode arr)) (class-of arr))
         #:shape (shape arr)
         #:strides (map (cut * n <>) (strides arr))
-        #:value (+ (slot-ref arr 'value) (* i (size-of (base (typecode arr)))))))
+        #:value (+ (value arr) (* i (size-of (base (typecode arr)))))))
 (define-syntax-rule (slice-if-type type arr i n default) (if (is-a? (typecode arr) (class-of type)) (slice arr i n) default))
 (define-method (red   (self <sequence<>>)) (slice-if-type <rgb<>> self 0 3 self))
 (define-method (green (self <sequence<>>)) (slice-if-type <rgb<>> self 1 3 self))
