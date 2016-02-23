@@ -449,7 +449,7 @@
 
 
 (define-method (returnable self) #f)
-;(define-method (returnable (self <meta<bool>>)) <ubyte>)
+(define-method (returnable (self <meta<bool>>)) <ubyte>)
 (define-method (returnable (self <meta<int<>>>)) self)
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
@@ -469,11 +469,13 @@
                            (assemble retval vars expr virtual-variables)))
          (fun         (lambda header (apply code (concatenate (map content header)))))]
     (if return-type
-      fun
+      (lambda args
+        (let [(result (apply fun args))]
+          (get (build target result))))
       (lambda args
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons result args))
-          result)))))
+          (get (build target result)))))))
 
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)
