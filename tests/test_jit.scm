@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 129)
+(planned-tests 132)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -446,8 +446,17 @@
       "generating a method with interface for copying an array should run without error"))
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
     "compile and run identity function for array")
-
-; equality for commands?
+(let* [(i  (var <long>))
+       (op (lambda (s) (tensor (dimension s) i (get s i))))]
+  (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) op) (seq <int> 2 3 5))))
+      "compile and run trivial 1D tensor function"))
+(let [(in  (skeleton (multiarray <int> 2)))
+      (out (skeleton (multiarray <int> 2)))]
+  (ok (list? (code out (expression in)))
+      "generating code for copying a 2D array should run without error"))
+(ok (equal? '((2 3 5) (7 9 11))
+            (to-list ((jit ctx (list (multiarray <int> 2)) identity) (arr <int> (2 3 5) (7 9 11)))))
+    "compile and run identity function for 2D array")
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))

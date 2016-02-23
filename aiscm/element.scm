@@ -4,11 +4,11 @@
   #:use-module (system foreign)
   #:export (<element>
             <meta<element>>
-            get set size-of foreign-type pack unpack
+            value get set size-of foreign-type pack unpack
             typecode size shape strides dimensions coerce match get-size
             build content base))
 (define-class* <element> <object> <meta<element>> <class>
-               (value #:init-keyword #:value))
+               (value #:init-keyword #:value #:getter value))
 (define-method (size-of (self <element>)) (size-of (class-of self)))
 (define-method (foreign-type (t <class>)) void)
 (define-generic pack)
