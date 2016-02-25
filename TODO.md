@@ -1,7 +1,8 @@
 ## Ready
 
-* tensor dimensions
+* array operations
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
+* tensor dimensions
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))

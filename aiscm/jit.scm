@@ -426,6 +426,10 @@
 (define (increment incr p) (list (ADD p incr)))
 (define (body self p) (project (rebase p self)))
 
+(define-class <function> ()
+  (type      #:init-keyword #:type      #:getter type)
+  (arguments #:init-keyword #:arguments #:getter arguments))
+
 (define-method (code (a <element>) (b <element>))
   (list (MOV (get a) (get b))))
 (define-method (code (a <element>) (b <pointer<>>))
@@ -446,7 +450,12 @@
                   (append (code (body a p) (body b q))
                           (increment p+ p)
                           (increment q+ q))))))
+(define-method (code (out <element>) (fun <function>))
+  (list (MOV (get out) (get (car (arguments fun))))
+        (ADD (get out) (get (cadr (arguments fun))))))
 
+(define-method (+ (a <int<>>) (b <int<>>))
+  (make <function> #:arguments (list a b) #:type (type a)))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
@@ -476,7 +485,6 @@
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons result args))
           (get (build target result)))))))
-
 ;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
 ;              (name  #:init-keyword #:name  #:getter get-name)
 ;              (args  #:init-keyword #:args  #:getter get-args)
@@ -779,31 +787,3 @@
 ;                          (get-increment destination)
 ;                          (get-increment source))))))
 ;
-;(define-method (returnable self) #f)
-;(define-method (returnable (self <meta<bool>>)) <ubyte>)
-;(define-method (returnable (self <meta<int<>>>)) self)
-;(define (assemble retval vars frag)
-;  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-;                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
-;                     (append (store retval frag) (list (RET)))))
-;(define (jit context classes proc)
-;  (let* [(vars        (map skeleton classes))
-;         (frag        (apply proc (map parameter vars)))
-;         (result-type (type frag))
-;         (return-type (returnable result-type))
-;         (target      (if return-type result-type (pointer result-type)))
-;         (retval      (skeleton target))
-;         (args        (if return-type vars (cons retval vars)))
-;         (code        (asm context
-;                           (or return-type <null>)
-;                           (map typecode (concatenate (map content args)))
-;                           (assemble retval vars frag)))
-;         (fun         (lambda header (apply code (concatenate (map content header)))))]
-;    (if return-type
-;        (lambda args
-;          (let [(result (apply fun args))]
-;            (get (build result-type result))))
-;        (lambda args
-;          (let [(result (make target #:shape (argmax length (map shape args))))]
-;            (apply fun (cons result args))
-;            (get (build result-type result)))))))

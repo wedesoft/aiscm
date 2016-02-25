@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 133)
+(planned-tests 135)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -459,6 +459,14 @@
 (ok (equal? '((2 3 5) (7 9 11))
             (to-list ((jit ctx (list (multiarray <int> 2)) identity) (arr <int> (2 3 5) (7 9 11)))))
     "compile and run identity function for 2D array")
+(let [(out (skeleton <int>))
+      (a   (expression (skeleton <int>)))
+      (b   (expression (skeleton <int>)))]
+  (ok (equal? (list (MOV (get out) (get a)) (ADD (get out) (get b)))
+              (code out (+ a b)))
+    "generate code for adding two numbers"))
+(ok (equal? 42 ((jit ctx (list <int> <int>) +) 19 23))
+    "compile and run function adding two numbers")
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
