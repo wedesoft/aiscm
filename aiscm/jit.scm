@@ -430,8 +430,10 @@
   (type      #:init-keyword #:type      #:getter type)
   (arguments #:init-keyword #:arguments #:getter arguments))
 
+(define (copy a b)
+  ((if (>= (size-of b) (size-of a)) MOV (if (signed? b) MOVSX MOVZX)) (get a) (get b)))
 (define-method (code (a <element>) (b <element>))
-  (list (MOV (get a) (get b))))
+  (list (copy a b)))
 (define-method (code (a <element>) (b <pointer<>>))
   (list (MOV (get a) (ptr (typecode b) (get b)))))
 (define-method (code (a <pointer<>>) (b <element>))
@@ -451,8 +453,7 @@
                           (increment p+ p)
                           (increment q+ q))))))
 (define-method (code (out <element>) (fun <function>))
-  (list (MOV (get out) (get (car (arguments fun))))
-        (ADD (get out) (get (cadr (arguments fun))))))
+  (attach (code out (car (arguments fun))) (ADD (get out) (get (cadr (arguments fun))))))
 
 (define-method (+ (a <int<>>) (b <int<>>))
   (make <function> #:arguments (list a b) #:type (type a)))

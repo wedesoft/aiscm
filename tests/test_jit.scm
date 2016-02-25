@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 135)
+(planned-tests 137)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -467,7 +467,14 @@
     "generate code for adding two numbers"))
 (ok (equal? 42 ((jit ctx (list <int> <int>) +) 19 23))
     "compile and run function adding two numbers")
-
+(let [(out (skeleton <int>))
+      (in  (skeleton <ubyte>))]
+  (ok (equal? (list (MOVZX (get out) (get in))) (code out in))
+      "generate code for copying integer with zero-extension"))
+(let [(out (skeleton <int>))
+      (in  (skeleton <byte>))]
+  (ok (equal? (list (MOVSX (get out) (get in))) (code out in))
+      "generate code for copying integer with sign-extension"))
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
 ;    "Type of code fragment")
