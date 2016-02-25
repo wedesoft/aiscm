@@ -431,7 +431,11 @@
   (arguments #:init-keyword #:arguments #:getter arguments))
 
 (define (copy a b)
-  ((if (>= (size-of b) (size-of a)) MOV (if (signed? b) MOVSX MOVZX)) (get a) (get b)))
+  ((cond ((eqv? (size-of b) (size-of a)) MOV)
+         ((>    (size-of b) (size-of a)) mov-part)
+         ((signed? b)                    MOVSX)
+         (else                           MOVZX))
+    (get a) (get b)))
 (define-method (code (a <element>) (b <element>))
   (list (copy a b)))
 (define-method (code (a <element>) (b <pointer<>>))

@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 137)
+(planned-tests 138)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -475,6 +475,12 @@
       (in  (skeleton <byte>))]
   (ok (equal? (list (MOVSX (get out) (get in))) (code out in))
       "generate code for copying integer with sign-extension"))
+(let [(out (skeleton <byte>))
+      (in  (skeleton <int>))]
+  (ok (equal? (list (MOV CL SIL) (RET))
+              (register-allocate (attach (code out in) (RET))
+                                 #:predefined (list (cons (get out) RCX) (cons (get in) RSI))))
+      "generate code for copying part of integer"))
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
 ;    "Type of code fragment")
