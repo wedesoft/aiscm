@@ -460,7 +460,7 @@
   (attach (code out (car (arguments fun))) (ADD (get out) (get (cadr (arguments fun))))))
 
 (define-method (+ (a <int<>>) (b <int<>>))
-  (make <function> #:arguments (list a b) #:type (type a)))
+  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)

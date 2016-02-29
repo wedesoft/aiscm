@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 138)
+(planned-tests 139)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -480,7 +480,14 @@
   (ok (equal? (list (MOV CL SIL) (RET))
               (register-allocate (attach (code out in) (RET))
                                  #:predefined (list (cons (get out) RCX) (cons (get in) RSI))))
-      "generate code for copying part of integer"))
+      "generate code for copying part of integer (critical case MOV CL SIL)"))
+(ok (eq? <sint> (type (+ (skeleton <usint>) (skeleton <byte>))))
+  "plus operation coerces return type correctly")
+;(let [(out (skeleton (sequence <int>)))
+;      (in  (skeleton (sequence <int>)))]
+;
+;      )
+; todo: coercion of integers
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
 ;    "Type of code fragment")
