@@ -9,11 +9,13 @@
 
 (load-extension "libguile-bench" "init_bench")
 
+(define hook #t); prevent optimizer from removing benchmarked code
+
 (define-syntax-rule (run description n body ...)
   (begin
     body ...
     (let [(t0 (times))]
-      (do ((i 0 (1+ i))) ((>= i n)) body ...)
+      (do ((i 0 (1+ i))) ((>= i n)) (set! hook (begin body ...)))
       (gc)
       (let* [(t1      (times))
              (user    (- (tms:utime t1) (tms:utime t0)))
