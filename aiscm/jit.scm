@@ -14,7 +14,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (<block> <cmd> <var> <ptr> <tensor> <lookup>
+  #:export (<block> <cmd> <var> <ptr> <tensor> <lookup> <function>
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             ;<fragment<top>> <meta<fragment<top>>>
@@ -463,7 +463,13 @@
 (define-method (code (out <element>) (fun <function>))
   (append (code out (car (arguments fun))) (add out (cadr (arguments fun)))))
 
-(define-method (+ (a <int<>>) (b <int<>>))
+(define-method (+ (a <element>) (b <element>)); TODO: use base node class
+  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
+(define-method (+ (a <tensor>) (b <element>))
+  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
+(define-method (+ (a <element>) (b <tensor>))
+  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
+(define-method (+ (a <tensor>) (b <tensor>))
   (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
 
 (define-method (returnable self) #f)

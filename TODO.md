@@ -1,5 +1,6 @@
 ## Ready
 
+* base <node> class for <tensor> and <element>
 * array operations
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
