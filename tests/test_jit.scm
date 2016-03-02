@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 149)
+(planned-tests 150)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -516,20 +516,13 @@
   (ok (equal? (list (MOV ESI (ptr <int> RDX)) (ADD ESI ECX) (MOV (ptr <int> RAX) ESI) (RET))
               (register-allocate (attach (code (body out p) (body f q)) (RET))))
       "instantiate loop body for array-scalar-function"))
-
-(define out (skeleton (sequence <int>)))
-(define a (expression (skeleton (sequence <int>))))
-(define b (expression (skeleton <int>)))
-(define f (+ a b))
-(define p (var <long>))
-(define q (var <long>))
-(code (body out p) (body f q))
-
 (let [(out (skeleton (sequence <int>)))
       (a   (skeleton (sequence <int>)))
       (b   (skeleton <int>))]
-  (skip (list? (code out (+ (expression a) (expression b))))
-      "generating code for adding a scalar to an array should run without error"))
+  (ok (list? (code out (+ (expression a) (expression b))))
+      "generating code for array-scalar operation should run without error"))
+(ok (equal? '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
+    "compile and run array-scalar operation")
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
 ;    "Type of code fragment")
