@@ -431,8 +431,8 @@
   (setup (car (arguments self)) increment p))
 (define (increment incr p) (list (ADD p incr)))
 (define-method (body self p) (project (rebase p self)))
-(define-method (body (self <function>) p)
-  (make <function> #:type (project (type self)) #:arguments (list (body (car (arguments self)) p) (cadr (arguments self)))))
+(define-method (body (self <function>) p); TODO: can use + here?
+  (make <function> #:type (typecode (type self)) #:arguments (list (body (car (arguments self)) p) (cadr (arguments self)))))
 
 (define-method (code (a <element>) (b <element>))
   (list ((cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -459,21 +459,20 @@
                           (increment p+ p)
                           (increment q+ q))))))
 
-(define (add a b)
+(define-method (add (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
     (list (ADD (get a) (get b)))
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (add a intermediate)))))
 (define-method (code (out <element>) (fun <function>))
   (append (code out (car (arguments fun))) (add out (cadr (arguments fun)))))
+(define-method (code (out <pointer<>>) (fun <function>))
+  (let [(intermediate (skeleton (typecode out)))]
+    (append (code intermediate fun) (code out intermediate))))
 
-(define-method (+ (a <element>) (b <element>)); TODO: use base node class
+(define-method (+ (a <element>) b); TODO: use base node class for tensor and element
   (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
-(define-method (+ (a <tensor>) (b <element>))
-  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
-(define-method (+ (a <element>) (b <tensor>))
-  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
-(define-method (+ (a <tensor>) (b <tensor>))
+(define-method (+ (a <tensor>) b)
   (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
 
 (define-method (returnable self) #f)
