@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 144)
+(planned-tests 148)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -439,12 +439,12 @@
   (ok (equal? (list (MOV DL (ptr <byte> RCX)) (MOV (ptr <byte> RAX) DL) (RET))
               (register-allocate (attach (code out in) (RET))))
       "generate code for copying a byte from one memory location to another"))
-(let [(in  (skeleton (sequence <int>)))
-      (out (skeleton (sequence <int>)))]
+(let [(out (skeleton (sequence <int>)))
+      (in  (skeleton (sequence <int>)))]
   (ok (list? (code out (expression in)))
       "generating code for copying an array should run without error")
-  (ok (equal? (list '() (append (content out) (content in)))
-              (take (assemble out (list in) (expression in) list) 2))
+  (ok (equal? (append (content out) (content in))
+              (cadr (assemble out (list in) (expression in) list)))
       "generating a method with interface for copying an array should run without error"))
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
     "compile and run identity function for array")
@@ -452,8 +452,8 @@
        (op (lambda (s) (tensor (dimension s) i (get s i))))]
   (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) op) (seq <int> 2 3 5))))
       "compile and run trivial 1D tensor function"))
-(let [(in  (skeleton (multiarray <int> 2)))
-      (out (skeleton (multiarray <int> 2)))]
+(let [(out (skeleton (multiarray <int> 2)))
+      (in  (skeleton (multiarray <int> 2)))]
   (ok (list? (code out (expression in)))
       "generating code for copying a 2D array should run without error"))
 (ok (equal? '((2 3 5) (7 9 11))
@@ -498,6 +498,30 @@
     "create function from element and tensor")
 (ok (+ (expression (skeleton (sequence <int>))) (expression (skeleton (sequence <int>))))
     "create function from two tensors")
+(let* [(a (skeleton (sequence <int>)))
+       (b (skeleton <int>))
+       (f (+ (expression a) (expression b)))
+       (incr (var <long>))
+       (p    (var <long>))]
+  (ok (equal? (list (IMUL incr (stride a) (size-of (typecode a)))
+                    (MOV p (value a)))
+              (setup f incr p))
+      "setup of loop over array-scalar-function should setup looping over first argument")
+  (ok (equal? p (value (car (arguments (body f p)))))
+      "body of loop should be function with element of first argument as argument")
+  (ok (equal? b (cadr (arguments (body f p))))
+      "body of loop should maintain second argument"))
+
+;(define out (skeleton (sequence <int>)))
+;(define a (expression (skeleton (sequence <int>))))
+;(define b (expression (skeleton <int>)))
+;(code out (+ a b))
+
+(let [(out (skeleton (sequence <int>)))
+      (a   (skeleton (sequence <int>)))
+      (b   (skeleton <int>))]
+  (skip (list? (code out (+ (expression a) (expression b))))
+      "generating code for adding a scalar to an array should run without error"))
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
 ;    "Type of code fragment")

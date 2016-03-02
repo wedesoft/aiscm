@@ -29,7 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
-            assemble jit setup increment body
+            assemble jit setup increment body arguments
             ;fragment type var skeleton parameter code value get-op get-name to-type
             ))
 (define-method (get-args self) '())
@@ -420,15 +420,19 @@
   (if (eq? (index self) idx) (term self) (lookup (index self) (project (term self)) (stride self))))
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
 
-(define (setup self increment p)
-  (list (IMUL increment (stride self) (size-of (typecode self)))
-        (MOV p (value self))))
-(define (increment incr p) (list (ADD p incr)))
-(define (body self p) (project (rebase p self)))
-
 (define-class <function> ()
   (type      #:init-keyword #:type      #:getter type)
   (arguments #:init-keyword #:arguments #:getter arguments))
+
+(define-method (setup self increment p)
+  (list (IMUL increment (stride self) (size-of (typecode self)))
+        (MOV p (value self))))
+(define-method (setup (self <function>) increment p)
+  (setup (car (arguments self)) increment p))
+(define (increment incr p) (list (ADD p incr)))
+(define-method (body self p) (project (rebase p self)))
+(define-method (body (self <function>) p)
+  (make <function> #:type (project (type self)) #:arguments (list (body (car (arguments self)) p) (cadr (arguments self)))))
 
 (define-method (code (a <element>) (b <element>))
   (list ((cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -443,7 +447,7 @@
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let [(intermediate (skeleton (typecode a)))]
     (append (code intermediate b) (code a intermediate))))
-(define-method (code (a <sequence<>>) (b <tensor>))
+(define-method (code (a <sequence<>>) b)
   (let [(p  (var <long>))
         (p+ (var <long>))
         (q  (var <long>))
