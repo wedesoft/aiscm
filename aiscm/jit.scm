@@ -29,9 +29,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
-            assemble jit setup increment body arguments
-            ;fragment type var skeleton parameter code value get-op get-name to-type
-            ))
+            assemble jit setup increment body arguments))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -396,7 +394,7 @@
 (define-method (typecode (self <tensor>)) (typecode (type self)))
 (define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self)))
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
-(define-method (expression self) self)
+(define-method (expression self) self); TODO: rename to parameter?
 (define-method (expression (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self) idx (lookup idx (expression (project self)) (stride self)))))
@@ -424,15 +422,21 @@
   (type      #:init-keyword #:type      #:getter type)
   (arguments #:init-keyword #:arguments #:getter arguments))
 
-(define-method (setup self increment p)
+(define-method (setup self increment p) '())
+(define-method (setup (self <sequence<>>) increment p); TODO: only use tensors
+  (list (IMUL increment (stride self) (size-of (typecode self)))
+        (MOV p (value self))))
+(define-method (setup (self <tensor>) increment p)
   (list (IMUL increment (stride self) (size-of (typecode self)))
         (MOV p (value self))))
 (define-method (setup (self <function>) increment p)
-  (setup (car (arguments self)) increment p))
+  (concatenate (map (cut setup <> increment p) (arguments self))))
 (define (increment incr p) (list (ADD p incr)))
-(define-method (body self p) (project (rebase p self)))
+(define-method (body self p) self)
+(define-method (body (self <sequence<>>) p) (project (rebase p self))); TODO: only use tensors?
+(define-method (body (self <tensor>) p) (project (rebase p self)))
 (define-method (body (self <function>) p); TODO: can use + here?
-  (make <function> #:type (typecode (type self)) #:arguments (list (body (car (arguments self)) p) (cadr (arguments self)))))
+  (make <function> #:type (typecode (type self)) #:arguments (map (cut body <> p) (arguments self))))
 
 (define-method (code (a <element>) (b <element>))
   (list ((cond ((eqv? (size-of b) (size-of a)) MOV)
