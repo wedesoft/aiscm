@@ -423,7 +423,7 @@
   (arguments #:init-keyword #:arguments #:getter arguments))
 
 (define-method (setup self increment p) '())
-(define-method (setup (self <sequence<>>) increment p); TODO: only use tensors
+(define-method (setup (self <sequence<>>) increment p); TODO: only use tensors?
   (list (IMUL increment (stride self) (size-of (typecode self)))
         (MOV p (value self))))
 (define-method (setup (self <tensor>) increment p)
@@ -438,14 +438,15 @@
 (define-method (body (self <function>) p); TODO: can use + here?
   (make <function> #:type (typecode (type self)) #:arguments (map (cut body <> p) (arguments self))))
 
+(define (mov-cmd a b)
+  (cond ((eqv? (size-of b) (size-of a)) MOV)
+        ((>    (size-of b) (size-of a)) mov-part)
+        ((signed? b)                    MOVSX)
+        (else                           MOVZX)))
 (define-method (code (a <element>) (b <element>))
-  (list ((cond ((eqv? (size-of b) (size-of a)) MOV)
-               ((>    (size-of b) (size-of a)) mov-part)
-               ((signed? b)                    MOVSX)
-               (else                           MOVZX))
-         (get a) (get b))))
+  (list ((mov-cmd a b) (get a) (get b))))
 (define-method (code (a <element>) (b <pointer<>>))
-  (list (MOV (get a) (ptr (typecode b) (get b)))))
+  (list ((mov-cmd a (typecode b)) (get a) (ptr (typecode b) (get b)))))
 (define-method (code (a <pointer<>>) (b <element>))
   (list (MOV (ptr (typecode a) (get a)) (get b))))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
@@ -466,10 +467,13 @@
 (define-method (add (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
     (list (ADD (get a) (get b)))
-    (let [(intermediate (skeleton (typecode a)))]; TODO: tested?
+    (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (add a intermediate)))))
 (define-method (add (a <element>) (b <pointer<>>))
-  (list (ADD (get a) (ptr (typecode a) (get b))))); TODO: different size?
+  (if (eqv? (size-of (typecode b)) (size-of a))
+    (list (ADD (get a) (ptr (typecode a) (get b))))
+    (let [(intermediate (skeleton (typecode a)))]
+      (append (code intermediate b) (add a intermediate)))))
 (define-method (code (out <element>) (fun <function>))
   (append (code out (car (arguments fun))) (add out (cadr (arguments fun)))))
 (define-method (code (out <pointer<>>) (fun <function>))

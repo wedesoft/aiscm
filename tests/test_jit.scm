@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 154)
+(planned-tests 157)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -541,6 +541,14 @@
   (ok (equal? (list (MOV ESI EDX) (ADD ESI (ptr <int> RCX)) (MOV (ptr <int> RAX) ESI) (RET))
               (register-allocate (attach (code (body out p) (body f q)) (RET))))
       "instantiate loop body for array-scalar-function"))
+(ok (equal? '(9 10 12) (to-list ((jit ctx (list <int> (sequence <int>)) +) 7 (seq <int> 2 3 5))))
+    "compile and run array-scalar operation")
+(let [(out (skeleton <int>))
+      (in  (skeleton (pointer <byte>)))]
+  (ok (equal? (list (MOVSX (get out) (ptr <byte> (get in)))) (code out in))
+      "generate code for reading integer from memory with sign-extension"))
+(ok (equal? '(9 10 12) (to-list ((jit ctx (list <int> (sequence <byte>)) +) 7 (seq <byte> 2 3 5))))
+    "sign-extend second number when adding value from pointer")
 
 ;(define out (skeleton (sequence <int>)))
 ;(define a (skeleton <int>))
@@ -549,7 +557,6 @@
 ;(define incr (var <long>))
 ;(define p (var <long>))
 ;(define q (var <long>))
-
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
