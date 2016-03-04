@@ -466,8 +466,10 @@
 (define-method (add (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
     (list (ADD (get a) (get b)))
-    (let [(intermediate (skeleton (typecode a)))]
+    (let [(intermediate (skeleton (typecode a)))]; TODO: tested?
       (append (code intermediate b) (add a intermediate)))))
+(define-method (add (a <element>) (b <pointer<>>))
+  (list (ADD (get a) (ptr (typecode a) (get b))))); TODO: different size?
 (define-method (code (out <element>) (fun <function>))
   (append (code out (car (arguments fun))) (add out (cadr (arguments fun)))))
 (define-method (code (out <pointer<>>) (fun <function>))

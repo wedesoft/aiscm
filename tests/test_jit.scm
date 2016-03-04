@@ -538,17 +538,18 @@
       "body of loop should maintain first argument")
   (ok (equal? q (value (cadr (arguments (body f q)))))
       "body of loop should be function with element of second argument as argument")
-  (skip (equal? (list (MOV ESI (ptr <int> RDX)) (ADD ESI ECX) (MOV (ptr <int> RAX) ESI) (RET))
+  (ok (equal? (list (MOV ESI EDX) (ADD ESI (ptr <int> RCX)) (MOV (ptr <int> RAX) ESI) (RET))
               (register-allocate (attach (code (body out p) (body f q)) (RET))))
       "instantiate loop body for array-scalar-function"))
 
-(define out (skeleton (sequence <int>)))
-(define a (skeleton <int>))
-(define b (skeleton (sequence <int>)))
-(define f (+ (expression a) (expression b)))
-(define incr (var <long>))
-(define p (var <long>))
-(define q (var <long>))
+;(define out (skeleton (sequence <int>)))
+;(define a (skeleton <int>))
+;(define b (skeleton (sequence <int>)))
+;(define f (+ (expression a) (expression b)))
+;(define incr (var <long>))
+;(define p (var <long>))
+;(define q (var <long>))
+
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
