@@ -423,9 +423,6 @@
   (arguments #:init-keyword #:arguments #:getter arguments))
 
 (define-method (setup self increment p) '())
-(define-method (setup (self <sequence<>>) increment p); TODO: only use tensors?
-  (list (IMUL increment (stride self) (size-of (typecode self)))
-        (MOV p (value self))))
 (define-method (setup (self <tensor>) increment p)
   (list (IMUL increment (stride self) (size-of (typecode self)))
         (MOV p (value self))))
@@ -433,9 +430,8 @@
   (concatenate (map (cut setup <> increment p) (arguments self))))
 (define (increment incr p) (list (ADD p incr)))
 (define-method (body self p) self)
-(define-method (body (self <sequence<>>) p) (project (rebase p self))); TODO: only use tensors?
 (define-method (body (self <tensor>) p) (project (rebase p self)))
-(define-method (body (self <function>) p); TODO: can use + here?
+(define-method (body (self <function>) p)
   (make <function> #:type (typecode (type self)) #:arguments (map (cut body <> p) (arguments self))))
 
 (define (mov-cmd a b)
@@ -452,7 +448,7 @@
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let [(intermediate (skeleton (typecode a)))]
     (append (code intermediate b) (code a intermediate))))
-(define-method (code (a <sequence<>>) b)
+(define-method (code (a <tensor>) b)
   (let [(p  (var <long>))
         (p+ (var <long>))
         (q  (var <long>))
@@ -491,7 +487,7 @@
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
                      (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
-                     (attach (code retval expr) (RET))))
+                     (attach (code (expression retval) expr) (RET))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
