@@ -394,7 +394,7 @@
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
-(define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self)))
+(define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self))); TODO: get correct shape
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
 (define-method (iterator (self <tensor>)) (iterator (term self))); TODO: get correct iterator
 (define-method (step (self <tensor>)) (step (term self))); TODO: get correct step
@@ -418,14 +418,14 @@
 (define-method (rebase value (self <tensor>))
   (tensor (dimension self) (index self) (rebase value (term self))))
 (define-method (rebase value (self <lookup>))
-  (lookup (index self) (rebase value (term self)) (stride self) (iterator self) (step self))); TODO: still used?
+  (lookup (index self) (rebase value (term self)) (stride self) (iterator self) (step self)))
 (define-method (project (self <tensor>)) (project (term self) (index self)))
 (define-method (project (self <tensor>) (idx <var>))
   (tensor (dimension self) (index self) (project (term self) idx)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (term self)
-      (lookup (index self) (project (term self)) (stride self) (iterator self) (step self)))); TODO: still used?
+      (lookup (index self) (project (term self)) (stride self) (iterator self) (step self))))
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
 
 (define-class <function> ()

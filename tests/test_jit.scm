@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 158)
+(planned-tests 159)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -537,6 +537,8 @@
       "generate code for reading integer from memory with sign-extension"))
 (ok (equal? '(9 10 12) (to-list ((jit ctx (list <int> (sequence <byte>)) +) 7 (seq <byte> 2 3 5))))
     "sign-extend second number when adding value from pointer")
+(ok (equal? '(9 14 18) (to-list ((jit ctx (list (sequence <int>) (sequence <int>)) +) (seq <int> 2 3 5) (seq <int> 7 11 13))))
+    "compile and run array-array operation")
 
 ; ------------------------------------------------------------
 ;(skip (eq? <int> (type (fragment <int>)))
