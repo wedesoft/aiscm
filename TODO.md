@@ -1,6 +1,5 @@
 ## Ready
 
-* add pointer and increment variable to lookup
 * base <node> class for <tensor> and <element>
 * array operations
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter

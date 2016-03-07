@@ -14,7 +14,7 @@
             pointer fetch store rebase))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-class* <pointer<element>> <pointer<>> <meta<pointer<element>>> <meta<pointer<>>>)
-(define-method (pointer target)
+(define-method (pointer (target <meta<element>>))
   (template-class (pointer target) (pointer (super target))
     (lambda (class metaclass)
       (define-method (initialize (self class) initargs)
