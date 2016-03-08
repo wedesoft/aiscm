@@ -391,7 +391,7 @@
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
 (define-method (iterator (self <tensor>)) (iterator (term self))); TODO: get correct iterator
 (define-method (step (self <tensor>)) (step (term self))); TODO: get correct step
-(define-method (parameter self) self); TODO: rename to parameter?
+(define-method (parameter self) self)
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self)
@@ -423,7 +423,8 @@
 
 (define-class <function> ()
   (type      #:init-keyword #:type      #:getter type)
-  (arguments #:init-keyword #:arguments #:getter arguments))
+  (arguments #:init-keyword #:arguments #:getter arguments)
+  (op        #:init-keyword #:op        #:getter op))
 
 (define-method (setup self) '())
 (define-method (setup (self <tensor>))
@@ -436,7 +437,7 @@
 (define-method (body self) self)
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self))); TODO: potential for simplification
 (define-method (body (self <function>))
-  (make <function> #:type (typecode (type self)) #:arguments (map (cut body <>) (arguments self))))
+  (apply + (map body (arguments self)))); TODO: implement unary -
 
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -470,16 +471,25 @@
     (list (ADD (get a) (ptr (typecode a) (get b))))
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (add a intermediate)))))
-(define-method (code (out <element>) (fun <function>))
-  (append (code out (car (arguments fun))) (add out (cadr (arguments fun)))))
+(define-method (neg (a <element>))
+  (list (NEG (get a))))
+(define-method (code (out <element>) (fun <function>)) ((op fun) out))
 (define-method (code (out <pointer<>>) (fun <function>))
   (let [(intermediate (skeleton (typecode out)))]
     (append (code intermediate fun) (code out intermediate))))
 
-(define-method (+ (a <element>) b); TODO: use base node class for tensor and element
-  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
+(define-method (- (a <element>))
+  (make <function> #:arguments (list a)
+                   #:type (type a)
+                   #:op (lambda (out) (append (code out a) (neg out)))))
+(define-method (+ (a <element>) b); TODO: intermediate function needed?
+  (make <function> #:arguments (list a b)
+                   #:type (coerce (type a) (type b))
+                   #:op (lambda (out) (append (code out a) (add out b)))))
 (define-method (+ (a <tensor>) b)
-  (make <function> #:arguments (list a b) #:type (coerce (type a) (type b))))
+  (make <function> #:arguments (list a b)
+                   #:type (coerce (type a) (type b))
+                   #:op (lambda (out) (append (code out a) (add out b)))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)

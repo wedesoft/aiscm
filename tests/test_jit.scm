@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 162)
+(planned-tests 163)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -545,6 +545,11 @@
 (ok (equal? '((0 1 3) (0 2 4))
             (to-list ((jit ctx (list (sequence <byte>) (multiarray <ubyte> 2)) +) (seq -2 -3) (arr (2 3 5) (3 5 7)))))
     "compile and run operation involving 1D and 2D array")
+(let [(out (skeleton <int>))
+      (a   (skeleton <int>))]
+  (ok (equal? (list (MOV (get out) (get a)) (NEG (get out)))
+              (code out (- a)))
+      "generate code for negating number"))
 ; ------------------------------------------------------------
 ;(skip (eq? <byte> (typecode (red (var <bytergb>))))
 ;    "Red channel of byte RGB variable is a byte variable")
