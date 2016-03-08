@@ -21,7 +21,7 @@
             callee-saved save-registers load-registers blocked repeat mov-part
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals var skeleton expression term tensor index type subst code
+            filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments))
 (define-method (get-args self) '())
 (define-method (input self) '())
@@ -391,12 +391,12 @@
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
 (define-method (iterator (self <tensor>)) (iterator (term self))); TODO: get correct iterator
 (define-method (step (self <tensor>)) (step (term self))); TODO: get correct step
-(define-method (expression self) self); TODO: rename to parameter?
-(define-method (expression (self <sequence<>>))
+(define-method (parameter self) self); TODO: rename to parameter?
+(define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self)
             idx
-            (lookup idx (expression (project self)) (stride self) (var <long>) (var <long>)))))
+            (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <tensor>) candidate replacement)
   (tensor (dimension self) (index self) (subst (term self) candidate replacement)))
@@ -487,11 +487,11 @@
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
                      (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
-                     (attach (code (expression retval) expr) (RET))))
+                     (attach (code (parameter retval) expr) (RET))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
-         (expr        (apply proc (map expression vars)))
+         (expr        (apply proc (map parameter vars)))
          (target      (type expr))
          (return-type (returnable target))
          (retval      (skeleton target))
