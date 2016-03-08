@@ -17,13 +17,6 @@
   #:export (<block> <cmd> <var> <ptr> <tensor> <lookup> <function>
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
-            ;<fragment<top>> <meta<fragment<top>>>
-            ;<fragment<element>> <meta<fragment<element>>>
-            ;<fragment<int<>>> <meta<fragment<int<>>>>
-            ;<fragment<rgb<>>> <meta<fragment<rgb<>>>>
-            ;<fragment<complex<>>> <meta<fragment<complex<>>>>
-            ;<fragment<pointer<>>> <meta<fragment<pointer<>>>>
-            ;<fragment<sequence<>>> <meta<fragment<sequence<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-part
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -516,19 +509,6 @@
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons result args))
           (get (build target result)))))))
-;(define-class* <fragment<top>> <object> <meta<fragment<top>>> <class>
-;              (name  #:init-keyword #:name  #:getter get-name)
-;              (args  #:init-keyword #:args  #:getter get-args)
-;              (code  #:init-keyword #:code  #:getter code)
-;              (value #:init-keyword #:value #:getter value))
-;(define-generic type)
-;(define (fragment t)
-;  (template-class (fragment t) (fragment (super t))
-;    (lambda (class metaclass)
-;      (define-method (type (self metaclass)) t)
-;      (define-method (type (self class)) t))))
-;(fragment <element>)
-;(fragment <int<>>)
 ;(define-method (parameter self)
 ;  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value (get self)))
 ;(define-method (parameter (p <pointer<>>))
@@ -623,8 +603,6 @@
 ;           #:name complex
 ;           #:code (append (code real~) (code imag~))
 ;           #:value (make <internalcomplex> #:real-part (value real~) #:imag-part (value imag~)))))
-;(fragment <pointer<>>)
-;(fragment <sequence<>>)
 ;(define (mutable-unary op result a)
 ;  (append (code a) (list (MOV result (value a)) (op result))))
 ;(define (immutable-unary op result a)
