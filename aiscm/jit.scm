@@ -436,8 +436,8 @@
 (define-method (increment (self <function>)) (concatenate (map increment (arguments self))))
 (define-method (body self) self)
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self))); TODO: potential for simplification
-(define-method (body (self <function>))
-  (apply + (map body (arguments self)))); TODO: implement unary -
+(define-method (body (self <function>)) ((op self)))
+; TODO: implement unary -
 
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -482,14 +482,18 @@
   (make <function> #:arguments (list a)
                    #:type (type a)
                    #:op (lambda (out) (append (code out a) (neg out)))))
-(define-method (+ (a <element>) b); TODO: intermediate function needed?
+(define-method (+ (a <element>) (b <element>))
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
                    #:op (lambda (out) (append (code out a) (add out b)))))
+(define-method (+ (a <element>) (b <tensor>))
+  (make <function> #:arguments (list a b)
+                   #:type (coerce (type a) (type b))
+                   #:op (lambda () (apply + (map body (list a b))))))
 (define-method (+ (a <tensor>) b)
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
-                   #:op (lambda (out) (append (code out a) (add out b)))))
+                   #:op (lambda () (apply + (map body (list a b))))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
