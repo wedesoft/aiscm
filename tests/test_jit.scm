@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 163)
+(planned-tests 164)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -550,6 +550,11 @@
   (ok (equal? (list (MOV (get out) (get a)) (NEG (get out)))
               (code out (- a)))
       "generate code for negating number"))
+(let [(a (parameter (skeleton (sequence <int>))))]
+  (ok (equal? (arguments (body (- a))) (arguments (- (body a))))
+      "body of array negation should have same argument as negation of array body"))
+(ok (equal? '(-2 3 -5) ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5)))
+    "compile and run function for negating array")
 ; ------------------------------------------------------------
 ;(skip (eq? <byte> (typecode (red (var <bytergb>))))
 ;    "Red channel of byte RGB variable is a byte variable")
