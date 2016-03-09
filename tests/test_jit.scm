@@ -553,7 +553,7 @@
 (let [(a (parameter (skeleton (sequence <int>))))]
   (ok (equal? (arguments (body (- a))) (arguments (- (body a))))
       "body of array negation should have same argument as negation of array body"))
-(ok (equal? '(-2 3 -5) ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5)))
+(ok (equal? '(-2 3 -5) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5))))
     "compile and run function for negating array")
 ; ------------------------------------------------------------
 ;(skip (eq? <byte> (typecode (red (var <bytergb>))))

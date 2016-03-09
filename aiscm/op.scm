@@ -46,24 +46,41 @@
 ;(define-unary-op !=0 !=0)
 ;(define-unary-op conj conj)
 ;(define ! =0)
-(define-syntax-rule (capture-binary-argument name type)
-  (begin
-    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
-    (define-method (name (a type) (b <element>)) (name (make (match a) #:value a) b))))
-(define-syntax-rule (define-binary-op name op)
-  (begin
-    (define-method (name (a <element>) (b <element>))
-      (let [(f (jit ctx (map class-of (list a b)) op))]
-        (add-method! name
-                     (make <method>
-                           #:specializers (map class-of (list a b))
-                           #:procedure (lambda (a b) (f (get a) (get b))))))
-      (name a b))
-    (capture-binary-argument name <boolean>)
-    (capture-binary-argument name <integer>)
-    (capture-binary-argument name <real>)
-    (capture-binary-argument name <rgb>)
-    (capture-binary-argument name <complex>)))
+;(define-syntax-rule (capture-binary-argument name type)
+;  (begin
+;    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
+;    (define-method (name (a type) (b <element>)) (name (make (match a) #:value a) b))))
+;(define-syntax-rule (define-binary-op name op)
+;  (begin
+;    (define-method (name (a <element>) (b <element>))
+;      (let [(f (jit ctx (map class-of (list a b)) op))]
+;        (add-method! name
+;                     (make <method>
+;                           #:specializers (map class-of (list a b))
+;                           #:procedure (lambda (a b) (f (get a) (get b))))))
+;      (name a b))
+;    (capture-binary-argument name <boolean>)
+;    (capture-binary-argument name <integer>)
+;    (capture-binary-argument name <real>)
+;    (capture-binary-argument name <rgb>)
+;    (capture-binary-argument name <complex>)))
+
+(define-method (+ (a <element>) (b <integer>)) (+ a (make (match b) #:value b)))
+(define-method (+ (a <integer>) (b <element>)) (+ (make (match a) #:value a) b))
+(define-method (+ (a <sequence<>>) (b <element>))
+  (let [(f (jit ctx (map class-of (list a b)) +))]
+    (add-method! +
+                 (make <method>
+                       #:specializers (map class-of (list a b))
+                       #:procedure (lambda (a b) (f (get a) (get b)))))
+    (+ a b)))
+(define-method (+ (a <element>) (b <sequence<>>))
+  (let [(f (jit ctx (map class-of (list a b)) +))]
+    (add-method! +
+                 (make <method>
+                       #:specializers (map class-of (list a b))
+                       #:procedure (lambda (a b) (f (get a) (get b)))))
+    (+ a b)))
 ;(define-binary-op +   +)
 ;(define-binary-op -   -)
 ;(define-binary-op *   *)

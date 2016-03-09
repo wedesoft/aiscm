@@ -325,39 +325,39 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-(define ((binary-cmp set1 set2) r a b)
-  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
-(define ((binary-bool op) r a b)
-  (let [(r1 (var <byte>))
-        (r2 (var <byte>))]
-    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
-(define ((binary-cmov op1 op2) r a b)
-  (if (= (size-of r) 1)
-    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
-    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
-(define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
-(define (div/mod r a b pick)
-  (let* [(size   (size-of r))
-         (ax     (reg size 0))
-         (dx     (reg size 2))
-         (result (pick (cons ax dx)))]
-    (blocked RAX
-      (if (signed? (typecode r))
-        (if (= size 1)
-          (list (MOV ax a) (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-          (list (MOV ax a) (blocked RDX (expand ax) (IDIV b) (MOV r result))))
-        (if (= size 1)
-          (list (MOVZX AX a) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-          (list (MOV ax a) (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
-(define (div r a b) (div/mod r a b car))
-(define (mod r a b) (div/mod r a b cdr))
-(define (sign-space a b)
-  (let [(coerced (coerce a b))]
-    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
-      coerced
-      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
-(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
+;(define ((binary-cmp set1 set2) r a b)
+;  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
+;(define ((binary-bool op) r a b)
+;  (let [(r1 (var <byte>))
+;        (r2 (var <byte>))]
+;    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
+;(define ((binary-cmov op1 op2) r a b)
+;  (if (= (size-of r) 1)
+;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
+;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
+;(define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
+;(define (div/mod r a b pick)
+;  (let* [(size   (size-of r))
+;         (ax     (reg size 0))
+;         (dx     (reg size 2))
+;         (result (pick (cons ax dx)))]
+;    (blocked RAX
+;      (if (signed? (typecode r))
+;        (if (= size 1)
+;          (list (MOV ax a) (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+;          (list (MOV ax a) (blocked RDX (expand ax) (IDIV b) (MOV r result))))
+;        (if (= size 1)
+;          (list (MOVZX AX a) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
+;          (list (MOV ax a) (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
+;(define (div r a b) (div/mod r a b car))
+;(define (mod r a b) (div/mod r a b cdr))
+;(define (sign-space a b)
+;  (let [(coerced (coerce a b))]
+;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
+;      coerced
+;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
+;(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
+;(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -430,14 +430,13 @@
 (define-method (setup (self <tensor>))
   (list (IMUL (step self) (stride self) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
-(define-method (setup (self <function>)) (concatenate (map setup (arguments self)))); TODO: redundant traversing code here
+(define-method (setup (self <function>)) (concatenate (map setup (arguments self))))
 (define-method (increment self) '())
 (define-method (increment (self <tensor>)) (list (ADD (iterator self) (step self))))
 (define-method (increment (self <function>)) (concatenate (map increment (arguments self))))
 (define-method (body self) self)
-(define-method (body (self <tensor>)) (project (rebase (iterator self) self))); TODO: potential for simplification
+(define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((op self)))
-; TODO: implement unary -
 
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)

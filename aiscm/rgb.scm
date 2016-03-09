@@ -10,10 +10,8 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (rgb
-            <rgb>
-            red green blue
-            <rgb<>> <meta<rgb<>>>
+  #:export (rgb <rgb> red green blue
+            <rgb<>>    <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
             <usintrgb> <rgb<int<16,unsigned>>> <meta<rgb<int<16,unsigned>>>>

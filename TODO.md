@@ -1,7 +1,7 @@
 ## Ready
 
-* base <node> class for <tensor> and <element> (and use <parameter> instead of <element>)
-* array operations
+* enable array operations (use <parameter> and <tensor> instead of <element>?)
+* comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
 * parameter passing for sequences, map, tensor operations, replace fill and other?
