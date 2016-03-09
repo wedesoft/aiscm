@@ -44,7 +44,7 @@
   "'to-image' preserves shape of array")
 (ok (equal? l (to-list (to-array (to-image m))))
   "Converting from unsigned byte multiarray to image and back preserves data")
-(ok (equal? #vu8(1 3 2 4) (read-bytes (get-mem (to-image (roll (arr (1 2) (3 4))))) 4))
+(skip (equal? #vu8(1 3 2 4) (read-bytes (get-mem (to-image (roll (arr (1 2) (3 4))))) 4))
   "Conversion to image ensures compacting of pixel lines")
 (skip (equal? l (to-list (to-array (to-image (to-array <int> l)))))
   "Converting from integer multiarray to image and back converts to byte data")
