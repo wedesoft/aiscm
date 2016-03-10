@@ -187,7 +187,8 @@
 (define-method (MOVZX (r <register>) (r/m <operand>))
   (let* [(bits   (get-bits r/m))
          (opcode (case bits (( 8) (list #x0f #xb6))
-                            ((16) (list #x0f #xb7))))]
+                            ((16) (list #x0f #xb7))
+                            ((32) (aiscm-error 'MOVZX "MOVZX does not support 32-bit input"))))]
     (append (prefixes r r/m) opcode (postfixes r r/m))))
 
 (define (CBW) '(#x66 #x98))

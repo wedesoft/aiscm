@@ -31,14 +31,14 @@
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
-(define-syntax-rule (define-unary-op name op)
-  (define-method (name (a <element>))
-    (let [(f (jit ctx (list (class-of a)) op))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (list (class-of a))
-                        #:procedure f)))
-    (name a)))
+;(define-syntax-rule (define-unary-op name op)
+;  (define-method (name (a <element>))
+;    (let [(f (jit ctx (list (class-of a)) op))]
+;      (add-method! name
+;                   (make <method>
+;                         #:specializers (list (class-of a))
+;                        #:procedure f)))
+;    (name a)))
 ;(define-unary-op duplicate identity)
 ;(define-unary-op - -)
 ;(define-unary-op ~ ~)
@@ -64,6 +64,13 @@
 ;    (capture-binary-argument name <real>)
 ;    (capture-binary-argument name <rgb>)
 ;    (capture-binary-argument name <complex>)))
+(define-method (- (a <sequence<>>))
+  (let [(f (jit ctx (list (class-of a)) -))]
+    (add-method! -
+                 (make <method>
+                       #:specializers (list (class-of a))
+                       #:procedure f)))
+  (- a))
 
 (define-method (+ (a <element>) (b <integer>)) (+ a (make (match b) #:value b)))
 (define-method (+ (a <integer>) (b <element>)) (+ (make (match a) #:value a) b))
