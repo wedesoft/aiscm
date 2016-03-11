@@ -425,8 +425,7 @@
 
 (define-class <function> (<parameter>)
   (type      #:init-keyword #:type      #:getter type)
-  (arguments #:init-keyword #:arguments #:getter arguments)
-  (op        #:init-keyword #:op        #:getter op)); TODO: use term instead?
+  (arguments #:init-keyword #:arguments #:getter arguments))
 
 (define-method (setup self) '())
 (define-method (setup (self <tensor>))
@@ -438,7 +437,7 @@
 (define-method (increment (self <function>)) (concatenate (map increment (arguments self))))
 (define-method (body self) self)
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
-(define-method (body (self <function>)) ((op self)))
+(define-method (body (self <function>)) ((term self)))
 
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -464,7 +463,7 @@
                 (append (code (body a) (body b))
                         (increment a)
                         (increment b)))))
-(define-method (code (out <element>) (fun <function>)) ((op fun) (parameter out))); TODO: unwrap function arguments here?
+(define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out))); TODO: unwrap function arguments here?
 (define-method (code (out <pointer<>>) (fun <function>))
   (let [(intermediate (skeleton (typecode out)))]
     (append (code intermediate fun) (code out intermediate))))
@@ -486,27 +485,27 @@
 (define-method (- (a <parameter>))
   (make <function> #:arguments (list a)
                    #:type (type a)
-                   #:op (lambda (out) (append (code out a) (neg (term out))))))
+                   #:term (lambda (out) (append (code out a) (neg (term out))))))
 (define-method (- (a <tensor>))
   (make <function> #:arguments (list a)
                    #:type (type a)
-                   #:op (lambda () (- (body a)))))
+                   #:term (lambda () (- (body a)))))
 (define-method (+ (a <parameter>) (b <parameter>))
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
-                   #:op (lambda (out) (append (code out a) (add (term out) (term b))))))
+                   #:term (lambda (out) (append (code out a) (add (term out) (term b))))))
 (define-method (+ (a <parameter>) (b <tensor>))
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
-                   #:op (lambda () (apply + (map body (list a b))))))
+                   #:term (lambda () (apply + (map body (list a b))))))
 (define-method (+ (a <tensor>) (b <parameter>))
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
-                   #:op (lambda () (apply + (map body (list a b))))))
+                   #:term (lambda () (apply + (map body (list a b))))))
 (define-method (+ (a <tensor>) (b <tensor>))
   (make <function> #:arguments (list a b)
                    #:type (coerce (type a) (type b))
-                   #:op (lambda () (apply + (map body (list a b))))))
+                   #:term (lambda () (apply + (map body (list a b))))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
