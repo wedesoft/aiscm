@@ -369,11 +369,13 @@
 
 (define-class <parameter> ()
   (term #:init-keyword #:term #:getter term))
+
 (define-class <tensor> (<parameter>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
 (define (tensor dimension index term)
   (make <tensor> #:dimension dimension #:index index #:term term))
+
 (define-class <lookup> (<parameter>)
   (index    #:init-keyword #:index    #:getter index)
   (stride   #:init-keyword #:stride   #:getter stride)
@@ -383,9 +385,14 @@
   (make <lookup> #:index index #:term term #:stride stride #:iterator iterator #:step step))
 (define-method (lookup idx (obj <tensor>) stride iterator step)
   (tensor (dimension obj) (index obj) (lookup idx (term obj) stride iterator step)))
+
+(define-class <function> (<parameter>)
+  (arguments #:init-keyword #:arguments #:getter arguments))
+
 (define-method (type (self <parameter>)) (typecode (term self)))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
+(define-method (type (self <function>)) (reduce coerce #f (map type (arguments self))))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
 (define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self))); TODO: get correct shape
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
@@ -422,10 +429,6 @@
       (term self)
       (lookup (index self) (project (term self)) (stride self) (iterator self) (step self))))
 (define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
-
-(define-class <function> (<parameter>)
-  (type      #:init-keyword #:type      #:getter type)
-  (arguments #:init-keyword #:arguments #:getter arguments))
 
 (define-method (setup self) '())
 (define-method (setup (self <tensor>))
@@ -484,27 +487,21 @@
 
 (define-method (- (a <parameter>))
   (make <function> #:arguments (list a)
-                   #:type (type a)
                    #:term (lambda (out) (append (code out a) (neg (term out))))))
 (define-method (- (a <tensor>))
   (make <function> #:arguments (list a)
-                   #:type (type a)
                    #:term (lambda () (- (body a)))))
 (define-method (+ (a <parameter>) (b <parameter>))
   (make <function> #:arguments (list a b)
-                   #:type (coerce (type a) (type b))
                    #:term (lambda (out) (append (code out a) (add (term out) (term b))))))
 (define-method (+ (a <parameter>) (b <tensor>))
   (make <function> #:arguments (list a b)
-                   #:type (coerce (type a) (type b))
                    #:term (lambda () (apply + (map body (list a b))))))
 (define-method (+ (a <tensor>) (b <parameter>))
   (make <function> #:arguments (list a b)
-                   #:type (coerce (type a) (type b))
                    #:term (lambda () (apply + (map body (list a b))))))
 (define-method (+ (a <tensor>) (b <tensor>))
   (make <function> #:arguments (list a b)
-                   #:type (coerce (type a) (type b))
                    #:term (lambda () (apply + (map body (list a b))))))
 
 (define-method (returnable self) #f)
