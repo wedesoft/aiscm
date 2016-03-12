@@ -485,11 +485,16 @@
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (add a intermediate)))))
 (define-method (neg (a <element>)) (list (NEG (get a))))
+(define-method (inv (a <element>)) (list (NOT (get a))))
 
 (define-method (- (a <parameter>))
   (make <function> #:arguments (list a)
                    #:project (lambda () (- (body a)))
                    #:term (lambda (out) (append (code out a) (neg (term out))))))
+(define-method (~ (a <parameter>))
+  (make <function> #:arguments (list a)
+                   #:project (lambda () (~ (body a)))
+                   #:term (lambda (out) (append (code out a) (inv (term out))))))
 (define-method (+ (a <parameter>) (b <parameter>))
   (make <function> #:arguments (list a b)
                    #:project (lambda () (apply + (map body (list a b))))

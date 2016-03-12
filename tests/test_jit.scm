@@ -613,7 +613,7 @@
 (ok (equal? i1 ((jit ctx (list (pointer <int>)) identity)
                 (make (pointer <int>) #:value (idata))))
     "Compile and run code for fetching data from a pointer")
-(skip (equal? '(253 252 250) (to-list ((jit ctx (list (sequence <ubyte>)) ~) (seq 2 3 5))))
+(ok (equal? '(253 252 250) (to-list ((jit ctx (list (sequence <ubyte>)) ~) (seq 2 3 5))))
     "Bitwise not of sequence")
 (skip (equal? '(#f #f #t #f) (to-list ((jit ctx (list (sequence <int>)) =0) (seq <int> 1 -2 0 3))))
     "Element-wise comparison with zero")
