@@ -387,7 +387,8 @@
   (tensor (dimension obj) (index obj) (lookup idx (term obj) stride iterator step)))
 
 (define-class <function> (<parameter>)
-  (arguments #:init-keyword #:arguments #:getter arguments))
+  (arguments #:init-keyword #:arguments #:getter arguments)
+  (project   #:init-keyword #:project   #:getter project))
 
 (define-method (type (self <parameter>)) (typecode (term self)))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
@@ -440,7 +441,7 @@
 (define-method (increment (self <function>)) (concatenate (map increment (arguments self))))
 (define-method (body self) self)
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
-(define-method (body (self <function>)) ((term self)))
+(define-method (body (self <function>)) ((project self)))
 
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)
@@ -487,22 +488,12 @@
 
 (define-method (- (a <parameter>))
   (make <function> #:arguments (list a)
+                   #:project (lambda () (- (body a)))
                    #:term (lambda (out) (append (code out a) (neg (term out))))))
-(define-method (- (a <tensor>))
-  (make <function> #:arguments (list a)
-                   #:term (lambda () (- (body a)))))
 (define-method (+ (a <parameter>) (b <parameter>))
   (make <function> #:arguments (list a b)
+                   #:project (lambda () (apply + (map body (list a b))))
                    #:term (lambda (out) (append (code out a) (add (term out) (term b))))))
-(define-method (+ (a <parameter>) (b <tensor>))
-  (make <function> #:arguments (list a b)
-                   #:term (lambda () (apply + (map body (list a b))))))
-(define-method (+ (a <tensor>) (b <parameter>))
-  (make <function> #:arguments (list a b)
-                   #:term (lambda () (apply + (map body (list a b))))))
-(define-method (+ (a <tensor>) (b <tensor>))
-  (make <function> #:arguments (list a b)
-                   #:term (lambda () (apply + (map body (list a b))))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
