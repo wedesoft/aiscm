@@ -474,16 +474,17 @@
 (define-method (code (out <parameter>) (fun <function>))
   (code (term out) fun))
 
-(define-method (add (a <element>) (b <element>))
+(define-method (binary op (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
-    (list (ADD (get a) (get b)))
+    (list (op (get a) (get b)))
     (let [(intermediate (skeleton (typecode a)))]
-      (append (code intermediate b) (add a intermediate)))))
-(define-method (add (a <element>) (b <pointer<>>))
+      (append (code intermediate b) (binary op a intermediate)))))
+(define-method (binary op (a <element>) (b <pointer<>>))
   (if (eqv? (size-of (typecode b)) (size-of a))
-    (list (ADD (get a) (ptr (typecode a) (get b))))
+    (list (op (get a) (ptr (typecode a) (get b))))
     (let [(intermediate (skeleton (typecode a)))]
-      (append (code intermediate b) (add a intermediate)))))
+      (append (code intermediate b) (binary op a intermediate)))))
+
 (define (unary op a) (list (op (get (term a)))))
 
 (define-method (- (a <parameter>))
@@ -497,7 +498,11 @@
 (define-method (+ (a <parameter>) (b <parameter>))
   (make <function> #:arguments (list a b)
                    #:project (lambda () (apply + (map body (list a b))))
-                   #:term (lambda (out) (append (code out a) (add (term out) (term b))))))
+                   #:term (lambda (out) (append (code out a) (binary ADD (term out) (term b))))))
+(define-method (- (a <parameter>) (b <parameter>))
+  (make <function> #:arguments (list a b)
+                   #:project (lambda () (apply - (map body (list a b))))
+                   #:term (lambda (out) (append (code out a) (binary SUB (term out) (term b))))))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)

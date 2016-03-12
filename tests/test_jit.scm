@@ -622,7 +622,7 @@
 (skip (equal? '(-1 2 3) (to-list ((jit ctx (list (sequence <byte>)) (cut to-type <int> <>))
                                 (seq <byte> -1 2 3))))
     "Typecasting a sequence should preserve values")
-(skip (equal? '(0 1 2) (to-list ((jit ctx (list (sequence <int>) <byte>) -) (seq <int> 1 2 3) 1)))
+(ok (equal? '(0 1 2) (to-list ((jit ctx (list (sequence <int>) <byte>) -) (seq <int> 1 2 3) 1)))
     "Subtract byte from integer sequence")
 (skip (equal? '(2 4 6) (to-list ((jit ctx (list (sequence <int>) <int>) *) (seq <int> 1 2 3) 2)))
     "Multiply integer sequence with an integer")
