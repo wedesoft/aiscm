@@ -477,9 +477,7 @@
       (make <function> #:arguments (list a)
                        #:project (lambda () (name (body a)))
                        #:term (lambda (out) (append (code out a) (unary cmd out)))))))
-(unary-op - NEG)
 (define-method (+ (a <parameter>)) a)
-(unary-op ~ NOT)
 
 (define-method (binary op (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
@@ -531,6 +529,23 @@
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons result args))
           (get (build target result)))))))
+
+(define ctx (make <context>))
+
+(define-syntax-rule (define-unary-op name cmd)
+  (begin
+    (unary-op name cmd)
+    (define-method (name (a <element>))
+      (let [(f (jit ctx (list (class-of a)) name))]
+        (add-method! name
+                     (make <method>
+                           #:specializers (list (class-of a))
+                           #:procedure f)))
+      (name a))))
+(define-unary-op - NEG)
+(define-method (+ (a <element>)) a)
+(define-unary-op ~ NOT)
+
 ;(pointer <rgb<>>)
 ;(pointer <complex<>>)
 ;(define-method (parameter (p <pointer<rgb<>>>))

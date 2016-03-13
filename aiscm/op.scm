@@ -16,7 +16,7 @@
   #:use-module (aiscm sequence)
   #:export (fill duplicate ! ensure-default-strides)
   #:re-export (+ - * / % = < <= > >= min max))
-(define ctx (make <context>))
+(define ctx (make <context>)); TODO: remove this
 
 (define-method (to-type (target <meta<element>>) (self <sequence<>>))
   (let [(proc (let [(fun (jit ctx (list (class-of self)) (cut to-type target <>)))]
@@ -40,8 +40,6 @@
 ;                        #:procedure f)))
 ;    (name a)))
 ;(define-unary-op duplicate identity)
-;(define-unary-op - -)
-;(define-unary-op ~ ~)
 ;(define-unary-op =0 =0)
 ;(define-unary-op !=0 !=0)
 ;(define-unary-op conj conj)
@@ -64,13 +62,6 @@
 ;    (capture-binary-argument name <real>)
 ;    (capture-binary-argument name <rgb>)
 ;    (capture-binary-argument name <complex>)))
-(define-method (- (a <sequence<>>))
-  (let [(f (jit ctx (list (class-of a)) -))]
-    (add-method! -
-                 (make <method>
-                       #:specializers (list (class-of a))
-                       #:procedure f)))
-  (- a))
 
 (define-method (+ (a <element>) (b <integer>)) (+ a (make (match b) #:value b)))
 (define-method (+ (a <integer>) (b <element>)) (+ (make (match a) #:value a) b))
