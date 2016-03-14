@@ -1,5 +1,6 @@
 ## Ready
 
+* mov-part -> mov-signed, mov-unsigned
 * enable array operations (use <parameter> and <tensor> instead of <element>?)
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
