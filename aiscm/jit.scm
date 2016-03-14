@@ -22,7 +22,8 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
-            assemble jit iterator step setup increment body arguments))
+            assemble jit iterator step setup increment body arguments
+            duplicate ensure-default-strides))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -75,6 +76,7 @@
 (functional-op    MOVSX)
 (functional-op    MOVZX)
 (functional-op    LEA)
+(mutating-op      IMUL)
 (mutating-op      SHL)
 (mutating-op      SHR)
 (mutating-op      SAL)
@@ -351,8 +353,8 @@
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL)))
-(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL)))
+(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL))); TODO: test
+(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL))); TODO: test
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -470,14 +472,14 @@
   (code (term out) fun))
 
 (define (unary op a) (list (op (get (term a)))))
-(define (unary-op name cmd)
+(define-syntax-rule (unary-op name cmd)
   (define-method (name (a <parameter>))
     (make <function> #:arguments (list a)
                      #:project (lambda () (name (body a)))
                      #:term (lambda (out) (append (code out a) (unary cmd out))))))
-(define (unary-op* name cmd)
-  (mutating-op cmd)
-  (unary-op name cmd))
+(define-syntax-rule (unary-op* name cmd)
+  (begin (mutating-op cmd)
+         (unary-op name cmd)))
 
 (define-method (binary op (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
@@ -489,14 +491,14 @@
     (list (op (get a) (ptr (typecode a) (get b))))
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (binary op a intermediate)))))
-(define (binary-op name cmd)
+(define-syntax-rule (binary-op name cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary cmd (term out) (term b)))))))
-(define (binary-op* name cmd)
-  (mutating-op cmd)
-  (binary-op name cmd))
+(define-syntax-rule (binary-op* name cmd)
+  (begin (mutating-op cmd)
+         (binary-op name cmd)))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
@@ -529,39 +531,48 @@
 
 (define ctx (make <context>))
 
-(define (define-unary-op define-op name cmd)
-  (define-op name cmd)
+(define-syntax-rule (define-unary-dispatch name delegate)
   (define-method (name (a <element>))
-    (let [(f (jit ctx (list (class-of a)) name))]
+    (let [(f (jit ctx (list (class-of a)) delegate))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of a))
                          #:procedure f)))
     (name a)))
+(define-syntax-rule (define-unary-op define-op name cmd)
+  (begin (define-op name cmd)
+         (define-unary-dispatch name name)))
+(define-unary-dispatch duplicate identity)
 (define-unary-op unary-op* - NEG)
 (define-method (+ (a <parameter>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-op unary-op* ~ NOT)
 
-(define (define-binary-op define-op name cmd)
-  (define-op name cmd)
-  (define-method (name (a <element>) (b <integer>)) (name a (make (match b) #:value b)))
-  (define-method (name (a <integer>) (b <element>)) (name (make (match a) #:value a) b))
-  (define-method (name (a <element>) (b <element>))
-    (let [(f (jit ctx (map class-of (list a b)) name))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (map class-of (list a b))
-                         #:procedure (lambda (a b) (f (get a) (get b)))))
-      (name a b))))
+(define-syntax-rule (define-binary-delegate name delegate)
+ (define-method (name (a <element>) (b <element>))
+   (let [(f (jit ctx (map class-of (list a b)) delegate))]
+     (add-method! name
+                  (make <method>
+                        #:specializers (map class-of (list a b))
+                        #:procedure (lambda (a b) (f (get a) (get b)))))
+     (name a b))))
+(define-syntax-rule (define-binary-op define-op name cmd)
+  (begin (define-op name cmd)
+         (define-method (name (a <element>) (b <integer>)) (name a (make (match b) #:value b)))
+         (define-method (name (a <integer>) (b <element>)) (name (make (match a) #:value a) b))
+         (define-binary-delegate name name)))
 (define-binary-op binary-op* +  ADD)
 (define-binary-op binary-op* -  SUB)
-(define-binary-op binary-op* *  IMUL)
+(define-binary-op binary-op  *  IMUL)
 (define-binary-op binary-op  << shl)
 (define-binary-op binary-op  >> shr)
+
+(define (ensure-default-strides img)
+  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
+
 ;(pointer <rgb<>>)
 ;(pointer <complex<>>)
-;(define-method (parameter (p <pointer<rgb<>>>))
+;(define-method (parameter   (p <pointer<rgb<>>>))
 ;  (let [(result (var (typecode p)))
 ;        (size   (size-of (base (typecode p))))]
 ;    (make (fragment (typecode p))
