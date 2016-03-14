@@ -63,22 +63,6 @@
 ;    (capture-binary-argument name <rgb>)
 ;    (capture-binary-argument name <complex>)))
 
-(define-method (+ (a <element>) (b <integer>)) (+ a (make (match b) #:value b)))
-(define-method (+ (a <integer>) (b <element>)) (+ (make (match a) #:value a) b))
-(define-method (+ (a <sequence<>>) (b <element>))
-  (let [(f (jit ctx (map class-of (list a b)) +))]
-    (add-method! +
-                 (make <method>
-                       #:specializers (map class-of (list a b))
-                       #:procedure (lambda (a b) (f (get a) (get b)))))
-    (+ a b)))
-(define-method (+ (a <element>) (b <sequence<>>))
-  (let [(f (jit ctx (map class-of (list a b)) +))]
-    (add-method! +
-                 (make <method>
-                       #:specializers (map class-of (list a b))
-                       #:procedure (lambda (a b) (f (get a) (get b)))))
-    (+ a b)))
 ;(define-binary-op +   +)
 ;(define-binary-op -   -)
 ;(define-binary-op *   *)

@@ -477,7 +477,6 @@
       (make <function> #:arguments (list a)
                        #:project (lambda () (name (body a)))
                        #:term (lambda (out) (append (code out a) (unary cmd out)))))))
-(define-method (+ (a <parameter>)) a)
 
 (define-method (binary op (a <element>) (b <element>))
   (if (eqv? (size-of b) (size-of a))
@@ -496,10 +495,6 @@
       (make <function> #:arguments (list a b)
                        #:project (lambda () (apply name (map body (list a b))))
                        #:term (lambda (out) (append (code out a) (binary cmd (term out) (term b))))))))
-(binary-op + ADD)
-(binary-op - SUB)
-(binary-op * IMUL)
-
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
@@ -543,9 +538,25 @@
                            #:procedure f)))
       (name a))))
 (define-unary-op - NEG)
+(define-method (+ (a <parameter>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-op ~ NOT)
 
+(define-syntax-rule (define-binary-op name cmd)
+  (begin
+    (binary-op name cmd)
+    (define-method (name (a <element>) (b <integer>)) (name a (make (match b) #:value b)))
+    (define-method (name (a <integer>) (b <element>)) (name (make (match a) #:value a) b))
+    (define-method (name (a <element>) (b <element>))
+      (let [(f (jit ctx (map class-of (list a b)) name))]
+        (add-method! name
+                     (make <method>
+                           #:specializers (map class-of (list a b))
+                           #:procedure (lambda (a b) (f (get a) (get b)))))
+        (name a b)))))
+(define-binary-op + ADD)
+(define-binary-op - SUB)
+(define-binary-op * IMUL)
 ;(pointer <rgb<>>)
 ;(pointer <complex<>>)
 ;(define-method (parameter (p <pointer<rgb<>>>))
