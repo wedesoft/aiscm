@@ -23,7 +23,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments
-            duplicate ensure-default-strides))
+            duplicate shl shr ensure-default-strides))
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -76,7 +76,6 @@
 (functional-op    MOVSX)
 (functional-op    MOVZX)
 (functional-op    LEA)
-(mutating-op      IMUL)
 (mutating-op      SHL)
 (mutating-op      SHR)
 (mutating-op      SAL)
@@ -353,8 +352,10 @@
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (shl r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAL SHL) r CL))); TODO: test
-(define (shr r x) (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) SAR SHR) r CL))); TODO: test
+(define (shx r x shift-signed shift-unsigned)
+  (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
+(define (shl r x) (shx r x SAL SHL))
+(define (shr r x) (shx r x SAR SHR))
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -563,7 +564,7 @@
          (define-binary-delegate name name)))
 (define-binary-op binary-op* +  ADD)
 (define-binary-op binary-op* -  SUB)
-(define-binary-op binary-op  *  IMUL)
+(define-binary-op binary-op* *  IMUL)
 (define-binary-op binary-op  << shl)
 (define-binary-op binary-op  >> shr)
 (define-binary-op binary-op* &  AND)

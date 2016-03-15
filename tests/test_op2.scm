@@ -11,7 +11,7 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 54)
+(planned-tests 53)
 (skip (equal?  '((((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2))))
              (to-list (+ 1 (fill <int> '(2 2 2 2) 1))))
     "add 1 to 4D array")
