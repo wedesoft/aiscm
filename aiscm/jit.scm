@@ -22,8 +22,11 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
-            assemble jit iterator step setup increment body arguments
-            duplicate shl shr ensure-default-strides))
+            assemble jit iterator step setup increment body arguments to-type operand
+            duplicate shl shr test-zero ensure-default-strides))
+
+(define ctx (make <context>))
+
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -356,6 +359,12 @@
   (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
 (define (shr r x) (shx r x SAR SHR))
+(define-method (test-zero r a) (list (TEST a a) (SETE r)))
+
+(define-method (to-type (target <meta<element>>) (self <meta<element>>))
+  target)
+(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
+  (multiarray target (dimensions self)))
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -386,12 +395,12 @@
 
 (define-class <function> (<parameter>)
   (arguments #:init-keyword #:arguments #:getter arguments)
+  (type      #:init-keyword #:type      #:getter type)
   (project   #:init-keyword #:project   #:getter project))
 
 (define-method (type (self <parameter>)) (typecode (term self)))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
-(define-method (type (self <function>)) (reduce coerce #f (map type (arguments self))))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
 (define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self))); TODO: get correct shape
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
@@ -441,20 +450,23 @@
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
 
+(define-method (operand (a <element>)) (get a))
+(define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
+
 (define (mov-cmd a b)
   (cond ((eqv? (size-of b) (size-of a)) MOV)
         ((>    (size-of b) (size-of a)) mov-part)
         ((signed? b)                    MOVSX)
         ((eqv? (size-of b) 4)           MOV)
         (else                           MOVZX)))
-(define-method (code (a <element>) (b <element>))
+(define-method (code (a <element>) (b <element>)); TODO: use "operand"
   (list ((mov-cmd a b) (get a) (get b))))
 (define-method (code (a <element>) (b <pointer<>>))
   (list ((mov-cmd a (typecode b)) (get a) (ptr (typecode b) (get b)))))
 (define-method (code (a <pointer<>>) (b <element>))
   (list (MOV (ptr (typecode a) (get a)) (get b))))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (let [(intermediate (skeleton (typecode a)))]
+  (let [(intermediate (skeleton (typecode a)))]; TODO: redundant code for inserting intermediate value
     (append (code intermediate b) (code a intermediate))))
 (define-method (code (a <parameter>) (b <parameter>))
   (code (term a) (term b)))
@@ -465,19 +477,30 @@
                 (append (code (body a) (body b))
                         (increment a)
                         (increment b)))))
-(define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out))); TODO: unwrap function arguments here?
+(define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
   (let [(intermediate (skeleton (typecode out)))]
     (append (code intermediate fun) (code out intermediate))))
 (define-method (code (out <parameter>) (fun <function>))
   (code (term out) fun))
 
-(define (unary op a) (list (op (get (term a)))))
+(define (unary op a) (list (op (get a))))
+(define-method (unaryx op out (a <element>)) (list (op (operand out) (operand a))))
+(define-method (unaryx op out (a <pointer<>>)); TODO: rename
+  (let [(intermediate (skeleton (typecode a)))]
+    (append (code intermediate a) (unaryx op out intermediate))))
 (define-syntax-rule (unary-op name cmd)
   (define-method (name (a <parameter>))
     (make <function> #:arguments (list a)
+                     #:type (type a)
                      #:project (lambda () (name (body a)))
-                     #:term (lambda (out) (append (code out a) (unary cmd out))))))
+                     #:term (lambda (out) (append (code out a) (unary cmd (term out)))))))
+(define-syntax-rule (unary-opx name cmd); TODO: refactor
+  (define-method (name (a <parameter>))
+    (make <function> #:arguments (list a)
+                     #:type (to-type <bool> (type a))
+                     #:project (lambda () (name (body a)))
+                     #:term (lambda (out) (unaryx cmd (term out) (term a))))))
 (define-syntax-rule (unary-op* name cmd)
   (begin (mutating-op cmd)
          (unary-op name cmd)))
@@ -495,6 +518,7 @@
 (define-syntax-rule (binary-op name cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)
+                     #:type (reduce coerce #f (map type (list a b)))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary cmd (term out) (term b)))))))
 (define-syntax-rule (binary-op* name cmd)
@@ -530,8 +554,6 @@
           (apply fun (cons result args))
           (get (build target result)))))))
 
-(define ctx (make <context>))
-
 (define-syntax-rule (define-unary-dispatch name delegate)
   (define-method (name (a <element>))
     (let [(f (jit ctx (list (class-of a)) delegate))]
@@ -548,6 +570,8 @@
 (define-method (+ (a <parameter>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-op unary-op* ~ NOT)
+;(define-unary-op unary-op )
+(define-unary-op unary-opx  =0 test-zero)
 
 (define-syntax-rule (define-binary-delegate name delegate)
  (define-method (name (a <element>) (b <element>))
@@ -599,10 +623,6 @@
 ;          #:value result)))
 ;(define-method (parameter (self <sequence<>>))
 ;  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
-;(define-method (to-type (target <meta<element>>) (self <meta<element>>))
-;  target)
-;(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
-;  (multiarray target (dimensions self)))
 ;  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
 ;    (let [(source (typecode (type frag)))]
 ;      (if (eq? target source)
