@@ -346,8 +346,8 @@
 ;        (if (= size 1)
 ;          (list (MOVZX AX a) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
 ;          (list (MOV ax a) (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
-;(define (div r a b) (div/mod r a b car))
-;(define (mod r a b) (div/mod r a b cdr))
+;(define (div r a b) (div/mod r a b car)); TODO: test
+;(define (mod r a b) (div/mod r a b cdr)); TODO: test
 ;(define (sign-space a b)
 ;  (let [(coerced (coerce a b))]
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
@@ -566,6 +566,11 @@
 (define-binary-op binary-op  *  IMUL)
 (define-binary-op binary-op  << shl)
 (define-binary-op binary-op  >> shr)
+(define-binary-op binary-op* &  AND)
+(define-binary-op binary-op* |  OR)
+(define-binary-op binary-op* ^  XOR)
+;(define-binary-op binary-op  /  div)
+;(define-binary-op binary-op  %  mod)
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))

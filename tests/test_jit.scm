@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 327)
+(planned-tests 332)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -677,6 +677,18 @@
     "'ensure-default-strides' should do nothing by default")
 (ok (let [(m (make (multiarray <int> 2) #:shape '(6 4)))] (equal? '(1 4) (strides (ensure-default-strides (roll m)))))
     "'ensure-default-strides' should create a compact clone if the input is not contiguous")
+(ok (equal? '(3 0 1) (to-list (& (seq 3 4 5) 3)))
+    "element-wise bit-wise and")
+(ok (equal? '(3 7 7) (to-list (| 3 (seq 3 4 5))))
+    "element-wise bit-wise or")
+(ok (equal? '(1 7 1) (to-list (^ (seq 2 3 4) (seq 3 4 5))))
+    "element-wise bit-wise xor")
+(skip (equal? '(1 2 -3) (to-list (/ (seq 3 6 -9) 3)))
+    "element-wise signed byte division")
+(skip (equal? '(2 3 0 1) (to-list (% (seq 7 8 5 6) 5)))
+    "element-wise modulo")
+
+
 ; ------------------------------------------------------------------------------
 (skip (equal? '(0 2 2) (to-list ((jit ctx (list (sequence <int>) <int>) &) (seq <int> 1 2 3) 2)))
     "Bitwise and of sequence and number")
