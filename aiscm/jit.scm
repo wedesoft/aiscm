@@ -459,12 +459,8 @@
         ((signed? b)                    MOVSX)
         ((eqv? (size-of b) 4)           MOV)
         (else                           MOVZX)))
-(define-method (code (a <element>) (b <element>)); TODO: use "operand"
-  (list ((mov-cmd a b) (get a) (get b))))
-(define-method (code (a <element>) (b <pointer<>>))
-  (list ((mov-cmd a (typecode b)) (get a) (ptr (typecode b) (get b)))))
-(define-method (code (a <pointer<>>) (b <element>))
-  (list (MOV (ptr (typecode a) (get a)) (get b))))
+(define-method (code (a <element>) (b <element>))
+  (list ((mov-cmd (typecode a) (typecode b)) (operand a) (operand b))))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let [(intermediate (skeleton (typecode a)))]; TODO: redundant code for inserting intermediate value
     (append (code intermediate b) (code a intermediate))))
@@ -505,14 +501,9 @@
   (begin (mutating-op cmd)
          (unary-op name cmd)))
 
-(define-method (binary op (a <element>) (b <element>))
-  (if (eqv? (size-of b) (size-of a))
-    (list (op (get a) (get b)))
-    (let [(intermediate (skeleton (typecode a)))]
-      (append (code intermediate b) (binary op a intermediate)))))
-(define-method (binary op (a <element>) (b <pointer<>>))
-  (if (eqv? (size-of (typecode b)) (size-of a))
-    (list (op (get a) (ptr (typecode a) (get b))))
+(define (binary op a b)
+  (if (eqv? (size-of (typecode b)) (size-of (typecode a)))
+    (list (op (operand a) (operand b)))
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (binary op a intermediate)))))
 (define-syntax-rule (binary-op name cmd)
