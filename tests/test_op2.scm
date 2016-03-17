@@ -11,10 +11,7 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 50)
-(skip (equal?  '((((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2))))
-             (to-list (+ 1 (fill <int> '(2 2 2 2) 1))))
-    "add 1 to 4D array")
+(planned-tests 48)
 (skip (equal? '(-2 3 5) (to-list (to-type <byte> (seq -2 3 5))))
     "trivial type conversion")
 (skip (eq? <int> (typecode (to-type <int> (seq 2 3 5))))
@@ -64,8 +61,6 @@
     "element-wise greater-equal of unsigned and signed bytes")
 ; ------------------------------------------------------------------------------
 
-(skip (equal? '(#f #f #f #t) (to-list (&& (seq #f #t #f #t) (seq #f #f #t #t))))
-    "element-wise and")
 (skip (equal? '(#f #t #f #f) (to-list (&& (seq #f #t #t #t) (seq #t #t #t #f) (seq #t #t #f #f))))
     "element-wise and with three arguments")
 (skip (equal? '(#f #t) (to-list (&& (seq #f #t) #t)))

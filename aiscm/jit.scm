@@ -326,10 +326,6 @@
 
 ;(define ((binary-cmp set1 set2) r a b)
 ;  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
-;(define ((binary-bool op) r a b)
-;  (let [(r1 (var <byte>))
-;        (r2 (var <byte>))]
-;    (list (TEST a a) (SETNE r1) (TEST b b) (SETNE r2) (op r1 r2) (MOV r r1))))
 ;(define ((binary-cmov op1 op2) r a b)
 ;  (if (= (size-of r) 1)
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
@@ -359,8 +355,16 @@
   (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
 (define (shr r x) (shx r x SAR SHR))
-(define-method (test-zero r a) (list (TEST a a) (SETE r)))
-(define-method (test-non-zero r a) (list (TEST a a) (SETNE r)))
+(define-method (test (a <var>)) (list (TEST a a)))
+(define-method (test (a <ptr>))
+  (let [(intermediate (var (typecode a)))]
+    (list (MOV intermediate a) (test intermediate))))
+(define (test-zero r a) (attach (test a) (SETE r)))
+(define (test-non-zero r a) (attach (test a) (SETNE r))); TODO: dispatch here? (CMP a 0)
+(define ((binary-bool op) a b)
+  (let [(intermediate (var <byte>))]
+    (append (test-non-zero a a) (test-non-zero intermediate b) (list (op a intermediate)))))
+(define bool-and (binary-bool AND))
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
@@ -588,6 +592,7 @@
 (define-binary-op binary-mutating-asm identity &  AND)
 (define-binary-op binary-mutating-asm identity |  OR)
 (define-binary-op binary-mutating-asm identity ^  XOR)
+(define-binary-op binary-mutating-fun to-bool  && bool-and)
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
