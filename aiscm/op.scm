@@ -14,7 +14,7 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (fill !)
+  #:export (fill)
   #:re-export (+ - * / % = < <= > >= min max))
 (define ctx (make <context>)); TODO: remove this
 

@@ -500,7 +500,7 @@
 (define-syntax-rule (unary-functional-fun name conversion cmd); TODO: refactor
   (define-method (name (a <parameter>))
     (make <function> #:arguments (list a)
-                     #:type (conversion (type a)); TODO: make this a parameter
+                     #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
                      #:term (lambda (out) (unary-functional-cmd cmd (term out) (term a))))))
 (define-syntax-rule (unary-mutating-asm name conversion cmd)
@@ -571,6 +571,7 @@
 (define-unary-op unary-mutating-asm   identity ~   NOT)
 (define-unary-op unary-functional-fun to-bool  =0  test-zero)
 (define-unary-op unary-functional-fun to-bool  !=0 test-non-zero)
+(define-unary-op unary-functional-fun to-bool  !   test-zero)
 
 (define-syntax-rule (define-binary-delegate name delegate)
  (define-method (name (a <element>) (b <element>))

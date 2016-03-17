@@ -11,7 +11,7 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 47)
+(planned-tests 46)
 (skip (equal? '(-2 3 5) (to-list (to-type <byte> (seq -2 3 5))))
     "trivial type conversion")
 (skip (eq? <int> (typecode (to-type <int> (seq 2 3 5))))
@@ -25,8 +25,6 @@
 (skip (equal? '(255 0 1) (to-list (to-type <ubyte> (seq 255 256 257))))
     "typecasting to smaller integer type")
 
-(skip (equal? '(#f #t #f) (to-list (! (seq #t #f #t))))
-    "element-wise not for booleans")
 (skip (equal? '(#f #t) (to-list (= (seq 3 4) (seq 5 4))))
     "element-wise array-array comparison")
 (skip (equal? '(#f #t) (to-list (= 4 (seq 5 4))))
