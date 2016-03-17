@@ -360,11 +360,12 @@
   (let [(intermediate (var (typecode a)))]
     (list (MOV intermediate a) (test intermediate))))
 (define (test-zero r a) (attach (test a) (SETE r)))
-(define (test-non-zero r a) (attach (test a) (SETNE r))); TODO: dispatch here? (CMP a 0)
+(define (test-non-zero r a) (attach (test a) (SETNE r)))
 (define ((binary-bool op) a b)
   (let [(intermediate (var <byte>))]
-    (append (test-non-zero a a) (test-non-zero intermediate b) (list (op a intermediate)))))
+    (attach (append (test-non-zero a a) (test-non-zero intermediate b)) (op a intermediate))))
 (define bool-and (binary-bool AND))
+(define bool-or  (binary-bool OR))
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
@@ -514,7 +515,7 @@
 (define-syntax-rule (binary-mutating-fun name conversion cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)
-                     #:type (conversion (coerce (type a) (type b)))
+                     #:type (coerce (conversion (type a)) (conversion (type b)))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary-mutating-cmd cmd (term out) (term b)))))))
 (define-syntax-rule (binary-mutating-asm name conversion cmd)
@@ -581,8 +582,8 @@
      (name a b))))
 (define-syntax-rule (define-binary-op define-op conversion name cmd)
   (begin (define-op name conversion cmd)
-         (define-method (name (a <element>) (b <integer>)) (name a (make (match b) #:value b)))
-         (define-method (name (a <integer>) (b <element>)) (name (make (match a) #:value a) b))
+         (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
+         (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-delegate name name)))
 (define-binary-op binary-mutating-asm identity +  ADD)
 (define-binary-op binary-mutating-asm identity -  SUB)
@@ -593,6 +594,7 @@
 (define-binary-op binary-mutating-asm identity |  OR)
 (define-binary-op binary-mutating-asm identity ^  XOR)
 (define-binary-op binary-mutating-fun to-bool  && bool-and)
+(define-binary-op binary-mutating-fun to-bool  || bool-or)
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
