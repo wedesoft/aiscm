@@ -18,7 +18,7 @@
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers blocked repeat mov-part
+            callee-saved save-registers load-registers blocked repeat mov-part mov-signed mov-unsigned
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
@@ -55,8 +55,16 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(define-method (mov-part (r <register>) (r/m <operand>))
-  (MOV r (reg (/ (get-bits r) 8) (get-code r/m))))
+(define-method (mov-part (a <operand>) (b <register>))
+  (MOV a (reg (/ (get-bits a) 8) (get-code b))))
+(define (mov movxx movxx32 a b)
+  (cond
+        ((eqv? (get-bits a) (get-bits b)) MOV)
+        ((<    (get-bits a) (get-bits b)) mov-part)
+        ((eqv? (get-bits b) 32)           movxx32)
+        (else                             movxx)))
+(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov MOVSX MOVSX a b) a b))
+(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov MOVZX MOV   a b) a b))
 (define-method (cmovnle16 (r <register>) (r/m <operand>))
   (CMOVNLE (reg (/ (max (get-bits r  ) 16) 8) (get-code r  ))
            (reg (/ (max (get-bits r/m) 16) 8) (get-code r/m))))
@@ -71,6 +79,8 @@
          (reg (/ (max (get-bits r/m) 16) 8) (get-code r/m))))
 
 (functional-op    mov-part)
+(functional-op    mov-signed)
+(functional-op    mov-unsigned)
 (mutating-op      cmovnle16)
 (mutating-op      cmovnbe16)
 (mutating-op      cmovl16)
@@ -460,11 +470,7 @@
 (define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
 
 (define (mov-cmd a b)
-  (cond ((eqv? (size-of b) (size-of a)) MOV)
-        ((>    (size-of b) (size-of a)) mov-part)
-        ((signed? b)                    MOVSX)
-        ((eqv? (size-of b) 4)           MOV)
-        (else                           MOVZX)))
+  (if (or (eq? b <bool>) (signed? b)) mov-signed mov-unsigned))
 (define-method (code (a <element>) (b <element>))
   (list ((mov-cmd (typecode a) (typecode b)) (operand a) (operand b))))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
