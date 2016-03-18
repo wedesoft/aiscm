@@ -1,6 +1,8 @@
 ## Ready
 
-* only run failed tests
+* fix skipped tests: >=, ..., to-type
+* enable and move RGB, complex code out of jit module
+* only run failed tests, parallel test runner?
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
