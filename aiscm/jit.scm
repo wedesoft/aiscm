@@ -523,7 +523,15 @@
     (let [(intermediate (skeleton (typecode a)))]
       (append (code intermediate b) (binary-mutating-cmd op a intermediate)))))
 (define (binary-functional-cmd op out a b)
-  (list (op (operand out) (operand a) (operand b))))
+  (cond ((< (size-of (typecode b)) (size-of (typecode a)))
+         (let [(intermediate (skeleton (typecode a)))]
+           (append (code intermediate b)
+                   (list (op (operand out) (operand a) (operand intermediate))))))
+        ((> (size-of (typecode b)) (size-of (typecode a)))
+         (let [(intermediate (skeleton (typecode b)))]
+           (append (code intermediate a)
+                   (list (op (operand out) (operand intermediate) (operand b))))))
+        (else (list (op (operand out) (operand a) (operand b))))))
 (define-syntax-rule (binary-mutating-fun name conversion cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)

@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 345)
+(planned-tests 347)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -733,6 +733,10 @@
     "Element-wise scalar-array comparison")
 (ok (equal? '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <int> 1 2 3))))
     "Element-wise array-array comparison")
+(ok (equal? '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <byte> 1 2 3))))
+    "Element-wise comparison with integers of different size (first case)")
+(ok (equal? '(#f #t #f) (to-list (= (seq <byte> 3 2 1) (seq <int> 1 2 3))))
+    "Element-wise comparison with integers of different size (second case)")
 
 
 ; ------------------------------------------------------------------------------
