@@ -11,7 +11,7 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 46)
+(planned-tests 43)
 (skip (equal? '(-2 3 5) (to-list (to-type <byte> (seq -2 3 5))))
     "trivial type conversion")
 (skip (eq? <int> (typecode (to-type <int> (seq 2 3 5))))
@@ -59,12 +59,6 @@
     "element-wise greater-equal of unsigned and signed bytes")
 ; ------------------------------------------------------------------------------
 
-(skip (equal? '(#f #t #f #f) (to-list (&& (seq #f #t #t #t) (seq #t #t #t #f) (seq #t #t #f #f))))
-    "element-wise and with three arguments")
-(skip (equal? '(#f #t) (to-list (&& (seq #f #t) #t)))
-    "element-wise and with array and boolean argument")
-(skip (equal? '(#f #t) (to-list (&& #t (seq #f #t))))
-    "element-wise and with boolean argument and array")
 (skip (equal? '(2 3)  (to-list (red (seq <intrgb> (rgb 2 3 5) (rgb 3 5 7)))))
     "extract red channel of RGB array")
 (skip (equal? '(3 5)  (to-list (green (seq <intrgb> (rgb 2 3 5) (rgb 3 5 7)))))
