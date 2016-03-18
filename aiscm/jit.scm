@@ -18,7 +18,7 @@
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
-            callee-saved save-registers load-registers blocked repeat mov-part mov-signed mov-unsigned
+            callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
@@ -55,8 +55,7 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(define-method (mov-part (a <operand>) (b <register>))
-  (MOV a (reg (/ (get-bits a) 8) (get-code b))))
+(define (mov-part a b) (MOV a (reg (/ (get-bits a) 8) (get-code b))))
 (define (mov movxx movxx32 a b)
   (cond
         ((eqv? (get-bits a) (get-bits b)) MOV)
@@ -78,7 +77,6 @@
   (CMOVB (reg (/ (max (get-bits r  ) 16) 8) (get-code r  ))
          (reg (/ (max (get-bits r/m) 16) 8) (get-code r/m))))
 
-(functional-op    mov-part)
 (functional-op    mov-signed)
 (functional-op    mov-unsigned)
 (mutating-op      cmovnle16)
@@ -362,7 +360,7 @@
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-part CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
+  (blocked RCX (mov-unsigned CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
 (define (shr r x) (shx r x SAR SHR))
 (define-method (test (a <var>)) (list (TEST a a)))
