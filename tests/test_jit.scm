@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 343)
+(planned-tests 345)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -727,11 +727,15 @@
     "element-wise signed byte division")
 (skip (equal? '(2 3 0 1) (to-list (% (seq 7 8 5 6) 5)))
     "element-wise modulo")
+(ok (equal? '(#f #t #f) (to-list (= (seq <int> 1 2 3) 2)))
+    "Element-wise array-scalar comparison")
+(ok (equal? '(#f #t #f) (to-list (= 2 (seq <int> 1 2 3))))
+    "Element-wise scalar-array comparison")
+(ok (equal? '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <int> 1 2 3))))
+    "Element-wise array-array comparison")
 
 
 ; ------------------------------------------------------------------------------
-(skip (equal? '(#f #t #f) (to-list ((jit ctx (list (sequence <int>) <int>) =) (seq <int> 1 2 3) 2)))
-    "Element-wise equal comparison")
 (skip (equal? '(#t #f #t) (to-list ((jit ctx (list (sequence <int>) <int>) !=) (seq <int> 1 2 3) 2)))
     "Element-wise not-equal comparison")
 (skip (equal? '(#t #f #f) (to-list ((jit ctx (list (sequence <ubyte>) <ubyte>) <) (seq 3 4 5) 4)))
