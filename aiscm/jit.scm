@@ -481,10 +481,10 @@
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
 
-(define (mov-cmd a b)
-  (if (or (eq? b <bool>) (signed? b)) mov-signed mov-unsigned))
+(define-method (code a b); TODO: remove comparison with <bool>
+  (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
 (define-method (code (a <element>) (b <element>))
-  (list ((mov-cmd (typecode a) (typecode b)) (operand a) (operand b))))
+  (code (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let [(intermediate (skeleton (typecode a)))]; TODO: redundant code for inserting intermediate value
     (append (code intermediate b) (code a intermediate))))
