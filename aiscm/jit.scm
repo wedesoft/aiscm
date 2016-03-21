@@ -379,7 +379,15 @@
 (define-method (cmp (a <ptr>) (b <ptr>))
   (let [(intermediate (var (typecode a)))]
     (list (MOV intermediate a) (CMP intermediate b))))
-(define (cmp-sete out a b) (attach (cmp a b) (SETE out)))
+(define ((cmp-setxx set-signed set-unsigned) out a b)
+  (let [(set (if (or (signed? (typecode a)) (signed? (typecode b))) set-signed set-unsigned))]
+    (attach (cmp a b) (set out))))
+(define cmp-equal         (cmp-setxx SETE   SETE  ))
+(define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
+(define cmp-lower-than    (cmp-setxx SETL   SETB  ))
+(define cmp-lower-equal   (cmp-setxx SETLE  SETBE ))
+(define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
+(define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
@@ -622,7 +630,12 @@
 (define-binary-op binary-mutating-asm   identity ^  XOR)
 (define-binary-op binary-mutating-fun   to-bool  && bool-and)
 (define-binary-op binary-mutating-fun   to-bool  || bool-or)
-(define-binary-op binary-functional-fun to-bool  =  cmp-sete)
+(define-binary-op binary-functional-fun to-bool  =  cmp-equal)
+(define-binary-op binary-functional-fun to-bool  != cmp-not-equal)
+(define-binary-op binary-functional-fun to-bool  <  cmp-lower-than)
+(define-binary-op binary-functional-fun to-bool  <= cmp-lower-equal)
+(define-binary-op binary-functional-fun to-bool  >  cmp-greater-than)
+(define-binary-op binary-functional-fun to-bool  >= cmp-greater-equal)
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
