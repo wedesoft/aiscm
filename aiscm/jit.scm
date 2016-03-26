@@ -23,7 +23,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
-            duplicate shl shr test-zero ensure-default-strides))
+            duplicate shl shr test-zero cmp-type ensure-default-strides))
 
 (define ctx (make <context>))
 
@@ -56,14 +56,14 @@
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
 (define (mov-part a b) (MOV a (reg (/ (get-bits a) 8) (get-code b))))
-(define (mov movxx movxx32 a b)
+(define (mov-cmd movxx movxx32 a b)
   (cond
         ((eqv? (get-bits a) (get-bits b)) MOV)
         ((<    (get-bits a) (get-bits b)) mov-part)
         ((eqv? (get-bits b) 32)           movxx32)
         (else                             movxx)))
-(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov MOVSX MOVSX a b) a b))
-(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov MOVZX MOV   a b) a b))
+(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX a b) a b))
+(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX MOV   a b) a b))
 (define-method (cmovnle16 (r <register>) (r/m <operand>))
   (CMOVNLE (reg (/ (max (get-bits r  ) 16) 8) (get-code r  ))
            (reg (/ (max (get-bits r/m) 16) 8) (get-code r/m))))
@@ -359,6 +359,9 @@
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
+(define-method (mov a b); TODO: remove comparison with <bool>
+  (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
+
 (define (shx r x shift-signed shift-unsigned)
   (blocked RCX (mov-unsigned CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
@@ -378,10 +381,22 @@
 (define-method (cmp a b) (list (CMP a b)))
 (define-method (cmp (a <ptr>) (b <ptr>))
   (let [(intermediate (var (typecode a)))]
-    (list (MOV intermediate a) (CMP intermediate b))))
+    (cons (MOV intermediate a) (cmp intermediate b))))
+(define (cmp-type a b)
+  (if (eq? (signed? a) (signed? b))
+      (coerce a b)
+      (integer (min 64 (* 2 (bits (coerce a b)))) signed)))
+(define (cmp-extended a b); TODO: compare integers of different size (as well as different sign), test
+  (let* [(type (cmp-type (typecode a) (typecode b)))
+         (ax (var type)); TODO: rename
+         (bx (var type))]
+    (append (if (eq? type (typecode a)) '() (mov ax a)); TODO: refactor
+            (if (eq? type (typecode b)) '() (mov bx b))
+            (cmp (if (eq? type (typecode a)) a ax)
+                 (if (eq? type (typecode b)) b bx)))))
 (define ((cmp-setxx set-signed set-unsigned) out a b)
   (let [(set (if (or (signed? (typecode a)) (signed? (typecode b))) set-signed set-unsigned))]
-    (attach (cmp a b) (set out))))
+    (attach (cmp-extended a b) (set out))))
 (define cmp-equal         (cmp-setxx SETE   SETE  ))
 (define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
 (define cmp-lower-than    (cmp-setxx SETL   SETB  ))
@@ -481,10 +496,8 @@
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
 
-(define-method (code a b); TODO: remove comparison with <bool>
-  (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
 (define-method (code (a <element>) (b <element>))
-  (code (operand a) (operand b)))
+  (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let [(intermediate (skeleton (typecode a)))]; TODO: redundant code for inserting intermediate value
     (append (code intermediate b) (code a intermediate))))
@@ -543,13 +556,13 @@
 (define-syntax-rule (binary-mutating-fun name conversion cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)
-                     #:type (coerce (conversion (type a)) (conversion (type b)))
+                     #:type (conversion (type a) (type b))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary-mutating-cmd cmd (term out) (term b)))))))
 (define-syntax-rule (binary-functional-fun name conversion cmd)
   (define-method (name (a <parameter>) (b <parameter>))
     (make <function> #:arguments (list a b)
-                     #:type (coerce (conversion (type a)) (conversion (type b)))
+                     #:type (conversion (type a) (type b))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (binary-functional-cmd cmd (term out) (term a) (term b))))))
 (define-syntax-rule (binary-mutating-asm name conversion cmd)
@@ -597,7 +610,9 @@
   (begin (define-op name conversion cmd)
          (define-unary-dispatch name name)))
 
-(define to-bool (cut to-type <bool> <>))
+(define-method (to-bool a) (to-type <bool> a))
+(define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
+
 (define-method (+ (a <parameter>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-dispatch duplicate identity)
@@ -620,14 +635,14 @@
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-delegate name name)))
-(define-binary-op binary-mutating-asm   identity +  ADD)
-(define-binary-op binary-mutating-asm   identity -  SUB)
-(define-binary-op binary-mutating-asm   identity *  IMUL)
-(define-binary-op binary-mutating-fun   identity << shl)
-(define-binary-op binary-mutating-fun   identity >> shr)
-(define-binary-op binary-mutating-asm   identity &  AND)
-(define-binary-op binary-mutating-asm   identity |  OR)
-(define-binary-op binary-mutating-asm   identity ^  XOR)
+(define-binary-op binary-mutating-asm   coerce   +  ADD)
+(define-binary-op binary-mutating-asm   coerce   -  SUB)
+(define-binary-op binary-mutating-asm   coerce   *  IMUL)
+(define-binary-op binary-mutating-fun   coerce   << shl)
+(define-binary-op binary-mutating-fun   coerce   >> shr)
+(define-binary-op binary-mutating-asm   coerce   &  AND)
+(define-binary-op binary-mutating-asm   coerce   |  OR)
+(define-binary-op binary-mutating-asm   coerce   ^  XOR)
 (define-binary-op binary-mutating-fun   to-bool  && bool-and)
 (define-binary-op binary-mutating-fun   to-bool  || bool-or)
 (define-binary-op binary-functional-fun to-bool  =  cmp-equal)
