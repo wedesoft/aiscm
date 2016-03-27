@@ -386,17 +386,17 @@
   (if (eq? (signed? a) (signed? b))
       (coerce a b)
       (integer (min 64 (* 2 (bits (coerce a b)))) signed)))
-(define (cmp-extended a b); TODO: compare integers of different size (as well as different sign), test
+(define (cmp-any a b)
   (let* [(type (cmp-type (typecode a) (typecode b)))
-         (ax (var type)); TODO: rename
-         (bx (var type))]
-    (append (if (eq? type (typecode a)) '() (mov ax a)); TODO: refactor
-            (if (eq? type (typecode b)) '() (mov bx b))
-            (cmp (if (eq? type (typecode a)) a ax)
-                 (if (eq? type (typecode b)) b bx)))))
+         (tmp1 (var type))
+         (tmp2 (var type))]
+    (append (if (eq? type (typecode a)) '() (mov tmp1 a)); TODO: refactor
+            (if (eq? type (typecode b)) '() (mov tmp2 b))
+            (cmp (if (eq? type (typecode a)) a tmp1)
+                 (if (eq? type (typecode b)) b tmp2)))))
 (define ((cmp-setxx set-signed set-unsigned) out a b)
   (let [(set (if (or (signed? (typecode a)) (signed? (typecode b))) set-signed set-unsigned))]
-    (attach (cmp-extended a b) (set out))))
+    (attach (cmp-any a b) (set out))))
 (define cmp-equal         (cmp-setxx SETE   SETE  ))
 (define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
 (define cmp-lower-than    (cmp-setxx SETL   SETB  ))
@@ -496,11 +496,13 @@
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
 
+(define-syntax-rule (intermediate-for x intermediate body ...)
+  (let [(intermediate (skeleton (typecode x)))] (append body ...)))
+
 (define-method (code (a <element>) (b <element>))
   (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (let [(intermediate (skeleton (typecode a)))]; TODO: redundant code for inserting intermediate value
-    (append (code intermediate b) (code a intermediate))))
+  (intermediate-for a intermediate (code intermediate b) (code a intermediate)))
 (define-method (code (a <parameter>) (b <parameter>))
   (code (term a) (term b)))
 (define-method (code (a <tensor>) (b <parameter>))
@@ -512,16 +514,14 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (let [(intermediate (skeleton (typecode out)))]
-    (append (code intermediate fun) (code out intermediate))))
+  (intermediate-for out intermediate (code intermediate fun) (code out intermediate)))
 (define-method (code (out <parameter>) (fun <function>))
   (code (term out) fun))
 
 (define (unary-mutating-cmd op a) (list (op (get a))))
 (define-method (unary-functional-cmd op out (a <element>)) (list (op (operand out) (operand a))))
 (define-method (unary-functional-cmd op out (a <pointer<>>))
-  (let [(intermediate (skeleton (typecode a)))]
-    (append (code intermediate a) (unary-functional-cmd op out intermediate))))
+  (intermediate-for a intermediate (code intermediate a) (unary-functional-cmd op out intermediate)))
 (define-syntax-rule (unary-mutating-fun name conversion cmd); TODO: refactor
   (define-method (name (a <parameter>))
     (make <function> #:arguments (list a)
@@ -541,17 +541,16 @@
 (define (binary-mutating-cmd op a b)
   (if (eqv? (size-of (typecode b)) (size-of (typecode a)))
     (list (op (operand a) (operand b)))
-    (let [(intermediate (skeleton (typecode a)))]
-      (append (code intermediate b) (binary-mutating-cmd op a intermediate)))))
+    (intermediate-for a intermediate (code intermediate b) (binary-mutating-cmd op a intermediate))))
 (define (binary-functional-cmd op out a b)
   (cond ((< (size-of (typecode b)) (size-of (typecode a)))
-         (let [(intermediate (skeleton (typecode a)))]
-           (append (code intermediate b)
-                   (list (op (operand out) (operand a) (operand intermediate))))))
+         (intermediate-for a intermediate
+                           (code intermediate b)
+                           (list (op (operand out) (operand a) (operand intermediate)))))
         ((> (size-of (typecode b)) (size-of (typecode a)))
-         (let [(intermediate (skeleton (typecode b)))]
-           (append (code intermediate a)
-                   (list (op (operand out) (operand intermediate) (operand b))))))
+         (intermediate-for b intermediate
+                           (code intermediate a)
+                           (list (op (operand out) (operand intermediate) (operand b)))))
         (else (list (op (operand out) (operand a) (operand b))))))
 (define-syntax-rule (binary-mutating-fun name conversion cmd)
   (define-method (name (a <parameter>) (b <parameter>))
