@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 353)
+(planned-tests 350)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -721,7 +721,7 @@
     "element-wise and with array and boolean argument")
 (ok (equal? '(#f #t #t #t) (to-list (|| (seq #f #t #f #t) (seq #f #f #t #t))))
     "element-wise or")
-(skip (equal? '(#f #t #f) (to-list (! (seq #t #f #t))))
+(ok (equal? '(#f #t #f) (to-list (! (seq #t #f #t))))
     "element-wise not for booleans")
 (skip (equal? '(1 2 -3) (to-list (/ (seq 3 6 -9) 3)))
     "element-wise signed byte division")
@@ -772,12 +772,6 @@
 
 
 ; ------------------------------------------------------------------------------
-(skip (equal? '(#f #f #f) (to-list ((jit ctx (list (sequence <ubyte>) <byte>) <=) (seq 1 2 128) -1)))
-    "element-wise lower-equal of unsigned and signed bytes")
-(skip (equal? '(#t #t #t) (to-list ((jit ctx (list (sequence <ubyte>) <byte>) >) (seq 1 2 128) -1)))
-    "element-wise greater-than of unsigned and signed bytes")
-(skip (equal? '(#t #t #t) (to-list ((jit ctx (list (sequence <ubyte>) <byte>) >=) (seq 1 2 128) -1)))
-    "element-wise greater-equal of unsigned and signed bytes")
 (skip (equal? '(1 2 -3) (to-list ((jit ctx (list (sequence <byte>) <byte>) /) (seq 3 6 -9) 3)))
     "element-wise signed byte division")
 (skip (equal? '(1200 -800 600) (to-list ((jit ctx (list <sint> (sequence <byte>)) /) 24000 (seq 20 -30 40))))
