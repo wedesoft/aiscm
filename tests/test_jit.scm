@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 350)
+(planned-tests 353)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -769,10 +769,18 @@
     "Largest type available is 64 bit")
 (ok (equal? '(#f #f #f) (to-list (< (seq 1 2 128) -1)))
    "element-wise lower-than with unsigned and signed byte")
-
-
+(let [(r (var <byte>)) (a (var <byte>)) (b (var <byte>))]
+  (ok (equal? (list (MOV AL a) (CBW) (IDIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b))))
+      "generate code for 8-bit signed division")
+  (ok (equal? (list (MOV AL a) (CBW) (IDIV b) (MOV AL AH) (MOV r AL)) (flatten-code (filter-blocks (mod r a b))))
+      "generate code for 8-bit signed remainder")
+  (ok (eq? RAX (get-reg (div r a b)))
+      "block RAX register when dividing"))
+(let [(r (var <ubyte>)) (a (var <ubyte>)) (b (var <ubyte>))]
+  (ok (equal? (list (MOVZX AX a) (DIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b))))
+      "generate code for 8-bit unsigned division"))
 ; ------------------------------------------------------------------------------
-(skip (equal? '(1 2 -3) (to-list ((jit ctx (list (sequence <byte>) <byte>) /) (seq 3 6 -9) 3)))
+(skip (equal? '(1 2 -3) (to-list (/ (seq 3 6 -9) 3)))
     "element-wise signed byte division")
 (skip (equal? '(1200 -800 600) (to-list ((jit ctx (list <sint> (sequence <byte>)) /) 24000 (seq 20 -30 40))))
     "element-wise signed short integer division")
@@ -864,8 +872,6 @@
     "divide RGB values")
 (skip (equal? (rgb 1 2 0) ((jit ctx (list <ubytergb> <ubyte>) %) (rgb 4 5 6) 3))
     "modulo RGB values")
-(skip (equal? '(#t #f) (map (jit ctx (list <bool>) =0) '(#f #t)))
-    "boolean negation")
 (skip (equal? (rgb 2 3 5) ((jit ctx (list <byte> <byte> <byte>) rgb) 2 3 5))
     "construct RGB value in compiled code")
 (skip (equal? (rgb 2 -3 256) ((jit ctx (list <ubyte> <byte> <usint>) rgb) 2 -3 256))

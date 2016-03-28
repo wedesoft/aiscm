@@ -23,7 +23,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
-            duplicate shl shr test-zero cmp-type ensure-default-strides))
+            duplicate shl shr div mod test-zero cmp-type ensure-default-strides))
 
 (define ctx (make <context>))
 
@@ -332,13 +332,22 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
+;(define (expand-ax bits) (case bits ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
+(define (div/mod-signed a b) (list (MOV AL a) (CBW) (IDIV b)))
+(define (div/mod-unsigned a b) (list (MOVZX AX a) (DIV b)))
+(define (div/mod a b r . finalise) (blocked RAX ((if (signed? (typecode r)) div/mod-signed div/mod-unsigned) a b) finalise))
+(define (div r a b) (div/mod a b r (MOV r AL)))
+(define (mod r a b) (div/mod a b r (MOV AL AH) (MOV r AL)))
+
+
+
+
 ;(define ((binary-cmp set1 set2) r a b)
 ;  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 ;(define ((binary-cmov op1 op2) r a b)
 ;  (if (= (size-of r) 1)
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
-;(define (expand reg) (case (get-bits reg) ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
 ;(define (div/mod r a b pick)
 ;  (let* [(size   (size-of r))
 ;         (ax     (reg size 0))
