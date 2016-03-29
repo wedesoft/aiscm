@@ -40,6 +40,7 @@
   (code   #:init-keyword #:code #:getter get-code)
   (symbol #:init-keyword #:symbol))
 (define-method (write (self <register>) port) (format port "~a" (slot-ref self 'symbol)))
+(define-method (size-of (self <register>)) (/ (get-bits self) 8))
 (define reg-symbols
   '((1 AL  CL  DL  BL  SPL BPL SIL DIL R8L R9L R10L R11L R12L R13L R14L R15L)
     (2 AX  CX  DX  BX  SP  BP  SI  DI  R8W R9W R10W R11W R12W R13W R14W R15W)
@@ -48,7 +49,8 @@
 (define (reg-list bytes lst)
   (map (lambda (sym code) (make <register> #:bits (ash bytes 3) #:code code #:symbol sym)) lst (iota #x10)))
 (define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) reg-symbols))
-(define (reg size code) (list-ref (assq-ref regs size) code))
+(define-method (reg (size <integer>) code) (list-ref (assq-ref regs size) code))
+(define-method (reg other code) (reg (size-of other) code))
 (for-each
   (lambda (pair)
     (for-each

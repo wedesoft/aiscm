@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 353)
+(planned-tests 356)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -779,6 +779,15 @@
 (let [(r (var <ubyte>)) (a (var <ubyte>)) (b (var <ubyte>))]
   (ok (equal? (list (MOVZX AX a) (DIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b))))
       "generate code for 8-bit unsigned division"))
+(let [(r (var <sint>)) (a (var <sint>)) (b (var <sint>))]
+  (ok (equal? (list (MOV AX a) (CWD) (IDIV b) (MOV r AX)) (flatten-code (filter-blocks (div r a b))))
+      "generate code for 16-bit signed division")
+  (skip (eq? RDX (get-reg (cdr (get-code (div r a b)))))
+      "16-bit signed division blocks RDX register"))
+(let [(r (var <usint>)) (a (var <usint>)) (b (var <usint>))]
+  (ok (equal? (list (MOV AX a) (MOV DX 0) (DIV b) (MOV r AX)) (flatten-code (filter-blocks (div r a b))))
+      "generate code for 16-bit unsigned division"))
+
 ; ------------------------------------------------------------------------------
 (skip (equal? '(1 2 -3) (to-list (/ (seq 3 6 -9) 3)))
     "element-wise signed byte division")

@@ -332,12 +332,14 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-;(define (expand-ax bits) (case bits ((8) (CBW)) ((16) (CWD)) ((32) (CDQ)) ((64) (CQO))))
-(define (div/mod-signed a b) (list (MOV AL a) (CBW) (IDIV b)))
-(define (div/mod-unsigned a b) (list (MOVZX AX a) (DIV b)))
-(define (div/mod a b r . finalise) (blocked RAX ((if (signed? (typecode r)) div/mod-signed div/mod-unsigned) a b) finalise))
-(define (div r a b) (div/mod a b r (MOV r AL)))
-(define (mod r a b) (div/mod a b r (MOV AL AH) (MOV r AL)))
+(define (expand-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))); TODO: test
+(define (div/mod-signed r a b)
+  (list (MOV (reg r 0) a) (expand-ax (size-of r)) (IDIV b)))
+(define (div/mod-unsigned r a b)
+  (list (if (eqv? 1 (size-of r)) (MOVZX AX a) (list (MOV (reg r 0) a) (MOV (reg r 2) 0))) (DIV b)))
+(define (div/mod r a b . finalise) (blocked RAX ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
+(define (div r a b) (div/mod r a b (MOV r (reg r 0))))
+(define (mod r a b) (div/mod r a b (MOV AL AH) (MOV r AL)))
 
 
 
@@ -371,8 +373,10 @@
 (define-method (mov a b); TODO: remove comparison with <bool>
   (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
 
+(define-method (signed? (x <var>)) (signed? (typecode x)))
+(define-method (signed? (x <ptr>)) (signed? (typecode x)))
 (define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-unsigned CL x) ((if (signed? (typecode r)) shift-signed shift-unsigned) r CL)))
+  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
 (define (shr r x) (shx r x SAR SHR))
 (define-method (test (a <var>)) (list (TEST a a)))
@@ -404,7 +408,7 @@
             (cmp (if (eq? type (typecode a)) a tmp1)
                  (if (eq? type (typecode b)) b tmp2)))))
 (define ((cmp-setxx set-signed set-unsigned) out a b)
-  (let [(set (if (or (signed? (typecode a)) (signed? (typecode b))) set-signed set-unsigned))]
+  (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
     (attach (cmp-any a b) (set out))))
 (define cmp-equal         (cmp-setxx SETE   SETE  ))
 (define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
