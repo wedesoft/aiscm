@@ -23,7 +23,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
-            duplicate shl shr div mod test-zero cmp-type ensure-default-strides))
+            duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides))
 
 (define ctx (make <context>))
 
@@ -332,14 +332,15 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-(define (expand-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))); TODO: test
-(define (div/mod-signed r a b)
-  (list (MOV (reg r 0) a) (expand-ax (size-of r)) (IDIV b)))
-(define (div/mod-unsigned r a b)
-  (list (if (eqv? 1 (size-of r)) (MOVZX AX a) (list (MOV (reg r 0) a) (MOV (reg r 2) 0))) (DIV b)))
-(define (div/mod r a b . finalise) (blocked RAX ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
+(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))); TODO: test
+(define (div/mod-prepare-signed r a) (list (MOV (reg r 0) a) (sign-extend-ax (size-of r))))
+(define (div/mod-prepare-unsigned r a) (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (reg r 0) a) (MOV (reg r 2) 0))))
+(define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
+(define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
+(define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
+(define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
-(define (mod r a b) (div/mod r a b (MOV AL AH) (MOV r AL)))
+(define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
 
 
@@ -650,6 +651,8 @@
 (define-binary-op binary-mutating-asm   coerce   +  ADD)
 (define-binary-op binary-mutating-asm   coerce   -  SUB)
 (define-binary-op binary-mutating-asm   coerce   *  IMUL)
+(define-binary-op binary-functional-fun coerce   /  div)
+(define-binary-op binary-functional-fun coerce   %  mod)
 (define-binary-op binary-mutating-fun   coerce   << shl)
 (define-binary-op binary-mutating-fun   coerce   >> shr)
 (define-binary-op binary-mutating-asm   coerce   &  AND)

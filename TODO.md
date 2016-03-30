@@ -1,5 +1,6 @@
 ## Ready
 
+* bits -> size-of?
 * fix skipped tests: >=, ..., to-type
 * enable and move RGB, complex code out of jit module
 * only run failed tests, parallel test runner?
