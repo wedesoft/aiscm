@@ -332,7 +332,7 @@
                          (blocked-intervals (cdr prog)))))
     (else '())))
 
-(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO)))); TODO: test
+(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
 (define (div/mod-prepare-signed r a) (list (MOV (reg r 0) a) (sign-extend-ax (size-of r))))
 (define (div/mod-prepare-unsigned r a) (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (reg r 0) a) (MOV (reg r 2) 0))))
 (define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
@@ -351,21 +351,6 @@
 ;  (if (= (size-of r) 1)
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
-;(define (div/mod r a b pick)
-;  (let* [(size   (size-of r))
-;         (ax     (reg size 0))
-;         (dx     (reg size 2))
-;         (result (pick (cons ax dx)))]
-;    (blocked RAX
-;      (if (signed? (typecode r))
-;        (if (= size 1)
-;          (list (MOV ax a) (expand ax) (IDIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-;          (list (MOV ax a) (blocked RDX (expand ax) (IDIV b) (MOV r result))))
-;        (if (= size 1)
-;          (list (MOVZX AX a) (DIV b) (blocked RDX (MOV DL AH) (MOV r result)))
-;          (list (MOV ax a) (blocked RDX (MOV dx 0) (DIV b) (MOV r result))))))))
-;(define (div r a b) (div/mod r a b car)); TODO: test
-;(define (mod r a b) (div/mod r a b cdr)); TODO: test
 ;(define (sign-space a b)
 ;  (let [(coerced (coerce a b))]
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
@@ -666,6 +651,20 @@
 (define-binary-op binary-functional-fun to-bool  <= cmp-lower-equal)
 (define-binary-op binary-functional-fun to-bool  >  cmp-greater-than)
 (define-binary-op binary-functional-fun to-bool  >= cmp-greater-equal)
+
+(define-method (to-type (target <meta<element>>) (a <parameter>))
+  (make <function> #:arguments (list a); TODO: refactor
+                   #:type (to-type target (type a))
+                   #:project (lambda () (to-type target (body a)))
+                   #:term (lambda (out) (code out a ))))
+
+(define-method (to-type (target <meta<element>>) (self <element>))
+  (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
+    (add-method! to-type
+                 (make <method>
+                       #:specializers (map class-of (list target self))
+                       #:procedure (lambda (target self) (f (get self)))))
+    (to-type target self)))
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
