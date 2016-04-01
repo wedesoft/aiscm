@@ -1,7 +1,6 @@
 ## Ready
 
-* (integer 2 signed) instead of (integer 16 signed)?
-* fix skipped tests: >=, ..., to-type
+* RGB and complex numbers
 * enable and move RGB, complex code out of jit module
 * only run failed tests, parallel test runner?
 * comoile C function calls (also support SCM values)

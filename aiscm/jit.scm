@@ -342,9 +342,6 @@
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-
-
-
 ;(define ((binary-cmp set1 set2) r a b)
 ;  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 ;(define ((binary-cmov op1 op2) r a b)
@@ -800,28 +797,6 @@
 ;        #:code #f
 ;        #:value #f))
 ;
-;(unary-op -      mutable-unary NEG identity)
-;(unary-op ~      mutable-unary NOT identity)
-;(unary-op =0     immutable-unary (lambda (r a) (list (TEST a a) (SETE r))) (cut to-type <bool> <>))
-;(unary-op !=0    immutable-unary (lambda (r a) (list (TEST a a) (SETNE r))) (cut to-type <bool> <>))
-;(binary-op +     mutable-binary   coerce     ADD                               identity)
-;(binary-op -     mutable-binary   coerce     SUB                               identity)
-;(binary-op *     mutable-binary   coerce     IMUL                              identity)
-;(binary-op &     mutable-binary   coerce     AND                               identity)
-;(binary-op |     mutable-binary   coerce     OR                                identity)
-;(binary-op ^     mutable-binary   coerce     XOR                               identity)
-;(binary-op <<    shift-binary     coerce     shl                               identity)
-;(binary-op >>    shift-binary     coerce     shr                               identity)
-;(binary-op /     immutable-binary coerce     div                               identity)
-;(binary-op %     immutable-binary coerce     mod                               identity)
-;(binary-op =     immutable-binary coerce     (binary-cmp SETE SETE)            (cut to-type <bool> <>))
-;(binary-op !=    immutable-binary coerce     (binary-cmp SETNE SETNE)          (cut to-type <bool> <>))
-;(binary-op <     immutable-binary sign-space (binary-cmp SETL SETB)            (cut to-type <bool> <>))
-;(binary-op <=    immutable-binary sign-space (binary-cmp SETLE SETBE)          (cut to-type <bool> <>))
-;(binary-op >     immutable-binary sign-space (binary-cmp SETNLE SETNBE)        (cut to-type <bool> <>))
-;(binary-op >=    immutable-binary sign-space (binary-cmp SETNL SETNB)          (cut to-type <bool> <>))
-;(binary-op &&    immutable-binary coerce     (binary-bool AND)                 (cut to-type <bool> <>))
-;(binary-op ||    immutable-binary coerce     (binary-bool OR)                  (cut to-type <bool> <>))
 ;(binary-op min   immutable-binary sign-space (binary-cmov cmovnle16 cmovnbe16) identity)
 ;(binary-op max   immutable-binary sign-space (binary-cmov cmovl16 cmovb16)     identity)
 ;
