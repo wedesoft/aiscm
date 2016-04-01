@@ -1,6 +1,5 @@
 ## Ready
 
-* (raw imm (min 4 ...))
 * (integer 2 signed) instead of (integer 16 signed)?
 * fix skipped tests: >=, ..., to-type
 * enable and move RGB, complex code out of jit module
