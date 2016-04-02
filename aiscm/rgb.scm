@@ -9,9 +9,11 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
+  #:use-module (aiscm asm)
+  #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
-  #:export (rgb <rgb> red green blue
-            <rgb<>>    <meta<rgb<>>>
+  #:export (rgb red green blue
+            <rgb> <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
             <usintrgb> <rgb<int<16,unsigned>>> <meta<rgb<int<16,unsigned>>>>
@@ -103,3 +105,10 @@
 (binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
+(define-method (var (self <meta<rgb<>>>)) (let [(type (base self))]  (rgb (var type) (var type) (var type))))
+(define-method (code (a <pointer<>>) (b <rgb<>>))
+  (let* [(type (base (typecode a)))
+         (size (size-of type))]
+    (list (MOV (ptr type (get a)           ) (get (red   b)))
+          (MOV (ptr type (get a)      size ) (get (green b)))
+          (MOV (ptr type (get a) (* 2 size)) (get (blue  b))))))

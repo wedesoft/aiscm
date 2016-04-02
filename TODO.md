@@ -1,6 +1,7 @@
 ## Ready
 
-* RGB and complex numbers
+* RGB operations
+* complex operations
 * enable and move RGB, complex code out of jit module
 * only run failed tests, parallel test runner?
 * comoile C function calls (also support SCM values)

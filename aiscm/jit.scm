@@ -11,8 +11,6 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
-  #:use-module (aiscm rgb)
-  #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr> <tensor> <lookup> <function>
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
@@ -158,9 +156,9 @@
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
-(define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
-(define-method (var (self <meta<complex<>>>)) (let [(t (base self))]
-  (make <internalcomplex> #:real-part (var t) #:imag-part (var t))))
+;(define-method (var (self <meta<rgb<>>>)) (let [(t (base self))] (rgb (var t) (var t) (var t))))
+;(define-method (var (self <meta<complex<>>>)) (let [(t (base self))]
+;  (make <internalcomplex> #:real-part (var t) #:imag-part (var t))))
 
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -342,8 +340,6 @@
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-;(define ((binary-cmp set1 set2) r a b)
-;  (list (CMP a b) ((if (signed? (typecode a)) set1 set2) r)))
 ;(define ((binary-cmov op1 op2) r a b)
 ;  (if (= (size-of r) 1)
 ;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
@@ -575,8 +571,9 @@
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
-         (target      (type expr))
-         (return-type (returnable target))
+         (result-type (type expr))
+         (return-type (returnable result-type))
+         (target      (if return-type result-type (pointer result-type)))
          (retval      (skeleton target))
          (args        (if return-type vars (cons retval vars)))
          (code        (asm context
@@ -587,11 +584,11 @@
     (if return-type
       (lambda args
         (let [(result (apply fun args))]
-          (get (build target result))))
+          (get (build result-type result))))
       (lambda args
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons result args))
-          (get (build target result)))))))
+          (get (build result-type result)))))))
 
 (define-syntax-rule (define-unary-dispatch name delegate)
   (define-method (name (a <element>))
