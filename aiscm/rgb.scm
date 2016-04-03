@@ -112,3 +112,9 @@
     (list (MOV (ptr type (get a)           ) (get (red   b)))
           (MOV (ptr type (get a)      size ) (get (green b)))
           (MOV (ptr type (get a) (* 2 size)) (get (blue  b))))))
+(define-method (code (a <rgb<>>) (b <pointer<>>))
+  (let* [(type (base (typecode b)))
+         (size (size-of type))]
+    (list (MOV (get (red   a)) (ptr type (get b)           ))
+          (MOV (get (green a)) (ptr type (get b)      size ))
+          (MOV (get (blue  a)) (ptr type (get b) (* 2 size))))))

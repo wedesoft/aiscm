@@ -568,7 +568,7 @@
                      (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
                      (attach (code (parameter retval) expr) (RET))))
 
-(define (jit context classes proc)
+(define (jit context classes proc); TODO: split up and test
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
