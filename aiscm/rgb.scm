@@ -109,12 +109,12 @@
 (define-method (code (a <pointer<>>) (b <rgb<>>))
   (let* [(type (base (typecode a)))
          (size (size-of type))]
-    (list (MOV (ptr type (get a)           ) (get (red   b)))
-          (MOV (ptr type (get a)      size ) (get (green b)))
-          (MOV (ptr type (get a) (* 2 size)) (get (blue  b))))))
+    (append (code (pointer-cast type a)             (red   b))
+            (code (pointer-cast type a)       size  (green b))
+            (code (pointer-cast type a)  (* 2 size) (blue  b)))))
 (define-method (code (a <rgb<>>) (b <pointer<>>))
   (let* [(type (base (typecode b)))
          (size (size-of type))]
-    (list (MOV (get (red   a)) (ptr type (get b)           ))
-          (MOV (get (green a)) (ptr type (get b)      size ))
-          (MOV (get (blue  a)) (ptr type (get b) (* 2 size))))))
+    (append (code (red   a) (pointer-cast type b)           )
+            (code (green a) (pointer-cast type b)      size )
+            (code (blue  a) (pointer-cast type b) (* 2 size)))))

@@ -8,7 +8,7 @@
              (aiscm int)
              (aiscm jit)
              (guile-tap))
-(planned-tests 18)
+(planned-tests 20)
 (define p (make <var> #:type <long> #:symbol 'p))
 (define m1 (make <mem> #:size 10))
 (define m2 (make <mem> #:size 4))
@@ -62,3 +62,7 @@
 (let [(v (var <long>))]
   (ok (equal? v (get (rebase v (make (pointer <byte>) #:value p))))
       "rebase a pointer"))
+(ok (eq? m1 (get (pointer-cast <int> p1-sint)))
+    "casting pointer preserves address")
+(ok (eq? <int> (typecode (pointer-cast <int> p1-sint)))
+    "casting pointer changes type")

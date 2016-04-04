@@ -1,5 +1,6 @@
 ## Ready
 
+* pointer-cast -> to-type
 * RGB operations
 * complex operations
 * enable and move RGB, complex code out of jit module

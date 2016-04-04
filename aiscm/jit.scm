@@ -487,16 +487,17 @@
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
+(define-method (operand (a <pointer<>>) offset) (ptr (typecode a) (get a) offset))
 
 (define-syntax-rule (intermediate-for x intermediate body ...)
   (let [(intermediate (skeleton (typecode x)))] (append body ...)))
 
-(define-method (code (a <element>) (b <element>))
-  (mov (operand a) (operand b)))
+(define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
+(define-method (code (a <pointer<>>) offset (b <element>)) (mov (operand a offset) (operand b)))
+(define-method (code (a <element>) (b <pointer<>>) offset) (mov (operand a) (operand b offset)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (intermediate-for a intermediate (code intermediate b) (code a intermediate)))
-(define-method (code (a <parameter>) (b <parameter>))
-  (code (term a) (term b)))
+(define-method (code (a <parameter>) (b <parameter>)) (code (term a) (term b)))
 (define-method (code (a <tensor>) (b <parameter>))
   (list (setup a)
         (setup b)
