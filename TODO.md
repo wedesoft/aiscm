@@ -1,6 +1,9 @@
 ## Ready
 
-* pointer-cast -> to-type
+* extract red channel (red (seq ...))
+* ignore null offset in machine code?
+* build RGB values
+* <param> still needed?
 * RGB operations
 * complex operations
 * enable and move RGB, complex code out of jit module

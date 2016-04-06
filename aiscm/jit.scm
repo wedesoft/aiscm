@@ -12,7 +12,7 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
-  #:export (<block> <cmd> <var> <ptr> <tensor> <lookup> <function>
+  #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
             ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
@@ -409,16 +409,16 @@
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
 
-(define-class <parameter> ()
+(define-class <param> ()
   (term #:init-keyword #:term #:getter term))
 
-(define-class <tensor> (<parameter>)
+(define-class <tensor> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
 (define (tensor dimension index term)
   (make <tensor> #:dimension dimension #:index index #:term term))
 
-(define-class <lookup> (<parameter>)
+(define-class <lookup> (<param>)
   (index    #:init-keyword #:index    #:getter index)
   (stride   #:init-keyword #:stride   #:getter stride)
   (iterator #:init-keyword #:iterator #:getter iterator)
@@ -428,12 +428,12 @@
 (define-method (lookup idx (obj <tensor>) stride iterator step)
   (tensor (dimension obj) (index obj) (lookup idx (term obj) stride iterator step)))
 
-(define-class <function> (<parameter>)
+(define-class <function> (<param>)
   (arguments #:init-keyword #:arguments #:getter arguments)
   (type      #:init-keyword #:type      #:getter type)
   (project   #:init-keyword #:project   #:getter project))
 
-(define-method (type (self <parameter>)) (typecode (term self)))
+(define-method (type (self <param>)) (typecode (term self)))
 (define-method (type (self <tensor>)) (sequence (type (term self))))
 (define-method (type (self <lookup>)) (type (term self)))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
@@ -441,7 +441,7 @@
 (define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
 (define-method (iterator (self <tensor>)) (iterator (term self))); TODO: get correct iterator
 (define-method (step (self <tensor>)) (step (term self))); TODO: get correct step
-(define-method (parameter (self <element>)) (make <parameter> #:term self))
+(define-method (parameter (self <element>)) (make <param> #:term self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self)
@@ -456,10 +456,10 @@
           (stride self)
           (iterator self)
           (step self)))
-(define-method (value (self <parameter>)) (value (term self)))
+(define-method (value (self <param>)) (value (term self)))
 (define-method (value (self <tensor>)) (value (term self)))
 (define-method (value (self <lookup>)) (value (term self)))
-(define-method (rebase value (self <parameter>)) (parameter (rebase value (term self))))
+(define-method (rebase value (self <param>)) (parameter (rebase value (term self))))
 (define-method (rebase value (self <tensor>))
   (tensor (dimension self) (index self) (rebase value (term self))))
 (define-method (rebase value (self <lookup>))
@@ -486,19 +486,19 @@
 (define-method (body (self <function>)) ((project self)))
 
 (define-method (operand (a <element>)) (get a))
-(define-method (operand (a <pointer<>>)) (ptr (typecode a) (get a)))
-(define-method (operand (a <pointer<>>) offset) (ptr (typecode a) (get a) offset))
+(define-method (operand (a <pointer<>>))
+  (if (pointer-offset a)
+      (ptr (typecode a) (get a) (pointer-offset a))
+      (ptr (typecode a) (get a))))
 
 (define-syntax-rule (intermediate-for x intermediate body ...)
   (let [(intermediate (skeleton (typecode x)))] (append body ...)))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
-(define-method (code (a <pointer<>>) offset (b <element>)) (mov (operand a offset) (operand b)))
-(define-method (code (a <element>) (b <pointer<>>) offset) (mov (operand a) (operand b offset)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (intermediate-for a intermediate (code intermediate b) (code a intermediate)))
-(define-method (code (a <parameter>) (b <parameter>)) (code (term a) (term b)))
-(define-method (code (a <tensor>) (b <parameter>))
+(define-method (code (a <param>) (b <param>)) (code (term a) (term b)))
+(define-method (code (a <tensor>) (b <param>))
   (list (setup a)
         (setup b)
         (repeat (dimension a)
@@ -508,7 +508,7 @@
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
   (intermediate-for out intermediate (code intermediate fun) (code out intermediate)))
-(define-method (code (out <parameter>) (fun <function>))
+(define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
 (define (unary-mutating-cmd op a) (list (op (get a))))
@@ -516,13 +516,13 @@
 (define-method (unary-functional-cmd op out (a <pointer<>>))
   (intermediate-for a intermediate (code intermediate a) (unary-functional-cmd op out intermediate)))
 (define-syntax-rule (unary-mutating-fun name conversion cmd); TODO: refactor
-  (define-method (name (a <parameter>))
+  (define-method (name (a <param>))
     (make <function> #:arguments (list a)
                      #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
                      #:term (lambda (out) (append (code out a) (unary-mutating-cmd cmd (term out)))))))
 (define-syntax-rule (unary-functional-fun name conversion cmd); TODO: refactor
-  (define-method (name (a <parameter>))
+  (define-method (name (a <param>))
     (make <function> #:arguments (list a)
                      #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
@@ -546,13 +546,13 @@
                            (list (op (operand out) (operand intermediate) (operand b)))))
         (else (list (op (operand out) (operand a) (operand b))))))
 (define-syntax-rule (binary-mutating-fun name conversion cmd)
-  (define-method (name (a <parameter>) (b <parameter>))
+  (define-method (name (a <param>) (b <param>))
     (make <function> #:arguments (list a b)
                      #:type (conversion (type a) (type b))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary-mutating-cmd cmd (term out) (term b)))))))
 (define-syntax-rule (binary-functional-fun name conversion cmd)
-  (define-method (name (a <parameter>) (b <parameter>))
+  (define-method (name (a <param>) (b <param>))
     (make <function> #:arguments (list a b)
                      #:type (conversion (type a) (type b))
                      #:project (lambda () (apply name (map body (list a b))))
@@ -606,7 +606,7 @@
 (define-method (to-bool a) (to-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
-(define-method (+ (a <parameter>)) a)
+(define-method (+ (a <param>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-dispatch duplicate identity)
 (define-unary-op unary-mutating-asm   identity -   NEG)
@@ -647,7 +647,7 @@
 (define-binary-op binary-functional-fun to-bool  >  cmp-greater-than)
 (define-binary-op binary-functional-fun to-bool  >= cmp-greater-equal)
 
-(define-method (to-type (target <meta<element>>) (a <parameter>))
+(define-method (to-type (target <meta<element>>) (a <param>))
   (make <function> #:arguments (list a); TODO: refactor
                    #:type (to-type target (type a))
                    #:project (lambda () (to-type target (body a)))

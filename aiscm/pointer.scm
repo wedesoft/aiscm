@@ -11,7 +11,7 @@
             <meta<pointer<>>>
             <pointer<element>>
             <meta<pointer<element>>>
-            pointer fetch store rebase pointer-cast))
+            pointer fetch store rebase pointer-cast pointer-offset set-pointer-offset))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-class* <pointer<element>> <pointer<>> <meta<pointer<element>>> <meta<pointer<>>>)
 (define-method (pointer (target <meta<element>>))
@@ -43,3 +43,8 @@
 (define-method (content (self <mem>)) (list (pointer-address (get-memory self))))
 (define-method (rebase value (self <pointer<>>)) (make (class-of self) #:value value))
 (define (pointer-cast target self) (make (pointer target) #:value (get self)))
+(define pointer-offset (make-object-property))
+(define (set-pointer-offset p offset)
+  (let [(retval (make (class-of p) #:value (get p)))]
+    (set! (pointer-offset retval) offset)
+    retval))

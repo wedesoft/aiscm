@@ -14,7 +14,7 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 335)
+(planned-tests 330)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -395,11 +395,14 @@
     (ok (eq? i (index (term (get mx i))))
       "retrieving an element should replace with the index")))
 (let [(a (skeleton <byte>))
-      (b  (skeleton (pointer <byte>)))]
+      (b (skeleton (pointer <byte>)))
+      (c (set-pointer-offset (skeleton (pointer <int>)) 3))]
   (ok (equal? (get a) (operand a))
       "element operand is value of element")
-  (ok (equal? (ptr (typecode b) (get b)) (operand b))
-      "pointer operand is pointer to element"))
+  (ok (equal? (ptr <byte> (get b)) (operand b))
+      "pointer operand is pointer to element")
+  (ok (equal? (ptr <int> (get c) 3) (operand c))
+      "pointer operand can have offset"))
 (let [(out (skeleton <int>))
       (in  (skeleton <int>))]
   (ok (equal? (list (mov-signed (get out) (get in))) (code out in))
@@ -757,23 +760,8 @@
     "type conversion uses specified element type for return value")
 (ok (equal? '(2 3 5) (to-list (to-type <int> (seq 2 3 5))))
     "type conversion preserves content")
-(let [(p (skeleton (pointer <int>)))
-      (a (skeleton <int>))]
-  (ok (equal? (list (mov-signed (ptr <int> (get p) 8) (get a))) (code p 8 a))
-      "write integer to memory location with offset")
-  (ok (equal? (list (mov-signed (get a) (ptr <int> (get p) 8))) (code a p 8))
-      "read integer from memory location with offset"))
 
 ; ------------------------------------------------------------------------------
-(skip (let [(c (list (rgb 2 3 5) (rgb 3 5 7)))]
-      (equal? c (to-list ((jit ctx (list (sequence <sintrgb>)) identity) (to-array <sintrgb> c)))))
-    "duplicate RGB array")
-(skip (equal? 2 ((jit ctx (list <ubytergb>) red) (rgb 2 3 5)))
-    "extract red channel of RGB value")
-(skip (equal? 3 ((jit ctx (list <ubytergb>) green) (rgb 2 3 5)))
-    "extract red channel of RGB value")
-(skip (equal? 5 ((jit ctx (list <ubytergb>) blue) (rgb 2 3 5)))
-    "extract red channel of RGB value")
 (skip (equal? '(2 3) (to-list ((jit ctx (list (sequence <ubytergb>)) red) (seq (rgb 2 3 5) (rgb 3 5 7)))))
     "extract red channel in compiled code")
 (skip (equal? '(3 5) (to-list ((jit ctx (list (sequence <ubytergb>)) green) (seq (rgb 2 3 5) (rgb 3 5 7)))))
