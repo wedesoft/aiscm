@@ -1,6 +1,6 @@
 ## Ready
 
-* extract red channel (red (seq ...))
+* refactor binary operation macros
 * ignore null offset in machine code?
 * build RGB values
 * <param> still needed?

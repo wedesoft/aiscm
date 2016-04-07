@@ -22,8 +22,8 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-functional-cmd unary-functional-fun unary-extract-component)
-  #:export-syntax (intermediate-for define-unary-op))
+            unary-mutating unary-functional unary-extract)
+  #:export-syntax (intermediate-for define-unary-op unary-fun))
 
 (define ctx (make <context>))
 
@@ -513,33 +513,21 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define (unary-mutating-cmd op out a) (attach (code out a) (op (get out))))
-(define-method (unary-functional-cmd op out (a <element>)) (list (op (operand out) (operand a))))
-(define-method (unary-functional-cmd op out (a <pointer<>>))
-  (intermediate-for a intermediate (code intermediate a) (unary-functional-cmd op out intermediate)))
-(define (unary-extract-cmd op out a) (list (code out (op a))))
-(define-syntax-rule (unary-mutating-fun name conversion cmd); TODO: refactor
+(define (unary-mutating op out a) (attach (code out a) (op (get out))))
+(define-method (unary-functional op out (a <element>)) (list (op (operand out) (operand a))))
+(define-method (unary-functional op out (a <pointer<>>))
+  (intermediate-for a intermediate (code intermediate a) (unary-functional op out intermediate)))
+(define (unary-extract op out a) (list (code out (op a))))
+(define-syntax-rule (unary-fun name conversion kind cmd)
   (define-method (name (a <param>))
     (make <function> #:arguments (list a)
                      #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
-                     #:term (lambda (out) (unary-mutating-cmd cmd (term out) (term a))))))
-(define-syntax-rule (unary-functional-fun name conversion cmd); TODO: refactor
-  (define-method (name (a <param>))
-    (make <function> #:arguments (list a)
-                     #:type (conversion (type a))
-                     #:project (lambda () (name (body a)))
-                     #:term (lambda (out) (unary-functional-cmd cmd (term out) (term a))))))
-(define-syntax-rule (unary-extract-component name conversion cmd); TODO: refactor
-  (define-method (name (a <param>))
-    (make <function> #:arguments (list a)
-                     #:type (conversion (type a))
-                     #:project (lambda () (name (body a)))
-                     #:term (lambda (out) (unary-extract-cmd cmd (term out) (term a))))))
+                     #:term (lambda (out) (kind cmd (term out) (term a))))))
 
-(define-syntax-rule (unary-mutating-asm name conversion cmd)
+(define-syntax-rule (unary-asm name conversion kind cmd)
   (begin (mutating-op cmd)
-         (unary-mutating-fun name conversion cmd)))
+         (unary-fun name conversion kind cmd)))
 
 (define (binary-mutating-cmd op a b)
   (if (eqv? (size-of (typecode b)) (size-of (typecode a)))
@@ -555,13 +543,13 @@
                            (code intermediate a)
                            (list (op (operand out) (operand intermediate) (operand b)))))
         (else (list (op (operand out) (operand a) (operand b))))))
-(define-syntax-rule (binary-mutating-fun name conversion cmd)
+(define-syntax-rule (binary-mutating-fun name conversion cmd); TODO: refactor
   (define-method (name (a <param>) (b <param>))
     (make <function> #:arguments (list a b)
                      #:type (conversion (type a) (type b))
                      #:project (lambda () (apply name (map body (list a b))))
                      #:term (lambda (out) (append (code out a) (binary-mutating-cmd cmd (term out) (term b)))))))
-(define-syntax-rule (binary-functional-fun name conversion cmd)
+(define-syntax-rule (binary-functional-fun name conversion cmd); TODO: refactor
   (define-method (name (a <param>) (b <param>))
     (make <function> #:arguments (list a b)
                      #:type (conversion (type a) (type b))
@@ -609,8 +597,8 @@
                          #:specializers (list (class-of a))
                          #:procedure f)))
     (name a)))
-(define-syntax-rule (define-unary-op define-op conversion name cmd)
-  (begin (define-op name conversion cmd)
+(define-syntax-rule (define-unary-op define-op conversion kind name cmd)
+  (begin (define-op name conversion kind cmd)
          (define-unary-dispatch name name)))
 
 (define-method (to-bool a) (to-type <bool> a))
@@ -619,11 +607,11 @@
 (define-method (+ (a <param>)) a)
 (define-method (+ (a <element>)) a)
 (define-unary-dispatch duplicate identity)
-(define-unary-op unary-mutating-asm   identity -   NEG)
-(define-unary-op unary-mutating-asm   identity ~   NOT)
-(define-unary-op unary-functional-fun to-bool  =0  test-zero)
-(define-unary-op unary-functional-fun to-bool  !=0 test-non-zero)
-(define-unary-op unary-functional-fun to-bool  !   test-zero)
+(define-unary-op unary-asm identity unary-mutating   -   NEG)
+(define-unary-op unary-asm identity unary-mutating   ~   NOT)
+(define-unary-op unary-fun to-bool  unary-functional =0  test-zero)
+(define-unary-op unary-fun to-bool  unary-functional !=0 test-non-zero)
+(define-unary-op unary-fun to-bool  unary-functional !   test-zero)
 
 (define-syntax-rule (define-binary-delegate name delegate)
  (define-method (name (a <element>) (b <element>))

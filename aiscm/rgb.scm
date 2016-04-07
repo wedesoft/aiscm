@@ -120,6 +120,6 @@
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
 
-(define-unary-op unary-extract-component base red   red  )
-(define-unary-op unary-extract-component base green green)
-(define-unary-op unary-extract-component base blue  blue )
+(define-unary-op unary-fun base unary-extract red   red  )
+(define-unary-op unary-fun base unary-extract green green)
+(define-unary-op unary-fun base unary-extract blue  blue )
