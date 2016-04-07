@@ -21,7 +21,9 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
-            duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides))
+            duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
+            unary-functional-cmd unary-functional-fun unary-extract-component)
+  #:export-syntax (intermediate-for define-unary-op))
 
 (define ctx (make <context>))
 
@@ -511,22 +513,30 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define (unary-mutating-cmd op a) (list (op (get a))))
+(define (unary-mutating-cmd op out a) (attach (code out a) (op (get out))))
 (define-method (unary-functional-cmd op out (a <element>)) (list (op (operand out) (operand a))))
 (define-method (unary-functional-cmd op out (a <pointer<>>))
   (intermediate-for a intermediate (code intermediate a) (unary-functional-cmd op out intermediate)))
+(define (unary-extract-cmd op out a) (list (code out (op a))))
 (define-syntax-rule (unary-mutating-fun name conversion cmd); TODO: refactor
   (define-method (name (a <param>))
     (make <function> #:arguments (list a)
                      #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
-                     #:term (lambda (out) (append (code out a) (unary-mutating-cmd cmd (term out)))))))
+                     #:term (lambda (out) (unary-mutating-cmd cmd (term out) (term a))))))
 (define-syntax-rule (unary-functional-fun name conversion cmd); TODO: refactor
   (define-method (name (a <param>))
     (make <function> #:arguments (list a)
                      #:type (conversion (type a))
                      #:project (lambda () (name (body a)))
                      #:term (lambda (out) (unary-functional-cmd cmd (term out) (term a))))))
+(define-syntax-rule (unary-extract-component name conversion cmd); TODO: refactor
+  (define-method (name (a <param>))
+    (make <function> #:arguments (list a)
+                     #:type (conversion (type a))
+                     #:project (lambda () (name (body a)))
+                     #:term (lambda (out) (unary-extract-cmd cmd (term out) (term a))))))
+
 (define-syntax-rule (unary-mutating-asm name conversion cmd)
   (begin (mutating-op cmd)
          (unary-mutating-fun name conversion cmd)))

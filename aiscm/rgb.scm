@@ -120,20 +120,6 @@
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
 
-(define-method (extract name a b) (code a (name b)))
-
-(define-method (red (a <param>))
-  (make <function> #:arguments (list a)
-                   #:type (base (type a))
-                   #:project (lambda () (red (body a)))
-                   #:term (lambda (out) (list (extract red (term out) (term a)))))); TODO: use unary-functional-fun
-(define-method (green (a <param>))
-  (make <function> #:arguments (list a)
-                   #:type (base (type a))
-                   #:project (lambda () (green (body a)))
-                   #:term (lambda (out) (list (extract green (term out) (term a)))))); TODO: use unary-functional-fun
-(define-method (blue (a <param>))
-  (make <function> #:arguments (list a)
-                   #:type (base (type a))
-                   #:project (lambda () (blue (body a)))
-                   #:term (lambda (out) (list (extract blue (term out) (term a)))))); TODO: use unary-functional-fun
+(define-unary-op unary-extract-component base red   red  )
+(define-unary-op unary-extract-component base green green)
+(define-unary-op unary-extract-component base blue  blue )
