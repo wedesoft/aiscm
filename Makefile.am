@@ -5,7 +5,7 @@ SUBDIRS = aiscm tests doc bench
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = Makefile.dist configure.ac README.md TODO.md COPYING
+EXTRA_DIST = Makefile.dist bootstrap configure.ac README.md TODO.md COPYING
 
 repl: all
 	$(ENVIRONMENT) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y $(RUN)
