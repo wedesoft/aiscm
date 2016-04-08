@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor binary operation macros
 * twice =0, !=0, !
 * ignore null offset in machine code?
 * build RGB values
