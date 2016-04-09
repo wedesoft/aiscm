@@ -117,6 +117,8 @@
   (append (code (red   a) (red   b))
           (code (green a) (green b))
           (code (blue  a) (blue  b))))
+
+(define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
 
