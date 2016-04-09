@@ -1,10 +1,8 @@
 ## Ready
 
-* twice =0, !=0, !
-* ignore null offset in machine code?
+* RGB operations
 * build RGB values
 * <param> still needed?
-* RGB operations
 * complex operations
 * enable and move RGB, complex code out of jit module
 * only run failed tests, parallel test runner?
