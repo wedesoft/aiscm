@@ -535,11 +535,11 @@
   (cond ((< (size-of (typecode (term b))) (size-of (typecode (term a))))
          (intermediate-for (term a) intermediate
                            (code intermediate (term b))
-                           (list (op (operand (term out)) (operand (term a)) (operand intermediate)))))
+                           (binary-functional op out a (parameter intermediate))))
         ((> (size-of (typecode (term b))) (size-of (typecode (term a))))
          (intermediate-for (term b) intermediate
                            (code intermediate (term a))
-                           (list (op (operand (term out)) (operand intermediate) (operand (term b))))))
+                           (binary-functional op out (parameter intermediate) b)))
         (else (list (op (operand (term out)) (operand (term a)) (operand (term b)))))))
 (define-syntax-rule (binary-fun name conversion kind op)
   (define-method (name (a <param>) (b <param>)) (make-function name conversion kind op a b)))
