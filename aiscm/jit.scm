@@ -22,7 +22,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-mutating unary-functional unary-extract xxx)
+            unary-mutating unary-functional unary-extract composite-op)
   #:export-syntax (intermediate-for define-unary-op unary-fun))
 
 (define ctx (make <context>))
@@ -512,17 +512,19 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define-method (xxx (a <param>)) (lambda (out) (xxx (type out) out a)))
+(define-method (composite-op (a <param>)) (lambda (out) (composite-op (type out) out a)))
+(define-method (composite-op (a <param>) (b <param>)) (lambda (out) (composite-op (type out) out a b)))
 
-(define-method (xxx (t <meta<int<>>>) out a) (attach (code out a) (NEG (get (term out)))))
+(define-method (composite-op (t <meta<int<>>>) out a) (unary-mutating NEG out a))
+(define-method (composite-op (t <meta<int<>>>) out a b) (binary-mutating SUB out a b))
 
 (define (make-function name conversion kind cmd . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
                    #:term
-                     (if (and (eq? name -) (eq? 1 (length args)))
-                       (apply xxx args)
+                     (if (eq? name -); TODO: remove this hack
+                       (apply composite-op args)
                        (lambda (out) (apply (cut kind cmd out <...>) args)))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
@@ -534,16 +536,18 @@
   (begin (mutating-op op)
          (unary-fun name conversion kind op)))
 
-(define (binary-mutating op out a b)
-  (if (eqv? (size-of (typecode (term b))) (size-of (typecode (term out))))
+(define-method (binary-mutating op out a b)
+  (if (eqv? (size-of (type b)) (size-of (type out)))
     (attach (code out a) (op (operand (term out)) (operand (term b))))
     (intermediate-for (term out) intermediate (code intermediate (term b)) (binary-mutating op out a (parameter intermediate)))))
+(define-method (binary-mutating op out a (b <function>)); TODO: cover other cases, refactor
+  (intermediate-for (term out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate))))
 (define (binary-functional op out a b)
-  (cond ((< (size-of (typecode (term b))) (size-of (typecode (term a))))
+  (cond ((< (size-of (type b)) (size-of (type a)))
          (intermediate-for (term a) intermediate
                            (code intermediate (term b))
                            (binary-functional op out a (parameter intermediate))))
-        ((> (size-of (typecode (term b))) (size-of (typecode (term a))))
+        ((> (size-of (type b)) (size-of (type a)))
          (intermediate-for (term b) intermediate
                            (code intermediate (term a))
                            (binary-functional op out (parameter intermediate) b)))
