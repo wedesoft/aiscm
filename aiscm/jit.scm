@@ -22,7 +22,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-mutating unary-functional unary-extract)
+            unary-mutating unary-functional unary-extract xxx)
   #:export-syntax (intermediate-for define-unary-op unary-fun))
 
 (define ctx (make <context>))
@@ -512,11 +512,18 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
+(define-method (xxx (a <param>)) (lambda (out) (xxx (type out) out a)))
+
+(define-method (xxx (t <meta<int<>>>) out a) (attach (code out a) (NEG (get (term out)))))
+
 (define (make-function name conversion kind cmd . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (apply (cut kind cmd out <...>) args))))
+                   #:term
+                     (if (and (eq? name -) (eq? 1 (length args)))
+                       (apply xxx args)
+                       (lambda (out) (apply (cut kind cmd out <...>) args)))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
 (define (unary-functional op out a) (list (op (operand (term out)) (operand (term a)))))

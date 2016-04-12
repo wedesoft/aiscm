@@ -163,5 +163,5 @@
     "extract green channel of RGB array")
 (ok (equal? '(5 7) (to-list (blue  (seq (rgb 2 3 5) (rgb 3 5 7)))))
     "extract blue channel of RGB array")
-(skip (equal? (rgb 2 3 -5) ((jit ctx (list (rgb <byte>)) -) (rgb -2 -3 5)))
-    "negate RGB value")
+(ok (equal? (rgb 2 3 -5) ((jit ctx (list (rgb <byte>)) -) (rgb -2 -3 5)))
+    "compile and run code to negate RGB value")

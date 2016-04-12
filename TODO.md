@@ -1,6 +1,5 @@
 ## Ready
 
-* RGB operations
 * build RGB values
 * <param> still needed?
 * complex operations

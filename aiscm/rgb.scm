@@ -125,3 +125,10 @@
 (define-unary-op unary-fun base unary-extract red   red  )
 (define-unary-op unary-fun base unary-extract green green)
 (define-unary-op unary-fun base unary-extract blue  blue )
+
+(define-method (xxx (t <meta<rgb<>>>) out a)
+  (let* [(decomposed (rgb (red a) (green a) (blue a)))
+         (result     (- decomposed))]
+    (append ((term (red   result)) (parameter (red   (term out))))
+            ((term (green result)) (parameter (green (term out))))
+            ((term (blue  result)) (parameter (blue  (term out)))))))
