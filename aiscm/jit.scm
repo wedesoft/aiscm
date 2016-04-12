@@ -23,7 +23,7 @@
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-mutating unary-functional unary-extract composite-op)
-  #:export-syntax (intermediate-for define-unary-op unary-fun))
+  #:export-syntax (define-unary-op unary-fun))
 
 (define ctx (make <context>))
 
@@ -492,12 +492,12 @@
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
 
-(define-syntax-rule (intermediate-for x intermediate body ...)
-  (let [(intermediate (skeleton (typecode x)))] (append body ...)))
+(define-syntax-rule (intermediate-var type intermediate body ...)
+  (let [(intermediate (skeleton type))] (append body ...)))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (intermediate-for a intermediate (code intermediate b) (code a intermediate)))
+  (intermediate-var (typecode a) intermediate (code intermediate b) (code a intermediate)))
 (define-method (code (a <param>) (b <param>)) (code (term a) (term b)))
 (define-method (code (a <tensor>) (b <param>))
   (list (setup a)
@@ -508,7 +508,7 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (intermediate-for out intermediate (code intermediate fun) (code out intermediate)))
+  (intermediate-var (typecode out) intermediate (code intermediate fun) (code out intermediate)))
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
@@ -528,7 +528,10 @@
                        (lambda (out) (apply (cut kind cmd out <...>) args)))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
-(define (unary-functional op out a) (list (op (operand (term out)) (operand (term a)))))
+(define-method (unary-functional op out a) (list (op (operand (term out)) (operand (term a)))))
+(define-method (unary-functional op out (a <function>)); TODO: cover other cases, refactor
+  (intermediate-var (type a) intermediate (code (parameter intermediate) a) (unary-functional op out (parameter intermediate))))
+
 (define (unary-extract op out a) (list (code (term out) (op (term a)))))
 (define-syntax-rule (unary-fun name conversion kind op)
   (define-method (name (a <param>)) (make-function name conversion kind op a)))
@@ -539,16 +542,16 @@
 (define-method (binary-mutating op out a b)
   (if (eqv? (size-of (type b)) (size-of (type out)))
     (attach (code out a) (op (operand (term out)) (operand (term b))))
-    (intermediate-for (term out) intermediate (code intermediate (term b)) (binary-mutating op out a (parameter intermediate)))))
+    (intermediate-var (type out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate)))))
 (define-method (binary-mutating op out a (b <function>)); TODO: cover other cases, refactor
-  (intermediate-for (term out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate))))
+  (intermediate-var (type out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate))))
 (define (binary-functional op out a b)
   (cond ((< (size-of (type b)) (size-of (type a)))
-         (intermediate-for (term a) intermediate
+         (intermediate-var (type a) intermediate
                            (code intermediate (term b))
                            (binary-functional op out a (parameter intermediate))))
         ((> (size-of (type b)) (size-of (type a)))
-         (intermediate-for (term b) intermediate
+         (intermediate-var (type b) intermediate
                            (code intermediate (term a))
                            (binary-functional op out (parameter intermediate) b)))
         (else (list (op (operand (term out)) (operand (term a)) (operand (term b)))))))
