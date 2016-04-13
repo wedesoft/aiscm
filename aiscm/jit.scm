@@ -23,7 +23,7 @@
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-mutating unary-functional unary-extract composite-op)
-  #:export-syntax (define-unary-op unary-fun))
+  #:export-syntax (intermediate-var intermediate-param define-unary-op unary-fun))
 
 (define ctx (make <context>))
 
@@ -492,8 +492,9 @@
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
 
-(define-syntax-rule (intermediate-var type intermediate body ...)
-  (let [(intermediate (skeleton type))] (append body ...)))
+(define-syntax-rule (intermediate declaration name body ...) (let [(name declaration)] (append body ...)))
+(define-syntax-rule (intermediate-var type name body ...) (intermediate (skeleton type) name body ...))
+(define-syntax-rule (intermediate-param type name body ...) (intermediate (parameter (skeleton type)) name body ...))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
@@ -530,7 +531,7 @@
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
 (define-method (unary-functional op out a) (list (op (operand (term out)) (operand (term a)))))
 (define-method (unary-functional op out (a <function>)); TODO: cover other cases, refactor
-  (intermediate-var (type a) intermediate (code (parameter intermediate) a) (unary-functional op out (parameter intermediate))))
+  (intermediate-param (type a) tmp (code tmp a) (unary-functional op out tmp)))
 
 (define (unary-extract op out a) (list (code (term out) (op (term a)))))
 (define-syntax-rule (unary-fun name conversion kind op)
@@ -542,19 +543,20 @@
 (define-method (binary-mutating op out a b)
   (if (eqv? (size-of (type b)) (size-of (type out)))
     (attach (code out a) (op (operand (term out)) (operand (term b))))
-    (intermediate-var (type out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate)))))
+    (intermediate-param (type out) tmp (code tmp b) (binary-mutating op out a tmp))))
 (define-method (binary-mutating op out a (b <function>)); TODO: cover other cases, refactor
-  (intermediate-var (type out) intermediate (code (parameter intermediate) b) (binary-mutating op out a (parameter intermediate))))
-(define (binary-functional op out a b)
+  (intermediate-param (type out) tmp (code tmp b) (binary-mutating op out a tmp)))
+(define-method (binary-functional op out a b)
   (cond ((< (size-of (type b)) (size-of (type a)))
-         (intermediate-var (type a) intermediate
-                           (code intermediate (term b))
-                           (binary-functional op out a (parameter intermediate))))
+         (intermediate-param (type a) tmp (code tmp b) (binary-functional op out a tmp)))
         ((> (size-of (type b)) (size-of (type a)))
-         (intermediate-var (type b) intermediate
-                           (code intermediate (term a))
-                           (binary-functional op out (parameter intermediate) b)))
+         (intermediate-param (type b) tmp (code tmp a) (binary-functional op out tmp b)))
         (else (list (op (operand (term out)) (operand (term a)) (operand (term b)))))))
+(define-method (binary-functional op out (a <function>) b)
+  (intermediate-param (type b) tmp (code tmp a) (binary-functional op out tmp b)))
+(define-method (binary-functional op out a (b <function>))
+  (intermediate-param (type a) tmp (code tmp b) (binary-functional op out a tmp)))
+
 (define-syntax-rule (binary-fun name conversion kind op)
   (define-method (name (a <param>) (b <param>)) (make-function name conversion kind op a b)))
 (define-syntax-rule (binary-asm name conversion kind op)

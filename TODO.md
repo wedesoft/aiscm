@@ -1,6 +1,5 @@
 ## Ready
 
-* nest unary functional operation (cover cases with unary and binary nested operations)
 * build RGB values
 * <param> still needed?
 * complex operations
