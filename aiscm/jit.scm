@@ -493,12 +493,16 @@
       (ptr (typecode a) (get a))))
 
 (define-syntax-rule (intermediate declaration name body ...) (let [(name declaration)] (append body ...)))
-(define-syntax-rule (intermediate-var type name body ...) (intermediate (skeleton type) name body ...))
-(define-syntax-rule (intermediate-param type name body ...) (intermediate (parameter (skeleton type)) name body ...))
+(define-syntax-rule (intermediate-var typecode name body ...) (intermediate (skeleton typecode) name body ...))
+(define-syntax-rule (intermediate-param typecode name body ...) (intermediate (parameter (skeleton typecode)) name body ...))
+(define-syntax-rule (force-intermediate typecode name value body ...)
+  (if (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value))))
+    (intermediate-param typecode name (code name value) body ...)
+    (let [(name value)] (append body ...))))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (intermediate-var (typecode a) intermediate (code intermediate b) (code a intermediate)))
+  (intermediate-var (typecode a) tmp (code tmp b) (code a tmp)))
 (define-method (code (a <param>) (b <param>)) (code (term a) (term b)))
 (define-method (code (a <tensor>) (b <param>))
   (list (setup a)
@@ -509,7 +513,7 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (intermediate-var (typecode out) intermediate (code intermediate fun) (code out intermediate)))
+  (intermediate-var (typecode out) tmp (code tmp fun) (code out tmp)))
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
@@ -523,39 +527,31 @@
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term
-                     (if (eq? name -); TODO: remove this hack
-                       (apply composite-op args)
-                       (lambda (out) (apply (cut kind cmd out <...>) args)))))
+                   #:term (if (eq? name -); TODO: remove this hack
+                            (apply composite-op args)
+                            (lambda (out) (apply (cut kind cmd out <...>) args)))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
-(define-method (unary-functional op out a) (list (op (operand (term out)) (operand (term a)))))
-(define-method (unary-functional op out (a <function>)); TODO: cover other cases, refactor
-  (intermediate-param (type a) tmp (code tmp a) (unary-functional op out tmp)))
-
+(define (unary-functional op out a)
+  (force-intermediate (type a) tmp a
+    (list (op (operand (term out)) (operand (term tmp))))))
 (define (unary-extract op out a) (list (code (term out) (op (term a)))))
+
 (define-syntax-rule (unary-fun name conversion kind op)
   (define-method (name (a <param>)) (make-function name conversion kind op a)))
 (define-syntax-rule (unary-asm name conversion kind op)
   (begin (mutating-op op)
          (unary-fun name conversion kind op)))
 
-(define-method (binary-mutating op out a b)
-  (if (eqv? (size-of (type b)) (size-of (type out)))
-    (attach (code out a) (op (operand (term out)) (operand (term b))))
-    (intermediate-param (type out) tmp (code tmp b) (binary-mutating op out a tmp))))
-(define-method (binary-mutating op out a (b <function>)); TODO: cover other cases, refactor
-  (intermediate-param (type out) tmp (code tmp b) (binary-mutating op out a tmp)))
-(define-method (binary-functional op out a b)
-  (cond ((< (size-of (type b)) (size-of (type a)))
-         (intermediate-param (type a) tmp (code tmp b) (binary-functional op out a tmp)))
-        ((> (size-of (type b)) (size-of (type a)))
-         (intermediate-param (type b) tmp (code tmp a) (binary-functional op out tmp b)))
-        (else (list (op (operand (term out)) (operand (term a)) (operand (term b)))))))
-(define-method (binary-functional op out (a <function>) b)
-  (intermediate-param (type b) tmp (code tmp a) (binary-functional op out tmp b)))
-(define-method (binary-functional op out a (b <function>))
-  (intermediate-param (type a) tmp (code tmp b) (binary-functional op out a tmp)))
+(define (binary-mutating op out a b)
+  (let [(t (type out))]
+    (force-intermediate t tmp-b b
+      (attach (code out a) (op (operand (term out)) (operand (term tmp-b)))))))
+(define (binary-functional op out a b)
+  (let [(t (argmax size-of (list (type a) (type b))))]
+    (force-intermediate t tmp-a a
+      (force-intermediate t tmp-b b
+        (list (op (operand (term out)) (operand (term tmp-a)) (operand (term tmp-b))))))))
 
 (define-syntax-rule (binary-fun name conversion kind op)
   (define-method (name (a <param>) (b <param>)) (make-function name conversion kind op a b)))
