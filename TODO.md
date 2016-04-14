@@ -3,7 +3,6 @@
 * RGB operations
 * build RGB values
 * complex operations
-* enable and move RGB, complex code out of jit module
 * hide passing tests, only run failed tests, parallel test runner?
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
