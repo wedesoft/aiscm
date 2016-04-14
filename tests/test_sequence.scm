@@ -8,7 +8,6 @@
              (aiscm jit)
              (aiscm util)
              (guile-tap))
-(planned-tests 80)
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
@@ -191,3 +190,4 @@
     "'content' for an array should return size and stride")
 (ok (equal? '(4 6 6 1) (take (content (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'content' for a 2D array should return shape and strides")
+(run-tests)

@@ -5,7 +5,6 @@
              (aiscm float)
              (aiscm sequence)
              (guile-tap))
-(planned-tests 20)
 (define v (make (complex <byte>) #:value 2+3i))
 (define r (make (complex <byte>) #:value 5))
 (ok (eq? (complex <int>) (complex <int>))
@@ -48,3 +47,4 @@
     "base type of sequence applies to element type")
 (ok (eqv? 2-3i (conj 2+3i))
     "conjugate of complex number")
+(run-tests)

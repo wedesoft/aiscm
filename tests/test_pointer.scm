@@ -8,7 +8,6 @@
              (aiscm int)
              (aiscm jit)
              (guile-tap))
-(planned-tests 24)
 (define p (make <var> #:type <long> #:symbol 'p))
 (define m1 (make <mem> #:size 10))
 (define m2 (make <mem> #:size 4))
@@ -76,3 +75,4 @@
       "Associated offset can be queried")
   (ok (not (pointer-offset p))
       "Original pointer remains without offset"))
+(run-tests)

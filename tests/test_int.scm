@@ -6,7 +6,6 @@
              (aiscm int)
              (aiscm jit)
              (guile-tap))
-(planned-tests 83)
 (ok (equal? (integer 32 signed) (integer 32 signed))
     "equality of classes")
 (ok (equal? <int> (integer 32 signed))
@@ -179,3 +178,4 @@
     "base type of integer is integer")
 (ok (eqv? 3 (conj 3))
     "conjugate of integer")
+(run-tests)

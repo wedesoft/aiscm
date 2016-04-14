@@ -4,7 +4,6 @@
              (aiscm jit)
              (oop goops)
              (guile-tap))
-(planned-tests 36)
 (define bool-false (make <bool> #:value #f))
 (define bool-true (make <bool> #:value #t))
 (ok (equal? bool-false bool-false)
@@ -81,3 +80,4 @@
     "'||' with four arguments")
 (ok (equal? '(#t #f) (map ! '(#f #t)))
    "'!' is like 'not'")
+(run-tests)

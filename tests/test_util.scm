@@ -3,7 +3,6 @@
              (rnrs bytevectors)
              (aiscm util)
              (guile-tap))
-(planned-tests 57)
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
@@ -146,3 +145,4 @@
     "concatenate byte vectors")
 (ok (equal? '(1 -2 3 -4 5) (map-if even? - + '(1 2 3 4 5)))
     "conditional map")
+(run-tests)

@@ -5,7 +5,6 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
-(planned-tests 344)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -860,3 +859,4 @@
     "CMOVB ECX ESI")
 (ok (equal? '(#x0f #x43 #xce) (CMOVNB ECX ESI))
     "CMOVNB ECX ESI")
+(run-tests)

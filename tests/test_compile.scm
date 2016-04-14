@@ -3,7 +3,6 @@
              (aiscm element)
              (aiscm int)
              (guile-tap))
-(planned-tests 9)
 (define i (make <int> #:value 2))
 (define j (make <int> #:value 3))
 (ok (equal? '(i 2) (expr->params '(+ i 2)))
@@ -24,3 +23,4 @@
     "expr->method uses descriptor as method name")
 (ok (eqv? 5 (get (comp (+ i j))))
     "compiling method generates and calls it")
+(run-tests)

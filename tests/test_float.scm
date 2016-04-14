@@ -4,7 +4,6 @@
              (aiscm float)
              (aiscm jit)
              (guile-tap))
-(planned-tests 24)
 (ok (equal? (floating-point single-precision) (floating-point single-precision))
     "equality of classes")
 (ok (eq? single-precision (precision (floating-point single-precision)))
@@ -55,3 +54,4 @@
     "build floating point number")
 (ok (equal? '(1.25) (content 1.25))
     "'content' returns floating point values")
+(run-tests)

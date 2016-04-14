@@ -5,7 +5,6 @@
              (system foreign)
              (guile-tap))
 (define m (make <mem> #:size 10))
-(planned-tests 15)
 (ok (>= (pointer-address (get-memory m)) (pointer-address (slot-ref m 'base)))
    "memory pointer should be greater or equal base pointer")
 (ok (equal? (get-memory m) (get-memory (make <mem> #:base (get-memory m) #:size 10)))
@@ -42,3 +41,4 @@
 (ok (string-match "^#<<mem> #x[0-9a-f]* 10>$"
   (call-with-output-string (lambda (port) (write m port))))
   "write mem object")
+(run-tests)

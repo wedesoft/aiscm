@@ -14,7 +14,6 @@
              (aiscm rgb)
              (aiscm complex)
              (guile-tap))
-(planned-tests 339)
 (define ctx (make <context>))
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
@@ -925,3 +924,4 @@
     "complex conjugate")
 (skip (eqv? 2 ((jit ctx (list <int>) conj) 2))
     "conjugate of real number")
+(run-tests)

@@ -11,7 +11,6 @@
              (aiscm rgb)
              (aiscm image)
              (guile-tap))
-(planned-tests 16)
 (define l '((2 3 5 7) (11 13 17 19)))
 (define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
 (define m (to-array <ubyte> l))
@@ -52,3 +51,4 @@
   "Convert RGB array to image")
 (skip (equal? c (to-list (to-array (to-image (to-array <intrgb> c)))))
   "Convert integer RGB array to image")
+(run-tests)

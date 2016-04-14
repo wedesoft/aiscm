@@ -1,7 +1,7 @@
 ## Ready
 
+* RGB operations
 * build RGB values
-* <param> still needed?
 * complex operations
 * enable and move RGB, complex code out of jit module
 * hide passing tests, only run failed tests, parallel test runner?

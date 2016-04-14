@@ -11,7 +11,6 @@
              (aiscm sequence)
              (aiscm op)
              (guile-tap))
-(planned-tests 43)
 (skip (equal? '(-2 3 5) (to-list (to-type <byte> (seq -2 3 5))))
     "trivial type conversion")
 (skip (eq? <int> (typecode (to-type <int> (seq 2 3 5))))
@@ -101,3 +100,4 @@
     "complex conjugate of real array")
 (skip (equal? '(2-3i 4-5i) (to-list (conj (seq (complex <byte>) 2+3i 4+5i))))
     "complex conjugate of complex array")
+(run-tests)
