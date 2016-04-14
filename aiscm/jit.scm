@@ -517,17 +517,13 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define-method (composite-op name kind cmd (a <param>)) (lambda (out) (composite-op (type out) name kind cmd out a)))
-(define-method (composite-op name kind cmd (a <param>) (b <param>)) (lambda (out) (composite-op (type out) name kind cmd out a b)))
-
-(define-method (composite-op t name kind cmd out a) (kind cmd out a))
-(define-method (composite-op t name kind cmd out a b) (kind cmd out a b))
+(define-method (composite-op t name kind cmd out args) (apply kind cmd out args))
 
 (define (make-function name conversion kind cmd . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (apply (cut composite-op name kind cmd <...>) args)))
+                   #:term (lambda (out) (composite-op (type out) name kind cmd out args))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
 (define (unary-functional op out a)

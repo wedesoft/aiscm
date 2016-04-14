@@ -126,17 +126,9 @@
 (define-unary-op unary-fun base unary-extract green green)
 (define-unary-op unary-fun base unary-extract blue  blue )
 
-(define-method (composite-op (t <meta<rgb<>>>) name kind cmd out a)
-  (let* [(decomposed (rgb (red a) (green a) (blue a)))
-         (result     (name decomposed))]
-    (append ((term (red   result)) (parameter (red   (term out))))
-            ((term (green result)) (parameter (green (term out))))
-            ((term (blue  result)) (parameter (blue  (term out)))))))
-
-(define-method (composite-op (t <meta<rgb<>>>) name kind cmd out a b)
-  (let* [(decomposed-a (rgb (red a) (green a) (blue a)))
-         (decomposed-b (rgb (red b) (green b) (blue b)))
-         (result       (name decomposed-a decomposed-b))]
+(define-method (composite-op (t <meta<rgb<>>>) name kind cmd out args)
+  (let* [(decomposed (map (lambda (x) (rgb (red x) (green x) (blue x))) args))
+         (result     (apply name decomposed))]
     (append ((term (red   result)) (parameter (red   (term out))))
             ((term (green result)) (parameter (green (term out))))
             ((term (blue  result)) (parameter (blue  (term out)))))))
