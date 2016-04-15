@@ -30,9 +30,9 @@
 (define-method (rgb r g b) (make <rgb> #:red r #:green g #:blue b))
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
-(define-method (red self) self)
+(define-method (red   self) self)
 (define-method (green self) self)
-(define-method (blue self) self)
+(define-method (blue  self) self)
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
@@ -126,8 +126,12 @@
 (define-unary-op unary-fun base unary-extract green green)
 (define-unary-op unary-fun base unary-extract blue  blue )
 
-(define-method (composite-op (t <meta<rgb<>>>) name kind cmd out args)
-  (let* [(decomposed (map (lambda (x) (rgb (red x) (green x) (blue x))) args))
+(define-method (decompose-value (t <meta<int<>>>) x) x)
+(define-method (decompose-value (t <meta<rgb<>>>) x) (rgb (red x) (green x) (blue x)))
+(define (decompose x) (decompose-value (type x) x))
+
+(define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
+  (let* [(decomposed (map decompose args))
          (result     (apply name decomposed))]
     (append ((term (red   result)) (parameter (red   (term out))))
             ((term (green result)) (parameter (green (term out))))

@@ -1,6 +1,6 @@
 ## Ready
 
-* RGB operations
+* RGB operations (to-type)
 * build RGB values
 * complex operations
 * hide passing tests, only run failed tests, parallel test runner?

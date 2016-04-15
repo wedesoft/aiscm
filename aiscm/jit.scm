@@ -13,7 +13,6 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
-            ;<pointer<rgb<>>> <meta<pointer<rgb<>>>>
             ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -22,7 +21,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments to-type operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-mutating unary-functional unary-extract composite-op)
+            unary-mutating unary-functional unary-extract delegate-op)
   #:export-syntax (intermediate-var intermediate-param define-unary-op unary-fun))
 
 (define ctx (make <context>))
@@ -517,13 +516,13 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define-method (composite-op t name kind cmd out args) (apply kind cmd out args))
+(define-method (delegate-op t name kind cmd out args) (apply kind cmd out args))
 
 (define (make-function name conversion kind cmd . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (composite-op (type out) name kind cmd out args))))
+                   #:term (lambda (out) (delegate-op (type out) name kind cmd out args))))
 
 (define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
 (define (unary-functional op out a)
@@ -656,18 +655,7 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-;(pointer <rgb<>>)
 ;(pointer <complex<>>)
-;(define-method (parameter   (p <pointer<rgb<>>>))
-;  (let [(result (var (typecode p)))
-;        (size   (size-of (base (typecode p))))]
-;    (make (fragment (typecode p))
-;          #:args (list p)
-;          #:name parameter
-;          #:code (list (MOV (red   result) (ptr (base (typecode p)) (get p)          ))
-;                       (MOV (green result) (ptr (base (typecode p)) (get p)      size))
-;                       (MOV (blue  result) (ptr (base (typecode p)) (get p) (* 2 size))))
-;          #:value result)))
 ;(define-method (parameter (p <pointer<complex<>>>))
 ;  (let [(result (var (typecode p)))
 ;        (size   (size-of (base (typecode p))))]
@@ -695,7 +683,6 @@
 ;                  #:code (append (code frag) (list (mov result (value frag))))
 ;                  #:value result)))))
 ;(define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
-;(fragment <rgb<>>)
 ;(fragment <complex<>>)
 ;(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
 ;  (let* [(tmp    (strip-code frag))
@@ -791,8 +778,6 @@
 ;(binary-op max   immutable-binary sign-space (binary-cmov cmovl16 cmovb16)     identity)
 ;
 ;(define-method (peel (self <fragment<element>>)) self)
-;(define-method (peel (self <fragment<rgb<>>>))
-;  (make <rgb> #:red (red self) #:green (green self) #:blue (blue self)))
 ;(define-method (peel (self <fragment<complex<>>>))
 ;  (make <internalcomplex> #:real-part (real-part self) #:imag-part (imag-part self)))
 ;
@@ -822,23 +807,6 @@
 ;    (define-method (op (a <fragment<element>>) (b struct))
 ;      (do-binary-struct-op op a b coercion))))
 ;
-;(unary-struct-op  <fragment<rgb<>>> -)
-;(unary-struct-op  <fragment<rgb<>>> ~)
-;(binary-struct-op <fragment<rgb<>>> +   coerce)
-;(binary-struct-op <fragment<rgb<>>> -   coerce)
-;(binary-struct-op <fragment<rgb<>>> *   coerce)
-;(binary-struct-op <fragment<rgb<>>> &   coerce)
-;(binary-struct-op <fragment<rgb<>>> |   coerce)
-;(binary-struct-op <fragment<rgb<>>> ^   coerce)
-;(binary-struct-op <fragment<rgb<>>> <<  coerce)
-;(binary-struct-op <fragment<rgb<>>> >>  coerce)
-;(binary-struct-op <fragment<rgb<>>> /   coerce)
-;(binary-struct-op <fragment<rgb<>>> %   coerce)
-;(binary-struct-op <fragment<rgb<>>> =   (const <bool>))
-;(binary-struct-op <fragment<rgb<>>> !=  (const <bool>))
-;(binary-struct-op <fragment<rgb<>>> max coerce)
-;(binary-struct-op <fragment<rgb<>>> min coerce)
-;
 ;(unary-struct-op  <fragment<complex<>>> -)
 ;(unary-struct-op  <fragment<complex<>>> conj)
 ;(binary-struct-op <fragment<complex<>>> + coerce)
@@ -857,9 +825,6 @@
 ;          #:name name
 ;          #:code (code self)
 ;          #:value ((protect (type self) name) (value self))))
-;(define-method (red   (self <fragment<element>>)) (component self red  ))
-;(define-method (green (self <fragment<element>>)) (component self green))
-;(define-method (blue  (self <fragment<element>>)) (component self blue ))
 ;(define-method (real-part (self <fragment<element>>)) self)
 ;(define-method (real-part (self <fragment<complex<>>>)) (component self real-part))
 ;(define-method (real-part (self <fragment<sequence<>>>)) (component self real-part))
@@ -867,12 +832,6 @@
 ;
 ;(define-method (store (p <pointer<>>) (a <fragment<element>>))
 ;  (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
-;(define-method (store (p <pointer<>>) (a <fragment<rgb<>>>))
-;  (let [(size (size-of (base (typecode p))))]
-;    (append (code a)
-;            (list (MOV (ptr (base (typecode p)) (get p)           ) (red   (value a)))
-;                  (MOV (ptr (base (typecode p)) (get p)       size) (green (value a)))
-;                  (MOV (ptr (base (typecode p)) (get p) (* 2 size)) (blue  (value a)))))))
 ;(define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
 ;  (let [(size (size-of (base (typecode p))))]
 ;    (append (code a)
