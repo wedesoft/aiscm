@@ -19,7 +19,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
-            assemble jit iterator step setup increment body arguments to-type operand
+            assemble jit iterator step setup increment body arguments operand
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-mutating unary-functional unary-extract delegate-op)
   #:export-syntax (intermediate-var intermediate-param define-unary-op unary-fun))
@@ -54,7 +54,7 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(define (mov-part a b) (MOV a (reg (size-of a) (get-code b))))
+(define (mov-part a b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
 (define (mov-cmd movxx movxx32 a b)
   (cond
         ((eqv? (size-of a) (size-of b)) MOV)

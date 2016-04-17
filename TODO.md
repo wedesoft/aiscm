@@ -1,6 +1,6 @@
 ## Ready
 
-* RGB operations (to-type)
+* document JMP and labels
 * build RGB values
 * complex operations
 * hide passing tests, only run failed tests, parallel test runner?

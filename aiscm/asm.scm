@@ -27,7 +27,7 @@
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             CMOVB CMOVNB CMOVE CMOVNE CMOVBE CMOVNBE CMOVL CMOVNL CMOVLE CMOVNLE
-            conditional?))
+            conditional? to-type))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")
@@ -59,6 +59,7 @@
 (define CH (make <register> #:size 1 #:code 5 #:symbol 'CH))
 (define DH (make <register> #:size 1 #:code 6 #:symbol 'DH))
 (define BH (make <register> #:size 1 #:code 7 #:symbol 'BH))
+(define-method (to-type (typecode <meta<int<>>>) (self <register>)) (reg (size-of typecode) (get-code self)))
 
 (define-class <xmm> (<operand>)
   (code   #:init-keyword #:code #:getter get-code)
@@ -79,7 +80,6 @@
   (format port "~a"
           (compact 'ptr (class-name (get-type self)) (get-reg self) (get-index self) (get-disp self))))
 (define-method (size-of (self <address>)) (size-of (get-type self)))
-
 (define-method (ptr (type <meta<element>>) (reg <register>))
   (make <address> #:type type #:reg reg))
 (define-method (ptr (type <meta<element>>) (reg <register>) (disp <integer>))
@@ -88,6 +88,8 @@
   (make <address> #:type type #:reg reg #:index index))
 (define-method (ptr (type <meta<element>>) (reg <register>) (index <register>) (disp <integer>))
   (make <address> #:type type #:reg reg #:index index #:disp disp))
+(define-method (to-type (typecode <meta<int<>>>) (self <address>))
+  (make <address> #:type typecode #:reg (get-reg self) #:disp (get-disp self) #:index (get-index self)))
 
 (define-method (raw64 (imm <boolean>) (size <integer>)) '())
 (define-method (raw64 (imm <integer>) (size <integer>))
