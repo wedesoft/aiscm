@@ -19,10 +19,10 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
-            assemble jit iterator step setup increment body arguments operand
+            assemble jit iterator step setup increment body arguments operand insert-intermediate optional-intermediate
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-mutating unary-functional unary-extract delegate-op)
-  #:export-syntax (intermediate-var intermediate-param define-unary-op unary-fun))
+  #:export-syntax (intermediate-param define-unary-op unary-fun))
 
 (define ctx (make <context>))
 
@@ -447,6 +447,7 @@
     (tensor (dimension self)
             idx
             (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
+(define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <tensor>) candidate replacement)
   (tensor (dimension self) (index self) (subst (term self) candidate replacement)))
@@ -490,18 +491,22 @@
   (if (pointer-offset a)
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
+(define-method (operand (a <param>)) (operand (term a)))
 
-(define-syntax-rule (intermediate declaration name body ...) (let [(name declaration)] (append body ...)))
-(define-syntax-rule (intermediate-var typecode name body ...) (intermediate (skeleton typecode) name body ...))
-(define-syntax-rule (intermediate-param typecode name body ...) (intermediate (parameter (skeleton typecode)) name body ...))
-(define-syntax-rule (force-intermediate typecode name value body ...)
-  (if (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value))))
-    (intermediate-param typecode name (code name value) body ...)
-    (let [(name value)] (append body ...))))
+(define (insert-intermediate value intermediate fun)
+  (append (code intermediate value) (fun intermediate)))
+(define (optional-intermediate value intermediate fun)
+  (if intermediate (insert-intermediate value intermediate fun) (fun value)))
+(define (ensure-intermediate typecode value fun)
+  (optional-intermediate value
+                         (and (or (is-a? value <function>)
+                                  (!= (size-of typecode) (size-of (type value))))
+                              (parameter typecode))
+                         fun))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (intermediate-var (typecode a) tmp (code tmp b) (code a tmp)))
+  (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
 (define-method (code (a <param>) (b <param>)) (code (term a) (term b)))
 (define-method (code (a <tensor>) (b <param>))
   (list (setup a)
@@ -512,7 +517,7 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (intermediate-var (typecode out) tmp (code tmp fun) (code out tmp)))
+  (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
@@ -524,33 +529,28 @@
                    #:project (lambda ()  (apply name (map body args)))
                    #:term (lambda (out) (delegate-op (type out) name kind cmd out args))))
 
-(define (unary-mutating op out a) (attach (code out a) (op (get (term out)))))
+(define (unary-mutating op out a) (attach (code out a) (op (get (term out))))); TODO: refactor
 (define (unary-functional op out a)
-  (force-intermediate (type a) tmp a
-    (list (op (operand (term out)) (operand (term tmp))))))
+  (ensure-intermediate (type a) a (lambda (tmp) (list (op (operand out) (operand tmp))))))
 (define (unary-extract op out a) (list (code (term out) (op (term a)))))
+(define (binary-mutating op out a b)
+  (let [(t (coerce (type a) (type b)))]
+    (ensure-intermediate t b (lambda (tmp-b)
+      (attach (code out a) (op (operand out) (operand tmp-b)))))))
+(define (binary-functional op out a b)
+  (let [(t (coerce (type a) (type b)))]
+    (ensure-intermediate t a (lambda (tmp-a)
+      (ensure-intermediate t b (lambda (tmp-b)
+        (list (op (operand out) (operand tmp-a) (operand tmp-b)))))))))
 
 (define-syntax-rule (unary-fun name conversion kind op)
   (define-method (name (a <param>)) (make-function name conversion kind op a)))
-(define-syntax-rule (unary-asm name conversion kind op)
-  (begin (mutating-op op)
-         (unary-fun name conversion kind op)))
-
-(define (binary-mutating op out a b)
-  (let [(t (type out))]
-    (force-intermediate t tmp-b b
-      (attach (code out a) (op (operand (term out)) (operand (term tmp-b)))))))
-(define (binary-functional op out a b)
-  (let [(t (argmax size-of (list (type a) (type b))))]
-    (force-intermediate t tmp-a a
-      (force-intermediate t tmp-b b
-        (list (op (operand (term out)) (operand (term tmp-a)) (operand (term tmp-b))))))))
-
 (define-syntax-rule (binary-fun name conversion kind op)
   (define-method (name (a <param>) (b <param>)) (make-function name conversion kind op a b)))
+(define-syntax-rule (unary-asm name conversion kind op)
+  (begin (mutating-op op) (unary-fun name conversion kind op)))
 (define-syntax-rule (binary-asm name conversion kind op)
-  (begin (mutating-op op)
-         (binary-fun name conversion kind op)))
+  (begin (mutating-op op) (binary-fun name conversion kind op)))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
@@ -606,7 +606,7 @@
 (define-unary-op unary-fun to-bool  unary-functional !=0 test-non-zero)
 (define-unary-op unary-fun to-bool  unary-functional !   test-zero)
 
-(define-syntax-rule (define-binary-delegate name delegate)
+(define-syntax-rule (define-binary-dispatch name delegate)
  (define-method (name (a <element>) (b <element>))
    (let [(f (jit ctx (map class-of (list a b)) delegate))]
      (add-method! name
@@ -618,7 +618,7 @@
   (begin (define-op name conversion kind op)
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
-         (define-binary-delegate name name)))
+         (define-binary-dispatch name name)))
 (define-binary-op binary-asm coerce  binary-mutating   +  ADD)
 (define-binary-op binary-asm coerce  binary-mutating   -  SUB)
 (define-binary-op binary-asm coerce  binary-mutating   *  IMUL)
@@ -665,24 +665,6 @@
 ;          #:code (list (MOV (real-part result) (ptr (base (typecode p)) (get p)     ))
 ;                       (MOV (imag-part result) (ptr (base (typecode p)) (get p) size)))
 ;          #:value result)))
-;(define-method (parameter (self <sequence<>>))
-;  (make (fragment (class-of self)) #:args (list self) #:name parameter #:code '() #:value self))
-;  (define-method (to-type (target <meta<element>>) (frag <fragment<element>>))
-;    (let [(source (typecode (type frag)))]
-;      (if (eq? target source)
-;          frag
-;          (let [(result (var target))
-;                (mov    (if (>= (size-of source) (size-of target))
-;                            mov-part
-;                            (if (signed? source)
-;                                MOVSX
-;                                (if (>= (size-of source) 4) MOV MOVZX))))]
-;            (make (fragment (to-type target (type frag)))
-;                  #:args (list target frag)
-;                  #:name to-type
-;                  #:code (append (code frag) (list (mov result (value frag))))
-;                  #:value result)))))
-;(define (strip-code frag) (parameter (make (type frag) #:value (value frag))))
 ;(fragment <complex<>>)
 ;(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
 ;  (let* [(tmp    (strip-code frag))
@@ -724,34 +706,6 @@
 ;           #:name complex
 ;           #:code (append (code real~) (code imag~))
 ;           #:value (make <internalcomplex> #:real-part (value real~) #:imag-part (value imag~)))))
-;(define (mutable-unary op result a)
-;  (append (code a) (list (MOV result (value a)) (op result))))
-;(define (immutable-unary op result a)
-;  (append (code a) (list (op result (value a)))))
-;(define-syntax-rule (unary-op name mode op conversion)
-;  (define-method (name (a <fragment<element>>))
-;    (let* [(target (conversion (type a)))
-;           (result (var (typecode target)))]
-;      (make (fragment target)
-;            #:args (list a)
-;            #:name name
-;            #:code (mode op result a)
-;            #:value result))))
-;(define (mutable-binary op result intermediate a b)
-;  (let [(a~  (to-type intermediate a))
-;        (b~  (to-type intermediate b))
-;        (tmp (skeleton intermediate))]
-;    (append (code a~) (code b~)
-;            (list (MOV result    (value a~))
-;                  (MOV (get tmp) (value b~))
-;                  (op result (get tmp))))))
-;(define (immutable-binary op result intermediate a b)
-;  (let [(a~ (to-type intermediate a))
-;        (b~ (to-type intermediate b))]
-;    (append (code a~) (code b~)
-;            (list (op result (value a~) (value b~))))))
-;(define (shift-binary op result intermediate a b)
-;  (append (code a) (code b) (list (MOV result (value a)) (op result (value b)))))
 ;(define-method (protect self fun) fun)
 ;(define-method (protect (self <meta<sequence<>>>) fun) list)
 ;(define-syntax-rule (binary-op name mode coercion op conversion)
@@ -814,55 +768,13 @@
 ;(binary-struct-op <fragment<complex<>>> * coerce)
 ;(binary-struct-op <fragment<complex<>>> / coerce)
 ;
-;(define-method (project self) self)
-;(define-method (project (self <fragment<sequence<>>>))
-;  (apply (get-name self) (map project (get-args self))))
-;(define-method (store (a <element>) (b <fragment<element>>))
-;  (append (code b) (list (MOV (get a) (value b)))))
-;(define (component self name)
-;  (make (fragment (base (type self)))
-;          #:args (list self)
-;          #:name name
-;          #:code (code self)
-;          #:value ((protect (type self) name) (value self))))
 ;(define-method (real-part (self <fragment<element>>)) self)
 ;(define-method (real-part (self <fragment<complex<>>>)) (component self real-part))
 ;(define-method (real-part (self <fragment<sequence<>>>)) (component self real-part))
 ;(define-method (imag-part (self <fragment<element>>)) (component self imag-part))
 ;
-;(define-method (store (p <pointer<>>) (a <fragment<element>>))
-;  (append (code a) (list (MOV (ptr (typecode p) (get p)) (value a)))))
 ;(define-method (store (p <pointer<>>) (a <fragment<complex<>>>))
 ;  (let [(size (size-of (base (typecode p))))]
 ;    (append (code a)
 ;            (list (MOV (ptr (base (typecode p)) (get p)     ) (real-part (value a)))
 ;                  (MOV (ptr (base (typecode p)) (get p) size) (imag-part (value a)))))))
-;(define-class <elementwise> ()
-;  (setup     #:init-keyword #:setup     #:getter get-setup)
-;  (increment #:init-keyword #:increment #:getter get-increment)
-;  (body      #:init-keyword #:body      #:getter get-body))
-;(define-method (element-wise self)
-;  (make <elementwise> #:setup '() #:increment '() #:body self))
-;(define-method (element-wise (s <sequence<>>))
-;  (let [(incr (var <long>))
-;        (p    (var <long>))]
-;    (make <elementwise>
-;          #:setup (list (IMUL incr (last (strides s)) (size-of (typecode s)))
-;                        (MOV p (value s)))
-;          #:increment (list (ADD p incr))
-;          #:body (project (rebase p s)))))
-;(define-method (element-wise (self <fragment<sequence<>>>))
-;  (let [(loops (map element-wise (get-args self)))]
-;    (make <elementwise>
-;          #:setup (map get-setup loops)
-;          #:increment (map get-increment loops)
-;          #:body (apply (get-name self) (map get-body loops)))))
-;(define-method (store (s <sequence<>>) (a <fragment<sequence<>>>))
-;  (let [(destination (element-wise s))
-;        (source      (element-wise a))]
-;    (list (get-setup destination)
-;          (get-setup source)
-;          (repeat (last (shape s))
-;                  (append (store (get-body destination) (get-body source))
-;                          (get-increment destination)
-;                          (get-increment source))))))

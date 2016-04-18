@@ -397,7 +397,7 @@
   (ok (equal? (list (mov-signed (ptr <int> (get out)) (get in)))
               (code out in))
       "generate code for writing integer to memory"))
-(let [(out (parameter (skeleton (sequence <int>))))]
+(let [(out (parameter (sequence <int>)))]
   (ok (eq? (iterator (term out)) (iterator out))
       "retrieve iterator pointer from tensor parameter")
   (ok (eq? (step (term out)) (step out))
@@ -406,7 +406,7 @@
       "step and iterator need to be distinct variables")
   (ok (is-a? (term (project out)) (pointer <int>))
       "projected 1D array tensor should contain pointer"))
-(let [(out  (parameter (skeleton (sequence <int>))))]
+(let [(out  (parameter (sequence <int>)))]
   (ok (equal? (list (IMUL (step out) (stride out) (size-of (typecode out)))
                     (MOV (iterator out) (value out)))
               (setup out))
@@ -456,7 +456,7 @@
               (register-allocate (attach (code out in) (RET))
                                  #:predefined (list (cons (get out) RCX) (cons (get in) RSI))))
       "generate code for copying part of integer (critical case MOV CL SIL)"))
-(ok (eq? <sint> (type (+ (parameter (skeleton <usint>)) (parameter (skeleton <byte>)))))
+(ok (eq? <sint> (type (+ (parameter <usint>) (parameter <byte>))))
   "plus operation coerces return type correctly")
 (let [(out (skeleton <sint>))
       (a   (skeleton <byte>))
@@ -467,16 +467,16 @@
   (ok (equal? (list (MOVSX DX CL) (MOV CX AX) (ADD CX DX) (RET))
               (register-allocate (attach (code (parameter out) (+ (parameter b) (parameter a))) (RET))))
       "sign-extend second number when adding"))
-(ok (+ (parameter (skeleton (sequence <int>))) (parameter (skeleton <int>)))
+(ok (+ (parameter (sequence <int>)) (parameter <int>))
     "create function from tensor and element")
-(ok (+ (parameter (skeleton <int>)) (parameter (skeleton (sequence <int>))))
+(ok (+ (parameter <int>) (parameter (sequence <int>)))
     "create function from element and tensor")
-(ok (+ (parameter (skeleton (sequence <int>))) (parameter (skeleton (sequence <int>))))
+(ok (+ (parameter (sequence <int>)) (parameter (sequence <int>)))
     "create function from two tensors")
-(let* [(a    (parameter (skeleton (sequence <int>))))
-       (b    (parameter (skeleton <int>)))
+(let* [(a    (parameter (sequence <int>)))
+       (b    (parameter <int>))
        (f    (+ a b))
-       (out  (parameter (skeleton (sequence <int>))))]
+       (out  (parameter (sequence <int>)))]
   (ok (equal? (list (IMUL (step a) (stride a) (size-of (typecode a)))
                     (MOV (iterator a) (value a)))
               (setup f))
@@ -497,10 +497,10 @@
       "generating code for array-scalar operation should run without error"))
 (ok (equal? '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
     "compile and run array-scalar operation")
-(let* [(a    (parameter (skeleton <int>)))
-       (b    (parameter (skeleton (sequence <int>))))
+(let* [(a    (parameter <int>))
+       (b    (parameter (sequence <int>)))
        (f    (+ a b))
-       (out  (parameter (skeleton (sequence <int>))))]
+       (out  (parameter (sequence <int>)))]
   (ok (equal? (list (IMUL (step b) (stride b) (size-of (typecode b)))
                     (MOV (iterator b) (value b)))
               (setup f))

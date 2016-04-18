@@ -62,7 +62,7 @@
   (ok (equal? (list (mov-signed (get out) (get a)) (NEG (get out)))
               (code (parameter out) (- (parameter a))))
       "generate code for negating number"))
-(let [(a (parameter (skeleton (sequence <int>))))]
+(let [(a (parameter (sequence <int>)))]
   (ok (equal? (term (car (arguments (body (- a))))) (term (car (arguments (- (body a))))))
       "body of array negation should have same argument as negation of array body"))
 (ok (equal? -42 ((jit ctx (list <int>) -) 42))
