@@ -497,12 +497,10 @@
   (append (code intermediate value) (fun intermediate)))
 (define (optional-intermediate value intermediate fun)
   (if intermediate (insert-intermediate value intermediate fun) (fun value)))
+(define (requires-intermediate? typecode value)
+  (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
 (define (ensure-intermediate typecode value fun)
-  (optional-intermediate value
-                         (and (or (is-a? value <function>)
-                                  (!= (size-of typecode) (size-of (type value))))
-                              (parameter typecode))
-                         fun))
+  (optional-intermediate value (and (requires-intermediate? typecode value) (parameter typecode)) fun))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
@@ -529,9 +527,11 @@
                    #:project (lambda ()  (apply name (map body args)))
                    #:term (lambda (out) (delegate-op (type out) name kind cmd out args))))
 
-(define (unary-mutating op out a) (attach (code out a) (op (get (term out))))); TODO: refactor
+(define (unary-mutating op out a)
+  (attach (code out a) (op (get (term out)))))
 (define (unary-functional op out a)
-  (ensure-intermediate (type a) a (lambda (tmp) (list (op (operand out) (operand tmp))))))
+  (ensure-intermediate (type a) a (lambda (tmp)
+    (list (op (operand out) (operand tmp))))))
 (define (unary-extract op out a) (list (code (term out) (op (term a)))))
 (define (binary-mutating op out a b)
   (let [(t (coerce (type a) (type b)))]
