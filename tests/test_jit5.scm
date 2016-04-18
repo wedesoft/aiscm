@@ -152,6 +152,8 @@
     "type conversion preserves content")
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) (cut to-type <byte> <>)) (seq <int> 2 3 5))))
     "compile and run element-wise conversion of array to byte")
+(ok (equal? '(255 0 1) (to-list (to-type <ubyte> (seq 255 256 257))))
+    "typecasting to smaller integer type")
 (ok (eq? <sint> (class-of (intermediate-var <sint> tmp tmp)))
     "type of intermediate variable")
 (ok (equal? (MOV AX 0) (intermediate-var <sint> tmp (MOV AX 0)))

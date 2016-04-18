@@ -15,13 +15,9 @@
     "fill byte sequence")
 (ok (equal? '(3 3 3) (to-list (fill <int> '(3) 3)))
     "fill integer sequence")
-(todo (equal? '(255 0 1) (to-list (to-type <ubyte> (seq 255 256 257))))
-    "typecasting to smaller integer type")
 
 ; ------------------------------------------------------------------------------
 
-(skip (equal? (list (rgb 2 4 9)) (to-list (* (rgb 2 2 3) (seq (rgb 1 2 3)))))
-    "multiply RGB array")
 (skip (equal? '(2 2 3 4) (to-list (max (seq <int> 1 2 3 4) 2)))
     "major value")
 (skip (equal? '(1 2 2 2) (to-list (min (seq <int> 1 2 3 4) 2)))
