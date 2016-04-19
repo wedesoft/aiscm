@@ -160,7 +160,7 @@
       "Skip intermediate values in conditional"))
 (let* [(a   (parameter <sint>))
        (tmp (parameter <sint>))
-       (f (~ a))]
+       (f   (~ a))]
   (ok (requires-intermediate? <sint> f)
       "Compilation of function require intermediate value")
   (ok (not (requires-intermediate? <sint> a))

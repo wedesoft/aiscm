@@ -182,4 +182,6 @@
     "Add RGB value and scalar sequence")
 (ok (equal? (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
     "Add scalar sequence and RGB value")
+(todo (equal? (rgb 2 3 5) ((jit ctx (list <int> <int> <int>) rgb) 2 3 5))
+    "compile and run function building an RGB value")
 (run-tests)

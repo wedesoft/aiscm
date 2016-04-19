@@ -139,7 +139,7 @@
 (define-method (variables (self <var>)) (list self))
 (define-method (variables (self <cmd>)) (variables (get-args self)))
 (define-method (variables (self <ptr>)) (variables (get-args self)))
-(define-method (variables (self <list>)) (delete-duplicates (concatenate (map variables self))))
+(define-method (variables (self <list>)) (delete-duplicates (append-map variables self)))
 (define-method (input (self <cmd>))
   (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
 (define-method (output (self <cmd>)) (variables (get-output self)))
@@ -479,10 +479,10 @@
 (define-method (setup (self <tensor>))
   (list (IMUL (step self) (stride self) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
-(define-method (setup (self <function>)) (concatenate (map setup (arguments self))))
+(define-method (setup (self <function>)) (append-map setup (arguments self)))
 (define-method (increment self) '())
 (define-method (increment (self <tensor>)) (list (ADD (iterator self) (step self))))
-(define-method (increment (self <function>)) (concatenate (map increment (arguments self))))
+(define-method (increment (self <function>)) (append-map increment (arguments self)))
 (define-method (body self) self)
 (define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
@@ -558,7 +558,7 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
+                     (append-map content (if (returnable (class-of retval)) vars (cons retval vars)))
                      (attach (code (parameter retval) expr) (RET))))
 
 (define (jit context classes proc); TODO: split up and test
@@ -571,9 +571,9 @@
          (args        (if return-type vars (cons retval vars)))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (concatenate (map content args)))
+                           (map typecode (append-map content args))
                            (assemble retval vars expr virtual-variables)))
-         (fun         (lambda header (apply code (concatenate (map content header)))))]
+         (fun         (lambda header (apply code (append-map content header))))]
     (if return-type
       (lambda args
         (let [(result (apply fun args))]

@@ -464,7 +464,7 @@
   (ok (equal? (list (mov-signed (get out) (get a)) (ADD (get out) (get b)))
               (code (parameter out) (+ (parameter a) (parameter b))))
       "sign-extend first number when adding")
-  (ok (equal? (list (MOVSX DX CL) (MOV CX AX) (ADD CX DX) (RET))
+  (ok (equal? (list (MOV DX CX) (MOVSX CX AL) (ADD DX CX) (RET))
               (register-allocate (attach (code (parameter out) (+ (parameter b) (parameter a))) (RET))))
       "sign-extend second number when adding"))
 (ok (+ (parameter (sequence <int>)) (parameter <int>))

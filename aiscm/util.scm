@@ -75,7 +75,7 @@
       (cons (car alist) (assq-set (cdr alist) key val)))))
 (define (assq-set alist key val) (alist-set eq? alist key val))
 (define (assq-remove alist key) (filter (compose not (cut eq? key <>) car) alist))
-(define (product lst1 lst2) (concatenate (map (lambda (x) (map (cut cons x <>) lst2)) lst1)))
+(define (product lst1 lst2) (append-map (lambda (x) (map (cut cons x <>) lst2)) lst1))
 (define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
 (define (sort-by-pred lst pred) (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
 (define (argop op fun lst)

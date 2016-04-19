@@ -82,7 +82,7 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define (assemble retval vars frag)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (concatenate (map content (if (returnable (class-of retval)) vars (cons retval vars))))
+                     (append-map content (if (returnable (class-of retval)) vars (cons retval vars)))
                      (append (store retval frag) (list (RET)))))
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
@@ -94,9 +94,9 @@
          (args        (if return-type vars (cons retval vars)))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (concatenate (map content args)))
+                           (map typecode (append-map content args))
                            (assemble retval vars frag)))
-         (fun         (lambda header (apply code (concatenate (map content header)))))]
+         (fun         (lambda header (apply code (append-map content header))))]
     (if return-type
         (lambda args
           (let [(result (apply fun args))]
