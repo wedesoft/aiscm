@@ -153,11 +153,7 @@
   (ok (equal? (attach (code tmp a) tmp) (insert-intermediate a tmp list))
       "Use intermediate value")
   (ok (equal? (code tmp a) (insert-intermediate a tmp (const '())))
-      "Use empty code")
-  (ok (equal? (attach (code tmp a) tmp) (optional-intermediate a tmp list))
-      "Use intermediate value in conditional")
-  (ok (equal? (list a) (optional-intermediate a #f list))
-      "Skip intermediate values in conditional"))
+      "Use empty code"))
 (let* [(a   (parameter <sint>))
        (tmp (parameter <sint>))
        (f   (~ a))]
