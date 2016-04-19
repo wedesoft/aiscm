@@ -156,6 +156,6 @@
 (define (objdump code) (let [(filename (tmpnam))]
   (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
   (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
-(define (map-if pred fun1 fun2 lst) (map (lambda (x) ((if (pred x) fun1 fun2) x)) lst))
+(define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37

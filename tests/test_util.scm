@@ -145,4 +145,6 @@
     "concatenate byte vectors")
 (ok (equal? '(1 -2 3 -4 5) (map-if even? - + '(1 2 3 4 5)))
     "conditional map")
+(ok (equal? '(1 5 8) (map-if (compose even? car list) - + '(2 3 5) '(1 2 3)))
+    "conditional map with multiple arguments")
 (run-tests)
