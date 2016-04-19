@@ -12,7 +12,7 @@
             assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
-            bytevector-sub bytevector-concat objdump map-if aiscm-error)
+            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -157,5 +157,6 @@
   (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
   (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
 (define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
+(define (map-select select fun1 fun2 . lsts) (apply map (lambda (val . args) (apply (if val fun1 fun2) args)) select lsts))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37

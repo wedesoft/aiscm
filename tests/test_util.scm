@@ -147,4 +147,6 @@
     "conditional map")
 (ok (equal? '(1 5 8) (map-if (compose even? car list) - + '(2 3 5) '(1 2 3)))
     "conditional map with multiple arguments")
+(ok (equal? '(1 5 8) (map-select '(#t #f #f) - + '(2 3 5) '(1 2 3)))
+    "selective map with multiple arguments")
 (run-tests)
