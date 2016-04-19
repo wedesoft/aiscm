@@ -20,6 +20,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
             assemble jit iterator step setup increment body arguments operand insert-intermediate optional-intermediate
+            requires-intermediate?
             duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-mutating unary-functional unary-extract delegate-op)
   #:export-syntax (intermediate-param define-unary-op unary-fun))
