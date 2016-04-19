@@ -6,15 +6,32 @@ The function then is used to negate the number *42*.
 
 ## Function definition
 
+Here is an example function negating an integer:
+
 ```Scheme
 @../tests/integration_asm.scm@
 ```
 
-This will generate and call a function with the following assembler code.
-Here is an example function negating an integer:
+This will generate and call an identity function with the following assembler code
 
 ```Assembler
 mov eax,edi
+neg eax
+ret
+```
+
+It is also possible to use jump statements and labels:
+
+```Scheme
+@../tests/integration_jmp.scm@
+```
+
+This will generate and call a function for computing the absolute value. The assembler code is as follows
+
+```Assembler
+mov eax, edi
+cmp eax, 0x0
+jg 0xb
 neg eax
 ret
 ```
