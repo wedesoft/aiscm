@@ -656,17 +656,6 @@
 ;                       (MOV (imag-part result) (ptr (base (typecode p)) (get p) size)))
 ;          #:value result)))
 ;(fragment <complex<>>)
-;(define-method (to-type (target <meta<rgb<>>>) (frag <fragment<element>>))
-;  (let* [(tmp    (strip-code frag))
-;         (r      (to-type (base target) (red   tmp)))
-;         (g      (to-type (base target) (green tmp)))
-;         (b      (to-type (base target) (blue  tmp)))
-;         (result (rgb r g b))]
-;    (make (fragment (to-type target (type frag)))
-;          #:args (list target frag)
-;          #:name to-type
-;          #:code (append (code frag) (code result))
-;          #:value (value result))))
 ;(define-method (to-type (target <meta<complex<>>>) (frag <fragment<element>>))
 ;  (let* [(tmp    (strip-code frag))
 ;         (re     (to-type (base target) (real-part tmp)))

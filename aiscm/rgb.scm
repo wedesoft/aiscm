@@ -126,12 +126,18 @@
 (define-unary-op unary-fun base unary-extract blue  blue )
 
 (define-method (decompose-value (t <meta<int<>>>) x) x)
-(define-method (decompose-value (t <meta<rgb<>>>) x) (rgb (red x) (green x) (blue x)))
+(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
 (define (decompose x) (decompose-value (type x) x))
 
+(define (components out)
+  (map (lambda (member) (parameter (member (term out)))) (list red green blue)))
+
 (define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
-  (let* [(decomposed (map decompose args))
-         (result     (apply name decomposed))]
-    (append ((term (red   result)) (parameter (red   (term out))))
-            ((term (green result)) (parameter (green (term out))))
-            ((term (blue  result)) (parameter (blue  (term out)))))))
+  (let [(result (apply name (map decompose args)))]
+    (append-map code (components out) (arguments result))))
+
+(define-method (rgb (a <param>) (b <param>) (c <param>))
+  (make <function> #:arguments (list a b c)
+                   #:type (rgb (reduce coerce #f (map type (list a b c))))
+                   #:project (lambda () (apply rgb (map body (list a b c))))
+                   #:term (lambda (out) (append-map code (components out) (list a b c)))))
