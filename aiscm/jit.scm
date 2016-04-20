@@ -95,9 +95,6 @@
 (mutating-op      INC)
 (mutating-op      IDIV)
 (mutating-op      DIV)
-(mutating-op      AND)
-(mutating-op      OR)
-(mutating-op      XOR)
 (state-setting-op CMP)
 (state-setting-op TEST)
 (state-reading-op SETB)
@@ -495,8 +492,6 @@
 
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
-(define ((requires-intermediate? typecode) value)
-  (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
 
 (define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
@@ -525,6 +520,8 @@
 
 (define (unary-extract op out a)
   (list (code (term out) (op (term a)))))
+(define ((requires-intermediate? typecode) value)
+  (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
 (define (x-code typecode op out . args)
   (let* [(mask          (map (requires-intermediate? typecode) args))
          (intermediates (map-select mask (lambda (arg) (parameter typecode)) identity args))
