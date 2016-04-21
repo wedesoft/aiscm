@@ -547,7 +547,7 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (append-map content (if (returnable (class-of retval)) vars (cons retval vars)))
+                     (append-map (compose content get) (if (returnable (class-of retval)) vars (cons retval vars)))
                      (attach (code (parameter retval) expr) (RET))))
 
 (define (jit context classes proc); TODO: split up and test
@@ -560,7 +560,7 @@
          (args        (if return-type vars (cons retval vars)))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (append-map content args))
+                           (map typecode (append-map (compose content get) args))
                            (assemble retval vars expr virtual-variables)))
          (fun         (lambda header (apply code (append-map content header))))]
     (if return-type

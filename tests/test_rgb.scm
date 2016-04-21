@@ -71,6 +71,8 @@
     "coerce RGB type and 2D array")
 (ok (equal? (list 2 3 5) (content (rgb 2 3 5)))
     "'content' extracts the channels of an RGB value")
+(ok (equal? (list 2 3 5) (map get (content (make <intrgb> #:value (rgb 2 3 5)))))
+    "'content' extracts values of typed RGB value")
 (ok (eq? <ubytergb> (match (rgb 2 3 5)))
     "type matching for (rgb 2 3 5)")
 (ok (eq? (rgb <double>) (match (rgb 2 3.5 5)))

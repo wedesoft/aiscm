@@ -66,7 +66,8 @@
 (define-method (match (c <rgb>) . args)
   (rgb (apply match (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
-(define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
+(define-method (content (self <rgb>)) (map (cut <> self) (list red green blue) ))
+(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue)))
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))
 (define-syntax-rule (unary-rgb-op op)
@@ -113,12 +114,8 @@
 (define-method (green (self <pointer<>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<>>)) (component (typecode self) self 2))
 
-(define (destructure value) (map (lambda (member) (member value)) (list red green blue)))
-(define (components out) (map parameter (destructure (term out))))
-(define (copy-rgb a b) (append-map code (destructure a) (destructure b)))
-(define-method (decompose-value (t <meta<int<>>>) x) x)
-(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
-(define (decompose x) (decompose-value (type x) x))
+(define-method (content (self <param>)) (map parameter (content (term self))))
+(define (copy-rgb a b) (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
 
 (define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
@@ -128,9 +125,13 @@
 (define-unary-op unary-fun base unary-extract green green)
 (define-unary-op unary-fun base unary-extract blue  blue )
 
+(define-method (decompose-value (t <meta<int<>>>) x) x)
+(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
+(define (decompose-arg x) (decompose-value (type x) x))
+
 (define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
-  (let [(result (apply name (map decompose args)))]
-    (append-map code (components out) (arguments result))))
+  (let [(result (apply name (map decompose-arg args)))]
+    (append-map code (content out) (arguments result))))
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
   (let [(t  (base target))]
@@ -139,4 +140,4 @@
   (make <function> #:arguments (list r g b)
                    #:type (rgb (reduce coerce #f (map type (list r g b))))
                    #:project (lambda () (apply rgb (map body (list r g b))))
-                   #:term (lambda (out) (append-map code (components out) (list r g b)))))
+                   #:term (lambda (out) (append-map code (content out) (list r g b)))))
