@@ -22,7 +22,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-extract delegate-op)
-  #:export-syntax (intermediate-param define-unary-op unary-fun))
+  #:export-syntax (define-unary-op define-binary-op unary-fun binary-fun))
 
 (define ctx (make <context>))
 

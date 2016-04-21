@@ -31,19 +31,7 @@
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
-;(define-syntax-rule (define-unary-op name op)
-;  (define-method (name (a <element>))
-;    (let [(f (jit ctx (list (class-of a)) op))]
-;      (add-method! name
-;                   (make <method>
-;                         #:specializers (list (class-of a))
-;                        #:procedure f)))
-;    (name a)))
-;(define-unary-op duplicate identity)
-;(define-unary-op =0 =0)
-;(define-unary-op !=0 !=0)
 ;(define-unary-op conj conj)
-;(define ! =0)
 ;(define-syntax-rule (capture-binary-argument name type)
 ;  (begin
 ;    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
@@ -63,24 +51,6 @@
 ;    (capture-binary-argument name <rgb>)
 ;    (capture-binary-argument name <complex>)))
 
-;(define-binary-op +   +)
-;(define-binary-op -   -)
-;(define-binary-op *   *)
-;(define-binary-op &   &)
-;(define-binary-op |   |)
-;(define-binary-op ^   ^)
-;(define-binary-op <<  <<)
-;(define-binary-op >>  >>)
-;(define-binary-op /   /)
-;(define-binary-op %   %)
-;(define-binary-op =   =)
-;(define-binary-op !=  !=)
-;(define-binary-op <   <)
-;(define-binary-op <=  <=)
-;(define-binary-op >   >)
-;(define-binary-op >=  >=)
-;(define-binary-op &&  &&)
-;(define-binary-op ||  ||)
 ;(define-binary-op max max)
 ;(define-binary-op min min)
 
