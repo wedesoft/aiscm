@@ -112,10 +112,13 @@
 (define-method (red   (self <pointer<>>)) (component (typecode self) self 0))
 (define-method (green (self <pointer<>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<>>)) (component (typecode self) self 2))
-(define (copy-rgb a b)
-  (append (code (red   a) (red   b))
-          (code (green a) (green b))
-          (code (blue  a) (blue  b))))
+
+(define (destructure value) (map (lambda (member) (member value)) (list red green blue)))
+(define (components out) (map parameter (destructure (term out))))
+(define (copy-rgb a b) (append-map code (destructure a) (destructure b)))
+(define-method (decompose-value (t <meta<int<>>>) x) x)
+(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
+(define (decompose x) (decompose-value (type x) x))
 
 (define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
@@ -125,12 +128,6 @@
 (define-unary-op unary-fun base unary-extract green green)
 (define-unary-op unary-fun base unary-extract blue  blue )
 
-(define-method (decompose-value (t <meta<int<>>>) x) x)
-(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
-(define (decompose x) (decompose-value (type x) x))
-
-(define (components out)
-  (map (lambda (member) (parameter (member (term out)))) (list red green blue)))
 
 (define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
   (let [(result (apply name (map decompose args)))]
