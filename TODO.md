@@ -2,7 +2,7 @@
 
 * build RGB values
 * complex operations
-* hide passing tests, only run failed tests, parallel test runner?
+* something like Ruby's Struct
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
@@ -14,7 +14,6 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
-* something like Ruby's Struct
 * use trs files to run failed tests, count tests automatically
 * Theano expression compiler: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round

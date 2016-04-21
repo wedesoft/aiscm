@@ -629,10 +629,7 @@
 (define-binary-op binary-fun to-bool functional-code >= cmp-greater-equal)
 
 (define-method (to-type (target <meta<element>>) (a <param>))
-  (make <function> #:arguments (list a); TODO: refactor
-                   #:type (to-type target (type a))
-                   #:project (lambda () (to-type target (body a)))
-                   #:term (lambda (out) (code out a ))))
+  (make-function (cut to-type target <>) (cut to-type target <>) functional-code mov a))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]

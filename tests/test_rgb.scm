@@ -1,5 +1,6 @@
 (use-modules (oop goops)
              (system foreign)
+             (srfi srfi-26)
              (aiscm element)
              (aiscm bool)
              (aiscm rgb)
@@ -184,4 +185,6 @@
     "Add scalar sequence and RGB value")
 (ok (equal? (rgb 2 3 5) ((jit ctx (list <int> <int> <int>) rgb) 2 3 5))
     "compile and run function building an RGB value")
+(ok (equal? (rgb 2 3 5) ((jit ctx (list <intrgb>) (cut to-type <bytergb> <>)) (rgb 2 3 5)))
+    "convert integer RGB to byte RGB")
 (run-tests)
