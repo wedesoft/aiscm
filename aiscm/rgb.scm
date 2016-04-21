@@ -134,8 +134,7 @@
     (append-map code (content out) (arguments result))))
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
-  (let [(t  (base target))]
-    (rgb (to-type t (red self)) (to-type t (green self)) (to-type t (blue self)))))
+  (apply rgb (map (cut to-type (base target) <>) (content self))))
 (define-method (rgb (r <param>) (g <param>) (b <param>))
   (make <function> #:arguments (list r g b)
                    #:type (rgb (reduce coerce #f (map type (list r g b))))
