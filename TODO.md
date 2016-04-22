@@ -1,6 +1,5 @@
 ## Ready
 
-* content <-> components
 * complex operations
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)

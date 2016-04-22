@@ -121,9 +121,9 @@
 (define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
 (define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
 
-(define-unary-op unary-fun base unary-extract red   red  )
-(define-unary-op unary-fun base unary-extract green green)
-(define-unary-op unary-fun base unary-extract blue  blue )
+(define-unary-op n-ary-fun base unary-extract red   red  )
+(define-unary-op n-ary-fun base unary-extract green green)
+(define-unary-op n-ary-fun base unary-extract blue  blue )
 
 (define-method (decompose-value (t <meta<int<>>>) x) x)
 (define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
@@ -135,7 +135,7 @@
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
   (apply rgb (map (cut to-type (base target) <>) (content self))))
-(define-method (rgb (r <param>) (g <param>) (b <param>))
+(define-method (rgb (r <param>) (g <param>) (b <param>)); TODO: use n-ary-fun
   (make <function> #:arguments (list r g b)
                    #:type (rgb (reduce coerce #f (map type (list r g b))))
                    #:project (lambda () (apply rgb (map body (list r g b))))
