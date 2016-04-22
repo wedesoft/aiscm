@@ -135,8 +135,4 @@
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
   (apply rgb (map (cut to-type (base target) <>) (content self))))
-(define-method (rgb (r <param>) (g <param>) (b <param>)); TODO: use n-ary-fun
-  (make <function> #:arguments (list r g b)
-                   #:type (rgb (reduce coerce #f (map type (list r g b))))
-                   #:project (lambda () (apply rgb (map body (list r g b))))
-                   #:term (lambda (out) (append-map code (content out) (list r g b)))))
+(n-ary-fun rgb 3 (lambda types (rgb (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
