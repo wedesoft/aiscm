@@ -10,6 +10,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>

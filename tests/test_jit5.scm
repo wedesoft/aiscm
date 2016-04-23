@@ -175,10 +175,6 @@
     "compile and run binary functional operation with nested first parameter")
 
 ; ------------------------------------------------------------------------------
-(skip (equal? (rgb 2 3 5) ((jit ctx (list <int> <int> <int>) (lambda (r g b) (rgb r g b))) 2 3 5))
-    "compose RGB value in compiled code")
-(skip (equal? (rgb 2 3 5) ((jit ctx (list <byte> <byte> <byte>) rgb) 2 3 5))
-    "construct RGB value in compiled code")
 (skip (equal? (rgb 2 -3 256) ((jit ctx (list <ubyte> <byte> <usint>) rgb) 2 -3 256))
     "construct RGB value from differently typed values")
 (skip ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 3 5))

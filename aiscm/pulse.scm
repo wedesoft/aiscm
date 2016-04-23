@@ -4,6 +4,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm int)
+  #:use-module (aiscm jit)
   #:use-module (aiscm mem)
   #:use-module (aiscm op)
   #:use-module (ice-9 optargs)
