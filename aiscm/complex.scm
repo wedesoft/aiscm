@@ -73,11 +73,8 @@
     (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
              (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
 
-(define-method (copy-complex a b)
+(define-method (copy-value (typecode <meta<complex<>>>) a b)
   (append-map (lambda (channel) (code (channel a) (channel b))) (list real-part imag-part)))
-(define-method (code (a <complex<>>) (b <complex<>>)) (copy-complex a b))
-(define-method (code (a <pointer<>>) (b <complex<>>)) (copy-complex a b))
-(define-method (code (a <complex<>>) (b <pointer<>>)) (copy-complex a b))
 
 (define-method (component type self offset) self)
 (define-method (component (type <meta<complex<>>>) self offset)

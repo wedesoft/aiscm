@@ -18,7 +18,7 @@
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code
+            filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-extract delegate-op make-function)
@@ -493,17 +493,12 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (copy-int a b) (mov (operand a) (operand b)))
+(define-method (copy-value (typecode <meta<int<>>>) a b) (mov (operand a) (operand b)))
+(define-method (copy-value (typecode <meta<bool>>) a b) (mov (operand a) (operand b)))
 
-(define-method (code (a <int<>>) (b <int<>>)) (copy-int a b))
-(define-method (code (a <pointer<>>) (b <int<>>)) (copy-int a b))
-(define-method (code (a <int<>>) (b <pointer<>>)) (copy-int a b))
-
-(define-method (copy-bool a b) (mov (operand a) (operand b)))
-
-(define-method (code (a <bool>) (b <bool>)) (copy-bool a b))
-(define-method (code (a <pointer<>>) (b <bool>)) (copy-bool a b))
-(define-method (code (a <bool>) (b <pointer<>>)) (copy-bool a b))
+(define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
+(define-method (code (a <pointer<>>) (b <element>)) (copy-value (typecode a) a b))
+(define-method (code (a <element>) (b <pointer<>>)) (copy-value (typecode a) a b))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))

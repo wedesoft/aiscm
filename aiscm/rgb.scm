@@ -106,11 +106,8 @@
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
 
-(define (copy-rgb a b) (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
-
-(define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
-(define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
-(define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
+(define-method (copy-value (typecode <meta<rgb<>>>) a b)
+  (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
 ;---
 
 (define-method (content (self <param>)) (map parameter (content (term self))))
