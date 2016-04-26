@@ -67,7 +67,7 @@
   (rgb (apply match (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (map (cut <> self) (list red green blue) ))
-(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue)))
+(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue))); TODO: test, refactor
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))
 (define-syntax-rule (unary-rgb-op op)
@@ -125,6 +125,8 @@
 (define-unary-op n-ary-fun base unary-extract green green)
 (define-unary-op n-ary-fun base unary-extract blue  blue )
 
+(n-ary-fun rgb 3 (lambda types (rgb (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
+
 (define-method (decompose-value (t <meta<int<>>>) x) x)
 (define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
 (define (decompose-arg x) (decompose-value (type x) x))
@@ -135,4 +137,3 @@
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
   (apply rgb (map (cut to-type (base target) <>) (content self))))
-(n-ary-fun rgb 3 (lambda types (rgb (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"

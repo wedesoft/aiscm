@@ -495,10 +495,7 @@
 
 (define-method (copy-value (typecode <meta<int<>>>) a b) (mov (operand a) (operand b)))
 (define-method (copy-value (typecode <meta<bool>>) a b) (mov (operand a) (operand b)))
-
 (define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
-(define-method (code (a <pointer<>>) (b <element>)) (copy-value (typecode a) a b))
-(define-method (code (a <element>) (b <pointer<>>)) (copy-value (typecode a) a b))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))

@@ -57,10 +57,10 @@
     "Extract real component in compiled code")
 (ok (eqv? 3 ((jit ctx (list (complex <int>)) imag-part) 2+3i))
     "Extract imaginary component in compiled code")
+(ok (equal? 2+3i ((jit ctx (list <int> <int>) (lambda (re im) (complex re im))) 2 3))
+    "compose complex value in compiled code")
 
 ; ------------------------------------------------------------------------------
-(skip (equal? 2+3i ((jit ctx (list <int> <int>) (lambda (re im) (complex re im))) 2 3))
-    "compose complex value in compiled code")
 (skip (equal? (list 2+3i) (to-list ((jit ctx (list (sequence (complex <ubyte>))) identity) (seq 2+3i))))
     "deal with complex pointer parameter")
 (skip (equal? (list 2+3i) (to-list ((jit ctx (list (sequence (complex <ubyte>))) (cut to-type (complex <int>) <>))

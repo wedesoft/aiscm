@@ -32,7 +32,8 @@
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 2))))]
     (make self #:value (apply make-rectangular (map (lambda (vec) (get (unpack (base self) vec))) vectors)))))
 (define-method (content (self <complex>)) (map inexact->exact (list (real-part self) (imag-part self))))
-(define-method (content (self <internalcomplex>)) (list (real-part self) (imag-part self)))
+(define-method (content (self <internalcomplex>)) (map (cut <> self) (list real-part imag-part)))
+(define-method (content (self <complex<>>)) (map (cut <> self) (list real-part imag-part))); TODO: test, refactor
 (define-method (coerce (a <meta<complex<>>>) (b <meta<element>>)) (complex (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<complex<>>>)) (complex (coerce a (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))
@@ -76,7 +77,9 @@
 (define-method (copy-value (typecode <meta<complex<>>>) a b)
   (append-map (lambda (channel) (code (channel a) (channel b))) (list real-part imag-part)))
 
-(define-method (component type self offset) self)
+(define-method (content (self <param>)) (map parameter (content (term self)))); TODO: ???
+
+(define-method (component type self offset) self); TODO: move to jit.scm
 (define-method (component (type <meta<complex<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
@@ -87,3 +90,13 @@
 
 (define-unary-op n-ary-fun base unary-extract real-part real-part)
 (define-unary-op n-ary-fun base unary-extract imag-part imag-part)
+
+(n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
+
+(define-method (decompose-value (t <meta<int<>>>) x) x); TODO: move to jit.scm
+(define-method (decompose-value (t <meta<complex<>>>) x) (make <internalcomplex> #:real-part (real-part x) #:imag-part (imag-part x)))
+(define (decompose-arg x) (decompose-value (type x) x))
+
+(define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args)
+  (let [(result (apply name (map decompose-arg args)))]
+    (append-map code (content out) (arguments result))))
