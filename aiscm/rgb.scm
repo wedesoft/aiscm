@@ -105,7 +105,17 @@
 (binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
-(define-method (var (self <meta<rgb<>>>)) (let [(type (base self))]  (rgb (var type) (var type) (var type))))
+
+(define (copy-rgb a b) (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
+
+(define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
+(define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
+(define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
+;---
+
+(define-method (content (self <param>)) (map parameter (content (term self))))
+
+(define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
 (define-method (component type self offset) self)
 (define-method (component (type <meta<rgb<>>>) self offset)
   (let* [(type (base (typecode self)))]
@@ -113,13 +123,6 @@
 (define-method (red   (self <pointer<>>)) (component (typecode self) self 0))
 (define-method (green (self <pointer<>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<>>)) (component (typecode self) self 2))
-
-(define-method (content (self <param>)) (map parameter (content (term self))))
-(define (copy-rgb a b) (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
-
-(define-method (code (a <rgb<>>) (b <rgb<>>)) (copy-rgb a b))
-(define-method (code (a <pointer<>>) (b <rgb<>>)) (copy-rgb a b))
-(define-method (code (a <rgb<>>) (b <pointer<>>)) (copy-rgb a b))
 
 (define-unary-op n-ary-fun base unary-extract red   red  )
 (define-unary-op n-ary-fun base unary-extract green green)

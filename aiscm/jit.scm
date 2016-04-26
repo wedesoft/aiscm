@@ -493,7 +493,18 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (code (a <element>) (b <element>)) (mov (operand a) (operand b)))
+(define-method (copy-int a b) (mov (operand a) (operand b)))
+
+(define-method (code (a <int<>>) (b <int<>>)) (copy-int a b))
+(define-method (code (a <pointer<>>) (b <int<>>)) (copy-int a b))
+(define-method (code (a <int<>>) (b <pointer<>>)) (copy-int a b))
+
+(define-method (copy-bool a b) (mov (operand a) (operand b)))
+
+(define-method (code (a <bool>) (b <bool>)) (copy-bool a b))
+(define-method (code (a <pointer<>>) (b <bool>)) (copy-bool a b))
+(define-method (code (a <bool>) (b <pointer<>>)) (copy-bool a b))
+
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
 (define-method (code (a <param>) (b <param>)) (code (term a) (term b)))

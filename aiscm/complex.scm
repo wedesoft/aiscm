@@ -6,6 +6,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (complex
             <internalcomplex>
@@ -15,6 +16,7 @@
 (define-class <internalcomplex> ()
   (real #:init-keyword #:real-part #:getter real-part)
   (imag #:init-keyword #:imag-part #:getter imag-part))
+(define-method (complex re im) (make <internalcomplex> #:real-part re #:imag-part im))
 (define-class* <complex<>> <element> <meta<complex<>>> <meta<element>>)
 (define-method (complex (t <meta<element>>))
   (template-class (complex t) <complex<>>
@@ -70,3 +72,21 @@
   (let [(denom (+ (* (real-part b) (real-part b)) (* (imag-part b) (imag-part b))))]
     (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
              (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
+
+(define-method (copy-complex a b)
+  (append-map (lambda (channel) (code (channel a) (channel b))) (list real-part imag-part)))
+(define-method (code (a <complex<>>) (b <complex<>>)) (copy-complex a b))
+(define-method (code (a <pointer<>>) (b <complex<>>)) (copy-complex a b))
+(define-method (code (a <complex<>>) (b <pointer<>>)) (copy-complex a b))
+
+(define-method (component type self offset) self)
+(define-method (component (type <meta<complex<>>>) self offset)
+  (let* [(type (base (typecode self)))]
+    (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
+(define-method (real-part (self <pointer<>>)) (component (typecode self) self 0))
+(define-method (imag-part (self <pointer<>>)) (component (typecode self) self 1))
+
+(define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
+
+(define-unary-op n-ary-fun base unary-extract real-part real-part)
+(define-unary-op n-ary-fun base unary-extract imag-part imag-part)
