@@ -6,6 +6,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (complex
@@ -17,6 +18,8 @@
   (real #:init-keyword #:real-part #:getter real-part)
   (imag #:init-keyword #:imag-part #:getter imag-part))
 (define-method (complex re im) (make <internalcomplex> #:real-part re #:imag-part im))
+(define-method (write (self <internalcomplex>) port)
+  (format port "(complex ~a ~a)" (real-part self) (imag-part self)))
 (define-class* <complex<>> <element> <meta<complex<>>> <meta<element>>)
 (define-method (complex (t <meta<element>>))
   (template-class (complex t) <complex<>>
@@ -100,3 +103,6 @@
 (define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
+
+(define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
+  (apply complex (map (cut to-type (base target) <>) (content self))))
