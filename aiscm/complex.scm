@@ -6,7 +6,6 @@
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
-  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (complex

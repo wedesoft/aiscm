@@ -27,7 +27,7 @@
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
             CMOVB CMOVNB CMOVE CMOVNE CMOVBE CMOVNBE CMOVL CMOVNL CMOVLE CMOVNLE
-            conditional? to-type))
+            conditional?))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-jit" "init_jit")

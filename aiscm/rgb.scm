@@ -9,7 +9,6 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
-  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
   #:export (rgb red green blue
