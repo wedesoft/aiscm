@@ -6,7 +6,7 @@
   #:use-module (aiscm element)
   #:export (<bool>
             <meta<bool>>
-            && || !=)
+            && || ! !=)
   #:re-export (=))
 (define-class* <bool> <element> <meta<bool>> <meta<element>>)
 (define-method (size-of (self <meta<bool>>)) 1)
@@ -28,3 +28,4 @@
 (define-method (|| a b c . args) (apply || (|| (|| a b) c) args))
 (define-generic !=)
 (define-generic =)
+(define-method (! (a <boolean>)) (not a))

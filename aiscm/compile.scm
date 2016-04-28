@@ -12,7 +12,7 @@
 (define (expr->params expr)
   (cond
     ((null? expr) '())
-    ((pair? expr) (concatenate (map expr->params (cdr expr))))
+    ((pair? expr) (append-map expr->params (cdr expr)))
     (else (list expr))))
 (define (expr->descr expr)
   (letrec

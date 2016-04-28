@@ -10,6 +10,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm rgb)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
@@ -157,7 +158,7 @@
          (if (= (car (strides self)) 1)
            (make <image> #:format  'GRAY
                          #:shape   (shape self)
-                         #:mem     (slot-ref self 'value)
+                         #:mem     (value self)
                          #:offsets '(0)
                          #:pitches (list (cadr (strides self))))
            (to-image (duplicate self))))
@@ -167,7 +168,7 @@
          (if (= (car (strides self)) 1)
            (make <image> #:format  'RGB
                          #:shape   (shape self)
-                         #:mem     (slot-ref self 'value)
+                         #:mem     (value self)
                          #:offsets '(0)
                          #:pitches (list (* 3 (cadr (strides self)))))
            (to-image (duplicate self))))

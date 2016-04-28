@@ -2,7 +2,6 @@
              (aiscm int)
              (aiscm pulse)
              (guile-tap))
-(planned-tests 12)
 (ok (not (throws? (check-audio-sample-type <sint> <sint>)))
     "accept equal audio sample types")
 (ok (throws? (check-audio-sample-type <sint> <ubyte>))
@@ -27,3 +26,4 @@
     "convert Pulse audio short integer to integer type")
 (ok (throws? (type->pulse-type <usint>))
     "throw error if type not supported by Pulse audio")
+(run-tests)

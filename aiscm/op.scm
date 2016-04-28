@@ -14,9 +14,9 @@
   #:use-module (aiscm rgb)
   #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (fill duplicate ! ensure-default-strides)
+  #:export (fill)
   #:re-export (+ - * / % = < <= > >= min max))
-(define ctx (make <context>))
+(define ctx (make <context>)); TODO: remove this
 
 (define-method (to-type (target <meta<element>>) (self <sequence<>>))
   (let [(proc (let [(fun (jit ctx (list (class-of self)) (cut to-type target <>)))]
@@ -31,68 +31,34 @@
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (store retval value)
     retval))
-(define-syntax-rule (define-unary-op name op)
-  (define-method (name (a <element>))
-    (let [(f (jit ctx (list (class-of a)) op))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (list (class-of a))
-                        #:procedure f)))
-    (name a)))
-(define-unary-op duplicate identity)
-(define-unary-op - -)
-(define-unary-op ~ ~)
-(define-unary-op =0 =0)
-(define-unary-op !=0 !=0)
-(define-unary-op conj conj)
-(define ! =0)
-(define-syntax-rule (capture-binary-argument name type)
-  (begin
-    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
-    (define-method (name (a type) (b <element>)) (name (make (match a) #:value a) b))))
-(define-syntax-rule (define-binary-op name op)
-  (begin
-    (define-method (name (a <element>) (b <element>))
-      (let [(f (jit ctx (map class-of (list a b)) op))]
-        (add-method! name
-                     (make <method>
-                           #:specializers (map class-of (list a b))
-                           #:procedure (lambda (a b) (f (get a) (get b))))))
-      (name a b))
-    (capture-binary-argument name <boolean>)
-    (capture-binary-argument name <integer>)
-    (capture-binary-argument name <real>)
-    (capture-binary-argument name <rgb>)
-    (capture-binary-argument name <complex>)))
-(define-binary-op +   +)
-(define-binary-op -   -)
-(define-binary-op *   *)
-(define-binary-op &   &)
-(define-binary-op |   |)
-(define-binary-op ^   ^)
-(define-binary-op <<  <<)
-(define-binary-op >>  >>)
-(define-binary-op /   /)
-(define-binary-op %   %)
-(define-binary-op =   =)
-(define-binary-op !=  !=)
-(define-binary-op <   <)
-(define-binary-op <=  <=)
-(define-binary-op >   >)
-(define-binary-op >=  >=)
-(define-binary-op &&  &&)
-(define-binary-op ||  ||)
-(define-binary-op max max)
-(define-binary-op min min)
+;(define-unary-op conj conj)
+;(define-syntax-rule (capture-binary-argument name type)
+;  (begin
+;    (define-method (name (a <element>) (b type)) (name a (make (match b) #:value b)))
+;    (define-method (name (a type) (b <element>)) (name (make (match a) #:value a) b))))
+;(define-syntax-rule (define-binary-op name op)
+;  (begin
+;    (define-method (name (a <element>) (b <element>))
+;      (let [(f (jit ctx (map class-of (list a b)) op))]
+;        (add-method! name
+;                     (make <method>
+;                           #:specializers (map class-of (list a b))
+;                           #:procedure (lambda (a b) (f (get a) (get b))))))
+;      (name a b))
+;    (capture-binary-argument name <boolean>)
+;    (capture-binary-argument name <integer>)
+;    (capture-binary-argument name <real>)
+;    (capture-binary-argument name <rgb>)
+;    (capture-binary-argument name <complex>)))
 
-(define (ensure-default-strides img)
-  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
+;(define-binary-op max max)
+;(define-binary-op min min)
 
 (define (slice arr i n)
   (make (to-type (base (typecode arr)) (class-of arr))
         #:shape (shape arr)
         #:strides (map (cut * n <>) (strides arr))
-        #:value (+ (slot-ref arr 'value) (* i (size-of (base (typecode arr)))))))
+        #:value (+ (value arr) (* i (size-of (base (typecode arr)))))))
 (define-syntax-rule (slice-if-type type arr i n default) (if (is-a? (typecode arr) (class-of type)) (slice arr i n) default))
 (define-method (red   (self <sequence<>>)) (slice-if-type <rgb<>> self 0 3 self))
 (define-method (green (self <sequence<>>)) (slice-if-type <rgb<>> self 1 3 self))

@@ -9,11 +9,10 @@
   #:use-module (aiscm bool)
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
+  #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
-  #:export (rgb
-            <rgb>
-            red green blue
-            <rgb<>> <meta<rgb<>>>
+  #:export (rgb red green blue
+            <rgb> <rgb<>> <meta<rgb<>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
             <usintrgb> <rgb<int<16,unsigned>>> <meta<rgb<int<16,unsigned>>>>
@@ -30,9 +29,9 @@
 (define-method (rgb r g b) (make <rgb> #:red r #:green g #:blue b))
 (define-method (write (self <rgb>) port)
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
-(define-method (red self) self)
+(define-method (red   self) self)
 (define-method (green self) self)
-(define-method (blue self) self)
+(define-method (blue  self) self)
 (define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
@@ -44,7 +43,7 @@
 (define-method (blue  (self <rgb<>>)) (make (base (class-of self)) #:value (blue  (get self))))
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
-(define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimension self)))
+(define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimensions self)))
 (define-method (pack (self <rgb<>>))
   (bytevector-concat (list (pack (red self)) (pack (green self)) (pack (blue self)))))
 (define-method (unpack (self <meta<rgb<>>>) (packed <bytevector>))
@@ -62,11 +61,12 @@
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<element>>)) (rgb (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
-(define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimension b)))
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimensions b)))
 (define-method (match (c <rgb>) . args)
   (rgb (apply match (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
-(define-method (content (self <rgb>)) (list (red self) (green self) (blue self)))
+(define-method (content (self <rgb>)) (map (cut <> self) (list red green blue) ))
+(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue))); TODO: test, refactor
 (define-method (typecode (self <rgb>))
   (rgb (reduce coerce #f (map typecode (content self)))))
 (define-syntax-rule (unary-rgb-op op)
@@ -76,12 +76,11 @@
 (unary-rgb-op ~)
 (define-syntax-rule (binary-rgb-op op)
   (begin
-    (define-method (op (a <rgb>) b)
-      (rgb (op (red a) b) (op (green a) b) (op (blue a) b)))
-    (define-method (op a (b <rgb>))
-      (rgb (op a (red b)) (op a (green b)) (op a (blue b))))
-    (define-method (op (a <rgb>) (b <rgb>))
-      (rgb (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b))))))
+    (define-method (op (a <rgb>) b) (rgb (op (red a) b) (op (green a) b) (op (blue a) b)))
+    (define-method (op (a <rgb>) (b <element>)) (op (make (match a) #:value a) b))
+    (define-method (op a (b <rgb>)) (rgb (op a (red b)) (op a (green b)) (op a (blue b))))
+    (define-method (op (a <element>) (b <rgb>)) (op a (make (match b) #:value b)))
+    (define-method (op (a <rgb>) (b <rgb>)) (rgb (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b))))))
 (binary-rgb-op +)
 (binary-rgb-op -)
 (binary-rgb-op *)
@@ -105,3 +104,35 @@
 (binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
+
+(define-method (copy-value (typecode <meta<rgb<>>>) a b)
+  (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
+;---
+
+(define-method (content (self <param>)) (map parameter (content (term self))))
+
+(define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
+(define-method (component type self offset) self)
+(define-method (component (type <meta<rgb<>>>) self offset)
+  (let* [(type (base (typecode self)))]
+    (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
+(define-method (red   (self <pointer<>>)) (component (typecode self) self 0))
+(define-method (green (self <pointer<>>)) (component (typecode self) self 1))
+(define-method (blue  (self <pointer<>>)) (component (typecode self) self 2))
+
+(define-unary-op n-ary-fun base unary-extract red   red  )
+(define-unary-op n-ary-fun base unary-extract green green)
+(define-unary-op n-ary-fun base unary-extract blue  blue )
+
+(n-ary-fun rgb 3 (lambda types (rgb (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
+
+(define-method (decompose-value (t <meta<int<>>>) x) x)
+(define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
+(define (decompose-arg x) (decompose-value (type x) x))
+
+(define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
+  (let [(result (apply name (map decompose-arg args)))]
+    (append-map code (content out) (arguments result))))
+
+(define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
+  (apply rgb (map (cut to-type (base target) <>) (content self))))

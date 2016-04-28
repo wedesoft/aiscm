@@ -5,7 +5,6 @@
              (aiscm jit)
              (aiscm rgb)
              (guile-tap))
-(planned-tests 11)
 (define ramp (read-image "fixtures/ramp.png"))
 (define index (read-image "fixtures/index.png"))
 (ok (equal? '(6 4) (shape ramp))
@@ -44,3 +43,4 @@
 (write-image (roll colour-img) rolled-file-name)
 (ok (equal? colour-values (to-list (roll (read-image rolled-file-name))))
     "Write image with non-default strides (pitches)")
+(run-tests)
