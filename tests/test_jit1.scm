@@ -389,14 +389,15 @@
     "compile and run boolean identity function")
 (let [(out (skeleton <int>))
       (in  (skeleton (pointer <int>)))]
-  (ok (equal? (list (mov-signed (get out) (ptr <int> (get in))))
-              (code out in))
+  (ok (equal? (list (mov-signed (get out) (ptr <int> (get in)))) (code out in))
       "generate code for reading integer from memory"))
 (let [(out (skeleton (pointer <int>)))
       (in  (skeleton <int>))]
-  (ok (equal? (list (mov-signed (ptr <int> (get out)) (get in)))
-              (code out in))
+  (ok (equal? (list (mov-signed (ptr <int> (get out)) (get in))) (code out in))
       "generate code for writing integer to memory"))
+(let [(out (skeleton <int>))]
+  (ok (equal? (list (MOV (get out) 0)) (code out 0))
+      "Generate code for setting variable to zero"))
 (let [(out (parameter (sequence <int>)))]
   (ok (eq? (iterator (term out)) (iterator out))
       "retrieve iterator pointer from tensor parameter")

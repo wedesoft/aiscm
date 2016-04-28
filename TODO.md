@@ -1,7 +1,8 @@
 ## Ready
 
-* real-part, red, ... <element> <-> <sequence<>> <-> <node>
-* complex operations
+* conjugate of real number
+* major/minor
+* real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter

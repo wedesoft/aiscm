@@ -25,7 +25,8 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
-(define-method (real-part (self <int<>>)) self)
+(define-method (real-part (self <int<>>)) self); TODO: use a number type
+(define-method (imag-part (self <int<>>)) 0)
 (define-method (real-part (self <complex<>>)) (make (base (class-of self)) #:value (real-part (get self))))
 (define-method (imag-part (self <complex<>>)) (make (base (class-of self)) #:value (imag-part (get self))))
 (define-method (pack (self <complex<>>))
@@ -106,3 +107,5 @@
 
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
+
+(define-unary-op n-ary-fun identity functional-code conj conj)

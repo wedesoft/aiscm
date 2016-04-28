@@ -21,7 +21,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-extract delegate-op make-function)
+            unary-extract mutating-code functional-code delegate-op make-function)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
 
 (define ctx (make <context>))
@@ -346,7 +346,7 @@
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define-method (mov a b); TODO: remove comparison with <bool>
+(define (mov a b); TODO: remove comparison with <bool>
   (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
 
 (define-method (signed? (x <var>)) (signed? (typecode x)))
@@ -496,6 +496,7 @@
 (define-method (copy-value (typecode <meta<int<>>>) a b) (mov (operand a) (operand b)))
 (define-method (copy-value (typecode <meta<bool>>) a b) (mov (operand a) (operand b)))
 (define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
+(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) 0)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
