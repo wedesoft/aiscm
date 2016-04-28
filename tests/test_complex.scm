@@ -82,10 +82,10 @@
     "divide complex number by number")
 (ok (eqv? 3-4i ((jit ctx (list <int> (complex <int>)) /) 25 3+4i))
     "divide number by complex number")
-
-; ------------------------------------------------------------------------------
-(skip (eqv? 42 ((jit ctx (list <int>) real-part) 42))
+(ok (eqv? 42 ((jit ctx (list <int>) real-part) 42))
     "get real part of real number")
+(skip (eqv? 0 ((jit ctx (list <int>) imag-part) 42))
+    "get imaginary part of real number")
 (skip (eqv? 2-3i ((jit ctx (list (complex <int>)) conj) 2+3i))
     "complex conjugate")
 (skip (eqv? 2 ((jit ctx (list <int>) conj) 2))

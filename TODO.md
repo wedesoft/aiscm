@@ -1,5 +1,6 @@
 ## Ready
 
+* real-part, red, ... <element> <-> <sequence<>> <-> <node>
 * complex operations
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)

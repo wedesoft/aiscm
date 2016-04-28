@@ -25,6 +25,7 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
+(define-method (real-part (self <int<>>)) self)
 (define-method (real-part (self <complex<>>)) (make (base (class-of self)) #:value (real-part (get self))))
 (define-method (imag-part (self <complex<>>)) (make (base (class-of self)) #:value (imag-part (get self))))
 (define-method (pack (self <complex<>>))
