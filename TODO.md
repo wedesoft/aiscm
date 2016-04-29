@@ -1,6 +1,5 @@
 ## Ready
 
-* imag-part of real array
 * conjugate of real number
 * red/green/blue of number
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>

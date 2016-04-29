@@ -10,7 +10,8 @@
   #:use-module (aiscm util)
   #:export (complex
             <internalcomplex>
-            <complex<>> <meta<complex<>>>)
+            <complex<>> <meta<complex<>>>
+            <pointer<complex<>>> <meta<pointer<complex<>>>>)
   #:re-export (real-part imag-part))
 (define-method (conj (self <complex>)) (make-rectangular (real-part self) (- (imag-part self))))
 (define-class <internalcomplex> ()
@@ -86,8 +87,11 @@
 (define-method (component (type <meta<complex<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
-(define-method (real-part (self <pointer<>>)) (component (typecode self) self 0))
-(define-method (imag-part (self <pointer<>>)) (component (typecode self) self 1))
+(pointer <complex<>>)
+(define-method (real-part (self <pointer<int<>>>)) self)
+(define-method (imag-part (self <pointer<int<>>>)) 0)
+(define-method (real-part (self <pointer<complex<>>>)) (component (typecode self) self 0))
+(define-method (imag-part (self <pointer<complex<>>>)) (component (typecode self) self 1))
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 

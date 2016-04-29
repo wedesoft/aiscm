@@ -12,7 +12,9 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
   #:export (rgb red green blue
-            <rgb> <rgb<>> <meta<rgb<>>>
+            <rgb>
+            <rgb<>> <meta<rgb<>>>
+            <pointer<rgb<>>> <meta<pointer<rgb>>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
             <bytergb>  <rgb<int<8,signed>>>    <meta<rgb<int<8,signed>>>>
             <usintrgb> <rgb<int<16,unsigned>>> <meta<rgb<int<16,unsigned>>>>
@@ -114,9 +116,13 @@
 (define-method (component (type <meta<rgb<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
-(define-method (red   (self <pointer<>>)) (component (typecode self) self 0))
-(define-method (green (self <pointer<>>)) (component (typecode self) self 1))
-(define-method (blue  (self <pointer<>>)) (component (typecode self) self 2))
+(pointer <rgb<>>)
+(define-method (red   (self <pointer<int<>>>)) self)
+(define-method (green (self <pointer<int<>>>)) self)
+(define-method (blue  (self <pointer<int<>>>)) self)
+(define-method (red   (self <pointer<rgb<>>>)) (component (typecode self) self 0))
+(define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
+(define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
 (define-unary-op n-ary-fun base unary-extract red   red  )
 (define-unary-op n-ary-fun base unary-extract green green)

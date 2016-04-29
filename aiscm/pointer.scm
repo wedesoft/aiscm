@@ -7,10 +7,9 @@
   #:use-module (aiscm int)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
-  #:export (<pointer<>>
-            <meta<pointer<>>>
-            <pointer<element>>
-            <meta<pointer<element>>>
+  #:export (<pointer<>> <meta<pointer<>>>
+            <pointer<element>> <meta<pointer<element>>>
+            <pointer<int<>>> <meta<pointer<int<>>>>
             pointer fetch store rebase pointer-cast pointer-offset set-pointer-offset))
 (define-class* <pointer<>> <element> <meta<pointer<>>> <meta<element>>)
 (define-class* <pointer<element>> <pointer<>> <meta<pointer<element>>> <meta<pointer<>>>)
@@ -49,3 +48,4 @@
   (let [(retval (make (class-of p) #:value (get p)))]
     (set! (pointer-offset retval) offset)
     retval))
+(pointer <int<>>)
