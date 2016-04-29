@@ -1,8 +1,12 @@
 ## Ready
 
+* imag-part of real array
 * conjugate of real number
-* major/minor
+* red/green/blue of number
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
+* major/minor
+* compare RGB values
+* print position of diagnostic statement
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
@@ -15,7 +19,6 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
-* use trs files to run failed tests, count tests automatically
 * Theano expression compiler: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * complex abs (magnitude), complex arg (and real)
@@ -30,7 +33,6 @@
 * imaginary part of variable
 * (complex 2 3), (complex (seq 1 2 3) 4)
 * (rgb (seq 1 2) 3 (seq 5 6))
-* (- (rgb frag frag frag)) -> (frag rgb)???
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing

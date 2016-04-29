@@ -107,12 +107,10 @@
 
 (define-method (copy-value (typecode <meta<rgb<>>>) a b)
   (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
-;---
 
 (define-method (content (self <param>)) (map parameter (content (term self))))
 
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
-(define-method (component type self offset) self)
 (define-method (component (type <meta<rgb<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))

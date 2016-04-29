@@ -83,7 +83,6 @@
 
 (define-method (content (self <param>)) (map parameter (content (term self)))); TODO: ???
 
-(define-method (component type self offset) self); TODO: move to jit.scm
 (define-method (component (type <meta<complex<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
