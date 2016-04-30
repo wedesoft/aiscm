@@ -6,6 +6,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (complex
@@ -13,6 +14,7 @@
             <complex<>> <meta<complex<>>>
             <pointer<complex<>>> <meta<pointer<complex<>>>>)
   #:re-export (real-part imag-part))
+(define-method (conj self) self)
 (define-method (conj (self <complex>)) (make-rectangular (real-part self) (- (imag-part self))))
 (define-class <internalcomplex> ()
   (real #:init-keyword #:real-part #:getter real-part)
@@ -111,4 +113,6 @@
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
 
-(define-unary-op n-ary-fun identity functional-code conj conj)
+(define (set-conj a b) (list (MOV a (conj b)))); delegate-op delegates to "set-conj". TODO: refactor
+
+(define-unary-op n-ary-fun identity functional-code conj set-conj)

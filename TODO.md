@@ -1,7 +1,5 @@
 ## Ready
 
-* conjugate of real number
-* red/green/blue of number
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * major/minor
 * compare RGB values
