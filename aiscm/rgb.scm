@@ -40,6 +40,8 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
+(define-method (rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
+  (rgb (reduce coerce #f (list r g b))))
 (define-method (red   (self <rgb<>>)) (make (base (class-of self)) #:value (red   (get self))))
 (define-method (green (self <rgb<>>)) (make (base (class-of self)) #:value (green (get self))))
 (define-method (blue  (self <rgb<>>)) (make (base (class-of self)) #:value (blue  (get self))))
@@ -128,7 +130,7 @@
 (define-unary-op n-ary-fun base unary-extract green green)
 (define-unary-op n-ary-fun base unary-extract blue  blue )
 
-(n-ary-fun rgb 3 (lambda types (rgb (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
+(n-ary-fun rgb 3 rgb 'kind 'cmd); TODO: remove "kind" and "op"
 
 (define-method (decompose-value (t <meta<int<>>>) x) x)
 (define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))

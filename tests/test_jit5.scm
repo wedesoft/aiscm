@@ -175,8 +175,6 @@
     "compile and run binary functional operation with nested first parameter")
 
 ; ------------------------------------------------------------------------------
-(skip (equal? (rgb 2 -3 256) ((jit ctx (list <ubyte> <byte> <usint>) rgb) 2 -3 256))
-    "construct RGB value from differently typed values")
 (skip ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 3 5))
     "Compare two RGB values (positive result)")
 (skip (not ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 4 5)))
