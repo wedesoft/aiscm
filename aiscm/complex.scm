@@ -61,6 +61,8 @@
       (complex (op a (real-part b)) (op (imag-part b))))
     (define-method (op (a <internalcomplex>) (b <internalcomplex>))
       (complex (op (real-part a) (real-part b)) (op (imag-part a) (imag-part b))))))
+(define-method (conj (self <int<>>)) self)
+(define-method (conj (self <pointer<int<>>>)) self)
 (define-method (conj (a <internalcomplex>)) (complex (real-part a) (- (imag-part a))))
 (binary-complex-op +)
 (binary-complex-op -)
@@ -113,6 +115,4 @@
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
 
-(define (set-conj a b) (list (MOV a (conj b)))); delegate-op delegates to "set-conj". TODO: refactor
-
-(define-unary-op n-ary-fun identity functional-code conj set-conj)
+(define-unary-op n-ary-fun identity unary-extract conj conj)
