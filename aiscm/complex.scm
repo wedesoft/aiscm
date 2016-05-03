@@ -104,11 +104,9 @@
 
 (n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
 
-(define-method (decompose-value (t <meta<int<>>>) x) x); TODO: move to jit.scm
 (define-method (decompose-value (t <meta<complex<>>>) x) (make <internalcomplex> #:real-part (real-part x) #:imag-part (imag-part x)))
-(define (decompose-arg x) (decompose-value (type x) x))
 
-(define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args)
+(define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args); TODO: make this redundant
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
 

@@ -100,4 +100,7 @@
     "complex conjugate")
 (ok (eqv? 2 ((jit ctx (list <int>) conj) 2))
     "conjugate of real number")
+(let [(c (parameter (complex <int>)))]
+  (ok (is-a? (decompose-arg c) <internalcomplex>)
+      "Decompose complex parameters into internal complex values"))
 (run-tests)

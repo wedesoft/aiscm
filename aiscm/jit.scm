@@ -21,7 +21,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-extract mutating-code functional-code delegate-op make-function)
+            unary-extract mutating-code functional-code decompose-arg decompose-value delegate-op make-function)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
 
 (define ctx (make <context>))
@@ -154,8 +154,6 @@
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
-;(define-method (var (self <meta<complex<>>>)) (let [(t (base self))]
-;  (make <internalcomplex> #:real-part (var t) #:imag-part (var t))))
 
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
@@ -514,29 +512,35 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
-(define-method (delegate-op t name kind cmd out args) (apply kind cmd out args))
+(define-method (decompose-value (t <meta<bool>>) self) self)
+(define-method (decompose-value (t <meta<int<>>>) self) self)
+(define (decompose-arg self) (decompose-value (type self) self))
+
+(define-method (delegate-op t name kind cmd out args)
+  (apply kind cmd out args))
+
+(define (coerce-args args) (reduce coerce #f (map type args)))
 
 (define (make-function name conversion kind cmd . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (delegate-op (type out) name kind cmd out args))))
+                   #:term (lambda (out) (delegate-op (type out) name kind cmd out args)))); TODO: use (coerce-args args)?
 
 (define (unary-extract op out a) (code (term out) (op (term a))))
 (define ((requires-intermediate? typecode) value)
   (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
-(define (x-code typecode op out . args)
+(define (x-code typecode op out . args); TODO: rename
   (let* [(mask          (map (requires-intermediate? typecode) args))
          (intermediates (map-select mask (lambda (arg) (parameter typecode)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op (operand out) (map operand intermediates)))))
-(define (coerce-args args) (reduce coerce #f (map type args)))
 (define (functional-code op out . args)
   (apply x-code (coerce-args args) op out args))
 (define (mutating-code op out . args)
   (insert-intermediate (car args) out (lambda (tmp-a) (apply x-code (coerce-args args) op tmp-a (cdr args)))))
 
-(define-macro (n-ary-fun name arity conversion kind op); TODO: use syntax-case to capture "make-function"
+(define-macro (n-ary-fun name arity conversion kind op)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
     `(define-method (,name . ,header) (make-function ,name ,conversion ,kind ,op . ,args))))

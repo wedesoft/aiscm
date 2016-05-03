@@ -132,9 +132,7 @@
 
 (n-ary-fun rgb 3 rgb 'kind 'cmd); TODO: remove "kind" and "op"
 
-(define-method (decompose-value (t <meta<int<>>>) x) x)
 (define-method (decompose-value (t <meta<rgb<>>>) x) (make <rgb> #:red (red x) #:green (green x) #:blue (blue x)))
-(define (decompose-arg x) (decompose-value (type x) x))
 
 (define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
   (let [(result (apply name (map decompose-arg args)))]
