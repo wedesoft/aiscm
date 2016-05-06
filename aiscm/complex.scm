@@ -104,7 +104,9 @@
 
 (n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
 
-(define-method (decompose-value (t <meta<complex<>>>) x) (make <internalcomplex> #:real-part (real-part x) #:imag-part (imag-part x)))
+(define-method (decompose-value (t <meta<complex<>>>) x)
+  (make <internalcomplex> #:real-part (parameter (real-part (term x)))
+                          #:imag-part (parameter (imag-part (term x)))))
 
 (define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args); TODO: make this redundant
   (let [(result (apply name (map decompose-arg args)))]
