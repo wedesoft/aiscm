@@ -512,20 +512,22 @@
 (define-method (code (out <param>) (fun <function>))
   (code (term out) fun))
 
+(define-method (content (self <param>)) (map parameter (content (term self))))
+
 (define-method (decompose-value (t <meta<bool>>) self) self)
 (define-method (decompose-value (t <meta<int<>>>) self) self)
 (define (decompose-arg self) (decompose-value (type self) self))
 
-(define-method (delegate-op t name kind cmd out args)
-  (apply kind cmd out args))
+(define-method (delegate-op t name kind op out args)
+  (apply kind op out args))
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
-(define (make-function name conversion kind cmd . args)
+(define (make-function name conversion kind op . args)
   (make <function> #:arguments args
                    #:type (apply conversion (map type args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (delegate-op (type out) name kind cmd out args)))); TODO: use (coerce-args args)?
+                   #:term (lambda (out) (delegate-op (type out) name kind op out args)))); TODO: use (coerce-args args)?
 
 (define (unary-extract op out a) (code (term out) (op (term a))))
 (define ((requires-intermediate? typecode) value)

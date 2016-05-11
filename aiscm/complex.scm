@@ -86,8 +86,6 @@
 (define-method (copy-value (typecode <meta<complex<>>>) a b)
   (append-map (lambda (channel) (code (channel a) (channel b))) (list real-part imag-part)))
 
-(define-method (content (self <param>)) (map parameter (content (term self)))); TODO: ???
-
 (define-method (component (type <meta<complex<>>>) self offset)
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
@@ -102,13 +100,13 @@
 (define-unary-op n-ary-fun base unary-extract real-part real-part)
 (define-unary-op n-ary-fun base unary-extract imag-part imag-part)
 
-(n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'cmd); TODO: remove "kind" and "op"
+(n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'op); TODO: remove "kind" and "op"
 
 (define-method (decompose-value (t <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (term x)))
                           #:imag-part (parameter (imag-part (term x)))))
 
-(define-method (delegate-op (t <meta<complex<>>>) name kind cmd out args); TODO: make this redundant
+(define-method (delegate-op (t <meta<complex<>>>) name kind op out args); TODO: make this redundant
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
 

@@ -1,5 +1,6 @@
 ## Ready
 
+* remove kind/op (delegate-op)
 * mutating-op, writing-op, functional-op/unary-extract <-> delegate-op
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * major/minor

@@ -112,8 +112,6 @@
 (define-method (copy-value (typecode <meta<rgb<>>>) a b)
   (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
 
-(define-method (content (self <param>)) (map parameter (content (term self))))
-
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
 (define-method (component (type <meta<rgb<>>>) self offset)
   (let* [(type (base (typecode self)))]
@@ -130,14 +128,14 @@
 (define-unary-op n-ary-fun base unary-extract green green)
 (define-unary-op n-ary-fun base unary-extract blue  blue )
 
-(n-ary-fun rgb 3 rgb 'kind 'cmd); TODO: remove "kind" and "op"
+(n-ary-fun rgb 3 rgb 'kind 'op); TODO: remove "kind" and "op"
 
 (define-method (decompose-value (t <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (term x)))
               #:green (parameter (green (term x)))
               #:blue  (parameter (blue  (term x)))))
 
-(define-method (delegate-op (t <meta<rgb<>>>) name kind cmd out args)
+(define-method (delegate-op (t <meta<rgb<>>>) name kind op out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
 
