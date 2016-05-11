@@ -124,9 +124,9 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-unary-op n-ary-fun base unary-extract red   red  )
-(define-unary-op n-ary-fun base unary-extract green green)
-(define-unary-op n-ary-fun base unary-extract blue  blue )
+(define-unary-op n-ary-fun base red   unary-extract red  )
+(define-unary-op n-ary-fun base green unary-extract green)
+(define-unary-op n-ary-fun base blue  unary-extract blue )
 
 (n-ary-fun rgb 3 rgb 'kind 'op); TODO: remove "kind" and "op"
 

@@ -1,5 +1,6 @@
 ## Ready
 
+* n-ary-fun -> make-function -> delegate-op
 * remove kind/op (delegate-op)
 * mutating-op, writing-op, functional-op/unary-extract <-> delegate-op
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
@@ -50,7 +51,6 @@
 ## Planned
 
 * <-> Guile 6.7.5 Arrays
-* coalesce variables
 * floating point exception (SIGFPE)
 * matching for lists?
 * document motivation: vector instructions, compose array functions and calls,

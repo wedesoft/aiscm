@@ -97,8 +97,8 @@
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 
-(define-unary-op n-ary-fun base unary-extract real-part real-part)
-(define-unary-op n-ary-fun base unary-extract imag-part imag-part)
+(define-unary-op n-ary-fun base real-part unary-extract real-part)
+(define-unary-op n-ary-fun base imag-part unary-extract imag-part)
 
 (n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'op); TODO: remove "kind" and "op"
 
@@ -113,4 +113,4 @@
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
 
-(define-unary-op n-ary-fun identity unary-extract conj conj)
+(define-unary-op n-ary-fun identity conj unary-extract conj)
