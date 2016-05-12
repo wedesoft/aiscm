@@ -23,8 +23,6 @@
     "equality of RGB types")
 (ok (eqv? 3 (size-of (rgb <ubyte>)))
     "storage size of unsigned byte RGB")
-(ok (eq? (rgb <int>) (rgb <sint> <uint> <byte>))
-    "coercion for base types for RGB type")
 (ok (eqv? 12 (size-of (rgb (floating-point single-precision))))
     "storage size of single-precision floating-point RGB")
 (ok (eq? <int> (base <intrgb>))

@@ -100,7 +100,7 @@
 (define-unary-op n-ary-fun base real-part unary-extract real-part)
 (define-unary-op n-ary-fun base imag-part unary-extract imag-part)
 
-(n-ary-fun complex 2 (lambda types (complex (reduce coerce #f types))) 'kind 'op); TODO: remove "kind" and "op"
+(n-ary-fun complex 2 complex 'kind 'op); TODO: remove "kind" and "op"
 
 (define-method (decompose-value (t <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (term x)))
