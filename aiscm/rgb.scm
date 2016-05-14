@@ -133,7 +133,7 @@
               #:green (parameter (green (term x)))
               #:blue  (parameter (blue  (term x)))))
 
-(define-method (delegate-op (t <meta<rgb<>>>) name kind op out args)
+(define-method (delegate-op (t <meta<rgb<>>>) name kind op out args); TODO: remove "kind" and "op"
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
 

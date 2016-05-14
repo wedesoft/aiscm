@@ -523,7 +523,7 @@
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
-(define (make-function name conversion kind op . args)
+(define (make-function name conversion kind op args)
   (make <function> #:arguments args
                    #:type (conversion (coerce-args args))
                    #:project (lambda ()  (apply name (map body args)))
@@ -545,7 +545,7 @@
 (define-macro (n-ary-fun name arity conversion kind op)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
-    `(define-method (,name . ,header) (make-function ,name ,conversion ,kind ,op . ,args))))
+    `(define-method (,name . ,header) (make-function ,name ,conversion ,kind ,op (list . ,args)))))
 (define-syntax-rule (n-ary-asm name arity conversion kind op)
   (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
 
@@ -636,7 +636,7 @@
 (define-binary-op n-ary-fun to-bool  >= functional-code cmp-greater-equal)
 
 (define-method (to-type (target <meta<element>>) (a <param>))
-  (make-function (cut to-type target <>) (cut to-type target <>) functional-code mov a))
+  (make-function (cut to-type target <>) (cut to-type target <>) functional-code mov (list a)))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
