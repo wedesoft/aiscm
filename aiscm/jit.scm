@@ -532,15 +532,15 @@
 (define (unary-extract op out a) (code (term out) (op (term a))))
 (define ((requires-intermediate? typecode) value)
   (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
-(define (prepare-arguments typecode op out . args)
+(define (prepare-arguments typecode op out args)
   (let* [(mask          (map (requires-intermediate? typecode) args))
          (intermediates (map-select mask (lambda (arg) (parameter typecode)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op (operand out) (map operand intermediates)))))
 (define (functional-code op out . args)
-  (apply prepare-arguments (coerce-args args) op out args))
+  (prepare-arguments (coerce-args args) op out args))
 (define (mutating-code op out . args)
-  (insert-intermediate (car args) out (lambda (tmp-a) (apply prepare-arguments (coerce-args args) op tmp-a (cdr args)))))
+  (insert-intermediate (car args) out (lambda (tmp-a) (prepare-arguments (coerce-args args) op tmp-a (cdr args)))))
 
 (define-macro (n-ary-fun name arity conversion kind op)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
