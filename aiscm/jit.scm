@@ -518,8 +518,7 @@
 (define-method (decompose-value (t <meta<int<>>>) self) self)
 (define (decompose-arg self) (decompose-value (type self) self))
 
-(define-method (delegate-op t name kind op out args)
-  (apply kind op out args))
+(define-method (delegate-op t name kind op out args) (kind op out args))
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
@@ -529,7 +528,7 @@
                    #:project (lambda ()  (apply name (map body args)))
                    #:term (lambda (out) (delegate-op (type out) name kind op out args))))
 
-(define (unary-extract op out a) (code (term out) (op (term a))))
+(define (unary-extract op out args) (code (term out) (apply op (map term args))))
 (define ((requires-intermediate? typecode) value)
   (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
 (define (prepare-arguments typecode op out args)
@@ -537,9 +536,9 @@
          (intermediates (map-select mask (lambda (arg) (parameter typecode)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op (operand out) (map operand intermediates)))))
-(define (functional-code op out . args)
+(define (functional-code op out args)
   (prepare-arguments (coerce-args args) op out args))
-(define (mutating-code op out . args)
+(define (mutating-code op out args)
   (insert-intermediate (car args) out (lambda (tmp-a) (prepare-arguments (coerce-args args) op tmp-a (cdr args)))))
 
 (define-macro (n-ary-fun name arity conversion kind op)
