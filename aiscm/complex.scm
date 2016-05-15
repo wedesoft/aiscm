@@ -106,10 +106,6 @@
   (make <internalcomplex> #:real-part (parameter (real-part (term x)))
                           #:imag-part (parameter (imag-part (term x)))))
 
-(define-method (delegate-op (t <meta<complex<>>>) name kind op out args); TODO: make this redundant
-  (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content out) (arguments result))))
-
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
 

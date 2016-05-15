@@ -518,7 +518,11 @@
 (define-method (decompose-value (t <meta<int<>>>) self) self)
 (define (decompose-arg self) (decompose-value (type self) self))
 
-(define-method (delegate-op t name kind op out args) (kind op out args))
+(define-method (delegate-op (t <meta<bool>>) name kind op out args) (kind op out args))
+(define-method (delegate-op (t <meta<int<>>>) name kind op out args) (kind op out args))
+(define-method (delegate-op t name kind op out args)
+  (let [(result (apply name (map decompose-arg args)))]
+    (append-map code (content out) (arguments result))))
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
