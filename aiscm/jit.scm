@@ -526,11 +526,11 @@
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
-(define (make-function name conversion kind op args)
+(define (make-function name conversion fun args)
   (make <function> #:arguments args
                    #:type (conversion (coerce-args args))
                    #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (delegate-op (type out) name kind op out args))))
+                   #:term (lambda (out) (fun out args))))
 
 (define (unary-extract op out args) (code (term out) (apply op (map term args))))
 (define ((requires-intermediate? typecode) value)
@@ -548,7 +548,11 @@
 (define-macro (n-ary-fun name arity conversion kind op)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
-    `(define-method (,name . ,header) (make-function ,name ,conversion ,kind ,op (list . ,args)))))
+    `(define-method (,name . ,header)
+       (make-function ,name
+                      ,conversion
+                      (lambda (out args) (delegate-op (type out) ,name ,kind ,op out args))
+                      (list . ,args)))))
 (define-syntax-rule (n-ary-asm name arity conversion kind op)
   (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
 
@@ -639,7 +643,11 @@
 (define-binary-op n-ary-fun to-bool  >= functional-code cmp-greater-equal)
 
 (define-method (to-type (target <meta<element>>) (a <param>))
-  (make-function (cut to-type target <>) (cut to-type target <>) functional-code mov (list a)))
+  (let [(to-target (cut to-type target <>))]
+    (make-function to-target
+                   to-target
+                   (lambda (out args) (delegate-op (type out) to-target functional-code mov out args))
+                   (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
