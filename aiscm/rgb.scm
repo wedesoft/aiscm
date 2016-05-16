@@ -126,7 +126,7 @@
 (define-unary-op n-ary-fun base green unary-extract green)
 (define-unary-op n-ary-fun base blue  unary-extract blue )
 
-(n-ary-fun rgb 3 rgb 'kind 'op); TODO: remove "kind" and "op"
+(n-ary-struct rgb 3 rgb)
 
 (define-method (decompose-value (t <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (term x)))

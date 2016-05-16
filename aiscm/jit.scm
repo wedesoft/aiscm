@@ -22,7 +22,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-extract mutating-code functional-code decompose-arg decompose-value delegate-op make-function)
-  #:export-syntax (define-unary-op define-binary-op n-ary-fun))
+  #:export-syntax (define-unary-op define-binary-op n-ary-fun n-ary-struct))
 
 (define ctx (make <context>))
 
@@ -520,7 +520,8 @@
 
 (define-method (delegate-op (t <meta<bool>>) name kind op out args) (kind op out args))
 (define-method (delegate-op (t <meta<int<>>>) name kind op out args) (kind op out args))
-(define-method (delegate-op t name kind op out args)
+(define-method (delegate-op t name kind op out args) (delegate-op t name out args))
+(define-method (delegate-op t name out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (arguments result))))
 
@@ -545,14 +546,14 @@
 (define (mutating-code op out args)
   (insert-intermediate (car args) out (lambda (tmp-a) (prepare-arguments (coerce-args args) op tmp-a (cdr args)))))
 
-(define-macro (n-ary-fun name arity conversion kind op)
+(define-macro (n-ary-base name arity conversion fun)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
-    `(define-method (,name . ,header)
-       (make-function ,name
-                      ,conversion
-                      (lambda (out args) (delegate-op (type out) ,name ,kind ,op out args))
-                      (list . ,args)))))
+    `(define-method (,name . ,header) (make-function ,name ,conversion ,fun (list . ,args)))))
+(define-syntax-rule (n-ary-fun name arity conversion kind op)
+  (n-ary-base name arity conversion (lambda (out args) (delegate-op (type out) name kind op out args))))
+(define-syntax-rule (n-ary-struct name arity conversion)
+  (n-ary-base name arity conversion (lambda (out args) (delegate-op (type out) name out args))))
 (define-syntax-rule (n-ary-asm name arity conversion kind op)
   (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
 
