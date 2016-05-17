@@ -21,7 +21,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-extract mutating-code functional-code decompose-value delegate-op make-function)
+            unary-extract mutating-code functional-code decompose-value delegate-fun make-function)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun n-ary-struct))
 
 (define ctx (make <context>))
@@ -518,13 +518,15 @@
 (define-method (decompose-value (target <meta<bool>>) self) self)
 (define-method (decompose-value (target <meta<int<>>>) self) self)
 
-(define-method (delegate-op (target <meta<bool>>) name kind op out args) (kind op out args))
-(define-method (delegate-op (target <meta<int<>>>) name kind op out args) (kind op out args))
-(define-method (delegate-op target name kind op out args) (delegate-op target name out args))
+(define-method (delegate-op (target <meta<bool>>) name out args kind op) (kind op out args))
+(define-method (delegate-op (target <meta<int<>>>) name out args kind op) (kind op out args))
+(define-method (delegate-op target name out args kind op) (delegate-op target name out args))
 (define-method (delegate-op target name out args)
   (let* [(decompose-arg (lambda (arg) (decompose-value (type arg) arg)))
          (result        (apply name (map decompose-arg args)))]
     (append-map code (content out) (content result))))
+(define (delegate-fun name . other)
+  (lambda (out args) (apply delegate-op (type out) name out args other)))
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
@@ -552,9 +554,9 @@
          (header (map (lambda (arg) (list arg '<param>)) args))]
     `(define-method (,name . ,header) (make-function ,name ,conversion ,fun (list . ,args)))))
 (define-syntax-rule (n-ary-fun name arity conversion kind op)
-  (n-ary-base name arity conversion (lambda (out args) (delegate-op (type out) name kind op out args))))
+  (n-ary-base name arity conversion (delegate-fun name kind op)))
 (define-syntax-rule (n-ary-struct name arity conversion)
-  (n-ary-base name arity conversion (lambda (out args) (delegate-op (type out) name out args))))
+  (n-ary-base name arity conversion (delegate-fun name)))
 (define-syntax-rule (n-ary-asm name arity conversion kind op)
   (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
 
@@ -648,7 +650,7 @@
   (let [(to-target (cut to-type target <>))]
     (make-function to-target
                    to-target
-                   (lambda (out args) (delegate-op (type out) to-target functional-code mov out args))
+                   (delegate-fun to-target functional-code mov)
                    (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
