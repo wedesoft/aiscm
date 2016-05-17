@@ -102,7 +102,7 @@
 
 (n-ary-struct complex 2 complex)
 
-(define-method (decompose-value (t <meta<complex<>>>) x)
+(define-method (decompose-value (target <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (term x)))
                           #:imag-part (parameter (imag-part (term x)))))
 

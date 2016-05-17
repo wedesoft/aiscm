@@ -192,7 +192,7 @@
 (ok (equal? (rgb 2 -3 256) ((jit ctx (list <ubyte> <byte> <usint>) rgb) 2 -3 256))
     "construct RGB value from differently typed values")
 (let [(c (parameter <intrgb>))]
-  (ok (is-a? (decompose-arg c) <rgb>)
+  (ok (is-a? (decompose-value <intrgb> c) <rgb>)
       "Decompose RGB parameter into RGB object"))
 (skip ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 3 5))
     "Compare two RGB values (positive result)")

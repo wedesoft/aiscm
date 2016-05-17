@@ -128,7 +128,7 @@
 
 (n-ary-struct rgb 3 rgb)
 
-(define-method (decompose-value (t <meta<rgb<>>>) x)
+(define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (term x)))
               #:green (parameter (green (term x)))
               #:blue  (parameter (blue  (term x)))))

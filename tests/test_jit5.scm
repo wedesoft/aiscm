@@ -174,7 +174,7 @@
 (ok ((jit ctx (list <int> <int> <int>) (lambda (a b c) (= (+ a b) c))) 2 3 5)
     "compile and run binary functional operation with nested first parameter")
 (let [(i (parameter <int>))]
-  (ok (equal? i (decompose-arg i))
+  (ok (equal? i (decompose-value <int> i))
       "Integer decomposes to itself"))
 (skip (equal? 32767 ((jit ctx (list <usint> <usint>) min) 32767 32768))
     "get minor number of two unsigned integers")

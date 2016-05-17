@@ -21,7 +21,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
-            unary-extract mutating-code functional-code decompose-arg decompose-value delegate-op make-function)
+            unary-extract mutating-code functional-code decompose-value delegate-op make-function)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun n-ary-struct))
 
 (define ctx (make <context>))
@@ -513,17 +513,18 @@
   (code (term out) fun))
 
 (define-method (content (self <param>)) (map parameter (content (term self))))
+(define-method (content (self <function>)) (arguments self))
 
-(define-method (decompose-value (t <meta<bool>>) self) self)
-(define-method (decompose-value (t <meta<int<>>>) self) self)
-(define (decompose-arg self) (decompose-value (type self) self))
+(define-method (decompose-value (target <meta<bool>>) self) self)
+(define-method (decompose-value (target <meta<int<>>>) self) self)
 
-(define-method (delegate-op (t <meta<bool>>) name kind op out args) (kind op out args))
-(define-method (delegate-op (t <meta<int<>>>) name kind op out args) (kind op out args))
-(define-method (delegate-op t name kind op out args) (delegate-op t name out args))
-(define-method (delegate-op t name out args)
-  (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content out) (arguments result))))
+(define-method (delegate-op (target <meta<bool>>) name kind op out args) (kind op out args))
+(define-method (delegate-op (target <meta<int<>>>) name kind op out args) (kind op out args))
+(define-method (delegate-op target name kind op out args) (delegate-op target name out args))
+(define-method (delegate-op target name out args)
+  (let* [(decompose-arg (lambda (arg) (decompose-value (type arg) arg)))
+         (result        (apply name (map decompose-arg args)))]
+    (append-map code (content out) (content result))))
 
 (define (coerce-args args) (reduce coerce #f (map type args)))
 
