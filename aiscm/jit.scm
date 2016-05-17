@@ -13,7 +13,6 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
-            ;<pointer<complex<>>> <meta<pointer<complex<>>>>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -22,7 +21,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
             unary-extract mutating-code functional-code decompose-value delegate-fun make-function)
-  #:export-syntax (define-unary-op define-binary-op n-ary-fun n-ary-struct))
+  #:export-syntax (define-unary-op define-binary-op n-ary-fun))
 
 (define ctx (make <context>))
 
@@ -553,10 +552,8 @@
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
     `(define-method (,name . ,header) (make-function ,name ,conversion ,fun (list . ,args)))))
-(define-syntax-rule (n-ary-fun name arity conversion kind op)
-  (n-ary-base name arity conversion (delegate-fun name kind op)))
-(define-syntax-rule (n-ary-struct name arity conversion)
-  (n-ary-base name arity conversion (delegate-fun name)))
+(define-syntax-rule (n-ary-fun name arity conversion other ...)
+  (n-ary-base name arity conversion (delegate-fun name other ...)))
 (define-syntax-rule (n-ary-asm name arity conversion kind op)
   (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
 
