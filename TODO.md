@@ -1,10 +1,7 @@
 ## Ready
 
-* n-ary-fun -> make-function -> delegate-op
-  remove kind/op (delegate-op)
-  mutating-op, writing-op, functional-op/unary-extract <-> delegate-op
-* real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * major/minor
+* real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * compare RGB values
 * print position of diagnostic statement
 * something like Ruby's Struct
