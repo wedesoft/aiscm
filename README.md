@@ -53,7 +53,7 @@ sudo make install
 * [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
 * [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
 
-[1]: http://www.wedesoft.de/aiscm/ "AIscm"
+[1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
 [3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm
 [4]: https://github.com/wedesoft/aiscm/releases
