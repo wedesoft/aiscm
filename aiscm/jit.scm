@@ -19,7 +19,8 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            requires-intermediate? duplicate shl shr sign-extend-ax div mod test-zero cmp-type ensure-default-strides
+            need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
+            test-zero cmp-type ensure-default-strides
             unary-extract mutating-code functional-code decompose-value delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
@@ -249,7 +250,7 @@
                                       vars
                                       registers
                                       #:predefined predefined
-                                      #:blocked blocked))
+                                      #:blocked    blocked))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
@@ -261,10 +262,10 @@
           (lambda (prog predefined blocked)
             (register-allocate prog
                                #:predefined predefined
-                               #:blocked blocked
-                               #:registers registers
+                               #:blocked    blocked
+                               #:registers  registers
                                #:parameters parameters
-                               #:offset (if stack-param? offset (- offset 8))))))
+                               #:offset     (if stack-param? offset (- offset 8))))))
       (save-and-use-registers prog colors parameters offset))))
 
 (define (blocked-predefined blocked predefined)
@@ -284,10 +285,10 @@
           (lambda (prog predefined blocked)
             (spill-blocked-predefines prog
                                       #:predefined predefined
-                                      #:blocked blocked
-                                      #:registers registers
+                                      #:blocked    blocked
+                                      #:registers  registers
                                       #:parameters parameters
-                                      #:offset (- offset 8)))))
+                                      #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
@@ -295,8 +296,8 @@
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))]
     (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
                               #:predefined (append result-regs arg-regs)
-                              #:blocked (blocked-intervals intermediate)
-                              #:registers registers
+                              #:blocked    (blocked-intervals intermediate)
+                              #:registers  registers
                               #:parameters arg-vars)))
 
 (define (repeat n . body)
@@ -344,8 +345,8 @@
 ;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
 ;      coerced
 ;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (minor r a b) (list (MOV r a) (CMP a b) ((if (signed? (typecode r)) CMOVNLE CMOVNBE) r b)))
-(define (major r a b) (list (MOV r a) (CMP a b) ((if (signed? (typecode r)) CMOVL   CMOVB  ) r b)))
+(define (minor r a b) (list (mov r a) (cmp-any r b) ((if (signed? (typecode r)) CMOVNLE CMOVNBE) r b))); TODO: use intermediary for CMOVNLE
+(define (major r a b) (list (mov r a) (cmp-any r b) ((if (signed? (typecode r)) CMOVL   CMOVB  ) r b)))
 
 (define (mov a b)
   (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
@@ -376,14 +377,14 @@
   (if (eq? (signed? a) (signed? b))
       (coerce a b)
       (integer (min 64 (* 2 (bits (coerce a b)))) signed)))
+(define ((need-intermediate-var? target) value) (not (eqv? target (typecode value))))
 (define (cmp-any a b)
-  (let* [(type (cmp-type (typecode a) (typecode b)))
-         (tmp1 (var type))
-         (tmp2 (var type))]
-    (append (if (eq? type (typecode a)) '() (mov tmp1 a)); TODO: refactor
-            (if (eq? type (typecode b)) '() (mov tmp2 b))
-            (cmp (if (eq? type (typecode a)) a tmp1)
-                 (if (eq? type (typecode b)) b tmp2)))))
+  (let* [(type          (cmp-type (typecode a) (typecode b)))
+         (args          (list a b))
+         (mask          (map (need-intermediate-var? type) args))
+         (intermediates (map-select mask (lambda (arg) (var type)) identity args))
+         (preamble      (concatenate (map-select mask mov (const '()) intermediates args)))]
+    (attach preamble (apply cmp intermediates)))); TODO: unify with prepare-arguments
 (define ((cmp-setxx set-signed set-unsigned) out a b)
   (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
     (attach (cmp-any a b) (set out))))
@@ -535,16 +536,16 @@
 
 (define (make-function name conversion fun args)
   (make <function> #:arguments args
-                   #:type (conversion (coerce-args args))
-                   #:project (lambda ()  (apply name (map body args)))
-                   #:term (lambda (out) (fun out args))))
+                   #:type      (apply conversion (map type args))
+                   #:project   (lambda ()  (apply name (map body args)))
+                   #:term      (lambda (out) (fun out args))))
 
 (define (unary-extract op out args) (code (term out) (apply op (map term args))))
-(define ((requires-intermediate? typecode) value)
-  (or (is-a? value <function>) (!= (size-of typecode) (size-of (type value)))))
-(define (prepare-arguments typecode op out args)
-  (let* [(mask          (map (requires-intermediate? typecode) args))
-         (intermediates (map-select mask (lambda (arg) (parameter typecode)) identity args))
+(define ((need-intermediate-param? t) value)
+  (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
+(define (prepare-arguments target op out args)
+  (let* [(mask          (map (need-intermediate-param? target) args))
+         (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op (operand out) (map operand intermediates)))))
 (define (functional-code op out args)
@@ -628,16 +629,16 @@
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-dispatch name name)))
-(define-binary-op n-ary-asm identity +   mutating-code   ADD)
-(define-binary-op n-ary-asm identity -   mutating-code   SUB)
-(define-binary-op n-ary-asm identity *   mutating-code   IMUL)
-(define-binary-op n-ary-fun identity /   functional-code div)
-(define-binary-op n-ary-fun identity %   functional-code mod)
-(define-binary-op n-ary-fun identity <<  mutating-code   shl)
-(define-binary-op n-ary-fun identity >>  mutating-code   shr)
-(define-binary-op n-ary-asm identity &   mutating-code   AND)
-(define-binary-op n-ary-asm identity |   mutating-code   OR)
-(define-binary-op n-ary-asm identity ^   mutating-code   XOR)
+(define-binary-op n-ary-asm coerce   +   mutating-code   ADD)
+(define-binary-op n-ary-asm coerce   -   mutating-code   SUB)
+(define-binary-op n-ary-asm coerce   *   mutating-code   IMUL)
+(define-binary-op n-ary-fun coerce   /   functional-code div)
+(define-binary-op n-ary-fun coerce   %   functional-code mod)
+(define-binary-op n-ary-fun coerce   <<  mutating-code   shl)
+(define-binary-op n-ary-fun coerce   >>  mutating-code   shr)
+(define-binary-op n-ary-asm coerce   &   mutating-code   AND)
+(define-binary-op n-ary-asm coerce   |   mutating-code   OR)
+(define-binary-op n-ary-asm coerce   ^   mutating-code   XOR)
 (define-binary-op n-ary-fun to-bool  &&  mutating-code   bool-and)
 (define-binary-op n-ary-fun to-bool  ||  mutating-code   bool-or)
 (define-binary-op n-ary-fun to-bool  =   functional-code cmp-equal)
@@ -646,8 +647,8 @@
 (define-binary-op n-ary-fun to-bool  <=  functional-code cmp-lower-equal)
 (define-binary-op n-ary-fun to-bool  >   functional-code cmp-greater-than)
 (define-binary-op n-ary-fun to-bool  >=  functional-code cmp-greater-equal)
-(define-binary-op n-ary-fun identity min functional-code minor)
-(define-binary-op n-ary-fun identity max functional-code major)
+(define-binary-op n-ary-fun cmp-type min functional-code minor)
+(define-binary-op n-ary-fun cmp-type max functional-code major)
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
