@@ -106,6 +106,8 @@
     "Use enlarged signed type for signed/unsigned comparisons")
 (ok (eq? <long> (cmp-type <long> <ulong>))
     "Largest type available is 64 bit")
+(ok (eq? (sequence <int>) (cmp-type (sequence <usint>) <byte>))
+    "Determine type for signed/unsigned comparison of array")
 (ok (equal? '(#f #f #f) (to-list (< (seq 1 2 128) -1)))
    "element-wise lower-than with unsigned and signed byte")
 (ok (equal? (list (CBW) (CWD) (CDQ) (CQO)) (map sign-extend-ax '(1 2 4 8)))

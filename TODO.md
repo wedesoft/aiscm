@@ -1,5 +1,6 @@
 ## Ready
 
+* sign-space for int, ubyte -> int
 * major/minor
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * compare RGB values

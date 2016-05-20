@@ -336,20 +336,11 @@
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-;(define ((binary-cmov op1 op2) r a b)
-;  (if (= (size-of r) 1)
-;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))
-;    (list (CMP a b) (MOV r a) ((if (signed? (typecode r)) op1 op2) r b))))
-;(define (sign-space a b)
-;  (let [(coerced (coerce a b))]
-;    (if (eqv? (signed? (typecode a)) (signed? (typecode b)))
-;      coerced
-;      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define (minor r a b) (list (mov r a) (cmp-any r b) ((if (signed? (typecode r)) CMOVNLE CMOVNBE) r b))); TODO: use intermediary for CMOVNLE
-(define (major r a b) (list (mov r a) (cmp-any r b) ((if (signed? (typecode r)) CMOVL   CMOVB  ) r b)))
+(define (minor r a b) (list (mov r a) (cmp-any r b) ((if (signed? r) CMOVNLE CMOVNBE) r b))); TODO: use intermediary for CMOVNLE
+(define (major r a b) (list (mov r a) (cmp-any r b) ((if (signed? r) CMOVL   CMOVB  ) r b)))
 
 (define (mov a b)
-  (list ((if (or (eq? (typecode b) <bool>) (signed? (typecode b))) mov-signed mov-unsigned) a b)))
+  (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
 
 (define-method (signed? (x <var>)) (signed? (typecode x)))
 (define-method (signed? (x <ptr>)) (signed? (typecode x)))
@@ -373,10 +364,11 @@
 (define-method (cmp (a <ptr>) (b <ptr>))
   (let [(intermediate (var (typecode a)))]
     (cons (MOV intermediate a) (cmp intermediate b))))
-(define (cmp-type a b); TODO: coerce array types
-  (if (eq? (signed? a) (signed? b))
-      (coerce a b)
-      (integer (min 64 (* 2 (bits (coerce a b)))) signed)))
+(define (cmp-type a b)
+  (let [(coerced (coerce a b))]
+    (if (eq? (signed? a) (signed? b))
+      coerced
+      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define ((need-intermediate-var? target) value) (not (eqv? target (typecode value))))
 (define (cmp-any a b)
   (let* [(type          (cmp-type (typecode a) (typecode b)))

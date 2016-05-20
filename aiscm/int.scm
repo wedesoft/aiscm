@@ -24,7 +24,7 @@
 (define-class* <int<>> <element> <meta<int<>>> <meta<element>>)
 (define-method (write (self <int<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
-(define-method (signed? (self <int<>>)) (signed? (class-of self)))
+(define-method (signed? (self <element>)) (signed? (class-of self)))
 (define-method (bits (self <int<>>)) (bits (class-of self)))
 (define (integer nbits sgn)
   (template-class (int nbits sgn) <int<>>

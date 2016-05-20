@@ -190,4 +190,6 @@
     "'content' for an array should return size and stride")
 (ok (equal? '(4 6 6 1) (take (content (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'content' for a 2D array should return shape and strides")
+(ok (signed? (seq -1 1))
+    "Check signed-ness of sequence")
 (run-tests)

@@ -163,3 +163,4 @@
 (define-method (build (self <meta<sequence<>>>) value) value)
 (define-method (content (self <sequence<>>))
   (append (map last (list (shape self) (strides self))) (content (get (project self)))))
+(define-method (signed? (self <meta<sequence<>>>)) (signed? (typecode self)))
