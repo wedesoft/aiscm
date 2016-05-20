@@ -40,6 +40,8 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
+(define-method (rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
+  (rgb (reduce coerce #f (list r g b))))
 (define-method (red   (self <rgb<>>)) (make (base (class-of self)) #:value (red   (get self))))
 (define-method (green (self <rgb<>>)) (make (base (class-of self)) #:value (green (get self))))
 (define-method (blue  (self <rgb<>>)) (make (base (class-of self)) #:value (blue  (get self))))

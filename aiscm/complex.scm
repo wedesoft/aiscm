@@ -28,6 +28,7 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
+(define-method (complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
 (define-method (real-part (self <int<>>)) self); TODO: use a number type
 (define-method (imag-part (self <int<>>)) 0)
 (define-method (real-part (self <complex<>>)) (make (base (class-of self)) #:value (real-part (get self))))

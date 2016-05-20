@@ -373,7 +373,7 @@
 (define-method (cmp (a <ptr>) (b <ptr>))
   (let [(intermediate (var (typecode a)))]
     (cons (MOV intermediate a) (cmp intermediate b))))
-(define (cmp-type a b)
+(define (cmp-type a b); TODO: coerce array types
   (if (eq? (signed? a) (signed? b))
       (coerce a b)
       (integer (min 64 (* 2 (bits (coerce a b)))) signed)))
