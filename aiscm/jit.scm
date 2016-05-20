@@ -370,13 +370,20 @@
       coerced
       (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
 (define ((need-intermediate-var? target) value) (not (eqv? target (typecode value))))
+;(define (prepare-parameters target pred args op)
+;  (let* [(mask          (map (pred target) args))
+;         (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
+;         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
+;    (attach preamble (apply op intermediates)))
+(define (prepare-vars target pred args op)
+  (let* [(mask          (map (pred target) args))
+         (intermediates (map-select mask (lambda (arg) (var target)) identity args))
+         (preamble      (concatenate (map-select mask mov (const '()) intermediates args)))]; TODO: code -> mov
+    (attach preamble (apply op intermediates)))); TODO: pass closure
 (define (cmp-any a b)
-  (let* [(type          (cmp-type (typecode a) (typecode b)))
-         (args          (list a b))
-         (mask          (map (need-intermediate-var? type) args))
-         (intermediates (map-select mask (lambda (arg) (var type)) identity args))
-         (preamble      (concatenate (map-select mask mov (const '()) intermediates args)))]
-    (attach preamble (apply cmp intermediates)))); TODO: unify with prepare-arguments
+  (let* [(target        (cmp-type (typecode a) (typecode b)))
+         (args          (list a b))]
+    (prepare-vars target need-intermediate-var? args cmp))); TODO: unify with prepare-parameters
 (define ((cmp-setxx set-signed set-unsigned) out a b)
   (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
     (attach (cmp-any a b) (set out))))
@@ -535,15 +542,18 @@
 (define (unary-extract op out args) (code (term out) (apply op (map term args))))
 (define ((need-intermediate-param? t) value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
-(define (prepare-arguments target op out args)
-  (let* [(mask          (map (need-intermediate-param? target) args))
+(define (prepare-parameters target pred args op)
+  (let* [(mask          (map (pred target) args))
          (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
-    (attach preamble (apply op (operand out) (map operand intermediates)))))
+    (attach preamble (apply op intermediates))))
 (define (functional-code op out args)
-  (prepare-arguments (coerce-args args) op out args))
+  (prepare-parameters (coerce-args args) need-intermediate-param? args
+                      (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (mutating-code op out args)
-  (insert-intermediate (car args) out (lambda (tmp-a) (prepare-arguments (coerce-args args) op tmp-a (cdr args)))))
+  (insert-intermediate (car args) out
+    (lambda (tmp-a) (prepare-parameters (coerce-args args) need-intermediate-param? (cdr args)
+      (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
 
 (define-macro (n-ary-base name arity conversion fun)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
