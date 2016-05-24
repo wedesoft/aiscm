@@ -32,7 +32,7 @@
     "coerce complex and scalar type")
 (ok (eq? (complex <byte>) (coerce <byte> (complex <byte>)))
     "coerce scalar type and complex")
-(ok (eq? (complex <sint>) (coerce (complex <byte>) (complex <usint>)))
+(ok (eq? (complex <int>) (coerce (complex <byte>) (complex <usint>)))
     "coerce different complex types")
 (ok (eq? (sequence (complex <int>)) (coerce (sequence <int>) (complex <int>)))
     "coerce integer sequence and complex type")

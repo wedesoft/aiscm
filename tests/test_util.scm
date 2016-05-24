@@ -39,6 +39,8 @@
     "template class can have methods")
 (ok (is8? <test<8>>)
     "meta classes can have methods")
+(ok (equal? '(#f #t #t #f) (map xor '(#f #f #t #t) '(#f #t #f #t)))
+    "exclusive-or for booleans")
 (ok (equal? '(1 2 3) (attach '(1 2) 3))
     "'attach' should add an element at the end of the list")
 (ok (not (index-of 4 '(2 3 5 7)))

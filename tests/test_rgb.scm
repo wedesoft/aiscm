@@ -61,7 +61,7 @@
     "coerce RGB and scalar type")
 (ok (eq? <ubytergb> (coerce <ubyte> <ubytergb>))
     "coerce scalar type and RGB")
-(ok (eq? <intrgb> (coerce <uintrgb> <bytergb>))
+(ok (eq? <longrgb> (coerce <uintrgb> <bytergb>))
     "coerce different RGB types")
 (ok (eq? (sequence <intrgb>) (coerce (sequence <int>) (rgb <int>)))
     "coerce integer sequence and RGB type")

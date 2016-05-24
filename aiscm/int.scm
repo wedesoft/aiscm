@@ -61,7 +61,8 @@
          (value (ref packed 0 (native-endianness) (size-of self)))]
     (make self #:value value)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
-  (integer (max (bits a) (bits b)) (if (or (signed? a) (signed? b)) signed unsigned)))
+  (integer (min 64 (* (if (xor (signed? a) (signed? b)) 2 1) (max (bits a) (bits b))))
+           (if (or (signed? a) (signed? b)) signed unsigned)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>)) b)
 (define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>)) a)
 (define-method (match (i <integer>) . args)

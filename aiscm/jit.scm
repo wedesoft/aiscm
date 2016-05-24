@@ -20,7 +20,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
-            test-zero cmp-type ensure-default-strides
+            test-zero ensure-default-strides
             unary-extract mutating-code functional-code decompose-value delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
@@ -336,8 +336,8 @@
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-(define (minor r a b) (list (mov r a) (cmp-any r b) ((if (signed? r) CMOVNLE CMOVNBE) r b))); TODO: use intermediary for CMOVNLE
-(define (major r a b) (list (mov r a) (cmp-any r b) ((if (signed? r) CMOVL   CMOVB  ) r b)))
+(define (minor r a b) (list (mov r a) (cmp r b) ((if (signed? r) CMOVNLE CMOVNBE) r b))); TODO: use intermediary for CMOVNLE
+(define (major r a b) (list (mov r a) (cmp r b) ((if (signed? r) CMOVL   CMOVB  ) r b)))
 
 (define (mov a b)
   (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
@@ -364,29 +364,9 @@
 (define-method (cmp (a <ptr>) (b <ptr>))
   (let [(intermediate (var (typecode a)))]
     (cons (MOV intermediate a) (cmp intermediate b))))
-(define (cmp-type a b)
-  (let [(coerced (coerce a b))]
-    (if (eq? (signed? a) (signed? b))
-      coerced
-      (to-type (integer (min 64 (* 2 (bits (typecode coerced)))) signed) coerced))))
-(define ((need-intermediate-var? target) value) (not (eqv? target (typecode value))))
-;(define (prepare-parameters target pred args op)
-;  (let* [(mask          (map (pred target) args))
-;         (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
-;         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
-;    (attach preamble (apply op intermediates)))
-(define (prepare-vars target pred args op)
-  (let* [(mask          (map (pred target) args))
-         (intermediates (map-select mask (lambda (arg) (var target)) identity args))
-         (preamble      (concatenate (map-select mask mov (const '()) intermediates args)))]; TODO: code -> mov
-    (attach preamble (apply op intermediates)))); TODO: pass closure
-(define (cmp-any a b)
-  (let* [(target        (cmp-type (typecode a) (typecode b)))
-         (args          (list a b))]
-    (prepare-vars target need-intermediate-var? args cmp))); TODO: unify with prepare-parameters
 (define ((cmp-setxx set-signed set-unsigned) out a b)
   (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
-    (attach (cmp-any a b) (set out))))
+    (attach (cmp a b) (set out))))
 (define cmp-equal         (cmp-setxx SETE   SETE  ))
 (define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
 (define cmp-lower-than    (cmp-setxx SETL   SETB  ))
@@ -552,7 +532,7 @@
                       (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (mutating-code op out args)
   (insert-intermediate (car args) out
-    (lambda (tmp-a) (prepare-parameters (coerce-args args) need-intermediate-param? (cdr args)
+    (lambda (tmp-a) (prepare-parameters (type out) need-intermediate-param? (cdr args)
       (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
 
 (define-macro (n-ary-base name arity conversion fun)
@@ -631,26 +611,26 @@
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-dispatch name name)))
-(define-binary-op n-ary-asm coerce   +   mutating-code   ADD)
-(define-binary-op n-ary-asm coerce   -   mutating-code   SUB)
-(define-binary-op n-ary-asm coerce   *   mutating-code   IMUL)
-(define-binary-op n-ary-fun coerce   /   functional-code div)
-(define-binary-op n-ary-fun coerce   %   functional-code mod)
-(define-binary-op n-ary-fun coerce   <<  mutating-code   shl)
-(define-binary-op n-ary-fun coerce   >>  mutating-code   shr)
-(define-binary-op n-ary-asm coerce   &   mutating-code   AND)
-(define-binary-op n-ary-asm coerce   |   mutating-code   OR)
-(define-binary-op n-ary-asm coerce   ^   mutating-code   XOR)
-(define-binary-op n-ary-fun to-bool  &&  mutating-code   bool-and)
-(define-binary-op n-ary-fun to-bool  ||  mutating-code   bool-or)
-(define-binary-op n-ary-fun to-bool  =   functional-code cmp-equal)
-(define-binary-op n-ary-fun to-bool  !=  functional-code cmp-not-equal)
-(define-binary-op n-ary-fun to-bool  <   functional-code cmp-lower-than)
-(define-binary-op n-ary-fun to-bool  <=  functional-code cmp-lower-equal)
-(define-binary-op n-ary-fun to-bool  >   functional-code cmp-greater-than)
-(define-binary-op n-ary-fun to-bool  >=  functional-code cmp-greater-equal)
-(define-binary-op n-ary-fun cmp-type min functional-code minor)
-(define-binary-op n-ary-fun cmp-type max functional-code major)
+(define-binary-op n-ary-asm coerce  +   mutating-code   ADD)
+(define-binary-op n-ary-asm coerce  -   mutating-code   SUB)
+(define-binary-op n-ary-asm coerce  *   mutating-code   IMUL)
+(define-binary-op n-ary-fun coerce  /   functional-code div)
+(define-binary-op n-ary-fun coerce  %   functional-code mod)
+(define-binary-op n-ary-fun coerce  <<  mutating-code   shl)
+(define-binary-op n-ary-fun coerce  >>  mutating-code   shr)
+(define-binary-op n-ary-asm coerce  &   mutating-code   AND)
+(define-binary-op n-ary-asm coerce  |   mutating-code   OR)
+(define-binary-op n-ary-asm coerce  ^   mutating-code   XOR)
+(define-binary-op n-ary-fun to-bool &&  mutating-code   bool-and)
+(define-binary-op n-ary-fun to-bool ||  mutating-code   bool-or)
+(define-binary-op n-ary-fun to-bool =   functional-code cmp-equal)
+(define-binary-op n-ary-fun to-bool !=  functional-code cmp-not-equal)
+(define-binary-op n-ary-fun to-bool <   functional-code cmp-lower-than)
+(define-binary-op n-ary-fun to-bool <=  functional-code cmp-lower-equal)
+(define-binary-op n-ary-fun to-bool >   functional-code cmp-greater-than)
+(define-binary-op n-ary-fun to-bool >=  functional-code cmp-greater-equal)
+(define-binary-op n-ary-fun coerce  min functional-code minor)
+(define-binary-op n-ary-fun coerce  max functional-code major)
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
