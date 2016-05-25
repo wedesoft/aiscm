@@ -511,8 +511,6 @@
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) name out args other)))
 
-(define (coerce-args args) (reduce coerce #f (map type args)))
-
 (define (make-function name conversion fun args)
   (make <function> #:arguments args
                    #:type      (apply conversion (map type args))
@@ -528,7 +526,8 @@
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op intermediates))))
 (define (functional-code op out args)
-  (prepare-parameters (coerce-args args) need-intermediate-param? args
+  (prepare-parameters (reduce coerce #f (map type args))
+                      need-intermediate-param? args
                       (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (mutating-code op out args)
   (insert-intermediate (car args) out

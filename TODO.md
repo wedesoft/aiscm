@@ -1,6 +1,5 @@
 ## Ready
 
-* sign-space for int, ubyte -> int
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * compare RGB values
 * print position of diagnostic statement
