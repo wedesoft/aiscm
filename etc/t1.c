@@ -1,5 +1,7 @@
-char f(char x, char y, char z)
+extern char x;
+extern char y;
+
+char f(void)
 {
-  char s = x + y;
-  return z > s ? z : s;
+  return x > y ? x : y;
 }

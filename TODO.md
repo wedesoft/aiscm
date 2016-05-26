@@ -1,5 +1,6 @@
 ## Ready
 
+* 8-bit CMOV not supported -> need 16 bit or use different machine code
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * compare RGB values
 * print position of diagnostic statement
