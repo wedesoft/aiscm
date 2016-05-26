@@ -64,6 +64,18 @@
         (else                           movxx)))
 (define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX a b) a b))
 (define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX MOV   a b) a b))
+(define (mov a b)
+  (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
+
+(define (to-size register type) (reg (size-of type) (get-code register)))
+(define (to-size16 register) (reg (max (size-of register) 2) (get-code register)))
+
+(define-syntax-rule (cmov16 name op)
+  (define-method (name (r <register>) (r/m <operand>)) (op (to-size16 r) (to-size16 r/m))))
+(cmov16 cmovnle16 CMOVNLE)
+(cmov16 cmovnbe16 CMOVNBE)
+(cmov16 cmovl16   CMOVL)
+(cmov16 cmovb16   CMOVB)
 
 (functional-op    mov-signed)
 (functional-op    mov-unsigned)
@@ -102,6 +114,10 @@
 (mutating-op      CMOVNL)
 (mutating-op      CMOVLE)
 (mutating-op      CMOVNLE)
+(mutating-op      cmovnle16)
+(mutating-op      cmovnbe16)
+(mutating-op      cmovl16)
+(mutating-op      cmovb16)
 
 (define-class <var> ()
   (type   #:init-keyword #:type   #:getter typecode)
@@ -125,10 +141,11 @@
   (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
 (define-method (output (self <cmd>)) (variables (get-output self)))
 (define-method (substitute-variables self alist) self)
+
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
     (if (is-a? target <register>)
-      (reg (size-of self) (get-code target))
+      (to-size target self)
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
@@ -196,14 +213,15 @@
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <address>) (MOV value (reg (size-of parameter) (get-code register))) #f)))
-    parameters (list RDI RSI RDX RCX R8 R9)))
-(define ((fetch-parameters parameters) colors); TODO: <-> spill-parameters?
+      (if (is-a? value <address>) (MOV value (to-size register parameter)) #f)))
+    parameters
+    (list RDI RSI RDX RCX R8 R9)))
+(define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <register>) (MOV (reg (size-of parameter) (get-code value))
-                                        (ptr (typecode parameter) RSP offset)) #f)))
-    parameters (iota (length parameters) 8 8)))
+      (if (is-a? value <register>) (MOV (to-size value parameter) (ptr (typecode parameter) RSP offset)) #f)))
+    parameters
+    (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
@@ -320,14 +338,6 @@
 (define (div r a b) (div/mod r a b (MOV r (reg r 0))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-(define ((cmp-cmovxx set-signed set-unsigned) r a b)
-  (list (mov r a) (cmp r b) ((if (signed? r) set-signed set-unsigned) r b)))
-(define minor (cmp-cmovxx CMOVNLE CMOVNBE))
-(define major (cmp-cmovxx CMOVL   CMOVB  ))
-
-(define (mov a b)
-  (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
-
 (define-method (signed? (x <var>)) (signed? (typecode x)))
 (define-method (signed? (x <ptr>)) (signed? (typecode x)))
 (define (shx r x shift-signed shift-unsigned)
@@ -359,6 +369,11 @@
 (define cmp-lower-equal   (cmp-setxx SETLE  SETBE ))
 (define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
 (define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
+
+(define ((cmp-cmovxx set-signed set-unsigned) r a b)
+  (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b))))
+(define minor (cmp-cmovxx cmovnle16 cmovnbe16))
+(define major (cmp-cmovxx cmovl16   cmovb16  ))
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)

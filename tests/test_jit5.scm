@@ -191,11 +191,11 @@
     "get major number of two signed integers")
 (ok (equal? 32768 ((jit ctx (list <sint> <usint>) max) -1 32768))
     "get major number of signed and unsigned short integers")
-(let [(r (skeleton <ubyte>))
-      (a (skeleton <ubyte>))
-      (b (skeleton <ubyte>))]
-  (skip (equal? (list (CMP DIL SIL) (MOV CL DIL) (CMOVB CX SI) (MOV AL CL) (RET))
-              (assemble r (list a b) (max (parameter a) (parameter b))))
+(let [(r (parameter <ubyte>))
+      (a (parameter <ubyte>))
+      (b (parameter <ubyte>))]
+  (ok (equal? (list (MOV DL CL) (CMP DL AL) (CMOVB DX AX) (RET))
+              (register-allocate (attach (flatten-code ((term (max a b)) r)) (RET))))
       "handle lack of support for 8-bit conditional move"))
 (skip (equal? -1 ((jit ctx (list <byte> <byte>) min) -1 1))
     "get minor number of signed bytes")
