@@ -198,7 +198,7 @@
     (let [(value (assq-ref colors parameter))]
       (if (is-a? value <address>) (MOV value (reg (size-of parameter) (get-code register))) #f)))
     parameters (list RDI RSI RDX RCX R8 R9)))
-(define ((fetch-parameters parameters) colors)
+(define ((fetch-parameters parameters) colors); TODO: <-> spill-parameters?
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
       (if (is-a? value <register>) (MOV (reg (size-of parameter) (get-code value))
@@ -497,9 +497,9 @@
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) name out args other)))
 
-(define (make-function name conversion fun args)
+(define (make-function name coercion fun args)
   (make <function> #:arguments args
-                   #:type      (apply conversion (map type args))
+                   #:type      (apply coercion (map type args))
                    #:project   (lambda ()  (apply name (map body args)))
                    #:term      (lambda (out) (fun out args))))
 
@@ -520,14 +520,14 @@
     (lambda (tmp-a) (prepare-parameters (type out) need-intermediate-param? (cdr args)
       (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
 
-(define-macro (n-ary-base name arity conversion fun)
+(define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
-    `(define-method (,name . ,header) (make-function ,name ,conversion ,fun (list . ,args)))))
-(define-syntax-rule (n-ary-fun name arity conversion other ...)
-  (n-ary-base name arity conversion (delegate-fun name other ...)))
-(define-syntax-rule (n-ary-asm name arity conversion kind op)
-  (begin (mutating-op op) (n-ary-fun name arity conversion kind op)))
+    `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
+(define-syntax-rule (n-ary-fun name arity coercion other ...)
+  (n-ary-base name arity coercion (delegate-fun name other ...)))
+(define-syntax-rule (n-ary-asm name arity coercion kind op)
+  (begin (mutating-op op) (n-ary-fun name arity coercion kind op)))
 
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
@@ -567,8 +567,8 @@
                          #:specializers (list (class-of a))
                          #:procedure (lambda args (apply f (map get args))))))
     (name a)))
-(define-syntax-rule (define-unary-op define-op conversion name kind op)
-  (begin (define-op name 1 conversion kind op)
+(define-syntax-rule (define-unary-op define-op coercion name kind op)
+  (begin (define-op name 1 coercion kind op)
          (define-unary-dispatch name name)))
 
 (define-method (to-bool a) (to-type <bool> a))
@@ -591,8 +591,8 @@
                         #:specializers (map class-of (list a b))
                         #:procedure (lambda args (apply f (map get args)))))
      (name a b))))
-(define-syntax-rule (define-binary-op define-op conversion name kind op)
-  (begin (define-op name 2 conversion kind op)
+(define-syntax-rule (define-binary-op define-op coercion name kind op)
+  (begin (define-op name 2 coercion kind op)
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-dispatch name name)))
