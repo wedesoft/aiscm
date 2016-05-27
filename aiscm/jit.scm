@@ -67,16 +67,6 @@
 (define (mov a b)
   (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
 
-(define (to-size register type) (reg (size-of type) (get-code register)))
-(define (to-size16 register) (reg (max (size-of register) 2) (get-code register)))
-
-(define-syntax-rule (cmov16 name op)
-  (define-method (name (r <register>) (r/m <operand>)) (op (to-size16 r) (to-size16 r/m))))
-(cmov16 cmovnle16 CMOVNLE)
-(cmov16 cmovnbe16 CMOVNBE)
-(cmov16 cmovl16   CMOVL)
-(cmov16 cmovb16   CMOVB)
-
 (functional-op    mov-signed)
 (functional-op    mov-unsigned)
 (functional-op    MOV)
@@ -114,10 +104,6 @@
 (mutating-op      CMOVNL)
 (mutating-op      CMOVLE)
 (mutating-op      CMOVNLE)
-(mutating-op      cmovnle16)
-(mutating-op      cmovnbe16)
-(mutating-op      cmovl16)
-(mutating-op      cmovb16)
 
 (define-class <var> ()
   (type   #:init-keyword #:type   #:getter typecode)
@@ -141,6 +127,8 @@
   (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
 (define-method (output (self <cmd>)) (variables (get-output self)))
 (define-method (substitute-variables self alist) self)
+
+(define (to-size register type) (reg (size-of type) (get-code register)))
 
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
@@ -370,10 +358,12 @@
 (define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
 (define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
 
-(define ((cmp-cmovxx set-signed set-unsigned) r a b)
-  (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b))))
-(define minor (cmp-cmovxx cmovnle16 cmovnbe16))
-(define major (cmp-cmovxx cmovl16   cmovb16  ))
+(define ((cmp-cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) r a b)
+  (if (eqv? 1 (size-of r))
+    (append (mov r a) (cmp r b) (list ((if (signed? r) jmp-signed jmp-unsigned) 'skip)) (mov r b) (list 'skip))
+    (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b)))))
+(define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
+(define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>))
   target)
