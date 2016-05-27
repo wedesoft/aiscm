@@ -12,5 +12,4 @@ dependencies:
 test:
   override:
     - make -f Makefile.dist
-    - ./configure
-    - make check -j
+    - make check -j 4

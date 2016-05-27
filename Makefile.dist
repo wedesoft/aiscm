@@ -1,7 +1,7 @@
 .SUFFIXES: .ac
 
 all: Makefile
-	make -j
+	make -j 4
 
 Makefile: configure
 	./configure CC=colorgcc
