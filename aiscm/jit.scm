@@ -20,7 +20,7 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
-            test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
+            test-zero ensure-default-strides unary-extract unary-extract2 mutating-code functional-code decompose-value
             delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
@@ -495,7 +495,7 @@
 (define-method (delegate-op (target <meta<bool>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
 (define-method (delegate-op (target <meta<int<>>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
 (define-method (delegate-op target intermediate name out args kind op)
-  (if (eq? kind unary-extract); TODO: this is probably more complicated than necessary! Also does not allow complex conjugate
+  (if (eq? kind unary-extract2); TODO: this is probably more complicated than necessary! Also does not allow complex conjugate
     (kind op out args)
     (delegate-op target intermediate name out args)))
 (define-method (delegate-op target intermediate name out args)
@@ -512,6 +512,7 @@
                    #:term      (lambda (out) (fun out args))))
 
 (define (unary-extract op out args) (code (term out) (apply op (map term args))))
+(define (unary-extract2 op out args) (code (term out) (apply op (map term args))))
 (define ((need-intermediate-param? t) value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
 (define (prepare-parameters target pred args op)

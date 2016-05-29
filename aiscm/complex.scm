@@ -98,8 +98,8 @@
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 
-(define-unary-op n-ary-fun base real-part unary-extract real-part)
-(define-unary-op n-ary-fun base imag-part unary-extract imag-part)
+(define-unary-op n-ary-fun base real-part unary-extract2 real-part)
+(define-unary-op n-ary-fun base imag-part unary-extract2 imag-part)
 
 (n-ary-fun complex 2 complex)
 

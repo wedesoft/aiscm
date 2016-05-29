@@ -124,9 +124,9 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-unary-op n-ary-fun base red   unary-extract red  )
-(define-unary-op n-ary-fun base green unary-extract green)
-(define-unary-op n-ary-fun base blue  unary-extract blue )
+(define-unary-op n-ary-fun base red   unary-extract2 red  )
+(define-unary-op n-ary-fun base green unary-extract2 green)
+(define-unary-op n-ary-fun base blue  unary-extract2 blue )
 
 (n-ary-fun rgb 3 rgb)
 
