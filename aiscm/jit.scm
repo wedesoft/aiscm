@@ -20,8 +20,8 @@
             filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
-            test-zero ensure-default-strides
-            unary-extract mutating-code functional-code decompose-value delegate-fun make-function)
+            test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
+            delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
 
@@ -468,7 +468,7 @@
 (define-method (copy-value (typecode <meta<int<>>>) a b) (mov (operand a) (operand b)))
 (define-method (copy-value (typecode <meta<bool>>) a b) (mov (operand a) (operand b)))
 (define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
-(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) 0)))
+(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
@@ -483,8 +483,7 @@
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
-(define-method (code (out <param>) (fun <function>))
-  (code (term out) fun))
+(define-method (code (out <param>) (fun <function>)) (code (term out) fun))
 
 (define-method (content (self <param>)) (map parameter (content (term self))))
 (define-method (content (self <function>)) (arguments self))
@@ -492,15 +491,19 @@
 (define-method (decompose-value (target <meta<bool>>) self) self)
 (define-method (decompose-value (target <meta<int<>>>) self) self)
 
-(define-method (delegate-op (target <meta<bool>>) name out args kind op) (kind op out args))
-(define-method (delegate-op (target <meta<int<>>>) name out args kind op) (kind op out args))
-(define-method (delegate-op target name out args kind op) (delegate-op target name out args))
-(define-method (delegate-op target name out args)
+(define-method (delegate-op (target <meta<bool>>) (intermediate <meta<bool>>) name out args kind op) (kind op out args))
+(define-method (delegate-op (target <meta<bool>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
+(define-method (delegate-op (target <meta<int<>>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
+(define-method (delegate-op target intermediate name out args kind op)
+  (if (eq? kind unary-extract); TODO: this is probably more complicated than necessary! Also does not allow complex conjugate
+    (kind op out args)
+    (delegate-op target intermediate name out args)))
+(define-method (delegate-op target intermediate name out args)
   (let* [(decompose-arg (lambda (arg) (decompose-value (type arg) arg)))
          (result        (apply name (map decompose-arg args)))]
     (append-map code (content out) (content result))))
 (define (delegate-fun name . other)
-  (lambda (out args) (apply delegate-op (type out) name out args other)))
+  (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
 
 (define (make-function name coercion fun args)
   (make <function> #:arguments args
