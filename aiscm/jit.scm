@@ -500,10 +500,11 @@
   (if (eq? kind unary-extract2); TODO: this is probably more complicated than necessary! Also does not allow complex conjugate
     (kind op out args)
     (if (memv op (list cmp-equal cmp-not-equal))
-      ((term (apply name (map decompose-arg args))) out); TODO: fix this hack
+      (let [(result (apply name (map decompose-arg args)))]
+        ((term result) out)) ; TODO: fix this hack
       (delegate-op target intermediate name out args))))
 (define-method (delegate-op target intermediate name out args)
-  (let* [(result (apply name (map decompose-arg args)))]
+  (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content out) (content result))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
