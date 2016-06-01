@@ -8,6 +8,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
@@ -465,8 +466,7 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (copy-value (typecode <meta<int<>>>) a b) (mov (operand a) (operand b)))
-(define-method (copy-value (typecode <meta<bool>>) a b) (mov (operand a) (operand b)))
+(define-method (copy-value (typecode <meta<scalar>>) a b) (mov (operand a) (operand b)))
 (define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
@@ -488,14 +488,11 @@
 (define-method (content (self <param>)) (map parameter (content (term self))))
 (define-method (content (self <function>)) (arguments self))
 
-(define-method (decompose-value (target <meta<bool>>) self) self)
-(define-method (decompose-value (target <meta<int<>>>) self) self)
+(define-method (decompose-value (target <meta<scalar>>) self) self)
 
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
-(define-method (delegate-op (target <meta<bool>>) (intermediate <meta<bool>>) name out args kind op) (kind op out args))
-(define-method (delegate-op (target <meta<bool>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
-(define-method (delegate-op (target <meta<int<>>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
+(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
 (define-method (delegate-op target intermediate name out args kind op)
   (if (eq? kind unary-extract2); TODO: fix this hack!
     (kind op out args)
