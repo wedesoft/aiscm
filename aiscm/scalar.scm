@@ -1,0 +1,6 @@
+(define-module (aiscm scalar)
+  #:use-module (oop goops) 
+  #:use-module (aiscm util) 
+  #:use-module (aiscm element)
+  #:export (<scalar> <meta<scalar>>))
+(define-class* <scalar> <element> <meta<scalar>> <meta<element>>)

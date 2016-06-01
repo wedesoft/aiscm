@@ -497,11 +497,11 @@
 (define-method (delegate-op (target <meta<bool>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
 (define-method (delegate-op (target <meta<int<>>>) (intermediate <meta<int<>>>) name out args kind op) (kind op out args))
 (define-method (delegate-op target intermediate name out args kind op)
-  (if (eq? kind unary-extract2); TODO: this is probably more complicated than necessary! Also does not allow complex conjugate
+  (if (eq? kind unary-extract2); TODO: fix this hack!
     (kind op out args)
     (if (memv op (list cmp-equal cmp-not-equal))
       (let [(result (apply name (map decompose-arg args)))]
-        ((term result) out)) ; TODO: fix this hack
+        ((term result) out)) ; TODO: fix this hack!
       (delegate-op target intermediate name out args))))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
@@ -609,6 +609,7 @@
          (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
          (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
          (define-binary-dispatch name name)))
+
 (define-binary-op n-ary-asm coerce  +   mutating-code   ADD)
 (define-binary-op n-ary-asm coerce  -   mutating-code   SUB)
 (define-binary-op n-ary-asm coerce  *   mutating-code   IMUL)

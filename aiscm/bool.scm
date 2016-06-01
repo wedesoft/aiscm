@@ -4,11 +4,12 @@
   #:use-module (rnrs bytevectors)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
   #:export (<bool>
             <meta<bool>>
             && || ! !=)
   #:re-export (=))
-(define-class* <bool> <element> <meta<bool>> <meta<element>>)
+(define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
 (define-method (size-of (self <meta<bool>>)) 1)
 (define-method (pack (self <bool>))
   (u8-list->bytevector (list (if (get self) 1 0))))

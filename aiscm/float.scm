@@ -5,13 +5,14 @@
   #:use-module (rnrs bytevectors)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
   #:export (floating-point single-precision double-precision precision double?
             <float<>> <meta<float<>>>
             <float>  <float<single>> <meta<float<single>>>
             <double> <float<double>> <meta<float<double>>>))
 (define single-precision 'single)
 (define double-precision 'double)
-(define-class* <float<>> <element> <meta<float<>>> <meta<element>>)
+(define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
 (define-method (write (self <float<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-generic precision)
