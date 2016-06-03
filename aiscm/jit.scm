@@ -18,10 +18,10 @@
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals var skeleton parameter term tensor index type subst code copy-value
+            filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
-            test-zero ensure-default-strides unary-extract unary-extract2 mutating-code functional-code decompose-value
+            test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
@@ -380,38 +380,39 @@
           #:strides (cons (var <long>) (strides slice)))))
 
 (define-class <param> ()
-  (term #:init-keyword #:term #:getter term))
+  (delegate #:init-keyword #:delegate #:getter delegate))
 
 (define-class <tensor> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
-(define (tensor dimension index term)
-  (make <tensor> #:dimension dimension #:index index #:term term))
+(define (tensor dimension index delegate)
+  (make <tensor> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
   (index    #:init-keyword #:index    #:getter index)
   (stride   #:init-keyword #:stride   #:getter stride)
   (iterator #:init-keyword #:iterator #:getter iterator)
   (step     #:init-keyword #:step     #:getter step))
-(define-method (lookup index term stride iterator step)
-  (make <lookup> #:index index #:term term #:stride stride #:iterator iterator #:step step))
+(define-method (lookup index delegate stride iterator step)
+  (make <lookup> #:index index #:delegate delegate #:stride stride #:iterator iterator #:step step))
 (define-method (lookup idx (obj <tensor>) stride iterator step)
-  (tensor (dimension obj) (index obj) (lookup idx (term obj) stride iterator step)))
+  (tensor (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
 
 (define-class <function> (<param>)
   (arguments #:init-keyword #:arguments #:getter arguments)
-  (type      #:init-keyword #:type      #:getter type)
-  (project   #:init-keyword #:project   #:getter project))
+  (type      #:init-keyword #:type      #:getter type); TODO: move to param?
+  (project   #:init-keyword #:project   #:getter project)
+  (term      #:init-keyword #:term      #:getter term))
 
-(define-method (type (self <param>)) (typecode (term self)))
-(define-method (type (self <tensor>)) (sequence (type (term self))))
-(define-method (type (self <lookup>)) (type (term self)))
+(define-method (type (self <param>)) (typecode (delegate self)))
+(define-method (type (self <tensor>)) (sequence (type (delegate self))))
+(define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (typecode (self <tensor>)) (typecode (type self)))
-(define-method (shape (self <tensor>)) (attach (shape (term self)) (dimension self))); TODO: get correct shape
-(define-method (stride (self <tensor>)) (stride (term self))); TODO: get correct stride
-(define-method (iterator (self <tensor>)) (iterator (term self))); TODO: get correct iterator
-(define-method (step (self <tensor>)) (step (term self))); TODO: get correct step
-(define-method (parameter (self <element>)) (make <param> #:term self))
+(define-method (shape (self <tensor>)) (attach (shape (delegate self)) (dimension self))); TODO: get correct shape
+(define-method (stride (self <tensor>)) (stride (delegate self))); TODO: get correct stride
+(define-method (iterator (self <tensor>)) (iterator (delegate self))); TODO: get correct iterator
+(define-method (step (self <tensor>)) (step (delegate self))); TODO: get correct step
+(define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
     (tensor (dimension self)
@@ -420,29 +421,29 @@
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <tensor>) candidate replacement)
-  (tensor (dimension self) (index self) (subst (term self) candidate replacement)))
+  (tensor (dimension self) (index self) (subst (delegate self) candidate replacement)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
-          (subst (term self) candidate replacement)
+          (subst (delegate self) candidate replacement)
           (stride self)
           (iterator self)
           (step self)))
-(define-method (value (self <param>)) (value (term self)))
-(define-method (value (self <tensor>)) (value (term self)))
-(define-method (value (self <lookup>)) (value (term self)))
-(define-method (rebase value (self <param>)) (parameter (rebase value (term self))))
+(define-method (value (self <param>)) (value (delegate self)))
+(define-method (value (self <tensor>)) (value (delegate self)))
+(define-method (value (self <lookup>)) (value (delegate self)))
+(define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 (define-method (rebase value (self <tensor>))
-  (tensor (dimension self) (index self) (rebase value (term self))))
+  (tensor (dimension self) (index self) (rebase value (delegate self))))
 (define-method (rebase value (self <lookup>))
-  (lookup (index self) (rebase value (term self)) (stride self) (iterator self) (step self)))
-(define-method (project (self <tensor>)) (project (term self) (index self)))
+  (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
+(define-method (project (self <tensor>)) (project (delegate self) (index self)))
 (define-method (project (self <tensor>) (idx <var>))
-  (tensor (dimension self) (index self) (project (term self) idx)))
+  (tensor (dimension self) (index self) (project (delegate self) idx)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
-      (term self)
-      (lookup (index self) (project (term self)) (stride self) (iterator self) (step self))))
-(define-method (get (self <tensor>) idx) (subst (term self) (index self) idx))
+      (delegate self)
+      (lookup (index self) (project (delegate self)) (stride self) (iterator self) (step self))))
+(define-method (get (self <tensor>) idx) (subst (delegate self) (index self) idx))
 
 (define-method (setup self) '())
 (define-method (setup (self <tensor>))
@@ -461,7 +462,7 @@
   (if (pointer-offset a)
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
-(define-method (operand (a <param>)) (operand (term a)))
+(define-method (operand (a <param>)) (operand (delegate a)))
 
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
@@ -472,7 +473,7 @@
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
-(define-method (code (a <param>) (b <param>)) (code (term a) (term b)))
+(define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
 (define-method (code (a <tensor>) (b <param>))
   (list (setup a)
         (setup b)
@@ -483,9 +484,9 @@
 (define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
 (define-method (code (out <pointer<>>) (fun <function>))
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
-(define-method (code (out <param>) (fun <function>)) (code (term out) fun))
+(define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
-(define-method (content (self <param>)) (map parameter (content (term self))))
+(define-method (content (self <param>)) (map parameter (content (delegate self))))
 (define-method (content (self <function>)) (arguments self))
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
@@ -494,11 +495,11 @@
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
 (define-method (delegate-op target intermediate name out args kind op)
-  (if (eq? kind unary-extract2); TODO: fix this hack!
-    (kind op out args)
-    (if (memv op (list cmp-equal cmp-not-equal))
-      (let [(result (apply name (map decompose-arg args)))]
-        ((term result) out)) ; TODO: fix this hack!
+  (if (memv op (list cmp-equal cmp-not-equal))
+    (let [(result (apply name (map decompose-arg args)))]
+      ((term result) out)); TODO: fix this hack!
+    (if (is-a? target <meta<scalar>>); TODO: fix this hack!
+      (code (delegate out) (apply op (map delegate args)))
       (delegate-op target intermediate name out args))))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
@@ -510,10 +511,10 @@
   (make <function> #:arguments args
                    #:type      (apply coercion (map type args))
                    #:project   (lambda ()  (apply name (map body args)))
+                   #:delegate  #f; TODO: fix this superfluous parameter
                    #:term      (lambda (out) (fun out args))))
 
-(define (unary-extract op out args) (code (term out) (apply op (map term args))))
-(define (unary-extract2 op out args) (code (term out) (apply op (map term args))))
+(define (unary-extract op out args) (code (delegate out) (apply op (map delegate args))))
 (define ((need-intermediate-param? t) value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
 (define (prepare-parameters target pred args op)

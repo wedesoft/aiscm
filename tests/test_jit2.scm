@@ -63,7 +63,7 @@
               (code (parameter out) (- (parameter a))))
       "generate code for negating number"))
 (let [(a (parameter (sequence <int>)))]
-  (ok (equal? (term (car (arguments (body (- a))))) (term (car (arguments (- (body a))))))
+  (ok (equal? (delegate (car (arguments (body (- a))))) (delegate (car (arguments (- (body a))))))
       "body of array negation should have same argument as negation of array body"))
 (ok (equal? -42 ((jit ctx (list <int>) -) 42))
     "Negate integer")
