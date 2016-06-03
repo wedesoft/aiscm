@@ -494,16 +494,15 @@
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
-(define-method (delegate-op target intermediate name out args kind op)
-  (if (memv op (list cmp-equal cmp-not-equal))
+(define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
+(define-method (delegate-op target intermediate name out args); TODO: fix this hack!
+  (if (memv name (list = !=))
     (let [(result (apply name (map decompose-arg args)))]
-      ((term result) out)); TODO: fix this hack!
-    (if (is-a? target <meta<scalar>>); TODO: fix this hack!
-      (code (delegate out) (apply op (map delegate args)))
-      (delegate-op target intermediate name out args))))
-(define-method (delegate-op target intermediate name out args)
-  (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content out) (content result))))
+      ((term result) out))
+    (if (is-a? target <meta<scalar>>)
+      (code (delegate out) (apply name (map delegate args))); component access
+      (let [(result (apply name (map decompose-arg args)))]
+        (append-map code (content out) (content result))))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
 
