@@ -496,13 +496,11 @@
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args); TODO: fix this hack!
-  (if (memv name (list = !=))
-    (let [(result (apply name (map decompose-arg args)))]
-      ((term result) out))
-    (if (is-a? target <meta<scalar>>)
-      (let [(result (apply name (map decompose-arg args)))]
-        (code out result)) ; component access
-      (let [(result (apply name (map decompose-arg args)))]
+  (let [(result (apply name (map decompose-arg args)))]
+    (if (memv name (list = !=))
+      ((term result) out)
+      (if (is-a? target <meta<scalar>>)
+        (code out result); component access
         (append-map code (content out) (content result))))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
