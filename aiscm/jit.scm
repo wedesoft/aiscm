@@ -500,8 +500,8 @@
     (let [(result (apply name (map decompose-arg args)))]
       ((term result) out))
     (if (is-a? target <meta<scalar>>)
-      (let [(result (apply name (map delegate args)))]
-        (code (delegate out) result)) ; component access
+      (let [(result (apply name (map decompose-arg args)))]
+        (code out result)) ; component access
       (let [(result (apply name (map decompose-arg args)))]
         (append-map code (content out) (content result))))))
 (define (delegate-fun name . other)
