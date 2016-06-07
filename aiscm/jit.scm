@@ -498,7 +498,7 @@
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
     (if (memv name (list = !=)); TODO: fix this hack!
-      ((term result) out)
+      (code out result)
       (append-map code (content out) (content result)))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
