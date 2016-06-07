@@ -487,7 +487,8 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 (define-method (content (self <param>)) (map parameter (content (delegate self))))
-(define-method (content (self <function>)) (arguments self))
+(define-method (content (self <function>))
+  (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
@@ -497,9 +498,7 @@
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
-    (if (memv name (list = !=)); TODO: fix this hack!
-      (code out result)
-      (append-map code (content out) (content result)))))
+    (append-map code (content out) (content result))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
 
