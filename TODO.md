@@ -1,7 +1,5 @@
 ## Ready
 
-* real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
-* compare RGB values
 * (red (seq 1 2 3) 4 5)
 * real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * print position of diagnostic statement
