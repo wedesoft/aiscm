@@ -1,7 +1,6 @@
 ## Ready
 
 * (red (seq 1 2 3) 4 5)
-* real-part, red, ... <element> <-> <sequence<>> <-> <node>/<scalar>
 * print position of diagnostic statement
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)

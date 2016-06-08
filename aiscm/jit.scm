@@ -22,7 +22,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            delegate-fun make-function)
+            decompose-arg delegate-fun make-function)
   #:re-export (min max)
   #:export-syntax (define-unary-op define-binary-op n-ary-fun))
 
@@ -491,7 +491,6 @@
   (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
-
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
