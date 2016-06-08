@@ -6,28 +6,31 @@
 
 (define tests '())
 
-(define (run-test test counter) (test counter))
+(define count 0)
+
+(define (run-test test) (test))
+
+(define-syntax-rule (schedule prog) (set! tests (cons (lambda () prog) tests)))
 
 (define (run-tests)
-  (let [(n (length tests))]
-    (format #t "1..~a~&~!" n)
-    (for-each run-test (reverse tests) (map 1+ (iota n)))))
+  (format #t "1..~a~&~!" count)
+  (for-each run-test (reverse tests)))
 
-(define (diagnostics msg) (format #t "# ~a~&" msg))
+(define (diagnostics msg)
+  (schedule (format #t "# ~a~&" msg)))
 
 (define (print-result result index description)
   (format #t "~a ~a - ~a~&~!" (if result "ok" "not ok") index description))
 
 (define-syntax-rule (ok expr description)
-  (set! tests
-        (cons (lambda (counter)
-                (catch #t
-                  (lambda () (print-result expr counter description))
-                  (lambda (key function fmt vals . args)
-                    (let* [(msg  (apply (cut format #f fmt <...>) vals))
-                           (info (format #f "~a (ERROR: In procedure ~a: ~a)" description function msg))]
-                      (print-result #f counter info)))))
-              tests)))
+  (let [(n (1+ count))]
+    (set! count (1+ count))
+    (schedule (catch #t
+                (lambda () (print-result expr n description))
+                (lambda (key function fmt vals . args)
+                  (let* [(msg  (apply (cut format #f fmt <...>) vals))
+                         (info (format #f "~a (ERROR: In procedure ~a: ~a)" description function msg))]
+                    (print-result #f n info)))))))
 
 (define-syntax-rule (skip expr description)
   (ok #t (string-append description " # SKIP")))
