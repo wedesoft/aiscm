@@ -27,7 +27,7 @@ sudo aptitude install autoconf automake libtool colorgcc pandoc libswscale-dev x
 Finally you can install the software as follows
 
 ```Shell
-tar xzf aiscm-*.tar.gz
+tar xJf aiscm-*.tar.xz
 cd aiscm-*
 ./configure CC=colorgcc
 make -j
