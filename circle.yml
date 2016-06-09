@@ -11,5 +11,7 @@ dependencies:
 
 test:
   override:
-    - make -f Makefile.dist
+    - ./bootstrap
+    - ./configure CC=colorgcc
+    - make -j 4
     - make check -j 4

@@ -1,7 +1,6 @@
 ## Ready
 
 * (red (seq 1 2 3) 4 5)
-* print position of diagnostic statement
 * something like Ruby's Struct
 * comoile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
@@ -18,7 +17,6 @@
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * complex abs (magnitude), complex arg (and real)
 * X.Org window with width and height?
-* wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort
@@ -58,3 +56,4 @@
 * slimv, tcp/ip, attach
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
 * ffmpeg input, fftw3, hypercomplex, kinect, linalg, opencv, qt4
+* wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>

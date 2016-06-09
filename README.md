@@ -52,6 +52,7 @@ sudo make install
 * [COOPS: Chicken Scheme object system](http://wiki.call-cc.org/eggref/4/coops)
 * [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
 * [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
+* [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile"
