@@ -45,6 +45,7 @@ sudo make install
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
+* [Bergstra et al.: Theano: A CPU and GPU math compiler in Python][5]
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
@@ -55,6 +56,7 @@ sudo make install
 * [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
-[2]: http://www.gnu.org/software/guile/ "Guile"
-[3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm
-[4]: https://github.com/wedesoft/aiscm/releases
+[2]: http://www.gnu.org/software/guile/ "Guile programming language"
+[3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm "AIscm Debian package"
+[4]: https://github.com/wedesoft/aiscm/releases "AIscm source releases"
+[5]: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf "Theano paper"
