@@ -5,6 +5,7 @@ general:
 
 dependencies:
   pre:
+    - lsb_release -irc
     - sudo apt-get update
     - sudo apt-get install libmagickcore5 libfftw3-double3 libmagickcore5-extra libpango-1.0-0 libpangocairo-1.0-0 ifupdown upstart-job upstart
     - sudo apt-get install autoconf automake libtool colorgcc pandoc imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev

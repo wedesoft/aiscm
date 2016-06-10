@@ -2,7 +2,7 @@
 
 * (red (seq 1 2 3) 4 5)
 * something like Ruby's Struct
-* comoile C function calls (also support SCM values)
+* compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
 * parameter passing for sequences, map, tensor operations, replace fill and other?
