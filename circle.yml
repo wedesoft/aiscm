@@ -10,8 +10,12 @@ dependencies:
     - sudo apt-get install -q autoconf automake libtool colorgcc pandoc imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev
 
 test:
-  override:
+  pre:
     - ./bootstrap
     - ./configure CC=colorgcc
     - make -j 4
+    - make dist-xz
+  override:
     - make check -j 4
+  post:
+    - mv aiscm-*.tar.xz $CIRCLE_ARTIFACTS
