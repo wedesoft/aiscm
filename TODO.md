@@ -1,6 +1,5 @@
 ## Ready
 
-* use "content" in complex implementation
 * make match
 * (red (seq 1 2 3) 4 5), define-ternary-op
 * something like Ruby's Struct
