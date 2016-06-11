@@ -5,7 +5,7 @@
   #:export (<element>
             <meta<element>>
             value get set size-of foreign-type pack unpack
-            typecode size shape strides dimensions coerce match get-size
+            typecode size shape strides dimensions coerce match wrap get-size
             build content component base to-type))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
@@ -26,6 +26,7 @@
 (define-generic slice)
 (define-generic coerce)
 (define-generic match)
+(define (wrap value) (make (match value) #:value value))
 (define-generic get-size)
 (define-generic build)
 (define-method (content self) (list self))

@@ -598,8 +598,8 @@
      (name a b))))
 (define-syntax-rule (define-binary-op define-op coercion name kind op)
   (begin (define-op name 2 coercion kind op)
-         (define-method (name (a <element>) b) (name a (make (match b) #:value b)))
-         (define-method (name a (b <element>)) (name (make (match a) #:value a) b))
+         (define-method (name (a <element>) b) (name a (wrap b)))
+         (define-method (name a (b <element>)) (name (wrap a) b))
          (define-binary-dispatch name name)))
 
 (define-binary-op n-ary-asm coerce  +   mutating-code   ADD)

@@ -1,6 +1,5 @@
 ## Ready
 
-* make match
 * (red (seq 1 2 3) 4 5), define-ternary-op
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
