@@ -1,6 +1,7 @@
 ## Ready
 
-* (red (seq 1 2 3) 4 5), define-ternary-op
+* (jit ctx (list (sequence <int>) <int> <int>) rgb)
+* (rgb (seq 1 2 3) 4 5), (complex (seq 1 2 3) 4), define-ternary-op
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
@@ -19,12 +20,9 @@
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3))
 * lexical sort
-* NArray-like reshaping
+* NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
 * separate function for defining operation for array?
-* imaginary part of variable
-* (complex 2 3), (complex (seq 1 2 3) 4)
-* (rgb (seq 1 2) 3 (seq 5 6))
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * x11 display: error handling for 'show', timing
