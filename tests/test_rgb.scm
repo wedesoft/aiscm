@@ -224,4 +224,6 @@
     "compose RGB array using array for green channel")
 (ok (equal? (list (rgb 2 3 5) (rgb 2 3 7) (rgb 2 3 11)) (to-list (rgb 2 3 (seq 5 7 11))))
     "compose RGB array using array for blue channel")
+(ok (equal? (list (rgb 2 3 5)) (to-list (rgb (seq 2) (seq 3) 5)))
+    "compose RGB array using array for red and green channel")
 (run-tests)

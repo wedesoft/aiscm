@@ -148,6 +148,8 @@
     "wrapping 125 creates a byte container")
 (ok (eqv? 125 (get (wrap 125)))
     "wrapping 125 maintains value")
+(ok (eqv? 125 (get (wrap (wrap 125))))
+    "don't wrap twice")
 (ok (equal? <double> (match 1 1.5))
     "type matching for 1 and 1.5")
 (ok (eqv? 123 (get (make <int> #:value 123)))

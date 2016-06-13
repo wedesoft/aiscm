@@ -598,8 +598,8 @@
      (name a b))))
 (define-syntax-rule (define-binary-op define-op coercion name kind op)
   (begin (define-op name 2 coercion kind op)
-         (define-method (name (a <element>) b) (name a (wrap b)))
-         (define-method (name a (b <element>)) (name (wrap a) b))
+         (define-method (name (a <element>) b) (apply name (map wrap (list a b))))
+         (define-method (name a (b <element>)) (apply name (map wrap (list a b))))
          (define-binary-dispatch name name)))
 
 (define-binary-op n-ary-asm coerce  +   mutating-code   ADD)
@@ -635,9 +635,9 @@
 
 (define-syntax-rule (define-ternary-op define-op coercion name)
   (begin (define-op name 3 coercion)
-         (define-method (name (a <element>) b c) (name a (wrap b) (wrap c))); TODO: what if b is element, too?
-         (define-method (name a (b <element>) c) (name (wrap a) b (wrap c)))
-         (define-method (name a b (c <element>)) (name (wrap a) (wrap b) c))
+         (define-method (name (a <element>) b c) (apply name (map wrap (list a b c))))
+         (define-method (name a (b <element>) c) (apply name (map wrap (list a b c))))
+         (define-method (name a b (c <element>)) (apply name (map wrap (list a b c))))
          (define-ternary-dispatch name name)))
 
 
