@@ -122,7 +122,7 @@
 (define-unary-op n-ary-fun base green unary-extract green)
 (define-unary-op n-ary-fun base blue  unary-extract blue )
 
-(n-ary-fun rgb 3 rgb)
+(define-ternary-op n-ary-fun rgb rgb)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))

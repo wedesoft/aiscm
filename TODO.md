@@ -1,7 +1,6 @@
 ## Ready
 
-* (jit ctx (list (sequence <int>) <int> <int>) rgb)
-* (rgb (seq 1 2 3) 4 5), (complex (seq 1 2 3) 4), define-ternary-op
+* refactor define-...ary-op
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter

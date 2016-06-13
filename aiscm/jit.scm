@@ -24,7 +24,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function)
   #:re-export (min max)
-  #:export-syntax (define-unary-op define-binary-op n-ary-fun))
+  #:export-syntax (define-unary-op define-binary-op define-ternary-op n-ary-fun))
 
 (define ctx (make <context>))
 
@@ -622,6 +622,24 @@
 (define-binary-op n-ary-fun to-bool >=  functional-code cmp-greater-equal)
 (define-binary-op n-ary-fun coerce  min functional-code minor)
 (define-binary-op n-ary-fun coerce  max functional-code major)
+
+
+(define-syntax-rule (define-ternary-dispatch name delegate)
+  (define-method (name (a <element>) (b <element>) (c <element>))
+    (let [(f (jit ctx (map class-of (list a b c)) delegate))]
+      (add-method! name
+                  (make <method>
+                        #:specializers (map class-of (list a b c))
+                        #:procedure (lambda args (apply f (map get args)))))
+      (name a b c))))
+
+(define-syntax-rule (define-ternary-op define-op coercion name)
+  (begin (define-op name 3 coercion)
+         (define-method (name (a <element>) b c) (name a (wrap b) (wrap c))); TODO: what if b is element, too?
+         (define-method (name a (b <element>) c) (name (wrap a) b (wrap c)))
+         (define-method (name a b (c <element>)) (name (wrap a) (wrap b) c))
+         (define-ternary-dispatch name name)))
+
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
