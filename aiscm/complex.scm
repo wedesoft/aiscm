@@ -14,6 +14,9 @@
             <complex<>> <meta<complex<>>>
             <pointer<complex<>>> <meta<pointer<complex<>>>>)
   #:re-export (real-part imag-part))
+
+(define ctx (make <context>))
+
 (define-method (conj self) self)
 (define-method (conj (self <complex>)) (make-rectangular (real-part self) (- (imag-part self))))
 (define-class <internalcomplex> ()

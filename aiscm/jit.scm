@@ -564,44 +564,43 @@
           (apply fun (cons (get result) args))
           (get (build result-type result)))))))
 
-(define-syntax-rule (define-unary-dispatch name delegate)
-  (define-method (name (a <element>))
-    (let [(f (jit ctx (list (class-of a)) delegate))]
-      (add-method! name
-                   (make <method>
-                         #:specializers (list (class-of a))
-                         #:procedure (lambda args (apply f (map get args))))))
-    (name a)))
+(define-macro (define-nary-dispatch name arity delegate)
+  (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
+         (header (map (lambda (arg) (list arg '<element>)) args))]
+    `(define-method (,name . ,header)
+       (let [(f (jit ctx (map class-of (list . ,args)) ,delegate))]
+         (add-method! ,name
+                      (make <method>
+                            #:specializers (map class-of (list . ,args))
+                            #:procedure (lambda args (apply f (map get args))))))
+       (,name . ,args))))
+
 (define-syntax-rule (define-unary-op define-op coercion name kind op)
   (begin (define-op name 1 coercion kind op)
-         (define-unary-dispatch name name)))
+         (define-nary-dispatch name 1 name)))
+(define-syntax-rule (define-binary-op define-op coercion name kind op)
+  (begin (define-op name 2 coercion kind op)
+         (define-method (name (a <element>) b) (apply name (map wrap (list a b))))
+         (define-method (name a (b <element>)) (apply name (map wrap (list a b))))
+         (define-nary-dispatch name 2 name)))
+(define-syntax-rule (define-ternary-op define-op coercion name)
+  (begin (define-op name 3 coercion)
+         (define-method (name (a <element>) b c) (apply name (map wrap (list a b c))))
+         (define-method (name a (b <element>) c) (apply name (map wrap (list a b c))))
+         (define-method (name a b (c <element>)) (apply name (map wrap (list a b c))))
+         (define-nary-dispatch name 3 name)))
 
 (define-method (to-bool a) (to-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
 (define-method (+ (a <param>)) a)
 (define-method (+ (a <element>)) a)
-(define-unary-dispatch duplicate identity)
+(define-nary-dispatch duplicate 1 identity)
 (define-unary-op n-ary-asm identity -   mutating-code   NEG)
 (define-unary-op n-ary-asm identity ~   mutating-code   NOT)
 (define-unary-op n-ary-fun to-bool  =0  functional-code test-zero)
 (define-unary-op n-ary-fun to-bool  !=0 functional-code test-non-zero)
 (define-unary-op n-ary-fun to-bool  !   functional-code test-zero)
-
-(define-syntax-rule (define-binary-dispatch name delegate)
- (define-method (name (a <element>) (b <element>))
-   (let [(f (jit ctx (map class-of (list a b)) delegate))]
-     (add-method! name
-                  (make <method>
-                        #:specializers (map class-of (list a b))
-                        #:procedure (lambda args (apply f (map get args)))))
-     (name a b))))
-(define-syntax-rule (define-binary-op define-op coercion name kind op)
-  (begin (define-op name 2 coercion kind op)
-         (define-method (name (a <element>) b) (apply name (map wrap (list a b))))
-         (define-method (name a (b <element>)) (apply name (map wrap (list a b))))
-         (define-binary-dispatch name name)))
-
 (define-binary-op n-ary-asm coerce  +   mutating-code   ADD)
 (define-binary-op n-ary-asm coerce  -   mutating-code   SUB)
 (define-binary-op n-ary-asm coerce  *   mutating-code   IMUL)
@@ -622,24 +621,6 @@
 (define-binary-op n-ary-fun to-bool >=  functional-code cmp-greater-equal)
 (define-binary-op n-ary-fun coerce  min functional-code minor)
 (define-binary-op n-ary-fun coerce  max functional-code major)
-
-
-(define-syntax-rule (define-ternary-dispatch name delegate)
-  (define-method (name (a <element>) (b <element>) (c <element>))
-    (let [(f (jit ctx (map class-of (list a b c)) delegate))]
-      (add-method! name
-                  (make <method>
-                        #:specializers (map class-of (list a b c))
-                        #:procedure (lambda args (apply f (map get args)))))
-      (name a b c))))
-
-(define-syntax-rule (define-ternary-op define-op coercion name)
-  (begin (define-op name 3 coercion)
-         (define-method (name (a <element>) b c) (apply name (map wrap (list a b c))))
-         (define-method (name a (b <element>) c) (apply name (map wrap (list a b c))))
-         (define-method (name a b (c <element>)) (apply name (map wrap (list a b c))))
-         (define-ternary-dispatch name name)))
-
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
