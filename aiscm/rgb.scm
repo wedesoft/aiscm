@@ -126,7 +126,7 @@
 (define-nary-op n-ary-fun base green 1 unary-extract green)
 (define-nary-op n-ary-fun base blue  1 unary-extract blue )
 
-(define-ternary-op n-ary-fun rgb rgb)
+(define-nary-op n-ary-fun rgb rgb 3)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))

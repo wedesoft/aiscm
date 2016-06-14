@@ -24,7 +24,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function)
   #:re-export (min max)
-  #:export-syntax (define-nary-op define-unary-op define-binary-op define-ternary-op n-ary-fun))
+  #:export-syntax (define-nary-op n-ary-fun))
 
 (define ctx (make <context>))
 
@@ -529,8 +529,8 @@
   (let* [(args   (map (lambda (i) (gensym)) (iota arity)))
          (header (map (lambda (arg) (list arg '<param>)) args))]
     `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
-(define-syntax-rule (n-ary-fun name arity coercion other ...)
-  (n-ary-base name arity coercion (delegate-fun name other ...)))
+(define-syntax-rule (n-ary-fun name arity coercion etc ...)
+  (n-ary-base name arity coercion (delegate-fun name etc ...)))
 (define-syntax-rule (n-ary-asm name arity coercion kind op)
   (begin (mutating-op op) (n-ary-fun name arity coercion kind op)))
 
@@ -585,22 +585,10 @@
                 (apply ,name (map wrap (list . ,(cycle-times args i))))))
             (iota arity)))))
 
-(define-syntax-rule (define-nary-op define-op coercion name arity kind op)
-  (begin (define-op name arity coercion kind op)
+(define-syntax-rule (define-nary-op define-op coercion name arity etc ...)
+  (begin (define-op name arity coercion etc ...)
          (define-nary-collect name arity)
          (define-nary-dispatch name arity name)))
-(define-syntax-rule (define-unary-op define-op coercion name kind op)
-  (begin (define-op name 1 coercion kind op)
-         (define-nary-collect name 1)
-         (define-nary-dispatch name 1 name)))
-(define-syntax-rule (define-binary-op define-op coercion name kind op)
-  (begin (define-op name 2 coercion kind op)
-         (define-nary-collect name 2)
-         (define-nary-dispatch name 2 name)))
-(define-syntax-rule (define-ternary-op define-op coercion name)
-  (begin (define-op name 3 coercion)
-         (define-nary-collect name 3)
-         (define-nary-dispatch name 3 name)))
 
 (define-method (to-bool a) (to-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
