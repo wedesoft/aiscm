@@ -163,4 +163,6 @@
     "conditional map with multiple arguments")
 (ok (equal? '(1 5 8) (map-select '(#t #f #f) - + '(2 3 5) '(1 2 3)))
     "selective map with multiple arguments")
+(ok (equal? (make-list 5 #t) (map symbol? (symbol-list 5)))
+    "generate 5 symbols")
 (run-tests)
