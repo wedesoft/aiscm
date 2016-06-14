@@ -94,8 +94,8 @@
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 
-(define-unary-op n-ary-fun base real-part unary-extract real-part)
-(define-unary-op n-ary-fun base imag-part unary-extract imag-part)
+(define-nary-op n-ary-fun base real-part 1 unary-extract real-part)
+(define-nary-op n-ary-fun base imag-part 1 unary-extract imag-part)
 
 (n-ary-fun complex 2 complex)
 
@@ -106,4 +106,4 @@
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content self))))
 
-(define-unary-op n-ary-fun identity conj unary-extract conj)
+(define-nary-op n-ary-fun identity conj 1 unary-extract conj)

@@ -8,7 +8,7 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
   #:export (toplevel-define! super gc-malloc-pointerless destroy xor attach index-of all-but-last
-            drop-up-to take-up-to flatten cycle uncycle integral alist-invert
+            drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
             assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
@@ -59,6 +59,10 @@
         (else      (list x))))
 (define (cycle lst) (attach (cdr lst) (car lst)))
 (define (uncycle lst) (cons (last lst) (all-but-last lst)))
+(define (cycle-times lst n)
+  (cond ((> n 0) (cycle-times (cycle   lst) (1- n)))
+        ((< n 0) (cycle-times (uncycle lst) (1+ n)))
+        (else    lst)))
 (define (integral lst)
   (letrec [(accumulate (lambda (lst x)
                          (if (null? lst)
