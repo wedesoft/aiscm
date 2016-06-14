@@ -165,4 +165,6 @@
     "selective map with multiple arguments")
 (ok (equal? (make-list 5 #t) (map symbol? (symbol-list 5)))
     "generate 5 symbols")
+(ok (equal? '((a <tag>) (b <tag>) (c <tag>)) (typed-header '(a b c) '<tag>))
+    "Add type tags to method header")
 (run-tests)

@@ -213,6 +213,6 @@
   (ok (equal? (list (MOV DL CL) (CMP DL AL) (JNBE #x2) (MOV DL AL) (RET))
               (resolve-jumps (register-allocate (attach (flatten-code ((term (max a b)) r)) (RET)))))
       "handle lack of support for 8-bit conditional move"))
-(skip (equal? -1 ((jit ctx (list <byte> <byte>) min) -1 1))
+(ok (equal? -1 ((jit ctx (list <byte> <byte>) min) -1 1))
     "get minor number of signed bytes")
 (run-tests)

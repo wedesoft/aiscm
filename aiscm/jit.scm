@@ -527,7 +527,7 @@
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
-         (header (map (lambda (arg) (list arg '<param>)) args))]
+         (header (typed-header args '<param>))]
     `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
 (define-syntax-rule (n-ary-fun name arity coercion etc ...)
   (n-ary-base name arity coercion (delegate-fun name etc ...)))
@@ -566,7 +566,7 @@
 
 (define-macro (define-nary-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
-         (header (map (lambda (arg) (list arg '<element>)) args))]
+         (header (typed-header args '<element>))]
     `(define-method (,name . ,header)
        (let [(f (jit ctx (map class-of (list . ,args)) ,delegate))]
          (add-method! ,name
