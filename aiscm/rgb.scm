@@ -122,11 +122,11 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-nary-op n-ary-fun base red   1 unary-extract red  )
-(define-nary-op n-ary-fun base green 1 unary-extract green)
-(define-nary-op n-ary-fun base blue  1 unary-extract blue )
+(define-jit-method map-to-fun base red   1 unary-extract red  )
+(define-jit-method map-to-fun base green 1 unary-extract green)
+(define-jit-method map-to-fun base blue  1 unary-extract blue )
 
-(define-nary-op n-ary-fun rgb rgb 3)
+(define-jit-method map-to-fun rgb rgb 3)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))

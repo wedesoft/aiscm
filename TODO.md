@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor define-...ary-op
 * compose complex values from arrays
 * capture of "ctx"?
 * something like Ruby's Struct
