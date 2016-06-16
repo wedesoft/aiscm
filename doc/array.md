@@ -27,7 +27,8 @@ Uniform multi-dimensional arrays can also be created from values using type matc
 @../tests/integration_2d_matching.scm@
 ```
 
-### Swap colour channels
+# RGB values
+## Swap colour channels
 
 Given the following image ...
 
