@@ -1,3 +1,5 @@
+SUFFIXES = .scm .tmp
+
 SUBDIRS = fixtures
 
 TEST_EXTENSIONS = .scm
@@ -15,15 +17,18 @@ INTEGRATION_TESTS = integration_grab.scm integration_camera_mode.scm \
 										integration_xorg_image_list.scm integration_xorg_video.scm \
 										integration_xorg_video_list.scm integration_xorg_window.scm \
 										integration_pulse_out.scm integration_pulse_in.scm integration_asm.scm \
-										integration_jmp.scm \
-										integration_virtual_registers.scm integration_virtual_arrays.scm \
-										integration_read_image.scm integration_write_image.scm
+										integration_jmp.scm integration_virtual_registers.scm integration_virtual_arrays.scm \
+										integration_read_image.scm integration_write_image.scm integration_swap_channels.scm
 
-integration:
-	@for f in $(INTEGRATION_TESTS); do \
-		echo "$$f"; \
-		$(INTEGRATION_RUN) "$$f"; \
-  done
+INTEGRATION_TEST_TARGETS = $(addsuffix .tmp, $(basename $(INTEGRATION_TESTS)))
+
+.scm.tmp:
+	@echo Running integration test $< ...
+	$(INTEGRATION_RUN) $<
+	$(TOUCH) $@
+	@echo done.
+
+integration: $(INTEGRATION_TEST_TARGETS)
 
 EXTRA_DIST = guile-tap.scm $(TESTS) $(INTEGRATION_TESTS) fubk.png
 
