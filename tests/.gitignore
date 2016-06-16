@@ -1,4 +1,5 @@
 Makefile
 Makefile.in
 pattern.png
+swap-channels.jpg
 *.tmp

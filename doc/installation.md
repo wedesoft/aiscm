@@ -35,14 +35,14 @@ sudo apt-get install guile-2.0-dev linux-libc-dev libmjpegtools-dev xorg-dev lib
 You need to download the source package:
 
 ```
-wget https://github.com/wedesoft/aiscm/releases/download/v@VERSION@/aiscm-@VERSION@.tar.xz
+wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep xz | cut -d '"' -f 4`
 ```
 
 #### Build AIscm
 
 ```
-tar xf aiscm-@VERSION@.tar.xz
-cd aiscm-@VERSION@
+tar xJf aiscm-*.tar.xz
+cd aiscm-*
 ./configure
 make
 sudo make install

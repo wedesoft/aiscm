@@ -18,7 +18,9 @@ INTEGRATION_TESTS = integration_grab.scm integration_camera_mode.scm \
 										integration_xorg_video_list.scm integration_xorg_window.scm \
 										integration_pulse_out.scm integration_pulse_in.scm integration_asm.scm \
 										integration_jmp.scm integration_virtual_registers.scm integration_virtual_arrays.scm \
-										integration_read_image.scm integration_write_image.scm integration_swap_channels.scm
+										integration_read_image.scm integration_write_image.scm integration_swap_channels.scm \
+										integration_byte_sequence.scm integration_type_matching.scm \
+										integration_2d_array.scm integration_2d_matching.scm
 
 INTEGRATION_TEST_TARGETS = $(addsuffix .tmp, $(basename $(INTEGRATION_TESTS)))
 

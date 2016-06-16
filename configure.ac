@@ -106,7 +106,6 @@ AC_OUTPUT(Makefile
           tests/fixtures/Makefile
           bench/Makefile
           doc/Makefile
-          doc/index.md
-          doc/installation.md,
+          doc/index.md,
           echo "$info",
           info="$info")

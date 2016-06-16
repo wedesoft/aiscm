@@ -7,6 +7,7 @@ which is a real-time computer vision extension for the Guile programming languag
 * [Getting started](installation.html "Getting started")
 * [Built-in assembler](assembler.html "Built-in assembler")
 * [Input/output](io.html "Input/output")
+* [Array operations](array.html "Array operations")
 
 ## External Links
 
