@@ -30,7 +30,7 @@ INTEGRATION_TEST_TARGETS = $(addsuffix .tmp, $(basename $(INTEGRATION_TESTS)))
 
 integration: $(INTEGRATION_TEST_TARGETS)
 
-EXTRA_DIST = guile-tap.scm $(TESTS) $(INTEGRATION_TESTS) fubk.png
+EXTRA_DIST = guile-tap.scm $(TESTS) $(INTEGRATION_TESTS) fubk.png pavillion.jpg
 
 CLEANFILES = *~ *.tmp *.log *.trs
 
