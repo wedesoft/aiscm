@@ -1,4 +1,4 @@
-SUFFIXES = .scm .png .jpg .md .html
+SUFFIXES = .scm .png .jpg .md .html .tmp
 
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
 RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
@@ -27,5 +27,8 @@ scaled-pattern.png: pattern.png
 swap-channels.jpg: ../tests/integration/swap_channels.scm pavillion.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
-.md.html:
-	$(GUILE) includes.scm < $< | $(PANDOC) -s -c buttondown.css -f markdown -t html > $@
+.md.tmp:
+	$(GUILE) includes.scm < $< > $@ || rm -f $@
+
+.tmp.html:
+	$(PANDOC) -s -c buttondown.css -f markdown -t html -o $@ $<

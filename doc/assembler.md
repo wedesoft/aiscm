@@ -9,7 +9,7 @@ The function then is used to negate the number *42*.
 Here is an example function negating an integer:
 
 ```Scheme
-@../tests/integration_asm.scm@
+@../tests/integration/asm.scm@
 ```
 
 This will generate and call an identity function with the following assembler code
@@ -23,7 +23,7 @@ ret
 It is also possible to use jump statements and labels:
 
 ```Scheme
-@../tests/integration_jmp.scm@
+@../tests/integration/jmp.scm@
 ```
 
 This will generate and call a function for computing the absolute value. The assembler code is as follows
@@ -42,11 +42,11 @@ The *jit* function provides a higher level interface with virtual registers and 
 The following example defines a function for adding two integers:
 
 ```Scheme
-@../tests/integration_virtual_registers.scm@
+@../tests/integration/virtual_registers.scm@
 ```
 
 The *jit* function also instantiates loops for array processing. For example:
 
 ```Scheme
-@../tests/integration_virtual_arrays.scm@
+@../tests/integration/virtual_arrays.scm@
 ```

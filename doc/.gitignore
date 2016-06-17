@@ -2,6 +2,7 @@ Makefile.in
 Makefile
 index.md
 *.html
+*.tmp
 fubk.png
 pavillion.jpg
 pattern.png

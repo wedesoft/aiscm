@@ -4,13 +4,13 @@
 Arrays can be instantiated using a type specification. Note that the elements are not guaranteed to be initialised:
 
 ```Scheme
-@../tests/integration_byte_sequence.scm@
+@../tests/integration/byte_sequence.scm@
 ```
 
 Uniform arrays can also be created from values using type matching:
 
 ```Scheme
-@../tests/integration_type_matching.scm@
+@../tests/integration/type_matching.scm@
 ```
 
 ## Multi-dimensional arrays
@@ -18,13 +18,13 @@ Uniform arrays can also be created from values using type matching:
 It is also possible to instantiate multi-dimensional arrays. Again elements are not guaranteed to be initialised:
 
 ```Scheme
-@../tests/integration_2d_array.scm@
+@../tests/integration/2d_array.scm@
 ```
 
 Uniform multi-dimensional arrays can also be created from values using type matching:
 
 ```Scheme
-@../tests/integration_2d_matching.scm@
+@../tests/integration/2d_matching.scm@
 ```
 
 ## Integer types
@@ -32,13 +32,13 @@ Uniform multi-dimensional arrays can also be created from values using type matc
 It is also possible to specify the array type when creating an array from values:
 
 ```Scheme
-@../tests/integration_typed_sequence.scm@
+@../tests/integration/typed_sequence.scm@
 ```
 
 Note that the integer type can be specified using number of bits and signed-ness instead:
 
 ```Scheme
-@../tests/integration_integer_type.scm@
+@../tests/integration/integer_type.scm@
 ```
 
 ## RGB values
@@ -53,5 +53,5 @@ Given the following image ...
 ![](swap-channels.jpg "Image with colour channels swapped")
 
 ```Scheme
-@../tests/integration_swap_channels.scm@
+@../tests/integration/swap_channels.scm@
 ```
