@@ -16,6 +16,8 @@
 aclocal.m4
 autom4te.cache
 build-aux
+confdefs.h
+conftest.*
 config.h
 config.h.in
 config.status

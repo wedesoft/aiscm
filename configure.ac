@@ -7,7 +7,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])
-AM_EXTRA_RECURSIVE_TARGETS([bench])
+AM_EXTRA_RECURSIVE_TARGETS([bench integration reintegration])
 LT_INIT
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -103,6 +103,7 @@ debug mode                           : $enable_debug"
 AC_OUTPUT(Makefile
           aiscm/Makefile
           tests/Makefile
+          tests/integration/Makefile
           tests/fixtures/Makefile
           bench/Makefile
           doc/Makefile

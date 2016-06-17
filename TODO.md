@@ -1,6 +1,5 @@
 ## Ready
 
-* put integration tests into sub-directory
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter

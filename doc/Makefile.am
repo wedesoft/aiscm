@@ -12,19 +12,19 @@ CLEANFILES = *~ *.html
 
 MAINTAINERCLEANFILES = Makefile.in index.md installation.md
 
-fubk.png: ../tests/fubk.png
+fubk.png: ../tests/integration/fubk.png
 	cp $< $@
 
-pavillion.jpg: ../tests/pavillion.jpg
+pavillion.jpg: ../tests/integration/pavillion.jpg
 	cp $< $@
 
-pattern.png: ../tests/integration_write_image.scm
+pattern.png: ../tests/integration/write_image.scm
 	$(ENVIRONMENT) $(RUN) $<
 
 scaled-pattern.png: pattern.png
 	$(CONVERT) $< -scale 320 $@
 
-swap-channels.jpg: ../tests/integration_swap_channels.scm pavillion.jpg
+swap-channels.jpg: ../tests/integration/swap_channels.scm pavillion.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.html:
