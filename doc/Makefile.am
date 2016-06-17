@@ -9,7 +9,7 @@ RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 doc_DATA = index.html installation.html assembler.html io.html array.html aiscm.gif fubk.png scaled-pattern.png \
 	pavillion.jpg swap-channels.jpg
 
-EXTRA_DIST = includes.scm buttondown.css aiscm.html5 index.md.in installation.md assembler.md io.md array.md aiscm.gif
+EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md aiscm.gif
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png *.html *.tmp
 
