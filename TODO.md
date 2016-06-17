@@ -16,7 +16,7 @@
 * complex abs (magnitude), complex arg (and real)
 * X.Org window with width and height?
 * save/load 16 and 32 bit images
-* (arr (rgb 1 2 3))
+* (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
 * lexical sort
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...

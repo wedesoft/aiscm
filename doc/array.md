@@ -27,8 +27,22 @@ Uniform multi-dimensional arrays can also be created from values using type matc
 @../tests/integration_2d_matching.scm@
 ```
 
-# RGB values
-## Swap colour channels
+## Integer types
+
+It is also possible to specify the array type when creating an array from values:
+
+```Scheme
+@../tests/integration_typed_sequence.scm@
+```
+
+Note that the integer type can be specified using number of bits and signed-ness instead:
+
+```Scheme
+@../tests/integration_integer_type.scm@
+```
+
+## RGB values
+### Swap colour channels
 
 Given the following image ...
 
