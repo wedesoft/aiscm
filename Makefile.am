@@ -11,7 +11,10 @@ repl: all
 	$(ENVIRONMENT) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y $(RUN)
 
 integration: all
-	cd tests && $(MAKE) $@ && cd ..
+	cd tests && $(MAKE) $(AM_MAKEFLAGS) $@ && cd ..
+
+reintegration: all
+	cd tests && $(MAKE) $(AM_MAKEFLAGS) $@ && cd ..
 
 CLEANFILES = *~ *.html
 

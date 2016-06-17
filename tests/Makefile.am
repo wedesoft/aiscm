@@ -31,7 +31,11 @@ INTEGRATION_TEST_TARGETS = $(addsuffix .tmp, $(basename $(INTEGRATION_TESTS)))
 	$(TOUCH) $@
 	@echo done.
 
-integration: $(INTEGRATION_TEST_TARGETS)
+integration:
+	rm -f $(INTEGRATION_TEST_TARGETS)
+	$(MAKE) $(AM_MAKEFLAGS) reintegration
+
+reintegration: $(INTEGRATION_TEST_TARGETS)
 
 EXTRA_DIST = guile-tap.scm $(TESTS) $(INTEGRATION_TESTS) fubk.png pavillion.jpg
 
