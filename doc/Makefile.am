@@ -8,9 +8,9 @@ doc_DATA = index.html installation.html assembler.html io.html array.html aiscm.
 
 EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md aiscm.gif
 
-CLEANFILES = *~ *.html
+CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png *.html *.tmp
 
-MAINTAINERCLEANFILES = Makefile.in index.md installation.md
+MAINTAINERCLEANFILES = Makefile.in index.md
 
 fubk.png: ../tests/integration/fubk.png
 	cp $< $@

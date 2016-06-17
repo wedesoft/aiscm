@@ -16,6 +16,4 @@ EXTRA_DIST = guile-tap.scm $(TESTS)
 
 CLEANFILES = *~ *.tmp *.log *.trs
 
-DISTCLEANFILES = .*.un~ .*.swp
-
 MAINTAINERCLEANFILES = Makefile.in

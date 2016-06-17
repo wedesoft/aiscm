@@ -17,4 +17,4 @@ assembler: t1.s t1.txt
 	gcc $(CFLAGS) -fverbose-asm -S $<
 
 clean:
-	rm -f *.txt *.o *.s
+	rm -f *.txt *.o *.s t1.txt

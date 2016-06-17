@@ -19,6 +19,7 @@ EXTRA_DIST = bench.scm
 
 CLEANFILES = *~ *.tmp *.go* *.la
 
-DISTCLEANFILES = .*.un~ .*.swp
-
 MAINTAINERCLEANFILES = Makefile.in
+
+maintainer-clean-local:
+	rm -Rf .deps

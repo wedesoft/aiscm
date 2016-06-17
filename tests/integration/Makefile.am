@@ -26,3 +26,7 @@ integration-local:
 	$(MAKE) $(AM_MAKEFLAGS) reintegration
 
 reintegration-local: $(INTEGRATION_TEST_TARGETS)
+
+CLEANFILES = pattern.png swap-channels.jpg *.tmp
+
+MAINTAINERCLEANFILES = Makefile.in

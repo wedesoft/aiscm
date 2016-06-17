@@ -57,8 +57,9 @@ $(cache_DATA): $(extension_LTLIBRARIES)
 
 EXTRA_DIST = $(site_DATA)
 
-CLEANFILES = *~ *.tmp *.go*
-
-DISTCLEANFILES = .*.un~ .*.swp
+CLEANFILES = *.tmp *.go*
 
 MAINTAINERCLEANFILES = Makefile.in
+
+maintainer-clean-local:
+	rm -Rf .deps
