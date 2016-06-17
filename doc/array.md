@@ -55,6 +55,12 @@ Given the following image ...
 @../tests/integration/roll_image.scm@
 ```
 
+*roll* and *unroll* cycle the dimensions of the array around. Here is and example with a 3D array:
+
+```Scheme
+@../tests/integration/roll_unroll.scm@
+```
+
 ## RGB values
 ### Swap colour channels
 
