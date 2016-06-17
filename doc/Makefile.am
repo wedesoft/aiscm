@@ -1,4 +1,7 @@
-SUFFIXES = .scm .png .jpg .md .html .tmp
+SUFFIXES = .scm .png .jpg .md .html .tmp .css .html5
+
+PANDOC_OPTS = -s -c buttondown.css -f markdown -t html
+PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(shell date --iso-8601) -Vpagetitle=AIscm
 
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
 RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
@@ -6,7 +9,7 @@ RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 doc_DATA = index.html installation.html assembler.html io.html array.html aiscm.gif fubk.png scaled-pattern.png \
 	pavillion.jpg swap-channels.jpg
 
-EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md aiscm.gif
+EXTRA_DIST = includes.scm buttondown.css aiscm.html5 index.md.in installation.md assembler.md io.md array.md aiscm.gif
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png *.html *.tmp
 
@@ -30,5 +33,5 @@ swap-channels.jpg: ../tests/integration/swap_channels.scm pavillion.jpg
 .md.tmp:
 	$(GUILE) includes.scm < $< > $@ || rm -f $@
 
-.tmp.html:
-	$(PANDOC) -s -c buttondown.css -f markdown -t html -o $@ $<
+%.html: %.tmp buttondown.css
+	$(PANDOC) $(PANDOC_OPTS) $(PANDOC_VARS) -o $@ $<
