@@ -41,14 +41,24 @@ Note that the integer type can be specified using number of bits and signed-ness
 @../tests/integration/integer_type.scm@
 ```
 
-## RGB values
-### Swap colour channels
+## Rolling dimensions
 
 Given the following image ...
 
 ![](pavillion.jpg "Test input image")
 
-... the *rgb* method can be used to combine colour values and images. The following program swaps the colour channels around:
+... rolling the dimensions will result in the following image:
+
+![](rolled.jpg "Dimension rolled")
+
+```Scheme
+@../tests/integration/roll_image.scm@
+```
+
+## RGB values
+### Swap colour channels
+
+The *rgb* method can be used to combine colour values and images. The following program swaps the colour channels around:
 
 ![](swap-channels.jpg "Image with colour channels swapped")
 

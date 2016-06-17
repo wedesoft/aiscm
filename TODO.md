@@ -1,5 +1,6 @@
 ## Ready
 
+* basic array documentation: stride, dimension, size, size-of, roll, unroll, downsample, get, set, to-list, to-array, shape
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
