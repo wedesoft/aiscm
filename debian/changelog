@@ -1,3 +1,11 @@
+aiscm (0.4.2-1) UNRELEASED; urgency=low
+
+  - compose RGB and complex values from arrays
+  - added some documentation
+  * aiscm/jit.scm: refactored dispatching code
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 8 Jun 2016 07:45:00 +0000
+
 aiscm (0.4.1-1) UNRELEASED; urgency=low
 
   - refactored jit compiler

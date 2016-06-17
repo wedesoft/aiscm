@@ -4,7 +4,7 @@
 This manual is for **AIscm** (version @VERSION@)
 which is a real-time computer vision extension for the Guile programming language
 
-* [Getting started](installation.html "Getting started")
+* [Installation](installation.html "Installation")
 * [Built-in assembler](assembler.html "Built-in assembler")
 * [Input/output](io.html "Input/output")
 * [Array operations](array.html "Array operations")
