@@ -27,6 +27,16 @@ Uniform multi-dimensional arrays can also be created from values using type matc
 @../tests/integration/2d_matching.scm@
 ```
 
+### Dimension, shape, and strides
+
+The *dimension* is the number of array indices used to select an element. The *shape* is a list specifying the size of the array in each direction. The *stride* specifies the internal memory layout of the array.
+
+```Scheme
+@../tests/integration/array_shape.scm@
+```
+
+The array *size* denotes the number of elements while *size-of* tells the storage size of the array. The *get* method can be used to extract elements or array slices.
+
 ## Integer types
 
 It is also possible to specify the array type when creating an array from values:
@@ -59,6 +69,24 @@ Given the following image ...
 
 ```Scheme
 @../tests/integration/roll_unroll.scm@
+```
+
+## Cropping arrays and dumping elements
+
+One can *dump* array slices from the beginning of the array and *crop* the length of the array, i.e. removing slices from the end of the array.
+
+![](cropped.jpg "Cropped image")
+
+```Scheme
+@../tests/integration/crop_dump.scm@
+```
+
+The *dump* and *crop* command can also take a list of values in order to extract a part of a multi-dimensional array:
+
+![](crop2d.jpg "2d cropped image")
+
+```Scheme
+@../tests/integration/crop_2d.scm@
 ```
 
 ## RGB values

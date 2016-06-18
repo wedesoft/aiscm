@@ -3,6 +3,8 @@ Makefile
 index.md
 *.html
 *.tmp
+crop2d.jpg
+cropped.jpg
 fubk.png
 pavillion.jpg
 pattern.png

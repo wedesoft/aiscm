@@ -1,6 +1,8 @@
 ## Ready
 
-* basic array documentation: stride, dimension, size, size-of, roll, unroll, downsample, get, set, to-list, to-array, shape
+* basic array documentation: to-list, to-array
+* git-init.xml asciidoc? jadetex? docbook2x
+* upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
 * compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
