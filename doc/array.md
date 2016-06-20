@@ -111,3 +111,14 @@ The *rgb* method can be used to combine colour values and images. The following 
 ```Scheme
 @../tests/integration/swap_channels.scm@
 ```
+
+## Complex values
+
+At the moment only integer complex values are supported. Here is a small example using complex arrays:
+
+```Scheme
+@../tests/integration/complex_array.scm@
+```
+
+Since native integers are used, numerical overflow can occur.
+Note that you can use *to-type* to convert an array to a more suitable type.
