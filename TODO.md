@@ -1,6 +1,5 @@
 ## Ready
 
-* basic array documentation: project, to-list, to-array
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct

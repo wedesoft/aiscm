@@ -43,5 +43,5 @@ crop2d.jpg: ../tests/integration/crop_2d.scm pavillion.jpg
 .md.tmp:
 	$(GUILE) includes.scm < $< > $@ || rm -f $@
 
-%.html: %.tmp buttondown.css
+%.html: %.tmp buttondown.css $(wildcard $(top_builddir)/tests/integration/*.scm)
 	$(PANDOC) $(PANDOC_OPTS) $(PANDOC_VARS) -o $@ $<
