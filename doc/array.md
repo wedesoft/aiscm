@@ -27,6 +27,16 @@ Uniform multi-dimensional arrays can also be created from values using type matc
 @../tests/integration/2d_matching.scm@
 ```
 
+### Conversion from/to lists
+
+Scheme list objects can be converted to uniform arrays and vice versa using the methods *to-array* and *to-list*:
+
+```Scheme
+@../tests/integration/to_list.scm@
+```
+
+*to-array* uses type matching to determine the most suitable type.
+
 ### Dimension, shape, and strides
 
 The *dimension* is the number of array indices used to select an element. The *shape* is a list specifying the size of the array in each direction. The *stride* specifies the internal memory layout of the array.
@@ -70,6 +80,8 @@ Given the following image ...
 ```Scheme
 @../tests/integration/roll_unroll.scm@
 ```
+
+The *project* method can be used to extract the first slice of an array.
 
 ## Cropping arrays and dumping elements
 

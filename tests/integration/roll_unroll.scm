@@ -17,3 +17,6 @@ a
 ; ((4)
 ;  (5)
 ;  (6)))
+(project (roll a))
+;#<sequence<sequence<int<8,unsigned>>>>:
+;((1 4))
