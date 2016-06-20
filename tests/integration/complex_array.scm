@@ -1,4 +1,4 @@
-(use-modules (aiscm complex) (aiscm sequence) (aiscm pointer) (aiscm int))
+(use-modules (aiscm complex) (aiscm sequence) (aiscm pointer) (aiscm int) (aiscm element))
 (define c (seq 2+3i 5+7i))
 c
 ;#<sequence<complex<int<8,unsigned>>>:
