@@ -1,7 +1,8 @@
 ## Ready
 
 * array operations documentation
-* Amazon Beanstalk, Docker? Guile Artanis web server
+* conditional/select
+* Guile Artanis web server, Amazon Beanstalk, Docker
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
