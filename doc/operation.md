@@ -72,7 +72,13 @@ Most scalar-scalar operations are already part of the Scheme programming languag
 
 ### Array-scalar operations
 
+One can use an array-scalar operation to divide each colour channels of an image by a number.
 
+![](divided.jpg "Divided image")
+
+```Scheme
+@../tests/integration/division.scm@
+```
 
 ### Scalar-array operations
 
