@@ -14,6 +14,18 @@ Here are a few examples using those operations:
 @../tests/integration/unary_ops.scm@
 ```
 
+Applied to the following image ...
+
+![](star-ferry.jpg "Test input image")
+
+... inverting the RGB values yields the following image:
+
+![](inverted.jpg "Inverted image")
+
+```Scheme
+@../tests/integration/invert.scm@
+```
+
 ## Binary operations
 ### Array-scalar operations
 

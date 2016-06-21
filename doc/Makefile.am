@@ -9,7 +9,7 @@ RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
 					 aiscm.gif fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
-					 cropped.jpg crop2d.jpg
+					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg
 
 EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
 						 operation.md aiscm.gif
@@ -22,6 +22,9 @@ fubk.png: ../tests/integration/fubk.png
 	cp $< $@
 
 pavillion.jpg: ../tests/integration/pavillion.jpg
+	cp $< $@
+
+star-ferry.jpg: ../tests/integration/star-ferry.jpg
 	cp $< $@
 
 pattern.png: ../tests/integration/write_image.scm
@@ -40,6 +43,9 @@ cropped.jpg: ../tests/integration/crop_dump.scm pavillion.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 crop2d.jpg: ../tests/integration/crop_2d.scm pavillion.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+inverted.jpg: ../tests/integration/invert.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:

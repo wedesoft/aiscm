@@ -1,6 +1,7 @@
 ## Ready
 
-* Heroku build pack? Guile Artanis web server
+* array operations documentation
+* Amazon Beanstalk, Docker? Guile Artanis web server
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
