@@ -80,6 +80,14 @@ One can use an array-scalar operation to divide each colour channels of an image
 @../tests/integration/division.scm@
 ```
 
+Another example is using the modulo operator to show the remainder of division by an integer for each channel.
+
+![](modulo.jpg "Remainder values")
+
+```Scheme
+@../tests/integration/modulo.scm@
+```
+
 ### Scalar-array operations
 
 ### Array-array operations
