@@ -47,6 +47,14 @@ The *dimension* is the number of array indices used to select an element. The *s
 
 The array *size* denotes the number of elements while *size-of* tells the storage size of the array. The *get* method can be used to extract elements or array slices.
 
+## Boolean arrays
+
+Boolean arrays are used to store *true* and *false* values. They can be converted to integer arrays and back if required.
+
+```Scheme
+@../tests/integration/boolean_array.scm@
+```
+
 ## Integer types
 
 It is also possible to specify the array type when creating an array from values:
