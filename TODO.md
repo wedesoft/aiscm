@@ -1,5 +1,7 @@
 ## Ready
 
+* boolean arrays
+* Heroku build pack? Guile Artanis web server
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct

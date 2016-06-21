@@ -7,10 +7,12 @@ PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(shell date --
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
 RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
 
-doc_DATA = index.html installation.html assembler.html io.html array.html aiscm.gif fubk.png scaled-pattern.png \
-	pavillion.jpg swap-channels.jpg rolled.jpg cropped.jpg crop2d.jpg
+doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
+					 aiscm.gif fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
+					 cropped.jpg crop2d.jpg
 
-EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md aiscm.gif
+EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
+						 operation.md aiscm.gif
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg *.html *.tmp
 
