@@ -70,8 +70,6 @@ Most scalar-scalar operations are already part of the Scheme programming languag
 @../tests/integration/scalars.scm@
 ```
 
-### Array-scalar operations
-
 One can use an array-scalar operation to divide each colour channels of an image by a number.
 
 ![](divided.jpg "Divided image")
@@ -88,6 +86,8 @@ Another example is using the modulo operator to show the remainder of division b
 @../tests/integration/modulo.scm@
 ```
 
-### Scalar-array operations
+Each binary operation can appear in scalar-array, array-scalar, or array-array form. Also note that the arrays can have different number of dimensions as long as the tail of the shape matches.
 
-### Array-array operations
+```Scheme
+@../tests/integration/binary.scm@
+```
