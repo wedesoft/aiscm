@@ -1,6 +1,5 @@
 ## Ready
 
-* array operations documentation
 * conditional/select
 * Guile Artanis web server, Amazon Beanstalk, Docker
 * git-init.xml asciidoc? jadetex? docbook2x

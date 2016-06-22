@@ -36,6 +36,8 @@ neg eax
 ret
 ```
 
+Setting the environment variable *DEBUG* to *YES* will cause the JIT compiler to display the assembler code using the *objdump* command line tool.
+
 ## Virtual registers
 
 The *jit* function provides a higher level interface with virtual registers and operator mappings.
