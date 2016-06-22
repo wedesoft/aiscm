@@ -61,10 +61,8 @@ The binary operations are:
 Furthermore there is **rgb** for composing RGB values which is a ternary method.
 
 Each binary operation can combine arrays and/or scalars.
-
-### Scalar-scalar operations
-
-Most scalar-scalar operations are already part of the Scheme programming language. *AIscm* mostly needs to provide a few operations and support for RGB values.
+Most scalar-scalar operations are already part of the Scheme programming language.
+*AIscm* mostly needs to provide a few numerical operations and some support for RGB and complex values.
 
 ```Scheme
 @../tests/integration/scalars.scm@
@@ -86,7 +84,8 @@ Another example is using the modulo operator to show the remainder of division b
 @../tests/integration/modulo.scm@
 ```
 
-Each binary operation can appear in scalar-array, array-scalar, or array-array form. Also note that the arrays can have different number of dimensions as long as the tail of the shape matches.
+Each binary operation can appear in scalar-array, array-scalar, or array-array form.
+Also note that the arrays can have different number of dimensions as long as the tail of the shape matches.
 
 ```Scheme
 @../tests/integration/binary.scm@
