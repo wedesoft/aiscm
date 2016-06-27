@@ -1,6 +1,7 @@
 ## Ready
 
 * ffplay
+* shape of v4l2, xorg window
 * xorg video framerate
 * use hash tables
 * conditional/select

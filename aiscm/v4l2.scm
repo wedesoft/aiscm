@@ -9,9 +9,12 @@
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
   #:export (<v4l2> <meta<v4l2>> grab))
+
 (load-extension "libguile-v4l2" "init_v4l2")
+
 (define-class* <v4l2> <object> <meta<v4l2>> <class>
                (videodev2 #:init-keyword #:videodev2))
+
 (define formats
   (list (cons 'RGB  V4L2_PIX_FMT_RGB24)
         (cons 'BGR  V4L2_PIX_FMT_BGR24)
@@ -33,6 +36,7 @@
         (size-x (apply * (cdr x)))
         (size-y (apply * (cdr y)))]
     (or (< ord-x ord-y) (and (= ord-x ord-y) (< size-x size-y)))))
+
 (define-method (initialize (self <v4l2>) initargs)
   (let-keywords initargs #f (device channel select)
     (let* [(device    (or device "/dev/video0"))
@@ -43,7 +47,9 @@
            (selection (lambda (formats)
                         (encode (select (sort (map decode (filter supported? formats)) format<)))))]
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
+
 (define-method (destroy (self <v4l2>)) (videodev2-destroy (slot-ref self 'videodev2)))
+
 (define-method (grab (self <v4l2>))
   (let [(picture (videodev2-grab (slot-ref self 'videodev2)))]
     (make <image>

@@ -23,9 +23,9 @@ libguile_jit_la_LDFLAGS = -no-undefined
 libguile_jit_la_LIBADD = $(GUILE_LIBS)
 
 libguile_ffmpeg_la_SOURCES = ffmpeg.c
-libguile_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS)
 libguile_ffmpeg_la_LDFLAGS = -no-undefined
-libguile_ffmpeg_la_LIBADD = $(GUILE_LIBS)
+libguile_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS)
 
 libguile_image_la_SOURCES = image.c
 libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
