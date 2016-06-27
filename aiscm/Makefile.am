@@ -2,12 +2,12 @@ SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
 site_DATA = mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm complex.scm float.scm \
-						sequence.scm asm.scm jit.scm op.scm compile.scm util.scm image.scm magick.scm \
+						sequence.scm asm.scm image.scm jit.scm op.scm compile.scm ffmpeg.scm util.scm magick.scm \
 						pulse.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-image.la libguile-magick.la \
-												libguile-pulse.la libguile-v4l2.la libguile-xorg.la
+extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-ffmpeg.la libguile-image.la \
+												libguile-magick.la libguile-pulse.la libguile-v4l2.la libguile-xorg.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
@@ -21,6 +21,11 @@ libguile_jit_la_SOURCES = jit.c
 libguile_jit_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_jit_la_LDFLAGS = -no-undefined
 libguile_jit_la_LIBADD = $(GUILE_LIBS)
+
+libguile_ffmpeg_la_SOURCES = ffmpeg.c
+libguile_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_ffmpeg_la_LDFLAGS = -no-undefined
+libguile_ffmpeg_la_LIBADD = $(GUILE_LIBS)
 
 libguile_image_la_SOURCES = image.c
 libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)

@@ -1,6 +1,5 @@
 (define-module (guile-tap)
   #:use-module (ice-9 format)
-  #:use-module (srfi srfi-26)
   #:export (run-tests diagnostics)
   #:export-syntax (ok skip todo throws?))
 
@@ -28,7 +27,7 @@
     (schedule (catch #t
                 (lambda () (print-result expr n description))
                 (lambda (key function fmt vals . args)
-                  (let* [(msg  (apply (cut format #f fmt <...>) vals))
+                  (let* [(msg  (apply format #f fmt vals))
                          (info (format #f "~a (ERROR: In procedure ~a: ~a)" description function msg))]
                     (print-result #f n info)))))))
 

@@ -1,0 +1,7 @@
+(use-modules (aiscm ffmpeg)
+             (aiscm element)
+             (guile-tap))
+(define video (open-input-video "fixtures/test.avi"))
+(skip (equal? '(6 4) (shape video))
+    "Check frame size of input video")
+(run-tests)

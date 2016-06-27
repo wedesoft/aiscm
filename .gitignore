@@ -2,8 +2,6 @@
 .libs
 *.la
 *.lo
-.*.swp
-.*.un~
 *.o
 *.go*
 *.gz
@@ -28,3 +26,4 @@ ltmain.sh
 /Makefile.in
 stamp-h1
 pkg
+etc

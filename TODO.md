@@ -1,7 +1,9 @@
 ## Ready
 
+* ffplay
+* xorg video framerate
+* use hash tables
 * conditional/select
-* Guile Artanis web server, Amazon Beanstalk, Docker
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
@@ -18,6 +20,7 @@
     (tensor [i j] (* (s i) (s j)))
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * complex abs (magnitude), complex arg (and real)
+* Guile Artanis web server, Ansible
 * X.Org window with width and height?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
