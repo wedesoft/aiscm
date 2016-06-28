@@ -1,0 +1,33 @@
+# http://ansible.pickle.io/post/86598332429/running-ansible-playbook-in-localhost
+---
+- hosts: all
+  sudo: yes
+  tasks:
+  - name: Install build tools
+    apt: name={{item}} state=latest update_cache=yes
+    with_items:
+    - autoconf
+    - automake
+    - libtool
+    - colorgcc
+  tasks:
+  - name: Install required packages
+    apt: name={{item}} state=latest update_cache=yes
+    with_items:
+    - guile-2.0-dev
+    - linux-libc-dev
+    - libmjpegtools-dev
+    - imagemagick
+    - libmagickcore-dev
+    - libpulse-dev
+    - libjpeg-dev
+    - libx11-dev
+    - libxext-dev
+    - libxv-dev
+    - libxmu-dev
+    - libxi-dev
+    - libglu1-mesa-dev
+    - libgl1-mesa-dev
+    - libswscale-dev
+    - libavformat-dev
+    - pandoc
