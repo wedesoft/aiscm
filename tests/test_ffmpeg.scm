@@ -7,4 +7,6 @@
     "Check frame size of input video")
 (ok (throws? (open-input-video "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
+(ok (throws? (shape audio))
+    "Audio file does not have a frame size")
 (run-tests)

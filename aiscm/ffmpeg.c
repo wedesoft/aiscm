@@ -72,7 +72,9 @@ SCM format_context_shape(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
-  int width = self->video_dec_ctx->width;// TODO: check stream available
+  if (!self->video_dec_ctx)
+    scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
+  int width = self->video_dec_ctx->width;
   int height = self->video_dec_ctx->height;
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
