@@ -1,8 +1,8 @@
 ## Ready
 
 * ffplay
-* provision CI host using Ansible
-* rename: open-input-video for test.mp3
+* test and package on Docker
+* rename: open-input-video for test.mp3 -> open-audio/video
 * shape of v4l2, xorg window
 * xorg video framerate
 * use hash tables

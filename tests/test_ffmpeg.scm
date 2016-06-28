@@ -9,4 +9,6 @@
     "Throw error if file does not exist")
 (ok (throws? (shape audio))
     "Audio file does not have a frame size")
+(ok (equal? '(320 240) (shape (read-video video)))
+    "Check frame size of video frame")
 (run-tests)

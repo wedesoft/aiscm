@@ -6,14 +6,11 @@ general:
 dependencies:
   pre:
     - sudo apt-get install -q ansible libmagickcore5 libfftw3-double3 libmagickcore5-extra libpango-1.0-0 libpangocairo-1.0-0 ifupdown upstart-job upstart
-    - sudo ansible-playbook -i "localhost," -c local ansible.yml
+    - ansible-playbook -i "localhost," -c local --tags dependencies aiscm.yml
 
 test:
   pre:
-    - ./bootstrap
-    - ./configure CC=colorgcc
-    - make -j 4
-    - make dist-xz
+    - ansible-playbook -i "localhost," -c local --tags build,distributable aiscm.yml
   override:
     - make check -j 4
   post:

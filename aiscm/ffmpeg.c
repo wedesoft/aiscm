@@ -33,7 +33,7 @@ size_t free_format_context(SCM scm_self)
   return 0;
 }
 
-SCM open_format_context(SCM scm_file_name)
+SCM open_format_context(SCM scm_file_name, SCM scm_debug)
 {
   SCM retval;
   struct format_context_t *self;
@@ -65,6 +65,8 @@ SCM open_format_context(SCM scm_file_name)
     };
     self->video_dec_ctx = dec_ctx;
   };
+  if (scm_is_true(scm_debug))
+    av_dump_format(self->fmt_ctx, 0, file_name, 0);
   return retval;
 }
 
@@ -79,11 +81,19 @@ SCM format_context_shape(SCM scm_self)
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
+SCM format_context_read_video(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  return scm_self;
+}
+
 void init_ffmpeg(void)
 {
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
   scm_set_smob_free(format_context_tag, free_format_context);
   av_register_all();
-  scm_c_define_gsubr("open-format-context", 1, 0, 0, open_format_context);
+  scm_c_define_gsubr("open-format-context", 2, 0, 0, open_format_context);
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
+  scm_c_define_gsubr("format-context-read-video", 1, 0, 0, format_context_read_video);
 }

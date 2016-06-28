@@ -1,16 +1,18 @@
 # http://ansible.pickle.io/post/86598332429/running-ansible-playbook-in-localhost
 ---
 - hosts: all
-  sudo: yes
   tasks:
-  - name: Install build tools
+  - name: install build tools
     apt: name={{item}} state=latest update_cache=yes
     with_items:
+    - build-essential
     - autoconf
     - automake
     - libtool
     - colorgcc
-  - name: Install required packages
+    sudo: true
+    tags: dependencies
+  - name: install required packages
     apt: name={{item}} state=latest update_cache=yes
     with_items:
     - guile-2.0-dev
@@ -30,3 +32,20 @@
     - libswscale-dev
     - libavformat-dev
     - pandoc
+    sudo: true
+    tags: dependencies
+  - name: bootstrap build scripts
+    command: ./bootstrap
+    tags: build
+  - name: configure build
+    command: ./configure CC=colorgcc
+    tags: build
+  - name: compile
+    command: make -j 4
+    tags: build
+  - name: create source archive
+    command: make dist-xz
+    tags: distributable
+  - name: run test suite
+    command: make check -j 4
+    tags: test
