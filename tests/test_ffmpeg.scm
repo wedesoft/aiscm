@@ -2,6 +2,7 @@
              (aiscm element)
              (guile-tap))
 (define video (open-input-video "fixtures/camera.avi"))
+(define audio (open-input-video "fixtures/test.mp3"))
 (ok (equal? '(6 4) (shape video))
     "Check frame size of input video")
 (ok (throws? (open-input-video "fixtures/no-such-file.avi"))

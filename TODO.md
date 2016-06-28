@@ -1,6 +1,7 @@
 ## Ready
 
 * ffplay
+* rename: open-input-video for test.mp3
 * shape of v4l2, xorg window
 * xorg video framerate
 * use hash tables
