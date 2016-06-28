@@ -1,6 +1,7 @@
 ## Ready
 
 * ffplay
+* provision CI host using Ansible
 * rename: open-input-video for test.mp3
 * shape of v4l2, xorg window
 * xorg video framerate
