@@ -12,4 +12,4 @@
 (define (open-input-video file-name)
   (make <ffmpeg> #:format-context (open-format-context file-name)))
 
-(define-method (shape (self <ffmpeg>)) '(6 4))
+(define-method (shape (self <ffmpeg>)) (format-context-shape (slot-ref self 'format-context)))

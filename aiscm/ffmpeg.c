@@ -68,10 +68,20 @@ SCM open_format_context(SCM scm_file_name)
   return retval;
 }
 
+SCM format_context_shape(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  int width = self->video_dec_ctx->width;// TODO: check stream available
+  int height = self->video_dec_ctx->height;
+  return scm_list_2(scm_from_int(width), scm_from_int(height));
+}
+
 void init_ffmpeg(void)
 {
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
   scm_set_smob_free(format_context_tag, free_format_context);
   av_register_all();
   scm_c_define_gsubr("open-format-context", 1, 0, 0, open_format_context);
+  scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
 }
