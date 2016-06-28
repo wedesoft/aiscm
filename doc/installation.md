@@ -14,7 +14,7 @@ There are [64-bit binaries for Debian Jessie][2].
 To install the software, you have to add the AIscm repository to your list of repositories and install via apt-get. To do this, paste the following lines into your terminal:
 
 ```
-echo 'deb http://download.opensuse.org/repositories/home:/wedesoft/Debian_8.0/ /' | sudo tee /etc/apt/sources.list.d/aiscm.list 
+echo 'deb http://download.opensuse.org/repositories/home:/wedesoft/Debian_8.0/ /' | sudo tee /etc/apt/sources.list.d/aiscm.list
 wget -qO- http://download.opensuse.org/repositories/home:wedesoft/Debian_8.0/Release.key | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install aiscm
@@ -27,7 +27,7 @@ sudo apt-get install aiscm
 First you need to install the dependencies:
 
 ```
-sudo apt-get install guile-2.0-dev linux-libc-dev libmjpegtools-dev xorg-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev pandoc
+sudo apt-get install libtool pandoc imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev libavformat-dev
 ```
 
 #### Get the source code
