@@ -5,7 +5,7 @@ general:
 
 dependencies:
   pre:
-    - sudo apt-get install -q ansible libmagickcore5 libfftw3-double3 libmagickcore5-extra libpango-1.0-0 libpangocairo-1.0-0 ifupdown upstart-job upstart
+    - sudo apt-get install -q ansible
     - ansible-playbook -i "localhost," -c local --tags dependencies aiscm.yml
 
 test:
