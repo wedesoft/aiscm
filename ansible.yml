@@ -10,7 +10,6 @@
     - automake
     - libtool
     - colorgcc
-  tasks:
   - name: Install required packages
     apt: name={{item}} state=latest update_cache=yes
     with_items:
