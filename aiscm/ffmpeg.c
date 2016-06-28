@@ -1,6 +1,7 @@
 #include <libguile.h>
 #include <libavformat/avformat.h>
 
+// https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
 
 static scm_t_bits format_context_tag;
 
@@ -8,12 +9,23 @@ struct format_context_t {
   AVFormatContext *fmt_ctx;
   int video_stream_idx;
   AVCodecContext *video_dec_ctx;
+  AVPacket pkt;
+  AVPacket orig_pkt;
+  AVFrame *frame;
 };
 
 SCM format_context_destroy(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  if (self->frame) {
+    av_frame_free(&self->frame);
+    self->frame = NULL;
+  };
+  if (self->orig_pkt.data) {
+    av_free_packet(&self->orig_pkt);
+    self->orig_pkt.data = NULL;
+  };
   if (self->video_dec_ctx) {
     avcodec_close(self->video_dec_ctx);
     self->video_dec_ctx = NULL;
@@ -41,14 +53,17 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
   self = (struct format_context_t *)scm_gc_calloc(sizeof(struct format_context_t), "format-context");
   self->video_stream_idx = -1;
   SCM_NEWSMOB(retval, format_context_tag, self);
+
   if (avformat_open_input(&self->fmt_ctx, file_name, NULL, NULL) < 0) {
     format_context_destroy(retval);
     scm_misc_error("open-format-context", "Error opening video file '~a'", scm_list_1(scm_file_name));
   };
+
   if (avformat_find_stream_info(self->fmt_ctx, NULL) < 0) {
     format_context_destroy(retval);
     scm_misc_error("open-format-context", "Could not find stream information for video file '~a'", scm_list_1(scm_file_name));
   };
+
   self->video_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
   if (self->video_stream_idx >= 0) {
     AVCodecContext *dec_ctx = self->fmt_ctx->streams[self->video_stream_idx]->codec;
@@ -65,8 +80,15 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
     };
     self->video_dec_ctx = dec_ctx;
   };
+
   if (scm_is_true(scm_debug))
     av_dump_format(self->fmt_ctx, 0, file_name, 0);
+
+  self->frame = av_frame_alloc();
+
+  av_init_packet(&self->pkt);
+  self->pkt.data = NULL;
+  self->pkt.size = 0;
   return retval;
 }
 
@@ -85,6 +107,32 @@ SCM format_context_read_video(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+
+  if (self->pkt.size <= 0) {
+    if (self->orig_pkt.data) {
+      av_free_packet(&self->orig_pkt);
+      self->orig_pkt.data = NULL;
+      self->orig_pkt.size = 0;
+    };
+    if (av_read_frame(self->fmt_ctx, &self->pkt) >= 0)
+      self->orig_pkt = self->pkt;
+    else {
+      self->pkt.data = NULL;
+      self->pkt.size = 0;
+    };
+  };
+
+  int decoded = self->pkt.size;
+  if (self->pkt.stream_index == self->video_stream_idx) {
+    int got_frame = 0;
+    avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);// check errors
+  };
+
+  if (self->pkt.data) {
+    self->pkt.data += decoded;
+    self->pkt.size -= decoded;
+  };
+
   return scm_self;
 }
 

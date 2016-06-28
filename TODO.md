@@ -1,8 +1,10 @@
 ## Ready
 
 * ffplay
+* read-video -> read-image
 * test and package on Docker
 * rename: open-input-video for test.mp3 -> open-audio/video
+* v4l2: grab -> read-image
 * shape of v4l2, xorg window
 * xorg video framerate
 * use hash tables
