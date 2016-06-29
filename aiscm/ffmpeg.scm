@@ -13,4 +13,4 @@
   (make <ffmpeg> #:format-context (open-format-context file-name (equal? "YES" (getenv "DEBUG")))))
 
 (define-method (shape (self <ffmpeg>)) (format-context-shape (slot-ref self 'format-context)))
-(define (read-video self) (format-context-read-video (slot-ref self 'format-context)) self)
+(define (read-video self) (format-context-read-video (slot-ref self 'format-context)))

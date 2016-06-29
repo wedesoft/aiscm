@@ -110,35 +110,41 @@ SCM format_context_shape(SCM scm_self)
 
 SCM format_context_read_video(SCM scm_self)
 {
+  SCM retval = SCM_BOOL_F;
+
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
 
-  if (self->pkt.size <= 0) {
-    if (self->orig_pkt.data) {
-      av_free_packet(&self->orig_pkt);
-      self->orig_pkt.data = NULL;
-      self->orig_pkt.size = 0;
+  int got_frame = 0;
+  while (!got_frame) {
+    if (self->pkt.size <= 0) {// TODO: test flushing of final frames.
+      if (self->orig_pkt.data) {
+        av_free_packet(&self->orig_pkt);
+        self->orig_pkt.data = NULL;
+        self->orig_pkt.size = 0;
+      };
+      if (av_read_frame(self->fmt_ctx, &self->pkt) >= 0) // TODO: check errors and EOF
+        self->orig_pkt = self->pkt;
+      else {
+        self->pkt.data = NULL;
+        self->pkt.size = 0;
+      };
     };
-    if (av_read_frame(self->fmt_ctx, &self->pkt) >= 0)
-      self->orig_pkt = self->pkt;
-    else {
-      self->pkt.data = NULL;
-      self->pkt.size = 0;
+
+    int decoded = self->pkt.size;
+    if (self->pkt.stream_index == self->video_stream_idx)
+      avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);// TODO: check errors
+
+    if (self->pkt.data) {
+      self->pkt.data += decoded;
+      self->pkt.size -= decoded;
     };
   };
 
-  int decoded = self->pkt.size;
-  if (self->pkt.stream_index == self->video_stream_idx) {
-    int got_frame = 0;
-    avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);// check errors
-  };
-
-  if (self->pkt.data) {
-    self->pkt.data += decoded;
-    self->pkt.size -= decoded;
-  };
-
-  return scm_self;
+  retval = scm_list_3(scm_from_int(self->frame->format),
+                      scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
+                      scm_from_pointer(self->frame->data, NULL));
+  return retval;
 }
 
 void init_ffmpeg(void)

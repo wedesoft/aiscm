@@ -12,7 +12,7 @@
     "Throw error if file does not exist")
 (ok (throws? (shape audio))
     "Audio file does not have a frame size")
-(ok (equal? '(320 240) (shape frame))
+(todo (equal? '(320 240) (shape frame))
     "Check frame size of video frame")
 (todo (is-a? frame <image>)
     "Check that video frame is an image object")
