@@ -6,12 +6,12 @@ general:
 dependencies:
   pre:
     - sudo apt-get install -q ansible
-    - ansible-playbook -i "localhost," -c local --tags dependencies aiscm.yml
+    - ansible-playbook -i "localhost," -c local --tags tools,dependencies aiscm.yml
 
 test:
   pre:
     - ansible-playbook -i "localhost," -c local --tags build,distributable aiscm.yml
   override:
-    - make check -j 32
+    - make check -j
   post:
     - mv aiscm-*.tar.xz $CIRCLE_ARTIFACTS

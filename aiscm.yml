@@ -11,7 +11,7 @@
     - libtool
     - colorgcc
     sudo: true
-    tags: dependencies
+    tags: tools
   - name: install required packages
     apt: name={{item}} state=latest update_cache=yes
     with_items:
@@ -43,11 +43,11 @@
     command: ./configure CC=colorgcc
     tags: build
   - name: compile
-    command: make -j 32
+    command: make -j
     tags: build
   - name: create source archive
     command: make dist-xz
     tags: distributable
   - name: run test suite
-    command: make check -j 4
+    command: make check -j
     tags: test
