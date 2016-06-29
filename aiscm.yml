@@ -30,6 +30,8 @@
     - libglu1-mesa-dev
     - libgl1-mesa-dev
     - libswscale-dev
+    - libavutil-dev
+    - libavcodec-dev
     - libavformat-dev
     - pandoc
     sudo: true

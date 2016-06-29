@@ -27,7 +27,7 @@ sudo apt-get install aiscm
 First you need to install the dependencies:
 
 ```
-sudo apt-get install libtool pandoc imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev libavformat-dev
+sudo apt-get install libtool pandoc imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev libavformat-dev libavcodec-dev libavutil-dev
 ```
 
 #### Get the source code
