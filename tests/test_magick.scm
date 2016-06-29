@@ -23,7 +23,7 @@
     "Writing image should return input image")
 (define grey (read-image grey-file-name))
 (diagnostics "following test works with ImageMagick 6.8.9")
-(skip (equal? grey-values (to-list grey))
+(ok (equal? grey-values (to-list grey))
     "Check content of saved greyscale image")
 (ok (throws? (write-image grey-img "fixtures/nosuchdir/tmp.png"))
     "Should handle errors when writing image")
