@@ -3,6 +3,11 @@
 
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
 
+// http://stackoverflow.com/questions/24057248/ffmpeg-undefined-references-to-av-frame-alloc
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
+#define av_frame_alloc  avcodec_alloc_frame
+#endif
+
 static scm_t_bits format_context_tag;
 
 struct format_context_t {

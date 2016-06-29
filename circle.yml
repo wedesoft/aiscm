@@ -12,6 +12,6 @@ test:
   pre:
     - ansible-playbook -i "localhost," -c local --tags build,distributable aiscm.yml
   override:
-    - make check -j 4
+    - make check -j 32
   post:
     - mv aiscm-*.tar.xz $CIRCLE_ARTIFACTS
