@@ -43,7 +43,7 @@
     command: ./configure CC=colorgcc
     tags: build
   - name: compile
-    command: make -j 4
+    command: make -j 32
     tags: build
   - name: create source archive
     command: make dist-xz
