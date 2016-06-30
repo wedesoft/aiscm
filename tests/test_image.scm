@@ -51,4 +51,8 @@
   "Convert RGB array to image")
 (ok (equal? c (to-list (to-array (to-image (to-array <intrgb> c)))))
   "Convert integer RGB array to image")
+(ok (eq? 'RGB (format->symbol (symbol->format 'RGB)))
+  "Convert RGB symbol to format number and back")
+(ok (eq? 'I420 (format->symbol (symbol->format 'I420)))
+  "Convert I420 symbol to format number and back")
 (run-tests)

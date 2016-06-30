@@ -108,6 +108,16 @@ SCM format_context_shape(SCM scm_self)
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
+SCM scm_from_array(int source[], int n)
+{
+  SCM retval;
+  if ((*source && n) || n == AV_NUM_DATA_POINTERS)
+    retval = scm_cons(scm_from_int(*source), scm_from_array(source + 1, n - 1));
+  else
+    retval = SCM_EOL;
+  return retval;
+}
+
 SCM format_context_read_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
@@ -141,9 +151,19 @@ SCM format_context_read_video(SCM scm_self)
     };
   };
 
-  retval = scm_list_3(scm_from_int(self->frame->format),
+  int i;
+  uint8_t *base = self->frame->data[0];
+  int offsets[AV_NUM_DATA_POINTERS];
+  for (i=0; i<AV_NUM_DATA_POINTERS; i++) {
+    uint8_t *plane = self->frame->data[i];
+    offsets[i] = plane ? plane - base : 0;
+  };
+
+  retval = scm_list_5(scm_from_int(self->frame->format),
                       scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
-                      scm_from_pointer(self->frame->data, NULL));
+                      scm_from_array(offsets, AV_NUM_DATA_POINTERS),
+                      scm_from_array(self->frame->linesize, AV_NUM_DATA_POINTERS),
+                      scm_from_pointer(*self->frame->data, NULL));
   return retval;
 }
 

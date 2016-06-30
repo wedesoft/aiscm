@@ -14,7 +14,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
-            get-format get-mem convert to-image))
+            get-format get-mem convert to-image symbol->format format->symbol))
 (load-extension "libguile-image" "init_image")
 (define-class* <image> <object> <meta<image>> <class>
               (format #:init-keyword #:format #:getter get-format)
@@ -42,8 +42,8 @@
         (cons 'YUY2 PIX_FMT_YUYV422)
         (cons 'MJPG 0)))
 (define symbols (alist-invert formats))
-(define (sym->fmt sym) (assq-ref formats sym))
-(define (fmt->sym fmt) (assq-ref symbols fmt))
+(define (symbol->format sym) (assq-ref formats sym))
+(define (format->symbol fmt) (assq-ref symbols fmt))
 (define (image-size format pitches height)
   (case format
     ((RGB)  (* (car pitches) height))
@@ -83,7 +83,7 @@
     ((MJPG) (list))))
 (define (warp lst indices) (map (cut list-ref lst <>) indices))
 (define-method (descriptor (format <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
-  (list (sym->fmt format)
+  (list (symbol->format format)
         shape
         (if (eqv? format 'YV12) (warp offsets '(0 2 1)) offsets)
         (if (eqv? format 'YV12) (warp pitches '(0 2 1)) pitches)))
@@ -109,7 +109,7 @@
     (if (equal? source-type dest-type)
       self
       (if (eq? (get-format self) 'MJPG)
-        (if (and (eqv? (sym->fmt fmt) PIX_FMT_YUV420P)
+        (if (and (eqv? (symbol->format fmt) PIX_FMT_YUV420P)
                  (equal? (slot-ref self 'shape) shape)
                  (equal? pitches (default-pitches fmt (car shape))))
           (let* [(source-mem      (get-mem self))

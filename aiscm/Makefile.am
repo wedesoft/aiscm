@@ -7,10 +7,16 @@ site_DATA = mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm 
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-ffmpeg.la libguile-image.la \
-												libguile-magick.la libguile-pulse.la libguile-v4l2.la libguile-xorg.la
+												libguile-magick.la libguile-pulse.la libguile-v4l2.la libguile-xorg.la \
+												libguile-tests.la
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
+
+libguile_tests_la_SOURCES = tests.c
+libguile_tests_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_tests_la_LDFLAGS = -no-undefined
+libguile_tests_la_LIBADD = $(GUILE_LIBS)
 
 libguile_util_la_SOURCES = util.c
 libguile_util_la_CFLAGS = $(GUILE_CFLAGS)

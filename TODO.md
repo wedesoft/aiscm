@@ -1,12 +1,18 @@
 ## Ready
 
-* ffplay
+* test frame content
+* tests for C code (cutest?), refactor
+* handle end of file <-> xorg
+* video integration test
+* ffmpeg frame size?
 * read-video -> read-image
 * test and package on Docker
 * rename: open-input-video for test.mp3 -> open-audio/video
 * v4l2: grab -> read-image
 * shape of v4l2, xorg window
+* xorg window scaling, fullscreen windows
 * xorg video framerate
+* sudo docker run -v /home/jan/test/aiscm:/aiscm -t -i debian /bin/bash
 * use hash tables
 * conditional/select
 * git-init.xml asciidoc? jadetex? docbook2x

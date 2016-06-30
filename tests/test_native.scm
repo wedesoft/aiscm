@@ -1,0 +1,5 @@
+(use-modules (guile-tap))
+(load-extension "libguile-tests" "init_tests")
+(ok (eqv? 42 (forty-two))
+    "Run simple native method")
+(run-tests)

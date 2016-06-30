@@ -24,10 +24,10 @@
         (cons 'GRAY V4L2_PIX_FMT_GREY)
         (cons 'MJPG V4L2_PIX_FMT_MJPEG)))
 (define symbols (alist-invert formats))
-(define (sym->fmt sym) (assq-ref formats sym))
-(define (fmt->sym fmt) (assq-ref symbols fmt))
+(define (symbol->v4l2-format sym) (assq-ref formats sym))
+(define (v4l2-format->symbol fmt) (assq-ref symbols fmt))
 (define (supported? fmt)
-  (or (fmt->sym (car fmt))
+  (or (v4l2-format->symbol (car fmt))
       (begin (warn (format #f "Unsupported V4L2 format 0x~x" (car fmt))) #f)))
 (define format-order (map car formats))
 (define (format< x y)
@@ -42,8 +42,8 @@
     (let* [(device    (or device "/dev/video0"))
            (channel   (or channel 0))
            (select    (or select last))
-           (decode    (lambda (f) (cons (fmt->sym (car f)) (cdr f))))
-           (encode    (lambda (f) (cons (sym->fmt (car f)) (cdr f))))
+           (decode    (lambda (f) (cons (v4l2-format->symbol (car f)) (cdr f))))
+           (encode    (lambda (f) (cons (symbol->v4l2-format (car f)) (cdr f))))
            (selection (lambda (formats)
                         (encode (select (sort (map decode (filter supported? formats)) format<)))))]
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
@@ -53,6 +53,6 @@
 (define-method (grab (self <v4l2>))
   (let [(picture (videodev2-grab (slot-ref self 'videodev2)))]
     (make <image>
-          #:format (fmt->sym (car picture))
+          #:format (v4l2-format->symbol (car picture))
           #:shape  (cadr picture)
           #:mem    (make <mem> #:base (caddr picture) #:size (cadddr picture)))))

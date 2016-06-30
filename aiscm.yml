@@ -1,4 +1,5 @@
 # http://ansible.pickle.io/post/86598332429/running-ansible-playbook-in-localhost
+# ansible-playbook -i "localhost," -c local aiscm.yml -K
 ---
 - hosts: all
   tasks:
