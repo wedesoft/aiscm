@@ -5,7 +5,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-input-video read-video))
+  #:export (<ffmpeg> open-input-video read-video frame-rate))
 
 (load-extension "libguile-ffmpeg" "init_ffmpeg")
 
@@ -16,6 +16,7 @@
   (make <ffmpeg> #:format-context (open-format-context file-name (equal? "YES" (getenv "DEBUG")))))
 
 (define-method (shape (self <ffmpeg>)) (format-context-shape (slot-ref self 'format-context)))
+(define (frame-rate self) (format-context-frame-rate (slot-ref self 'format-context)))
 (define (read-video self)
   (let [(picture (format-context-read-video (slot-ref self 'format-context)))]
     (make <image>

@@ -110,6 +110,16 @@ SCM format_context_shape(SCM scm_self)
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
+SCM format_context_frame_rate(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);// TODO: check video present
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  if (self->video_stream_idx < 0)
+    scm_misc_error("format-context-frame-rate", "File format does not have a video stream", SCM_EOL);
+  AVRational r_frame_rate = self->fmt_ctx->streams[self->video_stream_idx]->r_frame_rate;
+  return scm_divide(scm_from_int(r_frame_rate.num), scm_from_int(r_frame_rate.den));
+}
+
 SCM format_context_read_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
@@ -166,5 +176,6 @@ void init_ffmpeg(void)
   av_register_all();
   scm_c_define_gsubr("open-format-context", 2, 0, 0, open_format_context);
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
+  scm_c_define_gsubr("format-context-frame-rate", 1, 0, 0, format_context_frame_rate);
   scm_c_define_gsubr("format-context-read-video", 1, 0, 0, format_context_read_video);
 }

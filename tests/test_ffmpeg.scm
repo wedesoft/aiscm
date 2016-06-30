@@ -16,4 +16,8 @@
     "Check frame size of video frame")
 (ok (is-a? frame <image>)
     "Check that video frame is an image object")
+(ok (eqv? 5 (frame-rate video))
+    "Get frame rate of video")
+(ok (throws? (frame-rate audio))
+    "Audio file does not have a frame rate")
 (run-tests)
