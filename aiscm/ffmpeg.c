@@ -19,6 +19,7 @@ struct format_context_t {
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *frame;
+  int64_t video_pts;
 };
 
 SCM format_context_destroy(SCM scm_self)
@@ -120,6 +121,13 @@ SCM format_context_frame_rate(SCM scm_self)
   return scm_divide(scm_from_int(r_frame_rate.num), scm_from_int(r_frame_rate.den));
 }
 
+SCM format_context_video_pts(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  return scm_from_int(self->video_pts);
+}
+
 SCM format_context_read_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
@@ -164,6 +172,8 @@ SCM format_context_read_video(SCM scm_self)
       offsets[i] = plane ? plane - base : 0;
     };
 
+    self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
+
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);// TODO: get actual buffer size
 
     retval = scm_list_n(scm_from_int(self->frame->format),
@@ -187,4 +197,5 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
   scm_c_define_gsubr("format-context-frame-rate", 1, 0, 0, format_context_frame_rate);
   scm_c_define_gsubr("format-context-read-video", 1, 0, 0, format_context_read_video);
+  scm_c_define_gsubr("format-context-video-pts", 1, 0, 0, format_context_video_pts);
 }

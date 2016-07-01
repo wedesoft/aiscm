@@ -1,9 +1,11 @@
 ## Ready
 
-* xorg get display object to wait on ("waiter"?), include processing time?
 * tests for C code, refactor
-* handle end of file <-> xorg
+* video frame time stamp
+* xorg get display object to wait on ("waiter"?), include processing time?
 * video integration test
+* read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
+* handle end of file <-> xorg
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * test and package on Docker
