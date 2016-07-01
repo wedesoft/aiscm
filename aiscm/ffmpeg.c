@@ -164,7 +164,7 @@ SCM format_context_read_video(SCM scm_self)
       offsets[i] = plane ? plane - base : 0;
     };
 
-    int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
+    int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);// TODO: get actual buffer size
 
     retval = scm_list_n(scm_from_int(self->frame->format),
                         scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),

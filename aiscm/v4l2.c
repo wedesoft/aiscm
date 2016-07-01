@@ -234,6 +234,18 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   return retval;
 }
 
+SCM videodev2_shape(SCM scm_self)
+{
+  scm_assert_smob_type(videodev2_tag, scm_self);
+  struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  if (self->fd <= 0)
+    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
+                   SCM_UNDEFINED);
+  int width = self->format.fmt.pix.width;
+  int height = self->format.fmt.pix.height;
+  return scm_list_2(scm_from_int(width), scm_from_int(height));
+}
+
 SCM videodev2_grab(SCM scm_self)
 {
   scm_assert_smob_type(videodev2_tag, scm_self);
@@ -284,5 +296,6 @@ void init_v4l2(void)
   scm_c_define("V4L2_PIX_FMT_MJPEG" ,scm_from_int(V4L2_PIX_FMT_MJPEG));
   scm_c_define_gsubr("make-videodev2", 3, 0, 0, make_videodev2);
   scm_c_define_gsubr("videodev2-destroy", 1, 0, 0, videodev2_destroy);
+  scm_c_define_gsubr("videodev2-shape", 1, 0, 0, videodev2_shape);
   scm_c_define_gsubr("videodev2-grab", 1, 0, 0, videodev2_grab);
 }

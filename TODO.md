@@ -4,13 +4,11 @@
 * tests for C code, refactor
 * handle end of file <-> xorg
 * video integration test
-* ffmpeg frame size?
 * inject: equality, sum, mininum, maximum of frames
-* read-video -> read-image
+* basic io module, read-video -> read-image, v4l2: grab -> read-image
 * test and package on Docker
 * rename: open-input-video for test.mp3 -> open-audio/video
-* v4l2: grab -> read-image
-* shape of v4l2, xorg window
+* shape of xorg window
 * xorg window scaling, fullscreen windows
 * sudo docker run -v /home/jan/test/aiscm:/aiscm -t -i debian /bin/bash
 * use hash tables

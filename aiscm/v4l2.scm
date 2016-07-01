@@ -3,6 +3,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
+  #:use-module (aiscm element)
   #:use-module (aiscm mem)
   #:use-module (aiscm int)
   #:use-module (aiscm image)
@@ -49,6 +50,8 @@
       (next-method self (list #:videodev2 (make-videodev2 device channel selection))))))
 
 (define-method (destroy (self <v4l2>)) (videodev2-destroy (slot-ref self 'videodev2)))
+
+(define-method (shape (self <v4l2>)) (videodev2-shape (slot-ref self 'videodev2)))
 
 (define-method (grab (self <v4l2>))
   (let [(picture (videodev2-grab (slot-ref self 'videodev2)))]
