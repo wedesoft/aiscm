@@ -25,4 +25,4 @@
                #:shape   (cadr picture)
                #:offsets (caddr picture)
                #:pitches (cadddr picture)
-               #:mem     (make <mem> #:base (last picture) #:size 1000000)))))
+               #:mem     (make <mem> #:base (last picture) #:size (list-ref picture 4))))))

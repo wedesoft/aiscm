@@ -1,11 +1,11 @@
 ## Ready
 
-* test frame content
-* xorg get display object to wait on ("waiter"?)
-* tests for C code (cutest?), refactor
+* xorg get display object to wait on ("waiter"?), include processing time?
+* tests for C code, refactor
 * handle end of file <-> xorg
 * video integration test
 * ffmpeg frame size?
+* inject: equality, sum, mininum, maximum of frames
 * read-video -> read-image
 * test and package on Docker
 * rename: open-input-video for test.mp3 -> open-audio/video

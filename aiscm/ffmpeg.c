@@ -135,7 +135,7 @@ SCM format_context_read_video(SCM scm_self)
         self->orig_pkt.data = NULL;
         self->orig_pkt.size = 0;
       };
-      if (av_read_frame(self->fmt_ctx, &self->pkt) >= 0) // TODO: check errors and EOF
+      if (av_read_frame(self->fmt_ctx, &self->pkt) >= 0) // TODO: distinguish errors from EOF
         self->orig_pkt = self->pkt;
       else {
         self->pkt.data = NULL;
@@ -164,11 +164,15 @@ SCM format_context_read_video(SCM scm_self)
       offsets[i] = plane ? plane - base : 0;
     };
 
-    retval = scm_list_5(scm_from_int(self->frame->format),
+    int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
+
+    retval = scm_list_n(scm_from_int(self->frame->format),
                         scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
                         from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
                         from_non_zero_array(self->frame->linesize, AV_NUM_DATA_POINTERS, 1),
-                        scm_from_pointer(*self->frame->data, NULL));
+                        scm_from_int(size),
+                        scm_from_pointer(*self->frame->data, NULL),
+                        SCM_UNDEFINED);
   } else
     retval = SCM_BOOL_F;
   return retval;
