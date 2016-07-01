@@ -112,7 +112,7 @@ SCM format_context_shape(SCM scm_self)
 
 SCM format_context_frame_rate(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);// TODO: check video present
+  scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
   if (self->video_stream_idx < 0)
     scm_misc_error("format-context-frame-rate", "File format does not have a video stream", SCM_EOL);
@@ -144,8 +144,10 @@ SCM format_context_read_video(SCM scm_self)
     };
 
     int decoded = self->pkt.size;
-    if (self->pkt.stream_index == self->video_stream_idx)
+    if (self->pkt.stream_index == self->video_stream_idx) {
       avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);// TODO: check errors
+      if (self->pkt.size <= 0 && !got_frame) break;
+    };
 
     if (self->pkt.data) {
       self->pkt.data += decoded;
@@ -153,19 +155,22 @@ SCM format_context_read_video(SCM scm_self)
     };
   };
 
-  int i;
-  uint8_t *base = self->frame->data[0];
-  int offsets[AV_NUM_DATA_POINTERS];
-  for (i=0; i<AV_NUM_DATA_POINTERS; i++) {
-    uint8_t *plane = self->frame->data[i];
-    offsets[i] = plane ? plane - base : 0;
-  };
+  if (got_frame) {
+    int i;
+    uint8_t *base = self->frame->data[0];
+    int offsets[AV_NUM_DATA_POINTERS];
+    for (i=0; i<AV_NUM_DATA_POINTERS; i++) {
+      uint8_t *plane = self->frame->data[i];
+      offsets[i] = plane ? plane - base : 0;
+    };
 
-  retval = scm_list_5(scm_from_int(self->frame->format),
-                      scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
-                      from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
-                      from_non_zero_array(self->frame->linesize, AV_NUM_DATA_POINTERS, 1),
-                      scm_from_pointer(*self->frame->data, NULL));
+    retval = scm_list_5(scm_from_int(self->frame->format),
+                        scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
+                        from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
+                        from_non_zero_array(self->frame->linesize, AV_NUM_DATA_POINTERS, 1),
+                        scm_from_pointer(*self->frame->data, NULL));
+  } else
+    retval = SCM_BOOL_F;
   return retval;
 }
 

@@ -19,9 +19,10 @@
 (define (frame-rate self) (format-context-frame-rate (slot-ref self 'format-context)))
 (define (read-video self)
   (let [(picture (format-context-read-video (slot-ref self 'format-context)))]
-    (make <image>
-          #:format  (format->symbol (car picture))
-          #:shape   (cadr picture)
-          #:offsets (caddr picture)
-          #:pitches (cadddr picture)
-          #:mem     (make <mem> #:base (last picture) #:size 1000000))))
+    (and picture
+         (make <image>
+               #:format  (format->symbol (car picture))
+               #:shape   (cadr picture)
+               #:offsets (caddr picture)
+               #:pitches (cadddr picture)
+               #:mem     (make <mem> #:base (last picture) #:size 1000000)))))

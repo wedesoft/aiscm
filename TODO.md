@@ -1,6 +1,7 @@
 ## Ready
 
 * test frame content
+* xorg get display object to wait on ("waiter"?)
 * tests for C code (cutest?), refactor
 * handle end of file <-> xorg
 * video integration test
@@ -11,7 +12,6 @@
 * v4l2: grab -> read-image
 * shape of v4l2, xorg window
 * xorg window scaling, fullscreen windows
-* xorg video framerate
 * sudo docker run -v /home/jan/test/aiscm:/aiscm -t -i debian /bin/bash
 * use hash tables
 * conditional/select
