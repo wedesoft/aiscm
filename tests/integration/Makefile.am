@@ -10,9 +10,18 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm asm.scm byte_se
 										type_matching.scm virtual_arrays.scm virtual_registers.scm write_image.scm \
 										xorg_image_list.scm xorg_video_list.scm xorg_video.scm xorg_window.scm \
 										crop_dump.scm crop_2d.scm to_list.scm complex_array.scm unary_ops.scm \
-										boolean_array.scm invert.scm scalars.scm division.scm modulo.scm binary.scm
+										boolean_array.scm invert.scm scalars.scm division.scm modulo.scm binary.scm \
+										ffplay.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) fubk.png pavillion.jpg star-ferry.jpg 
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg 
+
+noinst_DATA = fubk.png camera.avi
+
+fubk.png: ../fixtures/fubk.png
+	$(LN_S) $< $@
+
+camera.avi: ../fixtures/camera.avi
+	$(LN_S) $< $@
 
 INTEGRATION_TEST_TARGETS = $(addsuffix .tmp, $(basename $(INTEGRATION_TESTS)))
 
@@ -28,6 +37,6 @@ integration-local:
 
 reintegration-local: $(INTEGRATION_TEST_TARGETS)
 
-CLEANFILES = pattern.png swap-channels.jpg *.tmp
+CLEANFILES = fubk.png camera.avi pattern.png swap-channels.jpg *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in

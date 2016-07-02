@@ -52,7 +52,7 @@
 (define-method (show (self <sequence<>>)) (show (to-image self)) self)
 (define-method (show (self <procedure>))
   (let* [(dsp     (make <xdisplay>))
-         (result  (self))
+         (result  (self dsp))
          (results (if (list? result) result (list result)))
          (images  (map to-image results))
          (shapes  (map shape images))

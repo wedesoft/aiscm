@@ -1,12 +1,8 @@
 ## Ready
 
-* sudo docker build -t wedesoft/aiscm .
-  sudo docker run -v /home/jan/test/aiscm:/aiscm -t -i wedesoft/aiscm /bin/bash
 * video positioning
-* av_frame_get_best_effort_timestamp undefined on Ubuntu
-  https://github.com/mikeboers/PyAV/issues/13
 * tests for C code, refactor
-* xorg get display object to wait on ("waiter"?), include processing time?
+* xorg get display object to wait on ("waiter"?), include processing time? update integration test example
 * video integration test
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * audio frame time stamp
