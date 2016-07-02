@@ -2,6 +2,7 @@
 
 * sudo docker build -t wedesoft/aiscm .
   sudo docker run -v /home/jan/test/aiscm:/aiscm -t -i wedesoft/aiscm /bin/bash
+* video positioning
 * av_frame_get_best_effort_timestamp undefined on Ubuntu
   https://github.com/mikeboers/PyAV/issues/13
 * tests for C code, refactor
