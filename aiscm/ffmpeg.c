@@ -172,7 +172,11 @@ SCM format_context_read_video(SCM scm_self)
       offsets[i] = plane ? plane - base : 0;
     };
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
+#else
+    self->video_pts += 1;// hack for old versions of FFmpeg
+#endif
 
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);// TODO: get actual buffer size
 

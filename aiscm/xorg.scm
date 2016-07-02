@@ -62,7 +62,7 @@
     (for-each show windows images)
     (for-each show windows)
     (do () ((quit? dsp))
-      (set! result (self))
+      (set! result (self dsp))
       (set! results (if (list? result) result (list result)))
       (set! images (map to-image results))
       (for-each show windows images)
