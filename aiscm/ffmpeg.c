@@ -164,13 +164,8 @@ SCM format_context_read_video(SCM scm_self)
   };
 
   if (got_frame) {
-    int i;
-    uint8_t *base = self->frame->data[0];
     int offsets[AV_NUM_DATA_POINTERS];
-    for (i=0; i<AV_NUM_DATA_POINTERS; i++) {
-      uint8_t *plane = self->frame->data[i];
-      offsets[i] = plane ? plane - base : 0;
-    };
+    offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
@@ -178,7 +173,7 @@ SCM format_context_read_video(SCM scm_self)
     self->video_pts += 1;// hack for old versions of FFmpeg
 #endif
 
-    int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);// TODO: get actual buffer size
+    int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
 
     retval = scm_list_n(scm_from_int(self->frame->format),
                         scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
