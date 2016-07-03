@@ -17,6 +17,8 @@
     "Throw error if file does not exist")
 (ok (throws? (shape audio))
     "Audio file does not have a frame size")
+(ok (throws? (video-pts audio))
+    "Audio file does not have a video presentation time stamp")
 (ok (equal? '(320 240) (shape frame))
     "Check frame size of video frame")
 (ok (is-a? frame <image>)

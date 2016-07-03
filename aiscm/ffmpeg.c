@@ -2,8 +2,9 @@
 #include <libavformat/avformat.h>
 #include "helpers.h"
 
-
+// http://dranger.com/ffmpeg/
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
+// https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/filtering_video.c
 
 // http://stackoverflow.com/questions/24057248/ffmpeg-undefined-references-to-av-frame-alloc
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
@@ -125,7 +126,11 @@ SCM format_context_video_pts(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
-  return scm_from_int(self->video_pts);
+  if (self->video_stream_idx < 0)
+    scm_misc_error("format-context-video-pts", "File format does not have a video stream", SCM_EOL);
+  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
+  int64_t video_pts = self->video_pts;
+  return scm_divide(scm_product(scm_from_int(video_pts), scm_from_int(time_base.num)), scm_from_int(time_base.den));
 }
 
 SCM format_context_read_video(SCM scm_self)
