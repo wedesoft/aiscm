@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-19)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 binary-ports)
@@ -12,7 +13,8 @@
             assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
-            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header)
+            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
+            clock elapsed)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -167,3 +169,7 @@
 (define (typed-header lst tag) (map (cut list <> tag) lst))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37
+(define (clock) (current-time))
+(define (elapsed since)
+  (let [(difference (time-difference (current-time) since))]
+    (+ (time-second difference) (* 1e-9 (time-nanosecond difference)))))
