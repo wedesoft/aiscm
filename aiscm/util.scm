@@ -14,7 +14,7 @@
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
-            clock elapsed)
+            clock elapsed synchronise)
   #:export-syntax (define-class* template-class))
 (load-extension "libguile-util" "init_util")
 (define (toplevel-define! name val)
@@ -173,3 +173,4 @@
 (define (elapsed since)
   (let [(difference (time-difference (current-time) since))]
     (+ (time-second difference) (* 1e-9 (time-nanosecond difference)))))
+(define (synchronise self target method result) (method (max 0 (- target (elapsed self)))) result)

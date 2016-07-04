@@ -160,8 +160,8 @@ SCM display_event_loop(SCM scm_self, SCM scm_timeout)
 {
   scm_assert_smob_type(display_tag, scm_self);
   struct display_t *self = (struct display_t *)SCM_SMOB_DATA(scm_self);
-  double timeout = scm_to_double(scm_timeout);
-  if (timeout >= 0) {
+  if (!scm_is_false(scm_timeout)) {
+    double timeout = scm_to_double(scm_timeout);
     struct timeval t0;
     double elapsed;
     gettimeofday(&t0, NULL);
