@@ -10,6 +10,7 @@
     - autoconf
     - automake
     - libtool
+    - gettext
     - colorgcc
     sudo: true
     tags: tools
