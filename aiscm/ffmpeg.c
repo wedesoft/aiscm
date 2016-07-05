@@ -172,10 +172,10 @@ SCM format_context_read_video(SCM scm_self)
     int offsets[AV_NUM_DATA_POINTERS];
     offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
 
-#ifdef av_frame_alloc
+#ifndef av_frame_alloc
     self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
 #else
-    self->video_pts += 1;// hack for older versions of FFmpeg
+    self->video_pts += 1;// hack for old versions of FFmpeg
 #endif
 
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);

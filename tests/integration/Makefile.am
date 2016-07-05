@@ -13,7 +13,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm asm.scm byte_se
 										boolean_array.scm invert.scm scalars.scm division.scm modulo.scm binary.scm \
 										ffplay.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg 
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
 
 noinst_DATA = fubk.png camera.avi
 

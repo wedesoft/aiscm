@@ -1,11 +1,9 @@
 ## Ready
 
-* tests for C code, refactor
-* xorg get display object to wait on ("waiter"?), include processing time? update integration test example
-* video positioning
-* video integration test
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
+* video positioning
 * audio frame time stamp
+* video/audio integration test
 * handle end of file <-> xorg
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
