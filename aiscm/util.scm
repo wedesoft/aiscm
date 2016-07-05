@@ -173,4 +173,4 @@
 (define (elapsed since)
   (let [(difference (time-difference (current-time) since))]
     (+ (time-second difference) (* 1e-9 (time-nanosecond difference)))))
-(define (synchronise self target method result) (method (max 0 (- target (elapsed self)))) result)
+(define (synchronise result time target method) (method (max 0 (- target (elapsed time)))) result)
