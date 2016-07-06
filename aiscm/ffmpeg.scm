@@ -5,18 +5,21 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-input-video read-video frame-rate video-pts))
+  #:export (<ffmpeg> open-input-video open-input-audio read-video frame-rate video-pts channels))
 
 (load-extension "libguile-ffmpeg" "init_ffmpeg")
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (format-context #:init-keyword #:format-context))
 
-(define (open-input-video file-name)
+(define (open-input file-name)
   (make <ffmpeg> #:format-context (open-format-context file-name (equal? "YES" (getenv "DEBUG")))))
+(define (open-input-video file-name) (open-input file-name))
+(define (open-input-audio file-name) (open-input file-name))
 
 (define-method (shape (self <ffmpeg>)) (format-context-shape (slot-ref self 'format-context)))
 (define (frame-rate self) (format-context-frame-rate (slot-ref self 'format-context)))
+
 (define (video-pts self) (format-context-video-pts (slot-ref self 'format-context)))
 (define (read-video self)
   (let [(picture (format-context-read-video (slot-ref self 'format-context)))]
@@ -27,3 +30,5 @@
                #:offsets (caddr picture)
                #:pitches (cadddr picture)
                #:mem     (make <mem> #:base (last picture) #:size (list-ref picture 4))))))
+
+(define (channels self) (format-context-channels (slot-ref self 'format-context)))
