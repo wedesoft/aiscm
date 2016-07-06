@@ -1,5 +1,5 @@
 # docker build -t wedesoft/aiscm-xenial .
-# docker run -v $HOME/test/aiscm:/mnt/aiscm -t -i wedesoft/aiscm /bin/bash
+# docker run -t -i wedesoft/aiscm-xenial /bin/bash
 # FROM debian:jessie
 FROM ubuntu:xenial
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
