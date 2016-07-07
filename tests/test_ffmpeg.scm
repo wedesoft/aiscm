@@ -46,4 +46,6 @@
     "Detect stereo audio stream")
 (ok (throws? (channels image))
     "Image does not have an audio channel")
+(ok (eqv? 8000 (rate audio))
+    "Get sampling rate of audio stream")
 (run-tests)

@@ -229,6 +229,13 @@ SCM format_context_channels(SCM scm_self)
   return scm_from_int(self->audio_dec_ctx->channels);
 }
 
+SCM format_context_rate(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  return scm_from_int(self->audio_dec_ctx->sample_rate);
+}
+
 void init_ffmpeg(void)
 {
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
@@ -240,4 +247,5 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-read-video", 1, 0, 0, format_context_read_video);
   scm_c_define_gsubr("format-context-video-pts", 1, 0, 0, format_context_video_pts);
   scm_c_define_gsubr("format-context-channels", 1, 0, 0, format_context_channels);
+  scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
 }
