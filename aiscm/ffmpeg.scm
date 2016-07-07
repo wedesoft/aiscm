@@ -2,6 +2,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
@@ -33,3 +34,4 @@
 
 (define (channels self) (format-context-channels (slot-ref self 'format-context)))
 (define (rate self) (format-context-rate (slot-ref self 'format-context)))
+(define-method (typecode (self <ffmpeg>)) (format-context-typecode (slot-ref self 'format-context))); TODO: convert to type object

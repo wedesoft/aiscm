@@ -246,7 +246,15 @@ SCM format_context_rate(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  // TODO: check for audio stream, refactor
   return scm_from_int(self->audio_dec_ctx->sample_rate);
+}
+
+SCM format_context_typecode(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  return scm_from_int(self->audio_dec_ctx->sample_fmt);
 }
 
 void init_ffmpeg(void)
@@ -254,6 +262,7 @@ void init_ffmpeg(void)
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
   scm_set_smob_free(format_context_tag, free_format_context);
   av_register_all();
+  scm_c_define("AV_SAMPLE_FMT_U8" ,scm_from_int(AV_SAMPLE_FMT_U8));
   scm_c_define_gsubr("open-format-context", 2, 0, 0, open_format_context);
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
   scm_c_define_gsubr("format-context-frame-rate", 1, 0, 0, format_context_frame_rate);
@@ -261,4 +270,5 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-video-pts", 1, 0, 0, format_context_video_pts);
   scm_c_define_gsubr("format-context-channels", 1, 0, 0, format_context_channels);
   scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
+  scm_c_define_gsubr("format-context-typecode", 1, 0, 0, format_context_typecode);
 }
