@@ -1,5 +1,5 @@
-# docker build -t wedesoft/aiscm-xenial .
-# docker run -t -i wedesoft/aiscm-xenial /bin/bash
+# docker build -t wedesoft/aiscm-debian .
+# docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian /bin/bash
 FROM debian:jessie
 # FROM ubuntu:xenial
 ENV VERSION 0.4.2

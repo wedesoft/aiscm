@@ -1,6 +1,9 @@
 ## Ready
 
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
+* rate, channels: pulse <-> ffmpeg
+* Docker image with deb-multimedia
+* vanilla Debian: av\_frame\_get\_best\_effort\_timestamp undefined
 * video positioning
 * audio frame time stamp
 * video/audio integration test
@@ -60,7 +63,7 @@
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * REPL docs: (help ...)
 * increase RSP if using more than 128 bytes; (ptr <int> RSP offset -8)
-* https://www.gnu.org/software/guile/manual/html_node/Arrays.html#Arrays
+* https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * array stack/unstack/record arrays
 * slimv, tcp/ip, attach
