@@ -6,6 +6,10 @@
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/filtering_video.c
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
+#define av_frame_alloc avcodec_alloc_frame
+#define av_frame_free avcodec_free_frame
+#endif
 
 static scm_t_bits format_context_tag;
 
@@ -204,7 +208,16 @@ SCM format_context_read_video(SCM scm_self)
     int offsets[AV_NUM_DATA_POINTERS];
     offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
+    if (self->frame->pkt_pts != AV_NOPTS_VALUE)
+      self->video_pts = self->frame->pkt_pts;
+    else if (self->frame->pkt_dts != AV_NOPTS_VALUE)
+      self->video_pts = self->frame->pkt_dts;
+    else
+      self->video_pts = 0;
+#else
     self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
+#endif
 
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
 
