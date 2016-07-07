@@ -1,0 +1,20 @@
+general:
+  branches:
+    ignore:
+      - gh-pages
+
+dependencies:
+  pre:
+    - sudo apt-get install -q build-essential autoconf automake libtool devscripts equivs
+    - sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
+
+test:
+  pre:
+    - ./bootstrap
+    - ./configure
+    - make -j
+  override:
+    - make check -j
+  post:
+    - make dist-xz
+    - mv aiscm-*.tar.xz $CIRCLE_ARTIFACTS
