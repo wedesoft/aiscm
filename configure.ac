@@ -13,6 +13,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_AWK
+AC_LANG(C)
 PKG_PROG_PKG_CONFIG
 AM_CONFIG_HEADER(config.h)
 AC_CHECK_PROG(TOUCH,touch,touch,touch)
@@ -57,6 +58,22 @@ AC_SUBST(AVCODEC_LIBS)
 PKG_CHECK_MODULES(AVFORMAT, libavformat >= 54.20.4)
 AC_SUBST(AVFORMAT_CFLAGS)
 AC_SUBST(AVFORMAT_LIBS)
+
+old_LIBS="$LIBS"
+LIBS="$LIBS $AVUTIL_LIBS"
+AC_MSG_CHECKING([for av_frame_alloc])
+AC_TRY_LINK([#include <libavutil/frame.h>],
+            [av_frame_alloc()],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is defined (replacing avcodec_alloc_frame)])],
+            [AC_MSG_RESULT([no])])
+AC_MSG_CHECKING([for av_frame_get_best_effort_timestamp])
+AC_TRY_LINK([#include <libavutil/frame.h>],
+            [av_frame_get_best_effort_timestamp(0)],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_BEST_EFFORT_TIMESTAMP,1,[use av_frame_get_best_effort_timestamp to determine timestamps])],
+            [AC_MSG_RESULT([no])])
+LIBS="$old_LIBS"
 
 GUILE_PKG([2.2 2.0 1.8])
 GUILE_PROGS
