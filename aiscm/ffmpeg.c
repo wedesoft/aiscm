@@ -146,8 +146,8 @@ SCM format_context_frame_rate(SCM scm_self)
   struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
   if (self->video_stream_idx < 0)
     scm_misc_error("format-context-frame-rate", "File format does not have a video stream", SCM_EOL);
-  AVRational r_frame_rate = self->fmt_ctx->streams[self->video_stream_idx]->r_frame_rate;
-  return scm_divide(scm_from_int(r_frame_rate.num), scm_from_int(r_frame_rate.den));
+  AVRational avg_frame_rate = self->fmt_ctx->streams[self->video_stream_idx]->avg_frame_rate;
+  return scm_divide(scm_from_int(avg_frame_rate.num), scm_from_int(avg_frame_rate.den));
 }
 
 SCM format_context_video_pts(SCM scm_self)
