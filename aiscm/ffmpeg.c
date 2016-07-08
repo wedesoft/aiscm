@@ -133,33 +133,31 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
-SCM format_context_shape(SCM scm_self)
+AVCodecContext *video_dec_ctx(struct format_context_t *self)
 {
-  struct format_context_t *self = get_self(scm_self);
   if (!self->video_dec_ctx)
     scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
-  int width = self->video_dec_ctx->width;
-  int height = self->video_dec_ctx->height;
-  return scm_list_2(scm_from_int(width), scm_from_int(height));
+  return self->video_dec_ctx;
+}
+
+SCM format_context_shape(SCM scm_self)
+{
+  AVCodecContext *ctx = video_dec_ctx(get_self(scm_self));
+  return scm_list_2(scm_from_int(ctx->width), scm_from_int(ctx->height));
 }
 
 SCM format_context_frame_rate(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  if (self->video_stream_idx < 0)
-    scm_misc_error("format-context-frame-rate", "File format does not have a video stream", SCM_EOL);
-  AVRational avg_frame_rate = self->fmt_ctx->streams[self->video_stream_idx]->avg_frame_rate;
-  return scm_divide(scm_from_int(avg_frame_rate.num), scm_from_int(avg_frame_rate.den));
+  AVRational frame_rate = video_dec_ctx(get_self(scm_self))->framerate;
+  return scm_divide(scm_from_int(frame_rate.num), scm_from_int(frame_rate.den));
 }
 
 SCM format_context_video_pts(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
-  if (self->video_stream_idx < 0)
-    scm_misc_error("format-context-video-pts", "File format does not have a video stream", SCM_EOL);
-  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
   int64_t video_pts = self->video_pts;
-  return scm_divide(scm_product(scm_from_int(video_pts), scm_from_int(time_base.num)), scm_from_int(time_base.den));
+  AVRational frame_rate = video_dec_ctx(self)->framerate;
+  return scm_divide(scm_product(scm_from_int(video_pts), scm_from_int(frame_rate.den)), scm_from_int(frame_rate.num));
 }
 
 SCM format_context_read_video(SCM scm_self)
@@ -241,13 +239,16 @@ SCM format_context_channels(SCM scm_self)
 SCM format_context_rate(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
-  // TODO: check for audio stream, refactor
+  if (self->audio_stream_idx < 0)
+    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
   return scm_from_int(self->audio_dec_ctx->sample_rate);
 }
 
 SCM format_context_typecode(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
+  if (self->audio_stream_idx < 0)
+    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
   return scm_from_int(self->audio_dec_ctx->sample_fmt);
 }
 

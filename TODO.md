@@ -1,7 +1,7 @@
 ## Ready
 
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
-* test for planar audio
+* test for planar/packed audio
 * test for FFmpeg floating point audio
 * rate, channels: pulse <-> ffmpeg
 * Docker image with deb-multimedia
