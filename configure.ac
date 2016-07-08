@@ -74,6 +74,13 @@ AC_TRY_LINK([#include <libavutil/frame.h>],
              AC_DEFINE(HAVE_BEST_EFFORT_TIMESTAMP,1,[use av_frame_get_best_effort_timestamp to determine timestamps])],
             [AC_MSG_RESULT([no])])
 LIBS="$old_LIBS"
+AC_MSG_CHECKING([for AVCodecContext.framerate])
+AC_TRY_COMPILE([#include <libavcodec/avcodec.h>],
+               [AVCodecContext ctx;]
+               [ctx.framerate;],
+               [AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_FRAMERATE,1,[use AVCodecContext.framerate])],
+               [AC_MSG_RESULT([no])])
 
 GUILE_PKG([2.2 2.0 1.8])
 GUILE_PROGS

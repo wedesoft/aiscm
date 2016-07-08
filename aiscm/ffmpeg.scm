@@ -3,11 +3,13 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm sequence)
   #:use-module (aiscm float)
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-input-video open-input-audio read-video frame-rate video-pts channels rate))
+  #:export (<ffmpeg> open-input-video open-input-audio
+            read-video read-audio frame-rate video-pts channels rate))
 
 (load-extension "libguile-ffmpeg" "init_ffmpeg")
 
@@ -40,6 +42,9 @@
                #:offsets (caddr picture)
                #:pitches (cadddr picture)
                #:mem     (make <mem> #:base (last picture) #:size (list-ref picture 4))))))
+
+(define (read-audio self)
+  (make (multiarray (typecode self) 2) #:shape '(1 100)))
 
 (define (channels self) (format-context-channels (slot-ref self 'format-context)))
 (define (rate self) (format-context-rate (slot-ref self 'format-context)))

@@ -155,8 +155,16 @@ SCM format_context_shape(SCM scm_self)
 
 SCM format_context_frame_rate(SCM scm_self)
 {
+#ifdef HAVE_FRAMERATE
   AVRational frame_rate = video_dec_ctx(get_self(scm_self))->framerate;
   return scm_divide(scm_from_int(frame_rate.num), scm_from_int(frame_rate.den));
+#else
+  struct format_context_t *self = get_self(scm_self);
+  if (self->video_stream_idx < 0)
+    scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
+  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
+  return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));
+#endif
 }
 
 SCM format_context_video_pts(SCM scm_self)
