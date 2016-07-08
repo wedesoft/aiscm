@@ -44,7 +44,8 @@
                #:mem     (make <mem> #:base (last picture) #:size (list-ref picture 4))))))
 
 (define (read-audio self)
-  (make (multiarray (typecode self) 2) #:shape (list (channels self) 100)))
+  (let [(samples (format-context-read-audio (slot-ref self 'format-context)))]
+    (make (multiarray (typecode self) 2) #:shape (list (channels self) 100))))
 
 (define (channels self) (format-context-channels (slot-ref self 'format-context)))
 (define (rate self) (format-context-rate (slot-ref self 'format-context)))

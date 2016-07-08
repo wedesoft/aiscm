@@ -39,14 +39,14 @@ static struct format_context_t *get_self(SCM scm_self)
   return (struct format_context_t *)SCM_SMOB_DATA(scm_self);
 }
 
-AVCodecContext *video_dec_ctx(struct format_context_t *self)
+static AVCodecContext *video_dec_ctx(struct format_context_t *self)
 {
   if (!self->video_dec_ctx)
     scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
   return self->video_dec_ctx;
 }
 
-AVCodecContext *audio_dec_ctx(struct format_context_t *self)
+static AVCodecContext *audio_dec_ctx(struct format_context_t *self)
 {
   if (!self->audio_dec_ctx)
     scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
@@ -94,13 +94,13 @@ AVCodecContext *open_codec(SCM scm_self, struct format_context_t *self, SCM scm_
   AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
   if (!dec) {
     format_context_destroy(scm_self);
-    scm_misc_error("open-format-context", "Failed to find ~a codec for file '~a'",
+    scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
   av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
   if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
     format_context_destroy(scm_self);
-    scm_misc_error("open-format-context", "Failed to open ~a codec for file '~a'",
+    scm_misc_error("open-codec", "Failed to open ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
   return dec_ctx;
@@ -171,30 +171,34 @@ SCM format_context_video_pts(SCM scm_self)
   return scm_divide(scm_from_int(get_self(scm_self)->video_pts), format_context_frame_rate(scm_self));
 }
 
+static void read_packet(struct format_context_t *self)
+{
+  if (self->pkt.size <= 0) {
+    if (self->orig_pkt.data) {
+      av_free_packet(&self->orig_pkt);
+      self->orig_pkt.data = NULL;
+      self->orig_pkt.size = 0;
+    };
+    int err = av_read_frame(self->fmt_ctx, &self->pkt);
+    if (err >= 0)
+      self->orig_pkt = self->pkt;
+    else if (err == AVERROR_EOF) {
+      self->pkt.data = NULL;
+      self->pkt.size = 0;
+    } else
+      scm_misc_error("read-packet", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
+  };
+}
+
 SCM format_context_read_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
 
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
 
   int got_frame = 0;
   while (!got_frame) {
-    if (self->pkt.size <= 0) {
-      if (self->orig_pkt.data) {
-        av_free_packet(&self->orig_pkt);
-        self->orig_pkt.data = NULL;
-        self->orig_pkt.size = 0;
-      };
-      int err = av_read_frame(self->fmt_ctx, &self->pkt);
-      if (err >= 0)
-        self->orig_pkt = self->pkt;
-      else if (err == AVERROR_EOF) {
-        self->pkt.data = NULL;
-        self->pkt.size = 0;
-      } else
-        scm_misc_error("format-context-read-video", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
-    };
+    read_packet(self);
 
     int decoded = self->pkt.size;
     if (self->pkt.stream_index == self->video_stream_idx) {
@@ -234,8 +238,40 @@ SCM format_context_read_video(SCM scm_self)
                         scm_from_int(size),
                         scm_from_pointer(*self->frame->data, NULL),
                         SCM_UNDEFINED);
-  } else
-    retval = SCM_BOOL_F;
+  };
+
+  return retval;
+}
+
+SCM format_context_read_audio(SCM scm_self)
+{
+  SCM retval = SCM_BOOL_F;
+
+#if 0
+  struct format_context_t *self = get_self(scm_self);
+
+  int got_frame = 0;
+  while (!got_frame) {
+    read_packet(self);
+
+    int decoded = self->pkt.size;
+    if (self->pkt.stream_index == self->audio_stream_idx) {
+      int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, &got_frame, &self->pkt);
+      if (len < 0)
+        scm_misc_error("format-context-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+      if (self->pkt.size <= 0 && !got_frame) break;
+    };
+
+    if (self->pkt.data) {
+      self->pkt.data += decoded;
+      self->pkt.size -= decoded;
+    };
+  };
+
+  if (got_frame) {
+    int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
+  };
+#endif
   return retval;
 }
 
@@ -272,4 +308,5 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-channels", 1, 0, 0, format_context_channels);
   scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
   scm_c_define_gsubr("format-context-typecode", 1, 0, 0, format_context_typecode);
+  scm_c_define_gsubr("format-context-read-audio", 1, 0, 0, format_context_read_audio);
 }
