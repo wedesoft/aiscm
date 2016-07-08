@@ -14,11 +14,11 @@
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (format-context #:init-keyword #:format-context))
 (define audio-formats
-  (list (cons <ubyte>  AV_SAMPLE_FMT_U8 )
-        (cons <sint>   AV_SAMPLE_FMT_S16)
-        (cons <int>    AV_SAMPLE_FMT_S32)
-        (cons <float>  AV_SAMPLE_FMT_FLT)
-        (cons <double> AV_SAMPLE_FMT_DBL)))
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
+        (cons <sint>   AV_SAMPLE_FMT_S16P)
+        (cons <int>    AV_SAMPLE_FMT_S32P)
+        (cons <float>  AV_SAMPLE_FMT_FLTP)
+        (cons <double> AV_SAMPLE_FMT_DBLP)))
 (define audio-types (alist-invert audio-formats))
 (define (audio-format->type fmt) (assq-ref audio-types fmt))
 

@@ -49,7 +49,6 @@
     "Image does not have an audio channel")
 (ok (eqv? 8000 (rate audio))
     "Get sampling rate of audio stream")
-(diagnostics (typecode audio))
-(skip (eq? <sint> (typecode audio))
+(ok (eq? <sint> (typecode audio))
     "Get type of audio samples")
 (run-tests)
