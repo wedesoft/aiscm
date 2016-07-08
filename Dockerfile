@@ -2,6 +2,7 @@
 # docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian /bin/bash
 FROM debian:jessie
 # FROM ubuntu:xenial
+# FROM ubuntu:trusty
 ENV VERSION 0.4.2
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update

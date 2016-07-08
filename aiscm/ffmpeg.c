@@ -33,10 +33,16 @@ SCM get_error_text(int err)
   return scm_from_locale_string(buf);
 }
 
+static struct format_context_t *get_self(SCM scm_self)
+{
+  scm_assert_smob_type(format_context_tag, scm_self);
+  return (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+}
+
 SCM format_context_destroy(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   if (self->frame) {
     av_frame_free(&self->frame);
     self->frame = NULL;
@@ -62,7 +68,7 @@ SCM format_context_destroy(SCM scm_self)
 
 size_t free_format_context(SCM scm_self)
 {
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   format_context_destroy(scm_self);
   scm_gc_free(self, sizeof(struct format_context_t), "format-context");
   return 0;
@@ -117,8 +123,7 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
   if (self->audio_stream_idx >= 0)
     self->audio_dec_ctx = open_codec(retval, self, scm_file_name, self->audio_stream_idx, "audio");
 
-  if (scm_is_true(scm_debug))
-    av_dump_format(self->fmt_ctx, 0, file_name, 0);
+  if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 0);
 
   self->frame = av_frame_alloc();
 
@@ -130,8 +135,7 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
 
 SCM format_context_shape(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   if (!self->video_dec_ctx)
     scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
   int width = self->video_dec_ctx->width;
@@ -141,8 +145,7 @@ SCM format_context_shape(SCM scm_self)
 
 SCM format_context_frame_rate(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   if (self->video_stream_idx < 0)
     scm_misc_error("format-context-frame-rate", "File format does not have a video stream", SCM_EOL);
   AVRational avg_frame_rate = self->fmt_ctx->streams[self->video_stream_idx]->avg_frame_rate;
@@ -151,8 +154,7 @@ SCM format_context_frame_rate(SCM scm_self)
 
 SCM format_context_video_pts(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   if (self->video_stream_idx < 0)
     scm_misc_error("format-context-video-pts", "File format does not have a video stream", SCM_EOL);
   AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
@@ -230,8 +232,7 @@ SCM format_context_read_video(SCM scm_self)
 
 SCM format_context_channels(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   if (self->audio_stream_idx < 0)
     scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
   return scm_from_int(self->audio_dec_ctx->channels);
@@ -239,16 +240,14 @@ SCM format_context_channels(SCM scm_self)
 
 SCM format_context_rate(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   // TODO: check for audio stream, refactor
   return scm_from_int(self->audio_dec_ctx->sample_rate);
 }
 
 SCM format_context_typecode(SCM scm_self)
 {
-  scm_assert_smob_type(format_context_tag, scm_self);
-  struct format_context_t *self = (struct format_context_t *)SCM_SMOB_DATA(scm_self);
+  struct format_context_t *self = get_self(scm_self);
   return scm_from_int(self->audio_dec_ctx->sample_fmt);
 }
 

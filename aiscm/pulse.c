@@ -15,9 +15,15 @@ static void device_not_open(const char *context)
   scm_misc_error(context, "Device is not open. Did you call 'destroy' before?", SCM_UNDEFINED);
 }
 
+static struct pulsedev_t *get_self(SCM scm_self)
+{
+  scm_assert_smob_type(pulsedev_tag, scm_self);
+  return (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+}
+
 SCM pulsedev_destroy(SCM scm_self)
 {
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (self->s) {
     pa_simple_free(self->s);
     self->s = NULL;
@@ -27,7 +33,7 @@ SCM pulsedev_destroy(SCM scm_self)
 
 size_t free_pulsedev(SCM scm_self)
 {
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   pulsedev_destroy(scm_self);
   scm_gc_free(self, sizeof(struct pulsedev_t), "pulse");
   return 0;
@@ -52,8 +58,7 @@ SCM make_pulsedev(SCM scm_direction, SCM scm_type, SCM scm_rate, SCM scm_channel
 
 SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
-  scm_assert_smob_type(pulsedev_tag, scm_self);
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-write");
   int error;
   if (pa_simple_write(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
@@ -64,8 +69,7 @@ SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)
 
 SCM pulsedev_read(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
-  scm_assert_smob_type(pulsedev_tag, scm_self);
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-read");
   int error;
   if (pa_simple_read(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
@@ -76,8 +80,7 @@ SCM pulsedev_read(SCM scm_self, SCM scm_data, SCM scm_bytes)
 
 SCM pulsedev_latency(SCM scm_self)
 {
-  scm_assert_smob_type(pulsedev_tag, scm_self);
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-latency");
   int error;
   pa_usec_t latency = pa_simple_get_latency(self->s, &error);
@@ -89,8 +92,7 @@ SCM pulsedev_latency(SCM scm_self)
 
 SCM pulsedev_drain(SCM scm_self)
 {
-  scm_assert_smob_type(pulsedev_tag, scm_self);
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-drain");
   int error;
   pa_simple_drain(self->s, &error);
@@ -102,8 +104,7 @@ SCM pulsedev_drain(SCM scm_self)
 
 SCM pulsedev_flush(SCM scm_self)
 {
-  scm_assert_smob_type(pulsedev_tag, scm_self);
-  struct pulsedev_t *self = (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-flush");
   int error;
   pa_simple_flush(self->s, &error);

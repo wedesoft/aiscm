@@ -31,11 +31,16 @@ static int xioctl(int fd, int request, void *arg)
   return r;
 }
 
-SCM videodev2_destroy(SCM scm_self)
+static struct videodev2_t *get_self(SCM scm_self)
 {
   scm_assert_smob_type(videodev2_tag, scm_self);
+  return (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+}
+
+SCM videodev2_destroy(SCM scm_self)
+{
   int i;
-  struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  struct videodev2_t *self = get_self(scm_self);
   if (self->capture) {
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     xioctl(self->fd, VIDIOC_STREAMOFF, &type);
@@ -55,7 +60,7 @@ SCM videodev2_destroy(SCM scm_self)
 
 size_t free_videodev2(SCM scm_self)
 {
-  struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  struct videodev2_t *self = get_self(scm_self);
   videodev2_destroy(scm_self);
   scm_gc_free(self, sizeof(struct videodev2_t), "videodev2");
   return 0;
@@ -236,8 +241,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
 
 SCM videodev2_shape(SCM scm_self)
 {
-  scm_assert_smob_type(videodev2_tag, scm_self);
-  struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
     scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
                    SCM_UNDEFINED);
@@ -248,9 +252,8 @@ SCM videodev2_shape(SCM scm_self)
 
 SCM videodev2_grab(SCM scm_self)
 {
-  scm_assert_smob_type(videodev2_tag, scm_self);
   SCM retval;
-  struct videodev2_t *self = (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
     scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
                    SCM_UNDEFINED);

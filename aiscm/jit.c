@@ -11,11 +11,17 @@ struct mmap_t {
   int len;
 };
 
+static struct mmap_t *get_self(SCM scm_self)
+{
+  scm_assert_smob_type(mmap_tag, scm_self);
+  return (struct mmap_t *)SCM_SMOB_DATA(scm_self);
+}
+
 size_t free_mmap(SCM scm_self)
 {
-  struct mmap_t *mem = (struct mmap_t *)SCM_SMOB_DATA(scm_self);
-  munmap(mem->mem, mem->len);
-  scm_gc_free(mem, sizeof(struct mmap_t), "mmap");
+  struct mmap_t *self = get_self(scm_self);
+  munmap(self->mem, self->len);
+  scm_gc_free(self, sizeof(struct mmap_t), "mmap");
   return 0;
 }
 
@@ -35,13 +41,11 @@ SCM make_mmap(SCM code)
 
 SCM mmap_address(SCM scm_self)
 {
-  scm_assert_smob_type(mmap_tag, scm_self);
-  scm_assert_smob_type(mmap_tag, scm_self);
-  struct mmap_t *mem = (struct mmap_t *)SCM_SMOB_DATA(scm_self);
+  struct mmap_t *self = get_self(scm_self);
 #if defined __x86_64__
-  return scm_from_int64((int64_t)mem->mem);
+  return scm_from_int64((int64_t)self->mem);
 #else
-  return scm_from_int32((int32_t)mem->mem);
+  return scm_from_int32((int32_t)self->mem);
 #endif
 }
 
