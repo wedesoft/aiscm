@@ -161,10 +161,7 @@ SCM format_context_frame_rate(SCM scm_self)
 
 SCM format_context_video_pts(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  int64_t video_pts = self->video_pts;
-  AVRational frame_rate = video_dec_ctx(self)->framerate;
-  return scm_divide(scm_product(scm_from_int(video_pts), scm_from_int(frame_rate.den)), scm_from_int(frame_rate.num));
+  return scm_divide(scm_from_int(get_self(scm_self)->video_pts), format_context_frame_rate(scm_self));
 }
 
 SCM format_context_read_video(SCM scm_self)
