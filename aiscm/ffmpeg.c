@@ -39,6 +39,20 @@ static struct format_context_t *get_self(SCM scm_self)
   return (struct format_context_t *)SCM_SMOB_DATA(scm_self);
 }
 
+AVCodecContext *video_dec_ctx(struct format_context_t *self)
+{
+  if (!self->video_dec_ctx)
+    scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
+  return self->video_dec_ctx;
+}
+
+AVCodecContext *audio_dec_ctx(struct format_context_t *self)
+{
+  if (!self->audio_dec_ctx)
+    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
+  return self->audio_dec_ctx;
+}
+
 SCM format_context_destroy(SCM scm_self)
 {
   scm_assert_smob_type(format_context_tag, scm_self);
@@ -133,13 +147,6 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
-AVCodecContext *video_dec_ctx(struct format_context_t *self)
-{
-  if (!self->video_dec_ctx)
-    scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
-  return self->video_dec_ctx;
-}
-
 SCM format_context_shape(SCM scm_self)
 {
   AVCodecContext *ctx = video_dec_ctx(get_self(scm_self));
@@ -230,26 +237,17 @@ SCM format_context_read_video(SCM scm_self)
 
 SCM format_context_channels(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  if (self->audio_stream_idx < 0)
-    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
-  return scm_from_int(self->audio_dec_ctx->channels);
+  return scm_from_int(audio_dec_ctx(get_self(scm_self))->channels);
 }
 
 SCM format_context_rate(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  if (self->audio_stream_idx < 0)
-    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
-  return scm_from_int(self->audio_dec_ctx->sample_rate);
+  return scm_from_int(audio_dec_ctx(get_self(scm_self))->sample_rate);
 }
 
 SCM format_context_typecode(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  if (self->audio_stream_idx < 0)
-    scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
-  return scm_from_int(self->audio_dec_ctx->sample_fmt);
+  return scm_from_int(audio_dec_ctx(get_self(scm_self))->sample_fmt);
 }
 
 void init_ffmpeg(void)
