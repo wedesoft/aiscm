@@ -3,6 +3,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm float)
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
@@ -12,6 +13,14 @@
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (format-context #:init-keyword #:format-context))
+(define audio-formats
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8 )
+        (cons <sint>   AV_SAMPLE_FMT_S16)
+        (cons <int>    AV_SAMPLE_FMT_S32)
+        (cons <float>  AV_SAMPLE_FMT_FLT)
+        (cons <double> AV_SAMPLE_FMT_DBL)))
+(define audio-types (alist-invert audio-formats))
+(define (audio-format->type fmt) (assq-ref audio-types fmt))
 
 (define (open-input file-name)
   (make <ffmpeg> #:format-context (open-format-context file-name (equal? "YES" (getenv "DEBUG")))))
@@ -34,4 +43,5 @@
 
 (define (channels self) (format-context-channels (slot-ref self 'format-context)))
 (define (rate self) (format-context-rate (slot-ref self 'format-context)))
-(define-method (typecode (self <ffmpeg>)) (format-context-typecode (slot-ref self 'format-context))); TODO: convert to type object
+(define-method (typecode (self <ffmpeg>))
+  (audio-format->type (format-context-typecode (slot-ref self 'format-context))))

@@ -263,7 +263,11 @@ void init_ffmpeg(void)
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
   scm_set_smob_free(format_context_tag, free_format_context);
   av_register_all();
-  scm_c_define("AV_SAMPLE_FMT_U8" ,scm_from_int(AV_SAMPLE_FMT_U8));
+  scm_c_define("AV_SAMPLE_FMT_U8" ,scm_from_int(AV_SAMPLE_FMT_U8 ));
+  scm_c_define("AV_SAMPLE_FMT_S16",scm_from_int(AV_SAMPLE_FMT_S16));
+  scm_c_define("AV_SAMPLE_FMT_S32",scm_from_int(AV_SAMPLE_FMT_S32));
+  scm_c_define("AV_SAMPLE_FMT_FLT",scm_from_int(AV_SAMPLE_FMT_FLT));
+  scm_c_define("AV_SAMPLE_FMT_DBL",scm_from_int(AV_SAMPLE_FMT_DBL));
   scm_c_define_gsubr("open-format-context", 2, 0, 0, open_format_context);
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
   scm_c_define_gsubr("format-context-frame-rate", 1, 0, 0, format_context_frame_rate);
