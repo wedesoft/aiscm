@@ -1,3 +1,5 @@
+# Docker file to build and test AIscm on different versions of Debian
+#
 # docker build -t wedesoft/aiscm-debian .
 # docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian /bin/bash
 FROM debian:jessie
