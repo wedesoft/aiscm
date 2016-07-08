@@ -68,6 +68,24 @@ size_t free_format_context(SCM scm_self)
   return 0;
 }
 
+AVCodecContext *open_codec(SCM scm_self, struct format_context_t *self, SCM scm_file_name, int stream_idx, const char *media_type)
+{
+  AVCodecContext *dec_ctx = self->fmt_ctx->streams[stream_idx]->codec;
+  AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
+  if (!dec) {
+    format_context_destroy(scm_self);
+    scm_misc_error("open-format-context", "Failed to find ~a codec for file '~a'",
+                   scm_list_2(scm_from_locale_string(media_type), scm_file_name));
+  };
+  av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
+  if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
+    format_context_destroy(scm_self);
+    scm_misc_error("open-format-context", "Failed to open ~a codec for file '~a'",
+                   scm_list_2(scm_from_locale_string(media_type), scm_file_name));
+  };
+  return dec_ctx;
+}
+
 SCM open_format_context(SCM scm_file_name, SCM scm_debug)
 {
   SCM retval;
@@ -92,36 +110,12 @@ SCM open_format_context(SCM scm_file_name, SCM scm_debug)
   };
 
   self->video_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-  if (self->video_stream_idx >= 0) {
-    AVCodecContext *dec_ctx = self->fmt_ctx->streams[self->video_stream_idx]->codec;
-    AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
-    if (!dec) {
-      format_context_destroy(retval);
-      scm_misc_error("open-format-context", "Failed to find video codec for file '~a'", scm_list_1(scm_file_name));
-    };
-    av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
-    if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
-      format_context_destroy(retval);
-      scm_misc_error("open-format-context", "Failed to open video codec for file '~a'", scm_list_1(scm_file_name));
-    };
-    self->video_dec_ctx = dec_ctx;
-  };
+  if (self->video_stream_idx >= 0)
+    self->video_dec_ctx = open_codec(retval, self, scm_file_name, self->video_stream_idx, "video");
 
   self->audio_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
-  if (self->audio_stream_idx >= 0) {
-    AVCodecContext *dec_ctx = self->fmt_ctx->streams[self->audio_stream_idx]->codec;
-    AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
-    if (!dec) {
-      format_context_destroy(retval);
-      scm_misc_error("open-format-context", "Failed to find audio codec for file '~a'", scm_list_1(scm_file_name));
-    };
-    av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
-    if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
-      format_context_destroy(retval);
-      scm_misc_error("open-format-context", "Failed to open audio codec for file '~a'", scm_list_1(scm_file_name));
-    };
-    self->audio_dec_ctx = dec_ctx;
-  };
+  if (self->audio_stream_idx >= 0)
+    self->audio_dec_ctx = open_codec(retval, self, scm_file_name, self->audio_stream_idx, "audio");
 
   if (scm_is_true(scm_debug))
     av_dump_format(self->fmt_ctx, 0, file_name, 0);
