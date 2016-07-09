@@ -255,20 +255,21 @@ SCM format_context_read_audio(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
 
-#if 0
   struct format_context_t *self = get_self(scm_self);
 
   int got_frame = 0;
   while (!got_frame) {
     read_packet(self);
 
-    int decoded = self->pkt.size;
+    int decoded;
     if (self->pkt.stream_index == self->audio_stream_idx) {
       int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, &got_frame, &self->pkt);
       if (len < 0)
         scm_misc_error("format-context-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+      decoded = FFMIN(self->pkt.size, len);
       if (self->pkt.size <= 0 && !got_frame) break;
-    };
+    } else
+      decoded = self->pkt.size;
 
     if (self->pkt.data) {
       self->pkt.data += decoded;
@@ -278,8 +279,17 @@ SCM format_context_read_audio(SCM scm_self)
 
   if (got_frame) {
     int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
+    int channels = self->audio_dec_ctx->channels;
+    int nb_samples = self->frame->nb_samples;
+    int offsets[AV_NUM_DATA_POINTERS];
+    offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
+    retval = scm_list_5(scm_from_int(self->audio_dec_ctx->sample_fmt),
+                        scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
+                        scm_list_2(scm_from_int(offsets[1] / data_size), scm_from_int(1)),// TODO: proper representation of planes
+                        scm_from_pointer(*self->frame->data, NULL),
+                        scm_from_int(data_size * channels * nb_samples));
   };
-#endif
+
   return retval;
 }
 

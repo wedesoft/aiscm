@@ -1,6 +1,7 @@
 (define-module (aiscm ffmpeg)
   #:use-module (srfi srfi-1)
   #:use-module (oop goops)
+  #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
@@ -45,7 +46,10 @@
 
 (define (read-audio self)
   (let [(samples (format-context-read-audio (slot-ref self 'format-context)))]
-    (make (multiarray (typecode self) 2) #:shape (list (channels self) 100))))
+    (make (multiarray (audio-format->type (car samples)) 2)
+          #:shape   (cadr samples)
+          #:strides (caddr samples)
+          #:value (make <mem> #:base (cadddr samples) #:size (list-ref samples 4)))))
 
 (define-method (channels (self <ffmpeg>)) (format-context-channels (slot-ref self 'format-context)))
 (define-method (rate (self <ffmpeg>)) (format-context-rate (slot-ref self 'format-context)))
