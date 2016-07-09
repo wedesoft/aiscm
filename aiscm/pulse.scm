@@ -13,7 +13,7 @@
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE
-            rate channels write-samples read-samples latency drain flush
+            write-samples read-samples latency drain flush
             check-audio-sample-type check-audio-sample-shape
             type->pulse-type pulse-type->type))
 (load-extension "libguile-pulse" "init_pulse")

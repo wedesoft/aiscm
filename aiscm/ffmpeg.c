@@ -8,8 +8,14 @@
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/filtering_video.c
 
 #ifndef HAVE_FRAME_ALLOC
+#warning "Using old FFmpeg methods for frame allocation"
 #define av_frame_alloc avcodec_alloc_frame
 #define av_frame_free avcodec_free_frame
+#endif
+
+#ifndef HAVE_PACKET_UNREF
+#warning "av_packet_unref not supported"
+#define av_packet_unref av_free_packet
 #endif
 
 static scm_t_bits format_context_tag;
@@ -62,7 +68,7 @@ SCM format_context_destroy(SCM scm_self)
     self->frame = NULL;
   };
   if (self->orig_pkt.data) {
-    av_free_packet(&self->orig_pkt);
+    av_packet_unref(&self->orig_pkt);
     self->orig_pkt.data = NULL;
   };
   if (self->audio_dec_ctx) {
@@ -159,6 +165,7 @@ SCM format_context_frame_rate(SCM scm_self)
   AVRational frame_rate = video_dec_ctx(get_self(scm_self))->framerate;
   return scm_divide(scm_from_int(frame_rate.num), scm_from_int(frame_rate.den));
 #else
+#warning "FFmpeg video decoder does not provide frame rate"
   struct format_context_t *self = get_self(scm_self);
   video_dec_ctx(self);
   AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
@@ -175,7 +182,7 @@ static void read_packet(struct format_context_t *self)
 {
   if (self->pkt.size <= 0) {
     if (self->orig_pkt.data) {
-      av_free_packet(&self->orig_pkt);
+      av_packet_unref(&self->orig_pkt);
       self->orig_pkt.data = NULL;
       self->orig_pkt.size = 0;
     };
@@ -221,6 +228,7 @@ SCM format_context_read_video(SCM scm_self)
 #ifdef HAVE_BEST_EFFORT_TIMESTAMP
     self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
 #else
+#warning "FFmpeg library does not provide method for getting time stamp"
     if (self->frame->pkt_pts != AV_NOPTS_VALUE)
       self->video_pts = self->frame->pkt_pts;
     else if (self->frame->pkt_dts != AV_NOPTS_VALUE)

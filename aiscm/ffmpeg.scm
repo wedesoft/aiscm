@@ -9,7 +9,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-input-video open-input-audio
-            read-video read-audio frame-rate video-pts channels rate))
+            read-video read-audio frame-rate video-pts))
 
 (load-extension "libguile-ffmpeg" "init_ffmpeg")
 
@@ -47,7 +47,7 @@
   (let [(samples (format-context-read-audio (slot-ref self 'format-context)))]
     (make (multiarray (typecode self) 2) #:shape (list (channels self) 100))))
 
-(define (channels self) (format-context-channels (slot-ref self 'format-context)))
-(define (rate self) (format-context-rate (slot-ref self 'format-context)))
+(define-method (channels (self <ffmpeg>)) (format-context-channels (slot-ref self 'format-context)))
+(define-method (rate (self <ffmpeg>)) (format-context-rate (slot-ref self 'format-context)))
 (define-method (typecode (self <ffmpeg>))
   (audio-format->type (format-context-typecode (slot-ref self 'format-context))))

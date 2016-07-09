@@ -4,7 +4,7 @@
   #:use-module (system foreign)
   #:export (<element>
             <meta<element>>
-            value get set size-of foreign-type pack unpack
+            value get set size-of foreign-type pack unpack channels rate
             typecode size shape strides dimensions coerce match wrap get-size
             build content component base to-type))
 (define-class* <element> <object> <meta<element>> <class>
@@ -13,6 +13,8 @@
 (define-method (foreign-type (t <class>)) void)
 (define-generic pack)
 (define-generic unpack)
+(define-generic channels)
+(define-generic rate)
 (define-method (equal? (a <element>) (b <element>)) (equal? (get a) (get b)))
 (define-method (size (self <element>)) 1)
 (define-method (shape self) '())
