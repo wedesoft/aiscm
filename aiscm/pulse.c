@@ -118,9 +118,10 @@ void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
   scm_set_smob_free(pulsedev_tag, free_pulsedev);
-  scm_c_define("PA_SAMPLE_U8", scm_from_int(PA_SAMPLE_U8));
-  scm_c_define("PA_SAMPLE_S16LE", scm_from_int(PA_SAMPLE_S16LE));
-  scm_c_define("PA_SAMPLE_S32LE", scm_from_int(PA_SAMPLE_S32LE));
+  scm_c_define("PA_SAMPLE_U8"       , scm_from_int(PA_SAMPLE_U8       ));
+  scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
+  scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
+  scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
   scm_c_define("PA_STREAM_PLAYBACK", scm_from_int(PA_STREAM_PLAYBACK));
   scm_c_define("PA_STREAM_RECORD", scm_from_int(PA_STREAM_RECORD));
   scm_c_define_gsubr("make-pulsedev"   , 4, 0, 0, make_pulsedev);

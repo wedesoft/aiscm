@@ -4,6 +4,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm int)
+  #:use-module (aiscm float)
   #:use-module (aiscm jit)
   #:use-module (aiscm mem)
   #:use-module (aiscm op)
@@ -12,7 +13,7 @@
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
-            PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE
+            PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
             write-samples read-samples latency drain flush
             check-audio-sample-type check-audio-sample-shape
             type->pulse-type pulse-type->type))
@@ -63,7 +64,11 @@
 (define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulse)) self)
 (define (flush self) (pulsedev-flush (slot-ref self 'pulse)) self)
-(define typemap (list (cons <ubyte> PA_SAMPLE_U8) (cons <sint> PA_SAMPLE_S16LE) (cons <int> PA_SAMPLE_S32LE)))
+(define typemap
+  (list (cons <ubyte> PA_SAMPLE_U8)
+        (cons <sint>  PA_SAMPLE_S16LE)
+        (cons <int>   PA_SAMPLE_S32LE)
+        (cons <float> PA_SAMPLE_FLOAT32LE)))
 (define (type->pulse-type type)
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)

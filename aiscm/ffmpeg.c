@@ -161,16 +161,10 @@ SCM format_context_shape(SCM scm_self)
 
 SCM format_context_frame_rate(SCM scm_self)
 {
-#ifdef HAVE_FRAMERATE
-  AVRational frame_rate = video_dec_ctx(get_self(scm_self))->framerate;
-  return scm_divide(scm_from_int(frame_rate.num), scm_from_int(frame_rate.den));
-#else
-#warning "FFmpeg video decoder does not provide frame rate"
   struct format_context_t *self = get_self(scm_self);
   video_dec_ctx(self);
   AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
   return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));
-#endif
 }
 
 SCM format_context_video_pts(SCM scm_self)
