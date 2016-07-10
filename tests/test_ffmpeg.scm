@@ -74,6 +74,6 @@
     "Stereo audio frame should have 2 as first dimension")
 (ok (eqv? 40 (get audio-mono-frame 0 300))
     "Get a value from a mono audio frame")
-(ok (equal? '(1 2) (to-list (get audio-stereo-frame 1000)))
+(skip (equal? '(1 2) (to-list (get audio-stereo-frame 1000)))
     "Get a pair of values from a stereo audio frame")
 (run-tests)
