@@ -46,9 +46,10 @@
 
 (define (read-audio self)
   (let [(samples (format-context-read-audio (slot-ref self 'format-context)))]
-    (make (multiarray (audio-format->type (car samples)) 2)
-          #:shape (cadr samples)
-          #:value (make <mem> #:base (caddr samples) #:size (cadddr samples)))))
+    (and samples
+         (make (multiarray (audio-format->type (car samples)) 2)
+               #:shape (cadr samples)
+               #:value (make <mem> #:base (caddr samples) #:size (cadddr samples))))))
 
 (define-method (channels (self <ffmpeg>)) (format-context-channels (slot-ref self 'format-context)))
 (define-method (rate (self <ffmpeg>)) (format-context-rate (slot-ref self 'format-context)))

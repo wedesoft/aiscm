@@ -88,3 +88,12 @@ The following example shows how to use the FFmpeg interface to open and view a v
 ```Scheme
 @../tests/integration/ffplay.scm@
 ```
+
+## Audio files
+
+One can play samples from an audio file by passing them to the audio device using the *write-samples* method.
+It is also possible to pass a function returning consecutive audio samples as shown below.
+
+```Scheme
+@../tests/integration/ffaudio.scm@
+```
