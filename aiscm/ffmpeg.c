@@ -275,6 +275,7 @@ SCM format_context_read_audio(SCM scm_self)
     int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
     int channels = self->audio_dec_ctx->channels;
     int nb_samples = self->frame->nb_samples;
+    int size = nb_samples * channels * data_size;
     int offsets[AV_NUM_DATA_POINTERS];
     offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
     retval = scm_list_5(scm_from_int(self->audio_dec_ctx->sample_fmt),

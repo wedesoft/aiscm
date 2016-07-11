@@ -19,3 +19,16 @@ void offsets_from_pointers(uint8_t *pointers[], int offsets[], int n)
   for (i=0; i<n; i++)
     offsets[i] = pointers[i] ? pointers[i] - pointers[0] : 0;
 }
+
+// Pack audio samples.
+void pack_audio(uint8_t *pointers[], int channels, int nb_samples, int data_size, uint8_t *destination)
+{
+  int i;
+  for (i=0; i<nb_samples; i++) {
+    int c;
+    for (c=0; c<channels; c++) {
+      memcpy(destination, pointers[c] + i * data_size, data_size);
+      destination += data_size;
+    };
+  };
+}

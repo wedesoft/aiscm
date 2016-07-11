@@ -57,6 +57,36 @@ SCM zero_offset_for_null_pointer(void)
   return scm_from_bool(offsets[1] == 0);
 }
 
+SCM pack_byte_audio_sample(void)
+{
+  uint8_t a[1] = {1};
+  uint8_t b[1] = {2};
+  uint8_t *data[2] = {a, b};
+  uint8_t destination[2];
+  pack_audio(data, 2, 1, sizeof(uint8_t), destination);
+  return scm_from_bool(destination[0] == 1 && destination[1] == 2);
+}
+
+SCM pack_byte_audio_samples(void)
+{
+  uint8_t a[3] = {1, 3, 5};
+  uint8_t b[3] = {2, 4, 6};
+  uint8_t *data[2] = {a, b};
+  uint8_t destination[6];
+  pack_audio(data, 2, 3, sizeof(uint8_t), destination);
+  return scm_from_bool(destination[4] == 5 && destination[5] == 6);
+}
+
+SCM pack_short_int_audio_samples(void)
+{
+  int16_t a[3] = {1, 3, 5};
+  int16_t b[3] = {2, 4, 6};
+  uint16_t *data[2] = {a, b};
+  uint16_t destination[6];
+  pack_audio(data, 2, 3, sizeof(uint16_t), destination);
+  return scm_from_bool(destination[4] == 5 && destination[5] == 6);
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -67,4 +97,7 @@ void init_tests(void)
   scm_c_define_gsubr("first-offset-is-zero", 0, 0, 0, first_offset_is_zero);
   scm_c_define_gsubr("second-offset-correct", 0, 0, 0, second_offset_correct);
   scm_c_define_gsubr("zero-offset-for-null-pointer", 0, 0, 0, zero_offset_for_null_pointer);
+  scm_c_define_gsubr("pack-byte-audio-sample", 0, 0, 0, pack_byte_audio_sample);
+  scm_c_define_gsubr("pack-byte-audio-samples", 0, 0, 0, pack_byte_audio_samples);
+  scm_c_define_gsubr("pack-short-int-audio-samples", 0, 0, 0, pack_short_int_audio_samples);
 }
