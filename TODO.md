@@ -1,13 +1,11 @@
 ## Ready
 
-* xorg loop exiting on false
 * test for planar/packed audio (see decoding\_encoding.c)
-* complex conjugate not working any more
 * add "aiscm" to native library names
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * test for FFmpeg floating point audio
+* use libswresample for audio conversions
 * Docker image with deb-multimedia
-* vanilla Debian: av\_frame\_get\_best\_effort\_timestamp undefined
 * video positioning
 * audio frame time stamp
 * video/audio integration test

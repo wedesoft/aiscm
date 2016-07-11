@@ -62,10 +62,13 @@
     (for-each show windows)
     (do () ((quit? dsp))
       (set! result (self dsp))
-      (set! results (if (list? result) result (list result)))
-      (set! images (map to-image results))
-      (for-each show windows images)
-      (process-events dsp))
+      (if result
+        (begin
+          (set! results (if (list? result) result (list result)))
+          (set! images (map to-image results))
+          (for-each show windows images)
+          (process-events dsp))
+        (quit= dsp #t)))
     (for-each hide windows)
     (destroy dsp)
     result))

@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse) (aiscm util))
+(use-modules (oop goops) (aiscm element) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse) (aiscm util))
 (define record (make <pulse-record> #:type <sint> #:channels 1 #:rate 44100))
 (channels record)
 ;1

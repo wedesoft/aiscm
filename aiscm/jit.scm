@@ -622,6 +622,9 @@
 (define-jit-method map-to-fun coerce   min 2 functional-code minor            )
 (define-jit-method map-to-fun coerce   max 2 functional-code major            )
 
+; catch weird one-argument "-" special case
+(define-method (- (a <integer>) (b <param>)) (make-function - identity (delegate-fun -) (list b)))
+
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
     (make-function to-target
