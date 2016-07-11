@@ -27,8 +27,9 @@ void pack_audio(uint8_t *pointers[], int channels, int nb_samples, int data_size
   for (i=0; i<nb_samples; i++) {
     int c;
     for (c=0; c<channels; c++) {
-      memcpy(destination, pointers[c] + i * data_size, data_size);
-      destination += data_size;
+      int b;
+      for (b=0; b<data_size; b++)
+        *destination++ = pointers[c][i * data_size + b];
     };
   };
 }

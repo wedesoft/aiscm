@@ -1,8 +1,6 @@
 ## Ready
 
-#  for (i=0; i<decoded_frame->nb_samples; i++)
-#      for (ch=0; ch<c->channels; ch++)
-#          fwrite(decoded_frame->data[ch] + data_size*i, 1, data_size, outfile);
+* use left-right audio test (mp3)
 * test for planar/packed audio (see decoding\_encoding.c)
 * add "aiscm" to native library names
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?

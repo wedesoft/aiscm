@@ -275,13 +275,11 @@ SCM format_context_read_audio(SCM scm_self)
     int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
     int channels = self->audio_dec_ctx->channels;
     int nb_samples = self->frame->nb_samples;
-    int size = nb_samples * channels * data_size;
-    int offsets[AV_NUM_DATA_POINTERS];
-    offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
-    retval = scm_list_5(scm_from_int(self->audio_dec_ctx->sample_fmt),
+    void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");
+    pack_audio(self->frame->data, channels, nb_samples, data_size, ptr);
+    retval = scm_list_4(scm_from_int(self->audio_dec_ctx->sample_fmt),
                         scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
-                        scm_list_2(scm_from_int(offsets[1] / data_size), scm_from_int(1)),// TODO: proper representation of planes
-                        scm_from_pointer(*self->frame->data, NULL),
+                        scm_from_pointer(ptr, NULL),
                         scm_from_int(data_size * channels * nb_samples));
   };
 
