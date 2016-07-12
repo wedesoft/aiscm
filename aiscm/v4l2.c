@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <libguile.h>
 
@@ -73,8 +74,11 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   struct stat st;
   int i;
   const char *name = scm_to_locale_string(scm_name);
-  if (stat(name, &st)) scm_syserror("make-videodev2");
-  if (!S_ISCHR(st.st_mode)) scm_misc_error("make-videodev2", "'~a' is not a device", scm_list_1(scm_name));
+  if (stat(name, &st))
+    scm_misc_error("make-videodev2", "Error getting file status of '~a': ~a",
+                   scm_list_2(scm_name, scm_from_locale_string(strerror(errno))));
+  if (!S_ISCHR(st.st_mode))
+    scm_misc_error("make-videodev2", "'~a' is not a device", scm_list_1(scm_name));
   self = (struct videodev2_t *)scm_gc_calloc(sizeof(struct videodev2_t), "v4l2");
   SCM_NEWSMOB(retval, videodev2_tag, self);
   self->fd = -1;
@@ -269,13 +273,17 @@ SCM videodev2_grab(SCM scm_self)
                         scm_from_int(size));
   } else {
     if (self->frame_used) {
-      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame)) scm_sys_error("videodev2-grab");
+      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame))
+        scm_misc_error("videodev2-grab", "Error queueing video buffer: ~a",
+                       scm_list_1(scm_from_locale_string(strerror(errno))));
       self->frame_used = 0;
     };
     memset(&self->frame, 0, sizeof(struct v4l2_buffer));
     self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
-    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame)) scm_sys_error("videodev2-grab");
+    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame))
+      scm_misc_error("videodev2-grab", "Error dequeueing video buffer: ~a",
+                     scm_list_1(scm_from_locale_string(strerror(errno))));
     self->frame_used = 1;
     void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),

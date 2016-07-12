@@ -1,8 +1,7 @@
-# AIscm [![GPLv3](https://img.shields.io/badge/license-GPLv3-red.png)](https://www.gnu.org/copyleft/gpl.html) [![Circle CI](https://img.shields.io/circleci/project/wedesoft/aiscm/master.png)](https://circleci.com/gh/wedesoft/aiscm) [![Travis CI](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm) [![GitHub version](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![so much hobby](http://img.shields.io/badge/so much-hobby-blue.png)](http://www.wedesoft.de/) [![wow very Scheme](http://img.shields.io/badge/wow very-Scheme-yellow.png)](http://www.gnu.org/software/guile) [![such JIT](http://img.shields.io/badge/such-JIT-lightgrey.png)](https://en.wikipedia.org/wiki/X86-64)
+# AIscm [![GPLv3](https://img.shields.io/github/license/wedesoft/aiscm.png)](https://www.gnu.org/copyleft/gpl.html) [![Circle CI](https://img.shields.io/circleci/project/wedesoft/aiscm/master.png)](https://circleci.com/gh/wedesoft/aiscm) [![Travis CI](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm) [![GitHub](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![Guile 2.0.11](http://img.shields.io/badge/Guile-2.0.11-yellow.png)](http://www.gnu.org/software/guile) [![amd64](http://img.shields.io/badge/architecture-amd64-lightgrey.png)](https://en.wikipedia.org/wiki/X86-64) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.57554.png)](http://dx.doi.org/10.5281/zenodo.57554)
 
-[**AIscm**][1] is a **real-time computer vision extension** for the
-[**Guile programming language**][2]. Performance in Scheme is achieved by means
-of a JIT compiler.
+[**AIscm**][1] is a **real-time computer vision extension** for the [**Guile programming language**][2].
+Performance in Scheme is achieved by means of a JIT compiler.
 
 ![](doc/aiscm.gif "AIscm")
 

@@ -540,7 +540,7 @@ void window_paint(struct window_t *self, int x11_event)
         break;};
       case IO_XVIDEO: {
         if (x11_event && self->require_color_key) {
-          XSetForeGround(self->display->display, self->gc, self->color_key);
+          XSetForeground(self->display->display, self->gc, self->color_key);
           XFillRectangle(self->display->display, self->window, self->gc,
                          0, 0, self->width, self->height);
         };

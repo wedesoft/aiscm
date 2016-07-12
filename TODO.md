@@ -1,5 +1,7 @@
 ## Ready
 
+* use xvideo for video player (keyword parameters for "show"?)
+* release using DOI by Zenodo https://guides.github.com/activities/citable-code/
 * test for planar/packed audio (see decoding\_encoding.c)
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * test for FFmpeg floating point audio

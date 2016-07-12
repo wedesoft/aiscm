@@ -1,4 +1,5 @@
 #include <libguile.h>
+#include <libavutil/opt.h>
 #include <libavformat/avformat.h>
 #include "config.h"
 #include "helpers.h"

@@ -81,9 +81,9 @@ SCM pack_short_int_audio_samples(void)
 {
   int16_t a[3] = {1, 3, 5};
   int16_t b[3] = {2, 4, 6};
-  uint16_t *data[2] = {a, b};
+  uint8_t *data[2] = {(uint8_t *)a, (uint8_t *)b};
   uint16_t destination[6];
-  pack_audio(data, 2, 3, sizeof(uint16_t), destination);
+  pack_audio(data, 2, 3, sizeof(uint16_t), (uint8_t *)destination);
   return scm_from_bool(destination[4] == 5 && destination[5] == 6);
 }
 
