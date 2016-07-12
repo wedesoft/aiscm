@@ -1,0 +1,14 @@
+sudo: required
+dist: trusty
+language: c
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get install -q build-essential autoconf automake libtool devscripts equivs
+  - sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
+install:
+  - ./bootstrap
+  - ./configure
+  - make -j
+script:
+  - make check -j

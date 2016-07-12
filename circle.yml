@@ -15,6 +15,3 @@ test:
     - make -j
   override:
     - make check -j
-  post:
-    - make dist-xz
-    - mv aiscm-*.tar.xz $CIRCLE_ARTIFACTS
