@@ -16,7 +16,7 @@
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed synchronise)
   #:export-syntax (define-class* template-class))
-(load-extension "libguile-util" "init_util")
+(load-extension "libguile-aiscm-util" "init_util")
 (define (toplevel-define! name val)
   (module-define! (current-module) name val) val)
 (define (super class)

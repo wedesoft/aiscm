@@ -15,7 +15,7 @@
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
             get-format get-mem convert to-image symbol->format format->symbol))
-(load-extension "libguile-image" "init_image")
+(load-extension "libguile-aiscm-image" "init_image")
 (define-class* <image> <object> <meta<image>> <class>
               (format #:init-keyword #:format #:getter get-format)
               (shape #:init-keyword #:shape #:getter shape)

@@ -17,7 +17,7 @@
             write-samples read-samples latency drain flush
             check-audio-sample-type check-audio-sample-shape
             type->pulse-type pulse-type->type))
-(load-extension "libguile-pulse" "init_pulse")
+(load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulse    #:init-keyword #:pulse)
                (type     #:init-keyword #:type)

@@ -12,7 +12,7 @@
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit=
             show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO))
-(load-extension "libguile-xorg" "init_xorg")
+(load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
   (display #:init-keyword #:display #:getter get-display))
 (define-method (initialize (self <xdisplay>) initargs)

@@ -10,7 +10,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (read-image write-image))
-(load-extension "libguile-magick" "init_magick")
+(load-extension "libguile-aiscm-magick" "init_magick")
 (define (read-image file-name)
   (let [(picture    (magick-read-image file-name))
         (array-type (lambda (format) (multiarray (if (eq? format 'I) <ubyte> <ubytergb>) 2)))

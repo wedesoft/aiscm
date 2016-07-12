@@ -7,7 +7,7 @@
              (aiscm op)
              (aiscm util))
 
-(load-extension "libguile-bench" "init_bench")
+(load-extension "libguile-aiscm-bench" "init_bench")
 
 (define hook #t); prevent optimizer from removing benchmarked code
 

@@ -6,60 +6,60 @@ site_DATA = mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm 
 						pulse.scm v4l2.scm xorg.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-util.la libguile-jit.la libguile-ffmpeg.la libguile-image.la \
-												libguile-magick.la libguile-pulse.la libguile-v4l2.la libguile-xorg.la
+extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
+												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la
 
-check_LTLIBRARIES = libguile-tests.la
+check_LTLIBRARIES = libguile-aiscm-tests.la
 
 noinst_HEADERS = helpers.h
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
 
-libguile_tests_la_SOURCES = tests.c helpers.c
-libguile_tests_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
-libguile_tests_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_tests_la_SOURCES = tests.c helpers.c
+libguile_aiscm_tests_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
+libguile_aiscm_tests_la_LIBADD = $(GUILE_LIBS)
 
-libguile_util_la_SOURCES = util.c
-libguile_util_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_util_la_LDFLAGS = -no-undefined
-libguile_util_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_util_la_SOURCES = util.c
+libguile_aiscm_util_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_util_la_LDFLAGS = -no-undefined
+libguile_aiscm_util_la_LIBADD = $(GUILE_LIBS)
 
-libguile_jit_la_SOURCES = jit.c
-libguile_jit_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_jit_la_LDFLAGS = -no-undefined
-libguile_jit_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_jit_la_SOURCES = jit.c
+libguile_aiscm_jit_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_jit_la_LDFLAGS = -no-undefined
+libguile_aiscm_jit_la_LIBADD = $(GUILE_LIBS)
 
-libguile_ffmpeg_la_SOURCES = ffmpeg.c helpers.c
-libguile_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)
-libguile_ffmpeg_la_LDFLAGS = -no-undefined
-libguile_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS) $(AVCODEC_LIBS) $(AVUTIL_LIBS)
+libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c helpers.c
+libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)
+libguile_aiscm_ffmpeg_la_LDFLAGS = -no-undefined
+libguile_aiscm_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS) $(AVCODEC_LIBS) $(AVUTIL_LIBS)
 
-libguile_image_la_SOURCES = image.c
-libguile_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
-libguile_image_la_LDFLAGS = -no-undefined
-libguile_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS) $(MJPEG_LIBS) -llavjpeg
+libguile_aiscm_image_la_SOURCES = image.c
+libguile_aiscm_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
+libguile_aiscm_image_la_LDFLAGS = -no-undefined
+libguile_aiscm_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS) $(MJPEG_LIBS) -llavjpeg
 
-libguile_magick_la_SOURCES = magick.c
-libguile_magick_la_CFLAGS = $(GUILE_CFLAGS) $(MAGICK_CFLAGS)
-libguile_magick_la_LDFLAGS = -no-undefined
-libguile_magick_la_LIBADD = $(GUILE_LIBS) $(MAGICK_LIBS)
+libguile_aiscm_magick_la_SOURCES = magick.c
+libguile_aiscm_magick_la_CFLAGS = $(GUILE_CFLAGS) $(MAGICK_CFLAGS)
+libguile_aiscm_magick_la_LDFLAGS = -no-undefined
+libguile_aiscm_magick_la_LIBADD = $(GUILE_LIBS) $(MAGICK_LIBS)
 
-libguile_pulse_la_SOURCES = pulse.c
-libguile_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS)
-libguile_pulse_la_LDFLAGS = -no-undefined
-libguile_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS)
+libguile_aiscm_pulse_la_SOURCES = pulse.c
+libguile_aiscm_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS)
+libguile_aiscm_pulse_la_LDFLAGS = -no-undefined
+libguile_aiscm_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS)
 
-libguile_v4l2_la_SOURCES = v4l2.c
-libguile_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_v4l2_la_LDFLAGS = -no-undefined
-libguile_v4l2_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_v4l2_la_SOURCES = v4l2.c
+libguile_aiscm_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_v4l2_la_LDFLAGS = -no-undefined
+libguile_aiscm_v4l2_la_LIBADD = $(GUILE_LIBS)
 
-libguile_xorg_la_SOURCES = xorg.c
-libguile_xorg_la_CFLAGS = $(GUILE_CFLAGS) $(X_CFLAGS)
-libguile_xorg_la_LDFLAGS = -no-undefined
-libguile_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv
+libguile_aiscm_xorg_la_SOURCES = xorg.c
+libguile_aiscm_xorg_la_CFLAGS = $(GUILE_CFLAGS) $(X_CFLAGS)
+libguile_aiscm_xorg_la_LDFLAGS = -no-undefined
+libguile_aiscm_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

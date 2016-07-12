@@ -12,7 +12,7 @@
   #:export (<ffmpeg> open-input-video open-input-audio
             read-video read-audio frame-rate video-pts))
 
-(load-extension "libguile-ffmpeg" "init_ffmpeg")
+(load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (format-context #:init-keyword #:format-context))

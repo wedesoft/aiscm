@@ -11,7 +11,7 @@
   #:use-module (system foreign)
   #:export (<v4l2> <meta<v4l2>> grab))
 
-(load-extension "libguile-v4l2" "init_v4l2")
+(load-extension "libguile-aiscm-v4l2" "init_v4l2")
 
 (define-class* <v4l2> <object> <meta<v4l2>> <class>
                (videodev2 #:init-keyword #:videodev2))

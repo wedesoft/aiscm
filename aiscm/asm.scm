@@ -30,7 +30,7 @@
             conditional?))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
-(load-extension "libguile-jit" "init_jit")
+(load-extension "libguile-aiscm-jit" "init_jit")
 (define-class <context> () (binaries #:init-value '()))
 
 (define-class <operand> ())

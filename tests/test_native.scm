@@ -1,5 +1,5 @@
 (use-modules (guile-tap))
-(load-extension "libguile-tests" "init_tests")
+(load-extension "libguile-aiscm-tests" "init_tests")
 (ok (eqv? 42 (forty-two))
     "Run simple native method")
 (ok (null? (from-array-empty))
