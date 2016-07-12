@@ -23,13 +23,17 @@ void offsets_from_pointers(uint8_t *pointers[], int offsets[], int n)
 // Pack audio samples.
 void pack_audio(uint8_t *pointers[], int channels, int nb_samples, int data_size, uint8_t *destination)
 {
-  int i;
-  for (i=0; i<nb_samples; i++) {
-    int c;
-    for (c=0; c<channels; c++) {
+  int c;
+  for (c=0; c<channels; c++) {
+    uint8_t *p = destination + c * data_size;
+    uint8_t *q = pointers[c];
+    uint8_t *qend = q + nb_samples * data_size;
+    int offset = (channels - 1) * data_size;
+    while (q != qend) {
       int b;
       for (b=0; b<data_size; b++)
-        *destination++ = pointers[c][i * data_size + b];
+        *p++ = *q++;
+      p += offset;
     };
   };
 }
