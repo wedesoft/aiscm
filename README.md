@@ -5,21 +5,21 @@ Performance in Scheme is achieved by means of a JIT compiler.
 
 ![](doc/aiscm.gif "AIscm")
 
-## Download
-
-You can download and unpack the latest release like this
-
-```Shell
-wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep xz | cut -d '"' -f 4`
-```
-
 ## Dependencies
 
-The dependencies can be installed like this
+First you need to install the dependencies:
 
 ```Shell
 sudo apt-get install -q --yes build-essential autoconf automake libtool devscripts equivs
 sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
+```
+
+## Download
+
+You can download the latest release like this
+
+```Shell
+wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download_url | cut -d '"' -f 4`
 ```
 
 ## Installation
@@ -29,7 +29,7 @@ Finally you can install the software as follows
 ```Shell
 tar xJf aiscm-*.tar.xz
 cd aiscm-*
-./configure CC=colorgcc
+./configure
 make -j
 make check -j
 sudo make install

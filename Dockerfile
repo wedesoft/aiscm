@@ -9,6 +9,7 @@ FROM debian:jessie
 ENV VERSION 0.4.2
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
+# RUN apt-get upgrade -q -y
 RUN apt-get install -q -y build-essential
 RUN apt-get install -q -y autoconf automake libtool
 RUN apt-get install -q -y devscripts equivs

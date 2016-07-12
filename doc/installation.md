@@ -27,15 +27,16 @@ sudo apt-get install aiscm
 First you need to install the dependencies:
 
 ```
-sudo apt-get install libtool pandoc gettext imagemagick libswscale-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev libmagickcore-dev libpulse-dev libmjpegtools-dev guile-2.0-dev libreadline-dev libavformat-dev libavcodec-dev libavutil-dev
+sudo apt-get install -q --yes build-essential autoconf automake libtool devscripts equivs
+sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 ```
 
 #### Get the source code
 
-You need to download the source package:
+You can download the latest release like this
 
 ```
-wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download | grep xz | cut -d '"' -f 4`
+wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download_url | cut -d '"' -f 4`
 ```
 
 #### Build AIscm
@@ -44,16 +45,16 @@ wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep
 tar xJf aiscm-*.tar.xz
 cd aiscm-*
 ./configure
-make
+make -j
 sudo make install
 ```
 
-## Testing
+#### Testing
 
-After installing AIscm you can run the test suite like this:
+You can run the test suite like this:
 
 ```
-make check
+make check -j
 ```
 
 [1]: http://www.gnu.org/software/guile/
