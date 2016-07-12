@@ -85,7 +85,9 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   self->map[0] = MAP_FAILED;
   self->map[1] = MAP_FAILED;
   self->fd = open(name, O_RDWR, 0);
-  if (self->fd == -1) scm_syserror("make-videodev2");
+  if (self->fd == -1)
+    scm_misc_error("make-videodev2", "Error opening file '~a': ~a",
+                   scm_list_2(scm_name, scm_from_locale_string(strerror(errno))));
   struct v4l2_capability cap;
   if (xioctl(self->fd, VIDIOC_QUERYCAP, &cap)) {
     videodev2_destroy(retval);
@@ -266,7 +268,9 @@ SCM videodev2_grab(SCM scm_self)
   if (self->io == IO_READ) {
     int size = self->format.fmt.pix.sizeimage;
     void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
-    if (read(self->fd, buf, size) == -1) scm_syserror("videodev2-grab");
+    if (read(self->fd, buf, size) == -1)
+      scm_misc_error("videodev2-grab", "Error reading from device: ~a",
+                     scm_list_1(scm_from_locale_string(strerror(errno))));
     retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                         scm_list_2(scm_from_int(width), scm_from_int(height)),
                         scm_from_pointer(buf, NULL),

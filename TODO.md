@@ -1,16 +1,15 @@
 ## Ready
 
 * use xvideo for video player (keyword parameters for "show"?)
-* release using DOI by Zenodo https://guides.github.com/activities/citable-code/
 * test for planar/packed audio (see decoding\_encoding.c)
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * test for FFmpeg floating point audio
 * use libswresample for audio conversions
-* Docker image with deb-multimedia
 * video positioning
 * audio frame time stamp
 * video/audio integration test
 * handle end of file <-> xorg
+* release using DOI by Zenodo https://guides.github.com/activities/citable-code/
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * rename: open-input-video for test.mp3 -> open-audio/video
