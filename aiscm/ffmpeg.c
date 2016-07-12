@@ -233,12 +233,13 @@ SCM format_context_read_video(SCM scm_self)
 
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
 
-    retval = scm_list_n(scm_from_int(self->frame->format),
+    retval = scm_list_n(scm_from_locale_symbol("video"),
+                        scm_from_int(self->frame->format),
                         scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
                         from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
                         from_non_zero_array(self->frame->linesize, AV_NUM_DATA_POINTERS, 1),
-                        scm_from_int(size),
                         scm_from_pointer(*self->frame->data, NULL),
+                        scm_from_int(size),
                         SCM_UNDEFINED);
   };
 
@@ -277,7 +278,8 @@ SCM format_context_read_audio(SCM scm_self)
     int nb_samples = self->frame->nb_samples;
     void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");
     pack_audio(self->frame->data, channels, nb_samples, data_size, ptr);
-    retval = scm_list_4(scm_from_int(self->audio_dec_ctx->sample_fmt),
+    retval = scm_list_5(scm_from_locale_symbol("audio"),
+                        scm_from_int(self->audio_dec_ctx->sample_fmt),
                         scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
                         scm_from_pointer(ptr, NULL),
                         scm_from_int(data_size * channels * nb_samples));

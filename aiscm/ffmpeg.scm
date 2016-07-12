@@ -35,21 +35,27 @@
 
 (define (video-pts self) (format-context-video-pts (slot-ref self 'format-context)))
 (define (read-video self)
-  (let [(picture (format-context-read-video (slot-ref self 'format-context)))]
+  (let [(picture (format-context-read-video (slot-ref self 'format-context)))
+        (memory  (lambda (data size) (make <mem> #:base data #:size size)))]
     (and picture
-         (make <image>
-               #:format  (format->symbol (car picture))
-               #:shape   (cadr picture)
-               #:offsets (caddr picture)
-               #:pitches (cadddr picture)
-               #:mem     (make <mem> #:base (last picture) #:size (list-ref picture 4))))))
+         (apply (lambda (tag format shape offsets pitches data size)
+                  (make <image>
+                        #:format  (format->symbol format)
+                        #:shape   shape
+                        #:offsets offsets
+                        #:pitches pitches
+                        #:mem     (memory data size)))
+                picture))))
 
 (define (read-audio self)
-  (let [(samples (format-context-read-audio (slot-ref self 'format-context)))]
+  (let [(samples    (format-context-read-audio (slot-ref self 'format-context)))
+        (memory     (lambda (data size) (make <mem> #:base data #:size size)))
+        (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
+        (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (and samples
-         (make (multiarray (audio-format->type (car samples)) 2)
-               #:shape (cadr samples)
-               #:value (make <mem> #:base (caddr samples) #:size (cadddr samples))))))
+         (apply (lambda (tag type shape data size)
+                  (array (array-type type) shape (memory data size)))
+                samples))))
 
 (define-method (channels (self <ffmpeg>)) (format-context-channels (slot-ref self 'format-context)))
 (define-method (rate (self <ffmpeg>)) (format-context-rate (slot-ref self 'format-context)))

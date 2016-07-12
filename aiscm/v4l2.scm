@@ -54,8 +54,11 @@
 (define-method (shape (self <v4l2>)) (videodev2-shape (slot-ref self 'videodev2)))
 
 (define-method (grab (self <v4l2>))
-  (let [(picture (videodev2-grab (slot-ref self 'videodev2)))]
-    (make <image>
-          #:format (v4l2-format->symbol (car picture))
-          #:shape  (cadr picture)
-          #:mem    (make <mem> #:base (caddr picture) #:size (cadddr picture)))))
+  (let [(picture (videodev2-grab (slot-ref self 'videodev2)))
+        (memory  (lambda (base size) (make <mem> #:base base #:size size)))]
+    (apply (lambda (format shape base size)
+             (make <image>
+                   #:format (v4l2-format->symbol format)
+                   #:shape shape
+                   #:mem (memory base size)))
+           picture)))
