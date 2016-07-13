@@ -34,7 +34,7 @@ struct format_context_t {
   int64_t audio_pts;
 };
 
-SCM get_error_text(int err)
+static SCM get_error_text(int err)
 {
   static char buf[255];
   av_strerror(err, buf, sizeof(buf));
@@ -59,6 +59,20 @@ static AVCodecContext *audio_dec_ctx(struct format_context_t *self)
   if (!self->audio_dec_ctx)
     scm_misc_error("format-context-channels", "File format does not have an audio stream", SCM_EOL);
   return self->audio_dec_ctx;
+}
+
+static AVStream *video_stream(struct format_context_t *self)
+{
+  if (self->video_stream_idx < 0)
+    scm_misc_error("format-context-shape", "File format does not have a video stream", SCM_EOL);
+  return self->fmt_ctx->streams[self->video_stream_idx];
+}
+
+static AVStream *audio_stream(struct format_context_t *self)
+{
+  if (self->audio_stream_idx < 0)
+    scm_misc_error("format-context-shape", "File format does not have an audio stream", SCM_EOL);
+  return self->fmt_ctx->streams[self->audio_stream_idx];
 }
 
 SCM format_context_destroy(SCM scm_self)
@@ -96,7 +110,8 @@ size_t free_format_context(SCM scm_self)
   return 0;
 }
 
-AVCodecContext *open_codec(SCM scm_self, struct format_context_t *self, SCM scm_file_name, int stream_idx, const char *media_type)
+static AVCodecContext *open_codec(SCM scm_self, struct format_context_t *self, SCM scm_file_name,
+                                  int stream_idx, const char *media_type)
 {
   AVCodecContext *dec_ctx = self->fmt_ctx->streams[stream_idx]->codec;
   AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
@@ -161,30 +176,34 @@ SCM format_context_shape(SCM scm_self)
   return scm_list_2(scm_from_int(ctx->width), scm_from_int(ctx->height));
 }
 
+SCM time_base(struct format_context_t *self, AVStream *stream)
+{
+  AVRational time_base = stream->time_base;
+  return scm_divide(scm_from_int(time_base.num), scm_from_int(time_base.den));
+}
+
 SCM format_context_frame_rate(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  video_dec_ctx(self);
-  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;// TODO: <-> avg_frame_rate?
+  AVRational time_base = video_stream(get_self(scm_self))->time_base;// TODO: <-> avg_frame_rate?
   return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));
 }
 
 SCM format_context_sampling_rate(SCM scm_self)
 {
-  struct format_context_t *self = get_self(scm_self);
-  audio_dec_ctx(self);
-  AVRational time_base = self->fmt_ctx->streams[self->audio_stream_idx]->time_base;// TOOD: refactor with above method
+  AVRational time_base = audio_stream(get_self(scm_self))->time_base;// TOOD: refactor with above method
   return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));// TODO: <-> sampling_rate?
 }
 
 SCM format_context_video_pts(SCM scm_self)
 {
-  return scm_divide(scm_from_int(get_self(scm_self)->video_pts), format_context_frame_rate(scm_self));
+  struct format_context_t *self = get_self(scm_self);
+  return scm_product(scm_from_int(self->video_pts), time_base(self, video_stream(self)));
 }
 
 SCM format_context_audio_pts(SCM scm_self)
 {
-  return scm_divide(scm_from_int(get_self(scm_self)->audio_pts), format_context_sampling_rate(scm_self));
+  struct format_context_t *self = get_self(scm_self);
+  return scm_product(scm_from_int(self->audio_pts), time_base(self, audio_stream(self)));
 }
 
 static void read_packet(struct format_context_t *self)
@@ -207,7 +226,7 @@ static void read_packet(struct format_context_t *self)
   };
 }
 
-int decode_video(struct format_context_t *self, int *got_frame)
+static int decode_video(struct format_context_t *self, int *got_frame)
 {
   int err = avcodec_decode_video2(self->video_dec_ctx, self->frame, got_frame, &self->pkt);
   if (err < 0)
@@ -215,7 +234,7 @@ int decode_video(struct format_context_t *self, int *got_frame)
   return self->pkt.size;
 }
 
-int decode_audio(struct format_context_t *self, int *got_frame)
+static int decode_audio(struct format_context_t *self, int *got_frame)
 {
   int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, got_frame, &self->pkt);
   if (len < 0)
@@ -223,7 +242,7 @@ int decode_audio(struct format_context_t *self, int *got_frame)
   return FFMIN(self->pkt.size, len);
 }
 
-int64_t frame_timestamp(AVFrame *frame)
+static int64_t frame_timestamp(AVFrame *frame)
 {
   int64_t retval;
   if (frame->pkt_pts != AV_NOPTS_VALUE)

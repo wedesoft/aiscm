@@ -34,6 +34,8 @@
     "Audio file does not have width and height")
 (ok (throws? (video-pts audio-mono))
     "Audio file does not have a video presentation time stamp")
+(ok (throws? (audio-pts image))
+    "Image does not have an audio presentation time stamp")
 (ok (equal? '(320 240) (shape video-frame))
     "Check shape of video frame")
 (ok (is-a? video-frame <image>)
