@@ -1,6 +1,8 @@
 ## Ready
 
+* merge read-audio and read-video
 * use xvideo for video player (keyword parameters for "show"?)
+* xorg: scm\_syserror -> scm\_misc\_error
 * test for planar/packed audio (see decoding\_encoding.c)
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * test for FFmpeg floating point audio
@@ -38,6 +40,7 @@
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
 * lexical sort
+* AdaBoost, decision trees, random forests
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
 * separate function for defining operation for array?

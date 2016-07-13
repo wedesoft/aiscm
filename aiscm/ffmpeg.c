@@ -184,12 +184,29 @@ static void read_packet(struct format_context_t *self)
     int err = av_read_frame(self->fmt_ctx, &self->pkt);
     if (err >= 0)
       self->orig_pkt = self->pkt;
-    else if (err == AVERROR_EOF) {
+    else {
       self->pkt.data = NULL;
       self->pkt.size = 0;
-    } else
-      scm_misc_error("read-packet", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
+      if (err != AVERROR_EOF)
+        scm_misc_error("read-packet", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
+    };
   };
+}
+
+int decode_video(struct format_context_t *self, int *got_frame)
+{
+  int err = avcodec_decode_video2(self->video_dec_ctx, self->frame, got_frame, &self->pkt);
+  if (err < 0)
+    scm_misc_error("format-context-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(err)));
+  return self->pkt.size;
+}
+
+int decode_audio(struct format_context_t *self, int *got_frame)
+{
+  int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, got_frame, &self->pkt);
+  if (len < 0)
+    scm_misc_error("format-context-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+  return FFMIN(self->pkt.size, len);
 }
 
 SCM format_context_read_video(SCM scm_self)
@@ -202,13 +219,12 @@ SCM format_context_read_video(SCM scm_self)
   while (!got_frame) {
     read_packet(self);
 
-    int decoded = self->pkt.size;
+    int decoded;
     if (self->pkt.stream_index == self->video_stream_idx) {
-      int err = avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);
-      if (err < 0)
-        scm_misc_error("format-context-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(err)));
+      decoded = decode_video(self, &got_frame);
       if (self->pkt.size <= 0 && !got_frame) break;
-    };
+    } else
+      decoded = self->pkt.size;
 
     if (self->pkt.data) {
       self->pkt.data += decoded;
@@ -259,10 +275,7 @@ SCM format_context_read_audio(SCM scm_self)
 
     int decoded;
     if (self->pkt.stream_index == self->audio_stream_idx) {
-      int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, &got_frame, &self->pkt);
-      if (len < 0)
-        scm_misc_error("format-context-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
-      decoded = FFMIN(self->pkt.size, len);
+      decoded = decode_audio(self, &got_frame);
       if (self->pkt.size <= 0 && !got_frame) break;
     } else
       decoded = self->pkt.size;
