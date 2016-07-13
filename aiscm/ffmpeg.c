@@ -176,34 +176,33 @@ SCM format_context_shape(SCM scm_self)
   return scm_list_2(scm_from_int(ctx->width), scm_from_int(ctx->height));
 }
 
-SCM time_base(struct format_context_t *self, AVStream *stream)
+static SCM rational(int numerator, int denominator)
+{
+  return scm_divide(scm_from_int(numerator), scm_from_int(denominator));
+}
+
+static SCM time_base(AVStream *stream)
 {
   AVRational time_base = stream->time_base;
-  return scm_divide(scm_from_int(time_base.num), scm_from_int(time_base.den));
+  return rational(time_base.num, time_base.den);
 }
 
 SCM format_context_frame_rate(SCM scm_self)
 {
-  AVRational time_base = video_stream(get_self(scm_self))->time_base;// TODO: <-> avg_frame_rate?
-  return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));
-}
-
-SCM format_context_sampling_rate(SCM scm_self)
-{
-  AVRational time_base = audio_stream(get_self(scm_self))->time_base;// TOOD: refactor with above method
-  return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));// TODO: <-> sampling_rate?
+  AVRational avg_frame_rate = video_stream(get_self(scm_self))->avg_frame_rate;
+  return rational(avg_frame_rate.num, avg_frame_rate.den);
 }
 
 SCM format_context_video_pts(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
-  return scm_product(scm_from_int(self->video_pts), time_base(self, video_stream(self)));
+  return scm_product(scm_from_int(self->video_pts), time_base(video_stream(self)));
 }
 
 SCM format_context_audio_pts(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
-  return scm_product(scm_from_int(self->audio_pts), time_base(self, audio_stream(self)));
+  return scm_product(scm_from_int(self->audio_pts), time_base(audio_stream(self)));
 }
 
 static void read_packet(struct format_context_t *self)
