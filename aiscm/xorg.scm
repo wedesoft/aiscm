@@ -53,9 +53,10 @@
   (let* [(dsp     (make <xdisplay>))
          (result  (self dsp))
          (results (if (list? result) result (list result)))
+         (io      (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
          (images  (map to-image results))
          (shapes  (map shape images))
-         (window  (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
+         (window  (cut make <xwindow> #:display dsp #:shape <> #:io io))
          (windows (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each show windows images)
