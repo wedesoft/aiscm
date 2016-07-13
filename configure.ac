@@ -67,12 +67,6 @@ AC_TRY_LINK([#include <libavutil/frame.h>],
             [AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is defined (replacing avcodec_alloc_frame)])],
             [AC_MSG_RESULT([no])])
-AC_MSG_CHECKING([for av_frame_get_best_effort_timestamp])
-AC_TRY_LINK([#include <libavutil/frame.h>],
-            [av_frame_get_best_effort_timestamp(0)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_BEST_EFFORT_TIMESTAMP,1,[use av_frame_get_best_effort_timestamp to determine timestamps])],
-            [AC_MSG_RESULT([no])])
 AC_MSG_CHECKING([for av_packet_unref])
 AC_TRY_LINK([#include <libavcodec/avcodec.h>],
             [av_packet_unref(0)],

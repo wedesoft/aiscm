@@ -223,6 +223,18 @@ int decode_audio(struct format_context_t *self, int *got_frame)
   return FFMIN(self->pkt.size, len);
 }
 
+int64_t frame_timestamp(AVFrame *frame)
+{
+  int64_t retval;
+  if (frame->pkt_pts != AV_NOPTS_VALUE)
+    retval = frame->pkt_pts;
+  else if (frame->pkt_dts != AV_NOPTS_VALUE)
+    retval = frame->pkt_dts;
+  else
+    retval = 0;
+  return retval;
+}
+
 SCM format_context_read_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
@@ -247,17 +259,7 @@ SCM format_context_read_video(SCM scm_self)
   };
 
   if (got_frame) {
-//#ifdef HAVE_BEST_EFFORT_TIMESTAMP
-//    self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
-//#else
-// #warning "FFmpeg library does not provide method for getting time stamp"
-    if (self->frame->pkt_pts != AV_NOPTS_VALUE)
-      self->video_pts = self->frame->pkt_pts;
-    else if (self->frame->pkt_dts != AV_NOPTS_VALUE)
-      self->video_pts = self->frame->pkt_dts;
-    else
-      self->video_pts = 0;
-//#endif
+    self->video_pts = frame_timestamp(self->frame);
 
     int offsets[AV_NUM_DATA_POINTERS];
     offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
@@ -299,12 +301,7 @@ SCM format_context_read_audio(SCM scm_self)
   };
 
   if (got_frame) {
-    if (self->frame->pkt_pts != AV_NOPTS_VALUE)
-      self->audio_pts = self->frame->pkt_pts;
-    else if (self->frame->pkt_dts != AV_NOPTS_VALUE)
-      self->audio_pts = self->frame->pkt_dts;
-    else
-      self->audio_pts = 0;
+    self->audio_pts = frame_timestamp(self->frame);
 
     int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
     int channels = self->audio_dec_ctx->channels;
