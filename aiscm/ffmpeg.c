@@ -363,6 +363,7 @@ void init_ffmpeg(void)
   format_context_tag = scm_make_smob_type("format-context", sizeof(struct format_context_t));
   scm_set_smob_free(format_context_tag, free_format_context);
   av_register_all();
+  avformat_network_init();
   scm_c_define("AV_SAMPLE_FMT_U8P" ,scm_from_int(AV_SAMPLE_FMT_U8P ));
   scm_c_define("AV_SAMPLE_FMT_S16P",scm_from_int(AV_SAMPLE_FMT_S16P));
   scm_c_define("AV_SAMPLE_FMT_S32P",scm_from_int(AV_SAMPLE_FMT_S32P));

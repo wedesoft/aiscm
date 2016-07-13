@@ -1,6 +1,8 @@
 ## Ready
 
 * refactor read-audio and read-video
+* use extract from http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
+  add network streaming example
 * merge read-audio and read-video
 * use xvideo for video player (keyword parameters for "show"?)
 * xorg: scm\_syserror -> scm\_misc\_error
