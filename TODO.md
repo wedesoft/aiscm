@@ -1,5 +1,6 @@
 ## Ready
 
+* refactor read-audio and read-video
 * merge read-audio and read-video
 * use xvideo for video player (keyword parameters for "show"?)
 * xorg: scm\_syserror -> scm\_misc\_error

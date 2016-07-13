@@ -23,14 +23,15 @@ static scm_t_bits format_context_tag;
 
 struct format_context_t {
   AVFormatContext *fmt_ctx;
-  int video_stream_idx;
   AVCodecContext *video_dec_ctx;
-  int audio_stream_idx;
   AVCodecContext *audio_dec_ctx;
+  int video_stream_idx;
+  int audio_stream_idx;
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *frame;
   int64_t video_pts;
+  int64_t audio_pts;
 };
 
 SCM get_error_text(int err)
@@ -164,13 +165,26 @@ SCM format_context_frame_rate(SCM scm_self)
 {
   struct format_context_t *self = get_self(scm_self);
   video_dec_ctx(self);
-  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;
+  AVRational time_base = self->fmt_ctx->streams[self->video_stream_idx]->time_base;// TODO: <-> avg_frame_rate?
   return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));
+}
+
+SCM format_context_sampling_rate(SCM scm_self)
+{
+  struct format_context_t *self = get_self(scm_self);
+  audio_dec_ctx(self);
+  AVRational time_base = self->fmt_ctx->streams[self->audio_stream_idx]->time_base;// TOOD: refactor with above method
+  return scm_divide(scm_from_int(time_base.den), scm_from_int(time_base.num));// TODO: <-> sampling_rate?
 }
 
 SCM format_context_video_pts(SCM scm_self)
 {
   return scm_divide(scm_from_int(get_self(scm_self)->video_pts), format_context_frame_rate(scm_self));
+}
+
+SCM format_context_audio_pts(SCM scm_self)
+{
+  return scm_divide(scm_from_int(get_self(scm_self)->audio_pts), format_context_sampling_rate(scm_self));
 }
 
 static void read_packet(struct format_context_t *self)
@@ -233,23 +247,21 @@ SCM format_context_read_video(SCM scm_self)
   };
 
   if (got_frame) {
-    int offsets[AV_NUM_DATA_POINTERS];
-    offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
-
-#ifdef HAVE_BEST_EFFORT_TIMESTAMP
-    self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
-#else
-#warning "FFmpeg library does not provide method for getting time stamp"
+//#ifdef HAVE_BEST_EFFORT_TIMESTAMP
+//    self->video_pts = av_frame_get_best_effort_timestamp(self->frame);
+//#else
+// #warning "FFmpeg library does not provide method for getting time stamp"
     if (self->frame->pkt_pts != AV_NOPTS_VALUE)
       self->video_pts = self->frame->pkt_pts;
     else if (self->frame->pkt_dts != AV_NOPTS_VALUE)
       self->video_pts = self->frame->pkt_dts;
     else
       self->video_pts = 0;
-#endif
+//#endif
 
+    int offsets[AV_NUM_DATA_POINTERS];
+    offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
     int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
-
     retval = scm_list_n(scm_from_locale_symbol("video"),
                         scm_from_int(self->frame->format),
                         scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
@@ -287,6 +299,13 @@ SCM format_context_read_audio(SCM scm_self)
   };
 
   if (got_frame) {
+    if (self->frame->pkt_pts != AV_NOPTS_VALUE)
+      self->audio_pts = self->frame->pkt_pts;
+    else if (self->frame->pkt_dts != AV_NOPTS_VALUE)
+      self->audio_pts = self->frame->pkt_dts;
+    else
+      self->audio_pts = 0;
+
     int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
     int channels = self->audio_dec_ctx->channels;
     int nb_samples = self->frame->nb_samples;
@@ -299,6 +318,13 @@ SCM format_context_read_audio(SCM scm_self)
                         scm_from_int(data_size * channels * nb_samples));
   };
 
+  return retval;
+}
+
+SCM format_context_read_audio_video(SCM scm_self)
+{
+  SCM retval = SCM_BOOL_F;
+  struct format_context_t *self = get_self(scm_self);
   return retval;
 }
 
@@ -336,4 +362,6 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
   scm_c_define_gsubr("format-context-typecode", 1, 0, 0, format_context_typecode);
   scm_c_define_gsubr("format-context-read-audio", 1, 0, 0, format_context_read_audio);
+  scm_c_define_gsubr("format_context_read_audio-video", 1, 0, 0, format_context_read_audio_video);
+  scm_c_define_gsubr("format-context-audio-pts", 1, 0, 0, format_context_audio_pts);
 }

@@ -10,7 +10,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-input-video open-input-audio
-            read-video read-audio frame-rate video-pts))
+            read-video read-audio frame-rate video-pts audio-pts))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
@@ -47,6 +47,7 @@
                         #:mem     (memory data size)))
                 picture))))
 
+(define (audio-pts self) (format-context-audio-pts (slot-ref self 'format-context)))
 (define (read-audio self)
   (let [(samples    (format-context-read-audio (slot-ref self 'format-context)))
         (memory     (lambda (data size) (make <mem> #:base data #:size size)))

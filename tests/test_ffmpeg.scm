@@ -12,12 +12,20 @@
 (define audio-mono (open-input-audio "fixtures/mono.mp3"))
 (define audio-stereo (open-input-audio "fixtures/test.mp3"))
 (define image (open-input-video "fixtures/fubk.png"))
+
 (define video-pts0 (video-pts video))
 (define video-frame (read-video video))
 (define video-pts1 (video-pts video))
+
+(define audio-pts0 (audio-pts audio-mono))
 (define audio-mono-frame (read-audio audio-mono))
+(define audio-pts1 (audio-pts audio-mono))
+(read-audio audio-mono)
+(define audio-pts2 (audio-pts audio-mono))
+
 (define audio-stereo-frame (read-audio audio-stereo))
 (define surround (open-input-video "fixtures/surround.vob"))
+
 (ok (equal? '(320 240) (shape video))
     "Check frame size of input video")
 (ok (throws? (open-input-video "fixtures/no-such-file.avi"))
@@ -78,4 +86,6 @@
 (define samples (map (lambda (i) (read-audio full-audio)) (iota 1625)))
 (ok (not (read-audio full-audio))
     "Check 'read-audio' returns false after last frame")
+(ok (equal? (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
+    "Check first three audio frame time stamps")
 (run-tests)
