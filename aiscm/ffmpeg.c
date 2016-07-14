@@ -316,7 +316,7 @@ SCM format_context_read_video(SCM scm_self)
   return retval;
 }
 
-SCM format_context_read_audio(SCM scm_self)
+SCM format_context_read_audio_video(SCM scm_self, SCM scm_do_video, SCM scm_do_audio)
 {
   SCM retval = SCM_BOOL_F;
 
@@ -341,13 +341,6 @@ SCM format_context_read_audio(SCM scm_self)
 
   if (got_frame) retval = samples_information(self);
 
-  return retval;
-}
-
-SCM format_context_read_audio_video(SCM scm_self)
-{
-  SCM retval = SCM_BOOL_F;
-  struct format_context_t *self = get_self(scm_self);
   return retval;
 }
 
@@ -385,7 +378,6 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("format-context-channels", 1, 0, 0, format_context_channels);
   scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
   scm_c_define_gsubr("format-context-typecode", 1, 0, 0, format_context_typecode);
-  scm_c_define_gsubr("format-context-read-audio", 1, 0, 0, format_context_read_audio);
-  scm_c_define_gsubr("format_context_read_audio-video", 1, 0, 0, format_context_read_audio_video);
+  scm_c_define_gsubr("format-context-read-audio-video", 3, 0, 0, format_context_read_audio_video);
   scm_c_define_gsubr("format-context-audio-pts", 1, 0, 0, format_context_audio_pts);
 }

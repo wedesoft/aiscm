@@ -49,7 +49,7 @@
 
 (define (audio-pts self) (format-context-audio-pts (slot-ref self 'format-context)))
 (define (read-audio self)
-  (let [(samples    (format-context-read-audio (slot-ref self 'format-context)))
+  (let [(samples    (format-context-read-audio-video (slot-ref self 'format-context) #f #t))
         (memory     (lambda (data size) (make <mem> #:base data #:size size)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
