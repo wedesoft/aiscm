@@ -35,7 +35,7 @@
 
 (define (video-pts self) (format-context-video-pts (slot-ref self 'format-context)))
 (define (read-video self)
-  (let [(picture (format-context-read-video (slot-ref self 'format-context)))
+  (let [(picture (format-context-read-audio-video (slot-ref self 'format-context) #f #t))
         (memory  (lambda (data size) (make <mem> #:base data #:size size)))]
     (and picture
          (apply (lambda (tag format shape offsets pitches data size)
@@ -49,7 +49,7 @@
 
 (define (audio-pts self) (format-context-audio-pts (slot-ref self 'format-context)))
 (define (read-audio self)
-  (let [(samples    (format-context-read-audio-video (slot-ref self 'format-context) #f #t))
+  (let [(samples    (format-context-read-audio-video (slot-ref self 'format-context) #t #f))
         (memory     (lambda (data size) (make <mem> #:base data #:size size)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]

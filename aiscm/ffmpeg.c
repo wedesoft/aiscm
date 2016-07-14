@@ -288,18 +288,22 @@ static SCM samples_information(struct format_context_t *self)
                     scm_from_int(data_size * channels * nb_samples));
 }
 
-SCM format_context_read_video(SCM scm_self)
+SCM format_context_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
 {
   SCM retval = SCM_BOOL_F;
 
   struct format_context_t *self = get_self(scm_self);
 
   int got_frame = 0;
+
   while (!got_frame) {
     read_packet(self);
 
     int decoded;
-    if (self->pkt.stream_index == self->video_stream_idx) {
+    if (self->pkt.stream_index == self->audio_stream_idx && scm_is_true(scm_do_audio)) {
+      decoded = decode_audio(self, &got_frame);
+      if (self->pkt.size <= 0 && !got_frame) break;
+    } else if (self->pkt.stream_index == self->video_stream_idx && scm_is_true(scm_do_video)) {
       decoded = decode_video(self, &got_frame);
       if (self->pkt.size <= 0 && !got_frame) break;
     } else
@@ -311,35 +315,8 @@ SCM format_context_read_video(SCM scm_self)
     };
   };
 
-  if (got_frame) retval = picture_information(self);
-
-  return retval;
-}
-
-SCM format_context_read_audio_video(SCM scm_self, SCM scm_do_video, SCM scm_do_audio)
-{
-  SCM retval = SCM_BOOL_F;
-
-  struct format_context_t *self = get_self(scm_self);
-
-  int got_frame = 0;
-  while (!got_frame) {
-    read_packet(self);
-
-    int decoded;
-    if (self->pkt.stream_index == self->audio_stream_idx) {
-      decoded = decode_audio(self, &got_frame);
-      if (self->pkt.size <= 0 && !got_frame) break;
-    } else
-      decoded = self->pkt.size;
-
-    if (self->pkt.data) {
-      self->pkt.data += decoded;
-      self->pkt.size -= decoded;
-    };
-  };
-
-  if (got_frame) retval = samples_information(self);
+  if (got_frame)
+    retval = scm_is_true(scm_do_audio) ? samples_information(self) : picture_information(self);
 
   return retval;
 }
@@ -373,7 +350,6 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("open-format-context", 2, 0, 0, open_format_context);
   scm_c_define_gsubr("format-context-shape", 1, 0, 0, format_context_shape);
   scm_c_define_gsubr("format-context-frame-rate", 1, 0, 0, format_context_frame_rate);
-  scm_c_define_gsubr("format-context-read-video", 1, 0, 0, format_context_read_video);
   scm_c_define_gsubr("format-context-video-pts", 1, 0, 0, format_context_video_pts);
   scm_c_define_gsubr("format-context-channels", 1, 0, 0, format_context_channels);
   scm_c_define_gsubr("format-context-rate", 1, 0, 0, format_context_rate);
