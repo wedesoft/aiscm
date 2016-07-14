@@ -90,4 +90,7 @@
     "Check 'read-audio' returns false after last frame")
 (ok (equal? (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
     "Check first three audio frame time stamps")
+(diagnostics "Following test should not hang")
+(ok (not (read-audio image))
+    "Do not hang when reading audio from image")
 (run-tests)

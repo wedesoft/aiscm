@@ -302,21 +302,20 @@ SCM ffmpeg_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
     int decoded;
     if (self->pkt.stream_index == self->audio_stream_idx && scm_is_true(scm_do_audio)) {
       decoded = decode_audio(self, &got_frame);
-      if (self->pkt.size <= 0 && !got_frame) break;
+      if (got_frame) retval = samples_information(self);
     } else if (self->pkt.stream_index == self->video_stream_idx && scm_is_true(scm_do_video)) {
       decoded = decode_video(self, &got_frame);
-      if (self->pkt.size <= 0 && !got_frame) break;
+      if (got_frame) retval = picture_information(self);
     } else
       decoded = self->pkt.size;
+
+    if (!got_frame && self->pkt.size <= 0) break;
 
     if (self->pkt.data) {
       self->pkt.data += decoded;
       self->pkt.size -= decoded;
     };
   };
-
-  if (got_frame)
-    retval = scm_is_true(scm_do_audio) ? samples_information(self) : picture_information(self);
 
   return retval;
 }
