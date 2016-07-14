@@ -15,7 +15,7 @@
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
-               (format-context #:init-keyword #:format-context))
+               (ffmpeg #:init-keyword #:ffmpeg))
 (define audio-formats
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
         (cons <sint>   AV_SAMPLE_FMT_S16P)
@@ -26,16 +26,16 @@
 (define (audio-format->type fmt) (assq-ref audio-types fmt))
 
 (define (open-input file-name)
-  (make <ffmpeg> #:format-context (open-format-context file-name (equal? "YES" (getenv "DEBUG")))))
+  (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
 (define (open-input-video file-name) (open-input file-name))
 (define (open-input-audio file-name) (open-input file-name))
 
-(define-method (shape (self <ffmpeg>)) (format-context-shape (slot-ref self 'format-context)))
-(define (frame-rate self) (format-context-frame-rate (slot-ref self 'format-context)))
+(define-method (shape (self <ffmpeg>)) (ffmpeg-shape (slot-ref self 'ffmpeg)))
+(define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
 
-(define (video-pts self) (format-context-video-pts (slot-ref self 'format-context)))
+(define (video-pts self) (ffmpeg-video-pts (slot-ref self 'ffmpeg)))
 (define (read-video self)
-  (let [(picture (format-context-read-audio-video (slot-ref self 'format-context) #f #t))
+  (let [(picture (ffmpeg-read-audio-video (slot-ref self 'ffmpeg) #f #t))
         (memory  (lambda (data size) (make <mem> #:base data #:size size)))]
     (and picture
          (apply (lambda (tag format shape offsets pitches data size)
@@ -47,9 +47,9 @@
                         #:mem     (memory data size)))
                 picture))))
 
-(define (audio-pts self) (format-context-audio-pts (slot-ref self 'format-context)))
+(define (audio-pts self) (ffmpeg-audio-pts (slot-ref self 'ffmpeg)))
 (define (read-audio self)
-  (let [(samples    (format-context-read-audio-video (slot-ref self 'format-context) #t #f))
+  (let [(samples    (ffmpeg-read-audio-video (slot-ref self 'ffmpeg) #t #f))
         (memory     (lambda (data size) (make <mem> #:base data #:size size)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
@@ -58,7 +58,7 @@
                   (array (array-type type) shape (memory data size)))
                 samples))))
 
-(define-method (channels (self <ffmpeg>)) (format-context-channels (slot-ref self 'format-context)))
-(define-method (rate (self <ffmpeg>)) (format-context-rate (slot-ref self 'format-context)))
+(define-method (channels (self <ffmpeg>)) (ffmpeg-channels (slot-ref self 'ffmpeg)))
+(define-method (rate (self <ffmpeg>)) (ffmpeg-rate (slot-ref self 'ffmpeg)))
 (define-method (typecode (self <ffmpeg>))
-  (audio-format->type (format-context-typecode (slot-ref self 'format-context))))
+  (audio-format->type (ffmpeg-typecode (slot-ref self 'ffmpeg))))
