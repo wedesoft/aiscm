@@ -1,16 +1,15 @@
 ## Ready
 
 * refactor read-audio and read-video
-* use extract from http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
-  add network streaming example
-* merge read-audio and read-video
-* use xvideo for video player (keyword parameters for "show"?)
+* writing videos
+* video positioning
+* link to https://www.youtube.com/watch?v=cGgf_dbDMsw
+* add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
 * xorg: scm\_syserror -> scm\_misc\_error
 * test for planar/packed audio (see decoding\_encoding.c)
 * read audio frames (or ignore audio frames), open-audio, open-video, open-audio/video?
 * test for FFmpeg floating point audio
 * use libswresample for audio conversions
-* video positioning
 * audio frame time stamp
 * video/audio integration test
 * handle end of file <-> xorg

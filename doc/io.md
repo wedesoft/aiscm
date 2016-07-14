@@ -86,7 +86,7 @@ Audio data can be recorded in a similar fashion
 The following example shows how to use the FFmpeg interface to open and view a video. The video presentation time stamps are used to display the video at the correct speed.
 
 ```Scheme
-@../tests/integration/ffplay.scm@
+@../tests/integration/ffvideo.scm@
 ```
 
 ## Audio files
