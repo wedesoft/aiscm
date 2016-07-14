@@ -33,30 +33,37 @@
 (define-method (shape (self <ffmpeg>)) (ffmpeg-shape (slot-ref self 'ffmpeg)))
 (define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
 
-(define (video-pts self) (ffmpeg-video-pts (slot-ref self 'ffmpeg)))
-(define (read-video self)
-  (let [(picture (ffmpeg-read-audio-video (slot-ref self 'ffmpeg) #f #t))
-        (memory  (lambda (data size) (make <mem> #:base data #:size size)))]
-    (and picture
-         (apply (lambda (tag format shape offsets pitches data size)
-                  (make <image>
-                        #:format  (format->symbol format)
-                        #:shape   shape
-                        #:offsets offsets
-                        #:pitches pitches
-                        #:mem     (memory data size)))
-                picture))))
-
-(define (audio-pts self) (ffmpeg-audio-pts (slot-ref self 'ffmpeg)))
-(define (read-audio self)
-  (let [(samples    (ffmpeg-read-audio-video (slot-ref self 'ffmpeg) #t #f))
-        (memory     (lambda (data size) (make <mem> #:base data #:size size)))
+(define (import-audio-frame lst)
+  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
-    (and samples
-         (apply (lambda (tag type shape data size)
-                  (array (array-type type) shape (memory data size)))
-                samples))))
+    (apply (lambda (type shape data size)
+             (array (array-type type) shape (memory data size)))
+           lst)))
+
+(define (import-video-frame lst)
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size)))] 
+    (apply (lambda (format shape offsets pitches data size)
+             (make <image>
+                   #:format  (format->symbol format)
+                   #:shape   shape
+                   #:offsets offsets
+                   #:pitches pitches
+                   #:mem     (memory data size)))
+           lst)))
+
+(define (import-frame lst)
+  ((case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)) (cdr lst)))
+
+(define (read-selected self audio video)
+  (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg) audio video))]
+    (and frame (import-frame frame))))
+
+(define (read-audio self) (read-selected self #t #f))
+(define (read-video self) (read-selected self #f #t))
+
+(define (audio-pts self) (ffmpeg-audio-pts (slot-ref self 'ffmpeg)))
+(define (video-pts self) (ffmpeg-video-pts (slot-ref self 'ffmpeg)))
 
 (define-method (channels (self <ffmpeg>)) (ffmpeg-channels (slot-ref self 'ffmpeg)))
 (define-method (rate (self <ffmpeg>)) (ffmpeg-rate (slot-ref self 'ffmpeg)))

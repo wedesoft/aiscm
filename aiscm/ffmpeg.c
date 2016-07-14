@@ -354,6 +354,6 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
-  scm_c_define_gsubr("ffmpeg-read-audio-video", 3, 0, 0, ffmpeg_read_audio_video);
+  scm_c_define_gsubr("ffmpeg-read-audio/video", 3, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-audio-pts", 1, 0, 0, ffmpeg_audio_pts);
 }
