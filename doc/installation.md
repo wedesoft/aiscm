@@ -2,8 +2,7 @@
 
 ## Requirements
 
-You need to install [Guile][1] and its development headers. You need at least version 2.0.9
-which supports calling foreign functions with up to 127 arguments.
+You need to install [Guile][1] version 2.0.9 or higher with development headers.
 
 ## Installation
 
@@ -32,7 +31,7 @@ wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep
 
 #### Install dependencies
 
-First you need to install the dependencies:
+You need to install the dependencies:
 
 ```
 sudo apt-get install -q --yes build-essential autoconf automake libtool
@@ -47,14 +46,6 @@ cd aiscm-*
 ./configure
 make -j
 sudo make install
-```
-
-#### Testing
-
-You can run the test suite like this:
-
-```
-make check -j
 ```
 
 [1]: http://www.gnu.org/software/guile/
