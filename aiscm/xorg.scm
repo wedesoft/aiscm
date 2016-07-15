@@ -61,7 +61,7 @@
     (for-each (cut title= <> "AIscm") windows)
     (for-each show windows images)
     (for-each show windows)
-    (do () ((quit? dsp))
+    (while (not (quit? dsp))
       (set! result (self dsp))
       (if result
         (begin

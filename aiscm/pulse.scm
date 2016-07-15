@@ -59,7 +59,7 @@
   samples)
 (define-method (write-samples (samples <procedure>) (self <pulse-play>))
   (let [(result (samples))]
-    (do () ((not result))
+    (while result
       (write-samples result self)
       (set! result (samples)))))
 (define (read-samples self n)
