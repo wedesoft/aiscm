@@ -22,21 +22,21 @@ sudo apt-get install aiscm
 
 ### Compile from source
 
-#### Install dependencies
-
-First you need to install the dependencies:
-
-```
-sudo apt-get install -q --yes build-essential autoconf automake libtool devscripts equivs
-sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
-```
-
 #### Get the source code
 
 You can download the latest release like this
 
 ```
 wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download_url | cut -d '"' -f 4`
+```
+
+#### Install dependencies
+
+First you need to install the dependencies:
+
+```
+sudo apt-get install -q --yes build-essential autoconf automake libtool
+sudo apt-get install guile-2.0-dev linux-libc-dev gettext libmjpegtools-dev imagemagick libmagickcore-dev libpulse-dev libjpeg-dev libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev libswscale-dev libavformat-dev libavcodec-dev libavutil-dev pandoc
 ```
 
 #### Build AIscm
