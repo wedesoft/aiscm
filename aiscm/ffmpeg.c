@@ -205,6 +205,21 @@ SCM ffmpeg_audio_pts(SCM scm_self)
   return scm_product(scm_from_int(self->audio_pts), time_base(audio_stream(self)));
 }
 
+SCM ffmpeg_seek(SCM scm_self, SCM scm_position)
+{
+  int64_t position = (int64_t)(scm_to_double(scm_position) * AV_TIME_BASE);
+  av_seek_frame(get_self(scm_self)->fmt_ctx, -1, position, AVSEEK_FLAG_ANY);// TODO: check error
+  return scm_position;
+}
+
+SCM ffmpeg_flush(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  if (self->video_dec_ctx) avcodec_flush_buffers(self->video_dec_ctx);
+  if (self->audio_dec_ctx) avcodec_flush_buffers(self->audio_dec_ctx);
+  return scm_self;
+}
+
 static void read_packet(struct ffmpeg_t *self)
 {
   if (self->pkt.size <= 0) {
@@ -355,4 +370,6 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-read-audio/video", 3, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-audio-pts", 1, 0, 0, ffmpeg_audio_pts);
+  scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
+  scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

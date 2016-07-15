@@ -1,7 +1,8 @@
 ## Ready
 
-* video positioning
-* threads for reading and decoding audio/video (also requires caching code)
+* video positioning (av_seek_frame(self->fmt_ctx, -1, t * AV_TIME_BASE, AVSEEK_FLAG_ANY))
+* avcodec_flush_buffers(self->video_dec_ctx), avcodec_flush_buffers(self->audio_dec_ctx)
+* threads for reading and decoding audio/video (also requires caching code), chain of futures (in Guile)?
 * test for planar/packed audio (see decoding\_encoding.c)
 * writing videos
 * use libswresample for audio conversions
