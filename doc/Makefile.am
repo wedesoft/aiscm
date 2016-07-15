@@ -4,8 +4,8 @@ PANDOC_OPTS = -s -c buttondown.css -f markdown -t html
 PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(shell date --iso-8601) \
 							-Vpagetitle="computer vision extension for the Guile programming language" -Vtitle-prefix=AIscm
 
-ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH)
-RUN = $(GUILE) --no-auto-compile -L $(top_builddir)
+ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
+RUN = $(GUILE) -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
 					 aiscm.gif fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
@@ -55,7 +55,7 @@ modulo.jpg: ../tests/integration/modulo.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:
-	$(GUILE) includes.scm < $< > $@ || rm -f $@
+	$(ENVIRONMENT) $(GUILE) includes.scm < $< > $@ || rm -f $@
 
 %.html: %.tmp buttondown.css $(wildcard $(top_builddir)/tests/integration/*.scm)
 	$(PANDOC) $(PANDOC_OPTS) $(PANDOC_VARS) -o $@ $<
