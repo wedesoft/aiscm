@@ -9,9 +9,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-input-video open-input-audio
-            read-video read-audio frame-rate video-pts audio-pts
-            read-audio/video))
+  #:export (<ffmpeg> open-ffmpeg-input read-video read-audio frame-rate video-pts audio-pts read-audio/video))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
@@ -28,8 +26,7 @@
 
 (define (open-input file-name)
   (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
-(define (open-input-video file-name) (open-input file-name))
-(define (open-input-audio file-name) (open-input file-name))
+(define (open-ffmpeg-input file-name) (open-input file-name))
 
 (define-method (shape (self <ffmpeg>)) (ffmpeg-shape (slot-ref self 'ffmpeg)))
 (define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
