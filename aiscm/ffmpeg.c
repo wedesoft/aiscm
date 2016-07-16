@@ -1,4 +1,5 @@
 #include <libguile.h>
+#include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libavformat/avformat.h>
 #include "config.h"
@@ -9,8 +10,9 @@
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/filtering_video.c
 
 #ifndef HAVE_FRAME_ALLOC
-#warning "Using old FFmpeg methods for frame allocation"
+#warning "av_frame_alloc not defined"
 #define av_frame_alloc avcodec_alloc_frame
+#warning "av_frame_free not defined"
 #define av_frame_free avcodec_free_frame
 #endif
 
@@ -274,7 +276,12 @@ static SCM picture_information(struct ffmpeg_t *self)
 
   int offsets[AV_NUM_DATA_POINTERS];
   offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
+#ifdef HAVE_IMAGE_BUFFER_SIZE
+  int size = av_image_get_buffer_size(self->frame->format, self->frame->width, self->frame->height, 32);
+#else
+#warning "av_image_get_buffer_size not defined"
   int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
+#endif
 
   return scm_list_n(scm_from_locale_symbol("video"),
                     scm_from_int(self->frame->format),

@@ -2,6 +2,7 @@
 
 * threads for reading and decoding audio/video (also requires caching code)
 * test for planar/packed audio (see decoding\_encoding.c)
+  http://kodi.wiki/view/Samples
 * writing videos
 * use libswresample for audio conversions
 * add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
