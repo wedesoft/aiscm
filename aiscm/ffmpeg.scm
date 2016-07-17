@@ -1,5 +1,6 @@
 (define-module (aiscm ffmpeg)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
@@ -15,7 +16,7 @@
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
-               (audio-pts #:init-value 0 #:getter audio-pts) 
+               (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 (define audio-formats
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
@@ -57,13 +58,18 @@
 (define (import-frame self lst)
   ((case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)) self (cdr lst)))
 
-(define (read-selected self audio video)
-  (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg) audio video))]
-    (and frame (import-frame self frame))))
+(define (audio? frame) (and (is-a? frame <sequence<>>) frame))
+(define (video? frame) (and (is-a? frame <image>     ) frame))
 
-(define (read-audio self) (read-selected self #t #f))
-(define (read-video self) (read-selected self #f #t))
-(define (read-audio/video self) (read-selected self #t #t))
+(define (read-selected self pred)
+  (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
+    (and frame
+         (or (pred (import-frame self frame))
+             (read-selected self pred)))))
+
+(define (read-audio self) (read-selected self audio?))
+(define (read-video self) (read-selected self video?))
+(define (read-audio/video self) (read-selected self identity))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

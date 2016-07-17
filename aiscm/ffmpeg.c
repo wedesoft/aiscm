@@ -152,6 +152,7 @@ SCM open_ffmpeg(SCM scm_file_name, SCM scm_debug)
     scm_misc_error("open-ffmpeg", "No stream information in file '~a': ~a", scm_list_2(scm_file_name, get_error_text(err)));
   };
 
+  // TODO: only open desired streams
   self->video_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
   if (self->video_stream_idx >= 0)
     self->video_dec_ctx = open_codec(retval, self, scm_file_name, self->video_stream_idx, "video");
@@ -293,7 +294,7 @@ static SCM list_sample_info(struct ffmpeg_t *self)
                     SCM_UNDEFINED);
 }
 
-SCM ffmpeg_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
+SCM ffmpeg_read_audio_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
 
@@ -305,10 +306,10 @@ SCM ffmpeg_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
     if (self->pkt.size <= 0) read_packet(self);
 
     int decoded;
-    if (self->pkt.stream_index == self->audio_stream_idx && scm_is_true(scm_do_audio)) {
+    if (self->pkt.stream_index == self->audio_stream_idx) {
       decoded = decode_audio(self, &got_frame);
       if (got_frame) retval = list_sample_info(self);
-    } else if (self->pkt.stream_index == self->video_stream_idx && scm_is_true(scm_do_video)) {
+    } else if (self->pkt.stream_index == self->video_stream_idx) {
       decoded = decode_video(self, &got_frame);
       if (got_frame) retval = list_image_info(self);
     } else
@@ -357,7 +358,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
-  scm_c_define_gsubr("ffmpeg-read-audio/video", 3, 0, 0, ffmpeg_read_audio_video);
+  scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }
