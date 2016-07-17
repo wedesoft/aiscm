@@ -32,8 +32,6 @@ struct ffmpeg_t {
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *frame;
-  int64_t video_pts;
-  int64_t audio_pts;
 };
 
 static SCM get_error_text(int err)
@@ -195,18 +193,6 @@ SCM ffmpeg_frame_rate(SCM scm_self)
   return rational(avg_frame_rate.num, avg_frame_rate.den);
 }
 
-SCM ffmpeg_video_pts(SCM scm_self)
-{
-  struct ffmpeg_t *self = get_self(scm_self);
-  return scm_product(scm_from_int(self->video_pts), time_base(video_stream(self)));
-}
-
-SCM ffmpeg_audio_pts(SCM scm_self)
-{
-  struct ffmpeg_t *self = get_self(scm_self);
-  return scm_product(scm_from_int(self->audio_pts), time_base(audio_stream(self)));
-}
-
 SCM ffmpeg_seek(SCM scm_self, SCM scm_position)
 {
   int64_t position = (int64_t)(scm_to_double(scm_position) * AV_TIME_BASE);
@@ -224,21 +210,19 @@ SCM ffmpeg_flush(SCM scm_self)
 
 static void read_packet(struct ffmpeg_t *self)
 {
-  if (self->pkt.size <= 0) {
-    if (self->orig_pkt.data) {
-      av_packet_unref(&self->orig_pkt);
-      self->orig_pkt.data = NULL;
-      self->orig_pkt.size = 0;
-    };
-    int err = av_read_frame(self->fmt_ctx, &self->pkt);
-    if (err >= 0)
-      self->orig_pkt = self->pkt;
-    else {
-      self->pkt.data = NULL;
-      self->pkt.size = 0;
-      if (err != AVERROR_EOF)
-        scm_misc_error("read-packet", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
-    };
+  if (self->orig_pkt.data) {
+    av_packet_unref(&self->orig_pkt);
+    self->orig_pkt.data = NULL;
+    self->orig_pkt.size = 0;
+  };
+  int err = av_read_frame(self->fmt_ctx, &self->pkt);
+  if (err >= 0)
+    self->orig_pkt = self->pkt;
+  else {
+    self->pkt.data = NULL;
+    self->pkt.size = 0;
+    if (err != AVERROR_EOF)
+      scm_misc_error("read-packet", "Error reading frame: ~a", scm_list_1(get_error_text(err)));
   };
 }
 
@@ -270,10 +254,8 @@ static int64_t frame_timestamp(AVFrame *frame)
   return retval;
 }
 
-static SCM picture_information(struct ffmpeg_t *self)
+static SCM list_image_info(struct ffmpeg_t *self)
 {
-  self->video_pts = frame_timestamp(self->frame);
-
   int offsets[AV_NUM_DATA_POINTERS];
   offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
 #ifdef HAVE_IMAGE_BUFFER_SIZE
@@ -284,6 +266,7 @@ static SCM picture_information(struct ffmpeg_t *self)
 #endif
 
   return scm_list_n(scm_from_locale_symbol("video"),
+                    scm_product(scm_from_int(frame_timestamp(self->frame)), time_base(video_stream(self))),
                     scm_from_int(self->frame->format),
                     scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
                     from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
@@ -293,21 +276,21 @@ static SCM picture_information(struct ffmpeg_t *self)
                     SCM_UNDEFINED);
 }
 
-static SCM samples_information(struct ffmpeg_t *self)
+static SCM list_sample_info(struct ffmpeg_t *self)
 {
-  self->audio_pts = frame_timestamp(self->frame);
-
   int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
   int channels = self->audio_dec_ctx->channels;
   int nb_samples = self->frame->nb_samples;
   void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");
   pack_audio(self->frame->data, channels, nb_samples, data_size, ptr);
 
-  return scm_list_5(scm_from_locale_symbol("audio"),
+  return scm_list_n(scm_from_locale_symbol("audio"),
+                    scm_product(scm_from_int(frame_timestamp(self->frame)), time_base(audio_stream(self))),
                     scm_from_int(self->audio_dec_ctx->sample_fmt),
                     scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
                     scm_from_pointer(ptr, NULL),
-                    scm_from_int(data_size * channels * nb_samples));
+                    scm_from_int(data_size * channels * nb_samples),
+                    SCM_UNDEFINED);
 }
 
 SCM ffmpeg_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
@@ -319,15 +302,15 @@ SCM ffmpeg_read_audio_video(SCM scm_self, SCM scm_do_audio, SCM scm_do_video)
   int got_frame = 0;
 
   while (!got_frame) {
-    read_packet(self);
+    if (self->pkt.size <= 0) read_packet(self);
 
     int decoded;
     if (self->pkt.stream_index == self->audio_stream_idx && scm_is_true(scm_do_audio)) {
       decoded = decode_audio(self, &got_frame);
-      if (got_frame) retval = samples_information(self);
+      if (got_frame) retval = list_sample_info(self);
     } else if (self->pkt.stream_index == self->video_stream_idx && scm_is_true(scm_do_video)) {
       decoded = decode_video(self, &got_frame);
-      if (got_frame) retval = picture_information(self);
+      if (got_frame) retval = list_image_info(self);
     } else
       decoded = self->pkt.size;
 
@@ -371,12 +354,10 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("open-ffmpeg", 2, 0, 0, open_ffmpeg);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
-  scm_c_define_gsubr("ffmpeg-video-pts", 1, 0, 0, ffmpeg_video_pts);
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-read-audio/video", 3, 0, 0, ffmpeg_read_audio_video);
-  scm_c_define_gsubr("ffmpeg-audio-pts", 1, 0, 0, ffmpeg_audio_pts);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

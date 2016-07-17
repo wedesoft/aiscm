@@ -14,7 +14,9 @@
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
-               (ffmpeg #:init-keyword #:ffmpeg))
+               (ffmpeg #:init-keyword #:ffmpeg)
+               (audio-pts #:init-value 0 #:getter audio-pts) 
+               (video-pts #:init-value 0 #:getter video-pts))
 (define audio-formats
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
         (cons <sint>   AV_SAMPLE_FMT_S16P)
@@ -31,17 +33,19 @@
 (define-method (shape (self <ffmpeg>)) (ffmpeg-shape (slot-ref self 'ffmpeg)))
 (define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
 
-(define (import-audio-frame lst)
+(define (import-audio-frame self lst)
   (let [(memory     (lambda (data size) (make <mem> #:base data #:size size)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
-    (apply (lambda (type shape data size)
+    (apply (lambda (pts type shape data size)
+             (slot-set! self 'audio-pts pts)
              (array (array-type type) shape (memory data size)))
            lst)))
 
-(define (import-video-frame lst)
+(define (import-video-frame self lst)
   (let [(memory (lambda (data size) (make <mem> #:base data #:size size)))]
-    (apply (lambda (format shape offsets pitches data size)
+    (apply (lambda (pts format shape offsets pitches data size)
+             (slot-set! self 'video-pts pts)
              (make <image>
                    #:format  (format->symbol format)
                    #:shape   shape
@@ -50,22 +54,19 @@
                    #:mem     (memory data size)))
            lst)))
 
-(define (import-frame lst)
-  ((case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)) (cdr lst)))
+(define (import-frame self lst)
+  ((case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)) self (cdr lst)))
 
 (define (read-selected self audio video)
   (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg) audio video))]
-    (and frame (import-frame frame))))
+    (and frame (import-frame self frame))))
 
 (define (read-audio self) (read-selected self #t #f))
 (define (read-video self) (read-selected self #f #t))
 (define (read-audio/video self) (read-selected self #t #t))
 
-(define (audio-pts self) (ffmpeg-audio-pts (slot-ref self 'ffmpeg)))
-(define (video-pts self) (ffmpeg-video-pts (slot-ref self 'ffmpeg)))
-
 (define (pts= self position)
-  (ffmpeg-seek (slot-ref self 'ffmpeg) position) 
+  (ffmpeg-seek (slot-ref self 'ffmpeg) position)
   (ffmpeg-flush (slot-ref self 'ffmpeg))
   position)
 

@@ -1,5 +1,6 @@
 ## Ready
 
+* lift packet and frame handling code into Guile, use ring buffer with write index and read index, see etc/threads.scm
 * threads for reading and decoding audio/video (also requires caching code)
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
@@ -7,14 +8,13 @@
 * use libswresample for audio conversions
 * add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
 * xorg: scm\_syserror -> scm\_misc\_error
-* audio frame time stamp
-* handle end of file <-> xorg
 * release using DOI by Zenodo https://guides.github.com/activities/citable-code/
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * shape of xorg window
 * xorg window scaling, fullscreen windows
 * use hash tables
+* use assp http://www.scheme.com/csug7/objects.html
 * conditional/select
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
