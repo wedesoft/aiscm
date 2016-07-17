@@ -229,9 +229,9 @@ static void read_packet(struct ffmpeg_t *self)
 
 static int decode_video(struct ffmpeg_t *self, int *got_frame)
 {
-  int err = avcodec_decode_video2(self->video_dec_ctx, self->frame, got_frame, &self->pkt);
-  if (err < 0)
-    scm_misc_error("ffmpeg-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(err)));
+  int len = avcodec_decode_video2(self->video_dec_ctx, self->frame, got_frame, &self->pkt);
+  if (len < 0)
+    scm_misc_error("ffmpeg-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
   return self->pkt.size;
 }
 
