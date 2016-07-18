@@ -233,26 +233,6 @@ static void consume_packet_data(struct ffmpeg_t *self, int decoded)
   self->pkt.size -= decoded;
 }
 
-static int decode_video(struct ffmpeg_t *self)
-{
-  int got_frame;
-  int len = avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);
-  if (len < 0)
-    scm_misc_error("ffmpeg-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
-  consume_packet_data(self, self->pkt.size);
-  return got_frame;
-}
-
-static int decode_audio(struct ffmpeg_t *self)
-{
-  int got_frame;
-  int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, &got_frame, &self->pkt);
-  if (len < 0)
-    scm_misc_error("ffmpeg-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
-  consume_packet_data(self, FFMIN(self->pkt.size, len));
-  return got_frame;
-}
-
 static int64_t frame_timestamp(AVFrame *frame)
 {
   int64_t retval;
@@ -263,6 +243,33 @@ static int64_t frame_timestamp(AVFrame *frame)
   else
     retval = 0;
   return retval;
+}
+
+static SCM list_sample_info(struct ffmpeg_t *self)
+{
+  int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
+  int channels = self->audio_dec_ctx->channels;
+  int nb_samples = self->frame->nb_samples;
+  void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");
+  pack_audio(self->frame->data, channels, nb_samples, data_size, ptr);
+
+  return scm_list_n(scm_from_locale_symbol("audio"),
+                    scm_product(scm_from_int(frame_timestamp(self->frame)), time_base(audio_stream(self))),
+                    scm_from_int(self->audio_dec_ctx->sample_fmt),
+                    scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
+                    scm_from_pointer(ptr, NULL),
+                    scm_from_int(data_size * channels * nb_samples),
+                    SCM_UNDEFINED);
+}
+
+static SCM decode_audio(struct ffmpeg_t *self)
+{
+  int got_frame;
+  int len = avcodec_decode_audio4(self->audio_dec_ctx, self->frame, &got_frame, &self->pkt);
+  if (len < 0)
+    scm_misc_error("ffmpeg-read-audio", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+  consume_packet_data(self, FFMIN(self->pkt.size, len));
+  return got_frame ? list_sample_info(self) : SCM_BOOL_F;
 }
 
 static SCM list_image_info(struct ffmpeg_t *self)
@@ -287,21 +294,14 @@ static SCM list_image_info(struct ffmpeg_t *self)
                     SCM_UNDEFINED);
 }
 
-static SCM list_sample_info(struct ffmpeg_t *self)
+static SCM decode_video(struct ffmpeg_t *self)
 {
-  int data_size = av_get_bytes_per_sample(self->audio_dec_ctx->sample_fmt);
-  int channels = self->audio_dec_ctx->channels;
-  int nb_samples = self->frame->nb_samples;
-  void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");
-  pack_audio(self->frame->data, channels, nb_samples, data_size, ptr);
-
-  return scm_list_n(scm_from_locale_symbol("audio"),
-                    scm_product(scm_from_int(frame_timestamp(self->frame)), time_base(audio_stream(self))),
-                    scm_from_int(self->audio_dec_ctx->sample_fmt),
-                    scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
-                    scm_from_pointer(ptr, NULL),
-                    scm_from_int(data_size * channels * nb_samples),
-                    SCM_UNDEFINED);
+  int got_frame;
+  int len = avcodec_decode_video2(self->video_dec_ctx, self->frame, &got_frame, &self->pkt);
+  if (len < 0)
+    scm_misc_error("ffmpeg-read-video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+  consume_packet_data(self, self->pkt.size);
+  return got_frame ? list_image_info(self) : SCM_BOOL_F;
 }
 
 static int packet_empty(struct ffmpeg_t *self)
@@ -315,23 +315,19 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
 
   struct ffmpeg_t *self = get_self(scm_self);
 
-  int got_frame = 0;
-
-  while (!got_frame) {
+  while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);
 
     int read_cached = packet_empty(self);
 
-    if (self->pkt.stream_index == self->audio_stream_idx) {
-      got_frame = decode_audio(self);
-      if (got_frame) retval = list_sample_info(self);
-    } else if (self->pkt.stream_index == self->video_stream_idx) {
-      got_frame = decode_video(self);
-      if (got_frame) retval = list_image_info(self);
-    } else
+    if (self->pkt.stream_index == self->audio_stream_idx)
+      retval = decode_audio(self);
+    else if (self->pkt.stream_index == self->video_stream_idx)
+      retval = decode_video(self);
+    else
       consume_packet_data(self, self->pkt.size);
 
-    if (!got_frame && read_cached) break;
+    if (scm_is_false(retval) && read_cached) break;
   };
 
   return retval;
