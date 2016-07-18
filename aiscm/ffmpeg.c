@@ -80,6 +80,7 @@ SCM ffmpeg_destroy(SCM scm_self)
   scm_assert_smob_type(ffmpeg_tag, scm_self);
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->frame) {
+    av_frame_unref(self->frame);
     av_frame_free(&self->frame);
     self->frame = NULL;
   };
@@ -314,6 +315,8 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   SCM retval = SCM_BOOL_F;
 
   struct ffmpeg_t *self = get_self(scm_self);
+
+  av_frame_unref(self->frame);
 
   while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);
