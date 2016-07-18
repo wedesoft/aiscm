@@ -14,6 +14,8 @@
 #define av_frame_alloc avcodec_alloc_frame
 #warning "av_frame_free not defined"
 #define av_frame_free avcodec_free_frame
+#warning "av_frame_unref not defined"
+#define av_frame_unref avcodec_get_frame_defaults
 #endif
 
 #ifndef HAVE_PACKET_UNREF
