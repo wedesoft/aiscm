@@ -256,46 +256,52 @@ SCM videodev2_shape(SCM scm_self)
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
+static SCM grab_io_read(struct videodev2_t *self, int width, int height)
+{
+  int size = self->format.fmt.pix.sizeimage;
+  void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
+  if (read(self->fd, buf, size) == -1)
+    scm_misc_error("videodev2-grab", "Error reading from device: ~a",
+                   scm_list_1(scm_from_locale_string(strerror(errno))));
+  return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
+                    scm_list_2(scm_from_int(width), scm_from_int(height)),
+                    scm_from_pointer(buf, NULL),
+                    scm_from_int(size));
+}
+
+static SCM grab_io_mmap_userptr(struct videodev2_t *self, int width, int height)
+{
+  if (self->frame_used) {
+    if (xioctl(self->fd, VIDIOC_QBUF, &self->frame))
+      scm_misc_error("videodev2-grab", "Error queueing video buffer: ~a",
+                     scm_list_1(scm_from_locale_string(strerror(errno))));
+    self->frame_used = 0;
+  };
+  memset(&self->frame, 0, sizeof(struct v4l2_buffer));
+  self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
+  if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame))
+    scm_misc_error("videodev2-grab", "Error dequeueing video buffer: ~a",
+                   scm_list_1(scm_from_locale_string(strerror(errno))));
+  self->frame_used = 1;
+  void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
+  return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
+                    scm_list_2(scm_from_int(width), scm_from_int(height)),
+                    scm_from_pointer(p, NULL),
+                    scm_from_int(self->format.fmt.pix.sizeimage));
+}
+
 SCM videodev2_grab(SCM scm_self)
 {
-  SCM retval;
   struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
     scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
                    SCM_UNDEFINED);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
-  if (self->io == IO_READ) {
-    int size = self->format.fmt.pix.sizeimage;
-    void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
-    if (read(self->fd, buf, size) == -1)
-      scm_misc_error("videodev2-grab", "Error reading from device: ~a",
-                     scm_list_1(scm_from_locale_string(strerror(errno))));
-    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                        scm_list_2(scm_from_int(width), scm_from_int(height)),
-                        scm_from_pointer(buf, NULL),
-                        scm_from_int(size));
-  } else {
-    if (self->frame_used) {
-      if (xioctl(self->fd, VIDIOC_QBUF, &self->frame))
-        scm_misc_error("videodev2-grab", "Error queueing video buffer: ~a",
-                       scm_list_1(scm_from_locale_string(strerror(errno))));
-      self->frame_used = 0;
-    };
-    memset(&self->frame, 0, sizeof(struct v4l2_buffer));
-    self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
-    if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame))
-      scm_misc_error("videodev2-grab", "Error dequeueing video buffer: ~a",
-                     scm_list_1(scm_from_locale_string(strerror(errno))));
-    self->frame_used = 1;
-    void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
-    retval = scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                        scm_list_2(scm_from_int(width), scm_from_int(height)),
-                        scm_from_pointer(p, NULL),
-                        scm_from_int(self->format.fmt.pix.sizeimage));
-  };
-  return retval;
+  return self->io == IO_READ ?
+         grab_io_read(self, width, height) :
+         grab_io_mmap_userptr(self, width, height);
 }
 
 void init_v4l2(void)
