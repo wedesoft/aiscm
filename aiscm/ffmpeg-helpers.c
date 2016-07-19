@@ -40,7 +40,7 @@ void pack_audio(uint8_t *pointers[], int channels, int nb_samples, int data_size
 
 void ring_buffer_init(struct ring_buffer_t *ring_buffer, int size)
 {
-  ring_buffer->buffer = malloc(sizeof(void *) * size);
+  ring_buffer->buffer = calloc(sizeof(void *), size);
   ring_buffer->size = size;
   ring_buffer->count = 0;
   ring_buffer->offset = 0;
@@ -49,6 +49,8 @@ void ring_buffer_init(struct ring_buffer_t *ring_buffer, int size)
 void ring_buffer_free(struct ring_buffer_t *ring_buffer)
 {
   free(ring_buffer->buffer);
+  ring_buffer->buffer = NULL;
+  ring_buffer->size = 0;
 }
 
 void ring_buffer_push(struct ring_buffer_t *ring_buffer, void *element)

@@ -196,6 +196,14 @@ SCM ring_buffer_test_empty(void)
   return retval;
 }
 
+SCM ring_buffer_free_nulls_pointer(void)
+{
+  struct ring_buffer_t ring_buffer;
+  ring_buffer_init(&ring_buffer, 1);
+  ring_buffer_free(&ring_buffer);
+  return scm_from_bool(!ring_buffer.buffer && !ring_buffer.size);
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -218,4 +226,5 @@ void init_tests(void)
   scm_c_define_gsubr("ring-buffer-cyclical", 0, 0, 0, ring_buffer_cyclical);
   scm_c_define_gsubr("ring-buffer-test-full", 0, 0, 0, ring_buffer_test_full);
   scm_c_define_gsubr("ring-buffer-test-empty", 0, 0, 0, ring_buffer_test_empty);
+  scm_c_define_gsubr("ring-buffer-free-nulls-pointer", 0, 0, 0, ring_buffer_free_nulls_pointer);
 }

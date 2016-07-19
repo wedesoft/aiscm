@@ -62,10 +62,10 @@
 (define (video? frame) (and (is-a? frame <image>     ) frame))
 
 (define (read-selected self pred)
-  (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
-    (and frame
-         (or (pred (import-frame self frame))
-             (read-selected self pred)))))
+  (if (ffmpeg-buffer-frame (slot-ref self 'ffmpeg))
+    (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
+      (or (pred (import-frame self frame)) (read-selected self pred)))
+    #f))
 
 (define (read-audio self) (read-selected self audio?))
 (define (read-video self) (read-selected self video?))

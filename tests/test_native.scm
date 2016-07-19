@@ -40,4 +40,6 @@
     "Tell whether ring buffer is full")
 (ok (ring-buffer-test-empty)
     "Tell whether ring buffer is empty")
+(ok (ring-buffer-free-nulls-pointer)
+    "Deleting ring buffer sets pointer to null")
 (run-tests)
