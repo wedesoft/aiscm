@@ -3,7 +3,7 @@
 #include <libavutil/opt.h>
 #include <libavformat/avformat.h>
 #include "config.h"
-#include "helpers.h"
+#include "ffmpeg-helpers.h"
 
 // http://dranger.com/ffmpeg/
 // https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
@@ -14,14 +14,14 @@
 #define av_frame_alloc avcodec_alloc_frame
 #warning "av_frame_free not defined"
 #define av_frame_free avcodec_free_frame
-#warning "av_frame_unref not defined"
-#define av_frame_unref avcodec_get_frame_defaults
+//#warning "av_frame_unref not defined"
+//#define av_frame_unref avcodec_get_frame_defaults
 #endif
 
-#ifndef HAVE_PACKET_UNREF
-#warning "av_packet_unref not supported"
-#define av_packet_unref av_free_packet
-#endif
+// #ifndef HAVE_PACKET_UNREF
+// #warning "av_packet_unref not supported"
+// #define av_packet_unref av_free_packet
+// #endif
 
 static scm_t_bits ffmpeg_tag;
 
@@ -82,12 +82,12 @@ SCM ffmpeg_destroy(SCM scm_self)
   scm_assert_smob_type(ffmpeg_tag, scm_self);
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->frame) {
-    av_frame_unref(self->frame);
+    // av_frame_unref(self->frame);
     av_frame_free(&self->frame);
     self->frame = NULL;
   };
   if (self->orig_pkt.data) {
-    av_packet_unref(&self->orig_pkt);
+    av_free_packet(&self->orig_pkt);
     self->orig_pkt.data = NULL;
   };
   if (self->audio_dec_ctx) {
@@ -123,7 +123,7 @@ static AVCodecContext *open_codec(SCM scm_self, struct ffmpeg_t *self, SCM scm_f
     scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
-  av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
+  // av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
   if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("open-codec", "Failed to open ~a codec for file '~a'",
@@ -215,7 +215,7 @@ SCM ffmpeg_flush(SCM scm_self)
 static void read_packet(struct ffmpeg_t *self)
 {
   if (self->orig_pkt.data) {
-    av_packet_unref(&self->orig_pkt);
+    av_free_packet(&self->orig_pkt);
     self->orig_pkt.data = NULL;
     self->orig_pkt.size = 0;
   };
@@ -318,7 +318,7 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
 
   struct ffmpeg_t *self = get_self(scm_self);
 
-  av_frame_unref(self->frame);
+  // av_frame_unref(self->frame);
 
   while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);

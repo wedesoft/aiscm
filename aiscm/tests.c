@@ -1,5 +1,5 @@
 #include <libguile.h>
-#include "helpers.h"
+#include "ffmpeg-helpers.h"
 
 
 SCM forty_two(void)
