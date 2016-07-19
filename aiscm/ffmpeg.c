@@ -14,14 +14,9 @@
 #define av_frame_alloc avcodec_alloc_frame
 #warning "av_frame_free not defined"
 #define av_frame_free avcodec_free_frame
-//#warning "av_frame_unref not defined"
-//#define av_frame_unref avcodec_get_frame_defaults
+#warning "av_frame_unref not defined"
+#define av_frame_unref avcodec_get_frame_defaults
 #endif
-
-// #ifndef HAVE_PACKET_UNREF
-// #warning "av_packet_unref not supported"
-// #define av_packet_unref av_free_packet
-// #endif
 
 static scm_t_bits ffmpeg_tag;
 
@@ -82,7 +77,7 @@ SCM ffmpeg_destroy(SCM scm_self)
   scm_assert_smob_type(ffmpeg_tag, scm_self);
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->frame) {
-    // av_frame_unref(self->frame);
+    av_frame_unref(self->frame);
     av_frame_free(&self->frame);
     self->frame = NULL;
   };
@@ -318,7 +313,7 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
 
   struct ffmpeg_t *self = get_self(scm_self);
 
-  // av_frame_unref(self->frame);
+  av_frame_unref(self->frame);
 
   while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);
