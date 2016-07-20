@@ -62,13 +62,14 @@
        ((video) import-video-frame))
      self (cdr lst))))
 
-(define (read-selected self fun)
-  (if (ffmpeg-buffer-frame (slot-ref self 'ffmpeg));TODO: only fill buffer if necessary
-    (or (fun (slot-ref self 'ffmpeg)) (read-selected self fun))
-    #f))
+(define (read-selected self empty? read-frame)
+  (let [(ffmpeg (slot-ref self 'ffmpeg))]
+    (if (empty? ffmpeg)
+      (and (ffmpeg-buffer-frame ffmpeg) (read-selected self empty? read-frame))
+      (read-frame ffmpeg))))
 
-(define (read-audio self) (import-frame self (read-selected self ffmpeg-read-audio)))
-(define (read-video self) (import-frame self (read-selected self ffmpeg-read-video)))
+(define (read-audio self) (import-frame self (read-selected self ffmpeg-audio-buffer-empty? ffmpeg-read-audio)))
+(define (read-video self) (import-frame self (read-selected self ffmpeg-video-buffer-empty? ffmpeg-read-video)))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

@@ -104,6 +104,6 @@
     "Seeking audio/video should update the video position")
 (let [(image (open-ffmpeg-input "fixtures/fubk.png"))]
   (read-audio image)
-  (todo (read-video image)
+  (ok (read-video image)
       "Cache video data when reading audio"))
 (run-tests)

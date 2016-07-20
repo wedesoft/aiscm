@@ -176,8 +176,8 @@ SCM open_ffmpeg(SCM scm_file_name, SCM scm_debug)
   self->pkt.data = NULL;
   self->pkt.size = 0;
 
-  ring_buffer_init(&self->audio_buffer, 10);
-  ring_buffer_init(&self->video_buffer, 3);
+  ring_buffer_init(&self->audio_buffer, 43);
+  ring_buffer_init(&self->video_buffer, 25);
 
   return retval;
 }
@@ -395,6 +395,16 @@ SCM ffmpeg_read_video(SCM scm_self)
   return retval;
 }
 
+SCM ffmpeg_audio_buffer_empty(SCM scm_self)
+{
+  return scm_from_bool(ring_buffer_empty(&get_self(scm_self)->audio_buffer));
+}
+
+SCM ffmpeg_video_buffer_empty(SCM scm_self)
+{
+  return scm_from_bool(ring_buffer_empty(&get_self(scm_self)->video_buffer));
+}
+
 SCM ffmpeg_channels(SCM scm_self)
 {
   return scm_from_int(audio_dec_ctx(get_self(scm_self))->channels);
@@ -430,6 +440,8 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-buffer-frame", 1, 0, 0, ffmpeg_buffer_frame);
   scm_c_define_gsubr("ffmpeg-read-audio", 1, 0, 0, ffmpeg_read_audio);
   scm_c_define_gsubr("ffmpeg-read-video", 1, 0, 0, ffmpeg_read_video);
+  scm_c_define_gsubr("ffmpeg-audio-buffer-empty?", 1, 0, 0, ffmpeg_audio_buffer_empty);
+  scm_c_define_gsubr("ffmpeg-video-buffer-empty?", 1, 0, 0, ffmpeg_video_buffer_empty);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }
