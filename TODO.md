@@ -1,8 +1,8 @@
 ## Ready
 
-* lift packet and frame handling code into Guile, use ring buffer with write index and read index, see etc/threads.scm
+* threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
+* closing of ffmpeg input
 * test data license
-* threads for reading and decoding audio/video (also requires caching code)
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
 * writing videos

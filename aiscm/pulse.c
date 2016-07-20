@@ -12,7 +12,7 @@ struct pulsedev_t {
 
 static void device_not_open(const char *context)
 {
-  scm_misc_error(context, "Device is not open. Did you call 'destroy' before?", SCM_UNDEFINED);
+  scm_misc_error(context, "Device is not open. Did you call 'destroy' before?", SCM_EOL);
 }
 
 static struct pulsedev_t *get_self(SCM scm_self)

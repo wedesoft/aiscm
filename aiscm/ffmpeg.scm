@@ -10,7 +10,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input read-video read-audio frame-rate video-pts audio-pts read-audio/video pts=))
+  #:export (<ffmpeg> open-ffmpeg-input read-video read-audio frame-rate video-pts audio-pts pts=))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
@@ -56,20 +56,19 @@
            lst)))
 
 (define (import-frame self lst)
-  ((case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)) self (cdr lst)))
+  (and lst
+    ((case (car lst)
+       ((audio) import-audio-frame)
+       ((video) import-video-frame))
+     self (cdr lst))))
 
-(define (audio? frame) (and (is-a? frame <sequence<>>) frame))
-(define (video? frame) (and (is-a? frame <image>     ) frame))
-
-(define (read-selected self pred)
-  (if (ffmpeg-buffer-frame (slot-ref self 'ffmpeg))
-    (let [(frame (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
-      (or (pred (import-frame self frame)) (read-selected self pred)))
+(define (read-selected self fun)
+  (if (ffmpeg-buffer-frame (slot-ref self 'ffmpeg));TODO: only fill buffer if necessary
+    (or (fun (slot-ref self 'ffmpeg)) (read-selected self fun))
     #f))
 
-(define (read-audio self) (read-selected self audio?))
-(define (read-video self) (read-selected self video?))
-(define (read-audio/video self) (read-selected self identity))
+(define (read-audio self) (import-frame self (read-selected self ffmpeg-read-audio)))
+(define (read-video self) (import-frame self (read-selected self ffmpeg-read-video)))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

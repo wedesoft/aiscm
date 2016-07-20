@@ -326,8 +326,6 @@ SCM ffmpeg_buffer_frame(SCM scm_self)
 
   struct ffmpeg_t *self = get_self(scm_self);
 
-  if (self->frame) av_frame_free(&self->frame);
-
   AVFrame *frame = av_frame_alloc();
 
   int got_frame = 0;
@@ -336,12 +334,20 @@ SCM ffmpeg_buffer_frame(SCM scm_self)
 
     int reading_cache = packet_empty(self);
 
-    if (self->pkt.stream_index == self->audio_stream_idx) {
+    if (self->pkt.stream_index == self->audio_stream_idx && !ring_buffer_full(&self->audio_buffer)) {
       got_frame = decode_audio(self, &self->pkt, frame);
-      if (got_frame) ring_buffer_push(&self->audio_buffer, frame);// TODO: check audio buffer overflow
-    } else if (self->pkt.stream_index == self->video_stream_idx) {
+      if (got_frame) {
+        // if (ring_buffer_full(&self->audio_buffer))
+        //   scm_misc_error("ffmpeg-buffer-frame", "Audio buffer is full", SCM_EOL);
+        ring_buffer_push(&self->audio_buffer, frame);
+      };
+    } else if (self->pkt.stream_index == self->video_stream_idx && !ring_buffer_full(&self->video_buffer)) {
       got_frame = decode_video(self, &self->pkt, frame);
-      if (got_frame) ring_buffer_push(&self->video_buffer, frame);// TODO: check video buffer overflow
+      if (got_frame) {
+        // if (ring_buffer_full(&self->video_buffer))
+        //   scm_misc_error("ffmpeg-buffer-frame", "Video buffer is full", SCM_EOL);
+        ring_buffer_push(&self->video_buffer, frame);
+      };
     } else
       consume_packet_data(&self->pkt, self->pkt.size);
 
@@ -351,18 +357,36 @@ SCM ffmpeg_buffer_frame(SCM scm_self)
   return scm_from_bool(got_frame);
 }
 
-SCM ffmpeg_read_audio_video(SCM scm_self)
+SCM ffmpeg_read_audio(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
 
   struct ffmpeg_t *self = get_self(scm_self);
 
-  if (self->frame) av_frame_free(&self->frame);
+  if (self->frame) {
+    av_frame_free(&self->frame);
+    self->frame = NULL;
+  };
 
   if (!ring_buffer_empty(&self->audio_buffer)) {
     self->frame = ring_buffer_pop(&self->audio_buffer);
     retval = list_sample_info(self);
   };
+
+  return retval;
+}
+
+SCM ffmpeg_read_video(SCM scm_self)
+{
+  SCM retval = SCM_BOOL_F;
+
+  struct ffmpeg_t *self = get_self(scm_self);
+
+  if (self->frame) {
+    av_frame_free(&self->frame);
+    self->frame = NULL;
+  };
+
   if (!ring_buffer_empty(&self->video_buffer)) {
     self->frame = ring_buffer_pop(&self->video_buffer);
     retval = list_image_info(self);
@@ -404,7 +428,8 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-buffer-frame", 1, 0, 0, ffmpeg_buffer_frame);
-  scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
+  scm_c_define_gsubr("ffmpeg-read-audio", 1, 0, 0, ffmpeg_read_audio);
+  scm_c_define_gsubr("ffmpeg-read-video", 1, 0, 0, ffmpeg_read_video);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

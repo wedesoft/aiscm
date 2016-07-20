@@ -249,8 +249,7 @@ SCM videodev2_shape(SCM scm_self)
 {
   struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
-    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
-                   SCM_UNDEFINED);
+    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
   return scm_list_2(scm_from_int(width), scm_from_int(height));
@@ -295,8 +294,7 @@ SCM videodev2_grab(SCM scm_self)
 {
   struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
-    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?",
-                   SCM_UNDEFINED);
+    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
   return self->io == IO_READ ?
