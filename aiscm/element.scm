@@ -6,7 +6,7 @@
             <meta<element>>
             value get set size-of foreign-type pack unpack channels rate
             typecode size shape strides dimensions coerce match wrap get-size
-            build content component base to-type))
+            build content component base to-type duplicate))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
 (define-method (size-of (self <element>)) (size-of (class-of self)))
@@ -36,3 +36,4 @@
 (define-method (component type self offset) self)
 (define-method (base self) self)
 (define-generic to-type)
+(define-generic duplicate)

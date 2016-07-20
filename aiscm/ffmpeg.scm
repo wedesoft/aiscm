@@ -16,6 +16,8 @@
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
+               (audio-buffer #:init-value '())
+               (video-buffer #:init-value '())
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 (define audio-formats
@@ -47,29 +49,36 @@
   (let [(memory (lambda (data size) (make <mem> #:base data #:size size)))]
     (apply (lambda (pts format shape offsets pitches data size)
              (slot-set! self 'video-pts pts)
-             (make <image>
-                   #:format  (format->symbol format)
-                   #:shape   shape
-                   #:offsets offsets
-                   #:pitches pitches
-                   #:mem     (memory data size)))
+             (duplicate
+               (make <image>
+                     #:format  (format->symbol format)
+                     #:shape   shape
+                     #:offsets offsets
+                     #:pitches pitches
+                     #:mem     (memory data size))))
            lst)))
 
-(define (import-frame self lst)
-  (and lst
-    ((case (car lst)
-       ((audio) import-audio-frame)
-       ((video) import-video-frame))
-     self (cdr lst))))
+(define (buffer-push self slot frame)
+  (slot-set! self slot (attach (slot-ref self slot) frame)) #t)
 
-(define (read-selected self empty? read-frame)
-  (let [(ffmpeg (slot-ref self 'ffmpeg))]
-    (if (empty? ffmpeg)
-      (and (ffmpeg-buffer-frame ffmpeg) (read-selected self empty? read-frame))
-      (read-frame ffmpeg))))
+(define (buffer-pop self slot)
+  (let [(frames (slot-ref self slot))]
+    (and
+      (not (null? frames))
+      (begin
+        (slot-set! self slot (cdr frames))
+        (car frames)))))
 
-(define (read-audio self) (import-frame self (read-selected self ffmpeg-audio-buffer-empty? ffmpeg-read-audio)))
-(define (read-video self) (import-frame self (read-selected self ffmpeg-video-buffer-empty? ffmpeg-read-video)))
+(define (buffer-audio/video self)
+  (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
+    (if lst
+       (case (car lst)
+         ((audio) (buffer-push self 'audio-buffer (import-audio-frame self (cdr lst))))
+         ((video) (buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
+       #f)))
+
+(define (read-audio self) (or (buffer-pop self 'audio-buffer) (and (buffer-audio/video self) (read-audio self))))
+(define (read-video self) (or (buffer-pop self 'video-buffer) (and (buffer-audio/video self) (read-video self))))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

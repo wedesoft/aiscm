@@ -20,7 +20,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            need-intermediate-param? need-intermediate-var? duplicate shl shr sign-extend-ax div mod
+            need-intermediate-param? need-intermediate-var? shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function)
   #:re-export (min max)
