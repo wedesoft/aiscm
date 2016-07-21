@@ -1,11 +1,13 @@
 ## Ready
 
+* pulse audio error handling
+* deduct sample time from delay in ffplay.scm
 * test and develop utils/buffer, limit buffer
 * fix video-pts and audio-pts!
 * proper implementation for duplication of images
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * closing of ffmpeg input
-* test data license
+* test data license https://www.youtube.com/watch?v=cGgf_dbDMsw
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
 * writing videos

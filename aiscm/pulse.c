@@ -39,6 +39,11 @@ size_t free_pulsedev(SCM scm_self)
   return 0;
 }
 
+static void pulse_error(const char *context, const char *format, int error)
+{
+   scm_misc_error(context, format, scm_list_1(scm_from_locale_string(pa_strerror(error))));
+}
+
 SCM make_pulsedev(SCM scm_direction, SCM scm_type, SCM scm_rate, SCM scm_channels)
 {
   SCM retval;
@@ -60,10 +65,9 @@ SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-write");
-  int error;
+  int error = PA_OK;
   if (pa_simple_write(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
-    scm_misc_error("pulsedev-write", "Error writing audio samples: ~a",
-                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+    pulse_error("pulsedev-write", "Error writing audio samples: ~a", error);
   return SCM_UNSPECIFIED;
 }
 
@@ -71,10 +75,9 @@ SCM pulsedev_read(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-read");
-  int error;
+  int error = PA_OK;
   if (pa_simple_read(self->s, scm_to_pointer(scm_data), scm_to_int(scm_bytes), &error) < 0)
-    scm_misc_error("pulsedev-read", "Error reading audio samples: ~a",
-                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+    pulse_error("pulsedev-read", "Error reading audio samples: ~a", error);
   return SCM_UNSPECIFIED;
 }
 
@@ -82,11 +85,10 @@ SCM pulsedev_latency(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-latency");
-  int error;
+  int error = PA_OK;
   pa_usec_t latency = pa_simple_get_latency(self->s, &error);
   if (error != PA_OK)
-    scm_misc_error("pulsedev-latency", "Error getting latency: ~a",
-                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+    pulse_error("pulsedev-latency", "Error getting latency: ~a", error);
   return scm_from_int(latency);
 }
 
@@ -94,11 +96,10 @@ SCM pulsedev_drain(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-drain");
-  int error;
+  int error = PA_OK;
   pa_simple_drain(self->s, &error);
   if (error != PA_OK)
-    scm_misc_error("pulsedev-drain", "Error waiting for data to be written: ~a",
-                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+    pulse_error("pulsedev-drain", "Error waiting for data to be written: ~a", error);
   return SCM_UNSPECIFIED;
 }
 
@@ -106,11 +107,10 @@ SCM pulsedev_flush(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (!self->s) device_not_open("pulsedev-flush");
-  int error;
+  int error = PA_OK;
   pa_simple_flush(self->s, &error);
   if (error != PA_OK)
-    scm_misc_error("pulsedev-flush", "Error discarding buffered audio samples: ~a",
-                   scm_list_1(scm_from_locale_string(pa_strerror(error))));
+    pulse_error("pulsedev-flush", "Error discarding buffered audio samples: ~a", error);
   return SCM_UNSPECIFIED;
 }
 
