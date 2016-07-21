@@ -41,33 +41,36 @@
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
-             (slot-set! self 'audio-pts pts)
-             (array (array-type type) shape (memory data size)))
+             (cons
+               pts
+               (array (array-type type) shape (memory data size))))
            lst)))
 
 (define (import-video-frame self lst)
   (let [(memory (lambda (data size) (make <mem> #:base data #:size size)))]
     (apply (lambda (pts format shape offsets pitches data size)
-             (slot-set! self 'video-pts pts)
-             (duplicate
-               (make <image>
-                     #:format  (format->symbol format)
-                     #:shape   shape
-                     #:offsets offsets
-                     #:pitches pitches
-                     #:mem     (memory data size))))
+             (cons
+               pts
+               (duplicate
+                 (make <image>
+                       #:format  (format->symbol format)
+                       #:shape   shape
+                       #:offsets offsets
+                       #:pitches pitches
+                       #:mem     (memory data size)))))
            lst)))
 
 (define (buffer-push self slot frame)
   (slot-set! self slot (attach (slot-ref self slot) frame)) #t)
 
-(define (buffer-pop self slot)
-  (let [(frames (slot-ref self slot))]
+(define (buffer-pop self buffer clock)
+  (let [(frames (slot-ref self buffer))]
     (and
       (not (null? frames))
       (begin
-        (slot-set! self slot (cdr frames))
-        (car frames)))))
+        (slot-set! self clock  (caar frames))
+        (slot-set! self buffer (cdr frames))
+        (cdar frames)))))
 
 (define (buffer-audio/video self)
   (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
@@ -77,8 +80,8 @@
          ((video) (buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
        #f)))
 
-(define (read-audio self) (or (buffer-pop self 'audio-buffer) (and (buffer-audio/video self) (read-audio self))))
-(define (read-video self) (or (buffer-pop self 'video-buffer) (and (buffer-audio/video self) (read-video self))))
+(define (read-audio self) (or (buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
+(define (read-video self) (or (buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-video self))))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

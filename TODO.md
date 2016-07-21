@@ -1,5 +1,6 @@
 ## Ready
 
+* test and develop utils/buffer, limit buffer
 * fix video-pts and audio-pts!
 * proper implementation for duplication of images
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm

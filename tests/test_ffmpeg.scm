@@ -33,7 +33,6 @@
 (define images (map (lambda _ (read-video full-video)) (iota 720)))
 (define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
 (define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
-;(define frames (map (lambda _ (class-of (read-audio/video video))) (iota 32)))
 
 (ok (equal? '(640 356) (shape video))
     "Check frame size of input video")
@@ -94,10 +93,6 @@
 (diagnostics "Following test should not hang")
 (ok (not (read-audio image))
     "Do not hang when reading audio from image")
-;(ok (memv (multiarray <float> 2) frames)
-;    "read-audio/video should return audio frames")
-;(ok (memv <image> frames)
-;    "read-audio/video should return video frames")
 (ok (eqv? 15 (pts= video 15))
     "Seeking should return the time parameter")
 (ok (<= 15 (begin (read-video video) (video-pts video)))
