@@ -1,8 +1,7 @@
 ## Ready
 
+* Pulse audio asynchronous API https://github.com/AlexWillisson/xmas2012/blob/master/pa-beep.c
 * deduct sample time from delay in ffplay.scm
-* test and develop utils/buffer, limit buffer
-* proper implementation for duplication of images
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * closing of ffmpeg input
 * test data license https://www.youtube.com/watch?v=cGgf_dbDMsw

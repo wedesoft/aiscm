@@ -2,10 +2,16 @@
 
 CFLAGS = -O
 
-all: assembler
+all: assembler pa-beep pa-mic-2-speaker
 
 assembler: t1.s t1.txt
 	cat t1.txt
+
+pa-beep: pa-beep.c
+	gcc $(shell pkg-config --cflags --libs libpulse) $< -o $@ -lm
+
+pa-mic-2-speaker: pa-mic-2-speaker.c
+	gcc $(shell pkg-config --cflags --libs libpulse) $< -o $@ -lm
 
 .o.txt:
 	objdump -d -M intel -S $< > $@
@@ -17,4 +23,4 @@ assembler: t1.s t1.txt
 	gcc $(CFLAGS) -fverbose-asm -S $<
 
 clean:
-	rm -f *.txt *.o *.s t1.txt
+	rm -f *.txt *.o *.s t1.txt pa-beep pa-mic-2-speaker
