@@ -1,3 +1,15 @@
+aiscm (0.5.1-1) UNRELEASED; urgency=low
+
+  * aiscm/ffmpeg.scm: reading video/audio files using FFmpeg
+  * aiscm/pulse.c: initialise "error" integer to PA_OK
+  * aiscm/util.scm: synchronisation method for audio-video-synchronisation
+  * aiscm/v4l2.c: refactor video capture code a bit
+  * Dockerfile: Docker build for Debian Jessie/Sid, Ubuntu Trusty/Xenial
+  * aiscm/xorg.scm: use XVideo as default for single-window videos
+  - updated documentation
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 22 Jul 2016 21:18:11 +0000
+
 aiscm (0.4.2-1) UNRELEASED; urgency=low
 
   - compose RGB and complex values from arrays

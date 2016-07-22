@@ -6,7 +6,6 @@ FROM debian:jessie
 # FROM debian:sid
 # FROM ubuntu:trusty
 # FROM ubuntu:xenial
-ENV VERSION 0.4.2
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
 # RUN apt-get upgrade -q -y
@@ -26,6 +25,7 @@ RUN mkdir -p /usr/src/aiscm/debian
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
 RUN mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
+ENV VERSION 0.5.1
 ADD aiscm-$VERSION.tar.xz .
 WORKDIR /usr/src/aiscm/aiscm-$VERSION
 RUN ./configure
