@@ -1,5 +1,8 @@
 # Docker file to build and test AIscm on different versions of Debian
 #
+# configure /etc/default/docker
+# DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 --ip-masq=true"
+#
 # docker build -t wedesoft/aiscm-debian .
 # docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian /bin/bash
 FROM debian:jessie
