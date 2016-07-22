@@ -10,7 +10,8 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input read-video read-audio frame-rate video-pts audio-pts pts=))
+  #:export (<ffmpeg> open-ffmpeg-input read-video read-audio frame-rate video-pts audio-pts pts=
+            ffmpeg-buffer-push ffmpeg-buffer-pop))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
@@ -60,28 +61,28 @@
                        #:mem     (memory data size)))))
            lst)))
 
-(define (buffer-push self slot frame)
-  (slot-set! self slot (attach (slot-ref self slot) frame)) #t)
+(define (ffmpeg-buffer-push self slot pts-and-frame)
+  (slot-set! self slot (attach (slot-ref self slot) pts-and-frame)) #t)
 
-(define (buffer-pop self buffer clock)
-  (let [(frames (slot-ref self buffer))]
+(define (ffmpeg-buffer-pop self buffer clock)
+  (let [(lst (slot-ref self buffer))]
     (and
-      (not (null? frames))
+      (not (null? lst))
       (begin
-        (slot-set! self clock  (caar frames))
-        (slot-set! self buffer (cdr frames))
-        (cdar frames)))))
+        (slot-set! self clock  (caar lst))
+        (slot-set! self buffer (cdr lst))
+        (cdar lst)))))
 
 (define (buffer-audio/video self)
   (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
     (if lst
        (case (car lst)
-         ((audio) (buffer-push self 'audio-buffer (import-audio-frame self (cdr lst))))
-         ((video) (buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
+         ((audio) (ffmpeg-buffer-push self 'audio-buffer (import-audio-frame self (cdr lst))))
+         ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
        #f)))
 
-(define (read-audio self) (or (buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
-(define (read-video self) (or (buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-video self))))
+(define (read-audio self) (or (ffmpeg-buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
+(define (read-video self) (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-video self))))
 
 (define (pts= self position)
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)

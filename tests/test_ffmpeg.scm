@@ -34,6 +34,10 @@
 (define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
 (define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
 
+(define-class <dummy> ()
+  (buffer #:init-value '())
+  (clock  #:init-value 0))
+
 (ok (equal? '(640 356) (shape video))
     "Check frame size of input video")
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
@@ -101,4 +105,18 @@
   (read-audio image)
   (ok (read-video image)
       "Cache video data when reading audio"))
+(let [(dummy (make <dummy>))]
+  (ok (not (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      "Popping buffer should return #f when empty"))
+(let [(dummy (make <dummy>))]
+  (ffmpeg-buffer-push dummy 'buffer (cons 123 'dummy-frame))
+  (ffmpeg-buffer-push dummy 'buffer (cons 456 'other-frame))
+  (ok (eq? 'dummy-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      "Popping buffer should return first frame")
+  (ok (eq? 123 (slot-ref dummy 'clock))
+      "Popping buffer should set the time stamp")
+  (ok (eq? 'other-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      "Popping buffer again should return the second frame")
+  (ok (eq? 456 (slot-ref dummy 'clock))
+      "Popping buffer again should set the time stamp"))
 (run-tests)
