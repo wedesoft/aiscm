@@ -10,6 +10,7 @@ static scm_t_bits pulsedev_tag;
 struct pulsedev_t {
   pa_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
+  pa_context *context;
 };
 
 static struct pulsedev_t *get_self(SCM scm_self)
@@ -22,6 +23,11 @@ SCM pulsedev_destroy(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   self->mainloop_api = NULL;
+  if (self->context) {
+    pa_context_disconnect(self->context);
+    pa_context_unref(self->context);
+    self->context = NULL;
+  };
   if (self->mainloop) {
     pa_mainloop_free(self->mainloop);
     self->mainloop = NULL;
@@ -49,6 +55,8 @@ SCM make_pulsedev(void)
   SCM_NEWSMOB(retval, pulsedev_tag, self);
   self->mainloop = pa_mainloop_new();
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
+  self->context = pa_context_new(self->mainloop_api, "aiscm");
+  pa_context_connect(self->context, NULL, 0, NULL);
   return retval;
 }
 
