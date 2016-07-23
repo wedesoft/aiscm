@@ -1,7 +1,9 @@
 ## Ready
 
-* Pulse audio asynchronous API https://github.com/AlexWillisson/xmas2012/blob/master/pa-beep.c
+* control pixels and machine code
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
+* Pulse audio asynchronous API https://github.com/AlexWillisson/xmas2012/blob/master/pa-beep.c
+* use ice-9 q?
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * closing of ffmpeg input
