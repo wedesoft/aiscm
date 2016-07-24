@@ -11,6 +11,7 @@ struct pulsedev_t {
   pa_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
   pa_context *context;
+  pa_stream *stream;
 };
 
 static struct pulsedev_t *get_self(SCM scm_self)
@@ -22,7 +23,10 @@ static struct pulsedev_t *get_self(SCM scm_self)
 SCM pulsedev_destroy(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
-  self->mainloop_api = NULL;
+  if (self->stream) {
+    pa_stream_unref(self->stream);
+    self->stream = NULL;
+  };
   if (self->context) {
     pa_context_disconnect(self->context);
     pa_context_unref(self->context);
@@ -31,6 +35,7 @@ SCM pulsedev_destroy(SCM scm_self)
   if (self->mainloop) {
     pa_mainloop_free(self->mainloop);
     self->mainloop = NULL;
+    self->mainloop_api = NULL;
   };
   return SCM_UNSPECIFIED;
 }
@@ -43,10 +48,26 @@ size_t free_pulsedev(SCM scm_self)
   return 0;
 }
 
-// static void pulse_error(const char *context, const char *format, int error)
-// {
-//    scm_misc_error(context, format, scm_list_1(scm_from_locale_string(pa_strerror(error))));
-// }
+static pa_sample_spec sample_spec = {// TODO: put into object
+  .format = PA_SAMPLE_S16LE,
+  .rate = 44100,
+  .channels = 2
+};
+
+static char *odevice = NULL;// TODO: make string parameter
+
+void state_callback(pa_context *context, void *userdata)
+{
+  pa_context_state_t state = pa_context_get_state(context);
+  struct pulsedev_t *self = (struct pulsedev_t *)userdata;
+  if (state == PA_CONTEXT_READY) {
+    self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error, unref
+    static pa_stream_flags_t flags = 0;
+    pa_buffer_attr buffer_attr;
+    memset(&buffer_attr, 0, sizeof(buffer_attr));
+    pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: disconnect
+  };
+}
 
 SCM make_pulsedev(void)
 {
@@ -57,6 +78,7 @@ SCM make_pulsedev(void)
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
   self->context = pa_context_new(self->mainloop_api, "aiscm");
   pa_context_connect(self->context, NULL, 0, NULL);
+  pa_context_set_state_callback(self->context, state_callback, self);
   return retval;
 }
 
