@@ -24,6 +24,7 @@ SCM pulsedev_destroy(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   if (self->stream) {
+    pa_stream_disconnect(self->stream);
     pa_stream_unref(self->stream);
     self->stream = NULL;
   };
@@ -61,11 +62,11 @@ void state_callback(pa_context *context, void *userdata)
   pa_context_state_t state = pa_context_get_state(context);
   struct pulsedev_t *self = (struct pulsedev_t *)userdata;
   if (state == PA_CONTEXT_READY) {
-    self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error, unref
+    self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error
     static pa_stream_flags_t flags = 0;
     pa_buffer_attr buffer_attr;
     memset(&buffer_attr, 0, sizeof(buffer_attr));
-    pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: disconnect
+    pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);
   };
 }
 
@@ -106,6 +107,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
   scm_c_define_gsubr("make-pulsedev"         , 0, 0, 0, make_pulsedev         );
+  scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
 }
