@@ -1,10 +1,7 @@
-(use-modules (oop goops) (aiscm element) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse) (aiscm util))
+(use-modules (oop goops) (aiscm pulse) (aiscm int) (aiscm pointer) (aiscm sequence) (ice-9 threads))
 (define samples (to-array <sint> (map (lambda (t) (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000))) (iota 441))))
-(define play (make <pulse-play> #:type <sint> #:channels 1 #:rate 44100))
-(channels play)
-;1
-(rate play)
-;44100
-(for-each (lambda (i) (write-samples samples play)) (iota 300))
-(drain play)
-(destroy play)
+(define play (make <pulse>))
+(define thread (make-thread (lambda _ (pulsedev-mainloop-run (slot-ref play 'pulse)))))
+(sleep 3)
+(pulsedev-mainloop-quit (slot-ref play 'pulse) 0)
+(pulsedev-destroy (slot-ref play 'pulse))

@@ -57,16 +57,20 @@ static pa_sample_spec sample_spec = {// TODO: put into object
 
 static char *odevice = NULL;// TODO: make string parameter
 
-void state_callback(pa_context *context, void *userdata)
+static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
+}
+
+void context_state_callback(pa_context *context, void *userdata)
 {
   pa_context_state_t state = pa_context_get_state(context);
   struct pulsedev_t *self = (struct pulsedev_t *)userdata;
   if (state == PA_CONTEXT_READY) {
     self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error
+    pa_stream_set_write_callback(self->stream, stream_write_callback, self);
     static pa_stream_flags_t flags = 0;
     pa_buffer_attr buffer_attr;
     memset(&buffer_attr, 0, sizeof(buffer_attr));
-    pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);
+    pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: check error
   };
 }
 
@@ -79,7 +83,7 @@ SCM make_pulsedev(void)
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
   self->context = pa_context_new(self->mainloop_api, "aiscm");
   pa_context_connect(self->context, NULL, 0, NULL);
-  pa_context_set_state_callback(self->context, state_callback, self);
+  pa_context_set_state_callback(self->context, context_state_callback, self);
   return retval;
 }
 
