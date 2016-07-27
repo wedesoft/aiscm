@@ -84,6 +84,8 @@ SCM make_pulsedev(void)
   self->context = pa_context_new(self->mainloop_api, "aiscm");
   pa_context_connect(self->context, NULL, 0, NULL);
   pa_context_set_state_callback(self->context, context_state_callback, self);
+  while (!self->stream)// TODO: handle errors
+    pa_mainloop_iterate(self->mainloop, 0, NULL);
   return retval;
 }
 

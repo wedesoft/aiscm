@@ -6,7 +6,7 @@
   #:export (<pulse> <meta<pulse>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
             type->pulse-type pulse-type->type
-            pulsedev-mainloop-run pulsedev-mainloop-quit pulsedev-destroy))
+            pulsedev-mainloop-run pulsedev-mainloop-quit))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulse #:init-keyword #:pulse))
@@ -22,3 +22,4 @@
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
   (assq-ref inverse-typemap pulse-type))
+(define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
