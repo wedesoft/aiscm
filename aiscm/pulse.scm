@@ -1,4 +1,5 @@
 (define-module (aiscm pulse)
+  #:use-module (ice-9 threads)
   #:use-module (oop goops)
   #:use-module (aiscm int)
   #:use-module (aiscm float)
@@ -9,9 +10,12 @@
             pulsedev-mainloop-run pulsedev-mainloop-quit))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
-               (pulse #:init-keyword #:pulse))
+               (pulsedev #:init-keyword #:pulsedev)
+               (thread #:init-keyword #:thread))
 (define-method (initialize (self <pulse>) initargs)
-  (next-method self (list #:pulse (make-pulsedev))))
+  (let* [(pulsedev (make-pulsedev))
+         (thread   (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]; TODO: only run thread when buffer not empty
+  (next-method self (list #:pulsedev pulsedev #:thread thread))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)
@@ -22,4 +26,7 @@
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
   (assq-ref inverse-typemap pulse-type))
-(define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
+(define-method (destroy (self <pulse>))
+  (pulsedev-mainloop-quit (slot-ref self 'pulsedev) 0)
+  (join-thread (slot-ref self 'thread))
+  (pulsedev-destroy (slot-ref self 'pulsedev)))
