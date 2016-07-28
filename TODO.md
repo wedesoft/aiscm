@@ -12,7 +12,7 @@
 * writing videos
 * use libswresample for audio conversions
 * add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
-* xorg: scm\_syserror -> scm\_misc\_error
+* split up into separate packages
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * shape of xorg window
