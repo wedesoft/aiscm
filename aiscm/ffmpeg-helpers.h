@@ -1,5 +1,5 @@
-#ifndef __HELPERS_H
-#define __HELPERS_H
+#ifndef __AISCM_FFMPEG_HELPERS_H
+#define __AISCM_FFMPEG_HELPERS_H
 
 #include <libguile.h>
 

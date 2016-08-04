@@ -58,6 +58,10 @@ static pa_sample_spec sample_spec = {// TODO: put into object
 static char *odevice = NULL;// TODO: make string parameter
 
 static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
+  //struct pulsedev_t *self = (struct pulsedev_t *)userdata;
+  //pa_usec_t usec;
+  //int negative;
+  //pa_stream_get_latency(s, &usec, &negative); // TODO: check error
 }
 
 void context_state_callback(pa_context *context, void *userdata)

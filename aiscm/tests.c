@@ -1,5 +1,6 @@
 #include <libguile.h>
 #include "ffmpeg-helpers.h"
+#include "ringbuffer.h"
 
 
 SCM forty_two(void)
@@ -87,6 +88,15 @@ SCM pack_short_int_audio_samples(void)
   return scm_from_bool(destination[4] == 5 && destination[5] == 6);
 }
 
+SCM ringbuffer_empty_initially(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  SCM retval = scm_from_bool(ringbuffer.size == 0);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -100,4 +110,5 @@ void init_tests(void)
   scm_c_define_gsubr("pack-byte-audio-sample", 0, 0, 0, pack_byte_audio_sample);
   scm_c_define_gsubr("pack-byte-audio-samples", 0, 0, 0, pack_byte_audio_samples);
   scm_c_define_gsubr("pack-short-int-audio-samples", 0, 0, 0, pack_short_int_audio_samples);
+  scm_c_define_gsubr("ringbuffer-empty-initially", 0, 0, 0, ringbuffer_empty_initially);
 }

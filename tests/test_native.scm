@@ -22,4 +22,6 @@
     "Pack byte audio samples")
 (ok (pack-short-int-audio-samples)
     "Pack short integer audio samples")
+(ok (ringbuffer-empty-initially)
+    "Ring buffer is empty initially")
 (run-tests)
