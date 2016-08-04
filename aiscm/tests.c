@@ -92,7 +92,39 @@ SCM ringbuffer_empty_initially(void)
 {
   struct ringbuffer_t ringbuffer;
   ringbuffer_init(&ringbuffer, 1024);
-  SCM retval = scm_from_bool(ringbuffer.size == 0);
+  SCM retval = scm_from_bool(ringbuffer.fill == 0);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
+SCM ringbuffer_initial_size(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  SCM retval = scm_from_bool(ringbuffer.size == 1024);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
+SCM ringbuffer_add_data(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  char data[100];
+  ringbuffer_store(&ringbuffer, data, 100);
+  SCM retval = scm_from_bool(ringbuffer.fill == 100);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
+SCM ringbuffer_add_more_data(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  char data[200];
+  ringbuffer_store(&ringbuffer, data, 100);
+  ringbuffer_store(&ringbuffer, data, 200);
+  SCM retval = scm_from_bool(ringbuffer.fill == 300);
   ringbuffer_destroy(&ringbuffer);
   return retval;
 }
@@ -111,4 +143,7 @@ void init_tests(void)
   scm_c_define_gsubr("pack-byte-audio-samples", 0, 0, 0, pack_byte_audio_samples);
   scm_c_define_gsubr("pack-short-int-audio-samples", 0, 0, 0, pack_short_int_audio_samples);
   scm_c_define_gsubr("ringbuffer-empty-initially", 0, 0, 0, ringbuffer_empty_initially);
+  scm_c_define_gsubr("ringbuffer-initial-size", 0, 0, 0, ringbuffer_initial_size);
+  scm_c_define_gsubr("ringbuffer-add-data", 0, 0, 0, ringbuffer_add_data);
+  scm_c_define_gsubr("ringbuffer-add-more-data", 0, 0, 0, ringbuffer_add_more_data);
 }
