@@ -30,4 +30,6 @@
     "Adding data to ring buffer increases fill")
 (ok (ringbuffer-add-more-data)
     "Adding data to ring buffer increments fill")
+(ok (ringbuffer-store-data)
+    "Store data at beginning of ring buffer")
 (run-tests)

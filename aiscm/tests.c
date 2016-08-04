@@ -129,6 +129,17 @@ SCM ringbuffer_add_more_data(void)
   return retval;
 }
 
+SCM ringbuffer_store_data(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  const char *data = "test";
+  ringbuffer_store(&ringbuffer, data, 5);
+  SCM retval = scm_from_bool(!strcmp(data, (char *)ringbuffer.buffer));
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -146,4 +157,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-initial-size", 0, 0, 0, ringbuffer_initial_size);
   scm_c_define_gsubr("ringbuffer-add-data", 0, 0, 0, ringbuffer_add_data);
   scm_c_define_gsubr("ringbuffer-add-more-data", 0, 0, 0, ringbuffer_add_more_data);
+  scm_c_define_gsubr("ringbuffer-store-data", 0, 0, 0, ringbuffer_store_data);
 }
