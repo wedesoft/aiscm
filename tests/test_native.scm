@@ -38,4 +38,6 @@
     "Fetching from ring buffer advances it")
 (ok (ringbuffer-storing-respects-offset)
     "Storing to ring buffer should be aware of offset")
+(ok (ringbuffer-wrap-around)
+    "Ring buffer should wrap around")
 (run-tests)

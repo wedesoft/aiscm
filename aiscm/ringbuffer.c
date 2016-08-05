@@ -18,13 +18,25 @@ void ringbuffer_destroy(struct ringbuffer_t *ringbuffer)
 void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int size, ringbuffer_callback_t callback, void *userdata)
 {
   int count = size < ringbuffer->fill ? size : ringbuffer->fill;
-  (*callback)(ringbuffer->buffer + ringbuffer->offset, count, userdata);
+  int startpos = ringbuffer->offset;
+  int boundary = ringbuffer->size - startpos;
+  if (size > boundary) {
+    (*callback)(ringbuffer->buffer + startpos, boundary, userdata);
+    (*callback)(ringbuffer->buffer, count - boundary, userdata);
+  } else
+    (*callback)(ringbuffer->buffer + ringbuffer->offset, count, userdata);
   ringbuffer->offset += count;
   ringbuffer->fill -= count;
 }
 
-void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int n)
+void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count)
 {
-  memcpy(ringbuffer->buffer + ringbuffer->offset + ringbuffer->fill, data, n);
-  ringbuffer->fill += n;
+  int startpos = ringbuffer->offset + ringbuffer->fill;// TODO: resize buffer
+  int boundary = ringbuffer->size - startpos;
+  if (count > boundary) {
+    memcpy(ringbuffer->buffer + startpos, data, boundary);
+    memcpy(ringbuffer->buffer, data + boundary, count - boundary);
+  } else
+    memcpy(ringbuffer->buffer + startpos, data, count);
+  ringbuffer->fill += count;
 }
