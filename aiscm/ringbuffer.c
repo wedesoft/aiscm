@@ -15,6 +15,6 @@ void ringbuffer_destroy(struct ringbuffer_t *ringbuffer)
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int n)
 {
-  memcpy(ringbuffer->buffer, data, n);// TODO: offset
+  memcpy(ringbuffer->buffer + ringbuffer->fill, data, n);
   ringbuffer->fill += n;
 }
