@@ -171,6 +171,24 @@ SCM ringbuffer_fetch_limit(void)
   ringbuffer_destroy(&ringbuffer);
   return scm_from_bool(retval);
 }
+
+void test_advances_callback(char *data, int size, void *userdata)
+{
+  *(char *)userdata = size == 4 && strncmp(data, "more", 4) == 0;
+}
+
+SCM ringbuffer_fetching_advances(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  ringbuffer_store(&ringbuffer, "testmore", 9);
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 4, test_advances_callback, &retval);
+  ringbuffer_fetch(&ringbuffer, 4, test_advances_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
+  return scm_from_bool(retval);
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -190,4 +208,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-store-and-fetch", 0, 0, 0, ringbuffer_store_and_fetch);
   scm_c_define_gsubr("ringbuffer-store-appends-data", 0, 0, 0, ringbuffer_store_appends_data);
   scm_c_define_gsubr("ringbuffer-fetch-limit", 0, 0, 0, ringbuffer_fetch_limit);
+  scm_c_define_gsubr("ringbuffer-fetching-advances", 0, 0, 0, ringbuffer_fetching_advances);
 }

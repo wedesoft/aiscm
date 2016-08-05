@@ -34,4 +34,6 @@
     "Adding more data to ring buffer appends to it")
 (ok (ringbuffer-fetch-limit)
     "Do not fetch more than the specified number of bytes")
+(ok (ringbuffer-fetching-advances)
+    "Fetching from ring buffer advances it")
 (run-tests)
