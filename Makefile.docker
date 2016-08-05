@@ -1,0 +1,29 @@
+# make -f Makefile.docker clean all TARGET=debian:sid
+# make -f Makefile.docker clean all TARGET=debian:jessie
+# make -f Makefile.docker clean all TARGET=ubuntu:trusty
+# make -f Makefile.docker clean all TARGET=ubuntu:xenial
+TARGET=debian:sid
+OPTS=
+# OPTS+=--no-cache
+
+all: docker docker/Dockerfile docker/aiscm-0.5.1.tar.xz docker/debian/control
+	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(TARGET) . && cd ..
+
+docker:
+	mkdir -p docker
+
+docker/Dockerfile: Dockerfile.template
+	m4 -DBASEIMAGE=$(TARGET) $< > $@
+
+docker/aiscm-0.5.1.tar.xz: aiscm-0.5.1.tar.xz
+	cp $< $@
+
+docker/debian/control: debian/control
+	mkdir -p docker/debian
+	cp $< $@
+
+aiscm-0.5.1.tar.xz:
+	make dist-xz
+
+clean:
+	rm -Rf docker
