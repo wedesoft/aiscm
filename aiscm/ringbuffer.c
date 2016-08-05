@@ -20,10 +20,11 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int size, ringbuffer_call
   int count = size < ringbuffer->fill ? size : ringbuffer->fill;
   (*callback)(ringbuffer->buffer + ringbuffer->offset, count, userdata);
   ringbuffer->offset += count;
+  ringbuffer->fill -= count;
 }
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int n)
 {
-  memcpy(ringbuffer->buffer + ringbuffer->fill, data, n);
+  memcpy(ringbuffer->buffer + ringbuffer->offset + ringbuffer->fill, data, n);
   ringbuffer->fill += n;
 }

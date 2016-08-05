@@ -189,6 +189,24 @@ SCM ringbuffer_fetching_advances(void)
   return scm_from_bool(retval);
 }
 
+void test_offset_callback(char *data, int size, void *userdata)
+{
+  *(char *)userdata = size == 4 && strncmp(data, "cdef", 4) == 0;
+}
+
+SCM ringbuffer_storing_respects_offset(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  char retval = 0;
+  ringbuffer_store(&ringbuffer, "abcd", 4);
+  ringbuffer_fetch(&ringbuffer, 2, test_offset_callback, &retval);
+  ringbuffer_store(&ringbuffer, "ef", 3);
+  ringbuffer_fetch(&ringbuffer, 4, test_offset_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
+  return scm_from_bool(retval);
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -209,4 +227,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-store-appends-data", 0, 0, 0, ringbuffer_store_appends_data);
   scm_c_define_gsubr("ringbuffer-fetch-limit", 0, 0, 0, ringbuffer_fetch_limit);
   scm_c_define_gsubr("ringbuffer-fetching-advances", 0, 0, 0, ringbuffer_fetching_advances);
+  scm_c_define_gsubr("ringbuffer-storing-respects-offset", 0, 0, 0, ringbuffer_storing_respects_offset);
 }

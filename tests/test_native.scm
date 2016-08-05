@@ -36,4 +36,6 @@
     "Do not fetch more than the specified number of bytes")
 (ok (ringbuffer-fetching-advances)
     "Fetching from ring buffer advances it")
+(ok (ringbuffer-storing-respects-offset)
+    "Storing to ring buffer should be aware of offset")
 (run-tests)
