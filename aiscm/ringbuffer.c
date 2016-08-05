@@ -16,7 +16,8 @@ void ringbuffer_destroy(struct ringbuffer_t *ringbuffer)
 
 void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int size, ringbuffer_callback_t callback, void *userdata)
 {
-  
+  int count = size < ringbuffer->fill ? size : ringbuffer->fill;
+  (*callback)(ringbuffer->buffer, count, userdata);
 }
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int n)

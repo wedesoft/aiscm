@@ -88,28 +88,19 @@ SCM pack_short_int_audio_samples(void)
   return scm_from_bool(destination[4] == 5 && destination[5] == 6);
 }
 
-SCM ringbuffer_empty_initially(void)
-{
-  struct ringbuffer_t ringbuffer;
-  ringbuffer_init(&ringbuffer, 1024);
-  SCM retval = scm_from_bool(ringbuffer.fill == 0);
-  ringbuffer_destroy(&ringbuffer);
-  return retval;
-}
-
 void test_empty_callback(char *data, int size, void *userdata)
 {
-  *(SCM *)userdata = scm_from_bool(size == 0);
+  *(char *)userdata = size == 0;
 }
 
 SCM ringbuffer_fetch_empty(void)
 {
   struct ringbuffer_t ringbuffer;
   ringbuffer_init(&ringbuffer, 1024);
-  SCM retval = SCM_BOOL_F;
+  char retval = 0;
   ringbuffer_fetch(&ringbuffer, 123, test_empty_callback, &retval);
   ringbuffer_destroy(&ringbuffer);
-  return retval;
+  return scm_from_bool(retval);
 }
 
 SCM ringbuffer_initial_size(void)
@@ -132,39 +123,54 @@ SCM ringbuffer_add_data(void)
   return retval;
 }
 
-SCM ringbuffer_add_more_data(void)
+void test_fetch_callback(char *data, int size, void *userdata)
 {
-  struct ringbuffer_t ringbuffer;
-  ringbuffer_init(&ringbuffer, 1024);
-  char data[200];
-  ringbuffer_store(&ringbuffer, data, 100);
-  ringbuffer_store(&ringbuffer, data, 200);
-  SCM retval = scm_from_bool(ringbuffer.fill == 300);
-  ringbuffer_destroy(&ringbuffer);
-  return retval;
+  *(char *)userdata = size == 5 && strcmp(data, "test") == 0;
 }
 
-SCM ringbuffer_store_data(void)
+SCM ringbuffer_store_and_fetch(void)
 {
   struct ringbuffer_t ringbuffer;
   ringbuffer_init(&ringbuffer, 1024);
   ringbuffer_store(&ringbuffer, "test", 5);
-  SCM retval = scm_from_bool(!strcmp("test", (char *)ringbuffer.buffer));
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 123, test_fetch_callback, &retval);
   ringbuffer_destroy(&ringbuffer);
-  return retval;
+  return scm_from_bool(retval);
 }
 
-SCM ringbuffer_store_more_data(void)
+void test_append_callback(char *data, int size, void *userdata)
+{
+  *(char *)userdata = size == 9 && strcmp(data, "testmore") == 0;
+}
+
+SCM ringbuffer_store_appends_data(void)
 {
   struct ringbuffer_t ringbuffer;
   ringbuffer_init(&ringbuffer, 1024);
   ringbuffer_store(&ringbuffer, "test", 4);
   ringbuffer_store(&ringbuffer, "more", 5);
-  SCM retval = scm_from_bool(!strcmp("testmore", (char *)ringbuffer.buffer));
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 123, test_append_callback, &retval);
   ringbuffer_destroy(&ringbuffer);
-  return retval;
+  return scm_from_bool(retval);
 }
 
+void test_limit_callback(char *data, int size, void *userdata)
+{
+  *(char *)userdata = size == 4 && strncmp(data, "test", 4) == 0;
+}
+
+SCM ringbuffer_fetch_limit(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  ringbuffer_store(&ringbuffer, "testmore", 9);
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 4, test_limit_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
+  return scm_from_bool(retval);
+}
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -178,11 +184,10 @@ void init_tests(void)
   scm_c_define_gsubr("pack-byte-audio-sample", 0, 0, 0, pack_byte_audio_sample);
   scm_c_define_gsubr("pack-byte-audio-samples", 0, 0, 0, pack_byte_audio_samples);
   scm_c_define_gsubr("pack-short-int-audio-samples", 0, 0, 0, pack_short_int_audio_samples);
-  scm_c_define_gsubr("ringbuffer-empty-initially", 0, 0, 0, ringbuffer_empty_initially);
   scm_c_define_gsubr("ringbuffer-fetch-empty", 0, 0, 0, ringbuffer_fetch_empty);
   scm_c_define_gsubr("ringbuffer-initial-size", 0, 0, 0, ringbuffer_initial_size);
   scm_c_define_gsubr("ringbuffer-add-data", 0, 0, 0, ringbuffer_add_data);
-  scm_c_define_gsubr("ringbuffer-add-more-data", 0, 0, 0, ringbuffer_add_more_data);
-  scm_c_define_gsubr("ringbuffer-store-data", 0, 0, 0, ringbuffer_store_data);
-  scm_c_define_gsubr("ringbuffer-store-more-data", 0, 0, 0, ringbuffer_store_more_data);
+  scm_c_define_gsubr("ringbuffer-store-and-fetch", 0, 0, 0, ringbuffer_store_and_fetch);
+  scm_c_define_gsubr("ringbuffer-store-appends-data", 0, 0, 0, ringbuffer_store_appends_data);
+  scm_c_define_gsubr("ringbuffer-fetch-limit", 0, 0, 0, ringbuffer_fetch_limit);
 }
