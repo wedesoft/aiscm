@@ -24,6 +24,8 @@
     "Pack short integer audio samples")
 (ok (ringbuffer-empty-initially)
     "Ring buffer is empty initially")
+(ok (ringbuffer-fetch-empty)
+    "Fetching from empty ring buffer should return no data")
 (ok (ringbuffer-initial-size)
     "Ring buffer initial size is as specified")
 (ok (ringbuffer-add-data)

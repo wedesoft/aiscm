@@ -11,6 +11,12 @@ void ringbuffer_init(struct ringbuffer_t *ringbuffer, int size)
 
 void ringbuffer_destroy(struct ringbuffer_t *ringbuffer)
 {
+  free(ringbuffer->buffer);
+}
+
+void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int size, ringbuffer_callback_t callback, void *userdata)
+{
+  
 }
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int n)

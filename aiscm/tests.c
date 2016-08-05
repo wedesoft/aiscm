@@ -97,6 +97,21 @@ SCM ringbuffer_empty_initially(void)
   return retval;
 }
 
+void test_empty_callback(char *data, int size, void *userdata)
+{
+  *(SCM *)userdata = scm_from_bool(size == 0);
+}
+
+SCM ringbuffer_fetch_empty(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 1024);
+  SCM retval = SCM_BOOL_F;
+  ringbuffer_fetch(&ringbuffer, 123, test_empty_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
+}
+
 SCM ringbuffer_initial_size(void)
 {
   struct ringbuffer_t ringbuffer;
@@ -164,6 +179,7 @@ void init_tests(void)
   scm_c_define_gsubr("pack-byte-audio-samples", 0, 0, 0, pack_byte_audio_samples);
   scm_c_define_gsubr("pack-short-int-audio-samples", 0, 0, 0, pack_short_int_audio_samples);
   scm_c_define_gsubr("ringbuffer-empty-initially", 0, 0, 0, ringbuffer_empty_initially);
+  scm_c_define_gsubr("ringbuffer-fetch-empty", 0, 0, 0, ringbuffer_fetch_empty);
   scm_c_define_gsubr("ringbuffer-initial-size", 0, 0, 0, ringbuffer_initial_size);
   scm_c_define_gsubr("ringbuffer-add-data", 0, 0, 0, ringbuffer_add_data);
   scm_c_define_gsubr("ringbuffer-add-more-data", 0, 0, 0, ringbuffer_add_more_data);
