@@ -40,4 +40,6 @@
     "Storing to ring buffer should be aware of offset")
 (ok (ringbuffer-wrap-around)
     "Ring buffer should wrap around")
+(ok (ringbuffer-grow)
+    "Ringbuffer should grow n size if required")
 (run-tests)

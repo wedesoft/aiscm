@@ -88,9 +88,9 @@ SCM pack_short_int_audio_samples(void)
   return scm_from_bool(destination[4] == 5 && destination[5] == 6);
 }
 
-void test_empty_callback(char *data, int size, void *userdata)
+void test_empty_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 0;
+  *(char *)userdata = count == 0;
 }
 
 SCM ringbuffer_fetch_empty(void)
@@ -123,9 +123,9 @@ SCM ringbuffer_add_data(void)
   return retval;
 }
 
-void test_fetch_callback(char *data, int size, void *userdata)
+void test_fetch_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 5 && strcmp(data, "test") == 0;
+  *(char *)userdata = count == 5 && strcmp(data, "test") == 0;
 }
 
 SCM ringbuffer_store_and_fetch(void)
@@ -139,9 +139,9 @@ SCM ringbuffer_store_and_fetch(void)
   return scm_from_bool(retval);
 }
 
-void test_append_callback(char *data, int size, void *userdata)
+void test_append_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 9 && strcmp(data, "testmore") == 0;
+  *(char *)userdata = count == 9 && strcmp(data, "testmore") == 0;
 }
 
 SCM ringbuffer_store_appends_data(void)
@@ -156,9 +156,9 @@ SCM ringbuffer_store_appends_data(void)
   return scm_from_bool(retval);
 }
 
-void test_limit_callback(char *data, int size, void *userdata)
+void test_limit_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 4 && strncmp(data, "test", 4) == 0;
+  *(char *)userdata = count == 4 && strncmp(data, "test", 4) == 0;
 }
 
 SCM ringbuffer_fetch_limit(void)
@@ -172,9 +172,9 @@ SCM ringbuffer_fetch_limit(void)
   return scm_from_bool(retval);
 }
 
-void test_advances_callback(char *data, int size, void *userdata)
+void test_advances_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 4 && strncmp(data, "more", 4) == 0;
+  *(char *)userdata = count == 4 && strncmp(data, "more", 4) == 0;
 }
 
 SCM ringbuffer_fetching_advances(void)
@@ -189,9 +189,9 @@ SCM ringbuffer_fetching_advances(void)
   return scm_from_bool(retval);
 }
 
-void test_offset_callback(char *data, int size, void *userdata)
+void test_offset_callback(char *data, int count, void *userdata)
 {
-  *(char *)userdata = size == 4 && strncmp(data, "cdef", 4) == 0;
+  *(char *)userdata = count == 4 && strncmp(data, "cdef", 4) == 0;
 }
 
 SCM ringbuffer_storing_respects_offset(void)
@@ -207,9 +207,9 @@ SCM ringbuffer_storing_respects_offset(void)
   return scm_from_bool(retval);
 }
 
-void test_wrap_callback(char *data, int size, void *userdata)
+void test_wrap_callback(char *data, int count, void *userdata)
 {
-  strncat((char *)userdata, data, size);
+  strncat((char *)userdata, data, count);
 }
 
 SCM ringbuffer_wrap_around(void)
@@ -223,6 +223,22 @@ SCM ringbuffer_wrap_around(void)
   ringbuffer_store(&ringbuffer, "ef", 2);
   ringbuffer_fetch(&ringbuffer, 4, test_wrap_callback, buf);
   return scm_from_bool(!strncmp(ringbuffer.buffer, "efcd", 4) && !strcmp(buf, "abcdef"));
+}
+
+void test_grow_callback(char *data, int count, void *userdata)
+{
+  printf("%s\n", data);
+  *(char *)userdata = count == 8 && strncmp(data, "abcdefgh", 8) == 0;
+}
+
+SCM ringbuffer_grow(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 4);
+  ringbuffer_store(&ringbuffer, "abcdefgh", 8);
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 8, test_grow_callback, &retval);
+  return scm_from_bool(retval);
 }
 
 void init_tests(void)
@@ -247,4 +263,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-fetching-advances", 0, 0, 0, ringbuffer_fetching_advances);
   scm_c_define_gsubr("ringbuffer-storing-respects-offset", 0, 0, 0, ringbuffer_storing_respects_offset);
   scm_c_define_gsubr("ringbuffer-wrap-around", 0, 0, 0, ringbuffer_wrap_around);
+  scm_c_define_gsubr("ringbuffer-grow", 0, 0, 0, ringbuffer_grow);
 }
