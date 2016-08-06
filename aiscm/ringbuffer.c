@@ -25,9 +25,11 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
     if (count > boundary) {
       (*callback)(ringbuffer->buffer + startpos, boundary, userdata);
       (*callback)(ringbuffer->buffer, count - boundary, userdata);
-    } else
+      ringbuffer->offset = count - boundary;
+    } else {
       (*callback)(ringbuffer->buffer + startpos, count, userdata);
-    ringbuffer->offset += count;// TODO: wrap around
+      ringbuffer->offset += count;
+    };
     ringbuffer->fill -= count;
   }
 }
