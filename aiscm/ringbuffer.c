@@ -43,7 +43,7 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
 {
   if (ringbuffer->fill + count > ringbuffer->size) {
     struct ringbuffer_t resize;
-    ringbuffer_init(&resize, ringbuffer->fill + count);
+    ringbuffer_init(&resize, ringbuffer->fill + count + ringbuffer->size);
     ringbuffer_fetch(ringbuffer, ringbuffer->fill, ringbuffer_copy_callback, &resize);
     ringbuffer_destroy(ringbuffer);
     memcpy(ringbuffer, &resize, sizeof(struct ringbuffer_t));

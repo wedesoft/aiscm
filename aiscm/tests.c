@@ -88,7 +88,7 @@ SCM pack_short_int_audio_samples(void)
   return scm_from_bool(destination[4] == 5 && destination[5] == 6);
 }
 
-void test_empty_callback(char *data, int count, void *userdata)
+static void test_empty_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 0;
 }
@@ -123,7 +123,7 @@ SCM ringbuffer_add_data(void)
   return retval;
 }
 
-void test_fetch_callback(char *data, int count, void *userdata)
+static void test_fetch_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 5 && strcmp(data, "test") == 0;
 }
@@ -139,7 +139,7 @@ SCM ringbuffer_store_and_fetch(void)
   return scm_from_bool(retval);
 }
 
-void test_append_callback(char *data, int count, void *userdata)
+static void test_append_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 9 && strcmp(data, "testmore") == 0;
 }
@@ -156,7 +156,7 @@ SCM ringbuffer_store_appends_data(void)
   return scm_from_bool(retval);
 }
 
-void test_limit_callback(char *data, int count, void *userdata)
+static void test_limit_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "test", 4) == 0;
 }
@@ -172,7 +172,7 @@ SCM ringbuffer_fetch_limit(void)
   return scm_from_bool(retval);
 }
 
-void test_advances_callback(char *data, int count, void *userdata)
+static void test_advances_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "more", 4) == 0;
 }
@@ -189,7 +189,7 @@ SCM ringbuffer_fetching_advances(void)
   return scm_from_bool(retval);
 }
 
-void test_offset_callback(char *data, int count, void *userdata)
+static void test_offset_callback(char *data, int count, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "cdef", 4) == 0;
 }
@@ -207,7 +207,7 @@ SCM ringbuffer_storing_respects_offset(void)
   return scm_from_bool(retval);
 }
 
-void test_wrap_callback(char *data, int count, void *userdata)
+static void test_wrap_callback(char *data, int count, void *userdata)
 {
   strncat((char *)userdata, data, count);
 }
@@ -227,7 +227,7 @@ SCM ringbuffer_wrap_around(void)
                        ringbuffer.offset == 2);
 }
 
-void test_grow_callback(char *data, int count, void *userdata)
+static void test_grow_callback(char *data, int count, void *userdata)
 {
   printf("%s\n", data);
   *(char *)userdata = count == 8 && strncmp(data, "abcdefgh", 8) == 0;

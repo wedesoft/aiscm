@@ -1,5 +1,5 @@
 (use-modules (oop goops) (aiscm util) (aiscm pulse) (aiscm int) (aiscm pointer) (aiscm sequence))
-(define samples (to-array <sint> (map (lambda (t) (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000))) (iota 441))))
+;(define samples (to-array <sint> (map (lambda (t) (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000))) (iota 441))))
 (define play (make <pulse>))
 (sleep 3)
 (destroy play)

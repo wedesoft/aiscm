@@ -1,5 +1,8 @@
 #include <pulse/pulseaudio.h>
 #include <libguile.h>
+#include "ringbuffer.h"
+
+#include <math.h> // TODO: remove this
 
 // https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/
 // http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
@@ -8,6 +11,7 @@
 static scm_t_bits pulsedev_tag;
 
 struct pulsedev_t {
+  struct ringbuffer_t ringbuffer;
   pa_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
   pa_context *context;
@@ -38,6 +42,10 @@ SCM pulsedev_destroy(SCM scm_self)
     self->mainloop = NULL;
     self->mainloop_api = NULL;
   };
+  if (self->ringbuffer.buffer) {
+    ringbuffer_destroy(&self->ringbuffer);
+    self->ringbuffer.buffer = NULL;
+  };
   return SCM_UNSPECIFIED;
 }
 
@@ -52,17 +60,24 @@ size_t free_pulsedev(SCM scm_self)
 static pa_sample_spec sample_spec = {// TODO: put into object
   .format = PA_SAMPLE_S16LE,
   .rate = 44100,
-  .channels = 2
+  .channels = 1
 };
 
-static char *odevice = NULL;// TODO: make string parameter
+static void write_from_ringbuffer(char *data, int count, void *userdata)
+{
+  pa_stream_write((pa_stream *)userdata, data, count, NULL, 0LL, PA_SEEK_RELATIVE);
+}
 
 static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
-  //struct pulsedev_t *self = (struct pulsedev_t *)userdata;
-  //pa_usec_t usec;
-  //int negative;
-  //pa_stream_get_latency(s, &usec, &negative); // TODO: check error
+  struct pulsedev_t *self = (struct pulsedev_t *)userdata;
+  pa_usec_t usec;
+  int neg;
+  if (!pa_stream_get_latency(self->stream, &usec, &neg))
+    printf("latency %s%8d us\n", neg ? "-" : "", (int)usec);
+  ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
 }
+
+static char *odevice = NULL;// TODO: make string parameter
 
 void context_state_callback(pa_context *context, void *userdata)
 {
@@ -71,9 +86,14 @@ void context_state_callback(pa_context *context, void *userdata)
   if (state == PA_CONTEXT_READY) {
     self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error
     pa_stream_set_write_callback(self->stream, stream_write_callback, self);
-    static pa_stream_flags_t flags = 0;
+    static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
     pa_buffer_attr buffer_attr;
-    memset(&buffer_attr, 0, sizeof(buffer_attr));
+    buffer_attr.fragsize = (uint32_t)-1;
+    int latency = 20000;
+    buffer_attr.maxlength = pa_usec_to_bytes(latency,&sample_spec);
+    buffer_attr.minreq = pa_usec_to_bytes(0,&sample_spec);
+    buffer_attr.prebuf = (uint32_t)-1;
+    buffer_attr.tlength = pa_usec_to_bytes(latency,&sample_spec);
     pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: check error
   };
 }
@@ -83,6 +103,12 @@ SCM make_pulsedev(void)
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
+  ringbuffer_init(&self->ringbuffer, 200000);
+  int i;
+  for (i=0;i<100000; i++) {// TODO: remove this
+    short int x = (short int)(sin(i * 0.05699) * 16000);
+    ringbuffer_store(&self->ringbuffer, (char *)&x, 2);
+  };
   self->mainloop = pa_mainloop_new();
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
   self->context = pa_context_new(self->mainloop_api, "aiscm");

@@ -14,7 +14,7 @@
                (thread #:init-keyword #:thread))
 (define-method (initialize (self <pulse>) initargs)
   (let* [(pulsedev (make-pulsedev))
-         (thread   (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]; TODO: only run thread when buffer not empty
+         (thread   (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
   (next-method self (list #:pulsedev pulsedev #:thread thread))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
