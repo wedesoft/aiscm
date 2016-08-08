@@ -127,6 +127,13 @@ SCM pulsedev_mainloop_quit(SCM scm_self, SCM scm_result)
   return SCM_UNDEFINED;
 }
 
+SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)// TODO: check audio device still open
+{
+  struct pulsedev_t *self = get_self(scm_self);
+  ringbuffer_store(&self->ringbuffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
+  return SCM_UNSPECIFIED;
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -139,4 +146,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
+  scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
 }

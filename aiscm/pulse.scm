@@ -2,13 +2,15 @@
   #:use-module (oop goops)
   #:use-module (ice-9 threads)
   #:use-module (ice-9 optargs)
+  #:use-module (aiscm mem)
+  #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm jit)
   #:use-module (aiscm float)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type
-            pulsedev-mainloop-run pulsedev-mainloop-quit))
+            type->pulse-type pulse-type->type write-samples))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulsedev #:init-keyword #:pulsedev)
@@ -19,7 +21,7 @@
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (pulsedev   (make-pulsedev pulse-type channels rate))
-           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
+           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]; TODO: use mutex
     (next-method self (list #:pulsedev pulsedev #:thread thread)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
@@ -35,3 +37,5 @@
   (pulsedev-mainloop-quit (slot-ref self 'pulsedev) 0)
   (join-thread (slot-ref self 'thread))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
+(define (write-samples samples self); TODO: check type, use mutex
+  (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
