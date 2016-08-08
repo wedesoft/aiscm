@@ -1,6 +1,7 @@
 (define-module (aiscm pulse)
-  #:use-module (ice-9 threads)
   #:use-module (oop goops)
+  #:use-module (ice-9 threads)
+  #:use-module (ice-9 optargs)
   #:use-module (aiscm int)
   #:use-module (aiscm float)
   #:use-module (aiscm util)
@@ -13,9 +14,13 @@
                (pulsedev #:init-keyword #:pulsedev)
                (thread #:init-keyword #:thread))
 (define-method (initialize (self <pulse>) initargs)
-  (let* [(pulsedev (make-pulsedev))
-         (thread   (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
-  (next-method self (list #:pulsedev pulsedev #:thread thread))))
+  (let-keywords initargs #f (type channels rate)
+    (let* [(pulse-type (type->pulse-type (or type <sint>)))
+           (channels   (or channels 2))
+           (rate       (or rate 44100))
+           (pulsedev   (make-pulsedev pulse-type channels rate))
+           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
+    (next-method self (list #:pulsedev pulsedev #:thread thread)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)

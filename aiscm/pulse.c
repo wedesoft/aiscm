@@ -11,6 +11,7 @@
 static scm_t_bits pulsedev_tag;
 
 struct pulsedev_t {
+  pa_sample_spec sample_spec;
   struct ringbuffer_t ringbuffer;
   pa_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
@@ -57,12 +58,6 @@ size_t free_pulsedev(SCM scm_self)
   return 0;
 }
 
-static pa_sample_spec sample_spec = {// TODO: put into object
-  .format = PA_SAMPLE_S16LE,
-  .rate = 44100,
-  .channels = 1
-};
-
 static void write_from_ringbuffer(char *data, int count, void *userdata)
 {
   pa_stream_write((pa_stream *)userdata, data, count, NULL, 0LL, PA_SEEK_RELATIVE);
@@ -84,31 +79,29 @@ void context_state_callback(pa_context *context, void *userdata)
   pa_context_state_t state = pa_context_get_state(context);
   struct pulsedev_t *self = (struct pulsedev_t *)userdata;
   if (state == PA_CONTEXT_READY) {
-    self->stream = pa_stream_new(context, "playback", &sample_spec, NULL);// TODO: check error
+    self->stream = pa_stream_new(context, "playback", &self->sample_spec, NULL);// TODO: check error
     pa_stream_set_write_callback(self->stream, stream_write_callback, self);
     static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
     pa_buffer_attr buffer_attr;
     buffer_attr.fragsize = (uint32_t)-1;
-    int latency = 20000;
-    buffer_attr.maxlength = pa_usec_to_bytes(latency,&sample_spec);
-    buffer_attr.minreq = pa_usec_to_bytes(0,&sample_spec);
+    int latency = 20000;// TODO: make parameter
+    buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
+    buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
     buffer_attr.prebuf = (uint32_t)-1;
-    buffer_attr.tlength = pa_usec_to_bytes(latency,&sample_spec);
+    buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
     pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: check error
   };
 }
 
-SCM make_pulsedev(void)
+SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate)
 {
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
-  ringbuffer_init(&self->ringbuffer, 200000);
-  int i;
-  for (i=0;i<100000; i++) {// TODO: remove this
-    short int x = (short int)(sin(i * 0.05699) * 16000);
-    ringbuffer_store(&self->ringbuffer, (char *)&x, 2);
-  };
+  self->sample_spec.format = scm_to_int(scm_type);
+  self->sample_spec.rate = scm_to_int(scm_rate);
+  self->sample_spec.channels = scm_to_int(scm_channels);
+  ringbuffer_init(&self->ringbuffer, 16384);
   self->mainloop = pa_mainloop_new();
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
   self->context = pa_context_new(self->mainloop_api, "aiscm");
@@ -142,7 +135,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
-  scm_c_define_gsubr("make-pulsedev"         , 0, 0, 0, make_pulsedev         );
+  scm_c_define_gsubr("make-pulsedev"         , 3, 0, 0, make_pulsedev         );
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
