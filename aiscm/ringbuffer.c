@@ -50,6 +50,7 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
     ringbuffer_store(ringbuffer, data, count);
   } else {
     int startpos = ringbuffer->offset + ringbuffer->fill;
+    if (startpos >= ringbuffer->size) startpos -= ringbuffer->size;
     int boundary = ringbuffer->size - startpos;
     if (count > boundary) {
       memcpy(ringbuffer->buffer + startpos, data, boundary);

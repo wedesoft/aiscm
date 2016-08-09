@@ -42,4 +42,6 @@
     "Ring buffer should wrap around")
 (ok (ringbuffer-grow)
     "Ringbuffer should grow n size if required")
+(ok (ringbuffer-wrap-write)
+    "Ringbuffer writing should wrap around")
 (run-tests)

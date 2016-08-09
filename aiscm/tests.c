@@ -243,6 +243,26 @@ SCM ringbuffer_grow(void)
   return scm_from_bool(retval);
 }
 
+static void test_wrap_write_callback(char *data, int count, void *userdata)
+{
+  printf("%s\n", data);
+  *(char *)userdata = count == 2 && strncmp(data, "ef", 2) == 0;
+}
+
+SCM ringbuffer_wrap_write(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 4);
+  ringbuffer_store(&ringbuffer, "abc", 3);
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 2, test_wrap_write_callback, &retval);
+  ringbuffer_store(&ringbuffer, "de", 2);
+  ringbuffer_store(&ringbuffer, "f", 1);
+  ringbuffer_fetch(&ringbuffer, 2, test_wrap_write_callback, &retval);
+  ringbuffer_fetch(&ringbuffer, 2, test_wrap_write_callback, &retval);
+  return scm_from_bool(retval);
+}
+
 void init_tests(void)
 {
   scm_c_define_gsubr("forty-two", 0, 0, 0, forty_two);
@@ -266,4 +286,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-storing-respects-offset", 0, 0, 0, ringbuffer_storing_respects_offset);
   scm_c_define_gsubr("ringbuffer-wrap-around", 0, 0, 0, ringbuffer_wrap_around);
   scm_c_define_gsubr("ringbuffer-grow", 0, 0, 0, ringbuffer_grow);
+  scm_c_define_gsubr("ringbuffer-wrap-write", 0, 0, 0, ringbuffer_wrap_write);
 }

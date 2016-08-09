@@ -14,14 +14,14 @@
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse> <object> <meta<pulse>> <class>
                (pulsedev #:init-keyword #:pulsedev)
-               (thread #:init-keyword #:thread))
+               (thread   #:init-keyword #:thread))
 (define-method (initialize (self <pulse>) initargs)
   (let-keywords initargs #f (type channels rate)
     (let* [(pulse-type (type->pulse-type (or type <sint>)))
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (pulsedev   (make-pulsedev pulse-type channels rate))
-           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]; TODO: use mutex
+           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
     (next-method self (list #:pulsedev pulsedev #:thread thread)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
@@ -37,5 +37,5 @@
   (pulsedev-mainloop-quit (slot-ref self 'pulsedev) 0)
   (join-thread (slot-ref self 'thread))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
-(define (write-samples samples self); TODO: check type, use mutex
+(define (write-samples samples self); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
