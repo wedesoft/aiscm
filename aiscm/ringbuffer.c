@@ -34,9 +34,15 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
   }
 }
 
-void ringbuffer_copy_callback(char *data, int count, void *userdata)
+static void ringbuffer_copy_callback(char *data, int count, void *userdata)
 {
   ringbuffer_store((struct ringbuffer_t *)userdata, data, count);
+}
+
+static int ringbuffer_write_pos(struct ringbuffer_t *ringbuffer)
+{
+  int write_offset = ringbuffer->offset + ringbuffer->fill;
+  return write_offset >= ringbuffer->size ? write_offset - ringbuffer->size : write_offset;
 }
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count)
@@ -49,8 +55,7 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
     memcpy(ringbuffer, &resize, sizeof(struct ringbuffer_t));
     ringbuffer_store(ringbuffer, data, count);
   } else {
-    int startpos = ringbuffer->offset + ringbuffer->fill;
-    if (startpos >= ringbuffer->size) startpos -= ringbuffer->size;
+    int startpos = ringbuffer_write_pos(ringbuffer);
     int boundary = ringbuffer->size - startpos;
     if (count > boundary) {
       memcpy(ringbuffer->buffer + startpos, data, boundary);
