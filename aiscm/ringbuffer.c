@@ -21,14 +21,13 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
   if (count > ringbuffer->fill)
     ringbuffer_fetch(ringbuffer, ringbuffer->fill, callback, userdata);
   else {
-    int startpos = ringbuffer->read_offset;
-    int boundary = ringbuffer->size - startpos;
+    int boundary = ringbuffer->size - ringbuffer->read_offset;
     if (count > boundary) {
-      (*callback)(ringbuffer->buffer + startpos, boundary, userdata);
+      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, boundary, userdata);
       (*callback)(ringbuffer->buffer, count - boundary, userdata);
       ringbuffer->read_offset = count - boundary;
     } else {
-      (*callback)(ringbuffer->buffer + startpos, count, userdata);
+      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, count, userdata);
       ringbuffer->read_offset += count;
     };
     ringbuffer->fill -= count;
@@ -55,14 +54,13 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
     ringbuffer_resize(ringbuffer, ringbuffer->fill + count + ringbuffer->size);
     ringbuffer_store(ringbuffer, data, count);
   } else {
-    int startpos = ringbuffer->write_offset;
-    int boundary = ringbuffer->size - startpos;
+    int boundary = ringbuffer->size - ringbuffer->write_offset;
     if (count > boundary) {
-      memcpy(ringbuffer->buffer + startpos, data, boundary);
+      memcpy(ringbuffer->buffer + ringbuffer->write_offset, data, boundary);
       memcpy(ringbuffer->buffer, data + boundary, count - boundary);
       ringbuffer->write_offset = count - boundary;
     } else {
-      memcpy(ringbuffer->buffer + startpos, data, count);
+      memcpy(ringbuffer->buffer + ringbuffer->write_offset, data, count);
       ringbuffer->write_offset += count;
     };
     ringbuffer->fill += count;
