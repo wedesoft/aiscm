@@ -16,11 +16,12 @@
                (pulsedev #:init-keyword #:pulsedev)
                (thread   #:init-keyword #:thread))
 (define-method (initialize (self <pulse>) initargs)
-  (let-keywords initargs #f (type channels rate)
+  (let-keywords initargs #f (type channels rate latency)
     (let* [(pulse-type (type->pulse-type (or type <sint>)))
            (channels   (or channels 2))
            (rate       (or rate 44100))
-           (pulsedev   (make-pulsedev pulse-type channels rate))
+           (latency    (or latency 0.02))
+           (pulsedev   (make-pulsedev pulse-type channels rate latency))
            (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
     (next-method self (list #:pulsedev pulsedev #:thread thread)))))
 (define typemap

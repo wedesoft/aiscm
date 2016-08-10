@@ -80,15 +80,15 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
   pthread_mutex_unlock(&self->mutex);
 }
 
-static char *odevice = NULL;// TODO: make string parameter
-
 void context_state_callback(pa_context *context, void *userdata)
 {
   pa_context_state_t state = pa_context_get_state(context);
   if (state == PA_CONTEXT_READY) *(char *)userdata = 1;
 }
 
-SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate)
+static char *odevice = NULL;// TODO: make string parameter
+
+SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
 {
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
@@ -112,7 +112,7 @@ SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate)
   static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
   pa_buffer_attr buffer_attr;
   buffer_attr.fragsize = (uint32_t)-1;
-  int latency = 20000;// TODO: make parameter
+  int latency = (int)(scm_to_double(scm_latency) * 1e6);
   buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
   buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
   buffer_attr.prebuf = (uint32_t)-1;
@@ -153,7 +153,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
-  scm_c_define_gsubr("make-pulsedev"         , 3, 0, 0, make_pulsedev         );
+  scm_c_define_gsubr("make-pulsedev"         , 4, 0, 0, make_pulsedev         );
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);

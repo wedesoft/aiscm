@@ -22,7 +22,7 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
     ringbuffer_fetch(ringbuffer, ringbuffer->fill, callback, userdata);
   else {
     int boundary = ringbuffer->size - ringbuffer->read_offset;
-    if (count > boundary) {
+    if (count >= boundary) {
       (*callback)(ringbuffer->buffer + ringbuffer->read_offset, boundary, userdata);
       (*callback)(ringbuffer->buffer, count - boundary, userdata);
       ringbuffer->read_offset = count - boundary;
@@ -55,7 +55,7 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
     ringbuffer_store(ringbuffer, data, count);
   } else {
     int boundary = ringbuffer->size - ringbuffer->write_offset;
-    if (count > boundary) {
+    if (count >= boundary) {
       memcpy(ringbuffer->buffer + ringbuffer->write_offset, data, boundary);
       memcpy(ringbuffer->buffer, data + boundary, count - boundary);
       ringbuffer->write_offset = count - boundary;
