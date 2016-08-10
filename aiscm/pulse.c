@@ -105,9 +105,12 @@ SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
   pa_context_connect(self->context, NULL, 0, NULL);
   char context_ready = 0;
   pa_context_set_state_callback(self->context, context_state_callback, &context_ready);
-  while (!context_ready)// TODO: handle errors
+  while (!context_ready)
     pa_mainloop_iterate(self->mainloop, 0, NULL);
   self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);// TODO: check error
+  if (!self->stream)
+    scm_misc_error("make-pulsedev", "Error creating audio stream: ~a",
+                   scm_list_1(scm_from_locale_string(pa_strerror(pa_context_errno(self->context)))));
   pa_stream_set_write_callback(self->stream, stream_write_callback, self);
   static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
   pa_buffer_attr buffer_attr;
