@@ -3,7 +3,8 @@
 
 struct ringbuffer_t {
   int fill;
-  int offset;
+  int read_offset;
+  int write_offset;
   int size;
   char *buffer;
 };

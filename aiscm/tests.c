@@ -224,7 +224,7 @@ SCM ringbuffer_wrap_around(void)
   ringbuffer_fetch(&ringbuffer, 4, test_wrap_callback, buf);
   return scm_from_bool(!strncmp(ringbuffer.buffer, "efcd", 4) &&
                        !strcmp(buf, "abcdef") &&
-                       ringbuffer.offset == 2);
+                       ringbuffer.read_offset == 2);
 }
 
 static void test_grow_callback(char *data, int count, void *userdata)
