@@ -1,8 +1,7 @@
 ## Ready
 
-* pulse audio parameters
+* restore output after buffer underflow
 * pulse audio latency, drain, flush
-* pulse audio errors
 * pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * use ice-9 q?

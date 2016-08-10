@@ -2,7 +2,6 @@
 #include <libguile.h>
 #include "ringbuffer.h"
 
-#include <math.h> // TODO: remove this
 
 // https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/
 // http://freedesktop.org/software/pulseaudio/doxygen/pacat-simple_8c-example.html
@@ -11,7 +10,6 @@
 static scm_t_bits pulsedev_tag;
 
 struct pulsedev_t {
-  pa_sample_spec sample_spec;
   pthread_mutex_t mutex;
   char mutex_initialised;
   struct ringbuffer_t ringbuffer;
@@ -92,35 +90,49 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
-  self->sample_spec.format = scm_to_int(scm_type);
-  self->sample_spec.rate = scm_to_int(scm_rate);
-  self->sample_spec.channels = scm_to_int(scm_channels);
+
+  // initialise mutex variable
   pthread_mutex_init(&self->mutex, NULL);
   self->mutex_initialised = 1;
+
+  // initialise ring buffer
   ringbuffer_init(&self->ringbuffer, 1024);
+
+  // initialise main loop
   self->mainloop = pa_mainloop_new();
   self->mainloop_api = pa_mainloop_get_api(self->mainloop);
+
+  // initialise context object
   self->context = pa_context_new(self->mainloop_api, "aiscm");
   pa_context_connect(self->context, NULL, 0, NULL);
   char context_ready = 0;
   pa_context_set_state_callback(self->context, context_state_callback, &context_ready);
   while (!context_ready)
     pa_mainloop_iterate(self->mainloop, 0, NULL);
-  self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);
+
+  // initialise audio stream
+  pa_sample_spec sample_spec;
+  sample_spec.format = scm_to_int(scm_type);
+  sample_spec.rate = scm_to_int(scm_rate);
+  sample_spec.channels = scm_to_int(scm_channels);
+  self->stream = pa_stream_new(self->context, "playback", &sample_spec, NULL);
   if (!self->stream)
     scm_misc_error("make-pulsedev", "Error creating audio stream: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(pa_context_errno(self->context)))));
   pa_stream_set_write_callback(self->stream, stream_write_callback, self);
+
+  // configure and connect audio stream
   static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
   pa_buffer_attr buffer_attr;
   buffer_attr.fragsize = (uint32_t)-1;
   int latency = (int)(scm_to_double(scm_latency) * 1e6);
-  buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
-  buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
+  buffer_attr.maxlength = pa_usec_to_bytes(latency, &sample_spec);
+  buffer_attr.minreq = pa_usec_to_bytes(0, &sample_spec);
   buffer_attr.prebuf = (uint32_t)-1;
-  buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
+  buffer_attr.tlength = pa_usec_to_bytes(latency, &sample_spec);
   const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
   pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
+
   return retval;
 }
 
