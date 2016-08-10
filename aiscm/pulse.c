@@ -75,7 +75,8 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
   //int neg;
   //if (!pa_stream_get_latency(self->stream, &usec, &neg))
   //  printf("latency %s%8d us\n", neg ? "-" : "", (int)usec);
-  //pthread_mutex_lock(&self->mutex);
+  //printf("%d\n", length);
+  pthread_mutex_lock(&self->mutex);
   ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
   pthread_mutex_unlock(&self->mutex);
 }
@@ -86,9 +87,7 @@ void context_state_callback(pa_context *context, void *userdata)
   if (state == PA_CONTEXT_READY) *(char *)userdata = 1;
 }
 
-static char *odevice = NULL;// TODO: make string parameter
-
-SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
+SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
 {
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
@@ -107,7 +106,7 @@ SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
   pa_context_set_state_callback(self->context, context_state_callback, &context_ready);
   while (!context_ready)
     pa_mainloop_iterate(self->mainloop, 0, NULL);
-  self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);// TODO: check error
+  self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);
   if (!self->stream)
     scm_misc_error("make-pulsedev", "Error creating audio stream: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(pa_context_errno(self->context)))));
@@ -120,7 +119,8 @@ SCM make_pulsedev(SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
   buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
   buffer_attr.prebuf = (uint32_t)-1;
   buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
-  pa_stream_connect_playback(self->stream, odevice, &buffer_attr, flags, NULL, NULL);// TODO: check error
+  const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
+  pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
   return retval;
 }
 
@@ -156,7 +156,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
-  scm_c_define_gsubr("make-pulsedev"         , 4, 0, 0, make_pulsedev         );
+  scm_c_define_gsubr("make-pulsedev"         , 5, 0, 0, make_pulsedev         );
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);

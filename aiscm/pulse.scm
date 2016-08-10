@@ -5,23 +5,24 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
-  #:use-module (aiscm jit)
   #:use-module (aiscm float)
+  #:use-module (aiscm sequence)
+  #:use-module (aiscm jit)
   #:use-module (aiscm util)
-  #:export (<pulse> <meta<pulse>>
+  #:export (<pulse-play> <meta<pulse-play>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
             type->pulse-type pulse-type->type write-samples))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
-(define-class* <pulse> <object> <meta<pulse>> <class>
+(define-class* <pulse-play> <object> <meta<pulse-play>> <class>
                (pulsedev #:init-keyword #:pulsedev)
                (thread   #:init-keyword #:thread))
-(define-method (initialize (self <pulse>) initargs)
-  (let-keywords initargs #f (type channels rate latency)
+(define-method (initialize (self <pulse-play>) initargs)
+  (let-keywords initargs #f (device type channels rate latency)
     (let* [(pulse-type (type->pulse-type (or type <sint>)))
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (latency    (or latency 0.02))
-           (pulsedev   (make-pulsedev pulse-type channels rate latency))
+           (pulsedev   (make-pulsedev device pulse-type channels rate latency))
            (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
     (next-method self (list #:pulsedev pulsedev #:thread thread)))))
 (define typemap
@@ -34,9 +35,14 @@
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
   (assq-ref inverse-typemap pulse-type))
-(define-method (destroy (self <pulse>))
+(define-method (destroy (self <pulse-play>))
   (pulsedev-mainloop-quit (slot-ref self 'pulsedev) 0)
   (join-thread (slot-ref self 'thread))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
-(define (write-samples samples self); TODO: check type
+(define-method (write-samples (samples <sequence<>>) (self <pulse-play>)); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+(define-method (write-samples (samples <procedure>) (self <pulse-play>))
+  (let [(result (samples))]
+    (while result
+      (write-samples result self)
+      (set! result (samples)))))
