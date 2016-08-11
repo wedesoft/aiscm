@@ -4,11 +4,9 @@
 
 void ringbuffer_init(struct ringbuffer_t *ringbuffer, int size)
 {
-  ringbuffer->fill = 0;
-  ringbuffer->read_offset = 0;
-  ringbuffer->write_offset = 0;
   ringbuffer->size = size;
   ringbuffer->buffer = malloc(size);
+  ringbuffer_flush(ringbuffer);
 }
 
 void ringbuffer_destroy(struct ringbuffer_t *ringbuffer)
@@ -65,4 +63,11 @@ void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int cou
     };
     ringbuffer->fill += count;
   };
+}
+
+void ringbuffer_flush(struct ringbuffer_t *ringbuffer)
+{
+  ringbuffer->fill = 0;
+  ringbuffer->read_offset = 0;
+  ringbuffer->write_offset = 0;
 }

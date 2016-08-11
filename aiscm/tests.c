@@ -222,14 +222,15 @@ SCM ringbuffer_wrap_around(void)
   ringbuffer_fetch(&ringbuffer, 2, test_wrap_callback, buf);
   ringbuffer_store(&ringbuffer, "ef", 2);
   ringbuffer_fetch(&ringbuffer, 4, test_wrap_callback, buf);
-  return scm_from_bool(!strncmp(ringbuffer.buffer, "efcd", 4) &&
-                       !strcmp(buf, "abcdef") &&
-                       ringbuffer.read_offset == 2);
+  SCM retval = scm_from_bool(!strncmp(ringbuffer.buffer, "efcd", 4) &&
+                             !strcmp(buf, "abcdef") &&
+                             ringbuffer.read_offset == 2);
+  ringbuffer_destroy(&ringbuffer);
+  return retval;
 }
 
 static void test_grow_callback(char *data, int count, void *userdata)
 {
-  printf("%s\n", data);
   *(char *)userdata = count == 8 && strncmp(data, "abcdefgh", 8) == 0;
 }
 
@@ -240,12 +241,12 @@ SCM ringbuffer_grow(void)
   ringbuffer_store(&ringbuffer, "abcdefgh", 8);
   char retval = 0;
   ringbuffer_fetch(&ringbuffer, 8, test_grow_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
   return scm_from_bool(retval);
 }
 
 static void test_wrap_write_callback(char *data, int count, void *userdata)
 {
-  printf("%s\n", data);
   *(char *)userdata = count == 2 && strncmp(data, "ef", 2) == 0;
 }
 
@@ -260,6 +261,25 @@ SCM ringbuffer_wrap_write(void)
   ringbuffer_store(&ringbuffer, "f", 1);
   ringbuffer_fetch(&ringbuffer, 2, test_wrap_write_callback, &retval);
   ringbuffer_fetch(&ringbuffer, 2, test_wrap_write_callback, &retval);
+  ringbuffer_destroy(&ringbuffer);
+  return scm_from_bool(retval);
+}
+
+static void test_flushing(char *data, int count, void *userdata)
+{
+  *(char *)userdata = count == 2 && strncmp(data, "cd", 2) == 0;
+}
+
+SCM ringbuffer_flushing(void)
+{
+  struct ringbuffer_t ringbuffer;
+  ringbuffer_init(&ringbuffer, 4);
+  ringbuffer_store(&ringbuffer, "ab", 2);
+  ringbuffer_flush(&ringbuffer);
+  ringbuffer_store(&ringbuffer, "cd", 2);
+  char retval = 0;
+  ringbuffer_fetch(&ringbuffer, 2, test_flushing, &retval);
+  ringbuffer_destroy(&ringbuffer);
   return scm_from_bool(retval);
 }
 
@@ -287,4 +307,5 @@ void init_tests(void)
   scm_c_define_gsubr("ringbuffer-wrap-around", 0, 0, 0, ringbuffer_wrap_around);
   scm_c_define_gsubr("ringbuffer-grow", 0, 0, 0, ringbuffer_grow);
   scm_c_define_gsubr("ringbuffer-wrap-write", 0, 0, 0, ringbuffer_wrap_write);
+  scm_c_define_gsubr("ringbuffer-flushing", 0, 0, 0, ringbuffer_flushing);
 }

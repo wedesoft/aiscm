@@ -19,4 +19,6 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
 
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count);
 
+void ringbuffer_flush(struct ringbuffer_t *ringbuffer);
+
 #endif

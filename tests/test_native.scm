@@ -44,4 +44,6 @@
     "Ringbuffer should grow n size if required")
 (ok (ringbuffer-wrap-write)
     "Ringbuffer writing should wrap around")
+(ok (ringbuffer-flushing)
+    "Flushing ring buffer should empty it")
 (run-tests)

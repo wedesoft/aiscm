@@ -11,7 +11,7 @@
   #:use-module (aiscm util)
   #:export (<pulse-play> <meta<pulse-play>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type write-samples))
+            type->pulse-type pulse-type->type write-samples flush))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse-play> <object> <meta<pulse-play>> <class>
                (pulsedev #:init-keyword #:pulsedev)
@@ -46,3 +46,4 @@
     (while result
       (write-samples result self)
       (set! result (samples)))))
+(define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))

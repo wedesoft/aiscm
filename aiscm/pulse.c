@@ -158,6 +158,16 @@ SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)// TODO: check audi
   return SCM_UNSPECIFIED;
 }
 
+SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
+{
+  struct pulsedev_t *self = get_self(scm_self);
+  pthread_mutex_lock(&self->mutex);
+  ringbuffer_flush(&self->ringbuffer);
+  pa_stream_flush(self->stream, NULL, NULL);
+  pthread_mutex_unlock(&self->mutex);
+  return SCM_UNSPECIFIED;
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -171,4 +181,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
   scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
+  scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
 }

@@ -1,6 +1,5 @@
 ## Ready
 
-* restore output after buffer underflow
 * pulse audio latency, drain, flush
 * pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
