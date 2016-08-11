@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <pulse/pulseaudio.h>
 #include <libguile.h>
 #include "ringbuffer.h"
@@ -12,6 +13,8 @@ static scm_t_bits pulsedev_tag;
 struct pulsedev_t {
   pthread_mutex_t mutex;
   char mutex_initialised;
+  pthread_cond_t condition;
+  char condition_initialised;
   struct ringbuffer_t ringbuffer;
   pa_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
@@ -47,6 +50,10 @@ SCM pulsedev_destroy(SCM scm_self)
     ringbuffer_destroy(&self->ringbuffer);
     self->ringbuffer.buffer = NULL;
   };
+  if (self->condition_initialised) {
+    pthread_cond_destroy(&self->condition);
+    self->condition_initialised = 0;
+  };
   if (self->mutex_initialised) {
     pthread_mutex_destroy(&self->mutex);
     self->mutex_initialised = 0;
@@ -74,7 +81,10 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
   //if (!pa_stream_get_latency(self->stream, &usec, &neg))
   //  printf("latency %s%8d us\n", neg ? "-" : "", (int)usec);
   pthread_mutex_lock(&self->mutex);
-  ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
+  if (self->ringbuffer.fill)
+    ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
+  else
+    pthread_cond_signal(&self->condition);
   pthread_mutex_unlock(&self->mutex);
 }
 
@@ -89,9 +99,11 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
 
-  // initialise mutex variable
+  // initialise mutex and condition variable
   pthread_mutex_init(&self->mutex, NULL);
   self->mutex_initialised = 1;
+  pthread_cond_init(&self->condition, NULL);
+  self->condition_initialised = 1;
 
   // initialise ring buffer
   ringbuffer_init(&self->ringbuffer, 1024);
@@ -168,6 +180,17 @@ SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
   return SCM_UNSPECIFIED;
 }
 
+SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
+{
+  struct pulsedev_t *self = get_self(scm_self);
+  pthread_mutex_lock(&self->mutex);
+  if (self->ringbuffer.fill)
+    pthread_cond_wait(&self->condition, &self->mutex);
+  pthread_mutex_unlock(&self->mutex);
+  pa_stream_drain(self->stream, NULL, NULL);
+  return SCM_UNSPECIFIED;
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -182,4 +205,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
   scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
   scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
+  scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, pulsedev_drain        );
 }
