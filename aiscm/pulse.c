@@ -81,8 +81,7 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
 
 void context_state_callback(pa_context *context, void *userdata)
 {
-  pa_context_state_t state = pa_context_get_state(context);
-  if (state == PA_CONTEXT_READY) *(char *)userdata = 1;
+  *(pa_context_state_t *)userdata = pa_context_get_state(context);
 }
 
 SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
@@ -105,9 +104,9 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   // initialise context object
   self->context = pa_context_new(self->mainloop_api, "aiscm");
   pa_context_connect(self->context, NULL, 0, NULL);
-  char context_ready = 0;
-  pa_context_set_state_callback(self->context, context_state_callback, &context_ready);
-  while (!context_ready)
+  pa_context_state_t context_state = PA_CONTEXT_UNCONNECTED;
+  pa_context_set_state_callback(self->context, context_state_callback, &context_state);
+  while (context_state != PA_CONTEXT_READY)
     pa_mainloop_iterate(self->mainloop, 0, NULL);
 
   // initialise audio stream
