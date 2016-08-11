@@ -73,7 +73,6 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
   //int neg;
   //if (!pa_stream_get_latency(self->stream, &usec, &neg))
   //  printf("latency %s%8d us\n", neg ? "-" : "", (int)usec);
-  //printf("%d\n", length);
   pthread_mutex_lock(&self->mutex);
   ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
   pthread_mutex_unlock(&self->mutex);
@@ -121,13 +120,13 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   pa_stream_set_write_callback(self->stream, stream_write_callback, self);
 
   // configure and connect audio stream
-  static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE;
+  static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_AUTO_TIMING_UPDATE;
   pa_buffer_attr buffer_attr;
   buffer_attr.fragsize = (uint32_t)-1;
   int latency = (int)(scm_to_double(scm_latency) * 1e6);
   buffer_attr.maxlength = pa_usec_to_bytes(latency, &sample_spec);
   buffer_attr.minreq = pa_usec_to_bytes(0, &sample_spec);
-  buffer_attr.prebuf = (uint32_t)-1;
+  buffer_attr.prebuf = 0;
   buffer_attr.tlength = pa_usec_to_bytes(latency, &sample_spec);
   const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
   pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
