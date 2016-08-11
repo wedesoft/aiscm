@@ -1,6 +1,8 @@
 ## Ready
 
-* pulse audio latency, drain, flush
+* documentation footer
+* pulse audio latency
+* wait for flush/drain to finish
 * pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * use ice-9 q?
