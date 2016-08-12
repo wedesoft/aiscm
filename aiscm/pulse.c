@@ -12,12 +12,8 @@ static scm_t_bits pulsedev_tag;
 
 struct pulsedev_t {
   pa_sample_spec sample_spec;
-  pthread_mutex_t mutex;
-  char mutex_initialised;
-  pthread_cond_t condition;
-  char condition_initialised;
   struct ringbuffer_t ringbuffer;
-  pa_mainloop *mainloop;
+  pa_threaded_mainloop *mainloop;
   pa_mainloop_api *mainloop_api;
   pa_context *context;
   pa_stream *stream;
@@ -43,21 +39,14 @@ SCM pulsedev_destroy(SCM scm_self)
     self->context = NULL;
   };
   if (self->mainloop) {
-    pa_mainloop_free(self->mainloop);
+    pa_threaded_mainloop_stop(self->mainloop);
+    pa_threaded_mainloop_free(self->mainloop);
     self->mainloop = NULL;
     self->mainloop_api = NULL;
   };
   if (self->ringbuffer.buffer) {
     ringbuffer_destroy(&self->ringbuffer);
     self->ringbuffer.buffer = NULL;
-  };
-  if (self->condition_initialised) {
-    pthread_cond_destroy(&self->condition);
-    self->condition_initialised = 0;
-  };
-  if (self->mutex_initialised) {
-    pthread_mutex_destroy(&self->mutex);
-    self->mutex_initialised = 0;
   };
   return SCM_UNSPECIFIED;
 }
@@ -77,26 +66,16 @@ static void write_from_ringbuffer(char *data, int count, void *userdata)
 
 static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
   struct pulsedev_t *self = (struct pulsedev_t *)userdata;
-  pthread_mutex_lock(&self->mutex);
   if (self->ringbuffer.fill)
     ringbuffer_fetch(&self->ringbuffer, length, write_from_ringbuffer, self->stream);
   else
-    pthread_cond_signal(&self->condition);
-  pthread_mutex_unlock(&self->mutex);
-}
-
-static void initialise_synchronisation(struct pulsedev_t *self)
-{
-  pthread_mutex_init(&self->mutex, NULL);
-  self->mutex_initialised = 1;
-  pthread_cond_init(&self->condition, NULL);
-  self->condition_initialised = 1;
+    pa_threaded_mainloop_signal(self->mainloop, 0);
 }
 
 static void initialise_mainloop(struct pulsedev_t *self)
 {
-  self->mainloop = pa_mainloop_new();
-  self->mainloop_api = pa_mainloop_get_api(self->mainloop);
+  self->mainloop = pa_threaded_mainloop_new();
+  self->mainloop_api = pa_threaded_mainloop_get_api(self->mainloop);
 }
 
 void context_state_callback(pa_context *context, void *userdata)
@@ -110,8 +89,9 @@ static void initialise_context(struct pulsedev_t *self)
   pa_context_connect(self->context, NULL, 0, NULL);
   pa_context_state_t context_state = PA_CONTEXT_UNCONNECTED;
   pa_context_set_state_callback(self->context, context_state_callback, &context_state);
+  pa_threaded_mainloop_start(self->mainloop);// TODO: check for error
   while (context_state != PA_CONTEXT_READY)
-    pa_mainloop_iterate(self->mainloop, 0, NULL);
+    pa_threaded_mainloop_wait(self->mainloop);
 }
 
 static void initialise_stream(struct pulsedev_t *self)
@@ -147,7 +127,6 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   self->sample_spec.rate = scm_to_int(scm_rate);
   self->sample_spec.channels = scm_to_int(scm_channels);
 
-  initialise_synchronisation(self);
   ringbuffer_init(&self->ringbuffer, 1024);
   initialise_mainloop(self);
   initialise_context(self);
@@ -157,61 +136,44 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   return retval;
 }
 
-SCM pulsedev_mainloop_run(SCM scm_self)
-{
-  int retval;
-  int error = pa_mainloop_run(get_self(scm_self)->mainloop, &retval);
-  if (error < 0)
-    scm_misc_error("pulsedev-mainloop-run", "Error running main loop", SCM_EOL);
-  return scm_from_int(retval);
-}
-
-SCM pulsedev_mainloop_quit(SCM scm_self, SCM scm_result)
-{
-  pa_mainloop_quit(get_self(scm_self)->mainloop, scm_to_int(scm_result));
-  return SCM_UNDEFINED;
-}
-
 SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  pthread_mutex_lock(&self->mutex);
+  pa_threaded_mainloop_lock(self->mainloop);
   ringbuffer_store(&self->ringbuffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
-  pthread_mutex_unlock(&self->mutex);
+  pa_threaded_mainloop_unlock(self->mainloop);
   return SCM_UNSPECIFIED;
 }
 
 SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  pthread_mutex_lock(&self->mutex);
+  pa_threaded_mainloop_lock(self->mainloop);
   ringbuffer_flush(&self->ringbuffer);
-  pa_stream_flush(self->stream, NULL, NULL);
-  pthread_mutex_unlock(&self->mutex);
+  pa_threaded_mainloop_unlock(self->mainloop);
   return SCM_UNSPECIFIED;
 }
 
 SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  pthread_mutex_lock(&self->mutex);
-  if (self->ringbuffer.fill)
-    pthread_cond_wait(&self->condition, &self->mutex);
-  pthread_mutex_unlock(&self->mutex);
-  pa_stream_drain(self->stream, NULL, NULL);
+  pa_threaded_mainloop_lock(self->mainloop);
+  while (self->ringbuffer.fill)
+    pa_threaded_mainloop_wait(self->mainloop);
+  pa_threaded_mainloop_unlock(self->mainloop);
   return SCM_UNSPECIFIED;
 }
 
 SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  pthread_mutex_lock(&self->mutex);
+  pa_threaded_mainloop_lock(self->mainloop);
   pa_usec_t ringbuffer_usec = pa_bytes_to_usec(self->ringbuffer.fill, &self->sample_spec);
   pa_usec_t pulse_usec;
   int negative;
   pa_stream_get_latency(self->stream, &pulse_usec, &negative);
   double retval = (negative ? ringbuffer_usec - pulse_usec : ringbuffer_usec + pulse_usec) * 1e-6;
-  pthread_mutex_unlock(&self->mutex);
+  pa_threaded_mainloop_unlock(self->mainloop);
   return scm_from_double(retval);
 }
 
@@ -225,8 +187,6 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
   scm_c_define_gsubr("make-pulsedev"         , 5, 0, 0, make_pulsedev         );
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
-  scm_c_define_gsubr("pulsedev-mainloop-run" , 1, 0, 0, pulsedev_mainloop_run );
-  scm_c_define_gsubr("pulsedev-mainloop-quit", 2, 0, 0, pulsedev_mainloop_quit);
   scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
   scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
   scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, pulsedev_drain        );

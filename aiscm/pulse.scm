@@ -1,6 +1,5 @@
 (define-module (aiscm pulse)
   #:use-module (oop goops)
-  #:use-module (ice-9 threads)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
@@ -14,17 +13,15 @@
             type->pulse-type pulse-type->type write-samples flush drain latency))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse-play> <object> <meta<pulse-play>> <class>
-               (pulsedev #:init-keyword #:pulsedev)
-               (thread   #:init-keyword #:thread))
+               (pulsedev #:init-keyword #:pulsedev))
 (define-method (initialize (self <pulse-play>) initargs)
   (let-keywords initargs #f (device type channels rate latency)
     (let* [(pulse-type (type->pulse-type (or type <sint>)))
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (latency    (or latency 0.02))
-           (pulsedev   (make-pulsedev device pulse-type channels rate latency))
-           (thread     (make-thread (lambda _ (pulsedev-mainloop-run pulsedev))))]
-    (next-method self (list #:pulsedev pulsedev #:thread thread)))))
+           (pulsedev   (make-pulsedev device pulse-type channels rate latency))]
+    (next-method self (list #:pulsedev pulsedev)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)
@@ -36,8 +33,6 @@
 (define (pulse-type->type pulse-type)
   (assq-ref inverse-typemap pulse-type))
 (define-method (destroy (self <pulse-play>))
-  (pulsedev-mainloop-quit (slot-ref self 'pulsedev) 0)
-  (join-thread (slot-ref self 'thread))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
 (define-method (write-samples (samples <sequence<>>) (self <pulse-play>)); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
