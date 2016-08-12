@@ -75,6 +75,9 @@ The following example program creates a sine wave and outputs it to the audio de
 @../tests/integration/pulse_out.scm@
 ```
 
+The *drain* method waits for the content of the audio buffer to finish playing.
+The method *flush* (not shown here) can be used to empty the audio buffer.
+
 Audio data can be recorded in a similar fashion
 
 ```Scheme

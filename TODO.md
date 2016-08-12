@@ -1,7 +1,6 @@
 ## Ready
 
-* documentation footer
-* pulse audio latency
+* documentation: flush, drain, latency
 * wait for flush/drain to finish
 * pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors

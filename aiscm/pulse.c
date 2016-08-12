@@ -200,7 +200,7 @@ SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
   pa_usec_t pulse_usec;
   int negative;
   pa_stream_get_latency(self->stream, &pulse_usec, &negative);
-  double retval = (ringbuffer_usec + pulse_usec) * 1e-6;
+  double retval = (negative ? ringbuffer_usec - pulse_usec : ringbuffer_usec + pulse_usec) * 1e-6;
   pthread_mutex_unlock(&self->mutex);
   return scm_from_double(retval);
 }
