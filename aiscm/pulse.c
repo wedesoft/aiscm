@@ -145,11 +145,20 @@ SCM pulsedev_write(SCM scm_self, SCM scm_data, SCM scm_bytes)// TODO: check audi
   return SCM_UNSPECIFIED;
 }
 
+void wait_for_flush(pa_stream *stream, int success, void *userdata)
+{
+  pa_threaded_mainloop_signal(userdata, 0);
+}
+
 SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
   pa_threaded_mainloop_lock(self->mainloop);
   ringbuffer_flush(&self->ringbuffer);
+  pa_operation *operation = pa_stream_flush(self->stream, wait_for_flush, self->mainloop);
+  while (pa_operation_get_state(operation) == PA_OPERATION_RUNNING)
+    pa_threaded_mainloop_wait(self->mainloop);
+  pa_operation_unref(operation);
   pa_threaded_mainloop_unlock(self->mainloop);
   return SCM_UNSPECIFIED;
 }
