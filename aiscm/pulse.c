@@ -11,6 +11,7 @@
 static scm_t_bits pulsedev_tag;
 
 struct pulsedev_t {
+  pa_sample_spec sample_spec;
   pthread_mutex_t mutex;
   char mutex_initialised;
   pthread_cond_t condition;
@@ -99,6 +100,7 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
 
+  // TODO: split up into methods
   // initialise mutex and condition variable
   pthread_mutex_init(&self->mutex, NULL);
   self->mutex_initialised = 1;
@@ -121,11 +123,10 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
     pa_mainloop_iterate(self->mainloop, 0, NULL);
 
   // initialise audio stream
-  pa_sample_spec sample_spec;
-  sample_spec.format = scm_to_int(scm_type);
-  sample_spec.rate = scm_to_int(scm_rate);
-  sample_spec.channels = scm_to_int(scm_channels);
-  self->stream = pa_stream_new(self->context, "playback", &sample_spec, NULL);
+  self->sample_spec.format = scm_to_int(scm_type);
+  self->sample_spec.rate = scm_to_int(scm_rate);
+  self->sample_spec.channels = scm_to_int(scm_channels);
+  self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);
   if (!self->stream)
     scm_misc_error("make-pulsedev", "Error creating audio stream: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(pa_context_errno(self->context)))));
@@ -136,10 +137,10 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   pa_buffer_attr buffer_attr;
   buffer_attr.fragsize = (uint32_t)-1;
   int latency = (int)(scm_to_double(scm_latency) * 1e6);
-  buffer_attr.maxlength = pa_usec_to_bytes(latency, &sample_spec);
-  buffer_attr.minreq = pa_usec_to_bytes(0, &sample_spec);
+  buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
+  buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
   buffer_attr.prebuf = 0;
-  buffer_attr.tlength = pa_usec_to_bytes(latency, &sample_spec);
+  buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
   const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
   pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
 
@@ -191,6 +192,19 @@ SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
   return SCM_UNSPECIFIED;
 }
 
+SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
+{
+  struct pulsedev_t *self = get_self(scm_self);
+  pthread_mutex_lock(&self->mutex);
+  pa_usec_t ringbuffer_usec = pa_bytes_to_usec(self->ringbuffer.fill, &self->sample_spec);
+  pa_usec_t pulse_usec;
+  int negative;
+  pa_stream_get_latency(self->stream, &pulse_usec, &negative);
+  double retval = (ringbuffer_usec + pulse_usec) * 1e-6;
+  pthread_mutex_unlock(&self->mutex);
+  return scm_from_double(retval);
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -206,4 +220,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
   scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
   scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, pulsedev_drain        );
+  scm_c_define_gsubr("pulsedev-latency"      , 1, 0, 0, pulsedev_latency      );
 }
