@@ -191,7 +191,7 @@ SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
 SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  return scm_from_double(1e6 * latency_usec(self));
+  return scm_from_double(1e-6 * latency_usec(self));
 }
 
 void init_pulse(void)
