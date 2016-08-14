@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <pulse/pulseaudio.h>
+#include <unistd.h>
 #include <libguile.h>
 #include "ringbuffer.h"
 
@@ -163,27 +164,34 @@ SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
   return SCM_UNSPECIFIED;
 }
 
+useconds_t latency_usec(struct pulsedev_t *self)
+{
+  pa_threaded_mainloop_lock(self->mainloop);
+  pa_usec_t ringbuffer_usec = pa_bytes_to_usec(self->ringbuffer.fill, &self->sample_spec);
+  pa_usec_t pulse_usec;
+  int negative;
+  pa_stream_get_latency(self->stream, &pulse_usec, &negative);
+  useconds_t retval =  negative ? ringbuffer_usec - pulse_usec : ringbuffer_usec + pulse_usec;
+  pa_threaded_mainloop_unlock(self->mainloop);
+  return retval;
+}
+
 SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
   pa_threaded_mainloop_lock(self->mainloop);
   while (self->ringbuffer.fill)
     pa_threaded_mainloop_wait(self->mainloop);
+  useconds_t usecs_remaining = latency_usec(self);
   pa_threaded_mainloop_unlock(self->mainloop);
+  usleep(usecs_remaining);
   return SCM_UNSPECIFIED;
 }
 
 SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
-  pa_threaded_mainloop_lock(self->mainloop);
-  pa_usec_t ringbuffer_usec = pa_bytes_to_usec(self->ringbuffer.fill, &self->sample_spec);
-  pa_usec_t pulse_usec;
-  int negative;
-  pa_stream_get_latency(self->stream, &pulse_usec, &negative);
-  double retval = (negative ? ringbuffer_usec - pulse_usec : ringbuffer_usec + pulse_usec) * 1e-6;
-  pa_threaded_mainloop_unlock(self->mainloop);
-  return scm_from_double(retval);
+  return scm_from_double(1e6 * latency_usec(self));
 }
 
 void init_pulse(void)
