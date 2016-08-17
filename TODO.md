@@ -1,10 +1,8 @@
 ## Ready
 
-* documentation: flush, drain, latency, pts=
-* wait for flush/drain to finish
 * pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
-* use ice-9 q?
+* use ice-9 q? background decoder thread
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * closing of ffmpeg input

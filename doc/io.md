@@ -86,10 +86,18 @@ Audio data can be recorded in a similar fashion
 
 ## Video files
 
-The following example shows how to use the FFmpeg interface to open and view a video. The video presentation time stamps are used to display the video at the correct speed.
+The following example shows how to use the FFmpeg interface to open and view a video.
+The video presentation time stamps are used to display the video at the correct speed.
+The method *latency* is used to determine the delay of the audio buffer.
 
 ```Scheme
 @../tests/integration/ffvideo.scm@
+```
+
+The method *pts=* can be used to seek to an absolute position in audio/video streams:
+
+```Scheme
+@../tests/integration/pts.scm@
 ```
 
 ## Audio files
