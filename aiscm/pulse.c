@@ -73,6 +73,18 @@ static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
     pa_threaded_mainloop_signal(self->mainloop, 0);
 }
 
+static void stream_read_callback(pa_stream *s, size_t length, void *userdata) {
+  struct pulsedev_t *self = (struct pulsedev_t *)userdata;
+  while (pa_stream_readable_size(self->stream) > 0) {
+    const void *data;
+    size_t count;
+    pa_stream_peek(s, &data, &count);// TODO: check for error
+    ringbuffer_store(&self->ringbuffer, data, count);
+    pa_stream_drop(self->stream);
+    printf("size = %d\n", self->ringbuffer.fill);
+  };
+}
+
 static void initialise_mainloop(struct pulsedev_t *self)
 {
   self->mainloop = pa_threaded_mainloop_new();
@@ -95,34 +107,41 @@ static void initialise_context(struct pulsedev_t *self)
     pa_threaded_mainloop_wait(self->mainloop);
 }
 
-static void initialise_stream(struct pulsedev_t *self)
+static void initialise_stream(struct pulsedev_t *self, char playback)
 {
   self->stream = pa_stream_new(self->context, "playback", &self->sample_spec, NULL);
   if (!self->stream)
     scm_misc_error("make-pulsedev", "Error creating audio stream: ~a",
                    scm_list_1(scm_from_locale_string(pa_strerror(pa_context_errno(self->context)))));
-  pa_stream_set_write_callback(self->stream, stream_write_callback, self);
+  if (playback)
+    pa_stream_set_write_callback(self->stream, stream_write_callback, self);
+  else
+    pa_stream_set_read_callback(self->stream, stream_read_callback, self);
 }
 
-static void connect_stream(struct pulsedev_t *self, const char *name, pa_usec_t latency)
+static void connect_stream(struct pulsedev_t *self, const char *name, char playback, pa_usec_t latency)
 {
-  static pa_stream_flags_t flags = PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_AUTO_TIMING_UPDATE;
+  static pa_stream_flags_t flags = PA_STREAM_ADJUST_LATENCY | PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_AUTO_TIMING_UPDATE;
   pa_buffer_attr buffer_attr;
-  buffer_attr.fragsize = (uint32_t)-1;
+  memset(&buffer_attr, 0, sizeof(buffer_attr));
+  buffer_attr.fragsize = pa_usec_to_bytes(latency, &self->sample_spec);
+  buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
   buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
   buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
-  buffer_attr.prebuf = 0;
-  buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
-  pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
+  if (playback)
+    pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
+  else
+    pa_stream_connect_record(self->stream, name, &buffer_attr, flags);
 }
 
-SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SCM scm_latency)
+SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_playback, SCM scm_channels, SCM scm_rate, SCM scm_latency)
 {
   SCM retval;
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
 
   const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
+  char playback = scm_is_true(scm_playback);
   pa_usec_t latency = (pa_usec_t)(scm_to_double(scm_latency) * 1e6);
   self->sample_spec.format = scm_to_int(scm_type);
   self->sample_spec.rate = scm_to_int(scm_rate);
@@ -131,8 +150,8 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_channels, SCM scm_rate, SC
   ringbuffer_init(&self->ringbuffer, 1024);
   initialise_mainloop(self);
   initialise_context(self);
-  initialise_stream(self);
-  connect_stream(self, name, latency);
+  initialise_stream(self, playback);
+  connect_stream(self, name, playback, latency);
 
   return retval;
 }
@@ -202,7 +221,7 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
-  scm_c_define_gsubr("make-pulsedev"         , 5, 0, 0, make_pulsedev         );
+  scm_c_define_gsubr("make-pulsedev"         , 6, 0, 0, make_pulsedev         );
   scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
   scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
   scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );

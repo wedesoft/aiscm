@@ -17,10 +17,11 @@
 (define-method (initialize (self <pulse-play>) initargs)
   (let-keywords initargs #f (device type channels rate latency)
     (let* [(pulse-type (type->pulse-type (or type <sint>)))
+           (playback   #t)
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (latency    (or latency 0.02))
-           (pulsedev   (make-pulsedev device pulse-type channels rate latency))]
+           (pulsedev   (make-pulsedev device pulse-type playback channels rate latency))]
     (next-method self (list #:pulsedev pulsedev)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
