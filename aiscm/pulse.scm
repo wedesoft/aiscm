@@ -10,19 +10,21 @@
   #:use-module (aiscm util)
   #:export (<pulse-play> <meta<pulse-play>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type write-samples flush drain latency))
+            type->pulse-type pulse-type->type write-samples flush drain latency channels))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse-play> <object> <meta<pulse-play>> <class>
-               (pulsedev #:init-keyword #:pulsedev))
+               (pulsedev #:init-keyword #:pulsedev)
+               (channels #:init-keyword #:channels #:getter channels)
+               (typecode #:init-keyword #:typecode #:getter typecode))
 (define-method (initialize (self <pulse-play>) initargs)
-  (let-keywords initargs #f (device type channels rate latency)
-    (let* [(pulse-type (type->pulse-type (or type <sint>)))
+  (let-keywords initargs #f (device typecode channels rate latency)
+    (let* [(pulse-type (type->pulse-type (or typecode <sint>)))
            (playback   #t)
            (channels   (or channels 2))
            (rate       (or rate 44100))
            (latency    (or latency 0.02))
            (pulsedev   (make-pulsedev device pulse-type playback channels rate latency))]
-    (next-method self (list #:pulsedev pulsedev)))))
+    (next-method self (list #:pulsedev pulsedev #:channels channels #:typecode typecode)))))
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)
