@@ -82,6 +82,7 @@ static void stream_read_callback(pa_stream *s, size_t length, void *userdata) {
     ringbuffer_store(&self->ringbuffer, data, count);
     pa_stream_drop(self->stream);
   };
+  pa_threaded_mainloop_signal(self->mainloop, 0);
 }
 
 static void initialise_mainloop(struct pulsedev_t *self)
@@ -198,7 +199,7 @@ SCM pulsedev_drain(SCM scm_self)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
   pa_threaded_mainloop_lock(self->mainloop);
-  while (self->ringbuffer.fill)
+  while (self->ringbuffer.fill > 0)
     pa_threaded_mainloop_wait(self->mainloop);
   useconds_t usecs_remaining = latency_usec(self);
   pa_threaded_mainloop_unlock(self->mainloop);
@@ -222,11 +223,14 @@ static void fetch_callback(char *data, int count, void *userdata)
 SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open
 {
   struct pulsedev_t *self = get_self(scm_self);
+  pa_threaded_mainloop_lock(self->mainloop);
   int bytes = scm_to_int(scm_bytes);
   void *buffer = scm_gc_malloc_pointerless(bytes, "aiscm pulse frame");
   void *p = buffer;
-  // TODO: wait until data available
+  while (self->ringbuffer.fill < bytes)
+    pa_threaded_mainloop_wait(self->mainloop);
   ringbuffer_fetch(&self->ringbuffer, bytes, fetch_callback, &p);
+  pa_threaded_mainloop_unlock(self->mainloop);
   return scm_from_pointer(buffer, NULL);
 }
 
