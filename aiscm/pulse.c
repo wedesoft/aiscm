@@ -81,7 +81,6 @@ static void stream_read_callback(pa_stream *s, size_t length, void *userdata) {
     pa_stream_peek(s, &data, &count);// TODO: check for error
     ringbuffer_store(&self->ringbuffer, data, count);
     pa_stream_drop(self->stream);
-    printf("size = %d\n", self->ringbuffer.fill);
   };
 }
 
@@ -213,6 +212,24 @@ SCM pulsedev_latency(SCM scm_self)// TODO: check audio device still open
   return scm_from_double(1e-6 * latency_usec(self));
 }
 
+static void fetch_callback(char *data, int count, void *userdata)
+{
+  void **p = (void **)userdata;
+  memcpy(*p, data, count);
+  *p += count;
+}
+
+SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open
+{
+  struct pulsedev_t *self = get_self(scm_self);
+  int bytes = scm_to_int(scm_bytes);
+  void *buffer = scm_gc_malloc_pointerless(bytes, "aiscm pulse frame");
+  void *p = buffer;
+  // TODO: wait until data available
+  ringbuffer_fetch(&self->ringbuffer, bytes, fetch_callback, &p);
+  return scm_from_pointer(buffer, NULL);
+}
+
 void init_pulse(void)
 {
   pulsedev_tag = scm_make_smob_type("pulsedev", sizeof(struct pulsedev_t));
@@ -227,4 +244,5 @@ void init_pulse(void)
   scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
   scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, pulsedev_drain        );
   scm_c_define_gsubr("pulsedev-latency"      , 1, 0, 0, pulsedev_latency      );
+  scm_c_define_gsubr("pulsedev-read"         , 2, 0, 0, pulsedev_read         );
 }

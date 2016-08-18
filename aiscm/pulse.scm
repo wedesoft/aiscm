@@ -10,7 +10,7 @@
   #:use-module (aiscm util)
   #:export (<pulse-play> <meta<pulse-play>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type write-samples flush drain latency channels))
+            type->pulse-type pulse-type->type write-samples read-samples flush drain latency channels))
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 (define-class* <pulse-play> <object> <meta<pulse-play>> <class>
                (pulsedev #:init-keyword #:pulsedev)
@@ -44,6 +44,11 @@
     (while result
       (write-samples result self)
       (set! result (samples)))))
+(define-method (read-samples (self <pulse-play>) (count <integer>))
+  (let* [(size    (* count (channels self) (size-of (typecode self))))
+         (samples (pulsedev-read (slot-ref self 'pulsedev) size))
+         (memory  (make <mem> #:base samples #:size size))]
+    (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:value memory)))
 (define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulsedev)))
 (define (latency self) (pulsedev-latency (slot-ref self 'pulsedev)))
