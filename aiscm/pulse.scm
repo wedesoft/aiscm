@@ -8,23 +8,34 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
-  #:export (<pulse-play> <meta<pulse-play>>
+  #:export (<pulse> <meta<pulse>>
+            <pulse-play> <meta<pulse-play>>
+            <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type write-samples read-samples flush drain latency channels))
+            type->pulse-type pulse-type->type write-samples read-samples flush drain latency))
+
 (load-extension "libguile-aiscm-pulse" "init_pulse")
-(define-class* <pulse-play> <object> <meta<pulse-play>> <class>
+
+(define-class* <pulse> <object> <meta<pulse>> <class>
                (pulsedev #:init-keyword #:pulsedev)
                (channels #:init-keyword #:channels #:getter channels)
                (typecode #:init-keyword #:typecode #:getter typecode))
-(define-method (initialize (self <pulse-play>) initargs)
-  (let-keywords initargs #f (device typecode channels rate latency)
+(define-method (initialize (self <pulse>) initargs)
+  (let-keywords initargs #f (device typecode channels rate latency playback)
     (let* [(pulse-type (type->pulse-type (or typecode <sint>)))
-           (playback   #t)
            (channels   (or channels 2))
            (rate       (or rate 44100))
-           (latency    (or latency 0.02))
+           (latency    (or latency 0.2))
            (pulsedev   (make-pulsedev device pulse-type playback channels rate latency))]
-    (next-method self (list #:pulsedev pulsedev #:channels channels #:typecode typecode)))))
+      (next-method self (list #:pulsedev pulsedev #:channels channels #:typecode typecode)))))
+
+(define-class* <pulse-play> <pulse> <meta<pulse-play>> <meta<pulse>>)
+(define-method (initialize (self <pulse-play>) initargs)
+  (next-method self (append initargs (list #:playback #t))))
+(define-class* <pulse-record> <pulse> <meta<pulse-record>> <meta<pulse>>)
+(define-method (initialize (self <pulse-record>) initargs)
+  (next-method self (append initargs (list #:playback #f))))
+
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)
@@ -35,8 +46,9 @@
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
   (assq-ref inverse-typemap pulse-type))
-(define-method (destroy (self <pulse-play>))
+(define-method (destroy (self <pulse>))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
+
 (define-method (write-samples (samples <sequence<>>) (self <pulse-play>)); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
 (define-method (write-samples (samples <procedure>) (self <pulse-play>))
@@ -44,11 +56,12 @@
     (while result
       (write-samples result self)
       (set! result (samples)))))
-(define-method (read-samples (self <pulse-play>) (count <integer>))
+(define-method (read-samples (self <pulse-record>) (count <integer>))
   (let* [(size    (* count (channels self) (size-of (typecode self))))
          (samples (pulsedev-read (slot-ref self 'pulsedev) size))
          (memory  (make <mem> #:base samples #:size size))]
     (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:value memory)))
+
 (define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulsedev)))
 (define (latency self) (pulsedev-latency (slot-ref self 'pulsedev)))
