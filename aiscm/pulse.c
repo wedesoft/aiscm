@@ -126,7 +126,7 @@ static void connect_stream(struct pulsedev_t *self, const char *name, char playb
   memset(&buffer_attr, 0, sizeof(buffer_attr));
   buffer_attr.fragsize = pa_usec_to_bytes(latency, &self->sample_spec);
   buffer_attr.tlength = pa_usec_to_bytes(latency, &self->sample_spec);
-  buffer_attr.maxlength = pa_usec_to_bytes(latency, &self->sample_spec);
+  buffer_attr.maxlength = (uint32_t)-1;
   buffer_attr.minreq = pa_usec_to_bytes(0, &self->sample_spec);
   if (playback)
     pa_stream_connect_playback(self->stream, name, &buffer_attr, flags, NULL, NULL);
