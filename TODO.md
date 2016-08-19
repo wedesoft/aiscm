@@ -1,6 +1,7 @@
 ## Ready
 
-* pulse audio input
+* pulse audio error checks
+* video tearing
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * use ice-9 q? background decoder thread
 * deduct sample time from delay in ffplay.scm

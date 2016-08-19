@@ -78,7 +78,8 @@ The following example program creates a sine wave and outputs it to the audio de
 The *drain* method waits for the content of the audio buffer to finish playing.
 The method *flush* (not shown here) can be used to empty the audio buffer.
 
-Audio data can be recorded in a similar fashion
+Audio data can be recorded in a similar fashion.
+The following example records 3 seconds of audio data and then plays it back.
 
 ```Scheme
 @../tests/integration/pulse_in.scm@

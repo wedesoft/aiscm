@@ -17,8 +17,9 @@
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 
 (define-class* <pulse> <object> <meta<pulse>> <class>
-               (pulsedev #:init-keyword #:pulsedev)
+               (pulsedev #:init-keyword #:pulsedev                  )
                (channels #:init-keyword #:channels #:getter channels)
+               (rate     #:init-keyword #:rate     #:getter rate    )
                (typecode #:init-keyword #:typecode #:getter typecode))
 (define-method (initialize (self <pulse>) initargs)
   (let-keywords initargs #f (device typecode channels rate latency playback)
@@ -27,7 +28,7 @@
            (rate       (or rate 44100))
            (latency    (or latency 0.2))
            (pulsedev   (make-pulsedev device pulse-type playback channels rate latency))]
-      (next-method self (list #:pulsedev pulsedev #:channels channels #:typecode typecode)))))
+      (next-method self (list #:pulsedev pulsedev #:channels channels #:rate rate #:typecode typecode)))))
 
 (define-class* <pulse-play> <pulse> <meta<pulse-play>> <meta<pulse>>)
 (define-method (initialize (self <pulse-play>) initargs)
