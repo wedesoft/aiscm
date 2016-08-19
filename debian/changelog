@@ -1,3 +1,11 @@
+aiscm (0.6.1-1) UNRELEASED; urgency=low
+
+  - Pulse audio input and output using asynchronous API
+  - ring buffer for first-in first-out (FIFO) buffering of data
+  - improved documentation
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Jul 2016 21:49:25 BST +0000
+
 aiscm (0.5.1-1) UNRELEASED; urgency=low
 
   * aiscm/ffmpeg.scm: reading video/audio files using FFmpeg

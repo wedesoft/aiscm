@@ -5,8 +5,9 @@
 TARGET=debian:sid
 OPTS=
 # OPTS+=--no-cache
+VERSION=0.6.1
 
-all: docker docker/Dockerfile docker/aiscm-0.5.1.tar.xz docker/debian/control
+all: docker docker/Dockerfile docker/aiscm-$(VERSION).tar.xz docker/debian/control
 	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(TARGET) . && cd ..
 
 docker:
@@ -15,14 +16,14 @@ docker:
 docker/Dockerfile: Dockerfile.template
 	m4 -DBASEIMAGE=$(TARGET) $< > $@
 
-docker/aiscm-0.5.1.tar.xz: aiscm-0.5.1.tar.xz
+docker/aiscm-$(VERSION).tar.xz: aiscm-$(VERSION).tar.xz
 	cp $< $@
 
 docker/debian/control: debian/control
 	mkdir -p docker/debian
 	cp $< $@
 
-aiscm-0.5.1.tar.xz:
+aiscm-$(VERSION).tar.xz:
 	make dist-xz
 
 clean:

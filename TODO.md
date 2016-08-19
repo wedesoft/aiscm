@@ -1,15 +1,19 @@
 ## Ready
 
-* synchronise with display to prevent video tearing
+* release, zenodo, opensuse
+* command-line tools
+* compile C function calls (also support SCM values)
+* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
-* use ice-9 q? background decoder thread
+* closing of ffmpeg input
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
-* closing of ffmpeg input
+* use ice-9 q? background decoder thread
+* synchronise with display to prevent video tearing
+* writing videos
 * test data license https://www.youtube.com/watch?v=cGgf_dbDMsw
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* writing videos
 * use libswresample for audio conversions
 * add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
 * split up into separate packages
@@ -23,7 +27,6 @@
 * git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
-* compile C function calls (also support SCM values)
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * tensor dimensions
 * parameter passing for sequences, map, tensor operations, replace fill and other?
@@ -34,14 +37,17 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * complex abs (magnitude), complex arg (and real)
-* Guile Artanis web server, Ansible
+* web server
 * X.Org window with width and height?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
 * lexical sort
 * AdaBoost, decision trees, random forests
+* distance transform, Chamfer matching
+* SLAM, inverse depth images
+* camera calibration
+* marker recognition
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
 * separate function for defining operation for array?
