@@ -1,5 +1,5 @@
 (use-modules (oop goops) (aiscm element) (aiscm int) (aiscm pointer) (aiscm sequence) (aiscm pulse) (aiscm util))
-(define record (make <pulse-record> #:type <sint> #:channels 1 #:rate 44100))
+(define record (make <pulse-record> #:typecode <sint> #:channels 1 #:rate 44100))
 (channels record)
 ;1
 (rate record)

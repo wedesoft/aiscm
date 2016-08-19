@@ -1,80 +1,67 @@
 (define-module (aiscm pulse)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
+  #:use-module (aiscm mem)
   #:use-module (aiscm element)
-  #:use-module (aiscm pointer)
-  #:use-module (aiscm sequence)
   #:use-module (aiscm int)
   #:use-module (aiscm float)
+  #:use-module (aiscm sequence)
   #:use-module (aiscm jit)
-  #:use-module (aiscm mem)
-  #:use-module (aiscm op)
-  #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            write-samples read-samples latency drain flush
-            check-audio-sample-type check-audio-sample-shape
-            type->pulse-type pulse-type->type))
+            type->pulse-type pulse-type->type write-samples read-samples flush drain latency))
+
 (load-extension "libguile-aiscm-pulse" "init_pulse")
+
 (define-class* <pulse> <object> <meta<pulse>> <class>
-               (pulse    #:init-keyword #:pulse)
-               (type     #:init-keyword #:type)
-               (rate     #:init-keyword #:rate     #:getter rate)
-               (channels #:init-keyword #:channels #:getter channels))
+               (pulsedev #:init-keyword #:pulsedev)
+               (channels #:init-keyword #:channels #:getter channels)
+               (typecode #:init-keyword #:typecode #:getter typecode))
 (define-method (initialize (self <pulse>) initargs)
-  (let-keywords initargs #f (direction rate channels type)
-    (let* [(rate       (or rate 44100))
+  (let-keywords initargs #f (device typecode channels rate latency playback)
+    (let* [(pulse-type (type->pulse-type (or typecode <sint>)))
            (channels   (or channels 2))
-           (type       (or type <sint>))
-           (pulse-type (type->pulse-type type))]
-      (next-method self (list #:pulse (make-pulsedev direction pulse-type rate channels)
-                              #:type type
-                              #:rate rate
-                              #:channels channels)))))
-(define-method (destroy (self <pulse>)) (pulsedev-destroy (slot-ref self 'pulse)))
+           (rate       (or rate 44100))
+           (latency    (or latency 0.2))
+           (pulsedev   (make-pulsedev device pulse-type playback channels rate latency))]
+      (next-method self (list #:pulsedev pulsedev #:channels channels #:typecode typecode)))))
+
 (define-class* <pulse-play> <pulse> <meta<pulse-play>> <meta<pulse>>)
 (define-method (initialize (self <pulse-play>) initargs)
-  (next-method self (append (list #:direction PA_STREAM_PLAYBACK) initargs)))
+  (next-method self (append initargs (list #:playback #t))))
 (define-class* <pulse-record> <pulse> <meta<pulse-record>> <meta<pulse>>)
 (define-method (initialize (self <pulse-record>) initargs)
-  (next-method self (append (list #:direction PA_STREAM_RECORD) initargs)))
-(define (check-audio-sample-type type expected)
-  (if (not (eq? type expected))
-      (aiscm-error 'write-samples "Audio data needs to be of type ~a (but was ~a)" expected type)))
-(define (check-audio-sample-shape shape channels)
-  (case (length shape)
-    ((1) (if (not (eqv? 1 channels))
-             (aiscm-error 'write-samples "One dimensional sample array only supported for one channel (not ~a)" channels)))
-    ((2) (if (not (eqv? (car shape) channels))
-             (aiscm-error 'write-samples "The samples should have ~a channels (but had ~a)" channels (car shape))))
-    (else (aiscm-error 'write-samples "Audio sample array must not have more than 2 dimensions (but it had ~a)" (length shape)))))
-(define-method (write-samples (samples <sequence<>>) (self <pulse-play>))
-  (check-audio-sample-type (typecode samples) (slot-ref self 'type))
-  (check-audio-sample-shape (shape samples) (channels self))
-  (pulsedev-write (slot-ref self 'pulse)
-                  (get-memory (value (ensure-default-strides samples)))
-                  (size-of samples))
-  samples)
-(define-method (write-samples (samples <procedure>) (self <pulse-play>))
-  (let [(result (samples))]
-    (while result
-      (write-samples result self)
-      (set! result (samples)))))
-(define (read-samples self n)
-  (let [(retval (make (multiarray (slot-ref self 'type) 2) #:shape (list (channels self) n)))]
-    (pulsedev-read (slot-ref self 'pulse) (get-memory (value retval)) (size-of retval))
-    retval))
-(define (latency self) (* 1e-6 (pulsedev-latency (slot-ref self 'pulse))))
-(define (drain self) (pulsedev-drain (slot-ref self 'pulse)) self)
-(define (flush self) (pulsedev-flush (slot-ref self 'pulse)) self)
+  (next-method self (append initargs (list #:playback #f))))
+
 (define typemap
   (list (cons <ubyte> PA_SAMPLE_U8)
         (cons <sint>  PA_SAMPLE_S16LE)
         (cons <int>   PA_SAMPLE_S32LE)
         (cons <float> PA_SAMPLE_FLOAT32LE)))
+(define inverse-typemap (alist-invert typemap))
 (define (type->pulse-type type)
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
-  (assq-ref (alist-invert typemap) pulse-type))
+  (assq-ref inverse-typemap pulse-type))
+(define-method (destroy (self <pulse>))
+  (pulsedev-destroy (slot-ref self 'pulsedev)))
+
+(define-method (write-samples (samples <sequence<>>) (self <pulse-play>)); TODO: check type
+  (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+(define-method (write-samples (samples <procedure>) (self <pulse-play>))
+  (let [(result (samples))]
+    (while result
+      (write-samples result self)
+      (set! result (samples)))))
+(define-method (read-samples (self <pulse-record>) (count <integer>))
+  (let* [(size    (* count (channels self) (size-of (typecode self))))
+         (samples (pulsedev-read (slot-ref self 'pulsedev) size))
+         (memory  (make <mem> #:base samples #:size size))]
+    (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:value memory)))
+
+(define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))
+(define (drain self) (pulsedev-drain (slot-ref self 'pulsedev)))
+(define (latency self) (pulsedev-latency (slot-ref self 'pulsedev)))

@@ -11,12 +11,12 @@ extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-ai
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
-noinst_HEADERS = ffmpeg-helpers.h
+noinst_HEADERS = ffmpeg-helpers.h ringbuffer.h
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
 
-libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c
+libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ringbuffer.c
 libguile_aiscm_tests_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
 libguile_aiscm_tests_la_LIBADD = $(GUILE_LIBS)
@@ -46,10 +46,10 @@ libguile_aiscm_magick_la_CFLAGS = $(GUILE_CFLAGS) $(MAGICK_CFLAGS)
 libguile_aiscm_magick_la_LDFLAGS = -no-undefined
 libguile_aiscm_magick_la_LIBADD = $(GUILE_LIBS) $(MAGICK_LIBS)
 
-libguile_aiscm_pulse_la_SOURCES = pulse.c
-libguile_aiscm_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS)
+libguile_aiscm_pulse_la_SOURCES = pulse.c ringbuffer.c
+libguile_aiscm_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS) $(PTHREAD_CFLAGS)
 libguile_aiscm_pulse_la_LDFLAGS = -no-undefined
-libguile_aiscm_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS)
+libguile_aiscm_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS) $(PTHREAD_LIBS)
 
 libguile_aiscm_v4l2_la_SOURCES = v4l2.c
 libguile_aiscm_v4l2_la_CFLAGS = $(GUILE_CFLAGS)

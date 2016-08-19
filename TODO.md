@@ -1,7 +1,8 @@
 ## Ready
 
-* Pulse audio asynchronous API https://github.com/AlexWillisson/xmas2012/blob/master/pa-beep.c
+* pulse audio input
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
+* use ice-9 q? background decoder thread
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * closing of ffmpeg input
@@ -11,8 +12,7 @@
 * writing videos
 * use libswresample for audio conversions
 * add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
-* xorg: scm\_syserror -> scm\_misc\_error
-* release using DOI by Zenodo https://guides.github.com/activities/citable-code/
+* split up into separate packages
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * shape of xorg window
