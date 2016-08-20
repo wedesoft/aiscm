@@ -10,11 +10,11 @@ global_settings {
 }
 
 camera {
-  location  < -1.5,  0.8, -0.5 >
+  location  < -6,  3.2, -2 >
   look_at   <  0,  0,  0 >
   up y
   right x
-  angle 60
+  angle 17
 }
 
 background {
@@ -28,7 +28,7 @@ light_source {
 
 sky_sphere {
   pigment {
-     Blue_Sky
+     Clouds
   }
   scale < 0.5, 0.1, 0.5 >
 }

@@ -3,7 +3,7 @@
 POVRAY = povray
 CONVERT = convert
 
-LFRAME = 099
+LFRAME = 49
 
 logo: blc.png blc.gif
 
@@ -11,7 +11,7 @@ blc.png: blca.png
 	$(CONVERT) blca.png -background white -flatten blc.png
 
 blc.gif: blc$(LFRAME).png
-	$(CONVERT) blc???.png -delay 4 -colors 32 +dither $@
+	$(CONVERT) blc??.png -delay 4 -colors 64 +dither $@
 
 blca.png: blc.ini blc.pov opensans.ttf
 	$(POVRAY) blc
@@ -20,7 +20,7 @@ blca$(LFRAME).png: blc.ini blc.pov opensans.ttf
 	$(POVRAY) blcanim
 
 blc$(LFRAME).png: blca$(LFRAME).png
-	for i in $(shell seq -f '%03g' 0 $(LFRAME)); do \
+	for i in $(shell seq -f '%02g' 0 $(LFRAME)); do \
 		$(CONVERT) blca$$i.png -background white -flatten blc$$i.png; \
 	done
 
