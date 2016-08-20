@@ -1,7 +1,7 @@
 ## Ready
 
-* release, zenodo, opensuse
 * command-line tools
+* copy logo source files, use orthogonal projection
 * compile C function calls (also support SCM values)
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
