@@ -3,7 +3,7 @@
 POVRAY = povray
 CONVERT = convert
 
-LFRAME = 49
+LFRAME = 79
 
 logo: blc.png blc.gif
 
