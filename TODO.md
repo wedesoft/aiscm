@@ -1,5 +1,6 @@
 ## Ready
 
+* update stack pointer
 * compile C function calls (also support SCM values)
 * tensor dimensions
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
@@ -11,6 +12,7 @@
 * use ice-9 q? background decoder thread
 * synchronise with display to prevent video tearing
 * writing videos
+* https://github.com/antoniogarro/guile-matrix
 * test data license https://www.youtube.com/watch?v=cGgf_dbDMsw
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples

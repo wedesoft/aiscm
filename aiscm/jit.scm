@@ -234,7 +234,7 @@
                                   (offset -8))
   (let* [(live       (live-analysis prog))
          (all-vars   (variables prog))
-         (vars       (difference (variables prog) (map car predefined)))
+         (vars       (difference all-vars (map car predefined)))
          (intervals  (live-intervals live all-vars))
          (adjacent   (overlap intervals))
          (colors     (color-intervals intervals

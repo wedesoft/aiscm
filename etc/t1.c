@@ -1,7 +1,4 @@
-extern char x;
-extern char y;
-
-char f(void)
+int f(int o, char *str)
 {
-  return x > y ? x : y;
+  return o + atoi(str);
 }

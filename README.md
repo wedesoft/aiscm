@@ -5,7 +5,7 @@
 [**AIscm**][1] is a **real-time computer vision extension** for the [**Guile programming language**][2].
 Performance in Scheme is achieved by means of a JIT compiler.
 
-Control all data and machine code down to every single bit and byte.
+Control all data and machine code down to every single bit and byte!
 
 ![](doc/aiscm.gif "AIscm")
 
