@@ -1,9 +1,9 @@
 ## Ready
 
-* command-line tools
-* copy logo source files, use orthogonal projection
 * compile C function calls (also support SCM values)
+* tensor dimensions
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * closing of ffmpeg input
 * deduct sample time from delay in ffplay.scm
@@ -28,7 +28,6 @@
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
-* tensor dimensions
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
