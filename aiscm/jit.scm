@@ -16,7 +16,7 @@
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
-            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
+            stack-pointer fix-stack-position spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
@@ -146,11 +146,13 @@
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
 
+; get program positions of labels
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
+; get list of live variables for program terminated by RET statement
 (define (live-analysis prog)
   (letrec* [(inputs    (map input prog))
             (outputs   (map output prog))
@@ -164,6 +166,18 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
+
+; stack pointer placeholder
+(define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
+; methods to replace stack pointer placeholder with RSP + offset
+(define-method (fix-stack-position self offset) self)
+(define-method (fix-stack-position (self <cmd>) offset)
+  (apply (get-op self) (map (cut fix-stack-position <> offset) (get-args self))))
+(define-method (fix-stack-position (self <ptr>) offset)
+  (if (equal? stack-pointer (car (get-args self)))
+    (apply ptr (list (typecode self) RSP (+ offset (cadr (get-args self)))))
+    self))
+
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
@@ -188,6 +202,7 @@
   (let [(instruction? (lambda (x) (and (list? x) (not (every integer? x)))))]
     (concatenate (map-if instruction? flatten-code list prog))))
 
+; replace target with a temporary variable and add instructions for fetching and storing it as required
 (define ((insert-temporary target) cmd)
   (let [(temporary (var (typecode target)))]
     (compact
@@ -246,9 +261,8 @@
     (if unassigned
       (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
              (stack-param? (and (index-of target parameters) (>= (index-of target parameters) 6)))
-             (location     (if stack-param?
-                               (ptr (typecode target) RSP (* 8 (- (index-of target parameters) 5)))
-                               (ptr (typecode target) RSP offset)))]
+             (displacement (if stack-param? (* 8 (- (index-of target parameters) 5)) offset))
+             (location     (ptr (typecode target) RSP displacement))]
         (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
             (register-allocate prog
