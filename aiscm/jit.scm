@@ -182,10 +182,10 @@
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
 (define (save-registers registers offset)
-  (map (lambda (register offset) (MOV (ptr <long> RSP offset) register))
+  (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
        registers (iota (length registers) offset -8)))
 (define (load-registers registers offset)
-  (map (lambda (register offset) (MOV register (ptr <long> RSP offset)))
+  (map (lambda (register offset) (MOV register (ptr <long> stack-pointer offset)))
        registers (iota (length registers) offset -8)))
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
@@ -209,36 +209,36 @@
       (and (memv target (input cmd)) (MOV temporary target))
       (substitute-variables cmd (list (cons target temporary)))
       (and (memv target (output cmd)) (MOV target temporary)))))
-(define (spill-variable var location prog)
-  (substitute-variables (map (insert-temporary var) prog) (list (cons var location))))
+(define (spill-variable target location prog)
+  (substitute-variables (map (insert-temporary target) prog) (list (cons target location))))
 
 (define ((idle-live prog live) var)
   (count (lambda (cmd active) (and (not (memv var (variables cmd))) (memv var active))) prog live))
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <address>) (MOV value (to-size register parameter)) #f)))
+      (if (not (is-a? value <register>)) (MOV value (to-size register parameter)) #f)))
     parameters
     (list RDI RSI RDX RCX R8 R9)))
 (define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <register>) (MOV (to-size value parameter) (ptr (typecode parameter) RSP offset)) #f)))
+      (if (is-a? value <register>) (MOV (to-size value parameter) (ptr (typecode parameter) stack-pointer offset)) #f)))
     parameters
     (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
-            ((spill-parameters (take-up-to parameters 6)) colors)
+            ((spill-parameters (take-up-to parameters 6)) colors); TODO: empty?
             ((fetch-parameters (drop-up-to parameters 6)) colors)
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
             (list (RET)))))
 
-(define (with-spilled-variable var location prog predefined blocked fun)
-  (let* [(spill-code (spill-variable var location prog))]
+(define (with-spilled-variable target location prog predefined blocked fun)
+  (let* [(spill-code (spill-variable target location prog))]
     (fun (flatten-code spill-code)
-         (assq-set predefined var location)
+         (assq-set predefined target location)
          (update-intervals blocked (index-groups spill-code)))))
 
 (define* (register-allocate prog
@@ -248,7 +248,7 @@
                                   (parameters '())
                                   (offset -8))
   (let* [(live       (live-analysis prog))
-         (all-vars   (variables prog))
+         (all-vars   (delete stack-pointer (variables prog))); TODO: make "all-vars" a parameter
          (vars       (difference all-vars (map car predefined)))
          (intervals  (live-intervals live all-vars))
          (adjacent   (overlap intervals))
@@ -262,7 +262,7 @@
       (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
              (stack-param? (and (index-of target parameters) (>= (index-of target parameters) 6)))
              (displacement (if stack-param? (* 8 (- (index-of target parameters) 5)) offset))
-             (location     (ptr (typecode target) RSP displacement))]
+             (location     (ptr (typecode target) stack-pointer displacement))]
         (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
             (register-allocate prog
@@ -271,7 +271,8 @@
                                #:registers  registers
                                #:parameters parameters
                                #:offset     (if stack-param? offset (- offset 8))))))
-      (save-and-use-registers prog colors parameters offset))))
+      (substitute-variables (save-and-use-registers prog colors parameters offset)
+                            (list (cons stack-pointer RSP)))))); TODO: apply correct offset
 
 (define (blocked-predefined blocked predefined)
   (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
@@ -285,7 +286,7 @@
     (let [(conflict (blocked-predefined blocked predefined))]
       (if conflict
         (let* [(target   (car conflict))
-               (location (ptr (typecode target) RSP offset))]
+               (location (ptr (typecode target) stack-pointer offset))]
         (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
             (spill-blocked-predefines prog
