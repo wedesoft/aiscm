@@ -2,6 +2,7 @@
 
 * update stack pointer
 * compile C function calls (also support SCM values)
+* bintray.com
 * tensor dimensions
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM
