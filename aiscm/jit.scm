@@ -137,7 +137,10 @@
       (to-size target self)
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
-  (apply ptr (cons (typecode self) (map (cut substitute-variables <> alist) (get-args self)))))
+  (let [(target (substitute-variables (car (get-args self)) alist))]
+    (if (is-a? target <pair>)
+      (ptr (typecode self) (car target) (+ (cadr (get-args self)) (cdr target)))
+      (apply ptr (typecode self) target (cdr (get-args self))))))
 (define-method (substitute-variables (self <cmd>) alist)
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
@@ -248,7 +251,7 @@
                                   (parameters '())
                                   (offset -8))
   (let* [(live       (live-analysis prog))
-         (all-vars   (delete stack-pointer (variables prog))); TODO: make "all-vars" a parameter
+         (all-vars   (delete stack-pointer (variables prog)))
          (vars       (difference all-vars (map car predefined)))
          (intervals  (live-intervals live all-vars))
          (adjacent   (overlap intervals))
