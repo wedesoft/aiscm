@@ -1,5 +1,7 @@
 ## Ready
 
+* method for incrementing RSP and substituting stack-pointer place holder
+* use continuation for register-allocate
 * update stack pointer
 * compile C function calls (also support SCM values)
 * bintray.com

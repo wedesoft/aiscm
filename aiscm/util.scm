@@ -14,7 +14,7 @@
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
-            clock elapsed)
+            clock elapsed object-slots)
   #:export-syntax (define-class* template-class synchronise))
 (load-extension "libguile-aiscm-util" "init_util")
 (define (toplevel-define! name val)
@@ -177,3 +177,4 @@
   (let [(result expr)]
     (method (max 0 time-remaining))
     result))
+(define (object-slots obj) (map (compose (cut slot-ref obj <>) car) (class-slots (class-of obj))))

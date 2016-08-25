@@ -79,11 +79,7 @@
 (define-method (write (self <address>) port)
   (format port "~a"
           (compact 'ptr (class-name (get-type self)) (get-reg self) (get-index self) (get-disp self))))
-(define-method (equal? (a <address>) (b <address>))
-  (and (equal? (get-type a) (get-type b))
-       (equal? (get-reg a) (get-reg b))
-       (equal? (get-disp a) (get-disp b))
-       (equal? (get-index a) (get-index b))))
+(define-method (equal? (a <address>) (b <address>)) (equal? (object-slots a) (object-slots b)))
 (define-method (size-of (self <address>)) (size-of (get-type self)))
 (define-method (ptr (type <meta<element>>) (reg <register>))
   (make <address> #:type type #:reg reg))
