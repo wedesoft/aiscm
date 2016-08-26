@@ -16,7 +16,8 @@
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
-            stack-pointer fix-stack-position spill-variable save-and-use-registers register-allocate spill-blocked-predefines
+            stack-pointer fix-stack-position position-stack-frame
+            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
@@ -179,6 +180,8 @@
     (apply ptr (list (typecode self) RSP (+ offset (cadr (get-args self)))))
     self))
 (define-method (fix-stack-position (self <list>) offset) (map (cut fix-stack-position <> offset) self))
+
+(define (position-stack-frame offset prog) (attach (cons (SUB RSP offset) prog) (ADD RSP offset)))
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
