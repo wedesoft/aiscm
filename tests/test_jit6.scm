@@ -15,4 +15,6 @@
     "setting stack position takes the pointer offset into account")
 (ok (equal? (MOV (ptr <byte> RSP 24) AL) (fix-stack-position (MOV (ptr <byte> stack-pointer 8) AL) 16))
     "stack pointer adjustment and pointer offset get added")
+(ok (equal? (list (MOV (ptr <byte> RSP 0) AL)) (fix-stack-position (list (MOV (ptr <byte> stack-pointer 0) AL)) 0))
+    "apply stack position adjustment to each command in a list")
 (run-tests)

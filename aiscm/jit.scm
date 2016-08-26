@@ -178,6 +178,7 @@
   (if (equal? stack-pointer (car (get-args self)))
     (apply ptr (list (typecode self) RSP (+ offset (cadr (get-args self)))))
     self))
+(define-method (fix-stack-position (self <list>) offset) (map (cut fix-stack-position <> offset) self))
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define (callee-saved registers)
@@ -272,8 +273,7 @@
                                #:registers  registers
                                #:parameters parameters
                                #:offset     (if stack-param? offset (- offset 8))))))
-      (substitute-variables (save-and-use-registers prog colors parameters offset)
-                            (list (cons stack-pointer RSP)))))); TODO: apply correct offset
+      (fix-stack-position (save-and-use-registers prog colors parameters offset) 0)))); TODO: apply correct offset
 
 (define (blocked-predefined blocked predefined)
   (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
