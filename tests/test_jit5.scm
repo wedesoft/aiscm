@@ -157,7 +157,7 @@
       (b (parameter <sint>))
       (c (parameter <ubyte>))
       (r (parameter <long>))]
-  (ok (equal? (list (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (RET))
+  (ok (equal? (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
               (register-allocate (attach ((term (+ a b c)) r) (RET))))
       "Coerce to output value when using multiple mutating operations"))
 (ok (equal? 9 ((jit ctx (list <int> <int> <int>) +) 2 3 4))
@@ -210,7 +210,7 @@
 (let [(r (parameter <ubyte>))
       (a (parameter <ubyte>))
       (b (parameter <ubyte>))]
-  (ok (equal? (list (MOV DL CL) (CMP DL AL) (JNBE #x2) (MOV DL AL) (RET))
+  (ok (equal? (list (SUB RSP 8) (MOV DL CL) (CMP DL AL) (JNBE #x2) (MOV DL AL) (ADD RSP 8) (RET))
               (resolve-jumps (register-allocate (attach (flatten-code ((term (max a b)) r)) (RET)))))
       "handle lack of support for 8-bit conditional move"))
 (ok (equal? -1 ((jit ctx (list <byte> <byte>) min) -1 1))
