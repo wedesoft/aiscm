@@ -1,8 +1,6 @@
 ## Ready
 
-* use continuation for register-allocate, virtual-variables
-* method for incrementing RSP and substituting stack-pointer place holder
-* update stack pointer
+* refactor register-allocate and virtual-variables
 * compile C function calls (also support SCM values)
 * bintray.com
 * tensor dimensions
