@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor register-allocate and virtual-variables
 * compile C function calls (also support SCM values)
 * bintray.com
 * tensor dimensions

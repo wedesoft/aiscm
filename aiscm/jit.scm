@@ -249,37 +249,33 @@
          (assq-set predefined target location)
          (update-intervals blocked (index-groups spill-code)))))
 
-(define* (register-allocate prog
-                            #:key (predefined '())
-                                  (blocked '())
-                                  (registers default-registers)
-                                  (parameters '())
-                                  (offset -8))
+(define (with-register-allocation prog predefined blocked registers parameters offset fun)
   (let* [(live       (live-analysis prog))
          (all-vars   (delete stack-pointer (variables prog)))
          (vars       (difference all-vars (map car predefined)))
          (intervals  (live-intervals live all-vars))
          (adjacent   (overlap intervals))
-         (colors     (color-intervals intervals
-                                      vars
-                                      registers
-                                      #:predefined predefined
-                                      #:blocked    blocked))
+         (colors     (color-intervals intervals vars registers #:predefined predefined #:blocked blocked))
          (unassigned (find (compose not cdr) (reverse colors)))]
     (if unassigned
       (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
              (stack-param? (and (index-of target parameters) (>= (index-of target parameters) 6)))
+             (new-offset   (if stack-param? offset (- offset 8)))
              (displacement (if stack-param? (* 8 (- (index-of target parameters) 5)) offset))
              (location     (ptr (typecode target) stack-pointer displacement))]
         (with-spilled-variable target location prog predefined blocked
           (lambda (prog predefined blocked)
-            (register-allocate prog
-                               #:predefined predefined
-                               #:blocked    blocked
-                               #:registers  registers
-                               #:parameters parameters
-                               #:offset     (if stack-param? offset (- offset 8))))))
-      (position-stack-frame (save-and-use-registers prog colors parameters offset) offset)))); TODO: apply correct offset
+            (with-register-allocation prog predefined blocked registers parameters new-offset fun))))
+      (fun prog colors parameters offset))))
+
+(define* (register-allocate prog #:key (predefined '())
+                                       (blocked '())
+                                       (registers default-registers)
+                                       (parameters '())
+                                       (offset -8))
+  (with-register-allocation prog predefined blocked registers parameters offset
+    (lambda (prog colors parameters offset)
+      (position-stack-frame (save-and-use-registers prog colors parameters offset) offset))))
 
 (define (blocked-predefined blocked predefined)
   (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
@@ -304,7 +300,7 @@
                                       #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
-(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
+(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers)); TODO: refactor
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))]
     (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
