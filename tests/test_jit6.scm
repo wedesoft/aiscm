@@ -1,10 +1,15 @@
 (use-modules (oop goops)
+             (system foreign)
              (aiscm int)
              (aiscm asm)
              (aiscm jit)
              (guile-tap))
-(define (subst cmd) (substitute-variables cmd (list (cons p RSP))))
+(load-extension "libguile-aiscm-tests" "init_tests")
+
+(define guile-aiscm-tests (dynamic-link "libguile-aiscm-tests"))
+(define jit-side-effect (pointer->procedure void (dynamic-func "jit_side_effect" guile-aiscm-tests) '()))
 (define p (var <long>))
+
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
     "setting stack position does not affect operations not involving pointers")
 (ok (equal? (MOV (ptr <byte> RSP 0) AL) (fix-stack-position (MOV (ptr <byte> stack-pointer 0) AL) 0))
@@ -22,4 +27,6 @@
 (ok (equal? (list (SUB RSP 8) (MOV (ptr <byte> RSP 24) AL) (ADD RSP 8) (RET))
             (position-stack-frame (list (MOV (ptr <byte> stack-pointer 16) AL) (RET)) -8))
     "positioning the stack pointer also adjusts pointer offsets")
+(ok (equal? 42 (begin (jit-reset-side-effect) (jit-side-effect) (jit-reset-side-effect)))
+    "compile a method call")
 (run-tests)

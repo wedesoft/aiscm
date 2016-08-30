@@ -3,10 +3,10 @@
 * compile C function calls (also support SCM values)
 * bintray.com
 * tensor dimensions
+* closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
-* closing of ffmpeg input
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * use ice-9 q? background decoder thread
@@ -60,7 +60,6 @@
 * duplicate image
 * types composed of Scheme objects
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
-* use ffmpeg library to convert MJPEG -> YV12, UYVY, ...
 * use thumbnail images to illustrate examples
 * update live intervals instead of recomputing
 * red-cyan, 3d display (bino, libglewmx, libavdevice)

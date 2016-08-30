@@ -1,4 +1,5 @@
 (use-modules (guile-tap))
+
 (load-extension "libguile-aiscm-tests" "init_tests")
 
 (ok (ringbuffer-fetch-empty)
