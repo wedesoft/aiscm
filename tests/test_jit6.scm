@@ -6,8 +6,9 @@
              (guile-tap))
 (load-extension "libguile-aiscm-tests" "init_tests")
 
+(define ctx (make <context>))
 (define guile-aiscm-tests (dynamic-link "libguile-aiscm-tests"))
-(define jit-side-effect (pointer->procedure void (dynamic-func "jit_side_effect" guile-aiscm-tests) '()))
+(define jit-side-effect (dynamic-func "jit_side_effect" guile-aiscm-tests))
 (define p (var <long>))
 
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
@@ -27,6 +28,10 @@
 (ok (equal? (list (SUB RSP 8) (MOV (ptr <byte> RSP 24) AL) (ADD RSP 8) (RET))
             (position-stack-frame (list (MOV (ptr <byte> stack-pointer 16) AL) (RET)) -8))
     "positioning the stack pointer also adjusts pointer offsets")
-(ok (equal? 42 (begin (jit-reset-side-effect) (jit-side-effect) (jit-reset-side-effect)))
+(ok (equal? 42 (begin (jit-reset-side-effect)
+                      ((asm ctx <null> '() (list (MOV RCX (pointer-address jit-side-effect))
+                                                 (CALL RCX)
+                                                 (RET))))
+                      (jit-reset-side-effect)))
     "compile a method call")
 (run-tests)

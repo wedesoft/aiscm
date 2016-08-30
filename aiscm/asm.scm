@@ -25,9 +25,9 @@
             ADD MOV MOVSX MOVZX LEA NOP RET PUSH POP SAL SAR SHL SHR NOT NEG INC SUB IMUL IDIV DIV
             AND OR XOR CBW CWDE CDQE CWD CDQ CQO CMP TEST
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
-            JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE
+            JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE conditional?
             CMOVB CMOVNB CMOVE CMOVNE CMOVBE CMOVNBE CMOVL CMOVNL CMOVLE CMOVNLE
-            conditional?))
+            CALL))
 ; http://www.drpaulcarter.com/pcasm/
 ; http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 (load-extension "libguile-aiscm-jit" "init_jit")
@@ -400,3 +400,6 @@
 (define-method (CMOVNL  (r <register>) (r/m <operand>)) (CMOVcc #x4d r r/m))
 (define-method (CMOVLE  (r <register>) (r/m <operand>)) (CMOVcc #x4e r r/m))
 (define-method (CMOVNLE (r <register>) (r/m <operand>)) (CMOVcc #x4f r r/m))
+
+(define-method (CALL (r/m <operand>))
+  (append (prefixes r/m) (list #xff) (postfixes 2 r/m)))

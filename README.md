@@ -40,6 +40,22 @@ sudo make install
 cd ..
 ```
 
+## Run tests
+
+You can run all tests like this
+
+```Shell
+make check -j
+```
+
+To run a single test suite, you can delete the *log* file and regenerate it using *make*:
+
+```Shell
+cd tests
+rm -f test_asm.log && make test_asm.log
+cd ..
+```
+
 ## See also
 
 * [AIscm homepage][1]

@@ -1,4 +1,5 @@
 (use-modules (oop goops)
+             (system foreign)
              (aiscm asm)
              (aiscm mem)
              (aiscm element)
@@ -863,4 +864,6 @@
     "CMOVB ECX ESI")
 (ok (equal? '(#x0f #x43 #xce) (CMOVNB ECX ESI))
     "CMOVNB ECX ESI")
+(ok (equal? '(#x48 #xff #xd2) (CALL RDX))
+    "CALL RDX")
 (run-tests)
