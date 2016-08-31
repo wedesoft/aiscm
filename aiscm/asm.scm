@@ -182,6 +182,8 @@
   (append (prefixes m) (if8 m #xc6 #xc7) (postfixes 0 m) (raw32 imm (size-of m))))
 (define-method (MOV (r <register>) (r/m <operand>))
   (append (prefixes r r/m) (if8 r #x8a #x8b) (postfixes r r/m)))
+(define-method (MOV (r <register>) (imm <foreign>))
+  (MOV r (pointer-address imm)))
 
 (define-method (MOVSX (r <register>) (r/m <operand>))
   (let* [(size   (size-of r/m))
