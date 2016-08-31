@@ -6,7 +6,14 @@
              (aiscm int)
              (aiscm pointer)
              (guile-tap))
+
+(load-extension "libguile-aiscm-tests" "init_tests")
+
+(define guile-aiscm-tests (dynamic-link "libguile-aiscm-tests"))
+(define jit-side-effect (dynamic-func "jit_side_effect" guile-aiscm-tests))
+
 (define ctx (make <context>))
+
 (define b1 (random (ash 1  6)))
 (define b2 (random (ash 1  6)))
 (define w1 (random (ash 1 14)))
@@ -39,6 +46,7 @@
 (define (idx) (begin
                 (store lptr #x0102030405060708)
                 mem))
+
 (ok (eqv? 4 (get-code RSP))
     "Get code of RSP register")
 (ok (eqv? 8 (get-code R8D))
@@ -869,4 +877,8 @@
     "CMOVNB ECX ESI")
 (ok (equal? '(#x48 #xff #xd2) (CALL RDX))
     "CALL RDX")
+(ok (equal? 42 (begin (jit-reset-side-effect)
+                      ((asm ctx <null> '() (list (MOV RCX jit-side-effect) (CALL RCX) (RET))))
+                      (jit-reset-side-effect)))
+    "Compile a method call")
 (run-tests)

@@ -23,7 +23,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? need-intermediate-var? shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function)
+            decompose-arg delegate-fun make-function call)
   #:re-export (min max)
   #:export-syntax (define-jit-method map-to-fun))
 
@@ -237,7 +237,7 @@
 (define (save-and-use-registers prog colors parameters offset)
   (let [(need-saving (callee-saved (map cdr colors)))]
     (append (save-registers need-saving offset)
-            ((spill-parameters (take-up-to parameters 6)) colors); TODO: empty?
+            ((spill-parameters (take-up-to parameters 6)) colors)
             ((fetch-parameters (drop-up-to parameters 6)) colors)
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
@@ -300,7 +300,7 @@
                                       #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
-(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers)); TODO: refactor
+(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))]
     (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
@@ -660,3 +660,10 @@
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
+
+(define (call return-type pointer)
+  (make-function
+    call
+    (const return-type)
+    (lambda (out args) (list (blocked RAX (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
+    '()))
