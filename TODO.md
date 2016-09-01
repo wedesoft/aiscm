@@ -2,7 +2,8 @@
 
 * compile C function calls (also support SCM values)
 * jit calls to other already compiled methods
-* bintray.com
+* build and install package using Docker
+* bintray.com?
 * tensor dimensions
 * closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round

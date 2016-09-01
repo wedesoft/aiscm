@@ -1,9 +1,8 @@
-VERSION=$(shell grep PACKAGE_VERSION config.h | sed -e "s/.*\"\(.*\)\"/\1/")
+VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 
 # https://wiki.debian.org/IntroDebianPackaging
 # https://en.opensuse.org/openSUSE:Build_Service_Tutorial
 package::
-	make dist
 	mkdir -p pkg
 	cp aiscm-$(VERSION).tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
 	tar xzf aiscm-$(VERSION).tar.gz -C pkg

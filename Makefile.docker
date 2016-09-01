@@ -2,12 +2,12 @@
 # make -f Makefile.docker clean all BASEIMAGE=debian:jessie
 # make -f Makefile.docker clean all BASEIMAGE=ubuntu:trusty
 # make -f Makefile.docker clean all BASEIMAGE=ubuntu:xenial
-BASEIMAGE=debian:sid
+BASEIMAGE=debian:jessie
 OPTS=
 # OPTS+=--no-cache
-VERSION=$(shell grep PACKAGE_VERSION config.h | sed -e "s/.*\"\(.*\)\"/\1/")
+VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 
-all: docker docker/Dockerfile docker/aiscm-$(VERSION).tar.xz docker/debian/control
+all: docker docker/Dockerfile docker/aiscm-$(VERSION).tar.gz docker/debian docker/configure.ac docker/Makefile.debian
 	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(BASEIMAGE) . && cd ..
 
 docker:
@@ -16,15 +16,20 @@ docker:
 docker/Dockerfile: Dockerfile.template
 	m4 -DBASEIMAGE=$(BASEIMAGE) -DVERSION=$(VERSION) $< > $@
 
-docker/aiscm-$(VERSION).tar.xz: aiscm-$(VERSION).tar.xz
+docker/aiscm-$(VERSION).tar.gz: aiscm-$(VERSION).tar.gz
 	cp $< $@
 
-docker/debian/control: debian/control
-	mkdir -p docker/debian
+docker/debian:: debian
+	cp -a $< docker
+
+docker/configure.ac: configure.ac
 	cp $< $@
 
-aiscm-$(VERSION).tar.xz:
-	make dist-xz
+docker/Makefile.debian: Makefile.debian
+	cp $< $@
+
+aiscm-$(VERSION).tar.gz:
+	make dist
 
 clean:
 	rm -Rf docker

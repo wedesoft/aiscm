@@ -48,6 +48,12 @@ You can run all tests like this
 make check -j
 ```
 
+One can use *recheck* to run only the test suites which have not completed successfully:
+
+```Shell
+make recheck -j
+```
+
 To run a single test suite, you can delete the *log* file and regenerate it using *make*:
 
 ```Shell
@@ -56,12 +62,12 @@ rm -f test_asm.log && make test_asm.log
 cd ..
 ```
 
-## See also
+# See also
 
 * [AIscm homepage][1]
 * [AIscm packages for Debian 8.0][3] (via [openSuSE build service][6])
 
-## External links
+# External links
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)

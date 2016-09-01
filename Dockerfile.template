@@ -4,11 +4,10 @@
 # DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 --ip-masq=true"
 #
 # docker build --no-cache -t wedesoft/aiscm-debian .
-# docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian /bin/bash
+# docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian:sid /bin/bash
 FROM BASEIMAGE
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
-# RUN apt-get upgrade -q -y
 RUN apt-get install -q -y build-essential
 RUN apt-get install -q -y autoconf automake libtool
 RUN apt-get install -q -y devscripts equivs
@@ -21,13 +20,13 @@ RUN apt-get install -q -y libjpeg-dev libmjpegtools-dev
 RUN apt-get install -q -y libpulse-dev
 RUN apt-get install -q -y imagemagick libmagickcore-dev
 RUN apt-get install -q -y libswscale-dev libavutil-dev libavcodec-dev libavformat-dev
-RUN mkdir -p /usr/src/aiscm/debian
+RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
 RUN mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
-ADD aiscm-VERSION.tar.xz .
-WORKDIR /usr/src/aiscm/aiscm-VERSION
-RUN ./configure
-RUN make -j
-RUN make check -j
-# TODO: build and install package
+COPY aiscm-VERSION.tar.gz .
+ADD configure.ac .
+ADD debian debian
+ADD Makefile.debian .
+RUN make -f Makefile.debian
+RUN dpkg --install pkg/aiscm_*.deb
