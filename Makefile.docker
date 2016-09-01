@@ -1,20 +1,20 @@
-# make -f Makefile.docker clean all TARGET=debian:sid
-# make -f Makefile.docker clean all TARGET=debian:jessie
-# make -f Makefile.docker clean all TARGET=ubuntu:trusty
-# make -f Makefile.docker clean all TARGET=ubuntu:xenial
-TARGET=debian:sid
+# make -f Makefile.docker clean all BASEIMAGE=debian:sid
+# make -f Makefile.docker clean all BASEIMAGE=debian:jessie
+# make -f Makefile.docker clean all BASEIMAGE=ubuntu:trusty
+# make -f Makefile.docker clean all BASEIMAGE=ubuntu:xenial
+BASEIMAGE=debian:sid
 OPTS=
 # OPTS+=--no-cache
-VERSION=0.6.1
+VERSION=$(shell grep PACKAGE_VERSION config.h | sed -e "s/.*\"\(.*\)\"/\1/")
 
 all: docker docker/Dockerfile docker/aiscm-$(VERSION).tar.xz docker/debian/control
-	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(TARGET) . && cd ..
+	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(BASEIMAGE) . && cd ..
 
 docker:
 	mkdir -p docker
 
 docker/Dockerfile: Dockerfile.template
-	m4 -DBASEIMAGE=$(TARGET) $< > $@
+	m4 -DBASEIMAGE=$(BASEIMAGE) -DVERSION=$(VERSION) $< > $@
 
 docker/aiscm-$(VERSION).tar.xz: aiscm-$(VERSION).tar.xz
 	cp $< $@
