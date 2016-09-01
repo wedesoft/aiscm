@@ -1,6 +1,7 @@
 ## Ready
 
 * compile C function calls (also support SCM values)
+* jit calls to other already compiled methods
 * bintray.com
 * tensor dimensions
 * closing of ffmpeg input, ffmpeg output

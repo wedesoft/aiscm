@@ -661,7 +661,7 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define (call return-type pointer)
+(define (call return-type pointer); TODO: pack return-type and pointer into a callable function
   (make-function
     call
     (const return-type)
