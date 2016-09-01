@@ -33,5 +33,5 @@
 (ok (equal? 42 ((jit ctx '() (const (call <int> jit-constant-fun)))))
     "Compile method call to function returning constant value")
 (ok (equal? 63 ((jit ctx (list <int>) (lambda (x) (+ x (call <int> jit-constant-fun)))) 21))
-    "Compile function call and plus operation to test that RAX gets blocked")
+    "Compile function call and plus operation to test that caller-saved registers get blocked")
 (run-tests)

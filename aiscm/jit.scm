@@ -186,9 +186,11 @@
           (all-but-last (fix-stack-position prog offset))
           (list (ADD RSP (- offset)) (RET))))
 
+; RSP is not included because it is used as a stack pointer
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+(define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define (callee-saved registers)
-  (lset-intersection eq? (delete-duplicates registers) (list RBX RSP RBP R12 R13 R14 R15)))
+  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP R12 R13 R14 R15)))
 (define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
        registers (iota (length registers) offset -8)))
@@ -316,8 +318,9 @@
 (define-class <block> ()
   (reg  #:init-keyword #:reg  #:getter get-reg)
   (code #:init-keyword #:code #:getter get-code))
-(define (blocked reg . body)
-  (make <block> #:reg reg #:code body))
+(define-method (blocked (reg <register>) . body) (make <block> #:reg reg #:code body))
+(define-method (blocked (lst <null>) . body) body)
+(define-method (blocked (lst <pair>) . body) (blocked (car lst) (apply blocked (cdr lst) body)))
 (define (filter-blocks prog)
   (cond
     ((is-a? prog <block>) (filter-blocks (get-code prog)))
@@ -665,5 +668,5 @@
   (make-function
     call
     (const return-type)
-    (lambda (out args) (list (blocked RAX (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
+    (lambda (out args) (list (blocked caller-saved (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
     '()))

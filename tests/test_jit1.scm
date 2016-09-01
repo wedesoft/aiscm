@@ -293,6 +293,8 @@
     "'blocked' represents the specified code segment")
 (ok (equal? RAX (get-reg (blocked RAX (MOV ECX 2) (RET))))
     "'blocked' stores the register to be blocked")
+(ok (equal? (list (MOV ECX 2) (RET)) (blocked '() (MOV ECX 2) (RET)))
+    "'blocked' with empty block list has no effect")
 (ok (equal? (list (MOV ECX 2) (RET)) (filter-blocks (blocked RAX (MOV ECX 2) (RET))))
     "'filter-blocks' should remove blocked-register information")
 (ok (equal? (list (MOV EDX 2) 'x (list (RET)))
@@ -307,6 +309,8 @@
 (ok (equal? (list (cons RAX '(1 . 4)) (cons RDX '(2 . 3)))
             (blocked-intervals (list 'x (blocked RAX (MOV AX 0) (blocked RDX (MOV DX 0) (IDIV CX)) (RET)))))
     "'blocked-intervals' should work recursively")
+(ok (equal? (list (cons RCX '(0 . 1)) (cons RDX '(0 . 1))) (blocked-intervals (blocked (list RCX RDX) (MOV ECX 2) (RET))))
+    "'blocked' with list of registers blocks all of them")
 (let  [(w (var <usint>))]
   (ok (equal? (list (SUB RSP 8) (MOV AX 0) (ADD RSP 8) (RET))
               (virtual-variables '() '() (list (blocked RCX (MOV w 0)) (RET))))
