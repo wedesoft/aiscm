@@ -65,6 +65,8 @@
     "Retrieve RSP by register code and size")
 (ok (equal? R8D (reg 4 8))
     "Retrieve R8D by register code and size")
+(ok (equal? EBX (reg <int> 3))
+    "Retrieve EBX by type and register code")
 (ok (equal? CX (to-type <sint> RCX))
     "Get corresponding register of different size")
 (ok (equal? XMM5 (xmm 5))

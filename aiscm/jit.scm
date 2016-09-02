@@ -128,12 +128,10 @@
 (define-method (output (self <cmd>)) (variables (get-output self)))
 (define-method (substitute-variables self alist) self)
 
-(define (to-size register type) (reg (size-of type) (get-code register)))
-
 (define-method (substitute-variables (self <var>) alist)
   (let [(target (assq-ref alist self))]
     (if (is-a? target <register>)
-      (to-size target self)
+      (to-type (typecode self) target)
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
   (let [(target (substitute-variables (car (get-args self)) alist))]
@@ -228,13 +226,13 @@
 (define ((spill-parameters parameters) colors)
   (filter-map (lambda (parameter register)
     (let [(value (assq-ref colors parameter))]
-      (if (not (is-a? value <register>)) (MOV value (to-size register parameter)) #f)))
+      (if (not (is-a? value <register>)) (MOV value (to-type (typecode parameter) register)) #f)))
     parameters
     register-parameters))
 (define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <register>) (MOV (to-size value parameter) (ptr (typecode parameter) stack-pointer offset)) #f)))
+      (if (is-a? value <register>) (MOV (to-type (typecode parameter) value) (ptr (typecode parameter) stack-pointer offset)) #f)))
     parameters
     (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
@@ -340,13 +338,15 @@
     (else '())))
 
 (define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
-(define (div/mod-prepare-signed r a) (list (MOV (reg r 0) a) (sign-extend-ax (size-of r))))
-(define (div/mod-prepare-unsigned r a) (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (reg r 0) a) (MOV (reg r 2) 0))))
+(define (div/mod-prepare-signed r a)
+  (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
+(define (div/mod-prepare-unsigned r a)
+  (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (to-type (typecode r) RAX) a) (MOV (to-type (typecode r) RDX) 0))))
 (define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
 (define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
 (define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
 (define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
-(define (div r a b) (div/mod r a b (MOV r (reg r 0))))
+(define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
 (define-method (signed? (x <var>)) (signed? (typecode x)))
@@ -666,12 +666,12 @@
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
 (define* ((native-fun return-type pointer) out args)
-  (list (blocked caller-saved (map (lambda (register param) (MOV (reg (type param) (get-code register)) (get (delegate param))))
+  (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
                                    register-parameters
                                    args)
                               (MOV RAX pointer)
                               (CALL RAX)
-                              (MOV (get (delegate out)) (reg return-type (get-code RAX))))))
+                              (MOV (get (delegate out)) (to-type return-type RAX)))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))

@@ -331,8 +331,6 @@
                                         #:predefined (list (cons a RCX))
                                         #:blocked (list (cons RCX '(0 . 1)))))
       "Spill predefined registers if they are blocked"))
-(ok (equal? (list SIL AX R9D RDX) (list (reg 1 6) (reg 2 0) (reg 4 9) (reg 8 2)))
-    "'reg' provides access to registers using register codes")
 (ok (eq? <var> (class-of (var <int>)))
     "Shortcut for creating variables creates variables")
 (ok (eq? <byte> (typecode (var <byte>)))

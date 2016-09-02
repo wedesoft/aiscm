@@ -48,8 +48,8 @@
 (define (reg-list bytes lst)
   (map (lambda (sym code) (make <register> #:size bytes #:code code #:symbol sym)) lst (iota #x10)))
 (define regs (map (lambda (pair) (cons (car pair) (reg-list (car pair) (cdr pair)))) reg-symbols))
-(define-method (reg (size <integer>) code) (list-ref (assq-ref regs size) code))
-(define-method (reg other code) (reg (size-of other) code))
+(define-method (reg (size <integer>) (code <integer>)) (list-ref (assq-ref regs size) code))
+(define-method (reg (type <meta<int<>>>) (code <integer>)) (reg (size-of type) code))
 (for-each
   (lambda (pair)
     (for-each
