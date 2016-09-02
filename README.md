@@ -42,6 +42,8 @@ cd ..
 
 ## Run tests
 
+### Unit tests
+
 You can run all tests like this
 
 ```Shell
@@ -60,6 +62,20 @@ To run a single test suite, you can delete the *log* file and regenerate it usin
 cd tests
 rm -f test_asm.log && make test_asm.log
 cd ..
+```
+
+### Integration tests
+
+Running the integration tests requires a graphical display, keyboard interaction, a camera, and a sound device.
+
+```Shell
+make integration
+```
+
+One can use *reintegration* to run only the integration tests which have not completed successfully:
+
+```Shell
+make reintegration
 ```
 
 # See also
