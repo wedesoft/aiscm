@@ -8,9 +8,10 @@
 (load-extension "libguile-aiscm-tests" "init_tests")
 
 (define ctx (make <context>))
-(define guile-aiscm-tests (dynamic-link "libguile-aiscm-tests"))
-(define jit-side-effect (dynamic-func "jit_side_effect" guile-aiscm-tests))
-(define jit-constant-fun (dynamic-func "jit_constant_fun" guile-aiscm-tests))
+(define guile-aiscm-tests   (dynamic-link "libguile-aiscm-tests"))
+(define jit-side-effect     (dynamic-func "jit_side_effect"     guile-aiscm-tests))
+(define jit-constant-fun    (dynamic-func "jit_constant_fun"    guile-aiscm-tests))
+(define jit-subtracting-fun (dynamic-func "jit_subtracting_fun" guile-aiscm-tests))
 
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
     "setting stack position does not affect operations not involving pointers")
@@ -34,4 +35,6 @@
     "Compile method call to function returning constant value")
 (ok (equal? 63 ((jit ctx (list <int>) (lambda (x) (+ x (call <int> jit-constant-fun)))) 21))
     "Compile function call and plus operation to test that caller-saved registers get blocked")
+(todo (equal? 2 ((jit ctx (list <int> <int>) (lambda (x y) (call <int> jit-subtracting-fun y x))) 5 7))
+    "Compile function call taking two arguments")
 (run-tests)

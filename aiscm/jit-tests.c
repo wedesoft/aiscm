@@ -19,6 +19,11 @@ int jit_constant_fun(void)
   return 42;
 }
 
+int jit_subtracting_fun(int a, int b)
+{
+  return a - b;
+}
+
 void init_jit_tests(void)
 {
   scm_c_define_gsubr("jit-reset-side-effect", 0, 0, 0, jit_reset_side_effect);

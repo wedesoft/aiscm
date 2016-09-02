@@ -667,5 +667,5 @@
 (define* ((native-fun return-type pointer) out args)
   (list (blocked caller-saved (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
 
-(define (call return-type pointer)
-  (make-function call (const return-type) (native-fun return-type pointer) '()))
+(define (call return-type pointer . args)
+  (make-function call (const return-type) (native-fun return-type pointer) args))
