@@ -37,4 +37,6 @@
     "Compile function call and plus operation to test that caller-saved registers get blocked")
 (ok (equal? 2 ((jit ctx (list <int> <int>) (lambda (x y) (call <int> jit-subtracting-fun y x))) 5 7))
     "Compile function call taking two arguments")
+(todo (equal? 5 ((jit ctx (list <int> <int> <int>) (lambda (x y z) (call <int> jit-subtracting-fun x (+ y z)))) 10 2 3))
+    "Pass result of expression to function call")
 (run-tests)

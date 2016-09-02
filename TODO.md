@@ -1,8 +1,7 @@
 ## Ready
 
-* (reg type register)
-* stack parameters
 * nesting function calls
+* stack parameters
 * jit calls to other already compiled methods
 * spill blocked registers into other register
 * avoid multiple copy operations (block boundaries?)

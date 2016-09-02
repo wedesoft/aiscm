@@ -2,9 +2,6 @@
 #
 # configure /etc/default/docker
 # DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 --ip-masq=true"
-#
-# docker build --no-cache -t wedesoft/aiscm-debian .
-# docker run -t -i -v /home/jan/test/aiscm:/mnt wedesoft/aiscm-debian:sid /bin/bash
 FROM BASEIMAGE
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
