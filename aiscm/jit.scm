@@ -664,9 +664,8 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define (call return-type pointer); TODO: pack return-type and pointer into a callable function
-  (make-function
-    call
-    (const return-type)
-    (lambda (out args) (list (blocked caller-saved (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
-    '()))
+(define* ((native-fun return-type pointer) out args)
+  (list (blocked caller-saved (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
+
+(define (call return-type pointer)
+  (make-function call (const return-type) (native-fun return-type pointer) '()))
