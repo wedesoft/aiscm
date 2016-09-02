@@ -189,6 +189,7 @@
 ; RSP is not included because it is used as a stack pointer
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
+(define register-parameters (list RDI RSI RDX RCX R8 R9))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RBP R12 R13 R14 R15)))
 (define (save-registers registers offset)
@@ -229,7 +230,7 @@
     (let [(value (assq-ref colors parameter))]
       (if (not (is-a? value <register>)) (MOV value (to-size register parameter)) #f)))
     parameters
-    (list RDI RSI RDX RCX R8 R9)))
+    register-parameters))
 (define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
@@ -304,7 +305,7 @@
 
 (define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
-         (arg-regs     (map cons arg-vars (list RDI RSI RDX RCX R8 R9)))]
+         (arg-regs     (map cons arg-vars register-parameters))]
     (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
                               #:predefined (append result-regs arg-regs)
                               #:blocked    (blocked-intervals intermediate)
@@ -665,7 +666,12 @@
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
 (define* ((native-fun return-type pointer) out args)
-  (list (blocked caller-saved (MOV RAX pointer) (CALL RAX) (MOV (get (delegate out)) (reg return-type 0)))))
+  (list (blocked caller-saved (map (lambda (register param) (MOV (reg (type param) (get-code register)) (get (delegate param))))
+                                   register-parameters
+                                   args)
+                              (MOV RAX pointer)
+                              (CALL RAX)
+                              (MOV (get (delegate out)) (reg return-type (get-code RAX))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))

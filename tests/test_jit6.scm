@@ -35,6 +35,6 @@
     "Compile method call to function returning constant value")
 (ok (equal? 63 ((jit ctx (list <int>) (lambda (x) (+ x (call <int> jit-constant-fun)))) 21))
     "Compile function call and plus operation to test that caller-saved registers get blocked")
-(todo (equal? 2 ((jit ctx (list <int> <int>) (lambda (x y) (call <int> jit-subtracting-fun y x))) 5 7))
+(ok (equal? 2 ((jit ctx (list <int> <int>) (lambda (x y) (call <int> jit-subtracting-fun y x))) 5 7))
     "Compile function call taking two arguments")
 (run-tests)

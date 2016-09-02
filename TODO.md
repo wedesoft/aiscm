@@ -1,8 +1,12 @@
 ## Ready
 
-* spill blocked registers into other register
-* compile C function calls (also support SCM values)
+* (reg type register)
+* stack parameters
+* nesting function calls
 * jit calls to other already compiled methods
+* spill blocked registers into other register
+* avoid multiple copy operations (block boundaries?)
+* packages for sid, trusty, xenial
 * tensor dimensions
 * closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
