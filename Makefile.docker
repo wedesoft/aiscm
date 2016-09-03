@@ -1,5 +1,5 @@
 # make -f Makefile.docker clean all
-CODENAME=xenial
+CODENAME=trusty
 BASEIMAGE=ubuntu:$(CODENAME)
 IMAGE=wedesoft/aiscm-$(BASEIMAGE)
 OPTS=
@@ -16,7 +16,7 @@ run: all
 package: all
 	mkdir -p pkg
 	cp aiscm-$(VERSION).tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
-	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE).debian.tar.xz /mnt/pkg
+	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE).debian.tar.gz /mnt/pkg
 	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE).dsc /mnt/pkg
 	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE)_amd64.deb /mnt/pkg
 

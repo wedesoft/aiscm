@@ -2,7 +2,7 @@
 #
 # configure /etc/default/docker
 # DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 --ip-masq=true"
-FROM ubuntu:xenial
+FROM ubuntu:trusty
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
 RUN apt-get install -q -y build-essential
