@@ -5,7 +5,7 @@ compiler:
   - gcc
 before_install:
   - sudo apt-get install -q --yes build-essential autoconf automake libtool devscripts equivs
-  - sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
+  - sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control.ubuntu:trusty
 install:
   - ./bootstrap
   - ./configure
