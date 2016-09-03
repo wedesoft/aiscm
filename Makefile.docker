@@ -1,6 +1,6 @@
 # make -f Makefile.docker clean all
-CODENAME=sid
-BASEIMAGE=debian:$(CODENAME)
+CODENAME=xenial
+BASEIMAGE=ubuntu:$(CODENAME)
 IMAGE=wedesoft/aiscm-$(BASEIMAGE)
 OPTS=
 # OPTS+=--no-cache
