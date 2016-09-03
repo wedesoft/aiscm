@@ -24,7 +24,7 @@ docker/aiscm-$(VERSION).tar.gz: aiscm-$(VERSION).tar.gz
 
 docker/debian:: debian
 	cp -a $< docker
-	cp $</control.$(BASEIMAGE) $@/control
+	cp control.$(BASEIMAGE) $@/control
 
 docker/configure.ac: configure.ac
 	cp $< $@
