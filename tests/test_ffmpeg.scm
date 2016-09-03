@@ -29,7 +29,6 @@
 (define audio-pts2 (audio-pts audio-mono))
 
 (define audio-stereo-frame (read-audio audio-stereo))
-(define surround (open-ffmpeg-input "fixtures/surround.vob"))
 
 (define full-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define images (map (lambda _ (read-video full-video)) (iota 720)))
@@ -88,8 +87,6 @@
     "Detect mono audio stream")
 (ok (eqv? 2 (channels video))
     "Detect stereo audio stream")
-(ok (eqv? 6 (channels surround))
-    "Detect 6 surround channels")
 (ok (throws? (channels image))
     "Image does not have audio channels")
 (ok (eqv? 8000 (rate audio-mono))

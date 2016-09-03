@@ -3,6 +3,7 @@
 * packages for sid, xenial -> installation documentation
 * nesting function calls
 * stack parameters
+* use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods
 * spill blocked registers into other register
 * avoid multiple copy operations (block boundaries?)
