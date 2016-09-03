@@ -1,5 +1,5 @@
 # make -f Makefile.docker clean all
-BASEIMAGE=debian:jessie
+BASEIMAGE=debian:sid
 OPTS=
 # OPTS+=--no-cache
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
