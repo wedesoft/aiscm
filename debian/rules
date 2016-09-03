@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --parallel
+
+override_dh_auto_install:
+	$(MAKE) DESTDIR=$$(pwd)/debian/aiscm prefix=/usr install
+	find $$(pwd)/debian/aiscm -name '*.la' -delete

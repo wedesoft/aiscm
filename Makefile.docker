@@ -1,0 +1,35 @@
+# make -f Makefile.docker clean all
+BASEIMAGE=debian:jessie
+OPTS=
+# OPTS+=--no-cache
+VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
+
+all: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.deb
+	cd docker && docker build $(OPTS) -t wedesoft/aiscm-$(BASEIMAGE) . && cd ..
+
+run:
+	docker run -t -i -v $(shell pwd):/mnt wedesoft/aiscm-$(BASEIMAGE) /bin/bash
+
+docker:
+	mkdir -p docker
+
+docker/Dockerfile: Dockerfile
+	cp $< $@
+
+docker/aiscm.tar.gz: aiscm-$(VERSION).tar.gz
+	cp $< $@
+
+docker/debian:: debian
+	cp -a $< docker
+
+docker/configure.ac: configure.ac
+	cp $< $@
+
+docker/Makefile.deb: Makefile.deb
+	cp $< $@
+
+aiscm-$(VERSION).tar.gz:
+	make dist
+
+clean:
+	rm -Rf docker
