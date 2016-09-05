@@ -145,17 +145,24 @@
   (ok (equal? (code tmp a) (insert-intermediate a tmp (const '())))
       "Use empty code"))
 (let* [(a   (parameter <sint>))
-       (tmp (parameter <sint>))
        (f   (~ a))]
-  (ok ((need-intermediate-param? <sint>) f)
+  (ok (need-intermediate-param? <sint> f)
       "Compilation of function require intermediate value")
-  (ok (not ((need-intermediate-param? <sint>) a))
+  (ok (not (need-intermediate-param? <sint> a))
       "Value does not require intermediate value")
-  (ok ((need-intermediate-param? <int>) a)
+  (ok (need-intermediate-param? <int> a)
       "Value of different size requires intermediate value"))
-
-
-
+(let [(a   (parameter <sint>))]
+  (ok (equal? (list a) (force-parameters (list <sint>) (list a) identity))
+      "Pass through parameters to specified function by default")
+  (let* [(forced       (force-parameters (list <int>) (list a) identity))
+         (intermediate (last forced))]
+    (ok (equal? <int> (type intermediate))
+        "Create parameter of target type if type is different")
+    (ok (equal? (attach (code intermediate a) intermediate) forced)
+        "Create preamble for initialising intermediate values")
+    (ok (equal? <int> (type (last (force-parameters <int> (list a) identity))))
+        "Alternatively force all parameters to the same type")))
 (let [(a (parameter <int>))
       (b (parameter <sint>))
       (c (parameter <ubyte>))

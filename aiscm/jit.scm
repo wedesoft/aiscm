@@ -21,7 +21,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            need-intermediate-param? shl shr sign-extend-ax div mod
+            need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max)
@@ -531,21 +531,23 @@
                    #:term      (lambda (out) (fun out args))))
 
 (define (unary-extract op out args) (code (delegate out) (apply op (map delegate args))))
-(define ((need-intermediate-param? t) value)
+
+(define (need-intermediate-param? t value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
-(define (prepare-parameters target args op)
-  (let* [(mask          (map (need-intermediate-param? target) args))
-         (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
+(define-method (force-parameters (targets <list>) args fun)
+  (let* [(mask          (map need-intermediate-param? targets args))
+         (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
-    (attach preamble (apply op intermediates))))
+    (attach preamble (apply fun intermediates))))
+(define-method (force-parameters target args fun)
+  (force-parameters (make-list (length args) target) args fun))
+
+(define (operation-code target op out args)
+  (force-parameters target args (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (functional-code op out args)
-  (prepare-parameters (reduce coerce #f (map type args))
-                      args
-                      (lambda intermediates (apply op (operand out) (map operand intermediates)))))
+  (operation-code (reduce coerce #f (map type args)) op out args))
 (define (mutating-code op out args)
-  (insert-intermediate (car args) out
-    (lambda (tmp-a) (prepare-parameters (type out) (cdr args)
-      (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
+  (insert-intermediate (car args) out (cut operation-code (type out) op <> (cdr args))))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
@@ -665,7 +667,7 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define* ((native-fun return-type pointer) out args); TODO: use prepare-parameters
+(define* ((native-fun return-type pointer) out args); TODO: use force-parameters
   (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
                                    register-parameters
                                    args)
