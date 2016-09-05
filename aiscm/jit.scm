@@ -533,18 +533,18 @@
 (define (unary-extract op out args) (code (delegate out) (apply op (map delegate args))))
 (define ((need-intermediate-param? t) value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
-(define (prepare-parameters target pred args op)
-  (let* [(mask          (map (pred target) args))
+(define (prepare-parameters target args op)
+  (let* [(mask          (map (need-intermediate-param? target) args))
          (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply op intermediates))))
 (define (functional-code op out args)
   (prepare-parameters (reduce coerce #f (map type args))
-                      need-intermediate-param? args
+                      args
                       (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (mutating-code op out args)
   (insert-intermediate (car args) out
-    (lambda (tmp-a) (prepare-parameters (type out) need-intermediate-param? (cdr args)
+    (lambda (tmp-a) (prepare-parameters (type out) (cdr args)
       (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
 
 (define-macro (n-ary-base name arity coercion fun)

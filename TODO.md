@@ -3,6 +3,7 @@
 * nesting function calls
   prepare-parameter, insert-intermediate, need-intermediate-param?
 * packages for sid, xenial -> installation documentation
+  http://davehall.com.au/blog/dave/2010/02/06/howto-setup-private-package-repository-reprepro-nginx
 * stack parameters
 * use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods
