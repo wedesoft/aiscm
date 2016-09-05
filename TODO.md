@@ -1,7 +1,8 @@
 ## Ready
 
-* packages for sid, xenial -> installation documentation
 * nesting function calls
+  prepare-parameter, insert-intermediate, need-intermediate-param?
+* packages for sid, xenial -> installation documentation
 * stack parameters
 * use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods

@@ -21,7 +21,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            need-intermediate-param? need-intermediate-var? shl shr sign-extend-ax div mod
+            need-intermediate-param? shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max)
@@ -665,7 +665,7 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define* ((native-fun return-type pointer) out args)
+(define* ((native-fun return-type pointer) out args); TODO: use prepare-parameters
   (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
                                    register-parameters
                                    args)
