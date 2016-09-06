@@ -185,11 +185,12 @@
           (list (ADD RSP (- offset)) (RET))))
 
 ; RSP is not included because it is used as a stack pointer
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+; RBP is not included because it may be used as a frame pointer
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define register-parameters (list RDI RSI RDX RCX R8 R9))
 (define (callee-saved registers)
-  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP R12 R13 R14 R15)))
+  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP RSP R12 R13 R14 R15)))
 (define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
        registers (iota (length registers) offset -8)))
@@ -667,13 +668,17 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define* ((native-fun return-type pointer) out args); TODO: use force-parameters
-  (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
-                                   register-parameters
-                                   args)
-                              (MOV RAX pointer)
-                              (CALL RAX)
-                              (MOV (get (delegate out)) (to-type return-type RAX)))))
+(define* ((native-fun return-type pointer) out args)
+  (force-parameters
+    (map type args)
+    args
+    (lambda intermediates
+      (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
+                                       register-parameters
+                                       intermediates)
+                                  (MOV RAX pointer)
+                                  (CALL RAX)
+                                  (MOV (get (delegate out)) (to-type return-type RAX)))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))
