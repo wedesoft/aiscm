@@ -1,8 +1,10 @@
 ## Ready
 
+* stack parameters for function calls
+* Debian repos
+* command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * packages for sid, xenial -> installation documentation
-* nesting function calls
-* stack parameters
+  http://davehall.com.au/blog/dave/2010/02/06/howto-setup-private-package-repository-reprepro-nginx
 * use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods
 * spill blocked registers into other register
@@ -10,7 +12,6 @@
 * tensor dimensions
 * closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
