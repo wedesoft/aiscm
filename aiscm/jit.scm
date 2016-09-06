@@ -668,17 +668,17 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define* ((native-fun return-type pointer) out args)
+(define* ((native-fun return-type pointer) out args); TODO: refactor
   (force-parameters
     (map type args)
     args
     (lambda intermediates
-      (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
-                                       register-parameters
-                                       intermediates)
-                                  (MOV RAX pointer)
-                                  (CALL RAX)
-                                  (MOV (get (delegate out)) (to-type return-type RAX)))))))
+      (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
+                                 register-parameters
+                                 intermediates)
+                            (MOV RAX pointer)
+                            (CALL RAX)
+                            (MOV (get (delegate out)) (to-type return-type RAX))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))

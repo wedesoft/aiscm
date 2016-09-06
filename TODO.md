@@ -1,10 +1,11 @@
 ## Ready
 
-* nesting function calls
+* nesting function calls (refactor)
+* stack parameters
+* Debian repos
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * packages for sid, xenial -> installation documentation
   http://davehall.com.au/blog/dave/2010/02/06/howto-setup-private-package-repository-reprepro-nginx
-* stack parameters
 * use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods
 * spill blocked registers into other register
