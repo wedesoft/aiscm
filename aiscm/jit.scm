@@ -21,7 +21,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            need-intermediate-param? need-intermediate-var? shl shr sign-extend-ax div mod
+            need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max)
@@ -185,11 +185,12 @@
           (list (ADD RSP (- offset)) (RET))))
 
 ; RSP is not included because it is used as a stack pointer
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX RBP R12 R13 R14 R15))
+; RBP is not included because it may be used as a frame pointer
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define register-parameters (list RDI RSI RDX RCX R8 R9))
 (define (callee-saved registers)
-  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP R12 R13 R14 R15)))
+  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP RSP R12 R13 R14 R15)))
 (define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
        registers (iota (length registers) offset -8)))
@@ -531,21 +532,23 @@
                    #:term      (lambda (out) (fun out args))))
 
 (define (unary-extract op out args) (code (delegate out) (apply op (map delegate args))))
-(define ((need-intermediate-param? t) value)
+
+(define (need-intermediate-param? t value)
   (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
-(define (prepare-parameters target pred args op)
-  (let* [(mask          (map (pred target) args))
-         (intermediates (map-select mask (lambda (arg) (parameter target)) identity args))
+(define-method (force-parameters (targets <list>) args fun)
+  (let* [(mask          (map need-intermediate-param? targets args))
+         (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
-    (attach preamble (apply op intermediates))))
+    (attach preamble (apply fun intermediates))))
+(define-method (force-parameters target args fun)
+  (force-parameters (make-list (length args) target) args fun))
+
+(define (operation-code target op out args)
+  (force-parameters target args (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define (functional-code op out args)
-  (prepare-parameters (reduce coerce #f (map type args))
-                      need-intermediate-param? args
-                      (lambda intermediates (apply op (operand out) (map operand intermediates)))))
+  (operation-code (reduce coerce #f (map type args)) op out args))
 (define (mutating-code op out args)
-  (insert-intermediate (car args) out
-    (lambda (tmp-a) (prepare-parameters (type out) need-intermediate-param? (cdr args)
-      (lambda intermediates (apply op (operand tmp-a) (map operand intermediates)))))))
+  (insert-intermediate (car args) out (cut operation-code (type out) op <> (cdr args))))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
@@ -665,13 +668,16 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
+(define (pass-parameters parameters)
+  (map (lambda (register parameter) (MOV (to-type (type parameter) register) (get (delegate parameter))))
+       register-parameters
+       parameters))
+
 (define* ((native-fun return-type pointer) out args)
-  (list (blocked caller-saved (map (lambda (register param) (MOV (to-type (type param) register) (get (delegate param))))
-                                   register-parameters
-                                   args)
-                              (MOV RAX pointer)
-                              (CALL RAX)
-                              (MOV (get (delegate out)) (to-type return-type RAX)))))
+  (force-parameters (map type args) args
+    (lambda intermediates
+      (blocked caller-saved (pass-parameters intermediates) (MOV RAX pointer) (CALL RAX)
+                            (MOV (get (delegate out)) (to-type return-type RAX))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))
