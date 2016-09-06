@@ -1,7 +1,6 @@
 ## Ready
 
-* nesting function calls (refactor)
-* stack parameters
+* stack parameters for function calls
 * Debian repos
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * packages for sid, xenial -> installation documentation
