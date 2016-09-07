@@ -1,7 +1,15 @@
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
-DISTRO = jessie sid
 
-all: $(addsuffix .distro,$(DISTRO))
+all: jessie sid trusty xenial
 
-%.distro:
-	cd apt && reprepro includedeb $(basename $@) ../pkg/aiscm_$(VERSION)-1$(basename $@)_amd64.deb && cd ..
+jessie:
+	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*deb8u*_amd64.deb) && cd ..
+
+sid:
+	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*deb9u*_amd64.deb) && cd ..
+
+trusty:
+	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*trusty*_amd64.deb) && cd ..
+
+xenial:
+	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*xenial*_amd64.deb) && cd ..
