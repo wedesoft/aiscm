@@ -1,7 +1,0 @@
-Origin: AIscm
-Label: AIscm
-Codename: sid
-Architectures: i386 amd64
-Components: main
-Description: Apt repository for AIscm
-SignWith: DA4C8315
