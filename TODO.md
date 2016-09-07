@@ -1,8 +1,11 @@
 ## Ready
 
+* set window icon
 * stack parameters for function calls
 * Debian repos, docker cp
   reprepro includedeb jessie aiscm\*.deb
+  add keys
+  https://wiki.debian.org/SettingUpSignedAptRepositoryWithReprepro
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * packages for sid, xenial -> installation documentation
   http://davehall.com.au/blog/dave/2010/02/06/howto-setup-private-package-repository-reprepro-nginx
