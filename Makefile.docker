@@ -5,7 +5,7 @@ IMAGE=wedesoft/aiscm-$(BASEIMAGE)
 OPTS=
 # OPTS+=--no-cache
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
-PACKAGE=aiscm_$(VERSION)-1$(CODENAME)_amd64.deb
+PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)_amd64.deb
 
 all: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.deb
 	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
@@ -15,7 +15,7 @@ run: all
 
 package: all
 	mkdir -p pkg
-	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/aiscm_$(VERSION)-1_amd64.deb /mnt/pkg/$(PACKAGE)
+	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE) /mnt/pkg
 
 docker:
 	mkdir -p docker

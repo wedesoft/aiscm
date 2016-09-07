@@ -27,6 +27,4 @@ ltmain.sh
 /Makefile.in
 stamp-h1
 pkg
-apt/*/db
-apt/*/dists
-apt/*/pool
+apt
