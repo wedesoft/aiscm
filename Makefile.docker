@@ -18,7 +18,7 @@ cp: all
 	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE) /mnt/pkg
 
 repo: cp
-	cd apt && reprepro includedeb $(CODENAME) ../pkg/$(PACKAGE) && cd ..
+	cd apt/$(CODENAME) && reprepro includedeb $(CODENAME) ../../pkg/$(PACKAGE) && cd ../..
 
 docker:
 	mkdir -p docker
