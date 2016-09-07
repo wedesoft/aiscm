@@ -27,6 +27,6 @@ ltmain.sh
 /Makefile.in
 stamp-h1
 pkg
-apt/jessie/db
-apt/jessie/dists
-apt/jessie/pool
+apt/*/db
+apt/*/dists
+apt/*/pool
