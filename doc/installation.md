@@ -8,13 +8,13 @@ You need to install [Guile][1] version 2.0.9 or higher with development headers.
 
 ### With binaries
 
-There are [64-bit binaries for Debian Jessie][2].
+There are AMD64 binaries for Debian Jessie (8), Debian Sid (9), Ubuntu Trusty (14.04), and Ubuntu Xenial (16.04)
 
 To install the software, you have to add the AIscm repository to your list of repositories and install via apt-get. To do this, paste the following lines into your terminal:
 
 ```
-echo 'deb http://download.opensuse.org/repositories/home:/wedesoft/Debian_8.0/ /' | sudo tee /etc/apt/sources.list.d/aiscm.list
-wget -qO- http://download.opensuse.org/repositories/home:wedesoft/Debian_8.0/Release.key | sudo apt-key add -
+echo "deb https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/aiscm.list
+wget -qO- https://wedesoft.github.io/aiscm/apt/pubkey.gpg | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install aiscm
 ```
@@ -49,4 +49,3 @@ sudo make install
 ```
 
 [1]: http://www.gnu.org/software/guile/
-[2]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm
