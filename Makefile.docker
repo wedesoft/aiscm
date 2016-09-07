@@ -32,4 +32,4 @@ aiscm-$(VERSION).tar.gz:
 	make dist
 
 clean:
-	rm -Rf docker
+	rm -Rf aiscm-$(VERSION).tar.gz docker
