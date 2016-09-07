@@ -63,7 +63,7 @@ SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_width, SCM scm_height, SCM scm_
   memset(offsets, 0, sizeof(offsets));
   scm_to_array(scm_offsets, offsets);
   decode_jpeg_raw(source_ptr, width * height * 2, Y4M_ILACE_NONE, 0, width, height,
-                  dest_ptr + offsets[0], dest_ptr + offsets[1], dest_ptr + offsets[2]);
+                  dest_ptr + offsets[0], dest_ptr + offsets[2], dest_ptr + offsets[1]);
   return SCM_UNDEFINED;
 }
 

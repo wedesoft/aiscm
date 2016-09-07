@@ -1,5 +1,6 @@
 ## Ready
 
+* set window icon
 * stack parameters for function calls
 * Debian repos, docker cp
   reprepro includedeb jessie aiscm\*.deb
