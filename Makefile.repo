@@ -1,0 +1,7 @@
+VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
+DISTRO = jessie sid
+
+all: $(addsuffix .distro,$(DISTRO))
+
+%.distro:
+	cd apt && reprepro includedeb $(basename $@) ../pkg/aiscm_$(VERSION)-1$(basename $@)_amd64.deb && cd ..
