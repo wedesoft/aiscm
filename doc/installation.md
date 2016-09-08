@@ -19,6 +19,12 @@ sudo apt-get update
 sudo apt-get install aiscm
 ```
 
+If you wish, you can additionally register the sources with *apt*:
+
+```
+echo "deb-src https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee -a /etc/apt/sources.list.d/aiscm.list
+```
+
 ### Compile from source
 
 #### Get the source code
