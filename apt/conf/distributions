@@ -1,7 +1,7 @@
 Origin: AIscm
 Label: AIscm
 Codename: jessie
-Architectures: i386 amd64
+Architectures: i386 amd64 source
 Components: main
 Description: Apt repository for AIscm
 SignWith: DA4C8315
@@ -9,7 +9,7 @@ SignWith: DA4C8315
 Origin: AIscm
 Label: AIscm
 Codename: sid
-Architectures: i386 amd64
+Architectures: i386 amd64 source
 Components: main
 Description: Apt repository for AIscm
 SignWith: DA4C8315
@@ -17,7 +17,7 @@ SignWith: DA4C8315
 Origin: AIscm
 Label: AIscm
 Codename: trusty
-Architectures: i386 amd64
+Architectures: i386 amd64 source
 Components: main
 Description: Apt repository for AIscm
 SignWith: DA4C8315
@@ -25,7 +25,7 @@ SignWith: DA4C8315
 Origin: AIscm
 Label: AIscm
 Codename: xenial
-Architectures: i386 amd64
+Architectures: i386 amd64 source
 Components: main
 Description: Apt repository for AIscm
 SignWith: DA4C8315
