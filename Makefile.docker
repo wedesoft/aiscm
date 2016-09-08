@@ -1,0 +1,42 @@
+# make -f Makefile.docker clean all
+CODENAME=sid
+BASEIMAGE=debian:$(CODENAME)
+IMAGE=wedesoft/aiscm-$(BASEIMAGE)
+OPTS=
+# OPTS+=--no-cache
+VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
+PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)_amd64.deb
+
+all: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.deb
+	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
+
+run: all
+	docker run -t -i -v $(shell pwd):/mnt $(IMAGE) /bin/bash
+
+package: all
+	mkdir -p pkg
+	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE) /mnt/pkg
+
+docker:
+	mkdir -p docker
+
+docker/Dockerfile: Dockerfile
+	cp $< $@
+
+docker/aiscm.tar.gz: aiscm-$(VERSION).tar.gz
+	cp $< $@
+
+docker/debian:: debian
+	cp -a $< docker
+
+docker/configure.ac: configure.ac
+	cp $< $@
+
+docker/Makefile.deb: Makefile.deb
+	cp $< $@
+
+aiscm-$(VERSION).tar.gz:
+	make dist
+
+clean:
+	rm -Rf aiscm-$(VERSION).tar.gz docker
