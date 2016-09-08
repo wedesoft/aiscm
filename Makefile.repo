@@ -6,7 +6,7 @@ jessie:
 	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*deb8u*_amd64.deb) && cd ..
 
 sid:
-	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*deb9u*_amd64.deb) && cd ..
+	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-?_amd64.deb) && cd ..
 
 trusty:
 	cd apt && reprepro includedeb $@ ../$(wildcard pkg/aiscm_$(VERSION)-*trusty*_amd64.deb) && cd ..
