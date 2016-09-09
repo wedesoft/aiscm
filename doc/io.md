@@ -101,6 +101,13 @@ The method *pts=* can be used to seek to an absolute position in audio/video str
 @../tests/integration/pts.scm@
 ```
 
+Note that *FFmpeg* also supports network streaming of video data.
+I.e. the following example will play a video from a web server.
+
+```Scheme
+@../tests/integration/ffstream.scm@
+```
+
 ## Audio files
 
 One can play samples from an audio file by passing them to the audio device using the *write-samples* method.

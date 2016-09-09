@@ -19,7 +19,6 @@
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
 * use libswresample for audio conversions
-* add network streaming example http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4 in examples,
 * split up into separate packages
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
