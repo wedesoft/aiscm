@@ -1,9 +1,7 @@
 ## Ready
 
-* set window icon
 * stack parameters for function calls
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
-* use Sintel video extract (or compressed video or bunny video)
 * jit calls to other already compiled methods
 * spill blocked registers into other register
 * avoid multiple copy operations (block boundaries?)
