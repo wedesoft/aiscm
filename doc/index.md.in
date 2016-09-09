@@ -9,7 +9,7 @@ Performance in Scheme is achieved by means of a JIT compiler.
 
 Control all data and machine code down to every single bit and byte.
 
-![](aiscm.gif "AIScm")
+![](aiscm.gif "")
 
 * [Installation](installation.html "Installation")
 * [Built-in assembler](assembler.html "Built-in assembler")
