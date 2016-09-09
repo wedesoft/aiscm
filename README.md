@@ -81,7 +81,7 @@ make reintegration
 # See also
 
 * [AIscm homepage][1]
-* [AIscm packages for Debian 8.0][3] (via [openSuSE build service][6])
+* [AIscm installation][6]
 
 # External links
 
@@ -103,4 +103,4 @@ make reintegration
 [3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm "AIscm Debian package"
 [4]: https://github.com/wedesoft/aiscm/releases "AIscm source releases"
 [5]: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf "Theano paper"
-[6]: https://build.opensuse.org/package/show/home:wedesoft/aiscm "openSuSE AIscm build"
+[6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
