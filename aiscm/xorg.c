@@ -5,7 +5,9 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
+#include <X11/xpm.h>
 #include <libguile.h>
+#include "aiscm.xpm"
 
 #ifndef timersub
 #define timersub(a, b, result)                       \
@@ -286,6 +288,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
   self->io = scm_to_int(scm_io);
   self->width = scm_to_int(scm_width);
   self->height = scm_to_int(scm_height);
+
   switch (self->io) {
     case IO_XIMAGE:
       self->visual_info = (XVisualInfo *)scm_gc_malloc_pointerless(sizeof(XVisualInfo), "XVisualInfo");
@@ -293,6 +296,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                             24, TrueColor, self->visual_info))
         scm_syserror("make-window");
       break;
+
     case IO_OPENGL: {
       int attributes[] = {GLX_RGBA,
                           GLX_RED_SIZE, 1,
@@ -303,6 +307,7 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                                           attributes);
       if (!self->visual_info) scm_syserror("make-window");
       break;}
+
     case IO_XVIDEO: {
       XWindowAttributes attributes;
       XGetWindowAttributes(display->display, DefaultRootWindow(display->display), &attributes);
@@ -359,9 +364,11 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
       };
       break;}
   };
+
   self->color_map = XCreateColormap(display->display, DefaultRootWindow(display->display),
                                     self->visual_info->visual, AllocNone);
   if (!self->color_map) scm_syserror("make-window");
+
   XSetWindowAttributes attributes;
   attributes.colormap = self->color_map;
   attributes.event_mask = KeyPressMask | ExposureMask | StructureNotifyMask;
@@ -370,12 +377,23 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
                                0, self->visual_info->depth, InputOutput, self->visual_info->visual,
                                CWColormap | CWEventMask, &attributes);
   if (!self->window) scm_syserror("make-window");
+
+  // Initialise graphics context
   XGCValues xgcv;
   self->gc = XCreateGC(display->display, self->window, 0L, &xgcv);
   if (!self->gc) scm_syserror("make-window");
+
+  // Do not delete window when it is closed.
   self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
+
+  // Set window icon
+  XWMHints wm_hints;
+  XpmCreatePixmapFromData(display->display, self->window, aiscm_xpm, &wm_hints.icon_pixmap, &wm_hints.icon_mask, 0);
+  wm_hints.flags = IconPixmapHint | IconMaskHint;
+  XSetWMHints(display->display, self->window, &wm_hints);
+
   display->scm_windows = scm_cons(retval, display->scm_windows);
   return retval;
 }

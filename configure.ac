@@ -79,6 +79,15 @@ AC_TRY_LINK([#include <libavutil/imgutils.h>],
             [AC_MSG_RESULT([no])])
 LIBS="$old_LIBS"
 
+LIBS="$LIBS -lXpm"
+AC_MSG_CHECKING([for XpmCreatePixmapFromData])
+AC_TRY_LINK([#include <X11/xpm.h>],
+            [XpmCreatePixmapFromData(0, 0, 0, 0, 0, 0)],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate Xpm library])])
+LIBS="$old_LIBS"
+
 GUILE_PKG([2.2 2.0 1.8])
 GUILE_PROGS
 GUILE_FLAGS

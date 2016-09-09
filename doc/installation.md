@@ -5,10 +5,10 @@
 ![](package.png "")
 
 There are AMD64 binaries for
-![](debian.png "Debian") Jessie (8),
-![](debian.png "Debian") Sid (9),
-![](ubuntu.png "Ubuntu") Trusty (14.04), and
-![](ubuntu.png "Ubuntu") Xenial (16.04)
+[![](debian.png "Debian")](https://www.debian.org/) Jessie (8),
+[![](debian.png "Debian")](https://www.debian.org/) Sid (9),
+[![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04), and
+[![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04)
 
 To install the software, you have to add the AIscm repository to your list of repositories and install via apt-get. To do this, paste the following lines into your terminal:
 

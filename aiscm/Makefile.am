@@ -59,7 +59,7 @@ libguile_aiscm_v4l2_la_LIBADD = $(GUILE_LIBS)
 libguile_aiscm_xorg_la_SOURCES = xorg.c
 libguile_aiscm_xorg_la_CFLAGS = $(GUILE_CFLAGS) $(X_CFLAGS)
 libguile_aiscm_xorg_la_LDFLAGS = -no-undefined
-libguile_aiscm_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv
+libguile_aiscm_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv -lXpm
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))
@@ -69,7 +69,7 @@ install-data-hook:
 
 $(cache_DATA): $(extension_LTLIBRARIES)
 
-EXTRA_DIST = $(site_DATA)
+EXTRA_DIST = $(site_DATA) aiscm.xpm
 
 CLEANFILES = *.tmp *.go*
 
