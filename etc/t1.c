@@ -1,18 +1,8 @@
 #include <stdlib.h>
 
-int f(int a, int b, int c, int d, int e, int f, int g, int h)
-{
-  return a + b + c + d + e + f + g + h;
-}
+int f(int a, int b, int c, int d, int e, int f, int g);
 
-int g(int a, int b, int c, int d, int e, int f, int g, int h);
-
-int h(int x, int y)
+int h(int a)
 {
-  return g(x, 1, 2, 3, 4, 5, y, 7);
-}
-
-int i(void)
-{
-  return random();
+  return f(a, a, a, a, a, a, a);
 }

@@ -23,11 +23,10 @@
 * inject: equality, sum, mininum, maximum of frames
 * basic io module, read-video -> read-image, v4l2: grab -> read-image
 * shape of xorg window
-* xorg window scaling, fullscreen windows
+* xorg window set size, fullscreen windows
 * use hash tables
 * use assp http://www.scheme.com/csug7/objects.html
 * conditional/select
-* git-init.xml asciidoc? jadetex? docbook2x
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
@@ -40,8 +39,8 @@
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
 * complex abs (magnitude), complex arg (and real)
+* video -> panorama stitching (multiresolution)
 * web server
-* X.Org window with width and height?
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
 * lexical sort

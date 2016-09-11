@@ -12,6 +12,7 @@
 (define jit-side-effect     (dynamic-func "jit_side_effect"     guile-aiscm-tests))
 (define jit-constant-fun    (dynamic-func "jit_constant_fun"    guile-aiscm-tests))
 (define jit-subtracting-fun (dynamic-func "jit_subtracting_fun" guile-aiscm-tests))
+(define jit-seven-arguments (dynamic-func "jit_seven_arguments" guile-aiscm-tests))
 
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
     "setting stack position does not affect operations not involving pointers")
@@ -37,6 +38,8 @@
     "Compile function call and plus operation to test that caller-saved registers get blocked")
 (ok (equal? 2 ((jit ctx (list <int> <int>) (lambda (x y) (call <int> jit-subtracting-fun y x))) 5 7))
     "Compile function call taking two arguments")
-(ok (equal? 5 ((jit ctx (list <int> <int> <int>) (lambda (x y z) (call <int> jit-subtracting-fun x (+ y z)))) 10 2 3))
+(ok (equal? 5 ((jit ctx (make-list 3 <int>) (lambda (x y z) (call <int> jit-subtracting-fun x (+ y z)))) 10 2 3))
     "Pass result of expression to function call")
+(todo (equal? 42 ((jit ctx (list <int> <int>) (lambda (a b) (call <int> jit-seven-arguments a a a a a a b))) 123 42))
+    "Compile function call with seven arguments (requires stack parameters)")
 (run-tests)
