@@ -24,8 +24,8 @@ RUN mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 COPY aiscm.tar.gz .
 ADD configure.ac .
 ADD debian debian
-ADD Makefile.deb .
-RUN make -f Makefile.deb
+ADD Makefile.package .
+RUN make -f Makefile.package
 RUN dpkg --install pkg/aiscm_*.deb
 RUN useradd -m -s /bin/bash -u 1000 default
 USER default

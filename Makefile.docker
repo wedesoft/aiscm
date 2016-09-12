@@ -7,7 +7,7 @@ OPTS=
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
 
-all: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.deb
+all: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.package
 	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
 
 run: all
@@ -35,7 +35,7 @@ docker/debian:: debian
 docker/configure.ac: configure.ac
 	cp $< $@
 
-docker/Makefile.deb: Makefile.deb
+docker/Makefile.package: Makefile.package
 	cp $< $@
 
 aiscm-$(VERSION).tar.gz:
