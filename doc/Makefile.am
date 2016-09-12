@@ -16,7 +16,7 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 debian.png ubuntu.png source.png package.png
 
 EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
-						 operation.md aiscm.gif debian.png ubuntu.png source.png package.png
+						 operation.md aiscm.gif debian.png ubuntu.png source.png package.png dependencies.sh
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg *.html *.tmp
 
@@ -61,5 +61,5 @@ modulo.jpg: ../tests/integration/modulo.scm star-ferry.jpg
 .md.tmp:
 	$(ENVIRONMENT) $(GUILE) includes.scm < $< > $@ || rm -f $@
 
-%.html: %.tmp buttondown.css $(wildcard $(top_builddir)/tests/integration/*.scm)
+%.html: %.tmp buttondown.css $(wildcard $(top_builddir)/tests/integration/*.scm) dependencies.sh
 	$(PANDOC) $(PANDOC_OPTS) $(PANDOC_VARS) -o $@ $<
