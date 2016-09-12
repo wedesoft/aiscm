@@ -10,7 +10,7 @@ There are AMD64 binaries for
 [![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04), and
 [![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04)
 
-To install the software, you have to add the AIscm repository to your list of repositories and install via apt-get. To do this, paste the following lines into your terminal:
+To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*. To do this, paste the following lines into your terminal:
 
 ```
 echo "deb https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/aiscm.list

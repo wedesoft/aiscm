@@ -25,7 +25,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max)
-  #:export-syntax (define-jit-method map-to-fun))
+  #:export-syntax (define-jit-method map-to-fun pass-parameters))
 
 (define ctx (make <context>))
 
@@ -237,10 +237,12 @@
     parameters
     (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
-  (let [(need-saving (callee-saved (map cdr colors)))]
+  (let [(need-saving          (callee-saved (map cdr colors)))
+        (first-six-parameters (take-up-to parameters 6))
+        (remaining-parameters (drop-up-to parameters 6))]
     (append (save-registers need-saving offset)
-            ((spill-parameters (take-up-to parameters 6)) colors)
-            ((fetch-parameters (drop-up-to parameters 6)) colors)
+            ((spill-parameters first-six-parameters) colors)
+            ((fetch-parameters remaining-parameters) colors)
             (all-but-last (substitute-variables prog colors))
             (load-registers need-saving offset)
             (list (RET)))))
@@ -668,16 +670,24 @@
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
-(define (pass-parameters parameters)
-  (map (lambda (register parameter) (MOV (to-type (type parameter) register) (get (delegate parameter))))
-       register-parameters
-       parameters))
+(define-syntax-rule (pass-parameters parameters body ...)
+  (let [(first-six-parameters (take-up-to parameters 6))
+        (remaining-parameters (drop-up-to parameters 6))]
+    (append (map (lambda (register parameter) (MOV (to-type (type parameter) register) (get (delegate parameter))))
+                 register-parameters
+                 first-six-parameters)
+            (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
+            (list body ...)
+            (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 (define* ((native-fun return-type pointer) out args)
   (force-parameters (map type args) args
     (lambda intermediates
-      (blocked caller-saved (pass-parameters intermediates) (MOV RAX pointer) (CALL RAX)
-                            (MOV (get (delegate out)) (to-type return-type RAX))))))
+      (blocked caller-saved
+        (pass-parameters intermediates
+          (MOV RAX pointer)
+          (CALL RAX)
+          (MOV (get (delegate out)) (to-type return-type RAX)))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))
