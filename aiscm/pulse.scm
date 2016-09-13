@@ -12,7 +12,7 @@
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type write-samples read-samples flush drain latency))
+            type->pulse-type pulse-type->type flush drain latency))
 
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 
@@ -50,14 +50,14 @@
 (define-method (destroy (self <pulse>))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
 
-(define-method (write-samples (samples <sequence<>>) (self <pulse-play>)); TODO: check type
+(define-method (write-audio (samples <sequence<>>) (self <pulse-play>)); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
-(define-method (write-samples (samples <procedure>) (self <pulse-play>))
+(define-method (write-audio (samples <procedure>) (self <pulse-play>))
   (let [(result (samples))]
     (while result
-      (write-samples result self)
+      (write-audio result self)
       (set! result (samples)))))
-(define-method (read-samples (self <pulse-record>) (count <integer>))
+(define-method (read-audio (self <pulse-record>) (count <integer>))
   (let* [(size    (* count (channels self) (size-of (typecode self))))
          (samples (pulsedev-read (slot-ref self 'pulsedev) size))
          (memory  (make <mem> #:base samples #:size size))]

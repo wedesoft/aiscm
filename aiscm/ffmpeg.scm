@@ -10,7 +10,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input read-audio frame-rate video-pts audio-pts pts=
+  #:export (<ffmpeg> open-ffmpeg-input frame-rate video-pts audio-pts pts=
             ffmpeg-buffer-push ffmpeg-buffer-pop))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -81,7 +81,7 @@
          ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
        #f)))
 
-(define (read-audio self)
+(define-method (read-audio (self <ffmpeg>))
   (or (ffmpeg-buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
 (define-method (read-image (self <ffmpeg>))
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))

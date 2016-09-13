@@ -5,6 +5,6 @@
 ;1
 (rate output)
 ;44100
-(for-each (lambda _ (write-samples samples output)) (iota 300))
+(for-each (lambda _ (write-audio samples output)) (iota 300))
 (drain output)
 (destroy output)

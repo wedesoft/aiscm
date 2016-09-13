@@ -1,6 +1,7 @@
 ## Ready
 
-* read-samples -> read-audio, write-samples -> write-audio
+* read-image, write-image in imagemagick
+* reading and writing with Guile file decriptors or Guile network sockets?
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)

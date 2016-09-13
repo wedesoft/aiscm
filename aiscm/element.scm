@@ -6,7 +6,8 @@
             <meta<element>>
             value get set size-of foreign-type pack unpack channels rate
             typecode size shape strides dimensions coerce match wrap get-size
-            build content component base to-type duplicate read-image))
+            build content component base to-type duplicate read-image read-audio
+            write-image write-audio))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
 (define-method (size-of (self <element>)) (size-of (class-of self)))
@@ -38,3 +39,6 @@
 (define-generic to-type)
 (define-generic duplicate)
 (define-generic read-image)
+(define-generic read-audio)
+(define-generic write-image)
+(define-generic write-audio)

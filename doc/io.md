@@ -110,7 +110,7 @@ I.e. the following example will play a video from a web server.
 
 ## Audio files
 
-One can play samples from an audio file by passing them to the audio device using the *write-samples* method.
+One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
 It is also possible to pass a function returning consecutive audio samples as shown below.
 
 ```Scheme
