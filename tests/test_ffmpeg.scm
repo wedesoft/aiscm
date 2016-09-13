@@ -17,9 +17,9 @@
 (define image (open-ffmpeg-input "fixtures/fubk.png"))
 
 (define video-pts0 (video-pts video))
-(define video-frame (read-video video))
+(define video-frame (read-image video))
 (define video-pts1 (video-pts video))
-(define video-frame (read-video video))
+(define video-frame (read-image video))
 (define video-pts2 (video-pts video))
 
 (define audio-pts0 (audio-pts audio-mono))
@@ -31,7 +31,7 @@
 (define audio-stereo-frame (read-audio audio-stereo))
 
 (define full-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
-(define images (map (lambda _ (read-video full-video)) (iota 2253)))
+(define images (map (lambda _ (read-image full-video)) (iota 2253)))
 (define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
 (define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
 
@@ -73,7 +73,7 @@
     "Get frame rate of video")
 (ok (throws? (frame-rate audio-mono))
     "Audio file does not have a frame rate")
-(ok (not (cadr (list (read-video image) (read-video image))))
+(ok (not (cadr (list (read-image image) (read-image image))))
     "Image has only one video frame")
 (ok (equal? (rgb 195 179 137) (get (to-array video-frame) 100 200))
     "Check a pixel in the first video frame of the video")
@@ -81,8 +81,8 @@
     "Check first three video frame time stamps")
 (ok (last images)
     "Check last image of video was read")
-(ok (not (read-video full-video))
-    "Check 'read-video' returns false after last frame")
+(ok (not (read-image full-video))
+    "Check 'read-image' returns false after last frame")
 (ok (eqv? 1 (channels audio-mono))
     "Detect mono audio stream")
 (ok (eqv? 2 (channels video))
@@ -118,11 +118,11 @@
     "Do not hang when reading audio from image")
 (ok (eqv? 15 (pts= video 15))
     "Seeking should return the time parameter")
-(ok (<= 15 (begin (read-video video) (video-pts video)))
+(ok (<= 15 (begin (read-image video) (video-pts video)))
     "Seeking audio/video should update the video position")
 (let [(image (open-ffmpeg-input "fixtures/fubk.png"))]
   (read-audio image)
-  (ok (read-video image)
+  (ok (read-image image)
       "Cache video data when reading audio"))
 (let [(dummy (make <dummy>))]
   (ok (not (ffmpeg-buffer-pop dummy 'buffer 'clock))

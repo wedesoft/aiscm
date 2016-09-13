@@ -4,6 +4,5 @@
 (show
   (lambda (dsp)
     (while (< (audio-pts video) (+ (video-pts video) 0.2)) (write-samples (or (read-audio video) (break)) pulse))
-    (synchronise (read-video video) (- (video-pts video) (- (audio-pts video) (latency pulse))) (event-loop dsp))))
+    (synchronise (read-image video) (- (video-pts video) (- (audio-pts video) (latency pulse))) (event-loop dsp))))
 (drain pulse)
-

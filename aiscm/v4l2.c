@@ -249,18 +249,18 @@ SCM videodev2_shape(SCM scm_self)
 {
   struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
-    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
+    scm_misc_error("videodev2-read-image", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
   return scm_list_2(scm_from_int(width), scm_from_int(height));
 }
 
-static SCM grab_io_read(struct videodev2_t *self, int width, int height)
+static SCM read_image_io_read(struct videodev2_t *self, int width, int height)
 {
   int size = self->format.fmt.pix.sizeimage;
   void *buf = scm_gc_malloc_pointerless(size, "aiscm v4l2 frame");
   if (read(self->fd, buf, size) == -1)
-    scm_misc_error("videodev2-grab", "Error reading from device: ~a",
+    scm_misc_error("videodev2-read-image", "Error reading from device: ~a",
                    scm_list_1(scm_from_locale_string(strerror(errno))));
   return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
                     scm_list_2(scm_from_int(width), scm_from_int(height)),
@@ -268,11 +268,11 @@ static SCM grab_io_read(struct videodev2_t *self, int width, int height)
                     scm_from_int(size));
 }
 
-static SCM grab_io_mmap_userptr(struct videodev2_t *self, int width, int height)
+static SCM read_image_io_mmap_userptr(struct videodev2_t *self, int width, int height)
 {
   if (self->frame_used) {
     if (xioctl(self->fd, VIDIOC_QBUF, &self->frame))
-      scm_misc_error("videodev2-grab", "Error queueing video buffer: ~a",
+      scm_misc_error("videodev2-read-image", "Error queueing video buffer: ~a",
                      scm_list_1(scm_from_locale_string(strerror(errno))));
     self->frame_used = 0;
   };
@@ -280,7 +280,7 @@ static SCM grab_io_mmap_userptr(struct videodev2_t *self, int width, int height)
   self->frame.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   self->frame.memory = self->io == IO_MMAP ? V4L2_MEMORY_MMAP : V4L2_MEMORY_USERPTR;
   if (xioctl(self->fd, VIDIOC_DQBUF, &self->frame))
-    scm_misc_error("videodev2-grab", "Error dequeueing video buffer: ~a",
+    scm_misc_error("videodev2-read-image", "Error dequeueing video buffer: ~a",
                    scm_list_1(scm_from_locale_string(strerror(errno))));
   self->frame_used = 1;
   void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
@@ -290,16 +290,16 @@ static SCM grab_io_mmap_userptr(struct videodev2_t *self, int width, int height)
                     scm_from_int(self->format.fmt.pix.sizeimage));
 }
 
-SCM videodev2_grab(SCM scm_self)
+SCM videodev2_read_image(SCM scm_self)
 {
   struct videodev2_t *self = get_self(scm_self);
   if (self->fd <= 0)
-    scm_misc_error("videodev2-grab", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
+    scm_misc_error("videodev2-read-image", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
   return self->io == IO_READ ?
-         grab_io_read(self, width, height) :
-         grab_io_mmap_userptr(self, width, height);
+         read_image_io_read(self, width, height) :
+         read_image_io_mmap_userptr(self, width, height);
 }
 
 void init_v4l2(void)
@@ -316,5 +316,5 @@ void init_v4l2(void)
   scm_c_define_gsubr("make-videodev2", 3, 0, 0, make_videodev2);
   scm_c_define_gsubr("videodev2-destroy", 1, 0, 0, videodev2_destroy);
   scm_c_define_gsubr("videodev2-shape", 1, 0, 0, videodev2_shape);
-  scm_c_define_gsubr("videodev2-grab", 1, 0, 0, videodev2_grab);
+  scm_c_define_gsubr("videodev2-read-image", 1, 0, 0, videodev2_read_image);
 }

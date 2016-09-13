@@ -1,9 +1,10 @@
 ## Ready
 
-* stack parameters for function calls
+* read-samples -> read-audio, write-samples -> write-audio
+* spill blocked registers into other register
+* call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * jit calls to other already compiled methods
-* spill blocked registers into other register
 * avoid multiple copy operations (block boundaries?)
 * tensor dimensions
 * closing of ffmpeg input, ffmpeg output
@@ -21,7 +22,6 @@
 * use libswresample for audio conversions
 * split up into separate packages
 * inject: equality, sum, mininum, maximum of frames
-* basic io module, read-video -> read-image, v4l2: grab -> read-image
 * shape of xorg window
 * xorg window set size, fullscreen windows
 * use hash tables

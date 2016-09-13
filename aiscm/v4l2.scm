@@ -9,7 +9,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm sequence)
   #:use-module (system foreign)
-  #:export (<v4l2> <meta<v4l2>> grab))
+  #:export (<v4l2> <meta<v4l2>>))
 
 (load-extension "libguile-aiscm-v4l2" "init_v4l2")
 
@@ -53,8 +53,8 @@
 
 (define-method (shape (self <v4l2>)) (videodev2-shape (slot-ref self 'videodev2)))
 
-(define-method (grab (self <v4l2>))
-  (let [(picture (videodev2-grab (slot-ref self 'videodev2)))
+(define-method (read-image (self <v4l2>))
+  (let [(picture (videodev2-read-image (slot-ref self 'videodev2)))
         (memory  (lambda (base size) (make <mem> #:base base #:size size)))]
     (apply (lambda (format shape base size)
              (make <image>
