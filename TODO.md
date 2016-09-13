@@ -1,10 +1,11 @@
 ## Ready
 
-* read-image, write-image in imagemagick
 * reading and writing with Guile file decriptors or Guile network sockets?
+* <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
+* use re-export for content of pointer.scm and element.scm
 * jit calls to other already compiled methods
 * avoid multiple copy operations (block boundaries?)
 * tensor dimensions
@@ -30,7 +31,6 @@
 * conditional/select
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
-* <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
