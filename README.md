@@ -89,6 +89,7 @@ make reintegration
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python][5]
+* [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
