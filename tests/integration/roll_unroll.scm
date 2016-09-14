@@ -1,4 +1,4 @@
-(use-modules (aiscm sequence) (aiscm pointer) (aiscm element))
+(use-modules (aiscm sequence) (aiscm element))
 (define a (arr ((1 2 3) (4 5 6))))
 a
 ;#<sequence<sequence<sequence<sequence<int<8,unsigned>>>>>>:

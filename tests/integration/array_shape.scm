@@ -1,4 +1,4 @@
-(use-modules (aiscm element) (aiscm pointer) (aiscm sequence) (aiscm int))
+(use-modules (aiscm element) (aiscm sequence) (aiscm int))
 (define a (arr <int> ((1 2 3) (4 5 6))))
 (dimensions a)
 ;3

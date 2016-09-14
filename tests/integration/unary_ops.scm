@@ -1,4 +1,4 @@
-(use-modules (aiscm sequence) (aiscm pointer) (aiscm int) (aiscm jit) (aiscm rgb) (aiscm complex))
+(use-modules (aiscm sequence) (aiscm int) (aiscm jit) (aiscm rgb) (aiscm complex))
 (- (seq <int> 2 3 5))
 ;#<sequence<int<32,signed>>>:
 ;(-2 -3 -5)

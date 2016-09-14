@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm int) (aiscm rgb) (aiscm sequence) (aiscm pointer))
+(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm int) (aiscm rgb) (aiscm sequence))
 (define ctx (make <context>))
 (define f (jit ctx (list (rgb <int>) (sequence <int>)) (lambda (x y) (+ x y))))
 (f (rgb 1 2 3) (seq <int> 4 5 6))
