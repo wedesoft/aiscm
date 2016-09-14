@@ -1,14 +1,15 @@
 ## Ready
 
-* reading and writing with Guile file decriptors or Guile network sockets?
+* use re-export for util, element, and pointer
+* destroy: move from util to base?
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
-* command-line tools, GUI tools: calibration, tracking, detection, speech processing, SLAM (hash-bang?)
-* use re-export for content of pointer.scm and element.scm
+* command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * jit calls to other already compiled methods
 * avoid multiple copy operations (block boundaries?)
 * tensor dimensions
+* reading and writing with Guile file decriptors or Guile network sockets?
 * closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors

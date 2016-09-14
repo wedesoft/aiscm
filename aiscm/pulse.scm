@@ -12,7 +12,8 @@
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type flush drain latency))
+            type->pulse-type pulse-type->type flush drain latency)
+  #:re-export (destroy))
 
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 

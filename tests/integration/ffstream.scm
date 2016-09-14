@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm ffmpeg) (aiscm xorg) (aiscm pulse) (aiscm util) (aiscm element) (aiscm image))
+(use-modules (oop goops) (aiscm ffmpeg) (aiscm xorg) (aiscm pulse) (aiscm element) (aiscm image) (aiscm util))
 (define video (open-ffmpeg-input "http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4"))
 (define pulse (make <pulse-play> #:rate (rate video) #:channels (channels video) #:typecode (typecode video) #:latency 0.1))
 (show

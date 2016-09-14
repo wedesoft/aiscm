@@ -11,7 +11,8 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit=
-            show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO))
+            show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO)
+  #:re-export (destroy))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
   (display #:init-keyword #:display #:getter get-display))
