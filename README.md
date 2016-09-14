@@ -91,6 +91,8 @@ make reintegration
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python][5]
 * [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
+* [Arrayfire: accelerated computing library](http://arrayfire.com/)
+* [Halide: a language for image processing and computational photography](http://halide-lang.org/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)

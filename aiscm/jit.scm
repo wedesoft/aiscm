@@ -24,7 +24,7 @@
             need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
-  #:re-export (min max)
+  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method map-to-fun pass-parameters))
 
 (define ctx (make <context>))

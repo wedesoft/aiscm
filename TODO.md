@@ -1,6 +1,6 @@
 ## Ready
 
-* use re-export for (aiscm element) stuff
+* xorg: show -> write-image?
 * destroy: move from util to base?
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * spill blocked registers into other register

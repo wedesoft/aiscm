@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm element) (aiscm v4l2) (aiscm xorg))
+(use-modules (oop goops) (aiscm v4l2) (aiscm xorg))
 (define v (make <v4l2>))
 (define d (make <xdisplay> #:name ":0.0"))
 (define w (make <xwindow> #:display d #:shape '(640 480) #:io IO-XVIDEO))

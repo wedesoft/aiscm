@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm ffmpeg) (aiscm xorg) (aiscm pulse) (aiscm element) (aiscm image) (aiscm util))
+(use-modules (oop goops) (aiscm ffmpeg) (aiscm xorg) (aiscm pulse) (aiscm image) (aiscm util))
 ; Creative commons audio-video sync test video https://www.youtube.com/watch?v=GKBKa9Za-FQ
 (define video (open-ffmpeg-input "av-sync.mp4"))
 (define pulse (make <pulse-play> #:rate (rate video) #:channels (channels video) #:typecode (typecode video) #:latency 0.1))

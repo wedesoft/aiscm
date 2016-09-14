@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm element) (aiscm int) (aiscm sequence) (aiscm pulse))
+(use-modules (oop goops) (aiscm int) (aiscm pulse))
 (define record (make <pulse-record> #:typecode <sint> #:channels 2 #:rate 44100))
 (define play (make <pulse-play> #:typecode <sint> #:channels 2 #:rate 44100))
 (for-each (lambda _ (write-audio (read-audio record 4410) play)) (iota 30))

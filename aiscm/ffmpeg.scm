@@ -11,7 +11,8 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input frame-rate video-pts audio-pts pts=
-            ffmpeg-buffer-push ffmpeg-buffer-pop))
+            ffmpeg-buffer-push ffmpeg-buffer-pop)
+  #:re-export (read-image read-audio rate channels typecode))
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 

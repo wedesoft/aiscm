@@ -9,11 +9,12 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
-  #:export (complex
-            <internalcomplex>
+  #:export (<internalcomplex>
             <complex<>> <meta<complex<>>>
-            <pointer<complex<>>> <meta<pointer<complex<>>>>)
-  #:re-export (real-part imag-part))
+            <pointer<complex<>>> <meta<pointer<complex<>>>>
+            complex)
+  #:re-export (<pointer<element>> <meta<pointer<element>>>
+               real-part imag-part to-type conj))
 
 (define ctx (make <context>))
 

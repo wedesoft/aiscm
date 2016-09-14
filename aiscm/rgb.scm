@@ -12,8 +12,7 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
-  #:export (rgb red green blue
-            <rgb>
+  #:export (<rgb>
             <rgb<>> <meta<rgb<>>>
             <pointer<rgb<>>> <meta<pointer<rgb>>>>
             <ubytergb> <rgb<int<8,unsigned>>>  <meta<rgb<int<8,unsigned>>>>
@@ -23,7 +22,8 @@
             <uintrgb>  <rgb<int<32,unsigned>>> <meta<rgb<int<32,unsigned>>>>
             <intrgb>   <rgb<int<32,signed>>>   <meta<rgb<int<32,signed>>>>
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
-            <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>)
+            <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
+            rgb red green blue)
   #:re-export (+ -))
 
 (define ctx (make <context>))

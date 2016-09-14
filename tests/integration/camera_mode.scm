@@ -1,4 +1,4 @@
-(use-modules (oop goops) (ice-9 rdelim) (aiscm element) (aiscm v4l2))
+(use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2))
 (define (select formats)
   (for-each (lambda (i mode) (format #t "~a: ~a~&" i mode))
             (iota (length formats))

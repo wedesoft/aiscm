@@ -8,7 +8,11 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm jit)
-  #:use-module (aiscm op))
+  #:use-module (aiscm op)
+  #:re-export (<pointer<element>> <meta<pointer<element>>>
+               <pointer<rgb<>>> <meta<pointer<rgb>>>>
+               read-image write-image))
+
 (load-extension "libguile-aiscm-magick" "init_magick")
 (define-method (read-image (file-name <string>))
   (let [(picture    (magick-read-image file-name))

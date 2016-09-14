@@ -1,2 +1,2 @@
-(use-modules (aiscm magick) (aiscm xorg) (aiscm element))
+(use-modules (aiscm magick) (aiscm xorg))
 (show (read-image "fubk.png"))

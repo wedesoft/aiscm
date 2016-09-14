@@ -13,10 +13,8 @@
             sequence seq multiarray to-list to-array default-strides
             dump crop project roll unroll downsample dimension stride)
   #:export-syntax (arr)
-  #:re-export (<pointer<>> <meta<pointer<>>>
-               <pointer<element>> <meta<pointer<element>>>
-               <pointer<int<>>> <meta<pointer<int<>>>>
-               pointer))
+  #:re-export (<pointer<element>> <meta<pointer<element>>>
+               <pointer<int<>>> <meta<pointer<int<>>>>))
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))

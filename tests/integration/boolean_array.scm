@@ -1,4 +1,4 @@
-(use-modules (aiscm element) (aiscm sequence) (aiscm int) (aiscm bool) (aiscm jit))
+(use-modules (aiscm sequence) (aiscm int) (aiscm bool) (aiscm jit))
 (define b (seq #f #f #t #t #f #t))
 b
 ;#<sequence<bool>>:
