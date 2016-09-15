@@ -12,7 +12,7 @@
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit=
             show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO)
-  #:re-export (destroy))
+  #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
   (display #:init-keyword #:display #:getter get-display))
@@ -43,7 +43,7 @@
          (window  (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
          (windows (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
-    (for-each show windows images)
+    (for-each write-image images windows)
     (for-each show windows)
     (event-loop dsp #f)
     (for-each hide windows)
@@ -60,7 +60,7 @@
          (window  (cut make <xwindow> #:display dsp #:shape <> #:io io))
          (windows (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
-    (for-each show windows images)
+    (for-each write-image images windows)
     (for-each show windows)
     (while (not (quit? dsp))
       (set! result (self dsp))
@@ -68,7 +68,7 @@
         (begin
           (set! results (if (list? result) result (list result)))
           (set! images (map to-image results))
-          (for-each show windows images)
+          (for-each write-image images windows)
           (process-events dsp))
         (quit= dsp #t)))
     (for-each hide windows)
@@ -79,5 +79,5 @@
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
 (define-method (resize (self <xwindow>) (shape <list>))
   (window-resize (get-window self) (car shape) (cadr shape)))
-(define-method (show (self <xwindow>) (image <image>)) (window-write (get-window self) image))
-(define-method (show (self <xwindow>) (arr <sequence<>>)) (show self (to-image arr)) arr)
+(define-method (write-image (image <image>) (self <xwindow>)) (window-write (get-window self) image))
+(define-method (write-image (arr <sequence<>>) (self <xwindow>)) (show self (to-image arr)) arr)

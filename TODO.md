@@ -1,7 +1,5 @@
 ## Ready
 
-* xorg: show -> write-image?
-* destroy: move from util to base?
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
