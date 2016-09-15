@@ -177,4 +177,4 @@
   (let [(result expr)]
     (method (max 0 time-remaining))
     result))
-(define (object-slots obj) (map (compose (cut slot-ref obj <>) car) (class-slots (class-of obj))))
+(define (object-slots obj) (map (compose (cut slot-ref obj <>) slot-definition-name) (class-slots (class-of obj))))
