@@ -5,7 +5,6 @@
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * jit calls to other already compiled methods
-* avoid multiple copy operations (block boundaries?)
 * tensor dimensions
 * reading and writing with Guile file decriptors or Guile network sockets?
 * closing of ffmpeg input, ffmpeg output
