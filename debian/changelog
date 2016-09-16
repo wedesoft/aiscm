@@ -7,13 +7,13 @@ aiscm (0.7.1-1) UNRELEASED; urgency=low
   - use re-export statements to make modules more independent
   - use read-image, read-audio, write-image, and write-audio throughout
 
- -- jan wedekind <jan@wedesoft.de>  Wed, 16 Sep 2016 12:46:00 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 16 Sep 2016 17:43:00 +0100
 
 aiscm (0.6.2-2) UNRELEASED; urgency=low
 
   - Make releases for different distros
 
- -- jan wedekind <jan@wedesoft.de>  Wed, 7 Sep 2016 20:10:18 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 7 Sep 2016 20:10:18 +0100
 
 aiscm (0.6.2-1) UNRELEASED; urgency=low
 

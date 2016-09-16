@@ -17,8 +17,8 @@
 (define jit-subtracting-fun (dynamic-func "jit_subtracting_fun" guile-aiscm-tests))
 (define jit-seven-arguments (dynamic-func "jit_seven_arguments" guile-aiscm-tests))
 
-(define libm (dynamic-link "libm"))
-(define libm-abs (dynamic-func "abs" libm))
+(define main (dynamic-link))
+(define cabs (dynamic-func "abs" main))
 
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
     "setting stack position does not affect operations not involving pointers")
@@ -56,6 +56,6 @@
     "Pass result of expression to function call")
 (ok (equal? 42 ((jit ctx (list <int> <int>) (lambda (a b) (call <int> jit-seven-arguments a a a a a a b))) 123 42))
     "Compile function call with seven arguments (requires stack parameters)")
-(ok (equal? 42 ((jit ctx (list <int>) (cut call <int> libm-abs <>)) -42))
+(ok (equal? 42 ((jit ctx (list <int>) (cut call <int> cabs <>)) -42))
     "call C standard library abs function")
 (run-tests)
