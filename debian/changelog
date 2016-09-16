@@ -1,3 +1,14 @@
+aiscm (0.7.1-1) UNRELEASED; urgency=low
+
+  * doc/installation.md: updated installation documentation
+  * aiscm/aiscm.xpm: added installation documentation
+  - FFmpeg network stream example
+  - better test video
+  - use re-export statements to make modules more independent
+  - use read-image, read-audio, write-image, and write-audio throughout
+
+ -- jan wedekind <jan@wedesoft.de>  Wed, 16 Sep 2016 12:46:00 +0100
+
 aiscm (0.6.2-2) UNRELEASED; urgency=low
 
   - Make releases for different distros

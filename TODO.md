@@ -16,7 +16,6 @@
 * synchronise with display to prevent video tearing
 * writing videos
 * https://github.com/antoniogarro/guile-matrix
-* test data license https://www.youtube.com/watch?v=cGgf_dbDMsw
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
 * use libswresample for audio conversions
@@ -59,6 +58,7 @@
 * duplicate image
 * types composed of Scheme objects
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
+* subpixel corner detector using steerable filters
 * use thumbnail images to illustrate examples
 * update live intervals instead of recomputing
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
