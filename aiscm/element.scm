@@ -5,7 +5,7 @@
   #:export (<element>
             <meta<element>>
             value get set size-of foreign-type pack unpack channels rate
-            typecode size shape strides dimensions coerce match wrap get-size
+            typecode size shape strides dimensions coerce native-type wrap get-size
             build content component base to-type duplicate read-image read-audio
             write-image write-audio))
 (define-class* <element> <object> <meta<element>> <class>
@@ -28,8 +28,8 @@
 (define-method (set (self <element>) value) (begin (slot-set! self 'value value)) value)
 (define-generic slice)
 (define-generic coerce)
-(define-generic match)
-(define-method (wrap self) (make (match self) #:value self))
+(define-generic native-type)
+(define-method (wrap self) (make (native-type self) #:value self))
 (define-method (wrap (self <element>)) self)
 (define-generic get-size)
 (define-generic build)

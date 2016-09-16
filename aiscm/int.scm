@@ -69,7 +69,7 @@
       (if (signed? b) (coerce (to-signed a) b) (integer max-bits unsigned)))))
 (define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>)) a)
 (define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>)) b)
-(define-method (match (i <integer>) . args)
+(define-method (native-type (i <integer>) . args)
   (if (every integer? args)
     (let [(lower (apply min (cons i args)))
           (upper (apply max (cons i args)))]
@@ -85,7 +85,7 @@
                 ((< nlower (ash 1 31))  <int>)
                 ((< nlower (ash 1 63)) <long>)
                 (else (next-method))))))
-    (apply match (sort-by-pred (cons i args) integer?))))
+    (apply native-type (sort-by-pred (cons i args) integer?))))
 (define-method (build (self <meta<int<>>>) value) (make self #:value value))
 (define-method (content (self <integer>)) (list self))
 (define-method (~ (self <integer>)) (lognot self))

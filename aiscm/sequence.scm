@@ -90,7 +90,7 @@
   (map (compose to-list (cut get self <>)) (iota (last (shape self)))))
 (define-method (shape (self <null>)) #f)
 (define-method (shape (self <pair>)) (attach (shape (car self)) (length self)))
-(define-method (to-array (lst <list>)) (to-array (apply match (flatten lst)) lst))
+(define-method (to-array (lst <list>)) (to-array (apply native-type (flatten lst)) lst))
 (define-method (to-array (typecode <meta<element>>) (lst <list>))
   (let* [(shape  (shape lst))
          (retval (make (multiarray typecode (length shape)) #:shape shape))]

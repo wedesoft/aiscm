@@ -70,8 +70,8 @@
 (define-method (coerce (a <meta<element>>) (b <meta<rgb<>>>)) (rgb (coerce a (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimensions b)))
-(define-method (match (c <rgb>) . args)
-  (rgb (apply match (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
+(define-method (native-type (c <rgb>) . args)
+  (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (self <rgb>)) (map (cut <> self) (list red green blue) ))
 (define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue))); TODO: test, refactor
