@@ -6,6 +6,7 @@
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * jit calls to other already compiled methods
 * tensor dimensions
+* use (ice-9 match) to simplify and translate assembler code?
 * reading and writing with Guile file decriptors or Guile network sockets?
 * closing of ffmpeg input, ffmpeg output
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
