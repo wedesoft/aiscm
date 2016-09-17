@@ -1,6 +1,6 @@
 # [AIscm][1]
 
-[![GPLv3](https://img.shields.io/github/license/wedesoft/aiscm.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm) [![GitHub](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![Guile 2.0.11](http://img.shields.io/badge/Guile-2.0.11-yellow.png)](http://www.gnu.org/software/guile) [![amd64](http://img.shields.io/badge/architecture-amd64-lightgrey.png)](https://en.wikipedia.org/wiki/X86-64) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.61752.svg)](http://dx.doi.org/10.5281/zenodo.61752)
+[![GPLv3](https://img.shields.io/github/license/wedesoft/aiscm.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm) [![GitHub](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![Guile 2.0.11](http://img.shields.io/badge/Guile-2.0.11-yellow.png)](http://www.gnu.org/software/guile) [![amd64](http://img.shields.io/badge/architecture-amd64-lightgrey.png)](https://en.wikipedia.org/wiki/X86-64) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.154229.svg)](http://dx.doi.org/10.5281/zenodo.154229)
 
 [**AIscm**][1] is a **real-time computer vision extension** for the [**Guile programming language**][2].
 Performance in Scheme is achieved by means of a JIT compiler.
@@ -103,7 +103,6 @@ make reintegration
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"
-[3]: http://software.opensuse.org/download.html?project=home%3Awedesoft&package=aiscm "AIscm Debian package"
 [4]: https://github.com/wedesoft/aiscm/releases "AIscm source releases"
 [5]: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf "Theano paper"
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
