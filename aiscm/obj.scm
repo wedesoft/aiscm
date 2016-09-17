@@ -1,0 +1,6 @@
+(define-module (aiscm obj)
+  #:use-module (oop goops)
+  #:use-module (aiscm util)
+  #:use-module (aiscm scalar)
+  #:export (<obj> <meta<obj>>)) 
+(define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)

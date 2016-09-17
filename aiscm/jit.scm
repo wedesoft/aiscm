@@ -12,6 +12,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
+  #:use-module (aiscm obj)
   #:use-module (aiscm sequence)
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
@@ -142,6 +143,7 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
+(define-method (var self) (var <long>))
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
@@ -396,6 +398,7 @@
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimensions self)))
 
+(define-method (skeleton self) (make <obj> #:value (var self)))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]

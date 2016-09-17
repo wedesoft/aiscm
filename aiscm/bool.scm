@@ -5,8 +5,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm scalar)
-  #:export (<bool>
-            <meta<bool>>
+  #:export (<bool> <meta<bool>>
             && || ! !=)
   #:re-export (=))
 (define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
