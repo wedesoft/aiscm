@@ -143,9 +143,9 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
-(define-method (var self) (var <long>))
 (define-method (var (self <meta<element>>)) (make <var> #:type self))
 (define-method (var (self <meta<bool>>)) (var <ubyte>))
+(define-method (var (self <meta<obj>>)) (var <long>))
 (define-method (var (self <meta<pointer<>>>)) (var <long>))
 
 ; get program positions of labels
@@ -398,7 +398,6 @@
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
   (multiarray target (dimensions self)))
 
-(define-method (skeleton self) (make <obj> #:value (var self)))
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
   (let [(slice (skeleton (project self)))]
@@ -514,6 +513,7 @@
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
+(define-method (content (self <var>)) (list self))
 (define-method (content (self <param>)) (map parameter (content (delegate self))))
 (define-method (content (self <function>))
   (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
@@ -567,6 +567,7 @@
 (define-method (returnable self) #f)
 (define-method (returnable (self <meta<bool>>)) <ubyte>)
 (define-method (returnable (self <meta<int<>>>)) self)
+(define-method (returnable (self <meta<obj>>)) <long>)
 (define (assemble retval vars expr virtual-variables)
   (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
                      (append-map (compose content get) (if (returnable (class-of retval)) vars (cons retval vars)))

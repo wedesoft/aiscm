@@ -33,7 +33,7 @@
 (define-method (wrap (self <element>)) self)
 (define-generic get-size)
 (define-generic build)
-(define-method (content self) (list self))
+(define-method (content (self <element>)) (list self))
 (define-method (component type self offset) self)
 (define-method (base self) self)
 (define-generic to-type)

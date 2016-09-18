@@ -59,15 +59,15 @@
     "Compile function call with seven arguments (requires stack parameters)")
 (ok (equal? 42 ((jit ctx (list <int>) (cut call <int> cabs <>)) -42))
     "call C standard library abs function")
-(ok (eq? <long> (typecode (var <top>)))
+(ok (eq? <long> (typecode (var <obj>)))
     "Scheme objects are represented using 64-bit integers")
-(let [(o (skeleton <top>))]
+(let [(o (skeleton <obj>))]
   (ok (is-a? o <obj>)
       "skeleton of top object is of type obj")
   (ok (is-a? (value o) <var>)
       "value of object skeleton is a variable")
   (ok (eq? <long> (typecode (value o)))
       "value of object skeleton is of type long integer"))
-(skip (eq? 'symbol ((jit ctx (list <top>) identity) 'symbol))
+(todo (eq? 'symbol ((jit ctx (list <obj>) identity) 'symbol))
     "compile and run identity function accepting Scheme object")
 (run-tests)
