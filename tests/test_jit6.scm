@@ -68,6 +68,6 @@
       "value of object skeleton is a variable")
   (ok (eq? <long> (typecode (value o)))
       "value of object skeleton is of type long integer"))
-(todo (eq? 'symbol ((jit ctx (list <obj>) identity) 'symbol))
+(ok (eq? 'symbol ((jit ctx (list <obj>) identity) 'symbol))
     "compile and run identity function accepting Scheme object")
 (run-tests)
