@@ -188,6 +188,8 @@
     "Downsample 3D array")
 (ok (equal? '(3 1) (take (content s1) 2))
     "'content' for an array should return size and stride")
+(ok (equal? '(3 1) (take (content <sequence<>> s1) 2))
+    "extract content when forcing type")
 (ok (equal? '(4 6 6 1) (take (content (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'content' for a 2D array should return shape and strides")
 (ok (signed? (seq -1 1))

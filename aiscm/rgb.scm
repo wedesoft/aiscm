@@ -73,8 +73,9 @@
 (define-method (native-type (c <rgb>) . args)
   (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) content list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
-(define-method (content (self <rgb>)) (map (cut <> self) (list red green blue) ))
-(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue))); TODO: test, refactor
+(define-method (content (self <rgb>)) (content <rgb<>> self))
+(define-method (content (type <meta<rgb<>>>) (self <rgb>)) (map (cut <> self) (list red green blue) ))
+(define-method (content (self <rgb<>>)) (map (cut <> self) (list red green blue)))
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content self)))))
 (define-syntax-rule (unary-rgb-op op) (define-method (op (a <rgb>)) (apply rgb (map op (content a)))))
 (unary-rgb-op -)

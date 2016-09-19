@@ -70,4 +70,6 @@
       "value of object skeleton is of type long integer"))
 (ok (eq? 'symbol ((jit ctx (list <obj>) identity) 'symbol))
     "compile and run identity function accepting Scheme object")
+(ok (eq? 42 ((jit ctx (list <obj>) identity) 42))
+    "make sure \"content\" enforces SCM object arguments")
 (run-tests)

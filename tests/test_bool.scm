@@ -66,6 +66,8 @@
     "'content' returns 0 for false")
 (ok (equal? '(1) (content #t))
     "'content' returns 1 for true")
+(ok (equal? '(1) (content <bool> #t))
+    "content of boolean when enforcing boolean")
 (ok (equal? '(#f #f #f #t) (map && '(#f #f #t #t) '(#f #t #f #t)))
     "'&&' behaves like 'and'")
 (ok (not (&& #t #t #f))

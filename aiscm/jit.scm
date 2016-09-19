@@ -581,11 +581,12 @@
          (target      (if return-type result-type (pointer result-type)))
          (retval      (skeleton target))
          (args        (if return-type vars (cons retval vars)))
+         (types       (if return-type classes (cons target classes)))
          (code        (asm context
                            (or return-type <null>)
                            (map typecode (append-map (compose content get) args))
                            (assemble retval vars expr virtual-variables)))
-         (fun         (lambda header (apply code (append-map content header))))]
+         (fun         (lambda header (apply code (append-map content types header))))]
     (if return-type
       (lambda args
         (let [(result (apply fun args))]

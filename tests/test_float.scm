@@ -54,4 +54,6 @@
     "build floating point number")
 (ok (equal? '(1.25) (content 1.25))
     "'content' returns floating point values")
+(ok (equal? '(1.25) (content <float> 1.25))
+    "content of floating point number when forcing float")
 (run-tests)
