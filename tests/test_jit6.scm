@@ -68,6 +68,8 @@
       "value of object skeleton is a variable")
   (ok (eq? <long> (typecode (value o)))
       "value of object skeleton is of type long integer"))
+(ok (is-a? (car (content <obj> (var <long>))) <var>)
+    "do not decompose variables")
 (ok (eq? 'symbol ((jit ctx (list <obj>) identity) 'symbol))
     "compile and run identity function accepting Scheme object")
 (ok (eq? 42 ((jit ctx (list <obj>) identity) 42))

@@ -160,7 +160,7 @@
     "return-value of setting integer")
 (ok (equal? (make <sint> #:value 42) (build <sint> 42))
     "build short integer")
-(ok (equal? '(42) (content 42))
+(ok (equal? '(42) (content <int<>> 42))
     "'content' returns integer values")
 (ok (equal? -43 (~ 42))
     "invert integer using '~'")

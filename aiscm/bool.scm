@@ -19,7 +19,6 @@
   (format port "#<<bool> ~a>" (get self)))
 (define-method (native-type (b <boolean>) . args) (if (every boolean? args) <bool> (next-method)))
 (define-method (build (self <meta<bool>>) value) (make self #:value (not (zero? value))))
-(define-method (content (self <boolean>)) (content <bool> self))
 (define-method (content (type <meta<bool>>) (self <boolean>)) (list (if self 1 0)))
 (define-method (&& a) a)
 (define-method (&& (a <boolean>) (b <boolean>)) (and a b))

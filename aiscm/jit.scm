@@ -513,8 +513,10 @@
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
+(define-method (content type (self <var>)) (list self)); TODO: is this needed?
+(define-method (content (type <meta<obj>>) (self <var>)) (list self))
 (define-method (content (self <var>)) (list self))
-(define-method (content (self <param>)) (map parameter (content (delegate self))))
+(define-method (content (self <param>)) (map parameter (content (type self) (delegate self))))
 (define-method (content (self <function>))
   (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
 
@@ -569,9 +571,11 @@
 (define-method (returnable (self <meta<int<>>>)) self)
 (define-method (returnable (self <meta<obj>>)) <long>)
 (define (assemble retval vars expr virtual-variables)
-  (virtual-variables (if (returnable (class-of retval)) (list (get retval)) '())
-                     (append-map (compose content get) (if (returnable (class-of retval)) vars (cons retval vars)))
-                     (attach (code (parameter retval) expr) (RET))))
+  (let* [(return-type (returnable (class-of retval)))
+         (result-vars (if return-type (list (get retval)) '()))
+         (args        (if return-type vars (cons retval vars)))
+         (arg-vars    (append-map content (map class-of args) (map get args)))]
+    (virtual-variables result-vars arg-vars (attach (code (parameter retval) expr) (RET)))))
 
 (define (jit context classes proc); TODO: split up and test
   (let* [(vars        (map skeleton classes))
@@ -584,7 +588,7 @@
          (types       (if return-type classes (cons target classes)))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (append-map (compose content get) args))
+                           (map typecode (append-map content types (map get args)))
                            (assemble retval vars expr virtual-variables)))
          (fun         (lambda header (apply code (append-map content types header))))]
     (if return-type

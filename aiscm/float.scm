@@ -46,5 +46,4 @@
       <double>
       (apply native-type (sort-by-pred (cons i args) real?))))
 (define-method (build (self <meta<float<>>>) value) (make self #:value value))
-(define-method (content (self <real>)) (list self))
-(define-method (content (type <meta<float<>>>) (self <real>)) (content self))
+(define-method (content (type <meta<float<>>>) (self <real>)) (list self))
