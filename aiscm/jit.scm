@@ -513,8 +513,7 @@
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
-(define-method (content type (self <var>)) (list self)); TODO: is this needed?
-(define-method (content (type <meta<obj>>) (self <var>)) (list self))
+(define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
 (define-method (content (self <var>)) (list self))
 (define-method (content (self <param>)) (map parameter (content (type self) (delegate self))))
 (define-method (content (self <function>))

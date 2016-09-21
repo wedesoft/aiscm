@@ -13,5 +13,4 @@
 ;TODO: write
 ;TODO: native-type
 (define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
-;(define-method (content self) (content <obj> self))
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
