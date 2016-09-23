@@ -514,9 +514,9 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
-(define-method (content t (self <param>)) (map parameter (content (type self) (delegate self))))
-(define-method (content t (self <function>))
-  (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
+(define-method (content type (self <param>)) (map parameter (content type (delegate self))))
+(define-method (content type (self <function>))
+  (if (is-a? type <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
@@ -525,7 +525,7 @@
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content "test" out) (content "test" result))))
+    (append-map code (content (type out) out) (content (type result) result))))
 (define (delegate-fun name . other)
   (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
 
