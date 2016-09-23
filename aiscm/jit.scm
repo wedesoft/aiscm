@@ -514,9 +514,9 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
-(define-method (content (t <string>) (self <var>)) (list self))
-(define-method (content (t <string>) (self <param>)) (map parameter (content (type self) (delegate self))))
-(define-method (content (t <string>) (self <function>))
+(define-method (content t (self <var>)) (list self))
+(define-method (content t (self <param>)) (map parameter (content (type self) (delegate self))))
+(define-method (content t (self <function>))
   (if (is-a? (type self) <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
