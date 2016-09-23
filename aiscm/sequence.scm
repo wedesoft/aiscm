@@ -163,7 +163,6 @@
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
 (define-method (build (self <meta<sequence<>>>) value) value)
-(define-method (content type (self <sequence<>>)) (content (class-of self) self)); TODO: remove this
 (define-method (content (type <meta<sequence<>>>) (self <sequence<>>))
-  (append (map last (list (shape self) (strides self))) (content (project type) (get (project self))))); TODO: project type
+  (append (map last (list (shape self) (strides self))) (content (project type) (get (project self)))))
 (define-method (signed? (self <meta<sequence<>>>)) (signed? (typecode self)))
