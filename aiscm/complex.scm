@@ -3,6 +3,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm element)
+  #:use-module (aiscm composite)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
@@ -26,7 +27,7 @@
 (define-method (complex re im) (make <internalcomplex> #:real-part re #:imag-part im))
 (define-method (write (self <internalcomplex>) port)
   (format port "(complex ~a ~a)" (real-part self) (imag-part self)))
-(define-class* <complex<>> <element> <meta<complex<>>> <meta<element>>)
+(define-class* <complex<>> <composite> <meta<complex<>>> <meta<composite>>)
 (define-method (complex (t <meta<element>>))
   (template-class (complex t) <complex<>>
     (lambda (class metaclass)

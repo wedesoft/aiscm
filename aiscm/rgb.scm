@@ -6,6 +6,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm composite)
   #:use-module (aiscm bool)
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
@@ -38,7 +39,7 @@
 (define-method (red   self) self)
 (define-method (green self) self)
 (define-method (blue  self) self)
-(define-class* <rgb<>> <element> <meta<rgb<>>> <meta<element>>)
+(define-class* <rgb<>> <composite> <meta<rgb<>>> <meta<composite>>)
 (define-method (rgb (t <meta<element>>))
   (template-class (rgb t) <rgb<>>
     (lambda (class metaclass)

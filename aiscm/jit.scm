@@ -8,6 +8,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
+  #:use-module (aiscm composite)
   #:use-module (aiscm scalar)
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
@@ -515,8 +516,8 @@
 
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
 (define-method (content type (self <param>)) (map parameter (content type (delegate self))))
-(define-method (content type (self <function>))
-  (if (is-a? type <meta<scalar>>) (list self) (arguments self))); TODO: only apply to function "rgb", "complex", ...
+(define-method (content type (self <function>)) (arguments self))
+(define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
