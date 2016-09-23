@@ -39,7 +39,7 @@
 (define-method (pack (self <pointer<>>))
   (pack (make <native-int>
               #:value ((compose pointer-address get-memory get) self))))
-(define-method (content (t <string>) (self <mem>)) (content <pointer<>> self)); TODO: remove this
+(define-method (content type (self <mem>)) (content <pointer<>> self)); TODO: remove this
 (define-method (content (type <meta<pointer<>>>) (self <mem>)) (list (pointer-address (get-memory self))))
 (define-method (rebase value (self <pointer<>>)) (make (class-of self) #:value value))
 (define (pointer-cast target self) (make (pointer target) #:value (get self)))

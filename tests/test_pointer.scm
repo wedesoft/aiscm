@@ -54,9 +54,9 @@
     "display pointer object")
 (ok (eqv? 4 (get-size (get (make (pointer <int>)))))
     "Memory is allocated if no value is specified")
-(ok (equal? (list (pointer-address (get-memory m1))) (content (get p1-byte)))
+(ok (equal? (list (pointer-address (get-memory m1))) (content <pointer<>> (get p1-byte)))
     "Content of pointer value is the address as a number")
-(ok (equal? (list p) (content p))
+(ok (equal? (list p) (content <pointer<>> p))
     "Content of pointer is a list containing the pointer")
 (let [(v (var <long>))]
   (ok (equal? v (get (rebase v (make (pointer <byte>) #:value p))))

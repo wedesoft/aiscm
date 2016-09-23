@@ -347,16 +347,16 @@
 (let [(s (skeleton (sequence <byte>)))]
   (ok (is-a? s (sequence <byte>))
       "skeleton of a sequence is a sequence")
-  (ok (equal? (list <var> <var> <var>) (map class-of (content s)))
+  (ok (equal? (list <var> <var> <var>) (map class-of (content (class-of s) s)))
       "sequence skeleton consists of three variables")
-  (ok (equal? (list <long> <long> <long>) (map typecode (content s)))
+  (ok (equal? (list <long> <long> <long>) (map typecode (content (class-of s) s)))
       "skeleton of sequence consists of long integer variables"))
 (let [(m (skeleton (multiarray <int> 2)))]
   (ok (is-a? m (multiarray <int> 2))
       "skeleton of a 2D array is a 2D array")
-  (ok (equal? (make-list 5 <var>) (map class-of (content m)))
+  (ok (equal? (make-list 5 <var>) (map class-of (content (class-of m) m)))
       "2D array skeleton consists of five variables")
-  (ok (equal? (make-list 5 <long>) (map typecode (content m)))
+  (ok (equal? (make-list 5 <long>) (map typecode (content (class-of m) m)))
       "skeleton of 2D array consists of long integer variables"))
 (let* [(s  (skeleton (sequence <int>)))
        (sx (parameter s))]
@@ -455,7 +455,7 @@
       (in  (skeleton (sequence <int>)))]
   (ok (list? (code (parameter out) (parameter in)))
       "generating code for copying an array should run without error")
-  (ok (equal? (append (content out) (content in))
+  (ok (equal? (append (content (class-of out) out) (content (class-of in) in))
               (cadr (assemble out (list in) (parameter in) list)))
       "generating a method with interface for copying an array should run without error"))
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
