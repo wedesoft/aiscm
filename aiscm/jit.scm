@@ -515,9 +515,9 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
-(define-method (content type (self <param>)) (map parameter (content type (delegate self))))
-(define-method (content type (self <function>)) (arguments self))
+(define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
+(define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
