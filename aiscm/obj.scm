@@ -9,6 +9,8 @@
 ;TODO: size-of
 ;TODO: pack
 ;TODO: unpack
+(define-method (coerce (a <meta<obj>>) b) <obj>)
+(define-method (coerce a (b <meta<obj>>)) <obj>)
 ;TODO: coerce
 ;TODO: write
 ;TODO: native-type

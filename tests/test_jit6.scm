@@ -74,4 +74,6 @@
     "compile and run identity function accepting Scheme object")
 (ok (eq? 42 ((jit ctx (list <obj>) identity) 42))
     "make sure \"content\" enforces SCM object arguments")
+(skip (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
+    "compiled plus operation using Scheme objects")
 (run-tests)
