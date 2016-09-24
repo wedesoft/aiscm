@@ -28,6 +28,8 @@ As shown above, you can display images using the method *show* as follows:
 
 One can also display a list of images:
 
+![](fubk-colours.png "List of images")
+
 ```Scheme
 @../tests/integration/xorg_image_list.scm@
 ```
@@ -103,6 +105,8 @@ The method *pts=* can be used to seek to an absolute position in audio/video str
 
 Note that *FFmpeg* also supports network streaming of video data.
 I.e. the following example will play a video from a web server.
+
+![](sintel.jpg "Sintel short movie")
 
 ```Scheme
 @../tests/integration/ffstream.scm@
