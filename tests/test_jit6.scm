@@ -20,6 +20,7 @@
 
 (define main (dynamic-link))
 (define cabs (dynamic-func "abs" main))
+(define scm-sum (dynamic-func "scm_sum" main))
 
 (ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
     "setting stack position does not affect operations not involving pointers")
@@ -74,6 +75,8 @@
     "compile and run identity function accepting Scheme object")
 (ok (eq? 42 ((jit ctx (list <obj>) identity) 42))
     "make sure \"content\" enforces SCM object arguments")
+(ok (eq? 300 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-sum x y))) 100 200))
+    "compile and run call to scm_sum")
 (skip (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
     "compiled plus operation using Scheme objects")
 (run-tests)

@@ -1,5 +1,6 @@
 ## Ready
 
+* call native method returning bool, move (to-type <int> RAX) into "int" module
 * coerce SCM objects to SCM objects
 * <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
 * spill blocked registers into other register
