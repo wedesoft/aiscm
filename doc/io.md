@@ -104,7 +104,7 @@ The method *pts=* can be used to seek to an absolute position in audio/video str
 ```
 
 Note that *FFmpeg* also supports network streaming of video data.
-I.e. the following example will play a video from a web server.
+I.e. the following example will play the [Sintel short film](https://durian.blender.org/) from a web server.
 
 ![](sintel.jpg "Sintel short movie")
 
