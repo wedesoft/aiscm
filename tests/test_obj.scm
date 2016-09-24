@@ -6,6 +6,8 @@
              (guile-tap))
 (define obj (make <obj> #:value 'sym))
 (define address (pointer-address (scm->pointer 'sym)))
+(ok (eqv? 8 (size-of <obj>))
+    "size of SCM reference is 64 bits")
 (ok (eq? <obj> (coerce <obj> <obj>))
     "objects coerce to objects")
 (ok (eq? <obj> (coerce <obj> <int>))

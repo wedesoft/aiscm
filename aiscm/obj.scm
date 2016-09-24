@@ -6,6 +6,7 @@
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
+(define-method (size-of (self <meta<obj>>)) 8)
 ;TODO: size-of
 ;TODO: pack
 ;TODO: unpack
