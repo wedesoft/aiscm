@@ -117,6 +117,8 @@ I.e. the following example will play a video from a web server.
 One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
 It is also possible to pass a function returning consecutive audio samples as shown below.
 
+<audio src="test.mp3" controls></audio>
+
 ```Scheme
 @../tests/integration/ffaudio.scm@
 ```
