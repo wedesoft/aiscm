@@ -19,6 +19,4 @@
     "build SCM value")
 (ok (equal? (list address) (content <obj> 'sym))
     "content of symbol returns internal 64 bit representation")
-(ok (equal? RSI (to-type <obj> ESI))
-    "converting register to object converts to 64 bit register")
 (run-tests)

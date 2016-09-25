@@ -681,7 +681,7 @@
 (define-syntax-rule (pass-parameters parameters body ...)
   (let [(first-six-parameters (take-up-to parameters 6))
         (remaining-parameters (drop-up-to parameters 6))]
-    (append (map (lambda (register parameter) (MOV (to-type (type parameter) register) (get (delegate parameter))))
+    (append (map (lambda (register parameter) (MOV (to-type (returnable (type parameter)) register) (get (delegate parameter))))
                  register-parameters
                  first-six-parameters); TODO: check similarities to spill-parameters and fetch-parameters
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
@@ -695,7 +695,7 @@
         (pass-parameters intermediates
           (MOV RAX pointer)
           (CALL RAX)
-          (MOV (get (delegate out)) (to-type return-type RAX)))))))
+          (MOV (get (delegate out)) (to-type (returnable return-type) RAX)))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))
