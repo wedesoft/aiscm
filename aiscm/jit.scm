@@ -21,7 +21,8 @@
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
-            filter-blocks blocked-intervals var skeleton parameter delegate term tensor index type subst code copy-value
+            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
+            term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -144,10 +145,13 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
-(define-method (var (self <meta<element>>)) (make <var> #:type self))
-(define-method (var (self <meta<bool>>)) (var <ubyte>))
-(define-method (var (self <meta<obj>>)) (var <long>))
-(define-method (var (self <meta<pointer<>>>)) (var <long>))
+(define-method (native-equivalent self) #f)
+(define-method (native-equivalent (self <meta<bool>>)) <ubyte>)
+(define-method (native-equivalent (self <meta<int<>>>)) self)
+(define-method (native-equivalent (self <meta<obj>>)) <long>)
+(define-method (native-equivalent (self <meta<pointer<>>>)) <long>)
+
+(define-method (var self) (make <var> #:type (native-equivalent self)))
 
 ; get program positions of labels
 (define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
@@ -565,30 +569,25 @@
 (define-syntax-rule (map-to-asm name arity coercion kind op)
   (begin (mutating-op op) (map-to-fun name arity coercion kind op)))
 
-(define-method (returnable self) #f)
-(define-method (returnable (self <meta<bool>>)) <ubyte>)
-(define-method (returnable (self <meta<int<>>>)) self)
-(define-method (returnable (self <meta<obj>>)) <long>)
-(define (assemble retval vars expr virtual-variables)
-  (let* [(return-type (returnable (class-of retval)))
-         (result-vars (if return-type (list (get retval)) '()))
-         (args        (if return-type vars (cons retval vars)))
-         (arg-vars    (append-map content (map class-of args) (map get args)))]
-    (virtual-variables result-vars arg-vars (attach (code (parameter retval) expr) (RET)))))
+(define (content-vars args) (append-map content (map class-of args) (map get args)))
 
-(define (jit context classes proc); TODO: split up and test
+(define (assemble return-args args instructions virtual-variables)
+  (virtual-variables (content-vars return-args) (content-vars args) (attach instructions (RET))))
+
+(define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
-         (return-type (returnable result-type))
+         (return-type (native-equivalent result-type))
          (target      (if return-type result-type (pointer result-type)))
-         (retval      (skeleton target))
-         (args        (if return-type vars (cons retval vars)))
-         (types       (if return-type classes (cons target classes)))
+         (result      (skeleton target))
+         (return-args (if return-type (list result) '()))
+         (args        (if return-type vars (cons result vars)))
+         (types       (map class-of args))
          (code        (asm context
                            (or return-type <null>)
-                           (map typecode (append-map content types (map get args)))
-                           (assemble retval vars expr virtual-variables)))
+                           (map typecode (content-vars args))
+                           (assemble return-args args (code (parameter result) expr) virtual-variables)))
          (fun         (lambda header (apply code (append-map content types header))))]
     (if return-type
       (lambda args
@@ -681,7 +680,8 @@
 (define-syntax-rule (pass-parameters parameters body ...)
   (let [(first-six-parameters (take-up-to parameters 6))
         (remaining-parameters (drop-up-to parameters 6))]
-    (append (map (lambda (register parameter) (MOV (to-type (returnable (type parameter)) register) (get (delegate parameter))))
+    (append (map (lambda (register parameter)
+                   (MOV (to-type (native-equivalent (type parameter)) register) (get (delegate parameter))))
                  register-parameters
                  first-six-parameters); TODO: check similarities to spill-parameters and fetch-parameters
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
@@ -695,7 +695,7 @@
         (pass-parameters intermediates
           (MOV RAX pointer)
           (CALL RAX)
-          (MOV (get (delegate out)) (to-type (returnable return-type) RAX)))))))
+          (MOV (get (delegate out)) (to-type (native-equivalent return-type) RAX)))))))
 
 (define (call return-type pointer . args)
   (make-function call (const return-type) (native-fun return-type pointer) args))

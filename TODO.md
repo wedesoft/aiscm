@@ -1,7 +1,6 @@
 ## Ready
 
-* coerce SCM objects to SCM objects
-* <int> + <int> -> always compile, <object> + <object> -> compile call back into Scheme interpreter
+* object + object, int + int
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
