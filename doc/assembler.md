@@ -47,6 +47,16 @@ The following example defines a function for adding two integers:
 @../tests/integration/virtual_registers.scm@
 ```
 
+The corresponding assembler code is
+
+```Assembler
+sub rsp, 0x8
+mov eax, edi
+add eax, esi
+add rsp, 0x8
+ret
+```
+
 The *jit* function also instantiates loops for array processing. For example:
 
 ```Scheme

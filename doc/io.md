@@ -57,6 +57,8 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 
 ## Video for Linux version 2 (V4L2)
 
+![](v4l2.jpg "V4L2 input image")
+
 As shown above already, you can open a camera and grab a frame as follows.
 
 ```Scheme
@@ -89,6 +91,10 @@ The following example records 3 seconds of audio data and then plays it back.
 
 ## Video files
 
+<div class="figure">
+<video src="av-sync.mp4" controls></video>
+</div>
+
 The following example shows how to use the FFmpeg interface to open and view a video.
 The video presentation time stamps are used to display the video at the correct speed.
 The method *latency* is used to determine the delay of the audio buffer.
@@ -106,7 +112,9 @@ The method *pts=* can be used to seek to an absolute position in audio/video str
 Note that *FFmpeg* also supports network streaming of video data.
 I.e. the following example will play the [Sintel short film](https://durian.blender.org/) from a web server.
 
-![](sintel.jpg "Sintel short movie")
+<div class="figure">
+<a href="http://peach.themazzone.com/durian/movies/sintel-1024-surround.mp4"><img src="sintel.jpg" title="Sintel short movie" /></a>
+</div>
 
 ```Scheme
 @../tests/integration/ffstream.scm@
@@ -117,7 +125,9 @@ I.e. the following example will play the [Sintel short film](https://durian.blen
 One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
 It is also possible to pass a function returning consecutive audio samples as shown below.
 
+<div class="figure">
 <audio src="test.mp3" controls></audio>
+</div>
 
 ```Scheme
 @../tests/integration/ffaudio.scm@
