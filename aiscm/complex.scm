@@ -98,10 +98,10 @@
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 
-(define-jit-method map-to-fun base real-part 1 unary-extract real-part)
-(define-jit-method map-to-fun base imag-part 1 unary-extract imag-part)
+(define-jit-method base real-part 1 unary-extract real-part)
+(define-jit-method base imag-part 1 unary-extract imag-part)
 
-(define-jit-method map-to-fun complex complex 2)
+(define-jit-method complex complex 2)
 
 (define-method (decompose-value (target <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (delegate x)))
@@ -110,4 +110,4 @@
 (define-method (to-type (target <meta<complex<>>>) (self <internalcomplex>))
   (apply complex (map (cut to-type (base target) <>) (content <complex<>> self))))
 
-(define-jit-method map-to-fun identity conj 1 unary-extract conj)
+(define-jit-method identity conj 1 unary-extract conj)

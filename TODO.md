@@ -1,6 +1,7 @@
 ## Ready
 
 * object + object, int + int
+* split up (aiscm jit)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
