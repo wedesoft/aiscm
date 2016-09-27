@@ -81,6 +81,6 @@
     "make sure \"content\" enforces SCM object arguments")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-sum x y))) 100 200))
     "compile and run call to scm_sum")
-(skip (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
+(ok (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
     "compiled plus operation using Scheme objects")
 (run-tests)

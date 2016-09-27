@@ -1,6 +1,6 @@
 ## Ready
 
-* object + object, int + int
+* object + object, int + int; delegate-op?
 * split up (aiscm jit)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
