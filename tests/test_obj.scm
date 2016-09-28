@@ -26,4 +26,6 @@
     "compile and run call to scm_sum")
 (ok (eq? 100 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-difference x y))) 300 200))
     "compile and run call to scm_difference")
+(skip (eq? 300 ((jit ctx (list <obj>) (lambda (x) (call <obj> scm-difference x))) 300 200))
+    "compile and run call to scm_difference")
 (run-tests)

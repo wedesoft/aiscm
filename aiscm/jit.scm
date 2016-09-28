@@ -534,12 +534,19 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
-(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) scm-sum); TODO: unary operations
-(define-method (- (a <meta<obj>>) (b <meta<obj>>)) scm-difference); TODO: align integer code
+(define-method (+ (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code ADD <...>))
+(define-method (- (z <integer>)     (a <meta<int<>>>)) (cut mutating-code NEG <...>))
+(define-method (- (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code SUB <...>))
 
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
+(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-sum)); TODO: unary operations
+(define-method (- (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-difference)); TODO: align integer code
+
+(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
+  (if (memv op (list + -))
+    ((apply name (map type args)) out args)
+    (kind op out args)))
 (define-method (delegate-op (target <meta<obj>>) intermediate name out args kind op); TODO: put into (aiscm obj)?
-  ((native-fun <obj> (name <obj> <obj>)) out args))
+  ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
@@ -665,9 +672,6 @@
 (define-jit-method to-bool  >=  2 functional-code cmp-greater-equal)
 (define-jit-method coerce   min 2 functional-code minor            )
 (define-jit-method coerce   max 2 functional-code major            )
-
-; catch weird one-argument "-" special case
-(define-method (- (a <integer>) (b <param>)) (make-function - identity (delegate-fun -) (list b)))
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
