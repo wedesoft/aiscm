@@ -534,9 +534,6 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
-(define main (dynamic-link)); TODO: put into (aiscm obj)?
-(define scm-sum (dynamic-func "scm_sum" main)); TODO: put into (aiscm obj)?
-
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
 (define-method (delegate-op (target <meta<obj>>) intermediate name out args kind op); TODO: put into (aiscm obj)?
   ((native-fun <obj> scm-sum) out args))
