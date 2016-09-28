@@ -534,9 +534,12 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
+(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) scm-sum); TODO: unary operations
+(define-method (- (a <meta<obj>>) (b <meta<obj>>)) scm-difference); TODO: align integer code
+
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op) (kind op out args))
 (define-method (delegate-op (target <meta<obj>>) intermediate name out args kind op); TODO: put into (aiscm obj)?
-  ((native-fun <obj> scm-sum) out args))
+  ((native-fun <obj> (name <obj> <obj>)) out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]

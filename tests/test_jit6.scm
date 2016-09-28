@@ -80,6 +80,6 @@
     "make sure \"content\" enforces SCM object arguments")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
     "compiled plus operation using Scheme objects")
-(skip (eq? 100 ((jit ctx (list <obj> <obj>) -) 300 200))
+(ok (eq? 100 ((jit ctx (list <obj> <obj>) -) 300 200))
     "compiled minus operation using Scheme objects")
 (run-tests)
