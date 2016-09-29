@@ -578,7 +578,7 @@
 (define-method (- (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-difference)); TODO: align integer code
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
-  ((kind op) out args)); TODO: handle unary-extract
+  ((kind op) out args)); TODO: handle unary-extract, to-type (delegate-fun)
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
@@ -660,8 +660,8 @@
                 (apply ,name (map wrap (list . ,(cycle-times args i))))))
             (iota arity)))))
 
-(define-syntax-rule (define-jit-method coercion name arity etc ...)
-  (begin (n-ary-base name arity coercion (delegate-fun name etc ...))
+(define-syntax-rule (define-jit-method coercion name arity)
+  (begin (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
