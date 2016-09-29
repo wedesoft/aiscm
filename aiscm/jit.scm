@@ -581,8 +581,6 @@
   ((kind op) out args)); TODO: handle unary-extract
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
-(define-method (delegate-op (target <meta<obj>>) intermediate name out args kind op); TODO: put into (aiscm obj)?
-  ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
