@@ -123,9 +123,13 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-jit-method base red   1 unary-extract red  )
-(define-jit-method base green 1 unary-extract green)
-(define-jit-method base blue  1 unary-extract blue )
+(define-operator-mapping red   1 <meta<element>> unary-extract red  )
+(define-operator-mapping green 1 <meta<element>> unary-extract green)
+(define-operator-mapping blue  1 <meta<element>> unary-extract blue )
+
+(define-jit-method base red   1)
+(define-jit-method base green 1)
+(define-jit-method base blue  1)
 
 (define-jit-method rgb rgb 3)
 

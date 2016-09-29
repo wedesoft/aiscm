@@ -28,7 +28,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method pass-parameters))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
 (define ctx (make <context>))
 
