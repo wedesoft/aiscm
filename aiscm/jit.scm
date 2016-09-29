@@ -534,15 +534,38 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
-(define-method (+ (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code ADD <...>))
-(define-method (- (z <integer>)     (a <meta<int<>>>)) (cut mutating-code NEG <...>))
-(define-method (- (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code SUB <...>))
+(define-method (-   (a <meta<int<>>>)                  ) (cut mutating-code   NEG               <...>))
+(define-method (-   (z <integer>)     (a <meta<int<>>>)) (cut mutating-code   NEG               <...>))
+(define-method (~   (a <meta<int<>>>)                  ) (cut mutating-code   NOT               <...>))
+(define-method (=0  (a <meta<int<>>>)                  ) (cut functional-code test-zero         <...>))
+(define-method (!=0 (a <meta<int<>>>)                  ) (cut functional-code test-non-zero     <...>))
+(define-method (!   (a <meta<bool>> )                  ) (cut functional-code test-zero         <...>))
+(define-method (+   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   ADD               <...>))
+(define-method (-   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   SUB               <...>))
+(define-method (*   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   IMUL              <...>))
+(define-method (/   (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code div               <...>))
+(define-method (%   (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code mod               <...>))
+(define-method (<<  (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   shl               <...>))
+(define-method (>>  (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   shr               <...>))
+(define-method (&   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   AND               <...>))
+(define-method (|   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   OR                <...>))
+(define-method (^   (a <meta<int<>>>) (b <meta<int<>>>)) (cut mutating-code   XOR               <...>))
+(define-method (&&  (a <meta<bool>> ) (b <meta<bool>> )) (cut mutating-code   bool-and          <...>))
+(define-method (||  (a <meta<bool>> ) (b <meta<bool>> )) (cut mutating-code   bool-or           <...>))
+(define-method (=   (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-equal         <...>))
+(define-method (!=  (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-not-equal     <...>))
+(define-method (<   (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-lower-than    <...>))
+(define-method (<=  (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-lower-equal   <...>))
+(define-method (>   (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-greater-than  <...>))
+(define-method (>=  (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code cmp-greater-equal <...>))
+(define-method (min (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code minor             <...>))
+(define-method (max (a <meta<int<>>>) (b <meta<int<>>>)) (cut functional-code major             <...>))
 
 (define-method (+ (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-sum)); TODO: unary operations
 (define-method (- (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-difference)); TODO: align integer code
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
-  (if (memv op (list + -))
+  (if (memv name (list - ~ =0 !=0 ! + - * / % << >> & | ^ && || = != < <= > >= min max)); TODO: replace unary-extract
     ((apply name (map type args)) out args)
     (kind op out args)))
 (define-method (delegate-op (target <meta<obj>>) intermediate name out args kind op); TODO: put into (aiscm obj)?
