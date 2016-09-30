@@ -579,6 +579,9 @@
 (define-operator-mapping * 2 <meta<obj>> (native-fun <obj> scm-product   ))
 (define-operator-mapping / 2 <meta<obj>> (native-fun <obj> scm-divide    ))
 (define-operator-mapping % 2 <meta<obj>> (native-fun <obj> scm-remainder ))
+(define-operator-mapping & 2 <meta<obj>> (native-fun <obj> scm-logand    ))
+(define-operator-mapping | 2 <meta<obj>> (native-fun <obj> scm-logior    ))
+(define-operator-mapping ^ 2 <meta<obj>> (native-fun <obj> scm-logxor    ))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
   (format #t "~a~&" (list kind op out args))

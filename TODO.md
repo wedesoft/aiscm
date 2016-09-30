@@ -1,7 +1,14 @@
 ## Ready
 
+* binary min, max for objects
+* unary -, ~ for objects
+* <<, >> for objects
 * type needed for operator mapping? (i.e. assume native scalar)
-* object + object, int + int; delegate-op?
+* reduce delegate-op implementation
+* array of objects
+* object + int -> object
+* object = object -> bool (implement !=, !=0, =0, !, <, >, ...)
+* to-type involving object
 * split up (aiscm jit)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
