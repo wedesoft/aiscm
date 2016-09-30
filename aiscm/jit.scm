@@ -156,8 +156,8 @@
 (define-method (native-equivalent  self                   ) #f     )
 (define-method (native-equivalent (self <meta<bool>>     )) <ubyte>)
 (define-method (native-equivalent (self <meta<int<>>>    )) self   )
-(define-method (native-equivalent (self <meta<obj>>      )) <long> )
-(define-method (native-equivalent (self <meta<pointer<>>>)) <long> )
+(define-method (native-equivalent (self <meta<obj>>      )) <ulong> )
+(define-method (native-equivalent (self <meta<pointer<>>>)) <ulong> )
 
 (define-method (var self) (make <var> #:type (native-equivalent self)))
 
@@ -574,8 +574,9 @@
 (define-operator-mapping min 2 <meta<int<>>> (functional-code minor            ))
 (define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
 
-(define-operator-mapping + 2 <meta<obj>> (native-fun <obj> scm-sum       )); TODO: unary minus
-(define-operator-mapping - 2 <meta<obj>> (native-fun <obj> scm-difference))
+(define-operator-mapping ~ 1 <meta<obj>> (native-fun <obj> scm-lognot    ))
+(define-operator-mapping + 2 <meta<obj>> (native-fun <obj> scm-sum       ))
+(define-operator-mapping - 2 <meta<obj>> (native-fun <obj> scm-difference)); TODO: unary minus
 (define-operator-mapping * 2 <meta<obj>> (native-fun <obj> scm-product   ))
 (define-operator-mapping / 2 <meta<obj>> (native-fun <obj> scm-divide    ))
 (define-operator-mapping % 2 <meta<obj>> (native-fun <obj> scm-remainder ))

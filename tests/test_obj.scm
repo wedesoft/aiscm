@@ -22,6 +22,8 @@
     "build SCM value")
 (ok (equal? (list address) (content <obj> 'sym))
     "content of symbol returns internal 64 bit representation")
+(ok (eq? -124 ((jit ctx (list <obj>) (lambda (x) (call <obj> scm-lognot x))) 123))
+    "compile and run bitwise not")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-sum x y))) 100 200))
     "compile and run call to scm_sum")
 (ok (eq? 100 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-difference x y))) 300 200))
