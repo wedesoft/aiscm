@@ -574,8 +574,9 @@
 (define-operator-mapping min 2 <meta<int<>>> functional-code minor            )
 (define-operator-mapping max 2 <meta<int<>>> functional-code major            )
 
-(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-sum)); TODO: unary operations
+(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-sum)       ); TODO: unary operations
 (define-method (- (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-difference)); TODO: align integer code
+(define-method (* (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-product)   )
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
   ((kind op) out args)); TODO: handle unary-extract, to-type (delegate-fun)

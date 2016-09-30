@@ -7,7 +7,7 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
-            scm-sum scm-difference))
+            scm-sum scm-difference scm-product))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 ;TODO: size-of
@@ -22,5 +22,6 @@
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
 
 (define main (dynamic-link))
-(define scm-sum (dynamic-func "scm_sum" main))
+(define scm-sum        (dynamic-func "scm_sum"        main))
 (define scm-difference (dynamic-func "scm_difference" main))
+(define scm-product    (dynamic-func "scm_product"    main))

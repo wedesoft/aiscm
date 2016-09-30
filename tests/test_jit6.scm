@@ -86,4 +86,6 @@
     "compiled minus operation using Scheme objects")
 (skip (eq? -300 ((jit ctx (list <obj>) -) 300))
     "compiled unary minus using Scheme objects")
+(ok (eq? 600 ((jit ctx (list <obj> <obj>) *) 20 30))
+    "compiled multiplication using Scheme objects")
 (run-tests)
