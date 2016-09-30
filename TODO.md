@@ -1,5 +1,6 @@
 ## Ready
 
+* type needed for operator mapping? (i.e. assume native scalar)
 * object + object, int + int; delegate-op?
 * split up (aiscm jit)
 * spill blocked registers into other register
