@@ -30,4 +30,8 @@
     "compile and run call to scm_difference with one argument")
 (ok (eq? 600 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-product x y))) 20 30))
     "compile and run call to scm_product")
+(ok (eq? 30 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-divide x y))) 600 20))
+    "compile and run call to scm_divide")
+(ok (eq? 33 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-remainder x y))) 123 45))
+    "compile and run call to scm_remainder")
 (run-tests)

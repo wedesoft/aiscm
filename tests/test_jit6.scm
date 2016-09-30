@@ -88,4 +88,8 @@
     "compiled unary minus using Scheme objects")
 (ok (eq? 600 ((jit ctx (list <obj> <obj>) *) 20 30))
     "compiled multiplication using Scheme objects")
+(ok (eq? 5 ((jit ctx (list <obj> <obj>) /) 15 3))
+    "compiled division using Scheme objects")
+(ok (eq? 33 ((jit ctx (list <obj> <obj>) %) 123 45))
+    "compiled modulo using Scheme objects")
 (run-tests)

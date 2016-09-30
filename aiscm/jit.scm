@@ -574,12 +574,15 @@
 (define-operator-mapping min 2 <meta<int<>>> (functional-code minor            ))
 (define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
 
-(define-method (+ (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-sum       )); TODO: unary operations
-(define-method (- (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-difference)); TODO: align integer code
-(define-method (* (a <meta<obj>>) (b <meta<obj>>)) (native-fun <obj> scm-product   ))
+(define-operator-mapping + 2 <meta<obj>> (native-fun <obj> scm-sum       )); TODO: unary minus
+(define-operator-mapping - 2 <meta<obj>> (native-fun <obj> scm-difference))
+(define-operator-mapping * 2 <meta<obj>> (native-fun <obj> scm-product   ))
+(define-operator-mapping / 2 <meta<obj>> (native-fun <obj> scm-divide    ))
+(define-operator-mapping % 2 <meta<obj>> (native-fun <obj> scm-remainder ))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
-  ((kind op) out args)); TODO: handle unary-extract, to-type (delegate-fun)
+  (format #t "~a~&" (list kind op out args))
+  ((kind op) out args)); TODO: handle to-type (delegate-fun)
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
