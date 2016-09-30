@@ -548,7 +548,7 @@
     `(define-method (,name . ,header) (,kind ,op))))
 
 (define-operator-mapping -   1 <meta<int<>>> mutating-code   NEG              )
-(define-method (- (z <integer>) (a <meta<int<>>>)) (cut mutating-code NEG <...>))
+(define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code NEG))
 (define-operator-mapping ~   1 <meta<int<>>> mutating-code   NOT              )
 (define-operator-mapping =0  1 <meta<int<>>> functional-code test-zero        )
 (define-operator-mapping !=0 1 <meta<int<>>> functional-code test-non-zero    )
