@@ -83,26 +83,6 @@ make reintegration
 * [AIscm homepage][1]
 * [AIscm installation][6]
 
-# External links
-
-* [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
-* [Torch: Scientific computing for LuaJIT](http://torch.ch/)
-* [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
-* [Bergstra et al.: Theano: A CPU and GPU math compiler in Python][5]
-* [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
-* [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
-* [Arrayfire: accelerated computing library](http://arrayfire.com/)
-* [Halide: a language for image processing and computational photography](http://halide-lang.org/)
-* [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
-* [Guile manual](http://www.gnu.org/software/guile/manual/)
-* [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
-* [COOPS: Chicken Scheme object system](http://wiki.call-cc.org/eggref/4/coops)
-* [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
-* [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
-* [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
-
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"
-[4]: https://github.com/wedesoft/aiscm/releases "AIscm source releases"
-[5]: http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf "Theano paper"
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
