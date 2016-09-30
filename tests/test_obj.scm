@@ -42,4 +42,8 @@
     "compile and run call to scm_logior")
 (ok (eq? 435 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-logxor x y))) 123 456))
     "compile and run call to scm_logxor")
+(ok (eq? 123 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-min x y))) 123 456))
+    "compile and run call to scm_min")
+(ok (eq? 456 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-max x y))) 123 456))
+    "compile and run call to scm_max")
 (run-tests)

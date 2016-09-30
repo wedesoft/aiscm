@@ -100,4 +100,8 @@
     "bitwise or using Scheme objects")
 (ok (eq? 435 ((jit ctx (list <obj> <obj>) ^) 123 456))
     "bitwise exclusive-or using Scheme objects")
+(ok (eq? 123 ((jit ctx (list <obj> <obj>) min) 123 456))
+    "compiled minimum using Scheme objects")
+(ok (eq? 456 ((jit ctx (list <obj> <obj>) max) 123 456))
+    "compiled maximum using Scheme objects")
 (run-tests)

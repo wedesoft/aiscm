@@ -8,7 +8,7 @@
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
             scm-sum scm-difference scm-product scm-divide scm-remainder
-            scm-logand scm-logior scm-logxor scm-lognot))
+            scm-logand scm-logior scm-logxor scm-lognot scm-min scm-max))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 ;TODO: size-of
@@ -32,3 +32,5 @@
 (define scm-logand     (dynamic-func "scm_logand"     main))
 (define scm-logior     (dynamic-func "scm_logior"     main))
 (define scm-logxor     (dynamic-func "scm_logxor"     main))
+(define scm-min        (dynamic-func "scm_min"        main))
+(define scm-max        (dynamic-func "scm_max"        main))
