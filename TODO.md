@@ -1,10 +1,9 @@
 ## Ready
 
-* binary min, max for objects
 * unary -, ~ for objects
 * <<, >> for objects
 * type needed for operator mapping? (i.e. assume native scalar)
-* reduce delegate-op implementation
+* reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * array of objects
 * object + int -> object
 * object = object -> bool (implement !=, !=0, =0, !, <, >, ...)
