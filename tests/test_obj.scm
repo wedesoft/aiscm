@@ -46,4 +46,8 @@
     "compile and run call to scm_min")
 (ok (eq? 456 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-max x y))) 123 456))
     "compile and run call to scm_max")
+(ok (eq? 1968 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-ash x y))) 123 4))
+    "compile and run call to scm_ash")
+(ok (eq? 123 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-shr x y))) 1968 4))
+    "compile and run call to scm_shr")
 (run-tests)

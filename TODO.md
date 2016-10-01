@@ -1,6 +1,5 @@
 ## Ready
 
-* <<, >> for objects
 * type needed for operator mapping? (i.e. assume native scalar)
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * array of objects

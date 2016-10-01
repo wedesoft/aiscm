@@ -106,4 +106,8 @@
     "compiled minimum using Scheme objects")
 (ok (eq? 456 ((jit ctx (list <obj> <obj>) max) 123 456))
     "compiled maximum using Scheme objects")
+(ok (eq? 1968 ((jit ctx (list <obj> <obj>) <<) 123 4))
+    "compiled shift-left using Scheme objects")
+(ok (eq? 123 ((jit ctx (list <obj> <obj>) >>) 1968 4))
+    "compiled shift-right using Scheme objects")
 (run-tests)

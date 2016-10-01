@@ -8,7 +8,7 @@
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
             scm-negate scm-lognot scm-sum scm-difference scm-product scm-divide scm-remainder
-            scm-logand scm-logior scm-logxor scm-min scm-max))
+            scm-logand scm-logior scm-logxor scm-min scm-max scm-ash scm-shr))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 ;TODO: size-of
@@ -37,3 +37,5 @@
 (define scm-logxor     (dynamic-func "scm_logxor"     main           ))
 (define scm-min        (dynamic-func "scm_min"        main           ))
 (define scm-max        (dynamic-func "scm_max"        main           ))
+(define scm-ash        (dynamic-func "scm_ash"        main           ))
+(define scm-shr        (dynamic-func "scm_shr"        guile-aiscm-obj))

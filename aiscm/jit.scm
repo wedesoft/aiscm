@@ -577,10 +577,12 @@
 (define-operator-mapping -   1 <meta<obj>> (native-fun <obj> scm-negate    ))
 (define-operator-mapping ~   1 <meta<obj>> (native-fun <obj> scm-lognot    ))
 (define-operator-mapping +   2 <meta<obj>> (native-fun <obj> scm-sum       ))
-(define-operator-mapping -   2 <meta<obj>> (native-fun <obj> scm-difference)); TODO: unary minus
+(define-operator-mapping -   2 <meta<obj>> (native-fun <obj> scm-difference))
 (define-operator-mapping *   2 <meta<obj>> (native-fun <obj> scm-product   ))
 (define-operator-mapping /   2 <meta<obj>> (native-fun <obj> scm-divide    ))
 (define-operator-mapping %   2 <meta<obj>> (native-fun <obj> scm-remainder ))
+(define-operator-mapping <<  2 <meta<obj>> (native-fun <obj> scm-ash       ))
+(define-operator-mapping >>  2 <meta<obj>> (native-fun <obj> scm-shr       ))
 (define-operator-mapping &   2 <meta<obj>> (native-fun <obj> scm-logand    ))
 (define-operator-mapping |   2 <meta<obj>> (native-fun <obj> scm-logior    ))
 (define-operator-mapping ^   2 <meta<obj>> (native-fun <obj> scm-logxor    ))
