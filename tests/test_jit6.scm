@@ -110,4 +110,6 @@
     "compiled shift-left using Scheme objects")
 (ok (eq? 123 ((jit ctx (list <obj> <obj>) >>) 1968 4))
     "compiled shift-right using Scheme objects")
+(ok (equal? (list #f #t) (map (jit ctx (list <obj> <obj>) =) '(21 42) '(42 42)))
+    "compiled comparison of Scheme objects")
 (run-tests)

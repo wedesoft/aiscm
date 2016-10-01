@@ -1,10 +1,9 @@
 ## Ready
 
-* type needed for operator mapping? (i.e. assume native scalar)
+* object = object -> bool (implement !=, !=0, =0, !, <, >, ...)
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * array of objects
 * object + int -> object
-* object = object -> bool (implement !=, !=0, =0, !, <, >, ...)
 * to-type involving object
 * split up (aiscm jit)
 * spill blocked registers into other register

@@ -10,6 +10,11 @@ SCM scm_shr(SCM x, SCM y)
   return scm_ash(x, scm_negate(y));
 }
 
+char obj_equal(SCM x, SCM y)
+{
+  return scm_is_true(scm_equal_p(x, y));
+}
+
 void init_obj(void)
 {
 }
