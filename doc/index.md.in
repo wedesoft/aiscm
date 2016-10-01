@@ -16,13 +16,13 @@ Control all data and machine code down to every single bit and byte.
 * [Input/output](io.html "Input/output")
 * [Array operations](array.html "Array operations")
 
-# See also
+## See also
 
 * [Github page](https://github.com/wedesoft/aiscm)
 * [Gitlab page](https://gitlab.com/wedesoft/aiscm)
 * [Bitbucket page](https://bitbucket.org/wedesoft/aiscm)
 
-# External links
+## External links
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)

@@ -574,6 +574,7 @@
 (define-operator-mapping min 2 <meta<int<>>> (functional-code minor            ))
 (define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
 
+(define-operator-mapping -   1 <meta<obj>> (native-fun <obj> scm-negate    ))
 (define-operator-mapping ~   1 <meta<obj>> (native-fun <obj> scm-lognot    ))
 (define-operator-mapping +   2 <meta<obj>> (native-fun <obj> scm-sum       ))
 (define-operator-mapping -   2 <meta<obj>> (native-fun <obj> scm-difference)); TODO: unary minus

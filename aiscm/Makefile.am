@@ -7,7 +7,8 @@ site_DATA = mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm 
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
-												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la
+												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
+												libguile-aiscm-obj.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
@@ -30,6 +31,11 @@ libguile_aiscm_jit_la_SOURCES = jit.c
 libguile_aiscm_jit_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_jit_la_LDFLAGS = -no-undefined
 libguile_aiscm_jit_la_LIBADD = $(GUILE_LIBS)
+
+libguile_aiscm_obj_la_SOURCES = obj.c
+libguile_aiscm_obj_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_obj_la_LDFLAGS = -no-undefined
+libguile_aiscm_obj_la_LIBADD = $(GUILE_LIBS)
 
 libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c ffmpeg-helpers.c
 libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)

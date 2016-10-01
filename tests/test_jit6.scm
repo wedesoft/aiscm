@@ -78,6 +78,8 @@
     "compile and run identity function accepting Scheme object")
 (ok (eq? 42 ((jit ctx (list <obj>) identity) 42))
     "make sure \"content\" enforces SCM object arguments")
+(ok (eq? -300 ((jit ctx (list <obj>) -) 300))
+    "negation of Scheme object")
 (ok (eq? -124 ((jit ctx (list <obj>) ~) 123))
     "bitwise logical not using Scheme objects")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
