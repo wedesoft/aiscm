@@ -1,13 +1,23 @@
 #include <libguile.h>
 
-SCM scm_negate(SCM x)
+SCM obj_negate(SCM x)
 {
   return scm_difference(x, SCM_UNDEFINED);
 }
 
-SCM scm_shr(SCM x, SCM y)
+char obj_zero_p(SCM x)
 {
-  return scm_ash(x, scm_negate(y));
+  return scm_is_true(scm_zero_p(x));
+}
+
+char obj_nonzero_p(SCM x)
+{
+  return scm_is_false(scm_zero_p(x));
+}
+
+SCM obj_shr(SCM x, SCM y)
+{
+  return scm_ash(x, obj_negate(y));
 }
 
 char obj_equal_p(SCM x, SCM y)
