@@ -1,6 +1,6 @@
 ## Ready
 
-* object = object -> bool (implement !=, !=0, =0, !, <, >, ...)
+* object = object -> bool (implement =0, !=0)
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * array of objects
 * object + int -> object
