@@ -9,7 +9,7 @@
   #:export (<obj> <meta<obj>>
             scm-negate scm-lognot scm-sum scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor scm-min scm-max scm-ash scm-shr
-            obj-equal obj-nequal))
+            obj-equal obj-nequal obj-less obj-leq obj-gr obj-geq))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 ;TODO: size-of
@@ -42,3 +42,7 @@
 (define scm-shr        (dynamic-func "scm_shr"        guile-aiscm-obj))
 (define obj-equal      (dynamic-func "obj_equal"      guile-aiscm-obj))
 (define obj-nequal     (dynamic-func "obj_nequal"     guile-aiscm-obj))
+(define obj-less       (dynamic-func "obj_less"       guile-aiscm-obj))
+(define obj-leq        (dynamic-func "obj_leq"        guile-aiscm-obj))
+(define obj-gr         (dynamic-func "obj_gr"         guile-aiscm-obj))
+(define obj-geq        (dynamic-func "obj_geq"        guile-aiscm-obj))
