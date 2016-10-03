@@ -52,5 +52,7 @@
 (ok (eq? 123 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-shr x y))) 1968 4))
     "compile and run call to scm_shr")
 (ok (equal? '(#f #t) (map (jit ctx (list <obj> <obj>) (lambda (x y) (call <bool> obj-equal x y))) '(21 42) '(42 42)))
-    "compile and run comparison of objects")
+    "compile and run equality of objects")
+(ok (equal? '(#t #f) (map (jit ctx (list <obj> <obj>) (lambda (x y) (call <bool> obj-nequal x y))) '(21 42) '(42 42)))
+    "compile and run inequality of objects")
 (run-tests)

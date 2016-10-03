@@ -15,6 +15,11 @@ char obj_equal(SCM x, SCM y)
   return scm_is_true(scm_equal_p(x, y));
 }
 
+char obj_nequal(SCM x, SCM y)
+{
+  return scm_is_false(scm_equal_p(x, y));
+}
+
 void init_obj(void)
 {
 }

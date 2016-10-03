@@ -575,6 +575,7 @@
 (define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
 
 (define-operator-mapping -   1 <meta<obj>> (native-fun <obj>  scm-negate    ))
+(define-method (- (z <integer>) (a <meta<obj>>)) (native-fun <obj> scm-negate))
 (define-operator-mapping ~   1 <meta<obj>> (native-fun <obj>  scm-lognot    ))
 (define-operator-mapping +   2 <meta<obj>> (native-fun <obj>  scm-sum       ))
 (define-operator-mapping -   2 <meta<obj>> (native-fun <obj>  scm-difference))
@@ -587,6 +588,7 @@
 (define-operator-mapping |   2 <meta<obj>> (native-fun <obj>  scm-logior    ))
 (define-operator-mapping ^   2 <meta<obj>> (native-fun <obj>  scm-logxor    ))
 (define-operator-mapping =   2 <meta<obj>> (native-fun <bool> obj-equal     ))
+(define-operator-mapping !=  2 <meta<obj>> (native-fun <bool> obj-nequal    ))
 (define-operator-mapping min 2 <meta<obj>> (native-fun <obj>  scm-min       ))
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
