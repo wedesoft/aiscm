@@ -1,9 +1,9 @@
 ## Ready
 
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
+* to-type involving object
 * array of objects
 * object + int -> object
-* to-type involving object
 * split up (aiscm jit)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints

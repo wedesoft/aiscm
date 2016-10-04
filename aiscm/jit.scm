@@ -602,7 +602,6 @@
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
-  (format #t "~a~&" (list kind op out args))
   ((kind op) out args)); TODO: handle to-type (delegate-fun)
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
