@@ -125,6 +125,7 @@ AC_TRY_LINK([#include <X11/extensions/Xv.h>],
    [AC_MSG_RESULT([yes])],
    [AC_MSG_RESULT([no])]
    [AC_MSG_ERROR([Could not locate Xvideo extension])])
+old_LIBS="$LIBS"
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,
