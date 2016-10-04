@@ -31,6 +31,8 @@
     "compile and run comparison with zero")
 (ok (equal? '(#t #f) (map (jit ctx (list <obj>) (lambda (x) (call <bool> obj-nonzero-p x))) '(3 0)))
     "compile and run not-equal-to zero")
+(ok (equal? '(#t #f #f #f #f) (map (jit ctx (list <obj>) (lambda (x) (call <bool> obj-not x))) '(#f #t () 0 1)))
+    "compile logical not for Scheme objects")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-sum x y))) 100 200))
     "compile and run call to scm_sum")
 (ok (eq? 100 ((jit ctx (list <obj> <obj>) (lambda (x y) (call <obj> scm-difference x y))) 300 200))

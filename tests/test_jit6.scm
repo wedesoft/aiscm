@@ -86,6 +86,8 @@
     "comparison of Scheme object with zero")
 (ok (equal? '(#t #f) (map (jit ctx (list <obj>) !=0) '(3 0)))
     "Scheme object not equal to zero")
+(ok (equal? '(#t #f #f #f #f) (map (jit ctx (list <obj>) !) '(#f #t () 0 1)))
+    "compiled logical not for Scheme objects")
 (ok (eq? 300 ((jit ctx (list <obj> <obj>) +) 100 200))
     "compiled plus operation using Scheme objects")
 (ok (eq? 300 ((jit ctx (list <obj>) +) 300))

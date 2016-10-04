@@ -15,6 +15,11 @@ char obj_nonzero_p(SCM x)
   return scm_is_false(scm_zero_p(x));
 }
 
+char obj_not(SCM x)
+{
+  return scm_is_true(scm_not(x));
+}
+
 SCM obj_shr(SCM x, SCM y)
 {
   return scm_ash(x, obj_negate(y));

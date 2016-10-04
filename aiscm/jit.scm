@@ -579,7 +579,7 @@
 (define-operator-mapping ~   1 <meta<obj>> (native-fun <obj>  scm-lognot    ))
 (define-operator-mapping =0  1 <meta<obj>> (native-fun <bool> obj-zero-p    ))
 (define-operator-mapping !=0 1 <meta<obj>> (native-fun <bool> obj-nonzero-p ))
-; TODO: !
+(define-operator-mapping !   1 <meta<obj>> (native-fun <bool> obj-not       ))
 (define-operator-mapping +   2 <meta<obj>> (native-fun <obj>  scm-sum       ))
 (define-operator-mapping -   2 <meta<obj>> (native-fun <obj>  scm-difference))
 (define-operator-mapping *   2 <meta<obj>> (native-fun <obj>  scm-product   ))

@@ -7,7 +7,8 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
-            obj-negate scm-lognot obj-zero-p obj-nonzero-p scm-sum scm-difference scm-product scm-divide scm-remainder
+            obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
+            scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor scm-min scm-max scm-ash obj-shr
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
@@ -30,6 +31,7 @@
 (define scm-lognot     (dynamic-func "scm_lognot"     main           ))
 (define obj-zero-p     (dynamic-func "obj_zero_p"     guile-aiscm-obj))
 (define obj-nonzero-p  (dynamic-func "obj_nonzero_p"  guile-aiscm-obj))
+(define obj-not        (dynamic-func "obj_not"        guile-aiscm-obj))
 (define scm-sum        (dynamic-func "scm_sum"        main           ))
 (define scm-difference (dynamic-func "scm_difference" main           ))
 (define scm-product    (dynamic-func "scm_product"    main           ))
