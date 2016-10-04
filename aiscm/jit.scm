@@ -590,8 +590,8 @@
 (define-operator-mapping &   2 <meta<obj>> (native-fun <obj>  scm-logand    ))
 (define-operator-mapping |   2 <meta<obj>> (native-fun <obj>  scm-logior    ))
 (define-operator-mapping ^   2 <meta<obj>> (native-fun <obj>  scm-logxor    ))
-; TODO: &&
-; TODO: ||
+(define-operator-mapping &&  2 <meta<obj>> (native-fun <obj>  obj-and       ))
+(define-operator-mapping ||  2 <meta<obj>> (native-fun <obj>  obj-or        ))
 (define-operator-mapping =   2 <meta<obj>> (native-fun <bool> obj-equal-p   ))
 (define-operator-mapping !=  2 <meta<obj>> (native-fun <bool> obj-nequal-p  ))
 (define-operator-mapping <   2 <meta<obj>> (native-fun <bool> obj-less-p    ))
@@ -712,8 +712,8 @@
 (define-jit-method coerce   &   2)
 (define-jit-method coerce   |   2)
 (define-jit-method coerce   ^   2)
-(define-jit-method to-bool  &&  2)
-(define-jit-method to-bool  ||  2)
+(define-jit-method coerce   &&  2)
+(define-jit-method coerce   ||  2)
 (define-jit-method to-bool  =   2)
 (define-jit-method to-bool  !=  2)
 (define-jit-method to-bool  <   2)

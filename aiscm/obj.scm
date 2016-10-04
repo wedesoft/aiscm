@@ -9,7 +9,7 @@
   #:export (<obj> <meta<obj>>
             obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
             scm-difference scm-product scm-divide scm-remainder
-            scm-logand scm-logior scm-logxor scm-min scm-max scm-ash obj-shr
+            scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
@@ -40,6 +40,8 @@
 (define scm-logand     (dynamic-func "scm_logand"     main           ))
 (define scm-logior     (dynamic-func "scm_logior"     main           ))
 (define scm-logxor     (dynamic-func "scm_logxor"     main           ))
+(define obj-and        (dynamic-func "obj_and"        guile-aiscm-obj))
+(define obj-or         (dynamic-func "obj_or"         guile-aiscm-obj))
 (define scm-min        (dynamic-func "scm_min"        main           ))
 (define scm-max        (dynamic-func "scm_max"        main           ))
 (define scm-ash        (dynamic-func "scm_ash"        main           ))

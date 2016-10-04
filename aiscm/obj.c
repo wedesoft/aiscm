@@ -20,6 +20,16 @@ char obj_not(SCM x)
   return scm_is_true(scm_not(x));
 }
 
+SCM obj_and(SCM a, SCM b)
+{
+  return scm_is_true(a) ? b : a;
+}
+
+SCM obj_or(SCM a, SCM b)
+{
+  return scm_is_true(a) ? a : b;
+}
+
 SCM obj_shr(SCM x, SCM y)
 {
   return scm_ash(x, obj_negate(y));
