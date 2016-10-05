@@ -42,6 +42,7 @@
 (define seq sequence)
 (define-syntax-rule (arr arg1 args ...)
   (if (is-a? (quote arg1) <symbol>) (to-array arg1 '(args ...)) (to-array '(arg1 args ...))))
+(define-method (pointerless? (self <meta<sequence<>>>)) (pointerless? (typecode self)))
 
 (define-method (pointer (target-class <meta<sequence<>>>)) target-class)
 (define (multiarray type dimensions)
