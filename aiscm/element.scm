@@ -7,7 +7,7 @@
             value get set size-of foreign-type pack unpack channels rate
             typecode size shape strides dimensions coerce native-type wrap get-size
             build content component base to-type duplicate read-image read-audio
-            write-image write-audio))
+            write-image write-audio pointerless?))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
 (define-method (size-of (self <element>)) (size-of (class-of self)))
@@ -42,3 +42,4 @@
 (define-generic read-audio)
 (define-generic write-image)
 (define-generic write-audio)
+(define-method (pointerless? self) #t)

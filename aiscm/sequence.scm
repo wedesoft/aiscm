@@ -28,6 +28,7 @@
           (define-method (initialize (self class) initargs)
             (let-keywords initargs #f (shape size value strides)
               (let* [(value   (or value (make <mem>
+                                         #:pointerless (pointerless? type)
                                          #:size (* (size-of (typecode type))
                                                    (or size (apply * shape))))))
                      (shape   (or shape (list size)))

@@ -1,6 +1,5 @@
 ## Ready
 
-* array of objects
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * to-type involving object
 * object + int -> object

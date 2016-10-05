@@ -54,4 +54,6 @@
     "build floating point number")
 (ok (equal? '(1.25) (content <float> 1.25))
     "'content' returns floating point values")
+(ok (pointerless? <float>)
+    "floating-point memory is pointerless")
 (run-tests)

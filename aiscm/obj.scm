@@ -25,6 +25,7 @@
 (define-method (native-type o . args) <obj>)
 (define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
+(define-method (pointerless? (self <meta<obj>>)) #f)
 
 (define main (dynamic-link))
 (define guile-aiscm-obj (dynamic-link "libguile-aiscm-obj"))

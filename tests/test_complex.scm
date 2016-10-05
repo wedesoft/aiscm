@@ -107,4 +107,6 @@
 (let [(c (parameter (complex <int>)))]
   (ok (is-a? (decompose-value (complex <int>) c) <internalcomplex>)
       "Decompose complex parameters into internal complex values"))
+(ok (pointerless? (complex <int>))
+    "complex memory is pointerless")
 (run-tests)

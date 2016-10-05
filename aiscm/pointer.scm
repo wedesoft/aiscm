@@ -18,7 +18,7 @@
     (lambda (class metaclass)
       (define-method (initialize (self class) initargs)
         (let-keywords initargs #t (value)
-          (let [(value (or value (make <mem> #:size (size-of target))))]
+          (let [(value (or value (make <mem> #:size (size-of target) #:pointerless (pointerless? target))))]
             (next-method self (list #:value value)))))
       (define-method (typecode (self metaclass)) target))))
 (define-method (write (self <pointer<>>) port)

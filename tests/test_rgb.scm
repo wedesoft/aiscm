@@ -226,4 +226,6 @@
     "compose RGB array using array for blue channel")
 (ok (equal? (list (rgb 2 3 5)) (to-list (rgb (seq 2) (seq 3) 5)))
     "compose RGB array using array for red and green channel")
+(ok (pointerless? <intrgb>)
+    "RGB memory is pointerless")
 (run-tests)

@@ -39,7 +39,7 @@
 (define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
 
 (define (import-audio-frame self lst)
-  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size)))
+  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
         (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
@@ -49,7 +49,7 @@
            lst)))
 
 (define (import-video-frame self lst)
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size)))]
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
     (apply (lambda (pts format shape offsets pitches data size)
              (cons
                pts

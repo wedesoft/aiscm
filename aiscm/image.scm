@@ -97,7 +97,7 @@
 (define (memalign size alignment)
   (let* [(offset        (1- alignment))
          (extended-size (+ size offset))
-         (mem           (make <mem> #:size extended-size))
+         (mem           (make <mem> #:size extended-size #:pointerless #t))
          (base          (get-memory mem))
          (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
     (make <mem> #:memory memory #:base base #:size size)))

@@ -78,4 +78,6 @@
     "'||' with four arguments")
 (ok (equal? '(#t #f) (map ! '(#f #t)))
    "'!' is like 'not'")
+(ok (pointerless? <bool>)
+    "boolean memory is pointerless")
 (run-tests)

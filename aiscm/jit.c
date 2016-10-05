@@ -29,7 +29,7 @@ SCM make_mmap(SCM code)
 {
   SCM retval;
   struct mmap_t *mem;
-  mem = (struct mmap_t *)scm_gc_malloc(sizeof(struct mmap_t), "mmap");
+  mem = (struct mmap_t *)scm_gc_malloc_pointerless(sizeof(struct mmap_t), "mmap");
   mem->len = SCM_BYTEVECTOR_LENGTH(code);
   mem->mem = mmap(NULL, mem->len, PROT_WRITE | PROT_EXEC,
                   MAP_ANON | MAP_PRIVATE, -1, 0);

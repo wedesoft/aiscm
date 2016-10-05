@@ -192,4 +192,6 @@
     "base type of integer is integer")
 (ok (eqv? 3 (conj 3))
     "conjugate of integer")
+(ok (pointerless? <int>)
+    "integer memory is pointerless")
 (run-tests)
