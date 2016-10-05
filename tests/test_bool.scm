@@ -46,8 +46,6 @@
     "type matching for #t")
 (ok (equal? <bool> (native-type #f #t))
     "type matching for multiple booleans")
-(ok (throws? (native-type #f 1))
-    "boolean does not match with anything else at the moment")
 (ok (get bool-true)
     "get value of true")
 (ok (not (get bool-false))

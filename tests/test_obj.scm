@@ -19,6 +19,11 @@
     "object and integer coerce to object")
 (ok (eq? <obj> (coerce <int> <obj>))
     "integer and object coerce to object")
+(ok (equal? "#<<obj> abc>"
+            (call-with-output-string (lambda (port) (write (make <obj> #:value 'abc) port))))
+    "write wrapped object")
+(ok (eq? <obj> (native-type 'a))
+    "native type for a symbol is <obj>")
 (ok (equal? (make <obj> #:value 'sym) (build <obj> address))
     "build SCM value")
 (ok (equal? (list address) (content <obj> 'sym))

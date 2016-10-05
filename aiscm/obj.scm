@@ -13,14 +13,12 @@
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
-;TODO: size-of
 ;TODO: pack
 ;TODO: unpack
-(define-method (coerce (a <meta<obj>>) b) <obj>)
-(define-method (coerce a (b <meta<obj>>)) <obj>)
-;TODO: coerce
-;TODO: write
-;TODO: native-type
+(define-method (coerce a b) <obj>)
+(define-method (write (self <obj>) port)
+  (format port "#<~a ~a>" (class-name (class-of self)) (get self))) 
+(define-method (native-type o . args) <obj>)
 (define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
 

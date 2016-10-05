@@ -1,8 +1,8 @@
 ## Ready
 
+* array of objects
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * to-type involving object
-* array of objects
 * object + int -> object
 * split up (aiscm jit)
 * spill blocked registers into other register
