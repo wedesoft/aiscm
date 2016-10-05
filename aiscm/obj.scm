@@ -1,6 +1,7 @@
 (define-module (aiscm obj)
   #:use-module (oop goops)
   #:use-module (system foreign)
+  #:use-module (rnrs bytevectors)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
@@ -13,11 +14,14 @@
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
-;TODO: pack
-;TODO: unpack
+(define-method (pack (self <obj>))
+  (uint-list->bytevector (list (pointer-address (scm->pointer (get self)))) (native-endianness) 8))
+(define-method (unpack (self <meta<obj>>) (packed <bytevector>))
+  (let [(value (car (bytevector->uint-list packed (native-endianness) (size-of self))))]
+    (make self #:value (pointer->scm (make-pointer value)))))
 (define-method (coerce a b) <obj>)
 (define-method (write (self <obj>) port)
-  (format port "#<~a ~a>" (class-name (class-of self)) (get self))) 
+  (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (native-type o . args) <obj>)
 (define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))

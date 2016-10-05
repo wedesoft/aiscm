@@ -52,14 +52,11 @@
 (define-method (foreign-type (t <meta<int<64,unsigned>>>)) uint64)
 (define-method (foreign-type (t   <meta<int<64,signed>>>))  int64)
 (define-method (pack (self <int<>>))
-  (let* [(typecode (class-of self))
-         (retval   (make-bytevector (size-of typecode)))
-         (setter   (if (signed? typecode) bytevector-sint-set! bytevector-uint-set!))]
-    (setter retval 0 (inexact->exact (get self)) (native-endianness) (size-of typecode))
-    retval))
+  (let [(converter (if (signed? self) sint-list->bytevector uint-list->bytevector))]
+    (converter (list (inexact->exact (get self))) (native-endianness) (size-of self))))
 (define-method (unpack (self <meta<int<>>>) (packed <bytevector>))
-  (let* [(ref   (if (signed? self) bytevector-sint-ref bytevector-uint-ref))
-         (value (ref packed 0 (native-endianness) (size-of self)))]
+  (let* [(converter (if (signed? self) bytevector->sint-list bytevector->uint-list))
+         (value     (car (converter packed (native-endianness) (size-of self))))]
     (make self #:value value)))
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   (let [(max-bits  (min 64 (max (bits a) (bits b))))

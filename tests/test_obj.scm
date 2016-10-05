@@ -13,6 +13,10 @@
 
 (ok (eqv? 8 (size-of <obj>))
     "size of SCM reference is 64 bits")
+(ok (equal? #vu8(#xaa #x00 #x00 #x00 #x00 #x00 #x00 #x00) (pack (make <obj> #:value 42)))
+    "pack Scheme object")
+(ok (equal? (make <obj> #:value 42) (unpack <obj> #vu8(#xaa #x00 #x00 #x00 #x00 #x00 #x00 #x00)))
+    "unpack Scheme object")
 (ok (eq? <obj> (coerce <obj> <obj>))
     "objects coerce to objects")
 (ok (eq? <obj> (coerce <obj> <int>))
