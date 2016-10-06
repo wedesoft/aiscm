@@ -11,7 +11,8 @@
             obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
             scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr
-            obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p))
+            obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p
+            scm-to-int64))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 (define-method (pack (self <obj>))
@@ -55,3 +56,4 @@
 (define obj-leq-p      (dynamic-func "obj_leq_p"      guile-aiscm-obj))
 (define obj-gr-p       (dynamic-func "obj_gr_p"       guile-aiscm-obj))
 (define obj-geq-p      (dynamic-func "obj_geq_p"      guile-aiscm-obj))
+(define scm-to-int64   (dynamic-func "scm_to_int64"   main           ))
