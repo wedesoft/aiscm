@@ -2,6 +2,7 @@
 
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * to-type involving object
+* add tagline to readme and index: computer vision for the robotic age?
 * object + int -> object
 * split up (aiscm jit)
 * spill blocked registers into other register

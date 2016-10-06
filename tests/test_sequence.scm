@@ -199,4 +199,8 @@
     "integer sequence memory is pointerless")
 (ok (not (pointerless? (sequence <obj>)))
     "object sequence memory is not pointerless")
+(ok (equal? '(#f #f #f) (to-list (make (sequence <obj>) #:size 3)))
+    "sequence of objects is filled with boolean false")
+(ok (equal? '((#f #f) (#f #f)) (to-list (make (multiarray <obj> 2) #:shape '(2 2))))
+    "2D array of objects is filled with boolean false")
 (run-tests)

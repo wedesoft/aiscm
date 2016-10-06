@@ -47,4 +47,5 @@
   (let [(retval (make (class-of p) #:value (get p)))]
     (set! (pointer-offset retval) offset)
     retval))
+(define-method (pointerless? (self <meta<pointer<>>>)) (pointerless? (typecode self)))
 (pointer <int<>>)

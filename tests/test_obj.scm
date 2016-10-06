@@ -85,6 +85,4 @@
     "compile and run greater-equal comparison for objects")
 (ok (not (pointerless? <obj>))
     "object memory is not pointerless")
-(ok (equal? '(#f #f #f) (to-list (make (sequence <obj>) #:size 3)))
-    "sequence of objects is filled with boolean false")
 (run-tests)
