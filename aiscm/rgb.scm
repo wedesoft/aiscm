@@ -139,4 +139,4 @@
               #:blue  (parameter (blue  (delegate x)))))
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
-  (apply rgb (map (cut to-type (base target) <>) (content <rgb<>> self))))
+  (apply rgb (map (cut to-type target <>) (content <rgb<>> self))))

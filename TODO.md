@@ -1,5 +1,6 @@
 ## Ready
 
+* convert object to boolean, int32, int16, uint32, ...
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * to-type involving object
 * fast fill method?

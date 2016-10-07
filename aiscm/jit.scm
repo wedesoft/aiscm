@@ -26,7 +26,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function call)
+            decompose-arg delegate-fun make-function call to-type-op)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
@@ -602,7 +602,7 @@
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args delegate)
-  (delegate out args))
+  ((apply delegate (map type args)) out args))
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args delegate) (delegate-op target intermediate name out args))
@@ -722,14 +722,17 @@
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
 
+(define-method (to-type (typecode <meta<obj>>))
+  (native-fun <long> scm-to-int64))
+
+(define-method (to-type (typecode <meta<scalar>>))
+  (functional-code mov))
+
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
     (make-function to-target
                    to-target
-                   (delegate-fun to-target
-                     (if (eq? (typecode (type a)) <obj>); TODO: fix this hack!
-                       (native-fun target scm-to-int64)
-                       (functional-code mov)))
+                   (delegate-fun to-target to-type)
                    (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
