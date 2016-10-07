@@ -2,6 +2,7 @@
 
 * reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
 * to-type involving object
+* fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
 * object + int -> object
 * split up (aiscm jit)

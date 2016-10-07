@@ -130,4 +130,6 @@
     "compiled greater-than comparison for Scheme objects")
 (ok (equal? (list #f #t #t) (map (jit ctx (list <obj> <obj>) >=) '(3 5 7) '(5 5 5)))
     "compiled greater-equal comparison for Scheme objects")
+(skip (eq? 42 ((jit ctx (list <obj>) (cut to-type <int> <>)) 42))
+    "convert Scheme object to integer in compiled code")
 (run-tests)

@@ -601,11 +601,11 @@
 (define-operator-mapping min 2 <meta<obj>> (native-fun <obj>  scm-min       ))
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args kind op)
-  ((kind op) out args)); TODO: handle to-type (delegate-fun)
+(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args delegate)
+  (delegate out args)); TODO: handle to-type (delegate-fun)
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
-(define-method (delegate-op target intermediate name out args kind op) (delegate-op target intermediate name out args))
+(define-method (delegate-op target intermediate name out args delegate) (delegate-op target intermediate name out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content (type out) out) (content (type result) result))))
@@ -726,7 +726,7 @@
   (let [(to-target (cut to-type target <>))]
     (make-function to-target
                    to-target
-                   (delegate-fun to-target functional-code mov)
+                   (delegate-fun to-target (functional-code mov))
                    (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
