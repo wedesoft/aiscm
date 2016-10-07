@@ -602,7 +602,7 @@
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args delegate)
-  (delegate out args)); TODO: handle to-type (delegate-fun)
+  (delegate out args))
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args delegate) (delegate-op target intermediate name out args))
@@ -616,7 +616,7 @@
   (make <function> #:arguments args
                    #:type      (apply coercion (map type args))
                    #:project   (lambda ()  (apply name (map body args)))
-                   #:delegate  #f; TODO: fix this superfluous parameter
+                   #:delegate  #f
                    #:term      (lambda (out) (fun out args))))
 
 (define (need-intermediate-param? t value)
@@ -726,7 +726,10 @@
   (let [(to-target (cut to-type target <>))]
     (make-function to-target
                    to-target
-                   (delegate-fun to-target (functional-code mov))
+                   (delegate-fun to-target
+                     (if (eq? (typecode (type a)) <obj>); TODO: fix this hack!
+                       (native-fun target scm-to-int64)
+                       (functional-code mov)))
                    (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
