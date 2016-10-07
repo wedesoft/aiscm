@@ -730,10 +730,7 @@
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
-    (make-function to-target
-                   to-target
-                   (delegate-fun to-target to-type)
-                   (list a))))
+    (make-function to-target to-target (delegate-fun to-target to-type) (list a))))
 
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
