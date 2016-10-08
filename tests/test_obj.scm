@@ -86,6 +86,8 @@
     "compile and run greater-equal comparison for objects")
 (ok (not (pointerless? <obj>))
     "object memory is not pointerless")
+(ok (not (signed? <obj>))
+    "object references don't need sign-extension")
 (ok (eq? 123 ((jit ctx (list <obj>) (cut call <long> scm-to-int64 <>)) 123))
     "compile and run call to scm_to_int64")
 (run-tests)

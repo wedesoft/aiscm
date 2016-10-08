@@ -1,8 +1,8 @@
 ## Ready
 
+* identity function for object sequence, negation for object sequence
 * convert object to boolean, int32, int16, uint32, ...
-* reduce delegate-op implementation (how to handle "to-type" and "delegate-fun"?)
-* to-type involving object
+* convert object array to integer array
 * fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
 * object + int -> object

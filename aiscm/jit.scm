@@ -26,7 +26,7 @@
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function call to-type-op)
+            decompose-arg delegate-fun make-function call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
@@ -719,10 +719,10 @@
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
 
-(define-method (to-type (typecode <meta<obj>>))
+(define-method (to-type (source <meta<obj>>))
   (native-fun <long> scm-to-int64))
 
-(define-method (to-type (typecode <meta<scalar>>))
+(define-method (to-type (source <meta<scalar>>))
   (functional-code mov))
 
 (define-method (to-type (target <meta<element>>) (a <param>))
