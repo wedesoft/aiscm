@@ -42,6 +42,7 @@ Control all data and machine code down to every single bit and byte.
 * [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
 * [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
 * [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
+* [Embedded Language for Accelerated Array Computations](https://github.com/AccelerateHS/accelerate)
 
 Copyright © 2013, 2014, 2015, 2016 Jan Wedekind.
 

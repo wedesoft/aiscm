@@ -601,16 +601,13 @@
 (define-operator-mapping min 2 <meta<obj>> (native-fun <obj>  scm-min       ))
 (define-operator-mapping max 2 <meta<obj>> (native-fun <obj>  scm-max       ))
 
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args delegate)
+(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
-  ((apply name (map type args)) out args))
-(define-method (delegate-op target intermediate name out args delegate) (delegate-op target intermediate name out args))
-(define-method (delegate-op target intermediate name out args)
+(define-method (delegate-op target intermediate name delegate out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content (type out) out) (content (type result) result))))
-(define (delegate-fun name . other)
-  (lambda (out args) (apply delegate-op (type out) (reduce coerce #f (map type args)) name out args other)))
+(define (delegate-fun name delegate)
+  (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name delegate out args)))
 
 (define (make-function name coercion fun args)
   (make <function> #:arguments args
@@ -685,7 +682,7 @@
             (iota arity)))))
 
 (define-syntax-rule (define-jit-method coercion name arity)
-  (begin (n-ary-base name arity coercion (delegate-fun name))
+  (begin (n-ary-base name arity coercion (delegate-fun name name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
