@@ -135,4 +135,6 @@
     "convert Scheme object to integer in compiled code")
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <obj>)) identity) (seq <obj> 2 3 5))))
     "compile and run identity function for sequence of objects")
+(ok (equal? '(-3 -4 -6) (to-list ((jit ctx (list (sequence <obj>)) ~) (seq <obj> 2 3 5))))
+    "dereference pointer when doing bitwise negation")
 (run-tests)

@@ -617,7 +617,9 @@
                    #:term      (lambda (out) (fun out args))))
 
 (define (need-intermediate-param? t value)
-  (or (is-a? value <function>) (not (eqv? (size-of t) (size-of (type value))))))
+  (or (is-a? value <function>)
+      (not (eqv? (size-of t) (size-of (type value))))
+      (and (eq? t <obj>) (is-a? (delegate value) <pointer<>>))))
 (define-method (force-parameters (targets <list>) args fun)
   (let* [(mask          (map need-intermediate-param? targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))

@@ -1,6 +1,7 @@
 ## Ready
 
-* identity function for object sequence, negation for object sequence
+* check long vs pointer
+* negation for object sequence
 * convert object to boolean, int32, int16, uint32, ...
 * convert object array to integer array
 * fast fill method?
