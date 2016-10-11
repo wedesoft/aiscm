@@ -535,7 +535,8 @@
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define (operation-code target op out args)
-  (force-parameters target args (lambda intermediates (apply op (operand out) (map operand intermediates)))))
+  (force-parameters target args need-intermediate-param?
+    (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
   (operation-code (reduce coerce #f (map type args)) op out args))
 (define ((mutating-code op) out args)
@@ -620,13 +621,13 @@
   (or (is-a? value <function>)
       (not (eqv? (size-of t) (size-of (type value))))
       (and (eq? t <obj>) (is-a? (delegate value) <pointer<>>))))
-(define-method (force-parameters (targets <list>) args fun)
-  (let* [(mask          (map need-intermediate-param? targets args))
+(define-method (force-parameters (targets <list>) args predicate fun)
+  (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
          (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
     (attach preamble (apply fun intermediates))))
-(define-method (force-parameters target args fun)
-  (force-parameters (make-list (length args) target) args fun))
+(define-method (force-parameters target args predicate fun)
+  (force-parameters (make-list (length args) target) args predicate fun))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
@@ -754,7 +755,7 @@
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 (define* ((native-fun return-type pointer) out args)
-  (force-parameters (map type args) args
+  (force-parameters (map type args) args need-intermediate-param?
     (lambda intermediates
       (blocked caller-saved
         (pass-parameters intermediates
