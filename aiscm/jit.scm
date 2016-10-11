@@ -24,7 +24,8 @@
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
             term tensor index type subst code copy-value
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            need-intermediate-param? force-parameters shl shr sign-extend-ax div mod
+            is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
+            force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
@@ -534,8 +535,23 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 (define (decompose-arg arg) (decompose-value (type arg) arg))
 
+(define (is-function? value) (not (delegate value)))
+(define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
+(define (need-conversion? target type) (not (eqv? (size-of target) (size-of type)))); TODO: bool
+(define (code-needs-intermediate? t value)
+  (or (is-function? value) (need-conversion? t (type value))))
+(define (call-needs-intermediate? t value)
+  (or (is-function? value) (need-conversion? t (type value)) (is-pointer? value)))
+(define-method (force-parameters (targets <list>) args predicate fun)
+  (let* [(mask          (map predicate targets args))
+         (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
+         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
+    (attach preamble (apply fun intermediates))))
+(define-method (force-parameters target args predicate fun)
+  (force-parameters (make-list (length args) target) args predicate fun))
+
 (define (operation-code target op out args)
-  (force-parameters target args need-intermediate-param?
+  (force-parameters target args code-needs-intermediate?
     (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
   (operation-code (reduce coerce #f (map type args)) op out args))
@@ -616,18 +632,6 @@
                    #:project   (lambda ()  (apply name (map body args)))
                    #:delegate  #f
                    #:term      (lambda (out) (fun out args))))
-
-(define (need-intermediate-param? t value)
-  (or (is-a? value <function>)
-      (not (eqv? (size-of t) (size-of (type value))))
-      (and (eq? t <obj>) (is-a? (delegate value) <pointer<>>))))
-(define-method (force-parameters (targets <list>) args predicate fun)
-  (let* [(mask          (map predicate targets args))
-         (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
-         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
-    (attach preamble (apply fun intermediates))))
-(define-method (force-parameters target args predicate fun)
-  (force-parameters (make-list (length args) target) args predicate fun))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
@@ -755,7 +759,7 @@
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 (define* ((native-fun return-type pointer) out args)
-  (force-parameters (map type args) args need-intermediate-param?
+  (force-parameters (map type args) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
         (pass-parameters intermediates
