@@ -723,6 +723,7 @@
 
 (define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
+
 (define-method (to-type (source <meta<obj>>)) (native-fun <long> scm-to-int64))
 (define-method (to-type (source <meta<scalar>>)) (functional-code mov))
 (define-method (to-type (target <meta<element>>) (a <param>))
