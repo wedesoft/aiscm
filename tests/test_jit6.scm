@@ -137,4 +137,6 @@
     "compile and run identity function for sequence of objects")
 (ok (equal? '(-3 -4 -6) (to-list ((jit ctx (list (sequence <obj>)) ~) (seq <obj> 2 3 5))))
     "dereference pointer when doing bitwise negation")
+(todo (equal? 42 ((jit ctx (list <int>) (cut to-type <obj> <>)) 42))
+    "convert integer to object")
 (run-tests)

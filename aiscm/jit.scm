@@ -407,10 +407,20 @@
 (define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
 (define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
 
-(define-method (to-type (target <meta<element>>) (self <meta<element>>))
-  target)
-(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>))
-  (multiarray target (dimensions self)))
+(define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
+(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
+(define-method (to-type (source <meta<obj>>)) (native-fun <long> scm-to-int64))
+(define-method (to-type (source <meta<scalar>>)) (functional-code mov))
+(define-method (to-type (target <meta<element>>) (a <param>))
+  (let [(to-target (cut to-type target <>))]
+    (make-function to-target to-target (delegate-fun to-target to-type) (list a))))
+(define-method (to-type (target <meta<element>>) (self <element>))
+  (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
+    (add-method! to-type
+                 (make <method>
+                       #:specializers (map class-of (list target self))
+                       #:procedure (lambda (target self) (f (get self)))))
+    (to-type target self)))
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))
@@ -725,24 +735,6 @@
 (define-jit-method to-bool  >=  2)
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
-
-(define-method (to-type (source <meta<obj>>))
-  (native-fun <long> scm-to-int64))
-
-(define-method (to-type (source <meta<scalar>>))
-  (functional-code mov))
-
-(define-method (to-type (target <meta<element>>) (a <param>))
-  (let [(to-target (cut to-type target <>))]
-    (make-function to-target to-target (delegate-fun to-target to-type) (list a))))
-
-(define-method (to-type (target <meta<element>>) (self <element>))
-  (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
-    (add-method! to-type
-                 (make <method>
-                       #:specializers (map class-of (list target self))
-                       #:procedure (lambda (target self) (f (get self)))))
-    (to-type target self)))
 
 (define (ensure-default-strides img)
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
