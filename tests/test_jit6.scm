@@ -143,6 +143,6 @@
     "convert integer to boolean")
 (ok (equal? '(0 1) (map (jit ctx (list <bool>) (cut to-type <ubyte> <>)) '(#f #t)))
     "convert boolean to unsigned byte")
-(todo (eqv? 42 ((jit ctx (list <int>) (cut to-type <obj> <>)) 42))
+(ok (eqv? 42 ((jit ctx (list <int>) (cut to-type <obj> <>)) 42))
     "convert integer to object")
 (run-tests)

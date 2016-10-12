@@ -1,7 +1,6 @@
 ## Ready
 
 * convert object to boolean, int32, int16, uint32, ...
-* convert object array to integer array
 * fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
 * object + int -> object

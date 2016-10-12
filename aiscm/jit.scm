@@ -15,6 +15,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm obj)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -724,11 +725,16 @@
 (define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 
-(define-method (to-type (source <meta<obj>>)) (native-fun <long> scm-to-int64))
-(define-method (to-type (source <meta<scalar>>)) (functional-code mov))
+(define-method (to-int/bool (source <meta<obj>>)) (native-fun <long> scm-to-int64))
+(define-method (to-int/bool (source <meta<scalar>>)) (functional-code mov))
+(define-method (to-object (source <meta<int<>>>)) (native-fun <obj> scm-from-int64))
+(define-method (to-type (target <meta<int<>>>)) to-int/bool)
+(define-method (to-type (target <meta<bool>>)) to-int/bool)
+(define-method (to-type (target <meta<obj>>)) to-object)
+(define-method (to-type (target <meta<composite>>)) (to-type (base target)))
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target (cut to-type target <>))]
-    (make-function to-target to-target (delegate-fun to-target to-type) (list a))))
+    (make-function to-target to-target (delegate-fun to-target (to-type target)) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type
