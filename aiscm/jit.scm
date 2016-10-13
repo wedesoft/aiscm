@@ -725,20 +725,19 @@
 (define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 
-(define-method (to-integer (source <meta<obj>>)) (native-fun <long> scm-to-int64))
-(define-method (to-integer (source <meta<int<>>>)) (functional-code mov))
-(define-method (to-integer (source <meta<bool>>)) (functional-code mov))
-(define-method (to-boolean (source <meta<int<>>>)) (functional-code mov)); TODO: convert 256 to true?
-(define-method (to-boolean (source <meta<obj>>)) (native-fun <bool> scm-to-bool))
-(define-method (to-object (source <meta<int<>>>)) (native-fun <obj> scm-from-int64))
-(define-method (to-object (source <meta<bool>>)) (native-fun <obj> obj-from-bool))
-(define-method (to-type (target <meta<int<>>>)) to-integer)
-(define-method (to-type (target <meta<bool>>)) to-boolean)
-(define-method (to-type (target <meta<obj>>)) to-object)
-(define-method (to-type (target <meta<composite>>)) (to-type (base target)))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<obj>>  )) (native-fun <long> scm-to-int64  ))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov             ))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov             ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov             )); TODO: 256?
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun <bool> scm-to-bool   ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int<>>>)) (native-fun <obj>  scm-from-int64))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun <obj>  obj-from-bool ))
+(define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source))
+
 (define-method (to-type (target <meta<element>>) (a <param>))
-  (let [(to-target (cut to-type target <>))]
-    (make-function to-target to-target (delegate-fun to-target (to-type target)) (list a))))
+  (let [(to-target  (cut to-type target <>))
+        (conversion (cut type-conversion target <>))]
+    (make-function to-target to-target (delegate-fun to-target conversion) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type
