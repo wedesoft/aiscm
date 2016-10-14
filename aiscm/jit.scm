@@ -725,13 +725,13 @@
 (define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 
-(define-method (type-conversion (target <meta<int<>>>) (source <meta<obj>>  )) (native-fun <long> scm-to-int64  ))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<obj>>  )) (native-fun target scm-to-int64  ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov             ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov             ))
 (define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov             )); TODO: 256?
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun <bool> scm-to-bool   ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int<>>>)) (native-fun <obj>  scm-from-int64))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun <obj>  obj-from-bool ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun target scm-to-bool   ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int<>>>)) (native-fun target scm-from-int64))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun target obj-from-bool ))
 (define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source))
 
 (define-method (to-type (target <meta<element>>) (a <param>))
