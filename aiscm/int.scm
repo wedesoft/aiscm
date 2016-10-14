@@ -10,14 +10,14 @@
   #:use-module (aiscm util)
   #:export (signed unsigned bits signed? integer
             <int<>> <meta<int<>>>
-            <ubyte> <int<8,unsigned>>  <meta<int<8,unsigned>>>
-            <byte>  <int<8,signed>>    <meta<int<8,signed>>>
-            <usint> <int<16,unsigned>> <meta<int<16,unsigned>>>
-            <sint>  <int<16,signed>>   <meta<int<16,signed>>>
-            <uint>  <int<32,unsigned>> <meta<int<32,unsigned>>>
-            <int>   <int<32,signed>>   <meta<int<32,signed>>>
-            <ulong> <int<64,unsigned>> <meta<int<64,unsigned>>>
-            <long>  <int<64,signed>>   <meta<int<64,signed>>>
+            <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
+            <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
+            <usint> <meta<usint>> <int<16,unsigned>> <meta<int<16,unsigned>>>
+            <sint>  <meta<sint>>  <int<16,signed>>   <meta<int<16,signed>>>
+            <uint>  <meta<uint>>  <int<32,unsigned>> <meta<int<32,unsigned>>>
+            <int>   <meta<int>>   <int<32,signed>>   <meta<int<32,signed>>>
+            <ulong> <meta<ulong>> <int<64,unsigned>> <meta<int<64,unsigned>>>
+            <long>  <meta<long>>  <int<64,signed>>   <meta<int<64,signed>>>
             <native-int>
             ~ & | ^ << >> % =0 !=0 conj))
 (define signed 'signed)
@@ -34,14 +34,14 @@
       (define-method (signed? (self metaclass)) (eq? sgn 'signed))
       (define-method (size-of (self metaclass)) (quotient (+ nbits 7) 8)))))
 (define native-bits (* (sizeof '*) 8))
-(define <ubyte> (integer  8 unsigned))
-(define <byte>  (integer  8 signed  ))
-(define <usint> (integer 16 unsigned))
-(define <sint>  (integer 16 signed  ))
-(define <uint>  (integer 32 unsigned))
-(define <int>   (integer 32 signed  ))
-(define <ulong> (integer 64 unsigned))
-(define <long>  (integer 64 signed  ))
+(define <ubyte> (integer  8 unsigned)) (define <meta<ubyte>> (class-of <ubyte>))
+(define <byte>  (integer  8 signed  )) (define <meta<byte>>  (class-of <byte> ))
+(define <usint> (integer 16 unsigned)) (define <meta<usint>> (class-of <usint>))
+(define <sint>  (integer 16 signed  )) (define <meta<sint>>  (class-of <sint> ))
+(define <uint>  (integer 32 unsigned)) (define <meta<uint>>  (class-of <uint> ))
+(define <int>   (integer 32 signed  )) (define <meta<int>>   (class-of <int>  ))
+(define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
+(define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
 (define <native-int> (integer native-bits signed))
 (define-method (foreign-type (t  <meta<int<8,unsigned>>>))  uint8)
 (define-method (foreign-type (t    <meta<int<8,signed>>>))   int8)
