@@ -1,6 +1,5 @@
 ## Ready
 
-* convert object to boolean, int32, int16, uint32, ...
 * convert rgb to object
 * (red (seq <obj> (rgb 1 2 3)))
 * (red (seq (rgb <obj>) (rgb 1 2 3)))
