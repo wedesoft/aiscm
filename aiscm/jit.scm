@@ -506,8 +506,8 @@
   (append (code intermediate value) (fun intermediate)))
 
 (define-method (copy-value (typecode <meta<scalar>>) a b) (mov (operand a) (operand b)))
-(define-method (code (a <element>) (b <element>)) (copy-value (typecode a) a b))
-(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
+(define-method (code (a <element>) (b <element>)) ((type-conversion (typecode a) (typecode b)) (parameter a) (list (parameter b))))
+(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b))); TODO: remove this
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
@@ -737,8 +737,10 @@
 (define-method (type-conversion (target <meta<long>> ) (source <meta<obj>>  )) (native-fun target scm-to-int64   ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov              ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov              ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov              ))
 (define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov              ))
 (define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun target scm-to-bool    ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov              ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun target scm-from-uint8 ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun target scm-from-int8  ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun target scm-from-uint16))

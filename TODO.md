@@ -1,5 +1,6 @@
 ## Ready
 
+* remove copy-value
 * test type conversions, convert RGB and complex, bool/bool conversion
 * define-operator-mapping, define-jit-method: dispatch on intermediate type?
 * test native-fun
