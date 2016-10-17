@@ -1,13 +1,18 @@
 ## Ready
 
+* test type conversions, convert RGB and complex, bool/bool conversion
+* define-operator-mapping, define-jit-method: dispatch on intermediate type?
+* test native-fun
+* object + int -> object
 * convert rgb to object
 * (red (seq <obj> (rgb 1 2 3)))
 * (red (seq (rgb <obj>) (rgb 1 2 3)))
 * (to-type <obj> (seq (rgb 1 2 3)))
 * (to-type (rgb <obj>) (seq (rgb 1 2 3)))
+* 256 -> boolean conversion
+* 32 -> boolean conversion
 * fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
-* object + int -> object
 * split up (aiscm jit)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints

@@ -34,6 +34,7 @@
 
 (define ctx (make <context>))
 
+; class for defining input and output variables of machine instructions
 (define-method (get-args self) '())
 (define-method (input self) '())
 (define-method (output self) '())
@@ -437,7 +438,7 @@
 
 (define-class <function> (<param>)
   (arguments #:init-keyword #:arguments #:getter arguments)
-  (type      #:init-keyword #:type      #:getter type); TODO: move to param?
+  (type      #:init-keyword #:type      #:getter type)
   (project   #:init-keyword #:project   #:getter project)
   (term      #:init-keyword #:term      #:getter term))
 
@@ -523,6 +524,7 @@
   (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
+; decompose parameters into elementary native types
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
@@ -533,7 +535,7 @@
 
 (define (is-function? value) (not (delegate value)))
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
-(define (need-conversion? target type) (not (eqv? (size-of target) (size-of type)))); TODO: bool
+(define (need-conversion? target type) (not (eqv? (size-of target) (size-of type))))
 (define (code-needs-intermediate? t value)
   (or (is-function? value) (need-conversion? t (type value))))
 (define (call-needs-intermediate? t value)
@@ -735,7 +737,7 @@
 (define-method (type-conversion (target <meta<long>> ) (source <meta<obj>>  )) (native-fun target scm-to-int64   ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov              ))
 (define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov              ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov              )); TODO: 256?
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov              ))
 (define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun target scm-to-bool    ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun target scm-from-uint8 ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun target scm-from-int8  ))
@@ -775,6 +777,7 @@
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 (define* ((native-fun return-type pointer) out args)
+  (format #t "force-parameters ~a ~a~&" (map type args) args)
   (force-parameters (map type args) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
