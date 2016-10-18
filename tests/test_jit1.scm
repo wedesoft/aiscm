@@ -420,7 +420,7 @@
               (assemble (list out) (list in) (code out in) list))
       "generate code for identity function"))
 (ok (equal? (list (SUB RSP 8) (MOV RCX RAX) (ADD RSP 8) (RET))
-            (register-allocate (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET))))
+            (register-allocate (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
     "Use default zero-extension for 32-bit numbers")
 (ok (eqv? 42 ((jit ctx (list <int>) identity) 42))
     "compile and run integer identity function")
