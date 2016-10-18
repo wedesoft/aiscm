@@ -505,9 +505,9 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (copy-value (typecode <meta<scalar>>) a b) (mov (operand a) (operand b)))
+(define-method (copy-value (typecode <meta<scalar>>) a b) (mov (operand a) (operand b))); TODO: remove copy-value
 (define-method (code (a <element>) (b <element>)) ((type-conversion (typecode a) (typecode b)) (parameter a) (list (parameter b))))
-(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b))); TODO: remove this
+(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
@@ -603,7 +603,7 @@
 (define-operator-mapping <<  2 <meta<obj>> (native-fun <obj>  scm-ash       ))
 (define-operator-mapping >>  2 <meta<obj>> (native-fun <obj>  obj-shr       ))
 (define-operator-mapping &   2 <meta<obj>> (native-fun <obj>  scm-logand    ))
-(define-operator-mapping |   2 <meta<obj>> (native-fun <obj>  scm-logior    ))
+(define-operator-mapping |   2 <meta<element>> (native-fun <obj>  scm-logior    ))
 (define-operator-mapping ^   2 <meta<obj>> (native-fun <obj>  scm-logxor    ))
 (define-operator-mapping &&  2 <meta<obj>> (native-fun <obj>  obj-and       ))
 (define-operator-mapping ||  2 <meta<obj>> (native-fun <obj>  obj-or        ))
