@@ -154,4 +154,6 @@
     "convert integer RGB sequence to object RGB sequence")
 (ok (equal? (list (rgb 2 3 5)) (to-list (to-type (rgb <int>) (seq (rgb <obj>) (rgb 2 3 5)))))
     "convert object RGB sequence to integer RGB sequence")
+(skip (eqv? 7 ((jit ctx (list <obj> <int>) |) 3 6))
+    "bitwise or for object and integer")
 (run-tests)

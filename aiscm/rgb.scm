@@ -108,8 +108,11 @@
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
 
-(define-method (copy-value (typecode <meta<rgb<>>>) a b)
-  (append-map (lambda (channel) (code (channel a) (channel b))) (list red green blue)))
+(define-method (type-conversion (target <meta<rgb<>>>) (source <meta<rgb<>>>))
+  (lambda (out args)
+    (append-map
+      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
+      (list red green blue))))
 
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
 (define-method (component (type <meta<rgb<>>>) self offset)

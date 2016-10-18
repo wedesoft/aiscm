@@ -23,7 +23,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term tensor index type subst code copy-value
+            term tensor index type subst code type-conversion
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
@@ -505,7 +505,6 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (copy-value (typecode <meta<scalar>>) a b) (mov (operand a) (operand b))); TODO: remove copy-value
 (define-method (code (a <element>) (b <element>)) ((type-conversion (typecode a) (typecode b)) (parameter a) (list (parameter b))))
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
@@ -750,7 +749,7 @@
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun target scm-from-uint64))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<long>> )) (native-fun target scm-from-int64 ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun target obj-from-bool ))
-(define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source))
+(define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source)); TODO: why this?
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
@@ -779,7 +778,6 @@
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 (define* ((native-fun return-type pointer) out args)
-  (format #t "force-parameters ~a ~a~&" (map type args) args)
   (force-parameters (map type args) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
