@@ -1,9 +1,5 @@
 ## Ready
 
-* test type conversions, convert RGB and complex, bool/bool conversion
-* define-operator-mapping, define-jit-method: dispatch on intermediate type?
-* test native-fun
-* object + int -> object
 * convert rgb to object
 * (red (seq <obj> (rgb 1 2 3)))
 * (red (seq (rgb <obj>) (rgb 1 2 3)))
@@ -14,6 +10,8 @@
 * fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
 * split up (aiscm jit)
+* line-by-line delayed video
+* smeared video (weighted average of previous value and current frame)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)

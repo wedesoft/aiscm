@@ -4,6 +4,7 @@
              (aiscm obj)
              (aiscm element)
              (aiscm int)
+             (aiscm float)
              (aiscm bool)
              (aiscm sequence)
              (aiscm jit)

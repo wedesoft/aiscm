@@ -12,11 +12,11 @@
             scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p
-            obj-from-bool scm-to-bool
             scm-to-uint8 scm-from-uint8 scm-to-int8 scm-from-int8
             scm-to-uint16 scm-from-uint16 scm-to-int16 scm-from-int16
             scm-to-uint32 scm-from-uint32 scm-to-int32 scm-from-int32
-            scm-to-uint64 scm-from-uint64 scm-to-int64 scm-from-int64))
+            scm-to-uint64 scm-from-uint64 scm-to-int64 scm-from-int64
+            obj-from-bool scm-to-bool))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 (define-method (pack (self <obj>))

@@ -13,6 +13,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
+  #:use-module (aiscm float)
   #:use-module (aiscm obj)
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
@@ -159,6 +160,7 @@
 (define-method (native-equivalent  self                   ) #f     )
 (define-method (native-equivalent (self <meta<bool>>     )) <ubyte>)
 (define-method (native-equivalent (self <meta<int<>>>    )) self   )
+(define-method (native-equivalent (self <meta<float<>>>  )) self   )
 (define-method (native-equivalent (self <meta<obj>>      )) <ulong> )
 (define-method (native-equivalent (self <meta<pointer<>>>)) <ulong> )
 
