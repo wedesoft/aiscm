@@ -1,9 +1,17 @@
-aiscm (0.7.1-1+trusty1) UNRELEASED; urgency=low
+aiscm (0.8.1-1+trusty1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Trusty
   * use gz instead of xz
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 16 Sep 2016 23:47:00 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Oct 2016 21:03:07 +0100
+
+aiscm (0.8.1-1) UNRELEASED; urgency=low
+
+  - refactored type conversions
+  - type conversions of method arguments
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Oct 2016 21:03:07 +0100
+>>>>>>> ubuntu/xenial
 
 aiscm (0.7.1-1) UNRELEASED; urgency=low
 

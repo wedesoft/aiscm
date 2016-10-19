@@ -65,6 +65,11 @@ char obj_geq_p(SCM x, SCM y)
   return scm_is_true(scm_geq_p(x, y));
 }
 
+SCM obj_from_bool(int x)
+{
+  return scm_from_bool(x);
+}
+
 void init_obj(void)
 {
 }

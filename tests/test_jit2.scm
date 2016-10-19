@@ -59,7 +59,7 @@
     "compile and run operation involving 1D and 2D array")
 (let [(out (skeleton <int>))
       (a   (skeleton <int>))]
-  (ok (equal? (list (mov-signed (get out) (get a)) (NEG (get out)))
+  (ok (equal? (list (list (mov-signed (get out) (get a))) (NEG (get out)))
               (code (parameter out) (- (parameter a))))
       "generate code for negating number"))
 (let [(a (parameter (sequence <int>)))]

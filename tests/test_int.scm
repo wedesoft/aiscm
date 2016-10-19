@@ -10,6 +10,8 @@
     "equality of classes")
 (ok (equal? <int> (integer 32 signed))
     "equality of predefined classes")
+(ok (equal? <meta<int>> (class-of (integer 32 signed)))
+    "equality of predefined metaclass")
 (ok (eqv? 64 (bits (integer 64 signed)))
     "number of bits of integer class")
 (ok (signed? (integer 64 signed))
