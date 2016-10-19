@@ -1,10 +1,17 @@
 ## Ready
 
-* convert object to boolean, int32, int16, uint32, ...
+* convert rgb to object
+* (red (seq <obj> (rgb 1 2 3)))
+* (red (seq (rgb <obj>) (rgb 1 2 3)))
+* (to-type <obj> (seq (rgb 1 2 3)))
+* (to-type (rgb <obj>) (seq (rgb 1 2 3)))
+* 256 -> boolean conversion
+* 32 -> boolean conversion
 * fast fill method?
 * add tagline to readme and index: computer vision for the robotic age?
-* object + int -> object
 * split up (aiscm jit)
+* line-by-line delayed video
+* smeared video (weighted average of previous value and current frame)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
