@@ -11,7 +11,8 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm asm.scm byte_se
 										xorg_image_list.scm xorg_video_list.scm xorg_video.scm xorg_window.scm \
 										crop_dump.scm crop_2d.scm to_list.scm complex_array.scm unary_ops.scm \
 										boolean_array.scm invert.scm scalars.scm division.scm modulo.scm binary.scm \
-										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm callback.scm
+										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm callback.scm \
+										object_array.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
 

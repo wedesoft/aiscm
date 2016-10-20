@@ -2,14 +2,14 @@ aiscm (0.8.2-1) UNRELEASED; urgency=low
 
   - temporarily match floating point numbers to objects
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Oct 2016 12:42:05 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 20 Oct 2016 12:42:05 +0100
 
 aiscm (0.8.1-1) UNRELEASED; urgency=low
 
   - refactored type conversions
   - type conversions of method arguments
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Oct 2016 21:03:07 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 19 Oct 2016 21:03:07 +0100
 
 aiscm (0.7.1-1) UNRELEASED; urgency=low
 
