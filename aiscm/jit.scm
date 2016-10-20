@@ -157,6 +157,11 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
+(define-method (native-type (i <real>) . args); TODO: remove this when floating point support is ready
+  (if (every real? args)
+      <obj>
+      (apply native-type (sort-by-pred (cons i args) real?))))
+
 (define-method (native-equivalent  self                   ) #f     )
 (define-method (native-equivalent (self <meta<bool>>     )) <ubyte>)
 (define-method (native-equivalent (self <meta<int<>>>    )) self   )
