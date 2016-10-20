@@ -1,6 +1,5 @@
 ## Ready
 
-* convert rgb to object
 * (red (seq <obj> (rgb 1 2 3)))
 * (red (seq (rgb <obj>) (rgb 1 2 3)))
 * (to-type <obj> (seq (rgb 1 2 3)))
