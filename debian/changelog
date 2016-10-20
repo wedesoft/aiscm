@@ -1,8 +1,14 @@
-aiscm (0.8.1-1+deb8u1) UNRELEASED; urgency=low
+aiscm (0.8.2-1+deb8u1) UNRELEASED; urgency=low
 
   * adjust dependencies for Debian Jessie
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Oct 2016 21:03:07 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Oct 2016 12:42:05 +0100
+
+aiscm (0.8.2-1) UNRELEASED; urgency=low
+
+  - temporarily match floating point numbers to objects
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Oct 2016 12:42:05 +0100
 
 aiscm (0.8.1-1) UNRELEASED; urgency=low
 
