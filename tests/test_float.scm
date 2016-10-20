@@ -42,7 +42,7 @@
     "foreign type of single-precision floating point number")
 (ok (equal? double (foreign-type <double>))
     "foreign type of double-precision floating point number")
-(ok (equal? <double> (native-type 1.5))
+(skip (equal? <double> (native-type 1.5))
     "type matching for 1.5")
 (ok (eqv? 1.25 (get (make <float> #:value 1.25)))
     "get value of floating point number")
