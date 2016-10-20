@@ -10,7 +10,6 @@ aiscm (0.8.2-1) UNRELEASED; urgency=low
 
  -- Jan Wedekind <jan@wedesoft.de>  Thu, 20 Oct 2016 12:42:05 +0100
 
->>>>>>> master
 aiscm (0.8.1-1) UNRELEASED; urgency=low
 
   - refactored type conversions
