@@ -2,7 +2,7 @@ aiscm (0.8.2-1+deb8u1) UNRELEASED; urgency=low
 
   * adjust dependencies for Debian Jessie
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Oct 2016 12:42:05 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 20 Oct 2016 12:42:05 +0100
 
 aiscm (0.8.2-1) UNRELEASED; urgency=low
 
