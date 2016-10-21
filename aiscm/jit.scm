@@ -532,7 +532,9 @@
 
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
+(define-method (content (type <meta<obj>>) (self <obj>)) (list self)); prevent <obj> objects from being decomposed
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
+(define-method (content (type <meta<obj>>) (self <param>)) (map parameter (content type (delegate self)))); prevent <param> objects from being decomposed
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 
@@ -626,7 +628,7 @@
   ((apply delegate (map type args)) out args))
 (define-method (delegate-op target intermediate name delegate out args)
   (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content (type out) out) (content (type result) result))))
+    (append-map code (content (type out) out) (content (type result) result)))); TODO: rename content here?
 (define (delegate-fun name delegate)
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name delegate out args)))
 

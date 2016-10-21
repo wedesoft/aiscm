@@ -44,15 +44,18 @@
   (let* [(size    (size-of (base self)))
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 2))))]
     (make self #:value (apply make-rectangular (map (lambda (vec) (get (unpack (base self) vec))) vectors)))))
-(define-method (content (type <meta<complex<>>>) (self <complex<>>)) (list (real-part self) (imag-part self)))
-(define-method (content (type <meta<complex<>>>) (self <internalcomplex>)) (list (real-part self) (imag-part self)))
-(define-method (content (type <meta<complex<>>>) (self <complex>)) (map inexact->exact (list (real-part self) (imag-part self))))
+(define-method (content (type <meta<complex<>>>) (self <complex<>>))
+  (append-map (cut content (base type) <>) (list (real-part self) (imag-part self))))
+(define-method (content (type <meta<complex<>>>) (self <internalcomplex>))
+  (append-map (cut content (base type) <>) (list (real-part self) (imag-part self))))
+(define-method (content (type <meta<complex<>>>) (self <complex>))
+  (append-map (cut content (base type) <>) (map inexact->exact (list (real-part self) (imag-part self)))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<element>>)) (complex (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<complex<>>>)) (complex (coerce a (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimensions b)))
 (define-method (native-type (c <complex>) . args)
-  (complex (apply native-type (concatenate (map-if (cut is-a? <> <complex>) (cut content <complex<>> <>) list (cons c args))))))
+  (complex (apply native-type (concatenate (map-if (cut is-a? <> <complex>) (lambda (v) (list (inexact->exact (real-part v)) (inexact->exact (imag-part v)))) list (cons c args))))))
 (define-method (build (self <meta<complex<>>>) value) (fetch value))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimensions self)))
 (define-syntax-rule (unary-complex-op op)
@@ -90,12 +93,12 @@
       (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
       (list real-part imag-part))))
 
-(define-method (component (type <meta<complex<>>>) self offset)
+(define-method (component (type <meta<complex<>>>) self offset); TODO: move to "composite" module
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
 (pointer <complex<>>)
-(define-method (real-part (self <pointer<int<>>>)) self)
-(define-method (imag-part (self <pointer<int<>>>)) 0)
+(define-method (real-part (self <pointer<>>)) self)
+(define-method (imag-part (self <pointer<>>)) 0)
 (define-method (real-part (self <pointer<complex<>>>)) (component (typecode self) self 0))
 (define-method (imag-part (self <pointer<complex<>>>)) (component (typecode self) self 1))
 

@@ -231,4 +231,6 @@
     "integer RGB memory is pointerless")
 (ok (not (pointerless? (rgb <obj>)))
     "object RGB  memory is not pointerless")
+(ok (eqv? 2 ((jit ctx (list (rgb <obj>)) red) (rgb 2 3 5)))
+    "extract red channel of object RGB")
 (run-tests)

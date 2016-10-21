@@ -1,9 +1,10 @@
 ## Ready
 
-* (red (seq <obj> (rgb 1 2 3)))
-* (red (seq (rgb <obj>) (rgb 1 2 3)))
+* rename "content" for jit -> unbuild; refactor "content" for composite values
+* imag-part for object complex
 * (to-type <obj> (seq (rgb 1 2 3)))
 * (to-type (rgb <obj>) (seq (rgb 1 2 3)))
+* compare with numpy
 * 256 -> boolean conversion
 * 32 -> boolean conversion
 * fast fill method?
