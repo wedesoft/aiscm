@@ -538,9 +538,6 @@
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 
-(define-method (decompose-value (target <meta<scalar>>) self) self)
-(define (decompose-arg arg) (decompose-value (type arg) arg))
-
 (define (is-function? value) (not (delegate value)))
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (need-conversion? target type) (not (eqv? (size-of target) (size-of type))))
@@ -623,6 +620,9 @@
 (define-operator-mapping >=  2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-geq-p     ))
 (define-operator-mapping min 2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-min       ))
 (define-operator-mapping max 2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-max       ))
+
+(define-method (decompose-value (target <meta<scalar>>) self) self)
+(define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
@@ -758,6 +758,11 @@
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun target (list <ulong>) scm-from-uint64))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<long>> )) (native-fun target (list <long> ) scm-from-int64 ))
 (define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun target (list <bool> ) obj-from-bool  ))
+(define-method (type-conversion (target <meta<composite>>) (source <meta<composite>>))
+  (lambda (out args)
+    (append-map
+      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
+      (components source))))
 (define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source)); TODO: why this?
 
 (define-method (to-type (target <meta<element>>) (a <param>))

@@ -45,6 +45,7 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
+(define-method (components (self <meta<rgb<>>>)) (list red green blue))
 (define-method (rgb (t <meta<sequence<>>>)) (multiarray (rgb (typecode t)) (dimensions t)))
 (define-method (rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
   (rgb (reduce coerce #f (list r g b))))
@@ -72,12 +73,12 @@
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>)) (rgb (coerce (base a) (base b))))
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimensions b)))
 (define-method (native-type (c <rgb>) . args)
-  (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) (lambda (v) (list (red v) (green v) (blue v))) list (cons c args))))))
+  (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) (lambda (v) (map (cut <> v) (components <rgb<>>))) list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
 (define-method (content (type <meta<rgb<>>>) (self <rgb>))
-  (append-map (cut content (base type) <>) (map (cut <> self) (list red green blue))))
+  (append-map (cut content (base type) <>) (map (cut <> self) (components type))))
 (define-method (content (type <meta<rgb<>>>) (self <rgb<>>))
-  (append-map (cut content (base type) <>) (map (cut <> self) (list red green blue) )))
+  (append-map (cut content (base type) <>) (map (cut <> self) (components type))))
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content <rgb<>> self)))))
 (define-syntax-rule (unary-rgb-op op) (define-method (op (a <rgb>)) (apply rgb (map op (content <rgb<>> a)))))
 (unary-rgb-op -)
@@ -110,16 +111,7 @@
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
 
-(define-method (type-conversion (target <meta<rgb<>>>) (source <meta<rgb<>>>))
-  (lambda (out args)
-    (append-map
-      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
-      (list red green blue))))
-
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
-(define-method (component (type <meta<rgb<>>>) self offset); TODO: move to "composite" module
-  (let* [(type (base (typecode self)))]
-    (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
 (pointer <rgb<>>)
 (define-method (red   (self <pointer<>>)) self)
 (define-method (green (self <pointer<>>)) self)

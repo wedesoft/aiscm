@@ -1,5 +1,6 @@
 (use-modules (oop goops)
              (srfi srfi-26)
+             (aiscm composite)
              (aiscm complex)
              (aiscm element)
              (aiscm int)
@@ -114,4 +115,6 @@
     "complex object memory is not pointerless")
 (ok (eqv? 2 ((jit ctx (list (complex <obj>)) real-part) 2+3i))
     "extract real part of object RGB")
+(ok (equal? (list real-part imag-part) (components <complex<>>))
+    "components of complex values are real-part and imag-part")
 (run-tests)

@@ -33,6 +33,7 @@
     (lambda (class metaclass)
       (define-method (base (self metaclass))t)
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
+(define-method (components (self <meta<complex<>>>)) (list real-part imag-part))
 (define-method (complex (t <meta<sequence<>>>)) (multiarray (complex (typecode t)) (dimensions t)))
 (define-method (complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
 (define-method (real-part (self <int<>>)) self); TODO: use a number type
@@ -45,11 +46,11 @@
          (vectors (map (cut bytevector-sub packed <> size) (map (cut * size <>) (iota 2))))]
     (make self #:value (apply make-rectangular (map (lambda (vec) (get (unpack (base self) vec))) vectors)))))
 (define-method (content (type <meta<complex<>>>) (self <complex<>>))
-  (append-map (cut content (base type) <>) (list (real-part self) (imag-part self))))
+  (append-map (cut content (base type) <>) (map (cut <> self) (components type))))
 (define-method (content (type <meta<complex<>>>) (self <internalcomplex>))
-  (append-map (cut content (base type) <>) (list (real-part self) (imag-part self))))
+  (append-map (cut content (base type) <>) (map (cut <> self) (components type))))
 (define-method (content (type <meta<complex<>>>) (self <complex>))
-  (append-map (cut content (base type) <>) (map inexact->exact (list (real-part self) (imag-part self)))))
+  (append-map (cut content (base type) <>) (map inexact->exact (map (cut <> self) (components type)))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<element>>)) (complex (coerce (base a) b)))
 (define-method (coerce (a <meta<element>>) (b <meta<complex<>>>)) (complex (coerce a (base b))))
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>)) (complex (coerce (base a) (base b))))
@@ -87,22 +88,12 @@
     (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
              (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
 
-(define-method (type-conversion (target <meta<complex<>>>) (source <meta<complex<>>>))
-  (lambda (out args)
-    (append-map
-      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
-      (list real-part imag-part))))
-
-(define-method (component (type <meta<complex<>>>) self offset); TODO: move to "composite" module
-  (let* [(type (base (typecode self)))]
-    (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
+(define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 (pointer <complex<>>)
 (define-method (real-part (self <pointer<>>)) self)
 (define-method (imag-part (self <pointer<>>)) 0)
 (define-method (real-part (self <pointer<complex<>>>)) (component (typecode self) self 0))
 (define-method (imag-part (self <pointer<complex<>>>)) (component (typecode self) self 1))
-
-(define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 
 (define-operator-mapping real-part 1 <meta<element>> (unary-extract real-part))
 (define-operator-mapping imag-part 1 <meta<element>> (unary-extract imag-part))
