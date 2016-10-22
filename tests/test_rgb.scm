@@ -236,4 +236,6 @@
     "extract red channel of object RGB")
 (ok (equal? (list red green blue) (components <rgb<>>))
     "components of RGB values are red, green, and blue")
+(ok (equal? '(2) (to-list (red (seq (rgb <obj>) (rgb 2 3 5)))))
+    "extract red component of object RGB sequence")
 (run-tests)
