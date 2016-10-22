@@ -533,6 +533,7 @@
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
 (define-method (content (type <meta<obj>>) (self <obj>)) (list self)); prevent <obj> objects from being decomposed
+(define-method (content (type <meta<obj>>) (self <pointer<obj>>)) (list self)); prevent pointer object from being decomposed
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<obj>>) (self <param>)) (map parameter (content type (delegate self)))); prevent <param> objects from being decomposed
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))

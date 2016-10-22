@@ -5,9 +5,11 @@
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm asm)
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
+            <pointer<obj>> <meta<pointer<obj>>>
             obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
             scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr
@@ -32,6 +34,8 @@
 (define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
 (define-method (pointerless? (self <meta<obj>>)) #f)
 (define-method (signed? (self <meta<obj>>)) #f)
+
+(pointer <obj>)
 
 (define main (dynamic-link))
 (define guile-aiscm-obj (dynamic-link "libguile-aiscm-obj"))
