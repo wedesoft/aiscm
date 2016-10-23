@@ -1,6 +1,5 @@
 ## Ready
 
-* rename "content" for jit -> unbuild; refactor "content" for composite values
 * imag-part for object complex
 * (to-type <obj> (seq (rgb 1 2 3)))
 * (to-type (rgb <obj>) (seq (rgb 1 2 3)))

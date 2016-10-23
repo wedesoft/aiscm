@@ -33,7 +33,7 @@
     "native type for a symbol is <obj>")
 (ok (equal? (make <obj> #:value 'sym) (build <obj> address))
     "build SCM value")
-(ok (equal? (list address) (content <obj> 'sym))
+(ok (equal? (list address) (unbuild <obj> 'sym))
     "content of symbol returns internal 64 bit representation")
 (ok (eq? -300 ((jit ctx (list <obj>) (cut call <obj> (list <obj>) obj-negate <>)) 300))
     "compile and run call to scm_difference with one argument")

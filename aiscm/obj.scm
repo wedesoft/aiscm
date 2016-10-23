@@ -31,7 +31,7 @@
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (native-type o . args) <obj>)
 (define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
-(define-method (content (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
+(define-method (unbuild (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
 (define-method (pointerless? (self <meta<obj>>)) #f)
 (define-method (signed? (self <meta<obj>>)) #f)
 

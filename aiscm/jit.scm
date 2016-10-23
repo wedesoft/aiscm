@@ -531,11 +531,7 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
-(define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
-(define-method (content (type <meta<obj>>) (self <obj>)) (list self)); prevent <obj> objects from being decomposed
-(define-method (content (type <meta<obj>>) (self <pointer<obj>>)) (list self)); prevent pointer object from being decomposed
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
-(define-method (content (type <meta<obj>>) (self <param>)) (map parameter (content type (delegate self)))); prevent <param> objects from being decomposed
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 
@@ -664,7 +660,7 @@
                            (or return-type <null>)
                            (map typecode (content-vars args))
                            (assemble return-args args (code (parameter result) expr) virtual-variables)))
-         (fun         (lambda header (apply code (append-map content types header))))]
+         (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
         (let [(result (apply fun args))]

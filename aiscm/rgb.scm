@@ -75,6 +75,8 @@
 (define-method (native-type (c <rgb>) . args)
   (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) (cut deconstruct <rgb<>> <>) list (cons c args))))))
 (define-method (build (self <meta<rgb<>>>) value) (fetch value))
+(define-method (unbuild (type <meta<rgb<>>>) self)
+  (append-map (cut unbuild (base type) <>) (deconstruct type self)))
 (define-method (content (type <meta<rgb<>>>) (self <rgb>))
   (append-map (cut content (base type) <>) (deconstruct type self)))
 (define-method (content (type <meta<rgb<>>>) (self <rgb<>>))
