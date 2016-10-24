@@ -29,7 +29,7 @@
             is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function call)
+            decompose-arg delegate-fun make-function native-call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
@@ -797,5 +797,5 @@
           (CALL RAX)
           (MOV (get (delegate out)) (to-type (native-equivalent return-type) RAX)))))))
 
-(define (call return-type arg-types pointer . args)
-  (make-function call (const return-type) (native-fun return-type arg-types pointer) args))
+(define (native-call return-type arg-types pointer . args)
+  (make-function native-call (const return-type) (native-fun return-type arg-types pointer) args))
