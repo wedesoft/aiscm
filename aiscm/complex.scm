@@ -36,8 +36,10 @@
 (define-method (components (self <meta<complex<>>>)) (list real-part imag-part))
 (define-method (complex (t <meta<sequence<>>>)) (multiarray (complex (typecode t)) (dimensions t)))
 (define-method (complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
+
 (define-method (real-part (self <int<>>)) self); TODO: use a number type
 (define-method (imag-part (self <int<>>)) 0)
+
 (define-method (real-part (self <complex<>>)) (make (base (class-of self)) #:value (real-part (get self))))
 (define-method (imag-part (self <complex<>>)) (make (base (class-of self)) #:value (imag-part (get self))))
 (define-method (pack (self <complex<>>)) (bytevector-concat (map pack (content (class-of self) self))))

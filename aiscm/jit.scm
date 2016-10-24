@@ -625,7 +625,7 @@
   ((apply delegate (map type args)) out args))
 (define-method (delegate-op target intermediate name delegate out args)
   (let [(result (apply name (map decompose-arg args)))]
-    (append-map code (content (type out) out) (content (type result) result)))); TODO: rename content here?
+    (append-map code (content (type out) out) (content (type result) result))))
 (define (delegate-fun name delegate)
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name delegate out args)))
 
