@@ -1,6 +1,6 @@
 ## Ready
 
-* declare native method types together with method pointer
+* make Makefile.repo more generic
 * tensor dimensions
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
