@@ -1,6 +1,5 @@
 ## Ready
 
-* imag-part for object complex (object zero)
 * declare native method types together with method pointer
 * tensor dimensions
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
@@ -8,11 +7,12 @@
 * REPL docs: (help ...)
 * https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
-* (to-type <obj> (seq (rgb 1 2 3)))
-* (to-type (rgb <obj>) (seq (rgb 1 2 3)))
+* red, green, blue, real-part, imag-part for objects
+* convert rgb to object, convert complex to object
+* convert object to rgb, convert object to complex
 * 256 -> boolean conversion
 * 32 -> boolean conversion
-* fast fill method?
+* fast fill method? fast set method
 * add tagline to readme and index: computer vision for the robotic age?
 * split up (aiscm jit)
 * line-by-line delayed video
