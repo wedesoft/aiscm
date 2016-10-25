@@ -1,31 +1,39 @@
 ## Ready
 
-* (red (seq <obj> (rgb 1 2 3)))
-* (red (seq (rgb <obj>) (rgb 1 2 3)))
-* (to-type <obj> (seq (rgb 1 2 3)))
-* (to-type (rgb <obj>) (seq (rgb 1 2 3)))
+* tensor dimensions (compiled returns list to build array object)
+* document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
+  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
+* REPL docs: (help ...)
+* https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
+  http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
+* red, green, blue, real-part, imag-part for objects
+* convert rgb to object, convert complex to object
+* convert object to rgb, convert object to complex
 * 256 -> boolean conversion
 * 32 -> boolean conversion
-* fast fill method?
+* fast fill method? fast set method
 * add tagline to readme and index: computer vision for the robotic age?
 * split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
-* command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
-* jit calls to other already compiled methods
-* tensor dimensions
+* fftw3, hypercomplex, kinect, linalg, opencv, qt4
+* <-> Guile 6.7.5 Arrays
+* floating point exception (SIGFPE)
+* create relocatable code and use linker to insert calls with relative addresses
+* use C parser to get method types? C++ binary interace? Qt bindings?
 * use (ice-9 match) to simplify and translate assembler code?
 * reading and writing with Guile file decriptors or Guile network sockets?
-* closing of ffmpeg input, ffmpeg output
+* ffmpeg output (writing videos)
+* command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * use ice-9 q? background decoder thread
 * synchronise with display to prevent video tearing
-* writing videos
+* array stack/unstack/record arrays
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
@@ -78,17 +86,6 @@
 
 ## Planned
 
-* <-> Guile 6.7.5 Arrays
-* floating point exception (SIGFPE)
-* matching for lists?
-* document motivation: vector instructions, compose array functions and calls,
-  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
-* REPL docs: (help ...)
-* increase RSP if using more than 128 bytes; (ptr <int> RSP offset -8)
-* https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
-  http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
-* array stack/unstack/record arrays
 * slimv, tcp/ip, attach
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
-* ffmpeg input, fftw3, hypercomplex, kinect, linalg, opencv, qt4
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
