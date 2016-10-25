@@ -16,11 +16,12 @@
             scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p
+            obj-from-bool scm-to-bool
             scm-to-uint8 scm-from-uint8 scm-to-int8 scm-from-int8
             scm-to-uint16 scm-from-uint16 scm-to-int16 scm-from-int16
             scm-to-uint32 scm-from-uint32 scm-to-int32 scm-from-int32
             scm-to-uint64 scm-from-uint64 scm-to-int64 scm-from-int64
-            obj-from-bool scm-to-bool))
+            scm-cons))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 (define-method (pack (self <obj>))
@@ -42,6 +43,7 @@
 (define main (dynamic-link))
 (define guile-aiscm-obj (dynamic-link "libguile-aiscm-obj"))
 
+; various operations for Scheme objects (SCM values)
 (define obj-negate      (native-method <obj>   (list <obj>        ) (dynamic-func "obj_negate"      guile-aiscm-obj)))
 (define scm-lognot      (native-method <obj>   (list <obj>        ) (dynamic-func "scm_lognot"      main           )))
 (define obj-zero-p      (native-method <bool>  (list <obj>        ) (dynamic-func "obj_zero_p"      guile-aiscm-obj)))
@@ -67,6 +69,8 @@
 (define obj-leq-p       (native-method <bool>  (list <obj>   <obj>) (dynamic-func "obj_leq_p"       guile-aiscm-obj)))
 (define obj-gr-p        (native-method <bool>  (list <obj>   <obj>) (dynamic-func "obj_gr_p"        guile-aiscm-obj)))
 (define obj-geq-p       (native-method <bool>  (list <obj>   <obj>) (dynamic-func "obj_geq_p"       guile-aiscm-obj)))
+
+; conversions for Scheme objects (SCM values)
 (define scm-to-bool     (native-method <bool>  (list <obj>        ) (dynamic-func "scm_to_bool"     main           )))
 (define obj-from-bool   (native-method <obj>   (list <bool>       ) (dynamic-func "obj_from_bool"   guile-aiscm-obj)))
 (define scm-to-uint8    (native-method <ubyte> (list <obj>        ) (dynamic-func "scm_to_uint8"    main           )))
@@ -85,3 +89,6 @@
 (define scm-from-uint64 (native-method <obj>   (list <ulong>      ) (dynamic-func "scm_from_uint64" main           )))
 (define scm-to-int64    (native-method <long>  (list <obj>        ) (dynamic-func "scm_to_int64"    main           )))
 (define scm-from-int64  (native-method <obj>   (list <long>       ) (dynamic-func "scm_from_int64"  main           )))
+
+; Scheme list manipulation
+(define scm-cons (native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))

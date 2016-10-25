@@ -1,6 +1,6 @@
 ## Ready
 
-* tensor dimensions
+* tensor dimensions (compiled returns list to build array object)
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * REPL docs: (help ...)

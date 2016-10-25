@@ -1,6 +1,7 @@
 (define-module (aiscm method)
   #:use-module (oop goops)
-  #:export (<native-method> native-method function-pointer return-type argument-types))
+  #:export (<native-method>
+            native-method function-pointer return-type argument-types))
 
 (define-class <native-method> ()
   (function-pointer #:init-keyword #:function-pointer #:getter function-pointer)
