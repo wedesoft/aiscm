@@ -8,6 +8,8 @@ VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
 
 all: package
+	cd apt && reprepro includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..
+	cd apt && reprepro includedsc $(CODENAME) ../pkg/$(PACKAGE).dsc && cd ..
 
 container: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/configure.ac docker/Makefile.package
 	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
