@@ -15,6 +15,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm float)
   #:use-module (aiscm obj)
+  #:use-module (aiscm method)
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
@@ -29,7 +30,7 @@
             is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function call)
+            decompose-arg delegate-fun make-function native-call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
@@ -531,13 +532,9 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
-(define-method (content (type <meta<obj>>) (self <var>)) (list self)); prevent <var> objects from being decomposed
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
-
-(define-method (decompose-value (target <meta<scalar>>) self) self)
-(define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define (is-function? value) (not (delegate value)))
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
@@ -595,32 +592,35 @@
 (define-operator-mapping min 2 <meta<int<>>> (functional-code minor            ))
 (define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
 
-(define-operator-mapping -   1 <meta<element>> (native-fun <obj>  (list <obj>)       obj-negate    ))
-(define-method (- (z <integer>) (a <meta<element>>)) (native-fun <obj> (list <obj>) obj-negate))
-(define-operator-mapping ~   1 <meta<element>> (native-fun <obj>  (list <obj>)       scm-lognot    ))
-(define-operator-mapping =0  1 <meta<element>> (native-fun <bool> (list <obj>)       obj-zero-p    ))
-(define-operator-mapping !=0 1 <meta<element>> (native-fun <bool> (list <obj>)       obj-nonzero-p ))
-(define-operator-mapping !   1 <meta<element>> (native-fun <bool> (list <obj>)       obj-not       ))
-(define-operator-mapping +   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-sum       ))
-(define-operator-mapping -   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-difference))
-(define-operator-mapping *   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-product   ))
-(define-operator-mapping /   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-divide    ))
-(define-operator-mapping %   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-remainder ))
-(define-operator-mapping <<  2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-ash       ))
-(define-operator-mapping >>  2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) obj-shr       ))
-(define-operator-mapping &   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-logand    ))
-(define-operator-mapping |   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-logior    ))
-(define-operator-mapping ^   2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-logxor    ))
-(define-operator-mapping &&  2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) obj-and       ))
-(define-operator-mapping ||  2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) obj-or        ))
-(define-operator-mapping =   2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-equal-p   ))
-(define-operator-mapping !=  2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-nequal-p  ))
-(define-operator-mapping <   2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-less-p    ))
-(define-operator-mapping <=  2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-leq-p     ))
-(define-operator-mapping >   2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-gr-p      ))
-(define-operator-mapping >=  2 <meta<element>> (native-fun <bool> (list <obj> <obj>) obj-geq-p     ))
-(define-operator-mapping min 2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-min       ))
-(define-operator-mapping max 2 <meta<element>> (native-fun <obj>  (list <obj> <obj>) scm-max       ))
+(define-operator-mapping -   1 <meta<element>> (native-fun obj-negate    ))
+(define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
+(define-operator-mapping ~   1 <meta<element>> (native-fun scm-lognot    ))
+(define-operator-mapping =0  1 <meta<element>> (native-fun obj-zero-p    ))
+(define-operator-mapping !=0 1 <meta<element>> (native-fun obj-nonzero-p ))
+(define-operator-mapping !   1 <meta<element>> (native-fun obj-not       ))
+(define-operator-mapping +   2 <meta<element>> (native-fun scm-sum       ))
+(define-operator-mapping -   2 <meta<element>> (native-fun scm-difference))
+(define-operator-mapping *   2 <meta<element>> (native-fun scm-product   ))
+(define-operator-mapping /   2 <meta<element>> (native-fun scm-divide    ))
+(define-operator-mapping %   2 <meta<element>> (native-fun scm-remainder ))
+(define-operator-mapping <<  2 <meta<element>> (native-fun scm-ash       ))
+(define-operator-mapping >>  2 <meta<element>> (native-fun obj-shr       ))
+(define-operator-mapping &   2 <meta<element>> (native-fun scm-logand    ))
+(define-operator-mapping |   2 <meta<element>> (native-fun scm-logior    ))
+(define-operator-mapping ^   2 <meta<element>> (native-fun scm-logxor    ))
+(define-operator-mapping &&  2 <meta<element>> (native-fun obj-and       ))
+(define-operator-mapping ||  2 <meta<element>> (native-fun obj-or        ))
+(define-operator-mapping =   2 <meta<element>> (native-fun obj-equal-p   ))
+(define-operator-mapping !=  2 <meta<element>> (native-fun obj-nequal-p  ))
+(define-operator-mapping <   2 <meta<element>> (native-fun obj-less-p    ))
+(define-operator-mapping <=  2 <meta<element>> (native-fun obj-leq-p     ))
+(define-operator-mapping >   2 <meta<element>> (native-fun obj-gr-p      ))
+(define-operator-mapping >=  2 <meta<element>> (native-fun obj-geq-p     ))
+(define-operator-mapping min 2 <meta<element>> (native-fun scm-min       ))
+(define-operator-mapping max 2 <meta<element>> (native-fun scm-max       ))
+
+(define-method (decompose-value (target <meta<scalar>>) self) self)
+(define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
@@ -661,7 +661,7 @@
                            (or return-type <null>)
                            (map typecode (content-vars args))
                            (assemble return-args args (code (parameter result) expr) virtual-variables)))
-         (fun         (lambda header (apply code (append-map content types header))))]
+         (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
         (let [(result (apply fun args))]
@@ -733,29 +733,34 @@
 (define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 
-(define-method (type-conversion (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-uint8   ))
-(define-method (type-conversion (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-int8    ))
-(define-method (type-conversion (target <meta<usint>>) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-uint16  ))
-(define-method (type-conversion (target <meta<sint>> ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-int16   ))
-(define-method (type-conversion (target <meta<uint>> ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-uint32  ))
-(define-method (type-conversion (target <meta<int>>  ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-int32   ))
-(define-method (type-conversion (target <meta<ulong>>) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-uint64  ))
-(define-method (type-conversion (target <meta<long>> ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-int64   ))
-(define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov                             ))
-(define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov                             ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov                             ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov                             ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun target (list <obj>  ) scm-to-bool    ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov                             ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun target (list <ubyte>) scm-from-uint8 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun target (list <byte> ) scm-from-int8  ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun target (list <usint>) scm-from-uint16))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<sint>> )) (native-fun target (list <sint> ) scm-from-int16 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<uint>> )) (native-fun target (list <uint> ) scm-from-uint32))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int>>  )) (native-fun target (list <int>  ) scm-from-int32 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun target (list <ulong>) scm-from-uint64))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<long>> )) (native-fun target (list <long> ) scm-from-int64 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun target (list <bool> ) obj-from-bool  ))
+(define-method (type-conversion (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
+(define-method (type-conversion (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
+(define-method (type-conversion (target <meta<usint>>) (source <meta<obj>>  )) (native-fun scm-to-uint16  ))
+(define-method (type-conversion (target <meta<sint>> ) (source <meta<obj>>  )) (native-fun scm-to-int16   ))
+(define-method (type-conversion (target <meta<uint>> ) (source <meta<obj>>  )) (native-fun scm-to-uint32  ))
+(define-method (type-conversion (target <meta<int>>  ) (source <meta<obj>>  )) (native-fun scm-to-int32   ))
+(define-method (type-conversion (target <meta<ulong>>) (source <meta<obj>>  )) (native-fun scm-to-uint64  ))
+(define-method (type-conversion (target <meta<long>> ) (source <meta<obj>>  )) (native-fun scm-to-int64   ))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov       ))
+(define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov       ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov       ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov       ))
+(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun scm-to-bool    ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov       ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun scm-from-uint8 ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun scm-from-int8  ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun scm-from-uint16))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<sint>> )) (native-fun scm-from-int16 ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<uint>> )) (native-fun scm-from-uint32))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int>>  )) (native-fun scm-from-int32 ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun scm-from-uint64))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<long>> )) (native-fun scm-from-int64 ))
+(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun obj-from-bool  ))
+(define-method (type-conversion (target <meta<composite>>) (source <meta<composite>>))
+  (lambda (out args)
+    (append-map
+      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
+      (components source))))
 (define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source)); TODO: why this?
 
 (define-method (to-type (target <meta<element>>) (a <param>))
@@ -784,14 +789,18 @@
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
-(define* ((native-fun return-type arg-types pointer) out args)
-  (force-parameters arg-types args call-needs-intermediate?
+
+(define* ((native-fun method) out args)
+  (force-parameters (argument-types method) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
         (pass-parameters intermediates
-          (MOV RAX pointer)
+          (MOV RAX (function-pointer method))
           (CALL RAX)
-          (MOV (get (delegate out)) (to-type (native-equivalent return-type) RAX)))))))
+          (MOV (get (delegate out)) (to-type (native-equivalent (return-type method)) RAX)))))))
 
-(define (call return-type arg-types pointer . args)
-  (make-function call (const return-type) (native-fun return-type arg-types pointer) args))
+(define (native-call method . args)
+  (make-function native-call
+                 (const (return-type method))
+                 (native-fun method)
+                 args))
