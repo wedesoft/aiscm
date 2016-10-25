@@ -6,7 +6,7 @@
             <meta<element>>
             value get set size-of foreign-type pack unpack channels rate
             typecode size shape strides dimensions coerce native-type wrap get-size
-            build content component base to-type duplicate read-image read-audio
+            build content unbuild component base to-type duplicate read-image read-audio
             write-image write-audio pointerless?))
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
@@ -34,6 +34,7 @@
 (define-generic get-size)
 (define-generic build)
 (define-method (content (type <meta<element>>) self) (list self))
+(define-method (unbuild (type <meta<element>>) self) (list self))
 (define-method (component type self offset) self)
 (define-method (base self) self)
 (define-generic to-type)
