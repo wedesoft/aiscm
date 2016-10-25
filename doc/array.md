@@ -37,7 +37,7 @@ Scheme list objects can be converted to uniform arrays and vice versa using the 
 
 *to-array* uses type matching to determine the most suitable type.
 
-### Dimension, shape, and strides
+## Dimension, shape, and strides
 
 The *dimension* is the number of array indices used to select an element. The *shape* is a list specifying the size of the array in each direction. The *stride* specifies the internal memory layout of the array.
 
@@ -110,7 +110,6 @@ The *dump* and *crop* command can also take a list of values in order to extract
 ```
 
 ## RGB values
-### Swap colour channels
 
 The *rgb* method can be used to combine colour values and images. The following program swaps the colour channels around:
 
@@ -130,3 +129,11 @@ At the moment only integer complex values are supported. Here is a small example
 
 Since native integers are used, numerical overflow can occur.
 Note that you can use *to-type* to convert an array to a more suitable type.
+
+## Object arrays
+
+It is also possible to use arrays of Scheme objects instead of using a native representation:
+
+```Scheme
+@../tests/integration/object_array.scm@
+```
