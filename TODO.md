@@ -1,9 +1,11 @@
 ## Ready
 
+* roll square tensor
 * tensor dimensions (compiled returns list to build array object)
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
-* REPL docs: (help ...)
+* add docstrings, REPL docs: ,d ...
+  http://www.draketo.de/proj/guile-basics/
 * https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * red, green, blue, real-part, imag-part for objects

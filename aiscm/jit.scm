@@ -18,14 +18,14 @@
   #:use-module (aiscm method)
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
-  #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
+  #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term tensor index type subst code type-conversion
+            term indexer index type subst code type-conversion
             assemble jit iterator step setup increment body arguments operand insert-intermediate
             is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
@@ -428,11 +428,11 @@
 (define-class <param> ()
   (delegate #:init-keyword #:delegate #:getter delegate))
 
-(define-class <tensor> (<param>)
+(define-class <indexer> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
-(define (tensor dimension index delegate)
-  (make <tensor> #:dimension dimension #:index index #:delegate delegate))
+(define (indexer dimension index delegate)
+  (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
   (index    #:init-keyword #:index    #:getter index)
@@ -441,8 +441,8 @@
   (step     #:init-keyword #:step     #:getter step))
 (define-method (lookup index delegate stride iterator step)
   (make <lookup> #:index index #:delegate delegate #:stride stride #:iterator iterator #:step step))
-(define-method (lookup idx (obj <tensor>) stride iterator step)
-  (tensor (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
+(define-method (lookup idx (obj <indexer>) stride iterator step)
+  (indexer (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
 
 (define-class <function> (<param>)
   (arguments #:init-keyword #:arguments #:getter arguments)
@@ -451,23 +451,23 @@
   (term      #:init-keyword #:term      #:getter term))
 
 (define-method (type (self <param>)) (typecode (delegate self)))
-(define-method (type (self <tensor>)) (sequence (type (delegate self))))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
-(define-method (typecode (self <tensor>)) (typecode (type self)))
-(define-method (shape (self <tensor>)) (attach (shape (delegate self)) (dimension self))); TODO: get correct shape
-(define-method (stride (self <tensor>)) (stride (delegate self))); TODO: get correct stride
-(define-method (iterator (self <tensor>)) (iterator (delegate self))); TODO: get correct iterator
-(define-method (step (self <tensor>)) (step (delegate self))); TODO: get correct step
+(define-method (typecode (self <indexer>)) (typecode (type self)))
+(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self))); TODO: get correct shape
+(define-method (stride (self <indexer>)) (stride (delegate self))); TODO: get correct stride
+(define-method (iterator (self <indexer>)) (iterator (delegate self))); TODO: get correct iterator
+(define-method (step (self <indexer>)) (step (delegate self))); TODO: get correct step
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (tensor (dimension self)
-            idx
-            (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
+    (indexer (dimension self)
+             idx
+             (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 (define-method (subst self candidate replacement) self)
-(define-method (subst (self <tensor>) candidate replacement)
-  (tensor (dimension self) (index self) (subst (delegate self) candidate replacement)))
+(define-method (subst (self <indexer>) candidate replacement)
+  (indexer (dimension self) (index self) (subst (delegate self) candidate replacement)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (delegate self) candidate replacement)
@@ -475,32 +475,32 @@
           (iterator self)
           (step self)))
 (define-method (value (self <param>)) (value (delegate self)))
-(define-method (value (self <tensor>)) (value (delegate self)))
+(define-method (value (self <indexer>)) (value (delegate self)))
 (define-method (value (self <lookup>)) (value (delegate self)))
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
-(define-method (rebase value (self <tensor>))
-  (tensor (dimension self) (index self) (rebase value (delegate self))))
+(define-method (rebase value (self <indexer>))
+  (indexer (dimension self) (index self) (rebase value (delegate self))))
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
-(define-method (project (self <tensor>)) (project (delegate self) (index self)))
-(define-method (project (self <tensor>) (idx <var>))
-  (tensor (dimension self) (index self) (project (delegate self) idx)))
+(define-method (project (self <indexer>)) (project (delegate self) (index self)))
+(define-method (project (self <indexer>) (idx <var>))
+  (indexer (dimension self) (index self) (project (delegate self) idx)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
       (lookup (index self) (project (delegate self)) (stride self) (iterator self) (step self))))
-(define-method (get (self <tensor>) idx) (subst (delegate self) (index self) idx))
+(define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
 
 (define-method (setup self) '())
-(define-method (setup (self <tensor>))
+(define-method (setup (self <indexer>))
   (list (IMUL (step self) (stride self) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
 (define-method (setup (self <function>)) (append-map setup (arguments self)))
 (define-method (increment self) '())
-(define-method (increment (self <tensor>)) (list (ADD (iterator self) (step self))))
+(define-method (increment (self <indexer>)) (list (ADD (iterator self) (step self))))
 (define-method (increment (self <function>)) (append-map increment (arguments self)))
 (define-method (body self) self)
-(define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
+(define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
 
 (define-method (operand (a <element>)) (get a))
@@ -519,7 +519,7 @@
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
-(define-method (code (a <tensor>) (b <param>))
+(define-method (code (a <indexer>) (b <param>))
   (list (setup a)
         (setup b)
         (repeat (dimension a)
@@ -799,8 +799,4 @@
           (CALL RAX)
           (MOV (get (delegate out)) (to-type (native-equivalent (return-type method)) RAX)))))))
 
-(define (native-call method . args)
-  (make-function native-call
-                 (const (return-type method))
-                 (native-fun method)
-                 args))
+(define (native-call method . args) (make-function native-call (const (return-type method)) (native-fun method) args))

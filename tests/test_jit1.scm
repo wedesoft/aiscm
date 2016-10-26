@@ -472,7 +472,7 @@
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
     "compile and run identity function for array")
 (let* [(i  (var <long>))
-       (op (lambda (s) (tensor (dimension s) i (get s i))))]
+       (op (lambda (s) (indexer (dimension s) i (get s i))))]
   (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) op) (seq <int> 2 3 5))))
       "compile and run trivial 1D tensor function"))
 (let [(out (skeleton (multiarray <int> 2)))

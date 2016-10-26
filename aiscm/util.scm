@@ -50,11 +50,19 @@
 (define (index-of a b)
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
-(define all-but-last (compose reverse cdr reverse))
+
+(define (all-but-last lst)
+  "Return all but last element of LST."
+  (reverse (cdr (reverse lst))))
+
 (define (drop-up-to lst n)
+  "Return the list LST after dropping up to N elements."
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
+
 (define (take-up-to lst n)
+  "Return up to N elements of the list LST."
   (if (zero? n) '() (if (null? lst) lst (cons (car lst) (take-up-to (cdr lst) (1- n))))))
+
 (define (flatten x)
   (cond ((null? x) x)
         ((pair? x) (append (flatten (car x)) (flatten (cdr x))))
