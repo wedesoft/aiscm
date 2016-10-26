@@ -454,9 +454,9 @@
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (typecode (self <indexer>)) (typecode (type self)))
-(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self))); TODO: get correct shape
+(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (stride (self <indexer>)) (stride (delegate self))); TODO: get correct stride
-(define-method (iterator (self <indexer>)) (iterator (delegate self))); TODO: get correct iterator
+(define-method (iterator (self <indexer>)) (iterator (delegate self)))
 (define-method (step (self <indexer>)) (step (delegate self))); TODO: get correct step
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
