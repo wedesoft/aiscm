@@ -455,9 +455,15 @@
 (define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (typecode (self <indexer>)) (typecode (type self)))
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
-(define-method (stride (self <indexer>)) (stride (delegate self))); TODO: get correct stride
-(define-method (iterator (self <indexer>)) (iterator (delegate self)))
-(define-method (step (self <indexer>)) (step (delegate self))); TODO: get correct step
+(define-method (stride (self <indexer>)) (stride (delegate self) (index self)))
+(define-method (stride (self <indexer>) (idx <var>)) (stride (delegate self) idx))
+(define-method (stride (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (stride self) (stride (delegate self) idx)))
+(define-method (iterator (self <indexer>)) (iterator (delegate self) (index self)))
+(define-method (iterator (self <indexer>) (idx <var>)) (iterator (delegate self) idx))
+(define-method (iterator (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (iterator self) (iterator (delegate self) idx)))
+(define-method (step (self <indexer>)) (step (delegate self) (index self)))
+(define-method (step (self <indexer>) (idx <var>)) (step (delegate self) idx))
+(define-method (step (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (step self) (step (delegate self) idx)))
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
