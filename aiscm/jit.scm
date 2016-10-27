@@ -488,7 +488,7 @@
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
-      (lookup (index self) (project (delegate self)) (stride self) (iterator self) (step self))))
+      (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
 
 (define-method (setup self) '())
