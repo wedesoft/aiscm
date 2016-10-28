@@ -32,7 +32,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function native-call)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
 (define ctx (make <context>))
 
@@ -493,6 +493,7 @@
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
+(define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
 
 (define-method (setup self) '())
 (define-method (setup (self <indexer>))

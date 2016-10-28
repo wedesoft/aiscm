@@ -78,5 +78,7 @@
   (ok (equal? (to-list (roll m))
               (to-list ((jit ctx (list (class-of m))
                 (lambda (m) (indexer (car (shape m)) i (indexer (cadr (shape m)) j (get (get m j) i))))) m)))
-      "switch dimensions of a 2D tensor"))
+      "switch dimensions of a 2D tensor")
+  (ok (equal? (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
+      "tensor macro provides local variable"))
 (run-tests)
