@@ -376,40 +376,6 @@
       "2D array skeleton consists of five variables")
   (ok (equal? (list <long> <long> <long> <long> <ulong>) (map typecode (content (class-of m) m)))
       "skeleton of 2D array consists of long integer variables"))
-(let* [(s  (skeleton (sequence <int>)))
-       (sx (parameter s))]
-  (ok (eq? (value s) (value (delegate (delegate sx))))
-      "sequence parameter maintains pointer")
-  (ok (eq? (index sx) (index (delegate sx)))
-      "index of parameter and index of parameters content should match")
-  (ok (eq? (dimension s) (dimension sx))
-      "sequence parameter should maintain dimension")
-  (ok (eq? (stride s) (stride (delegate sx)))
-      "sequence parameter should maintain stride")
-  (ok (eq? (sequence <int>) (type sx))
-      "sequence parameter maintains type")
-  (let [(i (var <long>))]
-    (ok (eq? i (index (subst (delegate sx) (index sx) i)))
-        "substitution should replace the lookup index")
-    (ok (eq? i (index (get sx i)))
-        "retrieving an element by index should replace with the index")))
-(let* [(m  (skeleton (multiarray <int> 2)))
-       (mx (parameter m))]
-  (ok (equal? (shape m) (shape mx))
-      "2D array parameter should maintain the shape")
-  (ok (equal? (index mx) (index (delegate (delegate mx))))
-      "first index of parameter should have a match")
-  (ok (equal? (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
-      "second index of parameter should have a match")
-  (let [(i (var <long>))]
-    (ok (eq? i (index (subst (delegate (delegate mx)) (index mx) i)))
-      "subst should allow replacing first index")
-    (ok (eq? i (index (delegate (subst (delegate (delegate mx)) (index (delegate mx)) i))))
-      "subst should allow replacing second index")
-    (ok (eq? (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
-      "replacing the second index should maintain the first one")
-    (ok (eq? i (index (delegate (get mx i))))
-      "retrieving an element should replace with the index")))
 (let [(a (skeleton <byte>))
       (b (skeleton (pointer <byte>)))
       (c (set-pointer-offset (skeleton (pointer <int>)) 3))]
@@ -444,15 +410,6 @@
 (let [(out (skeleton <int>))]
   (ok (equal? (list (MOV (get out) 0)) (code out 0))
       "Generate code for setting variable to zero"))
-(let [(out (parameter (sequence <int>)))]
-  (ok (eq? (iterator (delegate out)) (iterator out))
-      "retrieve iterator pointer from tensor parameter")
-  (ok (eq? (step (delegate out)) (step out))
-      "retrieve step variable from tensor parameter")
-  (ok (not (eq? (step out) (iterator out)))
-      "step and iterator need to be distinct variables")
-  (ok (is-a? (delegate (project out)) (pointer <int>))
-      "projected 1D array tensor should contain pointer"))
 (let [(out  (parameter (sequence <int>)))]
   (ok (equal? (list (IMUL (step out) (stride out) (size-of (typecode out)))
                     (MOV (iterator out) (value out)))
@@ -471,10 +428,6 @@
       "generate code for copying a byte from one memory location to another"))
 (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
     "compile and run identity function for array")
-(let* [(i  (var <long>))
-       (op (lambda (s) (indexer (dimension s) i (get s i))))]
-  (ok (equal? '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) op) (seq <int> 2 3 5))))
-      "compile and run trivial 1D tensor function"))
 (let [(out (skeleton (multiarray <int> 2)))
       (in  (skeleton (multiarray <int> 2)))]
   (ok (list? (code (parameter out) (parameter in)))
