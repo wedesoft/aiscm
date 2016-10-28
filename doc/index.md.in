@@ -44,6 +44,8 @@ Control all data and machine code down to every single bit and byte.
 * [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
 * [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
 * [Embedded Language for Accelerated Array Computations](https://github.com/AccelerateHS/accelerate)
+* [SymPy: computer algebra in Python](http://www.sympy.org/)
+* [Maxima computer algebra system](http://maxima.sourceforge.net/)
 
 Copyright © 2013, 2014, 2015, 2016 Jan Wedekind.
 
