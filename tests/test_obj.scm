@@ -127,4 +127,6 @@
     "compile and run call to scm_from_int64")
 (ok (equal? (cons 'a 'b) ((jit ctx (list <obj> <obj>) (cut native-call scm-cons <...>)) 'a 'b))
     "call \"cons\" from compiled code")
+(ok (equal? '() (pointer->scm (make-pointer scm-eol)))
+    "native representation of empty list")
 (run-tests)

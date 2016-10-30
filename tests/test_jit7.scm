@@ -65,7 +65,8 @@
                 (list (iterator (project tr)) (iterator tr)))
         "swap iterator variables when transposing")))
 (let [(s (seq <int> 2 3 5))
-      (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))]
+      (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
+      (r (arr <int> (2 3 5) (7 11 13)))]
   (let [(op (lambda (s) (indexer (dimension s) i (get s i))))]
     (ok (equal? (to-list s) (to-list ((jit ctx (list (sequence <int>)) op) s)))
         "compile and run trivial 1D tensor function"))
@@ -80,5 +81,9 @@
                 (lambda (m) (indexer (car (shape m)) i (indexer (cadr (shape m)) j (get (get m j) i))))) m)))
       "switch dimensions of a 2D tensor")
   (ok (equal? (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
-      "tensor macro provides local variable"))
+      "tensor macro provides local variable")
+  (skip (equal? (to-list (roll r))
+              (to-list ((jit ctx (list (class-of r))
+                (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i))))) r)))
+      "switch dimensions of a non-square 2D tensor"))
 (run-tests)

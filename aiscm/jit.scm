@@ -788,7 +788,7 @@
     (append (map (lambda (register parameter)
                    (MOV (to-type (native-equivalent (type parameter)) register) (get (delegate parameter))))
                  register-parameters
-                 first-six-parameters); TODO: check similarities to spill-parameters and fetch-parameters
+                 first-six-parameters)
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))

@@ -1,6 +1,5 @@
 ## Ready
 
-* tensor macro
 * tensor dimensions (compiled returns list to build array object)
 * index manipulation on function expressions
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
