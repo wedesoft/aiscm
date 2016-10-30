@@ -65,6 +65,8 @@
 (let [(a (parameter (sequence <int>)))]
   (ok (equal? (delegate (car (arguments (body (- a))))) (delegate (car (arguments (- (body a))))))
       "body of array negation should have same argument as negation of array body"))
+(ok (equal? -42 ((jit ctx (list <int>) (lambda (x) (make-function 'name identity (mutating-code NEG) (list x)))) 42))
+    "Create function object mapping to NEG")
 (ok (equal? -42 ((jit ctx (list <int>) -) 42))
     "Negate integer")
 (ok (equal? '(-2 3 -5) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5))))
