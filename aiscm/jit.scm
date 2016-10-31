@@ -30,7 +30,7 @@
             is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function native-call)
+            decompose-arg delegate-fun make-function native-call native-constant)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
@@ -556,13 +556,18 @@
   (force-parameters (make-list (length args) target) args predicate fun))
 
 (define (operation-code target op out args)
+  "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
     (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
+  "Adapter for machine code without side effects on its arguments"
   (operation-code (reduce coerce #f (map type args)) op out args))
 (define ((mutating-code op) out args)
+  "Adapter for machine code overwriting its first argument"
   (insert-intermediate (car args) out (cut operation-code (type out) op <> (cdr args))))
-(define ((unary-extract op) out args) (code (delegate out) (apply op (map delegate args))))
+(define ((unary-extract op) out args)
+  "Adapter for machine code to extract part of a composite value"
+  (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
   (let* [(args   (symbol-list arity))
@@ -794,13 +799,18 @@
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
 
-(define* ((native-fun method) out args)
-  (force-parameters (argument-types method) args call-needs-intermediate?
+(define* ((native-fun native) out args)
+  (force-parameters (argument-types native) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
         (pass-parameters intermediates
-          (MOV RAX (function-pointer method))
+          (MOV RAX (function-pointer native))
           (CALL RAX)
-          (MOV (get (delegate out)) (to-type (native-equivalent (return-type method)) RAX)))))))
+          (MOV (get (delegate out)) (to-type (native-equivalent (return-type native)) RAX)))))))
 
-(define (native-call method . args) (make-function native-call (const (return-type method)) (native-fun method) args))
+(define (native-call native . args) (make-function native-call (const (return-type native)) (native-fun native) args))
+
+(define* ((native-data native) out args)
+  (list (MOV (get (delegate out)) (get native))))
+
+(define (native-constant native . args) (make-function native-constant (const (return-type native)) (native-data native) args))

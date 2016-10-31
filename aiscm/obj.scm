@@ -91,5 +91,5 @@
 (define scm-from-int64  (native-method <obj>   (list <long>       ) (dynamic-func "scm_from_int64"  main           )))
 
 ; Scheme list manipulation
-(define scm-eol (pointer-address (scm->pointer '())))
+(define scm-eol (native-value <obj> (pointer-address (scm->pointer '()))))
 (define scm-cons (native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))

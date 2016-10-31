@@ -88,6 +88,4 @@
               (to-list ((jit ctx (list (class-of r))
                 (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i))))) r)))
       "switch dimensions of a non-square 2D tensor"))
-(ok (equal? '() ((jit ctx '() (const (make-function 'name (const <obj>) (functional-code (cut MOV <> scm-eol)) '())))))
-    "create nullary function returning empty list")
 (run-tests)
