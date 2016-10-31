@@ -129,4 +129,6 @@
     "call \"cons\" from compiled code")
 (ok (equal? '() ((jit ctx '() (lambda () (native-constant scm-eol)))))
     "compile function returning empty list")
+(ok (equal? '(a) ((jit ctx (list <obj>) (lambda (o) (native-call scm-cons o (native-constant scm-eol)))) 'a))
+    "compile function putting object into a one-element list")
 (run-tests)
