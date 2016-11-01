@@ -10,7 +10,7 @@ Performance is achieved by means of a JIT compiler.
 Control all data and machine code down to every single bit and byte.
 
 <div class="figure">
-<p><a href="installation.html" title="Installation"><img src="aiscm.gif" /> <strong>Installation</strong></a></p>
+<p><a href="installation.html" title="Installation"><strong>Installation</strong> <img src="aiscm.gif" alt=""/> <strong>Installation</strong></a></p>
 </div>
 
 ## Features

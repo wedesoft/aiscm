@@ -7,7 +7,7 @@ Performance is achieved by means of a JIT compiler.
 
 Control all data and machine code down to every single bit and byte!
 
-![](doc/aiscm.gif "AIscm")
+![AIscm](doc/aiscm.gif "AIscm")
 
 ## Download
 
