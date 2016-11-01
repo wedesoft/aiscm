@@ -135,4 +135,6 @@
     "compile function putting integer into a one-element list")
 (ok (equal? '(170) ((jit ctx (list <int> <int>) (lambda (i j) (native-call scm-cons (+ i j) (native-constant scm-eol)))) 100 70))
     "compile function putting result of expression into a one-element list")
+(ok (equal? -42 ((jit ctx (list <long>) (cut native-call obj-negate <>)) 42))
+    "implicit conversion from long integer to object")
 (run-tests)

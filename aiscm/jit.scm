@@ -27,7 +27,7 @@
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
             term indexer index type subst code type-conversion
             assemble jit iterator step setup increment body arguments operand insert-intermediate
-            is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
+            is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function native-call native-constant)
@@ -532,10 +532,10 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (insert-intermediate fun (skeleton (type fun)) (lambda (tmp) (code out tmp))); TODO: refactor?
+    (insert-intermediate fun (skeleton (type fun)) (cut code out <>)); TODO: refactor?
     ((term fun) (parameter out))))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp)))); TODO: refactor?
+  (insert-intermediate fun (skeleton (typecode out)) (cut code out <>))); TODO: refactor?
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
@@ -543,13 +543,16 @@
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 
-(define (is-function? value) (not (delegate value)))
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
-(define (need-conversion? target type) (not (eqv? (size-of target) (size-of type))))
-(define (code-needs-intermediate? t value)
-  (or (is-function? value) (need-conversion? t (type value))))
-(define (call-needs-intermediate? t value)
-  (or (is-function? value) (need-conversion? t (type value)) (is-pointer? value)))
+(define-method (need-conversion? target type) (not (eq? target type)))
+(define-method (need-conversion? (target <meta<int<>>>) (type <meta<int<>>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define-method (need-conversion? (target <meta<bool>>) (type <meta<int<>>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define-method (need-conversion? (target <meta<int<>>>) (type <meta<bool>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
+(define (call-needs-intermediate? t value) (or (code-needs-intermediate? t value) (is-pointer? value)))
 (define-method (force-parameters (targets <list>) args predicate fun)
   (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
