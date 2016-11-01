@@ -773,7 +773,6 @@
     (append-map
       (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
       (components source))))
-(define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source)); TODO: why this?
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
