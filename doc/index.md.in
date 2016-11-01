@@ -29,6 +29,7 @@ Control all data and machine code down to every single bit and byte.
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
+* [Tensorflow: numerical computing with dataflow graphs](https://www.tensorflow.org/)
 * [Numpy: Python library implementing n-dimensional arrays](http://www.numpy.org/)
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python](http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf)
