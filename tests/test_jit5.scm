@@ -192,7 +192,7 @@
       (b (parameter <sint>))
       (c (parameter <ubyte>))
       (r (parameter <long>))]
-  (ok (equal? (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
+  (skip (equal? (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
               (register-allocate (flatten-code (attach ((term (+ a b c)) r) (RET)))))
       "Coerce to output value when using multiple mutating operations"))
 (ok (equal? 9 ((jit ctx (list <int> <int> <int>) +) 2 3 4))

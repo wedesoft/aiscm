@@ -38,7 +38,7 @@
 (ok (eqv? 5 ((jit ctx (make-list 3 <int>)
                   (lambda (x y z) (native-call (native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z)))) 10 2 3))
     "Pass result of expression to function call")
-(todo (eqv? 5 ((jit ctx (list <int> <obj> <obj>)
+(ok (eqv? 5 ((jit ctx (list <int> <obj> <obj>)
                   (lambda (x y z) (native-call (native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z)))) 10 2 3))
     "Convert result of expression before passing to native function call")
 (ok (eqv? 42 ((jit ctx (list <int> <int>)

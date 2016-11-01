@@ -530,9 +530,12 @@
                 (append (code (body a) (body b))
                         (increment a)
                         (increment b)))))
-(define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
+(define-method (code (out <element>) (fun <function>))
+  (if (need-conversion? (typecode out) (type fun))
+    (insert-intermediate fun (skeleton (type fun)) (lambda (tmp) (code out tmp))); TODO: refactor?
+    ((term fun) (parameter out))))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
+  (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp)))); TODO: refactor?
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
