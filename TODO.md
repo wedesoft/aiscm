@@ -1,6 +1,5 @@
 ## Ready
 
-* require conversion long <-> object
 * generate code to convert and pack native integer in a list
 * tensor dimensions (compiled returns list to build array object)
 * index manipulation on function expressions

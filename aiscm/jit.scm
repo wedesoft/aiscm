@@ -521,7 +521,7 @@
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
+  (insert-intermediate b (skeleton (typecode a)) (cut code a <>)))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
 (define-method (code (a <indexer>) (b <param>))
   (list (setup a)
@@ -532,10 +532,10 @@
                         (increment b)))))
 (define-method (code (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (insert-intermediate fun (skeleton (type fun)) (cut code out <>)); TODO: refactor?
+    (insert-intermediate fun (skeleton (type fun)) (cut code out <>))
     ((term fun) (parameter out))))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (insert-intermediate fun (skeleton (typecode out)) (cut code out <>))); TODO: refactor?
+  (insert-intermediate fun (skeleton (typecode out)) (cut code out <>)))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
@@ -552,7 +552,7 @@
 (define-method (need-conversion? (target <meta<int<>>>) (type <meta<bool>>))
   (not (eqv? (size-of target) (size-of type))))
 (define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
-(define (call-needs-intermediate? t value) (or (code-needs-intermediate? t value) (is-pointer? value)))
+(define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 (define-method (force-parameters (targets <list>) args predicate fun)
   (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
@@ -802,7 +802,6 @@
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
-
 
 (define* ((native-fun native) out args)
   (force-parameters (argument-types native) args call-needs-intermediate?
