@@ -1,6 +1,6 @@
 #!/bin/sh
 while true; do
   clear;
-  cd tests && rm -f $@ && make $@ && cd ..
-  inotifywait -e CLOSE_WRITE `git ls-files`;
+  LD_LIBRARY_PATH=$PWD/aiscm/.libs guile -L $PWD -L $PWD/tests --no-auto-compile t.scm;
+  inotifywait -e CLOSE_WRITE t.scm;
 done

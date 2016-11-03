@@ -390,7 +390,7 @@
   (ok (equal? (list (list (mov-signed (get out) (get in)))) (code out in))
       "generate code for copying an integer")
   (ok (equal? (list (list (get out)) (list (get in)) (list (list (mov-signed (get out) (get in))) (RET)))
-              ((assemble (list out) (list in) (code out in)) list))
+              (assemble (list out) (list in) (code out in)))
       "generate code for identity function"))
 (ok (equal? (list (SUB RSP 8) (MOV RCX RAX) (ADD RSP 8) (RET))
             (register-allocate (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
