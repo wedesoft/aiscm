@@ -659,7 +659,7 @@
 
 (define (content-vars args) (append-map content (map class-of args) (map get args)))
 
-(define (assemble return-args args instructions virtual-variables)
+(define ((assemble return-args args instructions) virtual-variables)
   (virtual-variables (content-vars return-args) (content-vars args) (attach instructions (RET))))
 
 (define (jit context classes proc)
@@ -675,7 +675,7 @@
          (code        (asm context
                            (or return-type <null>)
                            (map typecode (content-vars args))
-                           (assemble return-args args (code (parameter result) expr) virtual-variables)))
+                           ((assemble return-args args (code (parameter result) expr)) virtual-variables)))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
