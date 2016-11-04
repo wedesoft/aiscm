@@ -683,8 +683,8 @@
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
-        (let [(result (apply fun args))]
-          (get (build result-type result))))
+        (let [(result (list (apply fun args)))]
+          (build result-type result)))
       (lambda args
         (let [(result (make target #:shape (argmax length (map shape args))))]
           (apply fun (cons (get result) args))

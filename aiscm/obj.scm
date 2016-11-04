@@ -33,7 +33,7 @@
 (define-method (write (self <obj>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (native-type o . args) <obj>)
-(define-method (build (self <meta<obj>>) value) (make self #:value (address->scm value)))
+(define-method (build (self <meta<obj>>) value) (address->scm (car value)))
 (define-method (unbuild (type <meta<obj>>) self) (list (scm->address self)))
 (define-method (pointerless? (self <meta<obj>>)) #f)
 (define-method (signed? (self <meta<obj>>)) #f)

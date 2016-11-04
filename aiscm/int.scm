@@ -83,7 +83,7 @@
                 ((< nlower (ash 1 63)) <long>)
                 (else (next-method))))))
     (apply native-type (sort-by-pred (cons i args) integer?))))
-(define-method (build (self <meta<int<>>>) value) (make self #:value value))
+(define-method (build (self <meta<int<>>>) value) (car value))
 (define-method (~ (self <integer>)) (lognot self))
 (define-method (=0 (self <integer>)) (zero? self))
 (define-method (!=0 (self <integer>)) (not (zero? self)))
