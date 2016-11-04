@@ -26,7 +26,7 @@
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
             term indexer index type subst code type-conversion
-            assemble jit iterator step setup increment body arguments operand insert-intermediate
+            assemble package-return-content jit iterator step setup increment body arguments operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -662,6 +662,9 @@
 (define (assemble return-args args instructions)
   "Determine result variables, argument variables, and instructions"
   (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
+
+(define (package-return-content retval)
+  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type retval) retval)))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
