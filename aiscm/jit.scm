@@ -330,12 +330,12 @@
                                       #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
-(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
+(define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars register-parameters))]
-    (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
+    (spill-blocked-predefines (flatten-code (relabel (filter-blocks instructions)))
                               #:predefined (append result-regs arg-regs)
-                              #:blocked    (blocked-intervals intermediate)
+                              #:blocked    (blocked-intervals instructions)
                               #:registers  registers
                               #:parameters arg-vars)))
 
@@ -660,6 +660,7 @@
 (define (content-vars args) (append-map content (map class-of args) (map get args)))
 
 (define (assemble return-args args instructions)
+  "Determine result variables, argument variables, and instructions"
   (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
 
 (define (jit context classes proc)
