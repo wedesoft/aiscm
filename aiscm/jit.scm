@@ -30,7 +30,7 @@
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function native-call native-constant)
+            decompose-arg delegate-fun make-function native-call native-constant generate-return-code)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
@@ -665,6 +665,11 @@
 
 (define (package-return-content retval)
   (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type retval) retval)))
+
+(define (generate-return-code args expr)
+  (let [(result (parameter (type expr)))
+        (retval (skeleton <obj>))]
+    (list (list retval) args (code (parameter retval) (package-return-content expr)))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))

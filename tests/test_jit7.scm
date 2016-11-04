@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (srfi srfi-26)
              (aiscm asm)
+             (aiscm util)
              (aiscm jit)
              (aiscm element)
              (aiscm int)
@@ -93,4 +94,8 @@
     "generate code to package an object in a list")
 (ok (equal? (list 2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
     "generate code to return the content of an RGB value")
+(let [(i (skeleton <int>))]
+  (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
+                       (apply assemble (generate-return-code (list i) (parameter i))))) 123)))
+      "generate code create, define, and package return value"))
 (run-tests)
