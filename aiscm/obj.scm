@@ -25,16 +25,16 @@
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 (define-method (pack (self <obj>))
-  (uint-list->bytevector (list (pointer-address (scm->pointer (get self)))) (native-endianness) 8))
+  (uint-list->bytevector (list (scm->address (get self))) (native-endianness) 8))
 (define-method (unpack (self <meta<obj>>) (packed <bytevector>))
   (let [(value (car (bytevector->uint-list packed (native-endianness) (size-of self))))]
-    (make self #:value (pointer->scm (make-pointer value)))))
+    (make self #:value (address->scm value))))
 (define-method (coerce a b) <obj>)
 (define-method (write (self <obj>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (native-type o . args) <obj>)
-(define-method (build (self <meta<obj>>) value) (make self #:value (pointer->scm (make-pointer value))))
-(define-method (unbuild (type <meta<obj>>) self) (list (pointer-address (scm->pointer self))))
+(define-method (build (self <meta<obj>>) value) (make self #:value (address->scm value)))
+(define-method (unbuild (type <meta<obj>>) self) (list (scm->address self)))
 (define-method (pointerless? (self <meta<obj>>)) #f)
 (define-method (signed? (self <meta<obj>>)) #f)
 
@@ -91,5 +91,5 @@
 (define scm-from-int64  (native-method <obj>   (list <long>       ) (dynamic-func "scm_from_int64"  main           )))
 
 ; Scheme list manipulation
-(define scm-eol (native-value <obj> (pointer-address (scm->pointer '()))))
+(define scm-eol (native-value <obj> (scm->address '())))
 (define scm-cons (native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))

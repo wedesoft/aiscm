@@ -9,9 +9,10 @@
              (aiscm sequence)
              (aiscm jit)
              (aiscm asm)
+             (aiscm util)
              (guile-tap))
 (define obj (make <obj> #:value 'sym))
-(define address (pointer-address (scm->pointer 'sym)))
+(define address (scm->address 'sym))
 (define ctx (make <context>))
 
 (ok (eqv? 8 (size-of <obj>))
