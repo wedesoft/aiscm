@@ -5,17 +5,17 @@ SCM obj_negate(SCM x)
   return scm_difference(x, SCM_UNDEFINED);
 }
 
-char obj_zero_p(SCM x)
+unsigned char obj_zero_p(SCM x)
 {
   return scm_is_true(scm_zero_p(x));
 }
 
-char obj_nonzero_p(SCM x)
+unsigned char obj_nonzero_p(SCM x)
 {
   return scm_is_false(scm_zero_p(x));
 }
 
-char obj_not(SCM x)
+unsigned char obj_not(SCM x)
 {
   return scm_is_true(scm_not(x));
 }
@@ -65,7 +65,7 @@ char obj_geq_p(SCM x, SCM y)
   return scm_is_true(scm_geq_p(x, y));
 }
 
-SCM obj_from_bool(int x)
+SCM obj_from_bool(unsigned char x)
 {
   return scm_from_bool(x);
 }

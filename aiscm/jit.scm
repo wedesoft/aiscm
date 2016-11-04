@@ -681,14 +681,19 @@
          (return-args (if return-type (list result) '()))
          (args        (if return-type vars (cons result vars)))
          (types       (map class-of args))
-         (code        (asm context
-                           (or return-type <null>)
-                           (map typecode (content-vars args))
-                           (apply virtual-variables (assemble return-args args (code (parameter result) expr)))))
+         (code        (if return-type
+                        (asm context
+                             <ulong>
+                             (map typecode (content-vars args))
+                             (apply virtual-variables (apply assemble (generate-return-code args expr))))
+                        (asm context
+                             <null>
+                             (map typecode (content-vars args))
+                             (apply virtual-variables (assemble return-args args (code (parameter result) expr))))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
-        (let [(result (list (apply fun args)))]
+        (let [(result (address->scm (apply fun args)))]
           (build result-type result)))
       (lambda args
         (let [(result (make target #:shape (argmax length (map shape args))))]

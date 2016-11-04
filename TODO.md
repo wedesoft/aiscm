@@ -1,7 +1,7 @@
 ## Ready
 
-* generate code to convert and pack native integer in a list
 * tensor dimensions (compiled returns list to build array object)
+* spill blocked registers into other register
 * index manipulation on function expressions
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
@@ -18,7 +18,6 @@
 * split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
-* spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * fftw3, hypercomplex, kinect, linalg, opencv, qt4
 * <-> Guile 6.7.5 Arrays

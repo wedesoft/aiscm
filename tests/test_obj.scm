@@ -32,7 +32,7 @@
     "write wrapped object")
 (ok (eq? <obj> (native-type 'a))
     "native type for a symbol is <obj>")
-(ok (equal? 'sym (build <obj> (list address)))
+(ok (equal? 'sym (build <obj> (list 'sym)))
     "build SCM value")
 (ok (equal? (list address) (unbuild <obj> 'sym))
     "content of symbol returns internal 64 bit representation")
