@@ -163,10 +163,10 @@
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
 
-(define-method (native-equivalent  self                   ) #f     )
-(define-method (native-equivalent (self <meta<bool>>     )) <ubyte>)
-(define-method (native-equivalent (self <meta<int<>>>    )) self   )
-(define-method (native-equivalent (self <meta<float<>>>  )) self   )
+(define-method (native-equivalent  self                   ) #f      )
+(define-method (native-equivalent (self <meta<bool>>     )) <ubyte> )
+(define-method (native-equivalent (self <meta<int<>>>    )) self    )
+(define-method (native-equivalent (self <meta<float<>>>  )) self    )
 (define-method (native-equivalent (self <meta<obj>>      )) <ulong> )
 (define-method (native-equivalent (self <meta<pointer<>>>)) <ulong> )
 
@@ -678,7 +678,6 @@
          (return-type (native-equivalent result-type))
          (target      (if return-type result-type (pointer result-type)))
          (result      (skeleton target))
-         (return-args (if return-type (list result) '()))
          (args        (if return-type vars (cons result vars)))
          (types       (map class-of args))
          (code        (if return-type
@@ -689,7 +688,7 @@
                         (asm context
                              <null>
                              (map typecode (content-vars args))
-                             (apply virtual-variables (assemble return-args args (code (parameter result) expr))))))
+                             (apply virtual-variables (assemble '() args (code (parameter result) expr))))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if return-type
       (lambda args
