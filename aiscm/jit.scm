@@ -663,8 +663,8 @@
   "Determine result variables, argument variables, and instructions"
   (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
 
-(define (package-return-content retval)
-  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type retval) retval)))
+(define (package-return-content expr)
+  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type expr) expr)))
 
 (define (generate-return-code args expr)
   (let [(result (parameter (type expr)))
@@ -675,12 +675,12 @@
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
-         (return-type (native-equivalent result-type))
-         (target      (if return-type result-type (pointer result-type)))
+         (element?    (native-equivalent result-type))
+         (target      (if element? result-type (pointer result-type)))
          (result      (skeleton target))
-         (args        (if return-type vars (cons result vars)))
+         (args        (if element? vars (cons result vars)))
          (types       (map class-of args))
-         (code        (if return-type
+         (code        (if element?
                         (asm context
                              <ulong>
                              (map typecode (content-vars args))
@@ -690,7 +690,7 @@
                              (map typecode (content-vars args))
                              (apply virtual-variables (assemble '() args (code (parameter result) expr))))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
-    (if return-type
+    (if element?
       (lambda args
         (let [(result (address->scm (apply fun args)))]
           (build result-type result)))
