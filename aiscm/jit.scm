@@ -669,35 +669,37 @@
 (define (generate-return-code args expr)
   (let [(result (parameter (type expr)))
         (retval (skeleton <obj>))]
-    (list (list retval) args (code (parameter retval) (package-return-content expr)))))
+    (list (list retval)
+          args
+          (append (code result expr)
+                  (code (parameter retval) (package-return-content result))))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
-         (element?    (native-equivalent result-type))
-         (target      (if element? result-type (pointer result-type)))
-         (result      (skeleton target))
-         (args        (if element? vars (cons result vars)))
+         (sequence?   (is-a? result-type <meta<sequence<>>>))
+         (result      (skeleton result-type))
+         (args        (if sequence? (cons result vars) vars))
          (types       (map class-of args))
-         (code        (if element?
-                        (asm context
-                             <ulong>
-                             (map typecode (content-vars args))
-                             (apply virtual-variables (apply assemble (generate-return-code args expr))))
+         (code        (if sequence?
                         (asm context
                              <null>
                              (map typecode (content-vars args))
-                             (apply virtual-variables (assemble '() args (code (parameter result) expr))))))
+                             (apply virtual-variables (assemble '() args (code (parameter result) expr))))
+                        (asm context
+                             <ulong>
+                             (map typecode (content-vars args))
+                             (apply virtual-variables (apply assemble (generate-return-code args expr))))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
-    (if element?
+    (if sequence?
+      (lambda args
+        (let [(result (make result-type #:shape (argmax length (map shape args))))]
+          (apply fun (cons (get result) args))
+          (get (build result-type result))))
       (lambda args
         (let [(result (address->scm (apply fun args)))]
-          (build result-type result)))
-      (lambda args
-        (let [(result (make target #:shape (argmax length (map shape args))))]
-          (apply fun (cons (get result) args))
-          (get (build result-type result)))))))
+          (build result-type result))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))

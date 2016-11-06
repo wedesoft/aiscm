@@ -1,6 +1,5 @@
 ## Ready
 
-* (content <intrgb> (~ (parameter <intrgb>)))
 * tensor dimensions (compiled returns list to build array object)
 * spill blocked registers into other register
 * index manipulation on function expressions
