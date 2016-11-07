@@ -54,4 +54,8 @@
     "check value of native value")
 (ok (eqv? 42 ((jit ctx '() (lambda () (native-constant (native-value <int> 42))))))
     "put native constant into compiled code")
+(ok ((jit ctx (list <ulong>) (cut native-call scm-gc-malloc-pointerless <>)) 128)
+    "allocate memory in compiled method")
+(ok ((jit ctx (list <ulong>) (cut native-call scm-gc-malloc <>)) 128)
+    "allocate memory in compiled method")
 (run-tests)

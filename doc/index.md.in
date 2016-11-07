@@ -28,6 +28,7 @@ Control all data and machine code down to every single bit and byte.
 ## External links
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
+* [Vigracket: Vigra bindings for Racket](https://github.com/BSeppke/vigracket)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
 * [Tensorflow: numerical computing with dataflow graphs](https://www.tensorflow.org/)
 * [Numpy: Python library implementing n-dimensional arrays](http://www.numpy.org/)
