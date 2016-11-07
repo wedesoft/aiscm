@@ -663,8 +663,9 @@
   "Determine result variables, argument variables, and instructions"
   (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
 
-(define (package-return-content expr)
-  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type expr) expr)))
+(define (package-return-content value)
+  "Generate code to package parameter VALUE in a Scheme list"
+  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type value) value)))
 
 (define (generate-return-code args expr)
   (let [(result (parameter (type expr)))

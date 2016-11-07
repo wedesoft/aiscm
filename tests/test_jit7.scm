@@ -94,6 +94,8 @@
     "generate code to package an object in a list")
 (ok (equal? (list 2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
     "generate code to return the content of an RGB value")
+(skip (eqv? -6 ((jit ctx (list <int>) (compose package-return-content ~)) 5))
+    "generate code to return the content of an integer expression")
 (let [(i (skeleton <int>))]
   (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
                        (apply assemble (generate-return-code (list i) (parameter i))))) 123)))
