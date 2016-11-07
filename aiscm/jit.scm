@@ -672,8 +672,9 @@
         (retval (skeleton <obj>))]
     (list (list retval)
           args
-          (append (code result expr)
-                  (code (parameter retval) (package-return-content result))))))
+          (insert-intermediate expr
+                               (parameter (type expr))
+                               (lambda (intermediate) (code (parameter retval) (package-return-content intermediate)))))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
