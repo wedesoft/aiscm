@@ -4,6 +4,8 @@
              (system foreign)
              (aiscm element)
              (aiscm int)
+             (aiscm sequence)
+             (aiscm mem)
              (aiscm pointer)
              (aiscm rgb)
              (aiscm obj)
@@ -15,17 +17,14 @@
 
 (define ctx (make <context>))
 
-;(address->scm (apply (asm ctx <ulong> (map typecode (content-vars args)) (apply virtual-variables (apply assemble (generate-return-code (list o) expr)))) (unbuild (typecode o) (rgb 2 3 5))))
+(unbuild (sequence <int>) (sequence 2 3 5))
 
-(define f (jit ctx (list <ulong>) (cut native-call scm-gc-malloc-pointerless <>)))
+(define s (parameter (sequence <ubyte>)))
 
-(define (g size) (f size))
+(define (content-s s) (list (parameter (make <int> #:value (dimension s))) (parameter (make <int> #:value (stride s))) (project s)))
 
-(define-method (build (type <meta<pointer<>>>) lst) (make-pointer (car lst))
-(list (pointer-address (get-memory self))))
+(define (pkg lst) (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) lst))
 
-(diagnostics (build (pointer <int>) (list (g 4))))
-
-(diagnostics (unbuild (pointer <int>) (make (pointer <int>))))
+(jit ctx (list (sequence <int>)) (lambda (s) (pkg (content-s s))))
 
 (run-tests)

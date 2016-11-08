@@ -2,6 +2,7 @@
 
 * tensor dimensions (compiled returns list to build array object)
 * spill blocked registers into other register
+* car, cadr, ... -> first, second, ...
 * index manipulation on function expressions
 * direct mapping instead of decompose-arg for rgb and complex?
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
