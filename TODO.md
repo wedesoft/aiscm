@@ -1,5 +1,10 @@
 ## Ready
 
+* (content <intrgb> (skeleton <intrgb>))
+  (content <intrgb> (parameter <intrgb>))
+  (content (sequence <int>) (skeleton (sequence <int>))) needs to be a list of elements
+  (content (sequence <int>) (parameter (sequence <int>))) needs to be a list of parameters
+  (build (sequence <ubyte>) (unbuild (sequence <ubyte>) (seq 1 2 3)))
 * tensor dimensions (compiled returns list to build array object)
 * spill blocked registers into other register
 * car, cadr, ... -> first, second, ...

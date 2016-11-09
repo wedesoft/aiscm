@@ -25,6 +25,6 @@
 
 (define (pkg lst) (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) lst))
 
-(jit ctx (list (sequence <int>)) (lambda (s) (pkg (content-s s))))
+(define f (jit ctx (list (sequence <int>)) (lambda (s) (pkg (content-s s)))))
 
 (run-tests)
