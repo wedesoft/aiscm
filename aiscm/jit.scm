@@ -639,6 +639,8 @@
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
+(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name delegate out args)
+  ((apply delegate (map type args)) out args))
 (define-method (delegate-op target intermediate name delegate out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content (type out) out) (content (type result) result))))
@@ -657,7 +659,7 @@
          (header (typed-header args '<param>))]
     `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
 
-(define (content-vars args) (append-map content (map class-of args) (map get args)))
+(define (content-vars args) (map get (append-map content (map class-of args) args)))
 
 (define (assemble return-args args instructions)
   "Determine result variables, argument variables, and instructions"
