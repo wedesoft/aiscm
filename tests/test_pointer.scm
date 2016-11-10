@@ -57,8 +57,8 @@
     "Memory is allocated if no value is specified")
 (ok (equal? (list (pointer-address (get-memory m1))) (unbuild <pointer<>> p1-byte))
     "Content of pointer value is the address as a number")
-(ok (equal? (list p) (content (pointer <int>) p))
-    "Content of pointer is a list with the content of the pointer")
+(ok (equal? (list (make <ulong> #:value p)) (content (pointer <int>) (make (pointer <byte>) #:value p)))
+    "Content of pointer is a list with the content of the pointer as an integer")
 (let [(v (var <long>))]
   (ok (equal? v (get (rebase v (make (pointer <byte>) #:value p))))
       "rebase a pointer"))

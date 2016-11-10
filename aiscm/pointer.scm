@@ -40,7 +40,7 @@
   (pack (make <native-int>
               #:value ((compose pointer-address get-memory get) self))))
 (define-method (unbuild (type <meta<pointer<>>>) self) (list (pointer-address (get-memory (get self)))))
-(define-method (content (type <meta<pointer<>>>) self) (list self))
+(define-method (content (type <meta<pointer<>>>) self) (list (make <ulong> #:value (get self))))
 (define-method (rebase value (self <pointer<>>)) (make (class-of self) #:value value))
 (define (pointer-cast target self) (make (pointer target) #:value (get self)))
 (define pointer-offset (make-object-property))
