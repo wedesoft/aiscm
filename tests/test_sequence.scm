@@ -196,6 +196,12 @@
       "reconstruct sequence from components")
   (ok (eqv? 6 (get-size (slot-ref roundtrip 'value)))
       "size of sequence memory is set correctly when reconstructing"))
+(let* [(m         (arr <sint> (1 2 3) (4 5 6)))
+       (roundtrip (build (class-of m) (unbuild(class-of m) m)))]
+  (ok (equal? '((1 2 3) (4 5 6)) (to-list roundtrip))
+      "reconstruct 2D array from components")
+  (ok (eqv? 12 (get-size (slot-ref roundtrip 'value)))
+      "size of array memory is set correctly when reconstructing"))
 (ok (equal? (list <long> <long>) (map class-of (take (content (sequence <int>) (skeleton (sequence <int>))) 2)))
     "'content' should convert dimension and stride to integer elements")
 (ok (equal? <ulong> (class-of (last (content (sequence <int>) (skeleton (sequence <int>))))))

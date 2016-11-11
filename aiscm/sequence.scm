@@ -166,9 +166,11 @@
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
 (define-method (build (self <meta<sequence<>>>) lst)
-  (make self #:strides (list (cadr lst))
-             #:shape (list (car lst))
-             #:value (make <mem> #:base (make-pointer (last lst)) #:size (* (size-of (typecode self)) (car lst)))))
+  (let [(shape (reverse (map (cut list-ref lst <>) (iota (dimensions self) 0 2))))
+        (strides (reverse (map (cut list-ref lst <>) (iota (dimensions self) 1 2))))]
+  (make self #:strides strides
+             #:shape shape
+             #:value (make <mem> #:base (make-pointer (last lst)) #:size (apply * (size-of (typecode self)) shape)))))
 (define-method (unbuild (type <meta<sequence<>>>) self)
   (cons (dimension self)
     (cons (stride self)
