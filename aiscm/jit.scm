@@ -700,7 +700,7 @@
       (lambda args
         (let [(result (make result-type #:shape (argmax length (map shape args))))]
           (apply fun (cons (get result) args))
-          (get (build result-type result))))
+          result))
       (lambda args
         (let [(result (address->scm (apply fun args)))]
           (build result-type result))))))

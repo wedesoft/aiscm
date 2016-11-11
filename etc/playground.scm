@@ -17,9 +17,13 @@
 
 (define ctx (make <context>))
 
-(unbuild (sequence <int>) (sequence 2 3 5))
+(define lst (unbuild (sequence <int>) (sequence 2 3 5)))
 
-(define s (parameter (sequence <ubyte>)))
+(define-method (build (type <meta<sequence<>>>) lst)
+  (make (sequence <int>) #:value (make <mem> #:base (make-pointer (last lst)) #:size 12)
+                         #:size (car lst)
+                         #:strides (list (cadr lst))))
+
 
 (define (content-s s) (list (parameter (make <long> #:value (dimension s)))
                             (parameter (make <long> #:value (stride s)))
@@ -30,6 +34,7 @@
 (define f (jit ctx (list (sequence <int>)) (lambda (s) (pkg (content-s s)))))
 
 (diagnostics (f (seq <int> 2 3 5)))
-(diagnostics (build (sequence <int>) (f (seq <int> 2 3 5)))); TODO: build sequence
+(diagnostics (build (sequence <int>) (f (seq <int> 2 3 5))))
+(diagnostics (build (sequence <int>) (unbuild (sequence <int>) (seq <int> 2 3 5))))
 
 (run-tests)

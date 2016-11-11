@@ -191,6 +191,11 @@
     "'unbuild' for an array should return size and stride")
 (ok (equal? '(4 6 6 1) (take (unbuild (multiarray <byte> 2) (make (multiarray <byte> 2) #:shape '(6 4))) 4))
     "'unbuild' for a 2D array should return shape and strides")
+(let [(roundtrip (build (class-of s1) (unbuild (class-of s1) s1)))]
+  (ok (equal? '(2 3 5) (to-list roundtrip))
+      "reconstruct sequence from components")
+  (ok (eqv? 6 (get-size (slot-ref roundtrip 'value)))
+      "size of sequence memory is set correctly when reconstructing"))
 (ok (equal? (list <long> <long>) (map class-of (take (content (sequence <int>) (skeleton (sequence <int>))) 2)))
     "'content' should convert dimension and stride to integer elements")
 (ok (equal? <ulong> (class-of (last (content (sequence <int>) (skeleton (sequence <int>))))))
