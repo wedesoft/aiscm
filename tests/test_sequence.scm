@@ -206,6 +206,13 @@
     "'content' should convert dimension and stride to integer elements")
 (ok (equal? <ulong> (class-of (last (content (sequence <int>) (skeleton (sequence <int>))))))
     "'content' should return pointer object as an integer in addition to dimension and stride")
+(let [(s (parameter (sequence <int>)))]
+  (ok (eq? (dimension s) (get (delegate (car (content (sequence <int>) s)))))
+      "content of sequence parameter contains dimension")
+  (ok (eq? (stride s) (get (delegate (cadr (content (sequence <int>) s)))))
+      "content of sequence parameter contains stride")
+  (ok (eq? (get (delegate (project s))) (get (delegate (caddr (content (sequence <int>) s)))))
+      "content of sequence contains pointer"))
 (ok (signed? (seq -1 1))
     "Check signed-ness of sequence")
 (ok (pointerless? (sequence <int>))

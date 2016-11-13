@@ -15,18 +15,15 @@
              (aiscm util)
              (guile-tap))
 
+;(define (content-s s) (list (parameter (make <long> #:value (dimension s)))
+;                            (parameter (make <long> #:value (stride s)))
+;                            (parameter (make <ulong> #:value (get (delegate (project s))))))); TODO: content of tensor expression
+
 (define ctx (make <context>))
-
-(define lst (unbuild (sequence <int>) (sequence 2 3 5)))
-
-
-(define (content-s s) (list (parameter (make <long> #:value (dimension s)))
-                            (parameter (make <long> #:value (stride s)))
-                            (parameter (make <ulong> #:value (get (delegate (project s))))))); TODO: content of tensor expression
 
 (define (pkg lst) (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) lst))
 
-(define f (jit ctx (list (sequence <int>)) (lambda (s) (pkg (content-s s)))))
+(define f (jit ctx (list (sequence <int>)) (lambda (s) (pkg (content (type s) s)))))
 
 (diagnostics (f (seq <int> 2 3 5)))
 (diagnostics (build (sequence <int>) (f (seq <int> 2 3 5))))

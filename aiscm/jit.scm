@@ -542,6 +542,10 @@
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
+(define-method (content (type <meta<sequence<>>>) (self <param>))
+  (cons (parameter (make <long> #:value (dimension self)))
+    (cons (parameter (make <long> #:value (stride self)))
+      (content (project type) (project self)))))
 
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define-method (need-conversion? target type) (not (eq? target type)))

@@ -59,6 +59,9 @@
     "Content of pointer value is the address as a number")
 (ok (equal? (list (make <ulong> #:value p)) (content (pointer <int>) (make (pointer <byte>) #:value p)))
     "Content of pointer is a list with the content of the pointer as an integer")
+(let [(p (parameter (pointer <int>)))]
+  (ok (equal? (get (delegate p)) (get (delegate (car (content (pointer <int>) p)))))
+      "content of pointer is based on same value"))
 (let [(v (var <long>))]
   (ok (equal? v (get (rebase v (make (pointer <byte>) #:value p))))
       "rebase a pointer"))

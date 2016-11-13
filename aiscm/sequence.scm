@@ -7,7 +7,6 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
-  #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
