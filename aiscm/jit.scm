@@ -688,13 +688,16 @@
          (result-type (type expr))
          (sequence?   (is-a? result-type <meta<sequence<>>>))
          (result      (skeleton result-type))
+         (retval      (skeleton <obj>))
          (args        (if sequence? (cons result vars) vars))
          (types       (map class-of args))
          (code        (if sequence?
                         (asm context
-                             <null>
+                             <ulong>
                              (map typecode (content-vars args))
-                             (apply virtual-variables (assemble '() args (code (parameter result) expr))))
+                             (apply virtual-variables (assemble (list retval) args
+                                    (append (code (parameter result) expr)
+                                            (code (parameter retval) (package-return-content (parameter result)))))))
                         (asm context
                              <ulong>
                              (map typecode (content-vars args))
@@ -703,8 +706,7 @@
     (if sequence?
       (lambda args
         (let [(result (make result-type #:shape (argmax length (map shape args))))]
-          (apply fun (cons (get result) args))
-          result))
+          (build result-type (address->scm (apply fun (cons (get result) args))))))
       (lambda args
         (let [(result (address->scm (apply fun args)))]
           (build result-type result))))))

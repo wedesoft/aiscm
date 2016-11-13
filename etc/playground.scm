@@ -15,10 +15,6 @@
              (aiscm util)
              (guile-tap))
 
-;(define (content-s s) (list (parameter (make <long> #:value (dimension s)))
-;                            (parameter (make <long> #:value (stride s)))
-;                            (parameter (make <ulong> #:value (get (delegate (project s))))))); TODO: content of tensor expression
-
 (define ctx (make <context>))
 
 (define (pkg lst) (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) lst))
