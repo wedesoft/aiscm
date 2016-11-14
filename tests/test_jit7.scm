@@ -98,6 +98,6 @@
     "generate code to return the content of an integer expression")
 (let [(i (skeleton <int>))]
   (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
-                       (apply assemble (generate-return-code (list i) (parameter i))))) 123)))
+                       (apply assemble (generate-return-code (list i) (parameter <int>) (parameter i))))) 123)))
       "generate code create, define, and package return value"))
 (run-tests)

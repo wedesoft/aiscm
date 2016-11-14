@@ -673,14 +673,11 @@
   "Generate code to package parameter VALUE in a Scheme list"
   (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type value) value)))
 
-(define (generate-return-code args expr)
-  (let [(result (parameter (type expr)))
-        (retval (skeleton <obj>))]
+(define (generate-return-code args intermediate expr)
+  (let [(retval (skeleton <obj>))]
     (list (list retval)
           args
-          (insert-intermediate expr
-                               (parameter (type expr))
-                               (lambda (intermediate) (code (parameter retval) (package-return-content intermediate)))))))
+          (append (code intermediate expr) (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
@@ -701,7 +698,7 @@
                         (asm context
                              <ulong>
                              (map typecode (content-vars args))
-                             (apply virtual-variables (apply assemble (generate-return-code args expr))))))
+                             (apply virtual-variables (apply assemble (generate-return-code args (parameter result) expr))))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if sequence?
       (lambda args
