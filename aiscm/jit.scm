@@ -683,30 +683,20 @@
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
-         (sequence?   (is-a? result-type <meta<sequence<>>>))
          (result      (skeleton result-type))
-         (retval      (skeleton <obj>))
+         (sequence?   (is-a? result-type <meta<sequence<>>>))
          (args        (if sequence? (cons result vars) vars))
          (types       (map class-of args))
-         (code        (if sequence?
-                        (asm context
-                             <ulong>
-                             (map typecode (content-vars args))
-                             (apply virtual-variables (assemble (list retval) args
-                                    (append (code (parameter result) expr)
-                                            (code (parameter retval) (package-return-content (parameter result)))))))
-                        (asm context
-                             <ulong>
-                             (map typecode (content-vars args))
-                             (apply virtual-variables (apply assemble (generate-return-code args (parameter result) expr))))))
+         (code        (asm context
+                           <ulong>
+                           (map typecode (content-vars args))
+                           (apply virtual-variables (apply assemble (generate-return-code args (parameter result) expr)))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
     (if sequence?
       (lambda args
         (let [(result (make result-type #:shape (argmax length (map shape args))))]
           (build result-type (address->scm (apply fun (cons (get result) args))))))
-      (lambda args
-        (let [(result (address->scm (apply fun args)))]
-          (build result-type result))))))
+      (lambda args (build result-type (address->scm (apply fun args)))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
