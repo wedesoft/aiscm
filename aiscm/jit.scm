@@ -172,14 +172,15 @@
 
 (define-method (var self) (make <var> #:type (native-equivalent self)))
 
-; get program positions of labels
-(define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
+(define (labels prog)
+  "Get positions of labels in program"
+  (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
-; get list of live variables for program terminated by RET statement
 (define (live-analysis prog)
+  "Get list of live variables for program terminated by RET statement"
   (letrec* [(inputs    (map input prog))
             (outputs   (map output prog))
             (indices   (iota (length prog)))
@@ -695,7 +696,7 @@
     (if sequence?
       (lambda args
         (let [(result (make result-type #:shape (argmax length (map shape args))))]
-          (build result-type (address->scm (apply fun (cons (get result) args))))))
+          (build result-type (address->scm (apply fun (cons result args))))))
       (lambda args (build result-type (address->scm (apply fun args)))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
@@ -802,6 +803,7 @@
     (to-type target self)))
 
 (define (ensure-default-strides img)
+  "Create a duplicate of the array unless it is compact"
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
 (define-syntax-rule (pass-parameters parameters body ...)
