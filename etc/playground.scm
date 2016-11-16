@@ -27,9 +27,14 @@
       (list (delegate r)) (list (delegate s))
         (append (code r (native-call scm-gc-malloc s))))))
 
+
+(define s (parameter (sequence <int>)))
+
 (define p (parameter <ulong>))
 (define d (parameter <long>))
 (define n (parameter <long>))
+
+; TODO: compose sequence parameter
 
 (define s (skeleton (sequence <ubyte>)))
 
@@ -42,5 +47,11 @@
            (append (code p (native-call scm-gc-malloc-pointerless n))
                    (code d (native-constant (native-value <int> 1)))
                    (code o (build-list n d p)))))) 3)))
+
+((jit ctx (list <int> <int>) build-list) 2 3)
+
+(build (sequence <ubyte>)
+ ((jit ctx (list <long>)
+   (lambda (n) (build-list n (native-constant (native-value <int> 1)) (native-call scm-gc-malloc-pointerless n)))) 3))
 
 (run-tests)
