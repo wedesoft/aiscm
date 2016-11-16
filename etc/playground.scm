@@ -17,7 +17,6 @@
 
 (define ctx (make <context>))
 
-(define o (parameter <obj>))
 (define r (parameter <ulong>))
 (define s (parameter <long>))
 
@@ -30,23 +29,32 @@
 
 (define s (parameter (sequence <int>)))
 
+(define o (parameter <obj>))
 (define p (parameter <ulong>))
 (define d (parameter <long>))
 (define n (parameter <long>))
 
 ; TODO: compose sequence parameter
+; TODO: construct sequence given shape information
 
 (define s (skeleton (sequence <ubyte>)))
+
+(define t (parameter s))
+
+(make (sequence <ubyte>) #:shape (shape s) #:strides (strides s) #:value (value s))
+
+;(define (construct-sequence typecode shape) )
 
 (build
   (sequence <ubyte>)
   (address->scm
-    ((asm ctx <ulong> (list <ulong>)
+    (apply (asm ctx <ulong> (list <long> <long> <ulong>)
        (apply virtual-variables
-         (assemble (list (delegate o)) (list (delegate n))
-           (append (code p (native-call scm-gc-malloc-pointerless n))
+         (assemble (list (delegate o)) (content (sequence <ubyte>) s)
+           (append (code n (parameter (make <long> #:value (car (shape s)))))
+                   (code p (native-call scm-gc-malloc-pointerless n))
                    (code d (native-constant (native-value <int> 1)))
-                   (code o (build-list n d p)))))) 3)))
+                   (code o (build-list n d p)))))) (unbuild (sequence <ubyte>) (seq 2 3 5)))))
 
 ((jit ctx (list <int> <int>) build-list) 2 3)
 
