@@ -92,10 +92,10 @@
       "switch dimensions of a non-square 2D tensor"))
 (ok (equal? '(a) ((jit ctx (list <obj>) package-return-content) 'a))
     "generate code to package an object in a list")
-(ok (equal? (list 2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
+(ok (equal? '(2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
     "generate code to return the content of an RGB value")
-(skip (eqv? -6 ((jit ctx (list <int>) (compose package-return-content ~)) 5))
-    "generate code to return the content of an integer expression")
+(ok (equal? '(2 3 5) ((jit ctx (list <int> <int> <int>) build-list) 2 3 5))
+    "build a list of values in compiled code")
 (let [(i (skeleton <int>))]
   (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
                        (apply assemble (generate-return-code (list i) (parameter <int>) (parameter i))))) 123)))

@@ -25,8 +25,8 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term indexer index type subst code type-conversion
-            assemble package-return-content jit iterator step setup increment body arguments operand insert-intermediate
+            term indexer index type subst code type-conversion assemble build-list package-return-content
+            jit iterator step setup increment body arguments operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -670,9 +670,13 @@
   "Determine result variables, argument variables, and instructions"
   (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
 
+(define (build-list . args)
+  "Generate code to package ARGS in a Scheme list"
+  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) args))
+
 (define (package-return-content value)
   "Generate code to package parameter VALUE in a Scheme list"
-  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) (content (type value) value)))
+  (apply build-list (content (type value) value)))
 
 (define (generate-return-code args intermediate expr)
   (let [(retval (skeleton <obj>))]
