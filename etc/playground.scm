@@ -17,33 +17,26 @@
 
 (define ctx (make <context>))
 
-(define r (parameter <ulong>))
-(define s (parameter <long>))
-
-(asm ctx <ulong> (list <long>)
-  (apply virtual-variables
-    (assemble
-      (list (delegate r)) (list (delegate s))
-        (append (code r (native-call scm-gc-malloc s))))))
-
-
-(define s (parameter (sequence <int>)))
-
-(define o (parameter <obj>))
-(define p (parameter <ulong>))
-(define d (parameter <long>))
-(define n (parameter <long>))
-
-; TODO: compose sequence parameter
-; TODO: construct sequence given shape information
+; TODO: shape of parameter should be a list of parameters
+; TODO: shape of function
 
 (define s (skeleton (sequence <ubyte>)))
-
 (define t (parameter s))
 
-(make (sequence <ubyte>) #:shape (shape s) #:strides (strides s) #:value (value s))
+(define o (parameter <obj>))
 
-;(define (construct-sequence typecode shape) )
+(define u (parameter (sequence <ubyte>)))
+
+;(make (sequence <ubyte>) #:shape (shape s) #:strides (strides s) #:value (value s))
+
+(define (to-para x) (parameter (make <long> #:value x)))
+
+; TODO: create value and initialisation code
+(define (construct-value retval expr)
+  (append (append-map code (map to-para (shape retval)) (map to-para (shape expr)))
+          (code (car (content (pointer <ubyte>) (project retval)))
+                (native-call scm-gc-malloc-pointerless (to-para (car (shape retval)))))
+          (code (to-para (stride expr)) (native-constant (native-value <int> 1)))))
 
 (build
   (sequence <ubyte>)
@@ -51,10 +44,9 @@
     (apply (asm ctx <ulong> (list <long> <long> <ulong>)
        (apply virtual-variables
          (assemble (list (delegate o)) (content (sequence <ubyte>) s)
-           (append (code n (parameter (make <long> #:value (car (shape s)))))
-                   (code p (native-call scm-gc-malloc-pointerless n))
-                   (code d (native-constant (native-value <int> 1)))
-                   (code o (build-list n d p)))))) (unbuild (sequence <ubyte>) (seq 2 3 5)))))
+           (append (construct-value t s)
+                   (code o (package-return-content t)))))) (unbuild (sequence <ubyte>) (seq 2 3 5)))))
+
 
 ((jit ctx (list <int> <int>) build-list) 2 3)
 
