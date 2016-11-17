@@ -17,7 +17,7 @@
 
 (define ctx (make <context>))
 
-; TODO: shape of parameter should be a list of parameters
+; TODO: strides of parameter should be a list of parameters
 ; TODO: shape of function
 
 (define s (skeleton (sequence <ubyte>)))
@@ -33,9 +33,9 @@
 
 ; TODO: create value and initialisation code
 (define (construct-value retval expr)
-  (append (append-map code (map to-para (shape retval)) (map to-para (shape expr)))
+  (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <ubyte>) (project retval)))
-                (native-call scm-gc-malloc-pointerless (to-para (car (shape retval)))))
+                (native-call scm-gc-malloc-pointerless (car (shape retval))))
           (code (to-para (stride expr)) (native-constant (native-value <int> 1)))))
 
 (build
@@ -44,7 +44,7 @@
     (apply (asm ctx <ulong> (list <long> <long> <ulong>)
        (apply virtual-variables
          (assemble (list (delegate o)) (content (sequence <ubyte>) s)
-           (append (construct-value t s)
+           (append (construct-value t (parameter s))
                    (code o (package-return-content t)))))) (unbuild (sequence <ubyte>) (seq 2 3 5)))))
 
 

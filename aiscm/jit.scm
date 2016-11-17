@@ -465,7 +465,7 @@
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (indexer (dimension self)
+    (indexer (parameter (make <ulong> #:value (dimension self)))
              idx
              (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
@@ -527,7 +527,7 @@
 (define-method (code (a <indexer>) (b <param>))
   (list (setup a)
         (setup b)
-        (repeat (dimension a)
+        (repeat (get (delegate (dimension a)))
                 (append (code (body a) (body b))
                         (increment a)
                         (increment b)))))
@@ -544,7 +544,7 @@
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
-  (cons (parameter (make <long> #:value (dimension self)))
+  (cons (dimension self)
     (cons (parameter (make <long> #:value (stride self)))
       (content (project type) (project self)))))
 

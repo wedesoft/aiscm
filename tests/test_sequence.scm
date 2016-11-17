@@ -207,7 +207,7 @@
 (ok (equal? <ulong> (class-of (last (content (sequence <int>) (skeleton (sequence <int>))))))
     "'content' should return pointer object as an integer in addition to dimension and stride")
 (let [(s (parameter (sequence <int>)))]
-  (ok (eq? (dimension s) (get (delegate (car (content (sequence <int>) s)))))
+  (ok (eq? (dimension s) (car (content (sequence <int>) s)))
       "content of sequence parameter contains dimension")
   (ok (eq? (stride s) (get (delegate (cadr (content (sequence <int>) s)))))
       "content of sequence parameter contains stride")

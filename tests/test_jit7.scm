@@ -21,7 +21,7 @@
       "sequence parameter maintains pointer")
   (ok (eq? (index sx) (index (delegate sx)))
       "index of parameter and index of parameters content should match")
-  (ok (eq? (dimension s) (dimension sx))
+  (ok (eq? (dimension s) (get (delegate (dimension sx))))
       "sequence parameter should maintain dimension")
   (ok (eq? (stride s) (stride (delegate sx)))
       "sequence parameter should maintain stride")
@@ -41,7 +41,7 @@
       "projected 1D array tensor should contain pointer"))
 (let* [(m  (skeleton (multiarray <int> 2)))
        (mx (parameter m))]
-  (ok (equal? (shape m) (shape mx))
+  (ok (equal? (shape m) (map (compose get delegate) (shape mx)))
       "2D array parameter should maintain the shape")
   (ok (equal? (index mx) (index (delegate (delegate mx))))
       "first index of parameter should have a match")
@@ -100,4 +100,6 @@
   (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
                        (apply assemble (generate-return-code (list i) (parameter <int>) (parameter i))))) 123)))
       "generate code create, define, and package return value"))
+(ok (equal? 3 ((jit ctx (list (sequence <ubyte>)) dimension) (seq 2 3 5)))
+    "get dimension of sequence")
 (run-tests)
