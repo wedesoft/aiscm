@@ -1,6 +1,6 @@
 #!/bin/sh
 while true; do
-  inotifywait -e CLOSE_WRITE `git ls-files`;
   clear;
-  cd tests && rm -f $@ && make $@ && cd ..
+  make check -j 4 | grep FAIL;
+  inotifywait -e CLOSE_WRITE `git ls-files`;
 done

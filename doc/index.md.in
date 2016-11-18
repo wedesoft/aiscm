@@ -4,13 +4,13 @@
 
 This manual is for **AIscm** (version @VERSION@).
 
-[**AIscm**][1] is a **real-time computer vision extension** for the [**Guile programming language**][2].
-Performance in Scheme is achieved by means of a JIT compiler.
+[**AIscm**][1] is a **Guile extension for numerical arrays and tensors**.
+Performance is achieved by means of a JIT compiler.
 
 Control all data and machine code down to every single bit and byte.
 
 <div class="figure">
-<p><a href="installation.html" title="Installation"><img src="aiscm.gif" /> <strong>Installation</strong></a></p>
+<p><a href="installation.html" title="Installation"><strong>Installation</strong> <img src="aiscm.gif" alt=""/> <strong>Installation</strong></a></p>
 </div>
 
 ## Features
@@ -28,7 +28,9 @@ Control all data and machine code down to every single bit and byte.
 ## External links
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
+* [Vigracket: Vigra bindings for Racket](https://github.com/BSeppke/vigracket)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
+* [Tensorflow: numerical computing with dataflow graphs](https://www.tensorflow.org/)
 * [Numpy: Python library implementing n-dimensional arrays](http://www.numpy.org/)
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python](http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf)
@@ -44,6 +46,8 @@ Control all data and machine code down to every single bit and byte.
 * [Intel® 64 and IA-32 Architectures Software Developer Manuals](http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html)
 * [CLASP: Lisp with LLVM Jit and C++ foreign interface](https://github.com/drmeister/clasp)
 * [Embedded Language for Accelerated Array Computations](https://github.com/AccelerateHS/accelerate)
+* [SymPy: computer algebra in Python](http://www.sympy.org/)
+* [Maxima computer algebra system](http://maxima.sourceforge.net/)
 
 Copyright © 2013, 2014, 2015, 2016 Jan Wedekind.
 
