@@ -28,5 +28,3 @@ ADD debian debian
 ADD Makefile.package .
 RUN make -f Makefile.package
 RUN dpkg --install pkg/aiscm_*.deb
-RUN useradd -m -s /bin/bash -u 1000 default
-USER default

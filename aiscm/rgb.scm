@@ -74,7 +74,7 @@
 (define-method (coerce (a <meta<rgb<>>>) (b <meta<sequence<>>>)) (multiarray (coerce a (typecode b)) (dimensions b)))
 (define-method (native-type (c <rgb>) . args)
   (rgb (apply native-type (concatenate (map-if (cut is-a? <> <rgb>) (cut deconstruct <rgb<>> <>) list (cons c args))))))
-(define-method (build (self <meta<rgb<>>>) value) (fetch value))
+(define-method (build (self <meta<rgb<>>>) value) (apply rgb value))
 (define-method (unbuild (type <meta<rgb<>>>) self)
   (append-map (cut unbuild (base type) <>) (deconstruct type self)))
 (define-method (content (type <meta<rgb<>>>) (self <rgb>))
@@ -138,4 +138,4 @@
               #:blue  (parameter (blue  (delegate x)))))
 
 (define-method (to-type (target <meta<rgb<>>>) (self <rgb>))
-  (apply rgb (map (cut to-type target <>) (content <rgb<>> self))))
+  (apply rgb (map (cut to-type (base target) <>) (content <rgb<>> self))))

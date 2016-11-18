@@ -17,15 +17,22 @@ container: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/con
 run: container
 	docker run -t -i -v $(shell pwd):/mnt $(IMAGE) /bin/bash
 
-package: container
-	mkdir -p pkg
-	cp aiscm-$(VERSION).tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
-	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE).debian.tar.gz /mnt/pkg
-	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE).dsc /mnt/pkg
-	docker run -v $(shell pwd):/mnt $(IMAGE) cp pkg/$(PACKAGE)_amd64.deb /mnt/pkg
+package: pkg/$(PACKAGE).debian.tar.gz pkg/$(PACKAGE).dsc pkg/$(PACKAGE)_amd64.deb
+
+pkg/$(PACKAGE).debian.tar.gz: pkg container
+	docker run $(IMAGE) cat $@ > $@
+
+pkg/$(PACKAGE).dsc: pkg container
+	docker run $(IMAGE) cat $@ > $@
+
+pkg/$(PACKAGE)_amd64.deb: pkg container
+	docker run $(IMAGE) cat $@ > $@
+
+pkg:
+	mkdir -p $@
 
 docker:
-	mkdir -p docker
+	mkdir -p $@
 
 docker/Dockerfile: Dockerfile
 	cp $< $@

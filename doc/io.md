@@ -3,7 +3,7 @@
 
 An image can be read from disk using *read-image* which uses the ImageMagick library to load the image.
 
-![](fubk.png "Test input image")
+![fubk.png](fubk.png "Test input image")
 
 ```Scheme
 @../tests/integration/read_image.scm@
@@ -15,7 +15,7 @@ Analogous *write-image* writes an image to disk.
 @../tests/integration/write_image.scm@
 ```
 
-![](scaled-pattern.png "Output image")
+![scaled-pattern.png](scaled-pattern.png "Output image")
 
 ## Xorg display
 ### Images
@@ -28,7 +28,7 @@ As shown above, you can display images using the method *show* as follows:
 
 One can also display a list of images:
 
-![](fubk-colours.png "List of images")
+![fubk-colours.png](fubk-colours.png "List of images")
 
 ```Scheme
 @../tests/integration/xorg_image_list.scm@
@@ -57,7 +57,7 @@ Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
 
 ## Video for Linux version 2 (V4L2)
 
-![](v4l2.jpg "V4L2 input image")
+![v4l2.jpg](v4l2.jpg "V4L2 input image")
 
 As shown above already, you can open a camera and grab a frame as follows.
 

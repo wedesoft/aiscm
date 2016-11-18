@@ -3,10 +3,10 @@
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (system foreign)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
-  #:use-module (aiscm sequence)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
   #:export (<meta<sequence<>>> <sequence<>>
@@ -164,9 +164,18 @@
 (define-method (downsample (n <null>) (self <sequence<>>)) self)
 (define-method (downsample (n <pair>) (self <sequence<>>))
   (downsample (last n) (roll (downsample (all-but-last n) (unroll self)))))
-(define-method (build (self <meta<sequence<>>>) value) value)
+(define-method (build (self <meta<sequence<>>>) lst)
+  (let [(shape (reverse (map (cut list-ref lst <>) (iota (dimensions self) 0 2))))
+        (strides (reverse (map (cut list-ref lst <>) (iota (dimensions self) 1 2))))]
+  (make self #:strides strides
+             #:shape shape
+             #:value (make <mem> #:base (make-pointer (last lst)) #:size (apply * (size-of (typecode self)) shape)))))
 (define-method (unbuild (type <meta<sequence<>>>) self)
-  (append (map last (list (shape self) (strides self))) (unbuild (project type) (get (project self)))))
+  (cons (dimension self)
+    (cons (stride self)
+      (unbuild (project type) (project self)))))
 (define-method (content (type <meta<sequence<>>>) (self <sequence<>>))
-  (append (map last (list (shape self) (strides self))) (content (project type) (get (project self)))))
+  (cons (make <long> #:value (dimension self))
+    (cons (make <long> #:value (stride self))
+      (content (project type) (project self)))))
 (define-method (signed? (self <meta<sequence<>>>)) (signed? (typecode self)))

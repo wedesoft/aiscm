@@ -28,22 +28,10 @@
 (define wptr (make (pointer <sint>) #:value mem))
 (define iptr (make (pointer <int>) #:value mem))
 (define lptr (make (pointer <long>) #:value mem))
-(define (bdata) (begin
-                  (store bptr       b1)
-                  (store (+ bptr 1) b2)
-                  mem))
-(define (wdata) (begin
-                  (store wptr       w1)
-                  (store (+ wptr 1) w2)
-                  mem))
 (define (idata) (begin
                   (store iptr       i1)
                   (store (+ iptr 1) i2)
-                  mem))
-(define (ldata) (begin
-                  (store lptr       l1)
-                  (store (+ lptr 1) l2)
-                  mem))
+                  iptr))
 (ok (equal? '(9 10 12) (to-list ((jit ctx (list <int> (sequence <int>)) +) 7 (seq <int> 2 3 5))))
     "compile and run scalar-array operation")
 (ok (equal? '(9 10 12) (to-list ((jit ctx (list <int> (sequence <byte>)) +) 7 (seq <byte> 2 3 5))))
@@ -65,6 +53,8 @@
 (let [(a (parameter (sequence <int>)))]
   (ok (equal? (delegate (car (arguments (body (- a))))) (delegate (car (arguments (- (body a))))))
       "body of array negation should have same argument as negation of array body"))
+(ok (equal? -42 ((jit ctx (list <int>) (lambda (x) (make-function 'name identity (mutating-code NEG) (list x)))) 42))
+    "Create function object mapping to NEG")
 (ok (equal? -42 ((jit ctx (list <int>) -) 42))
     "Negate integer")
 (ok (equal? '(-2 3 -5) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5))))

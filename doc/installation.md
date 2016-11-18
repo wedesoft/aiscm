@@ -2,13 +2,13 @@
 
 ## Using binary package
 
-![](package.png "")
+<div class="figure"><img src="package.png" alt=""/></div>
 
 There are AMD64 binaries for
-[![](debian.png "Debian")](https://www.debian.org/) Jessie (8),
-[![](debian.png "Debian")](https://www.debian.org/) Sid (9),
-[![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04), and
-[![](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04)
+[![Debian](debian.png "Debian")](https://www.debian.org/) Jessie (8),
+[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (9),
+[![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04), and
+[![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04)
 
 To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*. To do this, paste the following lines into your terminal:
 
@@ -27,7 +27,7 @@ echo "deb-src https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sud
 
 ## Compile from source
 
-![](source.png "")
+<div class="figure"><img src="source.png" alt=""/></div>
 
 ### Get the source code
 

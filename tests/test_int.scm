@@ -160,7 +160,7 @@
     "set value of integer")
 (ok (eqv? 123 (set (make <int> #:value 0) 123))
     "return-value of setting integer")
-(ok (equal? (make <sint> #:value 42) (build <sint> 42))
+(ok (equal? 42 (build <sint> '(42)))
     "build short integer")
 (ok (equal? '(42) (content <int<>> 42))
     "'content' returns integer values")

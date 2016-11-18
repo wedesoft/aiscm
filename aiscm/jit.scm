@@ -18,21 +18,21 @@
   #:use-module (aiscm method)
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
-  #:export (<block> <cmd> <var> <ptr> <param> <tensor> <lookup> <function>
+  #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices live-analysis
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term tensor index type subst code type-conversion
-            assemble jit iterator step setup increment body arguments operand insert-intermediate
-            is-function? is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
+            term indexer index type subst code type-conversion assemble build-list package-return-content
+            jit iterator step setup increment body arguments operand insert-intermediate
+            is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function native-call)
+            decompose-arg delegate-fun make-function native-call native-constant generate-return-code)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
 (define ctx (make <context>))
 
@@ -163,23 +163,24 @@
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
 
-(define-method (native-equivalent  self                   ) #f     )
-(define-method (native-equivalent (self <meta<bool>>     )) <ubyte>)
-(define-method (native-equivalent (self <meta<int<>>>    )) self   )
-(define-method (native-equivalent (self <meta<float<>>>  )) self   )
+(define-method (native-equivalent  self                   ) #f      )
+(define-method (native-equivalent (self <meta<bool>>     )) <ubyte> )
+(define-method (native-equivalent (self <meta<int<>>>    )) self    )
+(define-method (native-equivalent (self <meta<float<>>>  )) self    )
 (define-method (native-equivalent (self <meta<obj>>      )) <ulong> )
 (define-method (native-equivalent (self <meta<pointer<>>>)) <ulong> )
 
 (define-method (var self) (make <var> #:type (native-equivalent self)))
 
-; get program positions of labels
-(define (labels prog) (filter (compose symbol? car) (map cons prog (iota (length prog)))))
+(define (labels prog)
+  "Get positions of labels in program"
+  (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 (define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices (cmd <jcc>) k labels)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
-; get list of live variables for program terminated by RET statement
 (define (live-analysis prog)
+  "Get list of live variables for program terminated by RET statement"
   (letrec* [(inputs    (map input prog))
             (outputs   (map output prog))
             (indices   (iota (length prog)))
@@ -330,12 +331,12 @@
                                       #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
-(define* (virtual-variables result-vars arg-vars intermediate #:key (registers default-registers))
+(define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
          (arg-regs     (map cons arg-vars register-parameters))]
-    (spill-blocked-predefines (flatten-code (relabel (filter-blocks intermediate)))
+    (spill-blocked-predefines (flatten-code (relabel (filter-blocks instructions)))
                               #:predefined (append result-regs arg-regs)
-                              #:blocked    (blocked-intervals intermediate)
+                              #:blocked    (blocked-intervals instructions)
                               #:registers  registers
                               #:parameters arg-vars)))
 
@@ -428,11 +429,11 @@
 (define-class <param> ()
   (delegate #:init-keyword #:delegate #:getter delegate))
 
-(define-class <tensor> (<param>)
+(define-class <indexer> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
-(define (tensor dimension index delegate)
-  (make <tensor> #:dimension dimension #:index index #:delegate delegate))
+(define (indexer dimension index delegate)
+  (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
   (index    #:init-keyword #:index    #:getter index)
@@ -441,8 +442,8 @@
   (step     #:init-keyword #:step     #:getter step))
 (define-method (lookup index delegate stride iterator step)
   (make <lookup> #:index index #:delegate delegate #:stride stride #:iterator iterator #:step step))
-(define-method (lookup idx (obj <tensor>) stride iterator step)
-  (tensor (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
+(define-method (lookup idx (obj <indexer>) stride iterator step)
+  (indexer (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
 
 (define-class <function> (<param>)
   (arguments #:init-keyword #:arguments #:getter arguments)
@@ -451,23 +452,30 @@
   (term      #:init-keyword #:term      #:getter term))
 
 (define-method (type (self <param>)) (typecode (delegate self)))
-(define-method (type (self <tensor>)) (sequence (type (delegate self))))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
-(define-method (typecode (self <tensor>)) (typecode (type self)))
-(define-method (shape (self <tensor>)) (attach (shape (delegate self)) (dimension self))); TODO: get correct shape
-(define-method (stride (self <tensor>)) (stride (delegate self))); TODO: get correct stride
-(define-method (iterator (self <tensor>)) (iterator (delegate self))); TODO: get correct iterator
-(define-method (step (self <tensor>)) (step (delegate self))); TODO: get correct step
+(define-method (typecode (self <indexer>)) (typecode (type self)))
+(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
+(define-method (lookup (self <indexer>)) (lookup self (index self)))
+(define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
+(define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))
+(define-method (stride (self <indexer>)) (stride (lookup self)))
+(define-method (iterator (self <indexer>)) (iterator (lookup self)))
+(define-method (step (self <indexer>)) (step (lookup self)))
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (tensor (dimension self)
-            idx
-            (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
+    (indexer (parameter (make <long> #:value (dimension self)))
+             idx
+             (lookup idx
+                     (parameter (project self))
+                     (parameter (make <long> #:value (stride self)))
+                     (var <long>)
+                     (var <long>)))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 (define-method (subst self candidate replacement) self)
-(define-method (subst (self <tensor>) candidate replacement)
-  (tensor (dimension self) (index self) (subst (delegate self) candidate replacement)))
+(define-method (subst (self <indexer>) candidate replacement)
+  (indexer (dimension self) (index self) (subst (delegate self) candidate replacement)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (delegate self) candidate replacement)
@@ -475,32 +483,33 @@
           (iterator self)
           (step self)))
 (define-method (value (self <param>)) (value (delegate self)))
-(define-method (value (self <tensor>)) (value (delegate self)))
+(define-method (value (self <indexer>)) (value (delegate self)))
 (define-method (value (self <lookup>)) (value (delegate self)))
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
-(define-method (rebase value (self <tensor>))
-  (tensor (dimension self) (index self) (rebase value (delegate self))))
+(define-method (rebase value (self <indexer>))
+  (indexer (dimension self) (index self) (rebase value (delegate self))))
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
-(define-method (project (self <tensor>)) (project (delegate self) (index self)))
-(define-method (project (self <tensor>) (idx <var>))
-  (tensor (dimension self) (index self) (project (delegate self) idx)))
+(define-method (project (self <indexer>)) (project (delegate self) (index self)))
+(define-method (project (self <indexer>) (idx <var>))
+  (indexer (dimension self) (index self) (project (delegate self) idx)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
-      (lookup (index self) (project (delegate self)) (stride self) (iterator self) (step self))))
-(define-method (get (self <tensor>) idx) (subst (delegate self) (index self) idx))
+      (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
+(define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
+(define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
 
 (define-method (setup self) '())
-(define-method (setup (self <tensor>))
-  (list (IMUL (step self) (stride self) (size-of (typecode self)))
+(define-method (setup (self <indexer>))
+  (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
 (define-method (setup (self <function>)) (append-map setup (arguments self)))
 (define-method (increment self) '())
-(define-method (increment (self <tensor>)) (list (ADD (iterator self) (step self))))
+(define-method (increment (self <indexer>)) (list (ADD (iterator self) (step self))))
 (define-method (increment (self <function>)) (append-map increment (arguments self)))
 (define-method (body self) self)
-(define-method (body (self <tensor>)) (project (rebase (iterator self) self)))
+(define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
 
 (define-method (operand (a <element>)) (get a))
@@ -517,32 +526,40 @@
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (insert-intermediate b (skeleton (typecode a)) (lambda (tmp) (code a tmp))))
+  (insert-intermediate b (skeleton (typecode a)) (cut code a <>)))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
-(define-method (code (a <tensor>) (b <param>))
+(define-method (code (a <indexer>) (b <param>))
   (list (setup a)
         (setup b)
-        (repeat (dimension a)
+        (repeat (get (delegate (dimension a)))
                 (append (code (body a) (body b))
                         (increment a)
                         (increment b)))))
-(define-method (code (out <element>) (fun <function>)) ((term fun) (parameter out)))
+(define-method (code (out <element>) (fun <function>))
+  (if (need-conversion? (typecode out) (type fun))
+    (insert-intermediate fun (skeleton (type fun)) (cut code out <>))
+    ((term fun) (parameter out))))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (insert-intermediate fun (skeleton (typecode out)) (lambda (tmp) (code out tmp))))
+  (insert-intermediate fun (skeleton (typecode out)) (cut code out <>)))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
+(define-method (content (type <meta<sequence<>>>) (self <param>))
+  (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
 
-(define (is-function? value) (not (delegate value)))
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
-(define (need-conversion? target type) (not (eqv? (size-of target) (size-of type))))
-(define (code-needs-intermediate? t value)
-  (or (is-function? value) (need-conversion? t (type value))))
-(define (call-needs-intermediate? t value)
-  (or (is-function? value) (need-conversion? t (type value)) (is-pointer? value)))
+(define-method (need-conversion? target type) (not (eq? target type)))
+(define-method (need-conversion? (target <meta<int<>>>) (type <meta<int<>>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define-method (need-conversion? (target <meta<bool>>) (type <meta<int<>>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define-method (need-conversion? (target <meta<int<>>>) (type <meta<bool>>))
+  (not (eqv? (size-of target) (size-of type))))
+(define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
+(define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 (define-method (force-parameters (targets <list>) args predicate fun)
   (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
@@ -552,13 +569,18 @@
   (force-parameters (make-list (length args) target) args predicate fun))
 
 (define (operation-code target op out args)
+  "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
     (lambda intermediates (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
+  "Adapter for machine code without side effects on its arguments"
   (operation-code (reduce coerce #f (map type args)) op out args))
 (define ((mutating-code op) out args)
+  "Adapter for machine code overwriting its first argument"
   (insert-intermediate (car args) out (cut operation-code (type out) op <> (cdr args))))
-(define ((unary-extract op) out args) (code (delegate out) (apply op (map delegate args))))
+(define ((unary-extract op) out args)
+  "Adapter for machine code to extract part of a composite value"
+  (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
   (let* [(args   (symbol-list arity))
@@ -624,6 +646,8 @@
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
+(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name delegate out args)
+  ((apply delegate (map type args)) out args))
 (define-method (delegate-op target intermediate name delegate out args)
   (let [(result (apply name (map decompose-arg args)))]
     (append-map code (content (type out) out) (content (type result) result))))
@@ -642,34 +666,44 @@
          (header (typed-header args '<param>))]
     `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
 
-(define (content-vars args) (append-map content (map class-of args) (map get args)))
+(define (content-vars args) (map get (append-map content (map class-of args) args)))
 
-(define (assemble return-args args instructions virtual-variables)
-  (virtual-variables (content-vars return-args) (content-vars args) (attach instructions (RET))))
+(define (assemble return-args args instructions)
+  "Determine result variables, argument variables, and instructions"
+  (list (content-vars return-args) (content-vars args) (attach instructions (RET))))
+
+(define (build-list . args)
+  "Generate code to package ARGS in a Scheme list"
+  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) args))
+
+(define (package-return-content value)
+  "Generate code to package parameter VALUE in a Scheme list"
+  (apply build-list (content (type value) value)))
+
+(define (generate-return-code args intermediate expr)
+  (let [(retval (skeleton <obj>))]
+    (list (list retval)
+          args
+          (append (code intermediate expr) (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
   (let* [(vars        (map skeleton classes))
          (expr        (apply proc (map parameter vars)))
          (result-type (type expr))
-         (return-type (native-equivalent result-type))
-         (target      (if return-type result-type (pointer result-type)))
-         (result      (skeleton target))
-         (return-args (if return-type (list result) '()))
-         (args        (if return-type vars (cons result vars)))
+         (result      (skeleton result-type))
+         (sequence?   (is-a? result-type <meta<sequence<>>>))
+         (args        (if sequence? (cons result vars) vars))
          (types       (map class-of args))
          (code        (asm context
-                           (or return-type <null>)
+                           <ulong>
                            (map typecode (content-vars args))
-                           (assemble return-args args (code (parameter result) expr) virtual-variables)))
+                           (apply virtual-variables (apply assemble (generate-return-code args (parameter result) expr)))))
          (fun         (lambda header (apply code (append-map unbuild types header))))]
-    (if return-type
+    (if sequence?
       (lambda args
-        (let [(result (apply fun args))]
-          (get (build result-type result))))
-      (lambda args
-        (let [(result (make target #:shape (argmax length (map shape args))))]
-          (apply fun (cons (get result) args))
-          (get (build result-type result)))))))
+        (let [(result (make result-type #:shape (argmax length (map shape args))))]
+          (build result-type (address->scm (apply fun (cons result args))))))
+      (lambda args (build result-type (address->scm (apply fun args)))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
@@ -761,7 +795,6 @@
     (append-map
       (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
       (components source))))
-(define-method (type-conversion (target <meta<composite>>) source) (type-conversion (base target) source)); TODO: why this?
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
@@ -776,6 +809,7 @@
     (to-type target self)))
 
 (define (ensure-default-strides img)
+  "Create a duplicate of the array unless it is compact"
   (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
 (define-syntax-rule (pass-parameters parameters body ...)
@@ -784,23 +818,23 @@
     (append (map (lambda (register parameter)
                    (MOV (to-type (native-equivalent (type parameter)) register) (get (delegate parameter))))
                  register-parameters
-                 first-six-parameters); TODO: check similarities to spill-parameters and fetch-parameters
+                 first-six-parameters)
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
-
-(define* ((native-fun method) out args)
-  (force-parameters (argument-types method) args call-needs-intermediate?
+(define* ((native-fun native) out args)
+  (force-parameters (argument-types native) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
         (pass-parameters intermediates
-          (MOV RAX (function-pointer method))
+          (MOV RAX (function-pointer native))
           (CALL RAX)
-          (MOV (get (delegate out)) (to-type (native-equivalent (return-type method)) RAX)))))))
+          (MOV (get (delegate out)) (to-type (native-equivalent (return-type native)) RAX)))))))
 
-(define (native-call method . args)
-  (make-function native-call
-                 (const (return-type method))
-                 (native-fun method)
-                 args))
+(define (native-call native . args) (make-function native-call (const (return-type native)) (native-fun native) args))
+
+(define* ((native-data native) out args)
+  (list (MOV (get (delegate out)) (get native))))
+
+(define (native-constant native . args) (make-function native-constant (const (return-type native)) (native-data native) args))

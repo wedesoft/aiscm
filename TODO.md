@@ -1,9 +1,15 @@
 ## Ready
 
 * tensor dimensions (compiled returns list to build array object)
+* improve run-time performance of register allocator (linear-scan register allocator?)
+* spill blocked registers into other register
+* car, cadr, ... -> first, second, ...
+* index manipulation on function expressions
+* direct mapping instead of decompose-arg for rgb and complex?
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
-* REPL docs: (help ...)
+* add docstrings, REPL docs: ,d ...
+  http://www.draketo.de/proj/guile-basics/
 * https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
   http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * red, green, blue, real-part, imag-part for objects
@@ -12,13 +18,12 @@
 * 256 -> boolean conversion
 * 32 -> boolean conversion
 * fast fill method? fast set method
-* add tagline to readme and index: computer vision for the robotic age?
 * split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
-* spill blocked registers into other register
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * fftw3, hypercomplex, kinect, linalg, opencv, qt4
+* predator tracker
 * <-> Guile 6.7.5 Arrays
 * floating point exception (SIGFPE)
 * create relocatable code and use linker to insert calls with relative addresses
@@ -26,9 +31,10 @@
 * use (ice-9 match) to simplify and translate assembler code?
 * reading and writing with Guile file decriptors or Guile network sockets?
 * ffmpeg output (writing videos)
+* Conways way of life in one line of code
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* keywords: computer vision,image processing for vision,data structures,digital signal processing,tensors
+* keywords: data structures,digital signal processing,tensors,input/output (check standard theosaurus)
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * use ice-9 q? background decoder thread
