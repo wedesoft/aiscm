@@ -22,11 +22,11 @@ Here are a few examples using those operations:
 
 Applied to the following image ...
 
-![](star-ferry.jpg "Test input image")
+![star-ferry.jpg](star-ferry.jpg "Test input image")
 
 ... inverting the RGB values yields the following image:
 
-![](inverted.jpg "Inverted image")
+![inverted.jpg](inverted.jpg "Inverted image")
 
 ```Scheme
 @../tests/integration/invert.scm@
@@ -70,7 +70,7 @@ Most scalar-scalar operations are already part of the Scheme programming languag
 
 One can use an array-scalar operation to divide each colour channels of an image by a number.
 
-![](divided.jpg "Divided image")
+![divided.jpg](divided.jpg "Divided image")
 
 ```Scheme
 @../tests/integration/division.scm@
@@ -78,7 +78,7 @@ One can use an array-scalar operation to divide each colour channels of an image
 
 Another example is using the modulo operator to show the remainder of division by an integer for each channel.
 
-![](modulo.jpg "Remainder values")
+![modulo.jpg](modulo.jpg "Remainder values")
 
 ```Scheme
 @../tests/integration/modulo.scm@

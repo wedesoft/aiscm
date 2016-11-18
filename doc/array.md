@@ -73,11 +73,11 @@ Note that the integer type can be specified using number of bits and signed-ness
 
 Given the following image ...
 
-![](pavillion.jpg "Test input image")
+![pavillion.jpg](pavillion.jpg "Test input image")
 
 ... rolling the dimensions will result in the following image:
 
-![](rolled.jpg "Dimension rolled")
+![rolled.jph](rolled.jpg "Dimension rolled")
 
 ```Scheme
 @../tests/integration/roll_image.scm@
@@ -95,7 +95,7 @@ The *project* method can be used to extract the first slice of an array.
 
 One can *dump* array slices from the beginning of the array and *crop* the length of the array, i.e. removing slices from the end of the array.
 
-![](cropped.jpg "Cropped image")
+![cropped.jpg](cropped.jpg "Cropped image")
 
 ```Scheme
 @../tests/integration/crop_dump.scm@
@@ -103,7 +103,7 @@ One can *dump* array slices from the beginning of the array and *crop* the lengt
 
 The *dump* and *crop* command can also take a list of values in order to extract a part of a multi-dimensional array:
 
-![](crop2d.jpg "2d cropped image")
+![crop2d.jpg](crop2d.jpg "2d cropped image")
 
 ```Scheme
 @../tests/integration/crop_2d.scm@
@@ -113,7 +113,7 @@ The *dump* and *crop* command can also take a list of values in order to extract
 
 The *rgb* method can be used to combine colour values and images. The following program swaps the colour channels around:
 
-![](swap-channels.jpg "Image with colour channels swapped")
+![swap-channels.jpg](swap-channels.jpg "Image with colour channels swapped")
 
 ```Scheme
 @../tests/integration/swap_channels.scm@

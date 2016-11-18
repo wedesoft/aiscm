@@ -32,7 +32,7 @@
 (define-method (wrap self) (make (native-type self) #:value self))
 (define-method (wrap (self <element>)) self)
 (define-generic get-size)
-(define-generic build)
+(define-method (build self value) (car value))
 (define-method (content (type <meta<element>>) self) (list self))
 (define-method (unbuild (type <meta<element>>) self) (list self))
 (define-method (component type self offset) self)

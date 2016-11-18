@@ -13,7 +13,8 @@
 
 (define (run-tests)
   (format #t "1..~a~&~!" count)
-  (for-each run-test (reverse tests)))
+  (for-each run-test (reverse tests))
+  (set! tests '()))
 
 (define (diagnostics msg)
   (schedule (format #t "# ~a~&" msg)))

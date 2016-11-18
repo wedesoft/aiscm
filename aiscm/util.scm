@@ -14,7 +14,7 @@
             pair->list nodes live-intervals overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
-            clock elapsed object-slots)
+            clock elapsed object-slots scm->address address->scm)
   #:export-syntax (define-class* template-class synchronise))
 (load-extension "libguile-aiscm-util" "init_util")
 (define (toplevel-define! name val)
@@ -50,11 +50,19 @@
 (define (index-of a b)
   (let [(tail (member a (reverse b)))]
     (if tail (length (cdr tail)) #f)))
-(define all-but-last (compose reverse cdr reverse))
+
+(define (all-but-last lst)
+  "Return all but last element of LST."
+  (reverse (cdr (reverse lst))))
+
 (define (drop-up-to lst n)
+  "Return the list LST after dropping up to N elements."
   (if (null? lst) lst (if (zero? n) lst (drop-up-to (cdr lst) (1- n)))))
+
 (define (take-up-to lst n)
+  "Return up to N elements of the list LST."
   (if (zero? n) '() (if (null? lst) lst (cons (car lst) (take-up-to (cdr lst) (1- n))))))
+
 (define (flatten x)
   (cond ((null? x) x)
         ((pair? x) (append (flatten (car x)) (flatten (cdr x))))
@@ -178,3 +186,5 @@
     (method (max 0 time-remaining))
     result))
 (define (object-slots obj) (map (compose (cut slot-ref obj <>) slot-definition-name) (class-slots (class-of obj))))
+(define (scm->address scm) (pointer-address (scm->pointer scm)))
+(define (address->scm address) (pointer->scm (make-pointer address)))

@@ -45,4 +45,3 @@
   (if (every real? args)
       <double>
       (apply native-type (sort-by-pred (cons i args) real?))))
-(define-method (build (self <meta<float<>>>) value) (make self #:value value))

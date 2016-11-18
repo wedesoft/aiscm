@@ -50,7 +50,7 @@
     "set value of floating point number")
 (ok (eqv? 1.25 (set (make <float> #:value 0) 1.25))
     "return-value of setting floating point number")
-(ok (equal? (make <float> #:value 1.25) (build <float> 1.25))
+(ok (equal? 1.25 (build <float> (list 1.25)))
     "build floating point number")
 (ok (equal? '(1.25) (content <float> 1.25))
     "'content' returns floating point values")
