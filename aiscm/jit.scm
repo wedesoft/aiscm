@@ -465,9 +465,13 @@
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (indexer (parameter (make <ulong> #:value (dimension self)))
+    (indexer (parameter (make <long> #:value (dimension self)))
              idx
-             (lookup idx (parameter (project self)) (stride self) (var <long>) (var <long>)))))
+             (lookup idx
+                     (parameter (project self))
+                     (parameter (make <long> #:value (stride self)))
+                     (var <long>)
+                     (var <long>)))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <indexer>) candidate replacement)
@@ -498,7 +502,7 @@
 
 (define-method (setup self) '())
 (define-method (setup (self <indexer>))
-  (list (IMUL (step self) (stride self) (size-of (typecode self)))
+  (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
 (define-method (setup (self <function>)) (append-map setup (arguments self)))
 (define-method (increment self) '())
@@ -544,9 +548,7 @@
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
 (define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
-  (cons (dimension self)
-    (cons (parameter (make <long> #:value (stride self)))
-      (content (project type) (project self)))))
+  (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
 
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define-method (need-conversion? target type) (not (eq? target type)))

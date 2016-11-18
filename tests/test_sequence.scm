@@ -209,7 +209,7 @@
 (let [(s (parameter (sequence <int>)))]
   (ok (eq? (dimension s) (car (content (sequence <int>) s)))
       "content of sequence parameter contains dimension")
-  (ok (eq? (stride s) (get (delegate (cadr (content (sequence <int>) s)))))
+  (ok (eq? (stride s) (cadr (content (sequence <int>) s)))
       "content of sequence parameter contains stride")
   (ok (eq? (get (delegate (project s))) (get (delegate (caddr (content (sequence <int>) s)))))
       "content of sequence contains pointer"))

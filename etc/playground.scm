@@ -36,7 +36,7 @@
   (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <ubyte>) (project retval)))
                 (native-call scm-gc-malloc-pointerless (car (shape retval))))
-          (code (to-para (stride expr)) (native-constant (native-value <int> 1)))))
+          (code (stride expr) (native-constant (native-value <int> 1)))))
 
 (build
   (sequence <ubyte>)

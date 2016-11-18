@@ -411,7 +411,7 @@
   (ok (equal? (list (MOV (get out) 0)) (code out 0))
       "Generate code for setting variable to zero"))
 (let [(out  (parameter (sequence <int>)))]
-  (ok (equal? (list (IMUL (step out) (stride out) (size-of (typecode out)))
+  (ok (equal? (list (IMUL (step out) (get (delegate (stride out))) (size-of (typecode out)))
                     (MOV (iterator out) (value out)))
               (setup out))
       "setup of array loop should define increment and initialise pointer")
@@ -467,7 +467,7 @@
        (b    (parameter <int>))
        (f    (+ a b))
        (out  (parameter (sequence <int>)))]
-  (ok (equal? (list (IMUL (step a) (stride a) (size-of (typecode a)))
+  (ok (equal? (list (IMUL (step a) (get (delegate (stride a))) (size-of (typecode a)))
                     (MOV (iterator a) (value a)))
               (setup f))
       "setup of loop over array-scalar-function should setup looping over first argument")
@@ -491,7 +491,7 @@
        (b    (parameter (sequence <int>)))
        (f    (+ a b))
        (out  (parameter (sequence <int>)))]
-  (ok (equal? (list (IMUL (step b) (stride b) (size-of (typecode b)))
+  (ok (equal? (list (IMUL (step b) (get (delegate (stride b))) (size-of (typecode b)))
                     (MOV (iterator b) (value b)))
               (setup f))
       "setup of loop over scalar-array-function should setup looping over second argument")
