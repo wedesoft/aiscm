@@ -17,6 +17,7 @@
 
 (define ctx (make <context>))
 
+; TODO: default-strides with extra argument (1)
 ; TODO: strides of parameter should be a list of parameters
 ; TODO: shape of function
 
@@ -26,10 +27,6 @@
 (define o (parameter <obj>))
 
 (define u (parameter (sequence <int>)))
-
-;(make (sequence <int>) #:shape (shape s) #:strides (strides s) #:value (value s))
-
-(define (to-para x) (parameter (make <long> #:value x)))
 
 ; TODO: implement "size-of" for parameters
 
@@ -49,7 +46,5 @@
            (append (construct-value t (parameter s))
                    (code o (package-return-content t)))))) (unbuild (sequence <int>) (seq 2 3 5)))))
 
-
-((jit ctx (list <int> <int>) build-list) 2 3)
 
 (run-tests)
