@@ -19,7 +19,7 @@ run: container
 
 package: pkg/aiscm_$(VERSION).orig.tar.gz pkg/$(PACKAGE).debian.tar.xz pkg/$(PACKAGE).dsc pkg/$(PACKAGE)_amd64.deb
 
-pkg/aiscm_$(VERSION).orig.tar.gz: aiscm-$(VERSION).tar.gz
+pkg/aiscm_$(VERSION).orig.tar.gz: pkg aiscm-$(VERSION).tar.gz
 	cp $< $@
 
 pkg/$(PACKAGE).debian.tar.xz: pkg container
