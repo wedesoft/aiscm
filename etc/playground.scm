@@ -17,12 +17,7 @@
 
 (define ctx (make <context>))
 
-(define (default-stridesx base shape)
-  (map (compose (cut apply * base <>) (cut take shape <>)) (iota (length shape))))
-
 (define one (native-constant (native-value <long> 1)))
-
-(apply * one '())
 
 ; TODO: default-strides with extra argument (1)
 ; TODO: strides of parameter should be a list of parameters
@@ -35,7 +30,7 @@
 
 (define u (parameter (sequence <int>)))
 
-(default-stridesx (native-constant (native-value <long> 1)) (shape t))
+;(make (sequence <int>) #:shape (shape s) #:strides (strides s) #:value (value s))
 
 ; TODO: implement "size-of" for parameters
 
@@ -44,7 +39,9 @@
   (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <int>) (project retval)))
                 (native-call scm-gc-malloc-pointerless (* (native-constant (native-value <long> (size-of (typecode retval)))) (reduce * #f (shape retval)))))
-          (append-map (stride retval) (default-stridesx (native-constant (native-value <long> 1)) (shape retval)))))
+          (append-map code (strides retval) (default-strides (native-constant (native-value <long> 1)) (shape retval)))))
+
+; TODO: strides of parameter
 
 (build
   (sequence <int>)

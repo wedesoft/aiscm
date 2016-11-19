@@ -737,6 +737,8 @@
 ; define unary and binary operations
 (define-method (+ (a <param>)) a)
 (define-method (+ (a <element>)) a)
+(define-method (* (a <param>)) a)
+(define-method (* (a <element>)) a)
 (define-jit-dispatch duplicate 1 identity)
 (define-jit-method identity -   1)
 (define-jit-method identity ~   1)
@@ -810,7 +812,7 @@
 
 (define (ensure-default-strides img)
   "Create a duplicate of the array unless it is compact"
-  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
+  (if (equal? (strides img) (default-strides 1 (shape img))) img (duplicate img)))
 
 (define-syntax-rule (pass-parameters parameters body ...)
   (let [(first-six-parameters (take-up-to parameters 6))

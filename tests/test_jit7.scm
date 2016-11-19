@@ -104,4 +104,8 @@
     "get dimension of sequence")
 (ok (equal? 1 ((jit ctx (list (sequence <ubyte>)) stride) (seq 2 3 5)))
     "get stride of sequence")
+(ok (equal? 5 ((jit ctx (list <int>) *) 5))
+    "number multiplied with nothing returns same number")
+(ok (equal? '(2 3 5) (to-list (* (seq 2 3 5))))
+    "sequence multiplied with nothing returns same sequence")
 (run-tests)
