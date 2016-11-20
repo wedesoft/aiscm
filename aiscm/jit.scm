@@ -25,7 +25,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term indexer index type subst code type-conversion assemble build-list package-return-content
+            term indexer lookup index type subst code type-conversion assemble build-list package-return-content
             jit iterator step setup increment body arguments operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
@@ -456,6 +456,7 @@
 (define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (typecode (self <indexer>)) (typecode (type self)))
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
+(define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
 (define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
 (define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))

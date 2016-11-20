@@ -19,7 +19,6 @@
 
 (define one (native-constant (native-value <long> 1)))
 
-; TODO: default-strides with extra argument (1)
 ; TODO: strides of parameter should be a list of parameters
 ; TODO: shape of function
 
@@ -29,8 +28,6 @@
 (define o (parameter <obj>))
 
 (define u (parameter (sequence <int>)))
-
-;(make (sequence <int>) #:shape (shape s) #:strides (strides s) #:value (value s))
 
 ; TODO: implement "size-of" for parameters
 

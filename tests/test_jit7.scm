@@ -43,6 +43,8 @@
        (mx (parameter m))]
   (ok (equal? (shape m) (map (compose get delegate) (shape mx)))
       "2D array parameter should maintain the shape")
+  (ok (equal? (strides m) (map (compose get delegate) (strides mx)))
+      "2D array parameter should maintain the strides")
   (ok (equal? (index mx) (index (delegate (delegate mx))))
       "first index of parameter should have a match")
   (ok (equal? (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
