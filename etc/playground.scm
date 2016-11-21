@@ -35,10 +35,8 @@
 (define (construct-value retval expr)
   (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <int>) (project retval)))
-                (native-call scm-gc-malloc-pointerless (* (native-constant (native-value <long> (size-of (typecode retval)))) (reduce * #f (shape retval)))))
+                (native-call scm-gc-malloc-pointerless (size-of retval)))
           (append-map code (strides retval) (default-strides (native-constant (native-value <long> 1)) (shape retval)))))
-
-; TODO: strides of parameter
 
 (build
   (sequence <int>)

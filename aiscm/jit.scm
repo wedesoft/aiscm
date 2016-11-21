@@ -501,6 +501,9 @@
 (define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
 (define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
 
+(define-method (size-of (self <param>))
+  (apply * (native-constant (native-value <long> (size-of (typecode (type self))))) (shape self)))
+
 (define-method (setup self) '())
 (define-method (setup (self <indexer>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))

@@ -1,5 +1,6 @@
 ## Ready
 
+* compiled "size-of"
 * tensor dimensions (compiled returns list to build array object)
 * improve run-time performance of register allocator (linear-scan register allocator?)
 * spill blocked registers into other register
