@@ -17,19 +17,18 @@
 
 (define ctx (make <context>))
 
-(define one (native-constant (native-value <long> 1)))
-
-; TODO: strides of parameter should be a list of parameters
-; TODO: shape of function
-
 (define s (skeleton (sequence <int>)))
 (define t (parameter s))
-
 (define o (parameter <obj>))
 
-(define u (parameter (sequence <int>)))
+; TODO: shape of function is largest shape of arguments
 
-; TODO: implement "size-of" for parameters
+(define f (~ t))
+
+(argmax length (map shape (arguments f)))
+
+(shape t)
+(shape (~ t))
 
 ; TODO: create value and initialisation code
 (define (construct-value retval expr)
