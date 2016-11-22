@@ -114,4 +114,7 @@
     "determine size of integer in compiled code")
 (ok (eqv? 6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
     "determine size of sequence (compiled)")
+(let [(m (parameter (multiarray <int> 2)))]
+  (ok (equal? (shape m) (shape (~ m)))
+      "shape of unary function expression is shape of argument"))
 (run-tests)

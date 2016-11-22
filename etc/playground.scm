@@ -25,7 +25,10 @@
 
 (define f (~ t))
 
+
 (argmax length (map shape (arguments f)))
+
+(define-method (shape (self <function>)) (shape (car (arguments self))))
 
 (shape t)
 (shape (~ t))
