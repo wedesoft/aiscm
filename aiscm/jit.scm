@@ -515,7 +515,7 @@
 (define-method (body self) self)
 (define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
-(define-method (shape (self <function>)) (shape (car (arguments self))))
+(define-method (shape (self <function>)) (argmax length (map shape (arguments self))))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
