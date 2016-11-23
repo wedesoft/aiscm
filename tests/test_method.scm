@@ -52,6 +52,6 @@
     "check type of native value")
 (ok (eqv? 42 (get (native-value <int> 42)))
     "check value of native value")
-(ok (eqv? 42 ((jit ctx '() (lambda () (native-constant (native-value <int> 42))))))
+(ok (eqv? 42 ((jit ctx '() (lambda () (native-const <int> 42)))))
     "put native constant into compiled code")
 (run-tests)

@@ -30,7 +30,8 @@
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function make-native-function native-call native-constant generate-return-code
+            decompose-arg delegate-fun generate-return-code
+            make-function make-native-function native-call make-constant-function native-const
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
@@ -503,7 +504,7 @@
 (define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
 
 (define-method (size-of (self <param>))
-  (apply * (native-constant (native-value <long> (size-of (typecode (type self))))) (shape self)))
+  (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
 
 (define-method (setup self) '())
 (define-method (setup (self <indexer>))
@@ -548,8 +549,7 @@
 (define-method (code (out <pointer<>>) (fun <function>))
   (insert-intermediate fun (skeleton (typecode out)) (cut code out <>)))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
-(define-method (code (out <param>) (value <integer>))
-  (code out (native-constant (native-value (type out) value))))
+(define-method (code (out <param>) (value <integer>)) (code out (native-const (type out) value)))
 
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
@@ -850,11 +850,13 @@
 
 (define* ((native-data native) out args) (list (MOV (get (delegate out)) (get native))))
 
-(define (native-constant native . args) (make-function native-constant (const (return-type native)) (native-data native) args))
+(define (make-constant-function native . args) (make-function make-constant-function (const (return-type native)) (native-data native) args))
+
+(define (native-const type value) (make-constant-function (native-value type value)))
 
 ; Scheme list manipulation
 (define main (dynamic-link))
-(define scm-eol (native-constant (native-value <obj> (scm->address '()))))
+(define scm-eol (native-const <obj> (scm->address '())))
 (define scm-cons (native-call <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))
 (define scm-gc-malloc-pointerless (native-call <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc_pointerless" main)))
 (define scm-gc-malloc             (native-call <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc"             main)))
