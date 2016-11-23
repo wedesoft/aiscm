@@ -119,7 +119,10 @@
   (ok (equal? (shape m) (shape (~ m)))
       "shape of unary function expression is shape of argument")
   (ok (equal? (shape m) (shape (+ c m)))
-      "shape of scalar plus array expression") 
+      "shape of scalar plus array expression")
   (ok (equal? (shape m) (shape (+ m c)))
       "shape of array plus scalar expression"))
+(let [(i (parameter <int>))]
+  (ok (eqv? 42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))))
+      "assign native integer constant to parameter"))
 (run-tests)

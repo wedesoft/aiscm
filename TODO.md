@@ -1,6 +1,9 @@
 ## Ready
 
-* compiled "size-of"
+* check for (code ... (native-const ...))
+* simplify default-strides again
+* simplify native method calls
+* simplify native constants
 * tensor dimensions (compiled returns list to build array object)
 * improve run-time performance of register allocator (linear-scan register allocator?)
 * spill blocked registers into other register

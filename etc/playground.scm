@@ -16,38 +16,36 @@
              (guile-tap))
 
 (define ctx (make <context>))
+;
+;(define s (skeleton (sequence <int>)))
+;(define t (parameter s))
+;(define o (parameter <obj>))
 
-(define s (skeleton (sequence <int>)))
-(define t (parameter s))
-(define o (parameter <obj>))
-
-; TODO: shape of function is largest shape of arguments
-
-(define f (~ t))
-
-
-(argmax length (map shape (arguments f)))
-
-(define-method (shape (self <function>)) (shape (car (arguments self))))
-
-(shape t)
-(shape (~ t))
+; TODO: (code (parameter <int>) 1) # then simplify default-strides (and others)
 
 ; TODO: create value and initialisation code
 (define (construct-value retval expr)
   (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <int>) (project retval)))
                 (native-call scm-gc-malloc-pointerless (size-of retval)))
-          (append-map code (strides retval) (default-strides (native-constant (native-value <long> 1)) (shape retval)))))
+          (append-map code (strides retval) (default-strides (shape retval)))))
 
-(build
-  (sequence <int>)
-  (address->scm
-    (apply (asm ctx <ulong> (list <long> <long> <ulong>)
-       (apply virtual-variables
-         (assemble (list (delegate o)) (content (sequence <int>) s)
-           (append (construct-value t (parameter s))
-                   (code o (package-return-content t)))))) (unbuild (sequence <int>) (seq 2 3 5)))))
+(define i (parameter <int>))
 
+(asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))
+
+(ok (eqv? 3 3)
+    "test")
+
+;(build
+;  (sequence <int>)
+;  (address->scm
+;    (apply (asm ctx <ulong> (list <long> <long> <ulong>)
+;       (apply virtual-variables
+;         (assemble (list (delegate o)) (content (sequence <int>) s)
+;           (append (construct-value t (parameter s))
+;                   (code t (parameter s))
+;                   (code o (package-return-content t)))))) (unbuild (sequence <int>) (seq 2 3 5)))))
+;
 
 (run-tests)

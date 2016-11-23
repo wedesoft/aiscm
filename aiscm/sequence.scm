@@ -18,8 +18,8 @@
 (define-class* <sequence<>> <element> <meta<sequence<>>> <meta<element>>
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))
-(define (default-strides initial shape)
-  (map (compose (cut apply * initial <>) (cut take shape <>)) (iota (length shape))))
+(define (default-strides shape)
+  (map (compose (cut apply * <>) (cut take shape <>)) (iota (length shape))))
 (define (sequence type . args)
   (if (is-a? type <meta<element>>)
     (if (null? args)
@@ -32,7 +32,7 @@
                                          #:size (* (size-of (typecode type))
                                                    (or size (apply * shape))))))
                      (shape   (or shape (list size)))
-                     (strides (or strides (default-strides 1 shape)))]
+                     (strides (or strides (default-strides shape)))]
                 (next-method self (list #:value value #:shape shape #:strides strides)))))
           (define-method (project (self metaclass)) (pointer type))
           (define-method (dimensions (self metaclass)) (1+ (dimensions type)))

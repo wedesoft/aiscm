@@ -547,6 +547,8 @@
 (define-method (code (out <pointer<>>) (fun <function>))
   (insert-intermediate fun (skeleton (typecode out)) (cut code out <>)))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
+(define-method (code (out <param>) (value <integer>))
+  (code out (native-constant (native-value (type out) value))))
 
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
@@ -817,7 +819,7 @@
 
 (define (ensure-default-strides img)
   "Create a duplicate of the array unless it is compact"
-  (if (equal? (strides img) (default-strides 1 (shape img))) img (duplicate img)))
+  (if (equal? (strides img) (default-strides (shape img))) img (duplicate img)))
 
 (define-syntax-rule (pass-parameters parameters body ...)
   (let [(first-six-parameters (take-up-to parameters 6))
