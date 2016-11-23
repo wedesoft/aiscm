@@ -30,7 +30,8 @@
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function make-native-function native-constant generate-return-code)
+            decompose-arg delegate-fun make-function make-native-function native-call native-constant generate-return-code
+            scm-eol scm-cons)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
@@ -681,7 +682,7 @@
 
 (define (build-list . args)
   "Generate code to package ARGS in a Scheme list"
-  (fold-right (cut make-native-function scm-cons <...>) (native-constant scm-eol) args))
+  (fold-right scm-cons scm-eol args))
 
 (define (package-return-content value)
   "Generate code to package parameter VALUE in a Scheme list"
@@ -844,7 +845,15 @@
 (define (make-native-function native . args)
   (make-function make-native-function (const (return-type native)) (native-fun native) args))
 
+(define (native-call return-type argument-types function-pointer)
+  (cut make-native-function (make-native-method return-type argument-types function-pointer) <...>))
+
 (define* ((native-data native) out args)
   (list (MOV (get (delegate out)) (get native))))
 
 (define (native-constant native . args) (make-function native-constant (const (return-type native)) (native-data native) args))
+
+; Scheme list manipulation
+(define main (dynamic-link))
+(define scm-eol (native-constant (native-value <obj> (scm->address '()))))
+(define scm-cons (cut make-native-function (make-native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)) <...>))

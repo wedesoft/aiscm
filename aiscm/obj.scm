@@ -20,8 +20,7 @@
             scm-to-uint8 scm-from-uint8 scm-to-int8 scm-from-int8
             scm-to-uint16 scm-from-uint16 scm-to-int16 scm-from-int16
             scm-to-uint32 scm-from-uint32 scm-to-int32 scm-from-int32
-            scm-to-uint64 scm-from-uint64 scm-to-int64 scm-from-int64
-            scm-eol scm-cons))
+            scm-to-uint64 scm-from-uint64 scm-to-int64 scm-from-int64))
 (define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 (define-method (size-of (self <meta<obj>>)) 8)
 (define-method (pack (self <obj>))
@@ -88,7 +87,3 @@
 (define scm-from-uint64 (make-native-method <obj>   (list <ulong>      ) (dynamic-func "scm_from_uint64" main           )))
 (define scm-to-int64    (make-native-method <long>  (list <obj>        ) (dynamic-func "scm_to_int64"    main           )))
 (define scm-from-int64  (make-native-method <obj>   (list <long>       ) (dynamic-func "scm_from_int64"  main           )))
-
-; Scheme list manipulation
-(define scm-eol (native-value <obj> (scm->address '())))
-(define scm-cons (make-native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))
