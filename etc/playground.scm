@@ -30,13 +30,6 @@
                 (native-call scm-gc-malloc-pointerless (size-of retval)))
           (append-map code (strides retval) (default-strides (shape retval)))))
 
-(define i (parameter <int>))
-
-(asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))
-
-(ok (eqv? 3 3)
-    "test")
-
 ;(build
 ;  (sequence <int>)
 ;  (address->scm

@@ -1,7 +1,5 @@
 ## Ready
 
-* check for (code ... (native-const ...))
-* simplify default-strides again
 * simplify native method calls
 * simplify native constants
 * tensor dimensions (compiled returns list to build array object)
