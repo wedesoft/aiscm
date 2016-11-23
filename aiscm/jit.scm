@@ -31,7 +31,7 @@
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun make-function make-native-function native-call native-constant generate-return-code
-            scm-eol scm-cons)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
@@ -848,12 +848,13 @@
 (define (native-call return-type argument-types function-pointer)
   (cut make-native-function (make-native-method return-type argument-types function-pointer) <...>))
 
-(define* ((native-data native) out args)
-  (list (MOV (get (delegate out)) (get native))))
+(define* ((native-data native) out args) (list (MOV (get (delegate out)) (get native))))
 
 (define (native-constant native . args) (make-function native-constant (const (return-type native)) (native-data native) args))
 
 ; Scheme list manipulation
 (define main (dynamic-link))
 (define scm-eol (native-constant (native-value <obj> (scm->address '()))))
-(define scm-cons (cut make-native-function (make-native-method <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)) <...>))
+(define scm-cons (native-call <obj> (list <obj> <obj>) (dynamic-func "scm_cons" main)))
+(define scm-gc-malloc-pointerless (native-call <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc_pointerless" main)))
+(define scm-gc-malloc             (native-call <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc"             main)))

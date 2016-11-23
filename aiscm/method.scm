@@ -3,8 +3,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:export (<native-method> <native-value>
-            make-native-method function-pointer return-type argument-types native-value
-            scm-gc-malloc-pointerless scm-gc-malloc)
+            make-native-method function-pointer return-type argument-types native-value)
   #:re-export (get))
 
 (define-class <native-method> ()
@@ -23,7 +22,3 @@
 
 (define (native-value return-type value)
   (make <native-value> #:value value #:return-type return-type))
-
-(define main (dynamic-link))
-(define scm-gc-malloc-pointerless (make-native-method <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc_pointerless" main)))
-(define scm-gc-malloc             (make-native-method <ulong> (list <ulong>) (dynamic-func "scm_gc_malloc"             main)))

@@ -135,4 +135,8 @@
     "compile function putting integer into a one-element list")
 (ok (equal? '(170) ((jit ctx (list <int> <int>) (lambda (i j) (scm-cons (+ i j) scm-eol))) 100 70))
     "compile function putting result of expression into a one-element list")
+(ok ((jit ctx (list <ulong>) scm-gc-malloc-pointerless) 128)
+    "allocate memory in compiled method")
+(ok ((jit ctx (list <ulong>) scm-gc-malloc) 128)
+    "allocate memory in compiled method")
 (run-tests)
