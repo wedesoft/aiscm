@@ -30,7 +30,7 @@
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
-            decompose-arg delegate-fun make-function native-call native-constant generate-return-code)
+            decompose-arg delegate-fun make-function make-native-function native-constant generate-return-code)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
 
@@ -681,7 +681,7 @@
 
 (define (build-list . args)
   "Generate code to package ARGS in a Scheme list"
-  (fold-right (cut native-call scm-cons <...>) (native-constant scm-eol) args))
+  (fold-right (cut make-native-function scm-cons <...>) (native-constant scm-eol) args))
 
 (define (package-return-content value)
   "Generate code to package parameter VALUE in a Scheme list"
@@ -841,7 +841,8 @@
           (CALL RAX)
           (MOV (get (delegate out)) (to-type (native-equivalent (return-type native)) RAX)))))))
 
-(define (native-call native . args) (make-function native-call (const (return-type native)) (native-fun native) args))
+(define (make-native-function native . args)
+  (make-function make-native-function (const (return-type native)) (native-fun native) args))
 
 (define* ((native-data native) out args)
   (list (MOV (get (delegate out)) (get native))))

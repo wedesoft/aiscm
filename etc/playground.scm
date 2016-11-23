@@ -27,7 +27,7 @@
 (define (construct-value retval expr)
   (append (append-map code (shape retval) (shape expr))
           (code (car (content (pointer <int>) (project retval)))
-                (native-call scm-gc-malloc-pointerless (size-of retval)))
+                (make-native-function scm-gc-malloc-pointerless (size-of retval)))
           (append-map code (strides retval) (default-strides (shape retval)))))
 
 ;(build
