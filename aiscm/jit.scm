@@ -688,30 +688,34 @@
   "Generate code to package parameter VALUE in a Scheme list"
   (apply build-list (content (type value) value)))
 
+(define-method (construct-value result-type retval expr) '())
+(define-method (construct-value (result-type <meta<sequence<>>>) retval expr)
+  (let [(malloc (if (pointerless? result-type) scm-gc-malloc-pointerless scm-gc-malloc))]
+    (append (append-map code (shape retval) (shape expr))
+            (code (last (content result-type retval)) (malloc (size-of retval)))
+            (append-map code (strides retval) (default-strides (shape retval))))))
+
 (define (generate-return-code args intermediate expr)
   (let [(retval (skeleton <obj>))]
     (list (list retval)
           args
-          (append (code intermediate expr) (code (parameter retval) (package-return-content intermediate))))))
+          (append (construct-value (type intermediate) intermediate expr)
+                  (code intermediate expr)
+                  (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
-  (let* [(vars        (map skeleton classes))
-         (expr        (apply proc (map parameter vars)))
-         (result-type (type expr))
-         (result      (skeleton result-type))
-         (sequence?   (is-a? result-type <meta<sequence<>>>))
-         (args        (if sequence? (cons result vars) vars))
-         (types       (map class-of args))
-         (code        (asm context
-                           <ulong>
-                           (map typecode (content-vars args))
-                           (apply virtual-variables (apply assemble (generate-return-code args (parameter result) expr)))))
-         (fun         (lambda header (apply code (append-map unbuild types header))))]
-    (if sequence?
-      (lambda args
-        (let [(result (make result-type #:shape (argmax length (map shape args))))]
-          (build result-type (address->scm (apply fun (cons result args))))))
-      (lambda args (build result-type (address->scm (apply fun args)))))))
+  (let* [(vars         (map skeleton classes))
+         (expr         (apply proc (map parameter vars)))
+         (result-type  (type expr))
+         (result       (skeleton result-type))
+         (types        (map class-of vars))
+         (intermediate (generate-return-code vars (parameter result) expr))
+         (instructions (asm context
+                            <ulong>
+                            (map typecode (content-vars vars))
+                            (apply virtual-variables (apply assemble intermediate))))
+         (fun          (lambda header (apply instructions (append-map unbuild types header))))]
+    (lambda args (build result-type (address->scm (apply fun args))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
