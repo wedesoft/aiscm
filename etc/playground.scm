@@ -27,7 +27,7 @@
           (append-map code (strides retval) (default-strides (shape retval)))))
 
 (define s (skeleton (sequence <int>)))
-(define t (parameter s))
+(define t (parameter (sequence <int>)))
 (define o (parameter <obj>))
 
 (build
@@ -38,7 +38,7 @@
          (assemble (list (delegate o)) (content (sequence <int>) s)
            (append (construct-value t (parameter s))
                    (code t (parameter s))
-                   (code o (package-return-content t)))))) (unbuild (sequence <int>) (seq 2 3 5)))))
+                   (code o (package-return-content t)))))) (unbuild (sequence <int>) (seq <int> 2 3 5)))))
 
 
 (run-tests)
