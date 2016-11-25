@@ -651,15 +651,15 @@
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
-  ((apply delegate (map type args)) out args))
-(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name delegate out args)
-  ((apply delegate (map type args)) out args))
-(define-method (delegate-op target intermediate name delegate out args)
+(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
+  ((apply name (map type args)) out args))
+(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
+  ((apply name (map type args)) out args))
+(define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (append-map code (content (type out) out) (content (type result) result))))
-(define (delegate-fun name delegate)
-  (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name delegate out args)))
+(define (delegate-fun name)
+  (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name out args)))
 
 (define (make-function name coercion fun args)
   (make <function> #:arguments args
@@ -738,7 +738,7 @@
             (iota arity)))))
 
 (define-syntax-rule (define-jit-method coercion name arity)
-  (begin (n-ary-base name arity coercion (delegate-fun name name))
+  (begin (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
@@ -811,9 +811,8 @@
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
-        (coercion   (cut convert-type target <>))
-        (conversion (cut to-type target <>))]
-    (make-function to-target coercion (delegate-fun to-target conversion) (list a))))
+        (coercion   (cut convert-type target <>))]
+    (make-function to-target coercion (delegate-fun to-target) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type
