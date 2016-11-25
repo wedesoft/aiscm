@@ -1,3 +1,11 @@
+aiscm (0.9.1-1) UNRELEASED; urgency=low
+
+  * aiscm/jit.scm: compile code to allocate return values
+  - support for native constants
+  - working on tensor expressions
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 25 Nov 2016 21:53:30 +0000
+
 aiscm (0.8.3-1) UNRELEASED; urgency=low
 
   - object rgb and object complex values
