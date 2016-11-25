@@ -1,6 +1,8 @@
 ## Ready
 
-* tensor dimensions (compiled returns list to build array object)
+* type-conversion -> to-type
+* name != delegate only for type conversions
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * improve run-time performance of register allocator (linear-scan register allocator?)
 * spill blocked registers into other register
 * car, cadr, ... -> first, second, ...
