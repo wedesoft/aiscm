@@ -25,7 +25,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term indexer lookup index type subst code convert-type type-conversion assemble build-list package-return-content
+            term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step setup increment body arguments operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
@@ -529,7 +529,7 @@
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
 
-(define-method (code (a <element>) (b <element>)) ((type-conversion (typecode a) (typecode b)) (parameter a) (list (parameter b))))
+(define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (list (parameter b))))
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 
 (define-method (code (a <pointer<>>) (b <pointer<>>))
@@ -780,30 +780,30 @@
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
 
-(define-method (type-conversion (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
-(define-method (type-conversion (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
-(define-method (type-conversion (target <meta<usint>>) (source <meta<obj>>  )) (native-fun scm-to-uint16  ))
-(define-method (type-conversion (target <meta<sint>> ) (source <meta<obj>>  )) (native-fun scm-to-int16   ))
-(define-method (type-conversion (target <meta<uint>> ) (source <meta<obj>>  )) (native-fun scm-to-uint32  ))
-(define-method (type-conversion (target <meta<int>>  ) (source <meta<obj>>  )) (native-fun scm-to-int32   ))
-(define-method (type-conversion (target <meta<ulong>>) (source <meta<obj>>  )) (native-fun scm-to-uint64  ))
-(define-method (type-conversion (target <meta<long>> ) (source <meta<obj>>  )) (native-fun scm-to-int64   ))
-(define-method (type-conversion (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov       ))
-(define-method (type-conversion (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov       ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov       ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov       ))
-(define-method (type-conversion (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun scm-to-bool    ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov       ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun scm-from-uint8 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun scm-from-int8  ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun scm-from-uint16))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<sint>> )) (native-fun scm-from-int16 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<uint>> )) (native-fun scm-from-uint32))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<int>>  )) (native-fun scm-from-int32 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun scm-from-uint64))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<long>> )) (native-fun scm-from-int64 ))
-(define-method (type-conversion (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun obj-from-bool  ))
-(define-method (type-conversion (target <meta<composite>>) (source <meta<composite>>))
+(define-method (to-type (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
+(define-method (to-type (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
+(define-method (to-type (target <meta<usint>>) (source <meta<obj>>  )) (native-fun scm-to-uint16  ))
+(define-method (to-type (target <meta<sint>> ) (source <meta<obj>>  )) (native-fun scm-to-int16   ))
+(define-method (to-type (target <meta<uint>> ) (source <meta<obj>>  )) (native-fun scm-to-uint32  ))
+(define-method (to-type (target <meta<int>>  ) (source <meta<obj>>  )) (native-fun scm-to-int32   ))
+(define-method (to-type (target <meta<ulong>>) (source <meta<obj>>  )) (native-fun scm-to-uint64  ))
+(define-method (to-type (target <meta<long>> ) (source <meta<obj>>  )) (native-fun scm-to-int64   ))
+(define-method (to-type (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov       ))
+(define-method (to-type (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov       ))
+(define-method (to-type (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov       ))
+(define-method (to-type (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov       ))
+(define-method (to-type (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun scm-to-bool    ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov       ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun scm-from-uint8 ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun scm-from-int8  ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun scm-from-uint16))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<sint>> )) (native-fun scm-from-int16 ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<uint>> )) (native-fun scm-from-uint32))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<int>>  )) (native-fun scm-from-int32 ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<ulong>>)) (native-fun scm-from-uint64))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<long>> )) (native-fun scm-from-int64 ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun obj-from-bool  ))
+(define-method (to-type (target <meta<composite>>) (source <meta<composite>>))
   (lambda (out args)
     (append-map
       (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
@@ -812,7 +812,7 @@
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
         (coercion   (cut convert-type target <>))
-        (conversion (cut type-conversion target <>))]
+        (conversion (cut to-type target <>))]
     (make-function to-target coercion (delegate-fun to-target conversion) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
