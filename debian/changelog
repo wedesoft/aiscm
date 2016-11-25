@@ -1,8 +1,16 @@
-aiscm (0.8.3-1+xenial1) UNRELEASED; urgency=low
+aiscm (0.9.1-1+xenial1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Trusty
 
- -- Jan Wedekind <jan@wedesoft.de>  Tue, 25 Oct 2016 18:28:30 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 25 Nov 2016 21:53:30 +0000
+
+aiscm (0.9.1-1) UNRELEASED; urgency=low
+
+  * aiscm/jit.scm: compile code to allocate return values
+  - support for native constants
+  - working on tensor expressions
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 25 Nov 2016 21:53:30 +0000
 
 aiscm (0.8.3-1) UNRELEASED; urgency=low
 

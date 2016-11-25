@@ -51,9 +51,9 @@
       (r (var <bool>))]
   (ok (equal? (list (TEST a a) (SETE r)) (test-zero r a))
       "generate code for comparing with zero"))
-(ok (eq? <int> (to-type <int> <byte>))
+(ok (eq? <int> (convert-type <int> <byte>))
     "typecast for scalar type")
-(ok (eq? (sequence <int>) (to-type <int> (sequence <byte>)))
+(ok (eq? (sequence <int>) (convert-type <int> (sequence <byte>)))
     "typecast element-type of array type")
 (ok (equal? '(#f #t #f) (to-list (=0 (seq -1 0 1))))
     "compare bytes with zero")
