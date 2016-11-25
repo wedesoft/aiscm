@@ -707,9 +707,9 @@
   (let* [(vars         (map skeleton classes))
          (expr         (apply proc (map parameter vars)))
          (result-type  (type expr))
-         (result       (skeleton result-type))
+         (result       (parameter result-type))
          (types        (map class-of vars))
-         (intermediate (generate-return-code vars (parameter result) expr))
+         (intermediate (generate-return-code vars result expr))
          (instructions (asm context
                             <ulong>
                             (map typecode (content-vars vars))

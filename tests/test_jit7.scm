@@ -88,7 +88,7 @@
       "switch dimensions of a 2D tensor")
   (ok (equal? (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
       "tensor macro provides local variable")
-  (skip (equal? (to-list (roll r))
+  (ok (equal? (to-list (roll r))
               (to-list ((jit ctx (list (class-of r))
                 (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i))))) r)))
       "switch dimensions of a non-square 2D tensor"))
