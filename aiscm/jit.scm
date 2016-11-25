@@ -25,7 +25,7 @@
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
-            term indexer lookup index type subst code type-conversion assemble build-list package-return-content
+            term indexer lookup index type subst code convert-type type-conversion assemble build-list package-return-content
             jit iterator step setup increment body arguments operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
@@ -650,14 +650,13 @@
 (define-operator-mapping max 2 <meta<element>> (native-fun scm-max       ))
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
-(define (decompose-arg arg) (decompose-value (type arg) arg))
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name delegate out args)
   ((apply delegate (map type args)) out args))
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name delegate out args)
   ((apply delegate (map type args)) out args))
 (define-method (delegate-op target intermediate name delegate out args)
-  (let [(result (apply name (map decompose-arg args)))]
+  (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (append-map code (content (type out) out) (content (type result) result))))
 (define (delegate-fun name delegate)
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name delegate out args)))
@@ -743,7 +742,10 @@
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
-(define-method (to-bool a) (to-type <bool> a))
+; various type class conversions
+(define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
+(define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
+(define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
 ; define unary and binary operations
@@ -778,9 +780,6 @@
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
 
-(define-method (to-type (target <meta<element>>) (self <meta<element>>)) target)
-(define-method (to-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
-
 (define-method (type-conversion (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
 (define-method (type-conversion (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
 (define-method (type-conversion (target <meta<usint>>) (source <meta<obj>>  )) (native-fun scm-to-uint16  ))
@@ -812,8 +811,9 @@
 
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
+        (coercion   (cut convert-type target <>))
         (conversion (cut type-conversion target <>))]
-    (make-function to-target to-target (delegate-fun to-target conversion) (list a))))
+    (make-function to-target coercion (delegate-fun to-target conversion) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type
