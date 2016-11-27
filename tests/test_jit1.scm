@@ -109,9 +109,7 @@
       "Substitution works with 'CMP'")
   (let [(u (var <ubyte>))]
     (ok (equal? (SETB CL) (substitute-variables (SETB u) (list (cons u RCX))))
-        "Substitution works with 'SETB'"))
-  (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
-      "'labels' should extract indices of labels"))
+        "Substitution works with 'SETB'")))
 (ok (equal? (MOV AX CX) (mov-signed AX CX))
     "copy signed 16-bit value")
 (ok (equal? (MOVSX EAX CX) (mov-signed EAX CX))
@@ -126,6 +124,8 @@
     "copy part of unsigned value")
 (ok (equal? (MOV RAX RCX) (mov-unsigned RAX ECX)); TODO: map to MOV EAX ECX
     "zero-extending 32-bit value is done by default")
+(ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
+    "'labels' should extract indices of labels")
 (ok (equal? '(1) (next-indices (MOV CX 0) 0 '()))
     "Get following indices for first statement in a program")
 (ok (equal? '(2) (next-indices (MOV AX CX) 1 '()))

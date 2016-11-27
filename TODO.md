@@ -1,7 +1,8 @@
 ## Ready
 
-* type-conversion -> to-type
-* name != delegate only for type conversions
+* put results in live-analysis
+* register allocation: registers, stack pointer, live intervals, blocked intervals, predefined, overlap, spill variable,
+  parameters, stack parameters
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * improve run-time performance of register allocator (linear-scan register allocator?)
 * spill blocked registers into other register
@@ -24,6 +25,7 @@
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
+* ArUco markers robot control
 * fftw3, hypercomplex, kinect, linalg, opencv, qt4
 * predator tracker
 * <-> Guile 6.7.5 Arrays
