@@ -177,8 +177,8 @@
 (define (labels prog)
   "Get positions of labels in program"
   (filter (compose symbol? car) (map cons prog (iota (length prog)))))
-(define-method (next-indices cmd k labels) (if (equal? cmd (RET)) '() (list (1+ k))))
-(define-method (next-indices (cmd <jcc>) k labels)
+(define-method (next-indices labels cmd k) (if (equal? cmd (RET)) '() (list (1+ k))))
+(define-method (next-indices labels (cmd <jcc>) k)
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
 (define (live-analysis prog)
@@ -187,7 +187,7 @@
             (outputs   (map output prog))
             (indices   (iota (length prog)))
             (lut       (labels prog))
-            (flow      (map (lambda (cmd k) (next-indices cmd k lut)) prog indices))
+            (flow      (map (cut next-indices lut <...>) prog indices))
             (same?     (cut every (cut lset= equal? <...>) <...>))
             (track     (lambda (value)
                          (lambda (in ind out)
