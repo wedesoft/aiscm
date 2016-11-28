@@ -21,13 +21,20 @@
 
 (define intervals (live-intervals (live-analysis prog) (variables prog)))
 
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
+
 (define (labels prog)
   "Get positions of labels in program"
   (filter (compose symbol? car) (map cons prog (iota (length prog)))))
-(define-method (next-indices labels cmd k) (if (equal? cmd (RET)) '() (list (1+ k))))
+
+(define-method (next-indices labels cmd k)
+  "Determine next program indices for a statement"
+  (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices labels (cmd <jcc>) k)
+  "Determine next program indices for a (conditional) jump"
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
+
 (define (live-analysis prog results)
   "Get list of live variables for program terminated by RET statement"
   (letrec* [(inputs    (map-if (cut equal? (RET) <>) (const results) input prog))
@@ -43,6 +50,9 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
+(define (linear-scan intervals registers)
+  "Allocate registers"
+  (map cons (map car intervals) registers))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -69,5 +79,9 @@
   (ok (equal? (list (list a) (list a))
               (live-analysis (list (MOV a 0) (RET)) (list a)))
       "results should be propagated backwards from the return statement"))
+(ok (equal? '() (linear-scan '() '()))
+    "linear scan with no variables returns empty mapping")
+(ok (equal? (list (cons 'a RAX)) (linear-scan '((a . (0 . 0))) (list RAX)))
+    "allocate single variable")
 
 (run-tests)
