@@ -50,9 +50,14 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
+
+; TODO: sort intervals
 (define (linear-scan intervals registers)
-  "Allocate registers"
-  (map cons (map car intervals) registers))
+  (if (null? intervals)
+      '()
+      (cons
+        (cons (caar intervals) (car registers))
+        (linear-scan (cdr intervals) (if (< (cddar intervals) 1) registers (cdr registers))))))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -83,5 +88,9 @@
     "linear scan with no variables returns empty mapping")
 (ok (equal? (list (cons 'a RAX)) (linear-scan '((a . (0 . 0))) (list RAX)))
     "allocate single variable")
+(ok (equal? (list (cons 'a RAX) (cons 'b RAX)) (linear-scan '((a . (0 . 0)) (b . (1 . 1))) (list RAX RCX)))
+    "reuse register with two variables")
+(ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX)))
+    "do not reuse register with two conflicting variables")
 
 (run-tests)
