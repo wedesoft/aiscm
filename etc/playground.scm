@@ -60,6 +60,10 @@
   "Find register available at the specified program index"
   (cdr (or (find (lambda (x) (<= (car x) index)) availability) '(0 . #f))))
 
+(define (mark-used-till availability index register)
+  "Mark register in use up to specified index"
+  (cons (cons index register) (cdr availability)))
+
 (define (linear-scan intervals registers)
   (if (null? intervals)
       '()
@@ -112,5 +116,11 @@
     "first register already available")
 (ok (equal? RCX (find-available (list (cons 3 RAX) (cons 2 RCX)) 2))
     "second register is available")
+(ok (equal? (list (cons 3 RAX)) (mark-used-till (list (cons 1 RAX)) 3 RAX))
+    "mark first register as used")
+(ok (equal? (list (cons 3 RAX) (cons 5 RCX)) (mark-used-till (list (cons 1 RAX) (cons 5 RCX)) 3 RAX))
+    "keep track of unaffected registers")
+(skip (equal? (list (cons 1 RAX) (cons 8 RCX)) (mark-used-till (list (cons 1 RAX) (cons 5 RCX)) 8 RCX))
+    "mark second register as used")
 
 (run-tests)
