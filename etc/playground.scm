@@ -50,8 +50,16 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
-
 ; TODO: sort intervals
+
+(define (initial-availability lst)
+  "Initially all registers are available from index zero on"
+  (map (cut cons 0 <>) lst))
+
+(define (find-available availability index)
+  "Find register available at the specified program index"
+  (cdr (or (find (lambda (x) (<= (car x) index)) availability) '(0 . #f))))
+
 (define (linear-scan intervals registers)
   (if (null? intervals)
       '()
@@ -92,5 +100,17 @@
     "reuse register with two variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX)))
     "do not reuse register with two conflicting variables")
+(ok (equal? (list (cons 0 RAX) (cons 0 RCX)) (initial-availability (list RAX RCX)))
+    "initial availability points of registers")
+(ok (equal? RAX (find-available (list (cons 0 RAX)) 0))
+    "first register available")
+(ok (not (find-available (list (cons 1 RAX)) 0))
+    "first register not available")
+(ok (equal? RAX (find-available (list (cons 1 RAX)) 1))
+    "first register available at a later point in time")
+(ok (equal? RAX (find-available (list (cons 0 RAX)) 1))
+    "first register already available")
+(ok (equal? RCX (find-available (list (cons 3 RAX) (cons 2 RCX)) 2))
+    "second register is available")
 
 (run-tests)
