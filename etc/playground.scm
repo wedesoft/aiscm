@@ -54,15 +54,15 @@
 
 (define (initial-availability lst)
   "Initially all registers are available from index zero on"
-  (map (cut cons 0 <>) lst))
+  (map (cut cons <> 0) lst))
 
 (define (find-available availability index)
   "Find register available at the specified program index"
-  (cdr (or (find (lambda (x) (<= (car x) index)) availability) '(0 . #f))))
+  (car (or (find (lambda (x) (<= (cdr x) index)) availability) '(#f))))
 
-(define (mark-used-till availability index register)
+(define (mark-used-till availability register index)
   "Mark register in use up to specified index"
-  (cons (cons index register) (cdr availability)))
+  (assq-set availability register index))
 
 (define (linear-scan intervals registers)
   (if (null? intervals)
@@ -104,23 +104,23 @@
     "reuse register with two variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX)))
     "do not reuse register with two conflicting variables")
-(ok (equal? (list (cons 0 RAX) (cons 0 RCX)) (initial-availability (list RAX RCX)))
+(ok (equal? (list (cons RAX 0) (cons RCX 0)) (initial-availability (list RAX RCX)))
     "initial availability points of registers")
-(ok (equal? RAX (find-available (list (cons 0 RAX)) 0))
+(ok (equal? RAX (find-available (list (cons RAX 0)) 0))
     "first register available")
-(ok (not (find-available (list (cons 1 RAX)) 0))
+(ok (not (find-available (list (cons RAX 1)) 0))
     "first register not available")
-(ok (equal? RAX (find-available (list (cons 1 RAX)) 1))
+(ok (equal? RAX (find-available (list (cons RAX 1)) 1))
     "first register available at a later point in time")
-(ok (equal? RAX (find-available (list (cons 0 RAX)) 1))
+(ok (equal? RAX (find-available (list (cons RAX 0)) 1))
     "first register already available")
-(ok (equal? RCX (find-available (list (cons 3 RAX) (cons 2 RCX)) 2))
+(ok (equal? RCX (find-available (list (cons RAX 3) (cons RCX 2)) 2))
     "second register is available")
-(ok (equal? (list (cons 3 RAX)) (mark-used-till (list (cons 1 RAX)) 3 RAX))
+(ok (equal? (list (cons RAX 3)) (mark-used-till (list (cons RAX 1)) RAX 3))
     "mark first register as used")
-(ok (equal? (list (cons 3 RAX) (cons 5 RCX)) (mark-used-till (list (cons 1 RAX) (cons 5 RCX)) 3 RAX))
+(ok (equal? (list (cons RAX 3) (cons RCX 5)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RAX 3))
     "keep track of unaffected registers")
-(skip (equal? (list (cons 1 RAX) (cons 8 RCX)) (mark-used-till (list (cons 1 RAX) (cons 5 RCX)) 8 RCX))
+(ok (equal? (list (cons RAX 1) (cons RCX 8)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
     "mark second register as used")
 
 (run-tests)
