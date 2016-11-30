@@ -64,12 +64,13 @@
   "Mark register in use up to specified index"
   (assq-set availability register index))
 
-(define (linear-scan intervals registers)
+(define (linear-scan intervals availability)
   (if (null? intervals)
       '()
-      (cons
-        (cons (caar intervals) (car registers))
-        (linear-scan (cdr intervals) (if (< (cddar intervals) 1) registers (cdr registers))))))
+      (let [(register (find-available availability (cadar intervals)))]
+        (cons
+          (cons (caar intervals) register)
+          (linear-scan (cdr intervals) (mark-used-till availability register (1+ (cddar intervals))))))))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -96,14 +97,6 @@
   (ok (equal? (list (list a) (list a))
               (live-analysis (list (MOV a 0) (RET)) (list a)))
       "results should be propagated backwards from the return statement"))
-(ok (equal? '() (linear-scan '() '()))
-    "linear scan with no variables returns empty mapping")
-(ok (equal? (list (cons 'a RAX)) (linear-scan '((a . (0 . 0))) (list RAX)))
-    "allocate single variable")
-(ok (equal? (list (cons 'a RAX) (cons 'b RAX)) (linear-scan '((a . (0 . 0)) (b . (1 . 1))) (list RAX RCX)))
-    "reuse register with two variables")
-(ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX)))
-    "do not reuse register with two conflicting variables")
 (ok (equal? (list (cons RAX 0) (cons RCX 0)) (initial-availability (list RAX RCX)))
     "initial availability points of registers")
 (ok (equal? RAX (find-available (list (cons RAX 0)) 0))
@@ -122,5 +115,15 @@
     "keep track of unaffected registers")
 (ok (equal? (list (cons RAX 1) (cons RCX 8)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
     "mark second register as used")
+(ok (equal? '() (linear-scan '() '()))
+    "linear scan with no variables returns empty mapping")
+(ok (equal? (list (cons 'a RAX)) (linear-scan '((a . (0 . 0))) (initial-availability (list RAX))))
+    "allocate single variable")
+(ok (equal? (list (cons 'a RAX) (cons 'b RAX)) (linear-scan '((a . (0 . 0)) (b . (1 . 1))) (initial-availability (list RAX RCX))))
+    "reuse register with two variables")
+(ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (initial-availability (list RAX RCX))))
+    "allocate different registers for two conflicting variables")
+(ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 0)) (b . (0 . 1))) (initial-availability (list RAX RCX))))
+    "allocate different registers for two conflicting variables")
 
 (run-tests)
