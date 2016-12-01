@@ -15,12 +15,6 @@
              (aiscm util)
              (guile-tap))
 
-(define v (var <int>))
-
-(define prog (list (MOV v 42) (RET)))
-
-(define intervals (live-intervals (live-analysis prog) (variables prog)))
-
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
 (define (labels prog)
@@ -64,6 +58,11 @@
   "Mark register in use up to specified index"
   (assq-set availability register (1+ last-index)))
 
+(define (spill-candidate availability)
+  "Select register blocking for the longest time as a spill candidate"
+  (car (argmax cdr availability)))
+
+; TODO: recursively return spilled registers and allocated registers?
 ; TODO: recursively return spilled registers and allocated registers?
 (define (linear-allocate live-intervals availability)
   "recursively allocate registers"
@@ -135,5 +134,16 @@
     "allocate different registers for two conflicting variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 0)) (b . (0 . 1))) (list RAX RCX)))
     "allocate different registers for two conflicting variables")
+(ok (equal? RAX (spill-candidate (list (cons RAX 0))))
+    "spill only register if there is only one candidate")
+(ok (equal? RCX (spill-candidate (list (cons RAX 0) (cons RCX 1))))
+    "spill second register if it is allocated for a longer interval")
+(ok (equal? RAX (spill-candidate (list (cons RAX 1) (cons RCX 0))))
+    "spill first register if it is allocated for a longer interval")
 
 (run-tests)
+
+(define v (var <int>))
+(define prog (list (MOV v 42) (RET)))
+(define intervals (live-intervals (live-analysis prog '()) (variables prog)))
+(linear-scan intervals default-registers)
