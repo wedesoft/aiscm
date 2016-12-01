@@ -65,22 +65,22 @@
   (assq-set availability register (1+ last-index)))
 
 ; TODO: recursively return spilled registers and allocated registers?
-(define (linear-allocate intervals availability)
+(define (linear-allocate live-intervals availability)
   "recursively allocate registers"
-  (if (null? intervals)
+  (if (null? live-intervals)
       '()
-      (let* [(candidate (car intervals))
+      (let* [(candidate (car live-intervals))
              (variable  (car candidate))
              (interval  (cdr candidate))
              (first-index (car interval))
              (last-index (cdr interval))]
         (let [(register (find-available availability first-index))]
           (cons (cons variable register)
-                (linear-allocate (cdr intervals) (mark-used-till availability register last-index)))))))
+                (linear-allocate (cdr live-intervals) (mark-used-till availability register last-index)))))))
 
-(define (linear-scan intervals registers)
+(define (linear-scan live-intervals registers)
   "linear scan register allocation"
-  (linear-allocate intervals (initial-availability registers)))
+  (linear-allocate live-intervals (initial-availability registers)))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
