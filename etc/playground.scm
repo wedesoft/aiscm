@@ -56,22 +56,27 @@
   "Initially all registers are available from index zero on"
   (map (cut cons <> 0) lst))
 
-(define (find-available availability index)
-  "Find register available at the specified program index"
-  (car (or (find (lambda (x) (<= (cdr x) index)) availability) '(#f))))
+(define (find-available availability first-index)
+  "Find register available from the specified first program index onwards"
+  (car (or (find (lambda (x) (<= (cdr x) first-index)) availability) '(#f))))
 
-(define (mark-used-till availability register index)
+(define (mark-used-till availability register last-index)
   "Mark register in use up to specified index"
-  (assq-set availability register index))
+  (assq-set availability register (1+ last-index)))
 
+; TODO: recursively return spilled registers and allocated registers?
 (define (linear-allocate intervals availability)
   "recursively allocate registers"
   (if (null? intervals)
       '()
-      (let [(register (find-available availability (cadar intervals)))]
-        (cons
-          (cons (caar intervals) register)
-          (linear-allocate (cdr intervals) (mark-used-till availability register (1+ (cddar intervals))))))))
+      (let* [(candidate (car intervals))
+             (variable  (car candidate))
+             (interval  (cdr candidate))
+             (first-index (car interval))
+             (last-index (cdr interval))]
+        (let [(register (find-available availability first-index))]
+          (cons (cons variable register)
+                (linear-allocate (cdr intervals) (mark-used-till availability register last-index)))))))
 
 (define (linear-scan intervals registers)
   "linear scan register allocation"
@@ -114,11 +119,11 @@
     "first register already available")
 (ok (equal? RCX (find-available (list (cons RAX 3) (cons RCX 2)) 2))
     "second register is available")
-(ok (equal? (list (cons RAX 3)) (mark-used-till (list (cons RAX 1)) RAX 3))
+(ok (equal? (list (cons RAX 4)) (mark-used-till (list (cons RAX 1)) RAX 3))
     "mark first register as used")
-(ok (equal? (list (cons RAX 3) (cons RCX 5)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RAX 3))
+(ok (equal? (list (cons RAX 4) (cons RCX 5)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RAX 3))
     "keep track of unaffected registers")
-(ok (equal? (list (cons RAX 1) (cons RCX 8)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
+(ok (equal? (list (cons RAX 1) (cons RCX 9)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
     "mark second register as used")
 (ok (equal? '() (linear-scan '() '()))
     "linear scan with no variables returns empty mapping")
