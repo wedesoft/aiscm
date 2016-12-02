@@ -52,7 +52,7 @@
 
 (define (find-available availability first-index)
   "Find register available from the specified first program index onwards"
-  (car (or (find (lambda (x) (<= (cdr x) first-index)) availability) '(#f))))
+  (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
 
 (define (mark-used-till availability register last-index)
   "Mark register in use up to specified index"
@@ -62,20 +62,26 @@
   "Select register blocking for the longest time as a spill candidate"
   (car (argmax cdr availability)))
 
+(define (current-user allocation register)
+  "Determine the variable which last allocated the register"
+  (car (find (compose (cut eq? register <>) cdr) (reverse allocation))))
+
 ; TODO: recursively return spilled registers and allocated registers?
 ; TODO: recursively return spilled registers and allocated registers?
-(define (linear-allocate live-intervals availability)
+(define (linear-allocate live-intervals availability . result)
   "recursively allocate registers"
   (if (null? live-intervals)
-      '()
+      result
       (let* [(candidate (car live-intervals))
              (variable  (car candidate))
              (interval  (cdr candidate))
              (first-index (car interval))
              (last-index (cdr interval))]
         (let [(register (find-available availability first-index))]
-          (cons (cons variable register)
-                (linear-allocate (cdr live-intervals) (mark-used-till availability register last-index)))))))
+          (apply linear-allocate
+                 (cdr live-intervals)
+                 (mark-used-till availability register last-index)
+                 (attach result (cons variable register)))))))
 
 (define (linear-scan live-intervals registers)
   "linear scan register allocation"
@@ -140,6 +146,18 @@
     "spill second register if it is allocated for a longer interval")
 (ok (equal? RAX (spill-candidate (list (cons RAX 1) (cons RCX 0))))
     "spill first register if it is allocated for a longer interval")
+(ok (equal? (list (cons 'a #f)) (linear-scan '((a . (0 . 0))) '()))
+    "mark variable for spilling if no register is available")
+(ok (eq? 'a (current-user (list (cons 'a RCX)) RCX))
+    "if only one variable is using the register, it is the last user")
+(ok (eq? 'b (current-user (list (cons 'a RCX) (cons 'b RCX)) RCX))
+    "if two variables are using the register, return the last one")
+(ok (eq? 'b (current-user (list (cons 'a RCX) (cons 'b RCX)) RCX))
+    "if two variables are using the register, return the last one")
+(ok (eq? 'a (current-user (list (cons 'a RCX) (cons 'b RAX)) RCX))
+    "ignore variables using other registers")
+(skip (equal? (list (cons 'a #f) (cons 'b RAX)) (linear-scan '((a . (0 . 3)) (b . (1 . 1))) (list RAX)))
+    "mark first variable for spilling if it has a longer live interval")
 
 (run-tests)
 
