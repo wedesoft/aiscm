@@ -66,8 +66,6 @@
   "Determine the variable which last allocated the register"
   (car (find (compose (cut eq? register <>) cdr) (reverse allocation))))
 
-; TODO: recursively return spilled registers and allocated registers?
-; TODO: recursively return spilled registers and allocated registers?
 (define (linear-allocate live-intervals register-use variable-use . result)
   "recursively allocate registers"
   (if (null? live-intervals)
@@ -79,23 +77,19 @@
              (last-index   (cdr interval))
              (variable-use (mark-used-till variable-use variable last-index))]
         (let [(register (find-available register-use first-index))]
-          (apply linear-allocate
-                 (cdr live-intervals)
-                 (mark-used-till register-use register last-index)
-                 variable-use
-                 (assq-set result variable register))))))
-
-;          (if register
-;            (apply linear-allocate
-;                   (cdr live-intervals)
-;                   (mark-used-till availability register last-index)
-;                   (assq-set result variable register))
-;            (let* [(register (longest-use availability))
-;                   (spill    (current-user result register))]
-;              (apply linear-allocate
-;                     (cdr live-intervals)
-;                     (mark-used-till availability register last-index)
-;                     (assq-set (assq-set result spill #f) variable register))))    
+          (if register
+            (apply linear-allocate; TODO: refactor
+                   (cdr live-intervals)
+                   (mark-used-till register-use register last-index)
+                   variable-use
+                   (assq-set result variable register))
+            (let* [(spill (longest-use variable-use))
+                   (register (assq-ref result spill))]
+              (apply linear-allocate
+                     (cdr live-intervals)
+                     (mark-used-till register-use register last-index)
+                     variable-use
+                     (assq-set (assq-set result spill #f) variable register)))))))); TODO: remove instead of setting to false?
 
 (define (linear-scan live-intervals registers)
   "linear scan register allocation"
@@ -170,7 +164,7 @@
     "allocate different registers for two conflicting variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b #f)) (linear-scan '((a . (0 . 1)) (b . (1 . 3))) (list RAX)))
     "mark last variable for spilling if it has a longer live interval")
-(skip (equal? (list (cons 'a #f) (cons 'b RAX)) (linear-scan '((a . (0 . 3)) (b . (1 . 1))) (list RAX)))
+(ok (equal? (list (cons 'a #f) (cons 'b RAX)) (linear-scan '((a . (0 . 3)) (b . (1 . 1))) (list RAX)))
     "mark first variable for spilling if it has a longer live interval")
 
 (run-tests)
