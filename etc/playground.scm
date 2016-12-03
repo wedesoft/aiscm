@@ -46,7 +46,7 @@
 
 ; TODO: sort intervals
 
-(define (initial-register-availability lst)
+(define (initial-register-use lst)
   "Initially all registers are available from index zero on"
   (map (cut cons <> 0) lst))
 
@@ -58,7 +58,7 @@
   "Mark element in use up to specified index"
   (assq-set availability element (1+ last-index)))
 
-(define (longest-unavailable availability)
+(define (longest-use availability)
   "Select register blocking for the longest time as a spill candidate"
   (car (argmax cdr availability)))
 
@@ -68,7 +68,7 @@
 
 ; TODO: recursively return spilled registers and allocated registers?
 ; TODO: recursively return spilled registers and allocated registers?
-(define (linear-allocate live-intervals register-availability variable-use . result)
+(define (linear-allocate live-intervals register-use variable-use . result)
   "recursively allocate registers"
   (if (null? live-intervals)
       result
@@ -78,10 +78,10 @@
              (first-index  (car interval))
              (last-index   (cdr interval))
              (variable-use (mark-used-till variable-use variable last-index))]
-        (let [(register (find-available register-availability first-index))]
+        (let [(register (find-available register-use first-index))]
           (apply linear-allocate
                  (cdr live-intervals)
-                 (mark-used-till register-availability register last-index)
+                 (mark-used-till register-use register last-index)
                  variable-use
                  (assq-set result variable register))))))
 
@@ -90,7 +90,7 @@
 ;                   (cdr live-intervals)
 ;                   (mark-used-till availability register last-index)
 ;                   (assq-set result variable register))
-;            (let* [(register (longest-unavailable availability))
+;            (let* [(register (longest-use availability))
 ;                   (spill    (current-user result register))]
 ;              (apply linear-allocate
 ;                     (cdr live-intervals)
@@ -99,7 +99,7 @@
 
 (define (linear-scan live-intervals registers)
   "linear scan register allocation"
-  (linear-allocate live-intervals (initial-register-availability registers) '()))
+  (linear-allocate live-intervals (initial-register-use registers) '()))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -126,7 +126,7 @@
   (ok (equal? (list (list a) (list a))
               (live-analysis (list (MOV a 0) (RET)) (list a)))
       "results should be propagated backwards from the return statement"))
-(ok (equal? (list (cons RAX 0) (cons RCX 0)) (initial-register-availability (list RAX RCX)))
+(ok (equal? (list (cons RAX 0) (cons RCX 0)) (initial-register-use (list RAX RCX)))
     "initial availability points of registers")
 (ok (equal? RAX (find-available (list (cons RAX 0)) 0))
     "first register available")
@@ -152,11 +152,11 @@
     "if two variables are using the register, return the last one")
 (ok (eq? 'a (current-user (list (cons 'a RCX) (cons 'b RAX)) RCX))
     "ignore variables using other registers")
-(ok (eq? RAX (longest-unavailable (list (cons RAX 0))))
+(ok (eq? RAX (longest-use (list (cons RAX 0))))
     "spill only register if there is only one candidate")
-(ok (eq? RCX (longest-unavailable (list (cons RAX 0) (cons RCX 1))))
+(ok (eq? RCX (longest-use (list (cons RAX 0) (cons RCX 1))))
     "spill second register if it is allocated for a longer interval")
-(ok (eq? RAX (longest-unavailable (list (cons RAX 1) (cons RCX 0))))
+(ok (eq? RAX (longest-use (list (cons RAX 1) (cons RCX 0))))
     "spill first register if it is allocated for a longer interval")
 (ok (equal? '() (linear-scan '() '()))
     "linear scan with no variables returns empty mapping")
