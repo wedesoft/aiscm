@@ -75,21 +75,19 @@
              (interval     (cdr candidate))
              (first-index  (car interval))
              (last-index   (cdr interval))
-             (variable-use (mark-used-till variable-use variable last-index))]
-        (let [(register (find-available register-use first-index))]
-          (if register
-            (apply linear-allocate; TODO: refactor
-                   (cdr live-intervals)
-                   (mark-used-till register-use register last-index)
-                   variable-use
-                   (assq-set result variable register))
-            (let* [(spill (longest-use variable-use))
-                   (register (assq-ref result spill))]
-              (apply linear-allocate
-                     (cdr live-intervals)
-                     (mark-used-till register-use register last-index)
-                     variable-use
-                     (assq-set (assq-set result spill #f) variable register)))))))); TODO: remove instead of setting to false?
+             (variable-use (mark-used-till variable-use variable last-index))
+             (register     (find-available register-use first-index))
+             (recursion    (lambda (result register)
+                             (apply linear-allocate
+                                     (cdr live-intervals)
+                                     (mark-used-till register-use register last-index)
+                                     variable-use
+                                     (assq-set result variable register))))]
+        (if register
+          (recursion result register)
+          (let* [(spill-candidate (longest-use variable-use))
+                 (register (assq-ref result spill-candidate))]
+            (recursion (assq-set result spill-candidate #f) register))))))
 
 (define (linear-scan live-intervals registers)
   "linear scan register allocation"
