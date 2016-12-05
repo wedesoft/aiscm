@@ -19,7 +19,9 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
-            substitute-variables variables get-args input output labels next-indices live-analysis
+            substitute-variables variables get-args input output labels next-indices
+            initial-register-use find-available mark-used-till longest-use live-analysis
+            linear-scan linear-scan-allocate adjust-stack-pointer
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -177,13 +179,34 @@
 (define (labels prog)
   "Get positions of labels in program"
   (filter (compose symbol? car) (map cons prog (iota (length prog)))))
-(define-method (next-indices labels cmd k) (if (equal? cmd (RET)) '() (list (1+ k))))
+
+(define (initial-register-use lst)
+  "Initially all registers are available from index zero on"
+  (map (cut cons <> 0) lst))
+
+(define (find-available availability first-index)
+  "Find element available from the specified first program index onwards"
+  (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
+
+(define (mark-used-till availability element last-index)
+  "Mark element in use up to specified index"
+  (assq-set availability element (1+ last-index)))
+
+(define (longest-use availability)
+  "Select register blocking for the longest time as a spill candidate"
+  (car (argmax cdr availability)))
+
+(define-method (next-indices labels cmd k)
+  "Determine next program indices for a statement"
+  (if (equal? cmd (RET)) '() (list (1+ k))))
 (define-method (next-indices labels (cmd <jcc>) k)
+  "Determine next program indices for a (conditional) jump"
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
-(define (live-analysis prog)
+
+(define (live-analysis prog results)
   "Get list of live variables for program terminated by RET statement"
-  (letrec* [(inputs    (map input prog))
+  (letrec* [(inputs    (map-if (cut equal? (RET) <>) (const results) input prog))
             (outputs   (map output prog))
             (indices   (iota (length prog)))
             (lut       (labels prog))
@@ -195,6 +218,47 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
+
+(define (linear-allocate live-intervals register-use variable-use . result)
+  "Recursively perform one-pass register allocation"
+  (if (null? live-intervals)
+      result
+      (let* [(candidate    (car live-intervals))
+             (variable     (car candidate))
+             (interval     (cdr candidate))
+             (first-index  (car interval))
+             (last-index   (cdr interval))
+             (variable-use (mark-used-till variable-use variable last-index))
+             (register     (find-available register-use first-index))
+             (recursion    (lambda (result register)
+                             (apply linear-allocate
+                                     (cdr live-intervals)
+                                     (mark-used-till register-use register last-index)
+                                     variable-use
+                                     (assq-set result variable register))))]
+        (if register
+          (recursion result register)
+          (let* [(spill-candidate (longest-use variable-use))
+                 (register        (assq-ref result spill-candidate))]
+            (recursion (assq-set result spill-candidate #f) register))))))
+
+(define (linear-scan live-intervals registers)
+  "Linear scan register allocation based on live intervals"
+  (linear-allocate (sort-by live-intervals cadr)
+                   (initial-register-use registers)
+                   '()))
+
+(define (adjust-stack-pointer offset prog)
+  "Adjust stack pointer offset at beginning and end of program"
+  (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
+
+(define (linear-scan-allocate prog)
+  "Linear scan register allocation for a given program"
+  (let* [(live         (live-analysis prog '())); TODO: specify return values here
+         (all-vars     (variables prog))
+         (intervals    (live-intervals live all-vars))
+         (substitution (linear-scan intervals default-registers))]
+    (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
@@ -283,7 +347,7 @@
          (update-intervals blocked (index-groups spill-code)))))
 
 (define (with-register-allocation prog predefined blocked registers parameters offset fun)
-  (let* [(live       (live-analysis prog))
+  (let* [(live       (live-analysis prog '()))
          (all-vars   (delete stack-pointer (variables prog)))
          (vars       (difference all-vars (map car predefined)))
          (intervals  (live-intervals live all-vars))
