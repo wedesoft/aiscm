@@ -44,7 +44,8 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
-; TODO: sort intervals
+; TODO: use RAX for temporary retrieval of spilled variables
+; TODO: blocked registers
 
 (define (initial-register-use lst)
   "Initially all registers are available from index zero on"
@@ -91,7 +92,9 @@
 
 (define (linear-scan live-intervals registers)
   "linear scan register allocation"
-  (linear-allocate live-intervals (initial-register-use registers) '()))
+  (linear-allocate (sort-by live-intervals cadr)
+                   (initial-register-use registers)
+                   '()))
 
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -158,6 +161,8 @@
     "reuse register with two variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX)))
     "allocate different registers for two conflicting variables")
+(ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((b . (1 . 1)) (a . (0 . 1))) (list RAX RCX)))
+    "sort live intervals by beginning of interval before performing linear-scan register allocation")
 (ok (equal? (list (cons 'a RAX) (cons 'b RCX)) (linear-scan '((a . (0 . 0)) (b . (0 . 1))) (list RAX RCX)))
     "allocate different registers for two conflicting variables")
 (ok (equal? (list (cons 'a RAX) (cons 'b #f)) (linear-scan '((a . (0 . 1)) (b . (1 . 3))) (list RAX)))

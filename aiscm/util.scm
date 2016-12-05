@@ -116,11 +116,14 @@
     (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
     variables))
 (define ((overlap-interval intervals) interval)
+  "Get list of variables with overlapping intervals"
   (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
                                     (<= (cadr x) (cdr interval)))) intervals)))
 (define ((overlap intervals) var)
+  "Get variables with overlapping live intervals"
   (let [(interval (assq-ref intervals var))]
     ((overlap-interval intervals) interval)))
+
 (define* (color-intervals intervals nodes colors #:key (predefined '()) (blocked '()))
   (if (null? nodes) predefined
     (let* [(target    (argmin (compose length (overlap intervals)) nodes))
