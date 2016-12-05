@@ -252,12 +252,12 @@
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
-(define (linear-scan-allocate prog)
+(define* (linear-scan-allocate prog #:key (registers default-registers))
   "Linear scan register allocation for a given program"
   (let* [(live         (live-analysis prog '())); TODO: specify return values here
          (all-vars     (variables prog))
          (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan intervals default-registers))]
+         (substitution (linear-scan intervals registers))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
 ; stack pointer placeholder
