@@ -44,7 +44,7 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
-; TODO: use RAX for temporary retrieval of spilled variables
+; TODO: use RAX for temporary retrieval of spilled variables (or RDX?)
 ; TODO: blocked registers
 
 (define (initial-register-use lst)

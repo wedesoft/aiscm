@@ -16,23 +16,37 @@
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm)
   #:export-syntax (define-class* template-class synchronise))
+
+
 (load-extension "libguile-aiscm-util" "init_util")
+
 (define (toplevel-define! name val)
+  "Create a definition in the top level context"
   (module-define! (current-module) name val) val)
+
 (define (super class)
+  "Get (first) direct super class of a class"
   (let [(supers (class-direct-supers class))]
     (if (null? supers)
       (scm-error 'misc-error 'super "Class ~a has no super class" (list class) #f)
       (car supers))))
+
 (define-syntax-rule (define-class* name super metaname metasuper slots ...)
+  "Define a class with corresponding meta class and set up inheritance for both classes"
   (begin
     (define-class metaname (metasuper))
     (define-class name (super) slots ...  #:metaclass metaname)))
-(define-method (member-string x) (format #f "~a" x))
+
+(define-method (member-string x)
+  "Convert value to string"
+  (format #f "~a" x))
 (define-method (member-string (x <class>))
+  "Get class name and remove leading '<' character and trailing '>' character"
   (let [(name (format #f "~a" (class-name x)))]
     (xsubstring name 1 (1- (string-length name)))))
+
 (define-syntax-rule (template-class (base args ...) super finaliser ...)
+  "Define a parametric class deriving from BASE using multiple ARGS as parameters"
   (let* [(members  (map member-string (list args ...)))
          (name     (string->symbol (format #f "<~a<~a>>" (quote base) (string-join members ","))))
          (metaname (string->symbol (format #f "<meta~a>" name)))]
@@ -44,6 +58,7 @@
         (for-each (lambda (fun) (fun class metaclass)) (list finaliser ...))
         class)
       (primitive-eval name))))
+
 (define-generic destroy)
 (define (xor a b) (not (eq? a b)))
 (define (attach lst x) (reverse (cons x (reverse lst))))
