@@ -3,4 +3,3 @@
 (define output (make <pulse-play> #:rate (rate audio) #:channels (channels audio) #:typecode (typecode audio)))
 (write-audio (lambda _ (read-audio audio)) output)
 (drain output)
-(destroy output)
