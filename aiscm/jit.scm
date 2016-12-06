@@ -221,7 +221,7 @@
 
 (define (linear-scan-coloring live-intervals registers)
   "Linear scan register allocation based on live intervals"
-  (define (linear-allocate live-intervals register-use variable-use . result)
+  (define (linear-allocate live-intervals register-use variable-use result)
     (if (null? live-intervals)
         result
         (let* [(candidate    (car live-intervals))
@@ -232,17 +232,16 @@
                (variable-use (mark-used-till variable-use variable last-index))
                (register     (find-available register-use first-index))
                (recursion    (lambda (result register)
-                               (apply linear-allocate
-                                       (cdr live-intervals)
-                                       (mark-used-till register-use register last-index)
-                                       variable-use
-                                       (assq-set result variable register))))]
+                               (linear-allocate (cdr live-intervals)
+                                                (mark-used-till register-use register last-index)
+                                                variable-use
+                                                (assq-set result variable register))))]
           (if register
             (recursion result register)
             (let* [(spill-candidate (longest-use variable-use))
                    (register        (assq-ref result spill-candidate))]
               (recursion (assq-set result spill-candidate #f) register))))))
-  (linear-allocate (sort-by live-intervals cadr) (initial-register-use registers) '()))
+  (linear-allocate (sort-by live-intervals cadr) (initial-register-use registers) '() '()))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
