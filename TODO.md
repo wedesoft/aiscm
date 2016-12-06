@@ -1,5 +1,9 @@
 ## Ready
 
+* predefined registers
+* use RAX for temporary retrieval of spilled variables (or RDX?)
+* force "output" of each command into (temporary) register
+* blocked registers
 * put results in live-analysis
 * register allocation: registers, stack pointer, live intervals, blocked intervals, predefined, overlap, spill variable,
   parameters, stack parameters

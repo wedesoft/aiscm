@@ -21,7 +21,7 @@
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
-            linear-scan linear-scan-allocate adjust-stack-pointer
+            linear-scan-coloring linear-scan-allocate adjust-stack-pointer
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -242,7 +242,7 @@
                  (register        (assq-ref result spill-candidate))]
             (recursion (assq-set result spill-candidate #f) register))))))
 
-(define (linear-scan live-intervals registers)
+(define (linear-scan-coloring live-intervals registers)
   "Linear scan register allocation based on live intervals"
   (linear-allocate (sort-by live-intervals cadr)
                    (initial-register-use registers)
@@ -257,7 +257,7 @@
   (let* [(live         (live-analysis prog '())); TODO: specify return values here
          (all-vars     (variables prog))
          (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan intervals registers))]
+         (substitution (linear-scan-coloring intervals registers))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
 ; stack pointer placeholder
