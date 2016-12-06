@@ -17,34 +17,30 @@
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
-(define (linear-allocate live-intervals register-use variable-use . result)
-  "Recursively perform one-pass register allocation"
-  (if (null? live-intervals)
-      result
-      (let* [(candidate    (car live-intervals))
-             (variable     (car candidate))
-             (interval     (cdr candidate))
-             (first-index  (car interval))
-             (last-index   (cdr interval))
-             (variable-use (mark-used-till variable-use variable last-index))
-             (register     (find-available register-use first-index))
-             (recursion    (lambda (result register)
-                             (apply linear-allocate
-                                     (cdr live-intervals)
-                                     (mark-used-till register-use register last-index)
-                                     variable-use
-                                     (assq-set result variable register))))]
-        (if register
-          (recursion result register)
-          (let* [(spill-candidate (longest-use variable-use))
-                 (register        (assq-ref result spill-candidate))]
-            (recursion (assq-set result spill-candidate #f) register))))))
-
 (define (linear-scan-coloring live-intervals registers)
   "Linear scan register allocation based on live intervals"
-  (linear-allocate (sort-by live-intervals cadr)
-                   (initial-register-use registers)
-                   '()))
+  (define (linear-allocate live-intervals register-use variable-use . result)
+    (if (null? live-intervals)
+        result
+        (let* [(candidate    (car live-intervals))
+               (variable     (car candidate))
+               (interval     (cdr candidate))
+               (first-index  (car interval))
+               (last-index   (cdr interval))
+               (variable-use (mark-used-till variable-use variable last-index))
+               (register     (find-available register-use first-index))
+               (recursion    (lambda (result register)
+                               (apply linear-allocate
+                                       (cdr live-intervals)
+                                       (mark-used-till register-use register last-index)
+                                       variable-use
+                                       (assq-set result variable register))))]
+          (if register
+            (recursion result register)
+            (let* [(spill-candidate (longest-use variable-use))
+                   (register        (assq-ref result spill-candidate))]
+              (recursion (assq-set result spill-candidate #f) register))))))
+  (linear-allocate (sort-by live-intervals cadr) (initial-register-use registers) '()))
 
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
