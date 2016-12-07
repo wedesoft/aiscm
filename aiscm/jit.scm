@@ -21,7 +21,7 @@
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
-            linear-scan-coloring linear-scan-allocate adjust-stack-pointer
+            sort-live-intervals linear-scan-coloring linear-scan-allocate adjust-stack-pointer
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -180,9 +180,13 @@
   "Get positions of labels in program"
   (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 
-(define (initial-register-use lst)
+(define (initial-register-use registers)
   "Initially all registers are available from index zero on"
-  (map (cut cons <> 0) lst))
+  (map (cut cons <> 0) registers))
+
+(define (sort-live-intervals live-intervals predefined-variables)
+  "Sort live intervals predefined variables first and then by start point"
+  (sort-by live-intervals (lambda (live) (if (memv (car live) predefined-variables) -1 (cadr live)))))
 
 (define (find-available availability first-index)
   "Find element available from the specified first program index onwards"
@@ -219,7 +223,7 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
-(define (linear-scan-coloring live-intervals registers)
+(define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use result)
     (if (null? live-intervals)
@@ -230,7 +234,8 @@
                (first-index  (car interval))
                (last-index   (cdr interval))
                (variable-use (mark-used-till variable-use variable last-index))
-               (register     (find-available register-use first-index))
+               (register     (or (assq-ref predefined variable)
+                                 (find-available register-use first-index)))
                (recursion    (lambda (result register)
                                (linear-allocate (cdr live-intervals)
                                                 (mark-used-till register-use register last-index)
@@ -241,18 +246,22 @@
             (let* [(spill-candidate (longest-use variable-use))
                    (register        (assq-ref result spill-candidate))]
               (recursion (assq-set result spill-candidate #f) register))))))
-  (linear-allocate (sort-by live-intervals cadr) (initial-register-use registers) '() '()))
+  (linear-allocate (sort-live-intervals live-intervals (map car predefined))
+                   (initial-register-use registers)
+                   '()
+                   '()))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
-(define* (linear-scan-allocate prog #:key (registers default-registers))
+(define* (linear-scan-allocate prog #:key (registers default-registers)
+                                          (predefined '()))
   "Linear scan register allocation for a given program"
   (let* [(live         (live-analysis prog '())); TODO: specify return values here
          (all-vars     (variables prog))
          (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan-coloring intervals registers))]
+         (substitution (linear-scan-coloring intervals registers predefined))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
 ; stack pointer placeholder
