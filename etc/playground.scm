@@ -17,6 +17,14 @@
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
+(define (unallocated-variables allocation)
+   "Return a list of unallocated variables"
+   (map car (filter (compose not cdr) allocation)))
+
+(define (allocated-variables allocation)
+   "Return a list of variables with register allocated"
+   (map car (filter cdr allocation)))
+
 (define (set-spill-locations allocation offset increment)
   "Allocate spill locations for spilled variables"
   (if (null? allocation)
@@ -24,7 +32,7 @@
       (let* [(candidate (car allocation))
              (variable  (car candidate))
              (register  (cdr candidate))]
-        (cons (if register candidate (cons variable (ptr <int> RSP offset)))
+        (cons (if register candidate (cons variable (ptr (typecode variable) RSP offset)))
               (set-spill-locations (cdr allocation) (+ offset (if register 0 increment)) increment)))))
 
 (define (linear-scan-coloring live-intervals registers predefined)
@@ -66,7 +74,8 @@
 
 (let [(a (var <int>))
       (b (var <int>))
-      (c (var <int>))]
+      (c (var <int>))
+      (x (var <sint>))]
   (ok (equal? (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV a 42) (RET))))
       "Allocate a single register")
@@ -80,6 +89,18 @@
               (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                  #:predefined (list (cons a RSI) (cons c RAX))))
       "Register allocation with predefined registers")
+  (ok (equal? '() (unallocated-variables '()))
+      "no variables means no unallocated variables")
+  (ok (equal? (list a) (unallocated-variables (list (cons a #f))))
+      "return the unallocated variable")
+  (ok (equal? '() (unallocated-variables (list (cons a RAX))))
+      "ignore the variable with register allocated")
+  (ok (equal? '() (allocated-variables '()))
+      "no variables means no variables with register allocated")
+  (ok (equal? (list a) (allocated-variables (list (cons a RAX))))
+      "return the variable which has a register allocated")
+  (ok (equal? '() (allocated-variables (list (cons a #f))))
+      "ignore the variable which does not have a register allocated")
   (ok (equal? '() (set-spill-locations '() 16 8))
       "do nothing if there are no variables")
   (ok (equal? (list (cons a RAX)) (set-spill-locations (list (cons a RAX)) 16 8))
@@ -93,6 +114,8 @@
       "allocate spill location for two variables")
   (ok (equal? (list (cons a RAX) (cons b (ptr <int> RSP 16)))
               (set-spill-locations (list (cons a RAX) (cons b #f)) 16 8))
-      "allocate spill location for second variable"))
+      "allocate spill location for second variable")
+  (ok (equal? (list (cons x (ptr <sint> RSP 16))) (set-spill-locations (list (cons x #f)) 16 8))
+      "use correct type for spill locations"))
 
 (run-tests)
