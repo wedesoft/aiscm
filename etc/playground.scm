@@ -39,7 +39,7 @@
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use result)
-   (if (null? live-intervals)
+    (if (null? live-intervals)
         result
         (let* [(candidate    (car live-intervals))
                (variable     (car candidate))
@@ -72,6 +72,10 @@
          (intervals    (live-intervals live all-vars))
          (substitution (linear-scan-coloring intervals registers predefined))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
+
+(define (replace-variables cmd allocation temporary)
+  "Replace variables with registers and add spill code if necessary"
+  (list (substitute-variables cmd allocation)))
 
 (let [(a (var <int>))
       (b (var <int>))
@@ -118,6 +122,17 @@
   (ok (equal? (list (cons a RAX)) (add-spill-information (list (cons a RAX)) 16 8))
       "pass through variables with register allocation information")
   (ok (equal? (list (cons a (ptr <int> RSP 16))) (add-spill-information (list (cons a #f)) 16 8))
-      "allocate spill location for a variable"))
+      "allocate spill location for a variable")
+  (ok (equal? (list (MOV EAX 0)) (replace-variables (MOV EAX 0) '() RAX))
+      "only put instruction into a list if there are no variables to replace")
+  (ok (equal? (list (MOV ESI ECX)) (replace-variables (MOV ESI a) (list (cons a RCX)) RAX))
+      "replace input variable with allocated register")
+  (ok (equal? (list (MOV ECX 0)) (replace-variables (MOV a 0) (list (cons a RCX)) RAX))
+      "replace output variable with allocated register")
+  (ok (equal? (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (MOV EDX a) (list (cons a (ptr <int> RSP 16))) RAX))
+      "read input variable from spill location")
+  (skip (equal? (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0))
+                (replace-variables (CMP a 0) (list (cons a (ptr <int> RSP 16))) RAX))
+      "use temporary register for first argument and fetch value from spill location"))
 
 (run-tests)
