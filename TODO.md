@@ -1,6 +1,7 @@
 ## Ready
 
-* predefined registers
+* register spilling
+* parameters (register/stack)
 * use RAX for temporary retrieval of spilled variables (or RDX?)
 * force "output" of each command into (temporary) register
 * blocked registers

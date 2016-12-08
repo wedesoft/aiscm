@@ -17,18 +17,20 @@
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
-(define (initial-register-use registers)
-  "Initially all registers are available from index zero on"
-  (map (cut cons <> 0) registers))
-
-(define (sort-live-intervals live-intervals predefined-variables)
-  "Sort live intervals predefined variables first and then by start point"
-  (sort-by live-intervals (lambda (live) (if (memv (car live) predefined-variables) -1 (cadr live)))))
+(define (set-spill-locations allocation offset increment)
+  "Allocate spill locations for spilled variables"
+  (if (null? allocation)
+      allocation
+      (let* [(candidate (car allocation))
+             (variable  (car candidate))
+             (register  (cdr candidate))]
+        (cons (if register candidate (cons variable (ptr <int> RSP offset)))
+              (set-spill-locations (cdr allocation) (+ offset (if register 0 increment)) increment)))))
 
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use result)
-    (if (null? live-intervals)
+   (if (null? live-intervals)
         result
         (let* [(candidate    (car live-intervals))
                (variable     (car candidate))
@@ -62,14 +64,6 @@
          (substitution (linear-scan-coloring intervals registers predefined))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
-(ok (equal? '((a . (0 . 3)) (b . (1 . 2))) (sort-live-intervals '((a . (0 . 3)) (b . (1 . 2))) '()))
-    "pass through live intervals if they are already sorted")
-(ok (equal? '((b . (1 . 3)) (a . (2 . 2))) (sort-live-intervals '((a . (2 . 2)) (b . (1 . 3))) '()))
-    "sort live intervals by start point")
-(ok (equal? '((a . (1 . 3)) (b . (0 . 2))) (sort-live-intervals '((b . (0 . 2)) (a . (1 . 3))) '(a)))
-    "prioritise predefined variables when sorting live intervals")
-(ok (equal? (list (cons RAX 0)) (initial-register-use (list RAX)))
-    "initial availability points of registers are zero by default")
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))]
@@ -85,6 +79,20 @@
   (ok (equal? (list (SUB RSP 8) (MOV ECX 1) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                  #:predefined (list (cons a RSI) (cons c RAX))))
-      "Register allocation with predefined registers"))
+      "Register allocation with predefined registers")
+  (ok (equal? '() (set-spill-locations '() 16 8))
+      "do nothing if there are no variables")
+  (ok (equal? (list (cons a RAX)) (set-spill-locations (list (cons a RAX)) 16 8))
+      "ignore variables with allocated register when spilling")
+  (ok (equal? (list (cons a RAX) (cons b RCX)) (set-spill-locations (list (cons a RAX) (cons b RCX)) 16 8))
+      "ignore two variables with allocated register when spilling")
+  (ok (equal? (list (cons a (ptr <int> RSP 16))) (set-spill-locations (list (cons a #f)) 16 8))
+      "allocate spill location for a variable")
+  (ok (equal? (list (cons a (ptr <int> RSP 16)) (cons b (ptr <int> RSP 24)))
+              (set-spill-locations (list (cons a #f) (cons b #f)) 16 8))
+      "allocate spill location for two variables")
+  (ok (equal? (list (cons a RAX) (cons b (ptr <int> RSP 16)))
+              (set-spill-locations (list (cons a RAX) (cons b #f)) 16 8))
+      "allocate spill location for second variable"))
 
 (run-tests)
