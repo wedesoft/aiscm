@@ -39,6 +39,7 @@
 * create relocatable code and use linker to insert calls with relative addresses
 * use C parser to get method types? C++ binary interace? Qt bindings?
 * use (ice-9 match) to simplify and translate assembler code?
+  https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
 * ffmpeg output (writing videos)
 * Conways way of life in one line of code

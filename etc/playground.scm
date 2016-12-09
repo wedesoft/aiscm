@@ -38,9 +38,9 @@
 
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
-  (define (linear-allocate live-intervals register-use variable-use result)
+  (define (linear-allocate live-intervals register-use variable-use allocation)
     (if (null? live-intervals)
-        result
+        allocation
         (let* [(candidate    (car live-intervals))
                (variable     (car candidate))
                (interval     (cdr candidate))
@@ -49,16 +49,16 @@
                (variable-use (mark-used-till variable-use variable last-index))
                (register     (or (assq-ref predefined variable)
                                  (find-available register-use first-index)))
-               (recursion    (lambda (result register)
+               (recursion    (lambda (allocation register)
                                (linear-allocate (cdr live-intervals)
                                                 (mark-used-till register-use register last-index)
                                                 variable-use
-                                                (assq-set result variable register))))]
+                                                (assq-set allocation variable register))))]
           (if register
-            (recursion result register)
+            (recursion allocation register)
             (let* [(spill-candidate (longest-use variable-use))
-                   (register        (assq-ref result spill-candidate))]
-              (recursion (assq-set result spill-candidate #f) register))))))
+                   (register        (assq-ref allocation spill-candidate))]
+              (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
                    (initial-register-use registers)
                    '()
