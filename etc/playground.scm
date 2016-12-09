@@ -73,9 +73,21 @@
          (substitution (linear-scan-coloring intervals registers predefined))]
     (adjust-stack-pointer 8 (substitute-variables prog substitution))))
 
+(define-method (first-argument self)
+   "Return false for compiled instructions"
+   #f)
+(define-method (first-argument (self <cmd>))
+   "Get first argument of machine instruction"
+   (car (get-args self)))
+
 (define (replace-variables cmd allocation temporary)
   "Replace variables with registers and add spill code if necessary"
-  (list (substitute-variables cmd allocation)))
+  (let* [(primary-argument (first-argument cmd))
+         (primary-location (assq-ref allocation primary-argument))]
+    (if (is-a? primary-location <address>)
+      (list (MOV (to-type (typecode primary-argument) temporary) primary-location)
+            (substitute-variables cmd (assq-set allocation primary-argument temporary)))
+      (list (substitute-variables cmd allocation)))))
 
 (let [(a (var <int>))
       (b (var <int>))
@@ -131,8 +143,18 @@
       "replace output variable with allocated register")
   (ok (equal? (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (MOV EDX a) (list (cons a (ptr <int> RSP 16))) RAX))
       "read input variable from spill location")
-  (skip (equal? (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0))
-                (replace-variables (CMP a 0) (list (cons a (ptr <int> RSP 16))) RAX))
-      "use temporary register for first argument and fetch value from spill location"))
+  (ok (equal? a (first-argument (ADD a b)))
+      "get first argument of ADD statement")
+  (ok (not (first-argument (ADD CX DX)))
+      "return false if statement is compiled already")
+  (ok (equal? (list (MOV AX (ptr <sint> RSP 16)) (CMP AX 0))
+              (replace-variables (CMP x 0) (list (cons x (ptr <int> RSP 16))) RAX))
+      "use temporary register for first argument and fetch value from spill location")
+  (ok (equal? (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0))
+              (replace-variables (CMP a 0) (list (cons a (ptr <int> RSP 16))) RAX))
+      "use correct type for temporary register") 
+  (skip (equal? (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
+              (replace-variables (ADD a 1) (list (cons a (ptr <int> RSP 16))) RAX))
+      "write back output argument"))
 
 (run-tests)
