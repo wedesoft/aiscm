@@ -85,8 +85,10 @@
   (let* [(primary-argument (first-argument cmd))
          (primary-location (assq-ref allocation primary-argument))]
     (if (is-a? primary-location <address>)
-      (list (MOV (to-type (typecode primary-argument) temporary) primary-location)
-            (substitute-variables cmd (assq-set allocation primary-argument temporary)))
+      (let [(register (to-type (typecode primary-argument) temporary))]
+        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
+                 (substitute-variables cmd (assq-set allocation primary-argument temporary))
+                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
       (list (substitute-variables cmd allocation)))))
 
 (let [(a (var <int>))
@@ -152,9 +154,12 @@
       "use temporary register for first argument and fetch value from spill location")
   (ok (equal? (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0))
               (replace-variables (CMP a 0) (list (cons a (ptr <int> RSP 16))) RAX))
-      "use correct type for temporary register") 
-  (skip (equal? (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
+      "use correct type for temporary register")
+  (ok (equal? (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
               (replace-variables (ADD a 1) (list (cons a (ptr <int> RSP 16))) RAX))
-      "write back output argument"))
+      "read and write back argument from stack into temporary register")
+  (ok (equal? (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX))
+              (replace-variables (MOV a 1) (list (cons a (ptr <int> RSP 16))) RAX))
+      "write output value in temporary register to the stack"))
 
 (run-tests)
