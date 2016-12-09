@@ -21,6 +21,7 @@
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
+            unallocated-variables register-allocations assign-spill-locations add-spill-information
             sort-live-intervals linear-scan-coloring linear-scan-allocate adjust-stack-pointer
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
@@ -222,6 +223,25 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
+
+(define (unallocated-variables allocation)
+   "Return a list of unallocated variables"
+   (map car (filter (compose not cdr) allocation)))
+
+(define (register-allocations allocation)
+   "Return a list of variables with register allocated"
+   (filter cdr allocation))
+
+(define (assign-spill-locations variables offset increment)
+  "Assign spill locations to a list of variables"
+  (map (lambda (variable index) (cons variable (ptr (typecode variable) RSP index)))
+       variables
+       (iota (length variables) offset increment)))
+
+(define (add-spill-information allocation offset increment)
+  "Allocate spill locations for spilled variables"
+  (append (register-allocations allocation)
+          (assign-spill-locations (unallocated-variables allocation) offset increment)))
 
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"

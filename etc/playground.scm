@@ -17,25 +17,6 @@
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
-(define (unallocated-variables allocation)
-   "Return a list of unallocated variables"
-   (map car (filter (compose not cdr) allocation)))
-
-(define (register-allocations allocation)
-   "Return a list of variables with register allocated"
-   (filter cdr allocation))
-
-(define (assign-spill-locations variables offset increment)
-  "Assign spill locations to a list of variables"
-  (map (lambda (variable index) (cons variable (ptr (typecode variable) RSP index)))
-       variables
-       (iota (length variables) offset increment)))
-
-(define (add-spill-information allocation offset increment)
-  "Allocate spill locations for spilled variables"
-  (append (register-allocations allocation)
-          (assign-spill-locations (unallocated-variables allocation) offset increment)))
-
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use allocation)
@@ -70,8 +51,9 @@
   (let* [(live         (live-analysis prog '())); TODO: specify return values here
          (all-vars     (variables prog))
          (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan-coloring intervals registers predefined))]
-    (adjust-stack-pointer 8 (substitute-variables prog substitution))))
+         (allocation   (linear-scan-coloring intervals registers predefined))
+         (locations    (add-spill-information allocation 8 8))]
+    (adjust-stack-pointer 8 (concatenate (map (cut replace-variables <> locations RAX) prog))))); TODO: adjust stack pointer, use replace-variables
 
 (define-method (first-argument self)
    "Return false for compiled instructions"
@@ -108,35 +90,6 @@
               (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                  #:predefined (list (cons a RSI) (cons c RAX))))
       "Register allocation with predefined registers")
-  (ok (equal? '() (unallocated-variables '()))
-      "no variables means no unallocated variables")
-  (ok (equal? (list a) (unallocated-variables (list (cons a #f))))
-      "return the unallocated variable")
-  (ok (equal? '() (unallocated-variables (list (cons a RAX))))
-      "ignore the variable with register allocated")
-  (ok (equal? '() (register-allocations '()))
-      "no variables means no variables with register allocated")
-  (ok (equal? (list (cons a RAX)) (register-allocations (list (cons a RAX))))
-      "return the variable with register allocation information")
-  (ok (equal? '() (register-allocations (list (cons a #f))))
-      "filter out the variable which does not have a register allocated")
-  (ok (equal? '()  (assign-spill-locations '() 16 8))
-      "assigning spill locations to an empty list of variables returns an empty list")
-  (ok (equal? (list (cons a (ptr <int> RSP 16)))  (assign-spill-locations (list a) 16 8))
-      "assign spill location to a variable")
-  (ok (equal? (list (cons a (ptr <int> RSP 32)))  (assign-spill-locations (list a) 32 8))
-      "assign spill location with a different offset")
-  (ok (equal? (list (cons x (ptr <sint> RSP 16)))  (assign-spill-locations (list x) 16 8))
-      "use correct type for spill location")
-  (ok (equal? (list (cons a (ptr <int> RSP 16)) (cons b (ptr <int> RSP 24)))
-              (assign-spill-locations (list a b) 16 8))
-      "use increasing offsets for spill locations")
-  (ok (equal? '() (add-spill-information '() 16 8))
-      "do nothing if there are no variables")
-  (ok (equal? (list (cons a RAX)) (add-spill-information (list (cons a RAX)) 16 8))
-      "pass through variables with register allocation information")
-  (ok (equal? (list (cons a (ptr <int> RSP 16))) (add-spill-information (list (cons a #f)) 16 8))
-      "allocate spill location for a variable")
   (ok (equal? (list (MOV EAX 0)) (replace-variables (MOV EAX 0) '() RAX))
       "only put instruction into a list if there are no variables to replace")
   (ok (equal? (list (MOV ESI ECX)) (replace-variables (MOV ESI a) (list (cons a RCX)) RAX))
@@ -160,6 +113,19 @@
       "read and write back argument from stack into temporary register")
   (ok (equal? (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX))
               (replace-variables (MOV a 1) (list (cons a (ptr <int> RSP 16))) RAX))
-      "write output value in temporary register to the stack"))
+      "write output value in temporary register to the stack")
+  (ok (equal? (list (SUB RSP 16)
+                    (MOV ESI 1)
+                    (MOV (ptr <int> RSP 8) ESI)
+                    (MOV ESI 2)
+                    (ADD ESI 3)
+                    (MOV ESI (ptr <int> RSP 8))
+                    (ADD ESI 4)
+                    (MOV (ptr <int> RSP 8) ESI)
+                    (ADD RSP 16)
+                    (RET))
+              (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
+                                    #:registers (list RSI)))
+      "'linear-scan-allocate' should spill variables"))
 
 (run-tests)
