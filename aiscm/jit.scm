@@ -22,7 +22,8 @@
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
-            sort-live-intervals linear-scan-coloring linear-scan-allocate adjust-stack-pointer
+            sort-live-intervals linear-scan-coloring linear-scan-allocate first-argument
+            replace-variables adjust-stack-pointer
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -245,9 +246,9 @@
 
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"
-  (define (linear-allocate live-intervals register-use variable-use result)
+  (define (linear-allocate live-intervals register-use variable-use allocation)
     (if (null? live-intervals)
-        result
+        allocation
         (let* [(candidate    (car live-intervals))
                (variable     (car candidate))
                (interval     (cdr candidate))
@@ -256,20 +257,38 @@
                (variable-use (mark-used-till variable-use variable last-index))
                (register     (or (assq-ref predefined variable)
                                  (find-available register-use first-index)))
-               (recursion    (lambda (result register)
+               (recursion    (lambda (allocation register)
                                (linear-allocate (cdr live-intervals)
                                                 (mark-used-till register-use register last-index)
                                                 variable-use
-                                                (assq-set result variable register))))]
+                                                (assq-set allocation variable register))))]
           (if register
-            (recursion result register)
+            (recursion allocation register)
             (let* [(spill-candidate (longest-use variable-use))
-                   (register        (assq-ref result spill-candidate))]
-              (recursion (assq-set result spill-candidate #f) register))))))
+                   (register        (assq-ref allocation spill-candidate))]
+              (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
                    (initial-register-use registers)
                    '()
                    '()))
+
+(define-method (first-argument self)
+   "Return false for compiled instructions"
+   #f)
+(define-method (first-argument (self <cmd>))
+   "Get first argument of machine instruction"
+   (car (get-args self)))
+
+(define (replace-variables cmd allocation temporary)
+  "Replace variables with registers and add spill code if necessary"
+  (let* [(primary-argument (first-argument cmd))
+         (primary-location (assq-ref allocation primary-argument))]
+    (if (is-a? primary-location <address>)
+      (let [(register (to-type (typecode primary-argument) temporary))]
+        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
+                 (substitute-variables cmd (assq-set allocation primary-argument temporary))
+                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
+      (list (substitute-variables cmd allocation)))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"

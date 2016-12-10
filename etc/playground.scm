@@ -17,103 +17,20 @@
 
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
-(define (linear-scan-coloring live-intervals registers predefined)
-  "Linear scan register allocation based on live intervals"
-  (define (linear-allocate live-intervals register-use variable-use allocation)
-    (if (null? live-intervals)
-        allocation
-        (let* [(candidate    (car live-intervals))
-               (variable     (car candidate))
-               (interval     (cdr candidate))
-               (first-index  (car interval))
-               (last-index   (cdr interval))
-               (variable-use (mark-used-till variable-use variable last-index))
-               (register     (or (assq-ref predefined variable)
-                                 (find-available register-use first-index)))
-               (recursion    (lambda (allocation register)
-                               (linear-allocate (cdr live-intervals)
-                                                (mark-used-till register-use register last-index)
-                                                variable-use
-                                                (assq-set allocation variable register))))]
-          (if register
-            (recursion allocation register)
-            (let* [(spill-candidate (longest-use variable-use))
-                   (register        (assq-ref allocation spill-candidate))]
-              (recursion (assq-set allocation spill-candidate #f) register))))))
-  (linear-allocate (sort-live-intervals live-intervals (map car predefined))
-                   (initial-register-use registers)
-                   '()
-                   '()))
-
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
   (let* [(live         (live-analysis prog '())); TODO: specify return values here
          (all-vars     (variables prog))
          (intervals    (live-intervals live all-vars))
-         (allocation   (linear-scan-coloring intervals registers predefined))
+         (allocation   (linear-scan-coloring intervals registers predefined)); TODO: allocate temporary for each statement
          (locations    (add-spill-information allocation 8 8))]
-    (adjust-stack-pointer 8 (concatenate (map (cut replace-variables <> locations RAX) prog))))); TODO: adjust stack pointer, use replace-variables
-
-(define-method (first-argument self)
-   "Return false for compiled instructions"
-   #f)
-(define-method (first-argument (self <cmd>))
-   "Get first argument of machine instruction"
-   (car (get-args self)))
-
-(define (replace-variables cmd allocation temporary)
-  "Replace variables with registers and add spill code if necessary"
-  (let* [(primary-argument (first-argument cmd))
-         (primary-location (assq-ref allocation primary-argument))]
-    (if (is-a? primary-location <address>)
-      (let [(register (to-type (typecode primary-argument) temporary))]
-        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
-                 (substitute-variables cmd (assq-set allocation primary-argument temporary))
-                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (list (substitute-variables cmd allocation)))))
+    (adjust-stack-pointer 8 (concatenate (map (cut replace-variables <> locations RAX) prog))))); TODO: adjust stack pointer
 
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
       (x (var <sint>))]
-  (ok (equal? (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
-              (linear-scan-allocate (list (MOV a 42) (RET))))
-      "Allocate a single register")
-  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
-              (linear-scan-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
-      "Allocate a single register using custom list of registers")
-  (ok (equal? (list (SUB RSP 8) (MOV EAX 1) (MOV ECX 2) (ADD EAX ECX) (MOV ECX EAX) (ADD RSP 8) (RET))
-              (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
-      "Allocate multiple registers")
-  (ok (equal? (list (SUB RSP 8) (MOV ECX 1) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
-              (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
-                                 #:predefined (list (cons a RSI) (cons c RAX))))
-      "Register allocation with predefined registers")
-  (ok (equal? (list (MOV EAX 0)) (replace-variables (MOV EAX 0) '() RAX))
-      "only put instruction into a list if there are no variables to replace")
-  (ok (equal? (list (MOV ESI ECX)) (replace-variables (MOV ESI a) (list (cons a RCX)) RAX))
-      "replace input variable with allocated register")
-  (ok (equal? (list (MOV ECX 0)) (replace-variables (MOV a 0) (list (cons a RCX)) RAX))
-      "replace output variable with allocated register")
-  (ok (equal? (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (MOV EDX a) (list (cons a (ptr <int> RSP 16))) RAX))
-      "read input variable from spill location")
-  (ok (equal? a (first-argument (ADD a b)))
-      "get first argument of ADD statement")
-  (ok (not (first-argument (ADD CX DX)))
-      "return false if statement is compiled already")
-  (ok (equal? (list (MOV AX (ptr <sint> RSP 16)) (CMP AX 0))
-              (replace-variables (CMP x 0) (list (cons x (ptr <int> RSP 16))) RAX))
-      "use temporary register for first argument and fetch value from spill location")
-  (ok (equal? (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0))
-              (replace-variables (CMP a 0) (list (cons a (ptr <int> RSP 16))) RAX))
-      "use correct type for temporary register")
-  (ok (equal? (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
-              (replace-variables (ADD a 1) (list (cons a (ptr <int> RSP 16))) RAX))
-      "read and write back argument from stack into temporary register")
-  (ok (equal? (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX))
-              (replace-variables (MOV a 1) (list (cons a (ptr <int> RSP 16))) RAX))
-      "write output value in temporary register to the stack")
   (ok (equal? (list (SUB RSP 16)
                     (MOV ESI 1)
                     (MOV (ptr <int> RSP 8) ESI)
