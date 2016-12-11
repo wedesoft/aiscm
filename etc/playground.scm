@@ -21,6 +21,10 @@
   "Count the number of spilled variables"
   (length (unallocated-variables allocation)))
 
+(define (temporary-variables prog)
+  "Allocate temporary variable for each first argument of an instruction"
+  (map (lambda (cmd) (let [(arg (first-argument cmd))] (and arg (var (typecode arg))))) prog))
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
@@ -42,6 +46,16 @@
       "count one spilled variable")
   (ok (eqv? 0 (number-spilled-variables (list (cons a RAX))))
       "ignore allocated variables when counting spilled variables")
+  (ok (equal? '() (temporary-variables '()))
+      "an empty program needs no temporary variables")
+  (ok (equal? (list <var>) (map class-of (temporary-variables (list (MOV a 0)))))
+      "create temporary variable for first arguemnt of instruction")
+  (ok (not (equal? (list a) (temporary-variables (list (MOV a 0)))))
+      "temporary variable should be distinct from first argument of instruction")
+  (ok (equal? (list <sint>) (map typecode (temporary-variables (list (MOV x 0)))))
+      "temporary variable should have correct type")
+  (ok (equal? (list #f) (temporary-variables (list (MOV AL 0))))
+      "it should only create temporary variables when required")
   (ok (equal? (list (SUB RSP 16)
                     (MOV EAX 1)
                     (MOV (ptr <int> RSP 8) EAX)
