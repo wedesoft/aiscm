@@ -29,8 +29,6 @@
   "Generate intervals of length one for each temporary variable"
   (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
 
-; TODO: generate trivial live intervals for temporary variables (filter out undefined locations)
-
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"

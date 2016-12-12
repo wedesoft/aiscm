@@ -132,6 +132,8 @@
     "sort live intervals by start point")
 (ok (equal? '((a . (1 . 3)) (b . (0 . 2))) (sort-live-intervals '((b . (0 . 2)) (a . (1 . 3))) '(a)))
     "prioritise predefined variables when sorting live intervals")
+(ok (equal? '((tmp . (0 . 0)) (a . (0 . 1))) (sort-live-intervals '((a . (0 . 1)) (tmp . (0 . 0))) '()))
+    "sort live intervals by length if start point is the same")
 (ok (equal? (list (cons RAX 0)) (initial-register-use (list RAX)))
     "initial availability points of registers are zero by default")
 (ok (equal? RAX (find-available (list (cons RAX 0)) 0))

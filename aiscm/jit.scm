@@ -187,8 +187,9 @@
   (map (cut cons <> 0) registers))
 
 (define (sort-live-intervals live-intervals predefined-variables)
-  "Sort live intervals predefined variables first and then by start point"
-  (sort-by live-intervals (lambda (live) (if (memv (car live) predefined-variables) -1 (cadr live)))))
+  "Sort live intervals predefined variables first and then lexically by start point and length of interval"
+  (sort-by live-intervals
+           (lambda (live) (if (memv (car live) predefined-variables) -1 (- (cadr live) (/ 1 (+ 2 (cddr live))))))))
 
 (define (find-available availability first-index)
   "Find element available from the specified first program index onwards"
