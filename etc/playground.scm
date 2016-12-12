@@ -27,7 +27,7 @@
 
 (define (unit-intervals vars)
   "Generate intervals of length one for each temporary variable"
-  (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars))))
+  (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
 
 ; TODO: generate trivial live intervals for temporary variables (filter out undefined locations)
 
@@ -68,6 +68,8 @@
       "generate unit interval for one temporary variable")
   (ok (equal? '((a . (0 . 0)) (b . (1 . 1))) (unit-intervals '(a b)))
       "generate unit interval for two temporary variables")
+  (ok (equal? '((b . (1 . 1))) (unit-intervals '(#f b)))
+      "filter out locations without temporary variable")
   (ok (equal? (list (SUB RSP 16)
                     (MOV EAX 1)
                     (MOV (ptr <int> RSP 8) EAX)
