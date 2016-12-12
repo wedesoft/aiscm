@@ -25,6 +25,12 @@
   "Allocate temporary variable for each first argument of an instruction"
   (map (lambda (cmd) (let [(arg (first-argument cmd))] (and arg (var (typecode arg))))) prog))
 
+(define (unit-intervals vars)
+  "Generate intervals of length one for each temporary variable"
+  (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars))))
+
+; TODO: generate trivial live intervals for temporary variables (filter out undefined locations)
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
@@ -34,7 +40,7 @@
          (allocation   (linear-scan-coloring intervals registers predefined)); TODO: allocate temporary for each statement
          (stack-offset (* 8 (1+ (number-spilled-variables allocation))))
          (locations    (add-spill-information allocation 8 8))]
-    (adjust-stack-pointer stack-offset (concatenate (map (cut replace-variables <> locations RAX) prog)))))
+    (adjust-stack-pointer stack-offset (concatenate (map (cut replace-variables <> locations RAX) prog))))); TODO: use temporary here
 
 (let [(a (var <int>))
       (b (var <int>))
@@ -56,6 +62,12 @@
       "temporary variable should have correct type")
   (ok (equal? (list #f) (temporary-variables (list (MOV AL 0))))
       "it should only create temporary variables when required")
+  (ok (equal? '() (unit-intervals '()))
+      "create empty list of unit intervals")
+  (ok (equal? '((a . (0 . 0))) (unit-intervals '(a)))
+      "generate unit interval for one temporary variable")
+  (ok (equal? '((a . (0 . 0)) (b . (1 . 1))) (unit-intervals '(a b)))
+      "generate unit interval for two temporary variables")
   (ok (equal? (list (SUB RSP 16)
                     (MOV EAX 1)
                     (MOV (ptr <int> RSP 8) EAX)
