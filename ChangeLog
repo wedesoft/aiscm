@@ -1,1 +1,150 @@
-See debian/changelog
+aiscm (0.9.1-1)
+
+  * aiscm/jit.scm: compile code to allocate return values
+  - support for native constants
+  - working on tensor expressions
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 25 Nov 2016 21:53:30 +0000
+
+aiscm (0.8.3-1)
+
+  - object rgb and object complex values
+  - refactored native method calls
+  - improved docker build
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue, 25 Oct 2016 18:28:30 +0100
+
+aiscm (0.8.2-1)
+
+  - temporarily match floating point numbers to objects
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 20 Oct 2016 12:42:05 +0100
+
+aiscm (0.8.1-1)
+
+  - refactored type conversions
+  - type conversions of method arguments
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 19 Oct 2016 21:03:07 +0100
+
+aiscm (0.7.1-1)
+
+  * doc/installation.md: updated installation documentation
+  * aiscm/aiscm.xpm: added installation documentation
+  - FFmpeg network stream example
+  - better test video
+  - use re-export statements to make modules more independent
+  - use read-image, read-audio, write-image, and write-audio throughout
+  - renamed "match" to "native-type"
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 16 Sep 2016 17:43:00 +0100
+
+aiscm (0.6.2-2)
+
+  - Make releases for different distros
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 7 Sep 2016 20:10:18 +0100
+
+aiscm (0.6.2-1)
+
+  - fix package dependencies (do not use aliases)
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 1 Sep 2016 12:45:08 +0100
+
+aiscm (0.6.1-1)
+
+  - Pulse audio input and output using asynchronous API
+  - ring buffer for first-in first-out (FIFO) buffering of data
+  - improved documentation
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 19 Jul 2016 21:49:25 +0100
+
+aiscm (0.5.1-1)
+
+  * aiscm/ffmpeg.scm: reading video/audio files using FFmpeg
+  * aiscm/pulse.c: initialise "error" integer to PA_OK
+  * aiscm/util.scm: synchronisation method for audio-video-synchronisation
+  * aiscm/v4l2.c: refactor video capture code a bit
+  * Dockerfile: Docker build for Debian Jessie/Sid, Ubuntu Trusty/Xenial
+  * aiscm/xorg.scm: use XVideo as default for single-window videos
+  - updated documentation
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 22 Jul 2016 21:18:11 +0000
+
+aiscm (0.4.2-1)
+
+  - compose RGB and complex values from arrays
+  - added some documentation
+  * aiscm/jit.scm: refactored dispatching code
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 17 Jun 2016 21:41:40 +0000
+
+aiscm (0.4.1-1)
+
+  - refactored jit compiler
+  * aiscm/jit.scm: tensor implementation (WIP)
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 8 Jun 2016 07:45:00 +0000
+
+aiscm (0.3.1-1)
+
+  * aiscm/asm.scm: support for CMOVcc
+  * aiscm/jit.scm: major and minor number, =0, !=0, &&, ||
+  * aiscm/complex.scm: support for complex numbers
+  * aiscm/magick.scm: loading and saving of images via ImageMagick
+  * aiscm/pulse.scm: Pulse audio I/O
+  - n-ary operations &&, ||
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 6 Feb 2016 17:21:00 +0000
+
+aiscm (0.2.3-1)
+
+  * aiscm/jit.scm: refactored code
+  * aiscm/asm.scm: support for AH, CH, DH, and BH
+  * aiscm/xorg.scm: display lists of images and videos with multiple channels
+  - wrap variables in order to support boolean
+  - integer remainder of division
+  - RGB operations
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 4 Sep 2015 21:57:15 +0100
+
+aiscm (0.2.2-1)
+
+  * aiscm/xorg.scm: convert array to image before displaying
+  * aiscm/rgb.scm: support for RGB values
+  * aiscm/jit.scm: spill predefined registers if they are blocked
+  - changed garbage collector settings for benchmark
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 26 Sep 2015 21:22:56 +0100
+
+aiscm (0.2.1-1)
+
+  * aiscm/jit.scm: code fragments
+  * aiscm/op.scm: array operators based on code fragments
+  - block regions for reserving registers
+  - integer division
+  - boolean operations
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 2 Sep 2015 18:02:33 +0100
+
+aiscm (0.1.8-1)
+
+  * IDIV and DIV using blocked registers
+  * Shortcuts 'seq' and 'arr'
+  * Boolean operations for arrays
+  * Added benchmark
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sat, 11 Jul 2015 21:21:00 +0100
+
+aiscm (0.1.7-1)
+
+  * Packaging new version
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 11 Jun 2015 07:35:25 +0100
+
+aiscm (0.1.6-2)
+
+  * Initial release.
+  * Updated dependencies.
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 21 May 2015 22:43:31 +0100

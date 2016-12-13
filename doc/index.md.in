@@ -25,6 +25,11 @@ Control all data and machine code down to every single bit and byte.
 * [Gitlab page](https://gitlab.com/wedesoft/aiscm)
 * [Bitbucket page](https://bitbucket.org/wedesoft/aiscm)
 
+## Credits
+
+* Jan Wedekind: software development
+* Andrey Rahmatullin: Debian package sponsor
+
 ## External links
 
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
