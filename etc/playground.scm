@@ -29,6 +29,10 @@
   "Generate intervals of length one for each temporary variable"
   (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
 
+(define (temporary-registers allocation variables)
+  "Look up register for each temporary variable given the result of a register allocation"
+  (map (lambda (var) (let [(reg (assq-ref allocation var))] (and reg (to-type (typecode var) reg)))) variables))
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
@@ -68,6 +72,14 @@
       "generate unit interval for two temporary variables")
   (ok (equal? '((b . (1 . 1))) (unit-intervals '(#f b)))
       "filter out locations without temporary variable")
+  (ok (equal? '() (temporary-registers '() '()))
+      "create empty list of temporary registers")
+  (ok (equal? (list ECX) (temporary-registers (list (cons a RCX)) (list a)))
+      "return a temporary register of integer type")
+  (ok (equal? (list CX) (temporary-registers (list (cons x RCX)) (list x)))
+      "return a temporary register of short integer type")
+  (ok (equal? (list #f) (temporary-registers '() (list #f)))
+      "return false if no temporary variable was required for a statement")
   (ok (equal? (list (SUB RSP 16)
                     (MOV EAX 1)
                     (MOV (ptr <int> RSP 8) EAX)
