@@ -7,4 +7,3 @@
 ;44100
 (for-each (lambda _ (write-audio samples output)) (iota 300))
 (drain output)
-(destroy output)

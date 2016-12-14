@@ -15,17 +15,15 @@
              (aiscm util)
              (guile-tap))
 
-(define ctx (make <context>))
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 
-(define c (parameter <intrgb>))
-(diagnostics c)
-
-(define arg c)
-(define args (list arg))
-(diagnostics (decompose-value (type arg) arg))
-
-
-
-
+; TODO: use RAX for temporary retrieval of spilled variables (or RDX?)
+; TODO: force "output" of each command into (temporary) register
+; TODO: blocked registers
 
 (run-tests)
+
+(define v (var <int>))
+(define prog (list (MOV v 42) (RET)))
+(define intervals (live-intervals (live-analysis prog '()) (variables prog)))
+(define allocation (linear-scan intervals default-registers))
