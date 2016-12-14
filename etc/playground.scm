@@ -36,18 +36,34 @@
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
-  (let* [(live         (live-analysis prog '())); TODO: specify return values here
-         (all-vars     (variables prog))
-         (intervals    (live-intervals live all-vars))
-         (allocation   (linear-scan-coloring intervals registers predefined)); TODO: allocate temporary for each statement
-         (stack-offset (* 8 (1+ (number-spilled-variables allocation))))
-         (locations    (add-spill-information allocation 8 8))]
-    (adjust-stack-pointer stack-offset (concatenate (map (cut replace-variables <> locations RAX) prog))))); TODO: use temporary here
+  (let* [(live                (live-analysis prog '())); TODO: specify return values here
+         (temporary-variables (temporary-variables prog))
+         (intervals           (append (live-intervals live (variables prog))
+                                      (unit-intervals temporary-variables)))
+         (allocation          (linear-scan-coloring intervals registers predefined)); TODO: allocate temporary for each statement
+         (temporaries         (temporary-registers allocation temporary-variables))
+         (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
+         (locations           (add-spill-information allocation 8 8))]
+    (adjust-stack-pointer stack-offset
+                          (concatenate (map (lambda (cmd register) (replace-variables cmd locations register)) prog temporaries))))); TODO: use temporary here
 
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
       (x (var <sint>))]
+  (ok (equal? (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 42) (RET))))
+      "Allocate a single register")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+      "Allocate a single register using custom list of registers")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+      "Allocate multiple registers")
+  (ok (equal? (list (SUB RSP 8) (MOV EDX 1) (ADD EDX ESI) (MOV EAX EDX) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
+                                    #:predefined (list (cons a RSI) (cons c RAX))))
+      "Register allocation with predefined registers")
   (ok (eqv? 0 (number-spilled-variables '()))
       "count zero spilled variables")
   (ok (eqv? 1 (number-spilled-variables '((a . #f))))
@@ -91,7 +107,7 @@
                     (ADD RSP 16)
                     (RET))
               (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
-                                    #:registers (list RSI)))
+                                    #:registers (list RAX RSI)))
       "'linear-scan-allocate' should spill variables"))
 
 (run-tests)
