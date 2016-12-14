@@ -3,14 +3,14 @@ Maintainer: Jan Wedekind <jan@wedesoft.de>
 Section: lisp
 Priority: optional
 Homepage: http://wedesoft.github.io/aiscm/
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Testsuite: autopkgtest
 Build-Depends: guile-2.0-dev (>= 2.0.9), linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper (>= 9)
 
 Package: aiscm
 Architecture: amd64
-Depends: guile-2.0 (>= 2.0.9), liblavjpeg-2.1-0, libmagickcore-6.q16-2, libmagickcore-6.q16-2-extra, libpulse0, libx11-6, libxext6, libxv1, libxmu6, libxi6, libxpm4, libglu1-mesa | libglu1, libgl1-mesa-glx | libgl1, libswscale3, libavformat56, libavcodec56, libavutil54, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Pre-Depends: ${misc:Pre-Depends}
 Description: Guile numerical arrays and tensor extension
  AIscm is a Guile extension for numerical arrays and tensors.
- Performance is achieved by means of a JIT compiler.
+ Performance is achieved by means of an AMD64 JIT compiler.
