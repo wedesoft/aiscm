@@ -17,7 +17,8 @@ container: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/con
 run: container
 	docker run -t -i -v $(shell pwd):/mnt $(IMAGE) /bin/bash
 
-package: pkg/aiscm_$(VERSION).orig.tar.gz pkg/$(PACKAGE).debian.tar.xz pkg/$(PACKAGE).dsc pkg/$(PACKAGE)_amd64.deb
+package: pkg/aiscm_$(VERSION).orig.tar.gz pkg/$(PACKAGE).debian.tar.xz pkg/$(PACKAGE).dsc pkg/$(PACKAGE)_amd64.deb \
+	pkg/$(PACKAGE)_amd64.changes
 
 pkg/aiscm_$(VERSION).orig.tar.gz: aiscm-$(VERSION).tar.gz pkg
 	cp $< $@
@@ -29,6 +30,9 @@ pkg/$(PACKAGE).dsc: pkg container
 	docker run $(IMAGE) cat $@ > $@
 
 pkg/$(PACKAGE)_amd64.deb: pkg container
+	docker run $(IMAGE) cat $@ > $@
+
+pkg/$(PACKAGE)_amd64.changes: pkg container
 	docker run $(IMAGE) cat $@ > $@
 
 pkg:
