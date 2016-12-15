@@ -82,13 +82,14 @@ make reintegration
 
 * [AIscm homepage][1]
 * [AIscm installation][6]
-* [pbuilder][3]
+* [Debian sbuild[3] (installed from jessie-backports because of [bug 827315][7])
 * [Docker][4]
 * [managing Debian packages][5]
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"
-[3]: https://www.debian.org/doc/manuals/maint-guide/build.en.html#pbuilder "pbuilder package"
+[3]: https://wiki.debian.org/sbuild
 [4]: https://www.docker.com/
 [5]: https://www.debian.org/doc/manuals/developers-reference/ch05.en.html#newpackage
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
+[7]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=827315

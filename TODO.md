@@ -1,5 +1,7 @@
 ## Ready
 
+* make project more self contained (add logo files to project, remove web streaming integration test)
+* fix lintian issues: https://mentors.debian.net/package/aiscm
 * register spilling
 * parameters (register/stack)
 * use RAX for temporary retrieval of spilled variables (or RDX?)
