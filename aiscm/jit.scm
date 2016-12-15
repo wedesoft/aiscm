@@ -22,8 +22,9 @@
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
-            sort-live-intervals linear-scan-coloring linear-scan-allocate first-argument
-            replace-variables adjust-stack-pointer
+            first-argument replace-variables adjust-stack-pointer
+            number-spilled-variables temporary-variables unit-intervals temporary-registers
+            sort-live-intervals linear-scan-coloring linear-scan-allocate
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
@@ -295,14 +296,35 @@
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
+(define (number-spilled-variables allocation)
+  "Count the number of spilled variables"
+  (length (unallocated-variables allocation)))
+
+(define (temporary-variables prog)
+  "Allocate temporary variable for each first argument of an instruction"
+  (map (lambda (cmd) (let [(arg (first-argument cmd))] (and arg (var (typecode arg))))) prog))
+
+(define (unit-intervals vars)
+  "Generate intervals of length one for each temporary variable"
+  (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
+
+(define (temporary-registers allocation variables)
+  "Look up register for each temporary variable given the result of a register allocation"
+  (map (lambda (var) (let [(reg (assq-ref allocation var))] (and reg (to-type (typecode var) reg)))) variables))
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (predefined '()))
   "Linear scan register allocation for a given program"
-  (let* [(live         (live-analysis prog '())); TODO: specify return values here
-         (all-vars     (variables prog))
-         (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan-coloring intervals registers predefined))]
-    (adjust-stack-pointer 8 (substitute-variables prog substitution))))
+  (let* [(live                (live-analysis prog '())); TODO: specify return values here
+         (temporary-variables (temporary-variables prog))
+         (intervals           (append (live-intervals live (variables prog))
+                                      (unit-intervals temporary-variables)))
+         (allocation          (linear-scan-coloring intervals registers predefined))
+         (temporaries         (temporary-registers allocation temporary-variables))
+         (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
+         (locations           (add-spill-information allocation 8 8))]
+    (adjust-stack-pointer stack-offset
+                          (concatenate (map (lambda (cmd register) (replace-variables cmd locations register)) prog temporaries)))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
