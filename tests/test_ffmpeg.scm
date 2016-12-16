@@ -18,6 +18,7 @@
 
 (define video-pts0 (video-pts video))
 (define video-frame (read-image video))
+(define video-pixel (get (to-array video-frame) 10 270))
 (define video-pts1 (video-pts video))
 (define video-frame (read-image video))
 (define video-pts2 (video-pts video))
@@ -75,7 +76,7 @@
     "Audio file does not have a frame rate")
 (ok (not (cadr (list (read-image image) (read-image image))))
     "Image has only one video frame")
-(ok (equal? (rgb 195 179 137) (get (to-array video-frame) 100 200))
+(ok (equal? (rgb 154 154 154) video-pixel)
     "Check a pixel in the first video frame of the video")
 (ok (equal? (list 0 0 (/ 1 25)) (list video-pts0 video-pts1 video-pts2))
     "Check first three video frame time stamps")
