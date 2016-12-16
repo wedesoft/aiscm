@@ -1,4 +1,4 @@
-aiscm (0.9.3-1) unstable; urgency=low
+aiscm (0.9.2-1) unstable; urgency=low
 
   * test/test_ffmpeg.scm: extract pixel value earlier in test
   * aiscm/jit.scm: compile code to allocate return values
