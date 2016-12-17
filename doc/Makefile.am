@@ -13,8 +13,7 @@ RUN = $(GUILE) -L $(top_builddir)
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
 					 aiscm.gif fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
-					 debian.png ubuntu.png source.png package.png fubk-colours.png sintel.jpg test.mp3 \
-					 v4l2.jpg av-sync.mp4
+					 debian.png ubuntu.png source.png package.png fubk-colours.png sintel.jpg v4l2.jpg
 
 EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
 						 operation.md aiscm.gif debian.png ubuntu.png source.png package.png dependencies.sh \
@@ -32,12 +31,6 @@ pavillion.jpg: ../tests/integration/pavillion.jpg
 	cp $< $@
 
 star-ferry.jpg: ../tests/integration/star-ferry.jpg
-	cp $< $@
-
-test.mp3: ../tests/fixtures/test.mp3
-	cp $< $@
-
-av-sync.mp4: ../tests/fixtures/av-sync.mp4
 	cp $< $@
 
 pattern.png: ../tests/integration/write_image.scm
