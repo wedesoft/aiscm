@@ -1,5 +1,8 @@
 SUFFIXES = .c .scm .go
 
+DPKG_EXPORT_BUILDFLAGS = yes
+include /usr/share/dpkg/default.mk
+
 sitedir = $(GUILE_SITE)/aiscm
 site_DATA = mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm complex.scm float.scm \
 						sequence.scm asm.scm image.scm jit.scm op.scm ffmpeg.scm util.scm magick.scm \
