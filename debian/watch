@@ -1,0 +1,4 @@
+version=3
+
+opts="filenamemangle=s/(?:.*)?v?(\d[\d\.]*)\.tar\.gz/<aiscm>-$1.tar.gz/" \
+  https://github.com/wedesoft/aiscm/tags (?:.*/)?v?(\d[\d\.]*)\.tar\.gz
