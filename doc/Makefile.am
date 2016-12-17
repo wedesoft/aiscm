@@ -18,7 +18,8 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 
 EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
 						 operation.md aiscm.gif debian.png ubuntu.png source.png package.png dependencies.sh \
-						 fubk-colours.png sintel.jpg v4l2.jpg
+						 fubk-colours.png sintel.jpg v4l2.jpg \
+						 gplv3.png amd64.png
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg *.html *.tmp
 
