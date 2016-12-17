@@ -1,6 +1,6 @@
 ## Ready
 
-* make project more self contained (add logo files to project, remove web streaming integration test)
+* make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * put results in live-analysis
 * register allocation: registers, stack pointer, live intervals, blocked intervals, predefined, overlap, spill variable,
