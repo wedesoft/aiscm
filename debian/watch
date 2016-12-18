@@ -1,4 +1,5 @@
 version=3
 
-opts="filenamemangle=s/(?:.*)?v?(\d[\d\.]*)\.tar\.gz/<aiscm>-$1.tar.gz/" \
+opts=filenamemangle=s/(?:.*)?v?(\d[\d\.]*)\.tar\.gz/<aiscm>-$1.tar.gz/,\
+pgpsigurlmangle=s/$/.asc/ \
   https://github.com/wedesoft/aiscm/tags (?:.*/)?v?(\d[\d\.]*)\.tar\.xz
