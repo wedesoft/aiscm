@@ -25,6 +25,7 @@
 
 (define audio-pts0 (audio-pts audio-mono))
 (define audio-mono-frame (read-audio audio-mono))
+(define audio-sample (get audio-mono-frame 0 300))
 (define audio-pts1 (audio-pts audio-mono))
 (read-audio audio-mono)
 (define audio-pts2 (audio-pts audio-mono))
@@ -108,7 +109,7 @@
     "Mono audio frame should have 1 as first dimension")
 (ok (eqv? 2 (car (shape audio-stereo-frame)))
     "Stereo audio frame should have 2 as first dimension")
-(ok (eqv? 40 (get audio-mono-frame 0 300))
+(ok (eqv? 40 audio-sample)
     "Get a value from a mono audio frame")
 (skip (not (read-audio full-audio)); number of audio frames depends on FFmpeg version
     "Check 'read-audio' returns false after last frame")
