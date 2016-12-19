@@ -4,7 +4,7 @@ Section: lisp
 Priority: optional
 Homepage: http://wedesoft.github.io/aiscm/
 Standards-Version: 3.9.8
-Build-Depends: guile-2.0-dev (>= 2.0.9), linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper (>= 9)
+Build-Depends: guile-2.0-dev (>= 2.0.9), linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper (>= 10)
 
 Package: aiscm
 Architecture: amd64
