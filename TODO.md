@@ -1,6 +1,6 @@
 ## Ready
 
-* make project more self contained (add logo files to project, remove web streaming integration test)
+* make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * register spilling
 * parameters (register/stack)

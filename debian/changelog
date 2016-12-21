@@ -1,8 +1,5 @@
 aiscm (0.9.2-1) unstable; urgency=low
 
-  * aiscm/jit.scm: compile code to allocate return values
-  - support for native constants
-  - working on tensor expressions
-  - Create package for Debian. Closes: #848078
+  - Create new package for Debian. Closes: #848078
 
- -- Jan Wedekind <jan@wedesoft.de>  Tue, 13 Dec 2016 20:51:00 +0000
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 15 Dec 2016 19:54:15 +0000
