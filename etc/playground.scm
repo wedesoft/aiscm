@@ -15,11 +15,6 @@
              (aiscm util)
              (guile-tap))
 
-; register-parameters
-; stack-parameters
-; spilled-parameters
-; write-spilled-parameters
-
 (define (parameters-to-spill parameters allocation)
   "Get a list of parameters which need spill code"
   (filter (compose not (cut assq-ref allocation <>)) (take-up-to parameters 6)))
@@ -27,6 +22,13 @@
 (define (parameters-to-fetch parameters allocation)
   "Get a list of parameters which need to be fetched"
   (filter (cut assq-ref allocation <>) (drop-up-to parameters 6)))
+
+(define (initial-parameter-locations parameters)
+  "Create an association list with the initial parameter locations"
+  (map (lambda (parameter register)
+         (cons parameter (to-type (typecode parameter) register)))
+       parameters
+       (list RDI RSI RDX RCX R8 R9)))
 
 (define (write-spilled-parameters parameters locations)
   "Generate spill code for spilled parameters"
@@ -36,7 +38,10 @@
   "Generate fetch code for stack parameters"
   '())
 
-(let [(a (var <int>))]
+; TODO: create and use array of initial parameter locations
+
+(let [(i (var <int>))
+      (l (var <long>))]
   (ok (equal? '() (parameters-to-spill '(a) (list (cons 'a RAX))))
       "a parameter does not need spilling if a register was allocated for it")
   (ok (equal? '(a) (parameters-to-spill '(a) '()))
@@ -49,9 +54,17 @@
       "stack parameter without allocated register does not need fetching")
   (ok (equal? '(a b c d e f) (parameters-to-spill '(a b c d e f g) '()))
       "only the first six parameters may need spilling")
+  (ok (equal? '() (initial-parameter-locations '()))
+      "initial parameter locations for no parameters")
+  (ok (equal? (list (cons i EDI)) (initial-parameter-locations (list i)))
+      "initial parameter location for one integer parameter")
+  (ok (equal? (list (cons l RDI)) (initial-parameter-locations (list l)))
+      "initial parameter location for one long integer parameter")
+  (ok (equal? (list RDI RSI RDX RCX R8 R9) (map cdr (initial-parameter-locations (make-list 6 l))))
+      "initial parameter locations for first six parameters")
   (ok (equal? '() (write-spilled-parameters '() '()))
       "write no parameter to stack")
-  (ok (equal? (list (MOV (ptr <int> RSP -8) a)) (write-spilled-parameters (list a) (list (cons a (ptr <int> RSP -8)))))
+  (ok (equal? (list (MOV (ptr <int> RSP -8) i)) (write-spilled-parameters (list i) (list (cons i (ptr <int> RSP -8)))))
       "write one parameter to stack")
   (ok (equal? '() (fetch-stack-parameters '() '()))
       "no parameters to fetch"))
