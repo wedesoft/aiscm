@@ -1,5 +1,6 @@
 ## Ready
 
+* copyright headers
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * put results in live-analysis
