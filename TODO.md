@@ -1,6 +1,8 @@
 ## Ready
 
 * copyright headers
+* robot speech processing
+* add checks https://wiki.debian.org/HowToPackageForDebian
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * put results in live-analysis
