@@ -19,6 +19,7 @@
 #include <jpegutils.h>
 #include <libguile.h>
 
+
 void scm_to_array(SCM source, int dest[])
 {
   if (!scm_is_null_and_not_nil(source)) {
