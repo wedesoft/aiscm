@@ -15,13 +15,21 @@
              (aiscm util)
              (guile-tap))
 
-(define (parameters-to-spill parameters allocation)
-  "Get a list of parameters which need spill code"
-  (filter (compose not (cut is-a? <> <register>) (cut assq-ref allocation <>)) (take-up-to parameters 6)))
+(define (register-parameters parameters)
+   "Return the parameters which are stored in registers according to the x86 ABI"
+   (take-up-to parameters 6))
 
-(define (parameters-to-fetch parameters allocation)
+(define (stack-parameters parameters)
+   "Return the parameters which are stored on the stack according to the x86 ABI"
+   (drop-up-to parameters 6))
+
+(define (parameters-to-spill register-parameters allocation)
+  "Get a list of parameters which need spill code"
+  (filter (compose not (cut is-a? <> <register>) (cut assq-ref allocation <>)) register-parameters))
+
+(define (parameters-to-fetch stack-parameters allocation)
   "Get a list of parameters which need to be fetched"
-  (filter (compose (cut is-a? <> <register>) (cut assq-ref allocation <>)) (drop-up-to parameters 6)))
+  (filter (compose (cut is-a? <> <register>) (cut assq-ref allocation <>)) stack-parameters))
 
 (define (register-parameter-locations parameters)
   "Create an association list with the initial parameter locations"
@@ -41,26 +49,36 @@
 
 (define (update-parameter-locations parameters allocation)
   "Generate the required code to update the parameter locations according to the register allocation"
-  (append (move-parameters (parameters-to-spill parameters allocation) allocation (register-parameter-locations parameters))
-          (move-parameters (parameters-to-fetch parameters allocation) allocation (stack-parameter-locations parameters -48))))
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (move-parameters (parameters-to-spill register-parameters allocation)
+                             allocation
+                             (register-parameter-locations register-parameters))
+            (move-parameters (parameters-to-fetch stack-parameters allocation)
+                             allocation
+                             (stack-parameter-locations stack-parameters 0)))))
 
 ; TODO: create and use array of initial parameter locations
 
+(ok (equal? '(a b c) (register-parameters '(a b c)))
+    "the first parameters are register parameters")
+(ok (equal? '(a b c d e f) (register-parameters '(a b c d e f g)))
+    "only the first six parameters are register parameters")
+(ok (equal? '() (stack-parameters '(a b c)))
+    "the first few parameters are not stored on the stack")
+(ok (equal? '(g h) (stack-parameters '(a b c d e f g h)))
+    "appart from the first six parameters, all parameters are stored on the stack")
 (ok (equal? '() (parameters-to-spill '(a) (list (cons 'a RAX))))
     "a parameter does not need spilling if a register was allocated for it")
 (ok (equal? '(a) (parameters-to-spill '(a) '()))
     "a parameter needs spilling if no register was allocated for it")
 (ok (equal? '(a) (parameters-to-spill '(a) (list (cons 'a (ptr <int> RSP -8)))))
     "a parameter needs spilling if a stack location was allocated for it")
-(ok (equal? '(a b c d e f) (parameters-to-spill '(a b c d e f g) '()))
-    "only the first six parameters may need spilling")
-(ok (equal? '() (parameters-to-fetch '(a) (list (cons 'a RAX))))
-    "a parameter does not need fetching if it is one of the first six ones")
-(ok (equal? '(g) (parameters-to-fetch '(a b c d e f g) (list (cons 'g RAX))))
+(ok (equal? '(g) (parameters-to-fetch '(g) (list (cons 'g RAX))))
     "stack parameter with allocated register needs fetching")
-(ok (equal? '() (parameters-to-fetch '(a b c d e f g) '()))
+(ok (equal? '() (parameters-to-fetch '(g) '()))
     "stack parameter without allocated register does not need fetching")
-(ok (equal? '() (parameters-to-fetch '(a b c d e f g) (list (cons 'g (ptr <int> RSP -8)))))
+(ok (equal? '() (parameters-to-fetch '(g) (list (cons 'g (ptr <int> RSP -8)))))
     "stack parameter with stack location does not need fetching")
 (ok (equal? '() (register-parameter-locations '()))
     "initial parameter locations for no parameters")
@@ -102,6 +120,10 @@
   (ok (equal? (list (MOV EAX (ptr <int> RSP 8)))
               (update-parameter-locations (list a b c d e f g)
                                           (map cons (list a b c d e f g) (list EDI ESI EDX ECX R8D R9D EAX))))
-      "load a stack parameter"))
+      "load a stack parameter")
+  (ok (equal? '()
+              (update-parameter-locations (list a b c d e f g)
+                                          (map cons (list a b c d e f) (list EDI ESI EDX ECX R8D R9D))))
+      "do nothing if only the first six parameters are in registers"))
 
 (run-tests)
