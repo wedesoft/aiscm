@@ -47,7 +47,7 @@
   "Generate spill code for spilled parameters"
   (map MOV (map (cut assq-ref allocation <>) parameters) (map (cut assq-ref initial-locations <>) parameters)))
 
-(define (update-parameter-locations parameters allocation)
+(define (update-parameter-locations parameters allocation offset)
   "Generate the required code to update the parameter locations according to the register allocation"
   (let [(register-parameters (register-parameters parameters))
         (stack-parameters    (stack-parameters parameters))]
@@ -56,7 +56,7 @@
                              (register-parameter-locations register-parameters))
             (move-parameters (parameters-to-fetch stack-parameters allocation)
                              allocation
-                             (stack-parameter-locations stack-parameters 0)))))
+                             (stack-parameter-locations stack-parameters offset)))))
 
 ; TODO: create and use array of initial parameter locations
 
@@ -112,18 +112,25 @@
       (e (var <int>))
       (f (var <int>))
       (g (var <int>))]
-  (ok (equal? '() (update-parameter-locations '() '()))
+  (ok (equal? '() (update-parameter-locations '() '() 0))
       "no parameters to move arround")
   (ok (equal? (list (MOV (ptr <int> RSP -8) EDI))
-              (update-parameter-locations (list a) (list (cons a (ptr <int> RSP -8))))); TODO: offset
+              (update-parameter-locations (list a) (list (cons a (ptr <int> RSP -8))) 0))
       "spill a register parameter")
   (ok (equal? (list (MOV EAX (ptr <int> RSP 8)))
               (update-parameter-locations (list a b c d e f g)
-                                          (map cons (list a b c d e f g) (list EDI ESI EDX ECX R8D R9D EAX))))
+                                          (map cons (list a b c d e f g) (list EDI ESI EDX ECX R8D R9D EAX))
+                                          0))
       "load a stack parameter")
+  (ok (equal? (list (MOV EAX (ptr <int> RSP 24)))
+              (update-parameter-locations (list a b c d e f g)
+                                          (map cons (list a b c d e f g) (list EDI ESI EDX ECX R8D R9D EAX))
+                                          16))
+      "load a stack parameter taking into account the stack pointer offset")
   (ok (equal? '()
               (update-parameter-locations (list a b c d e f g)
-                                          (map cons (list a b c d e f) (list EDI ESI EDX ECX R8D R9D))))
+                                          (map cons (list a b c d e f) (list EDI ESI EDX ECX R8D R9D))
+                                          0))
       "do nothing if only the first six parameters are in registers"))
 
 (run-tests)
