@@ -15,6 +15,10 @@
              (aiscm util)
              (guile-tap))
 
+; TODO: use stack location as spill locations for stack parameters
+; assign-spill-locations
+; add-spill-information
+
 (define (register-parameters parameters)
    "Return the parameters which are stored in registers according to the x86 ABI"
    (take-up-to parameters 6))

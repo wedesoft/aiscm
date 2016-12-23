@@ -2,7 +2,7 @@
 
 * copyright headers
 * robot speech processing
-* add checks https://wiki.debian.org/HowToPackageForDebian
+* add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * register spilling
