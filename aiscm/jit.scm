@@ -260,7 +260,7 @@
 (define (add-spill-information allocation offset increment)
   "Allocate spill locations for spilled variables"
   (append (register-allocations allocation)
-          (assign-spill-locations (unallocated-variables allocation) offset increment)))
+          (assign-spill-locations (unallocated-variables allocation) offset increment))); TODO: determine offset here
 
 (define (linear-scan-coloring live-intervals registers predefined)
   "Linear scan register allocation based on live intervals"

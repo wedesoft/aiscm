@@ -16,6 +16,7 @@
              (guile-tap))
 
 ; TODO: use stack location as spill locations for stack parameters
+; determine offset in add-spill-information
 ; assign-spill-locations
 ; add-spill-information
 
@@ -46,6 +47,10 @@
   (map (lambda (parameter index) (cons parameter (ptr (typecode parameter) RSP index)))
        parameters
        (iota (length parameters) (+ 8 offset) 8)))
+
+(define (add-stack-parameter-information allocation stack-parameter-locations)
+   "Add the stack location for stack parameters which do not have a register allocated"
+   stack-parameter-locations)
 
 (define (move-parameters parameters allocation initial-locations)
   "Generate spill code for spilled parameters"
@@ -108,7 +113,12 @@
       "write no parameter to stack")
   (ok (equal? (list (MOV (ptr <int> RSP -8) EDI))
               (move-parameters (list i) (list (cons i (ptr <int> RSP -8))) (list (cons i EDI))))
-      "write one parameter to stack"))
+      "write one parameter to stack")
+  (ok (equal? '() (add-stack-parameter-information '() '()))
+      "no stack location required")
+  (ok (equal? (list (cons i (ptr <int> RSP 8)))
+              (add-stack-parameter-information (list (cons i #f)) (list (cons i (ptr <int> RSP 8)))))
+      "use stack location for register spilling"))
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
