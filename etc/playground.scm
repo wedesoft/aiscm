@@ -50,7 +50,9 @@
 
 (define (add-stack-parameter-information allocation stack-parameter-locations)
    "Add the stack location for stack parameters which do not have a register allocated"
-   stack-parameter-locations)
+   (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
+        (map car allocation)
+        (map cdr allocation)))
 
 (define (move-parameters parameters allocation initial-locations)
   "Generate spill code for spilled parameters"
@@ -118,7 +120,10 @@
       "no stack location required")
   (ok (equal? (list (cons i (ptr <int> RSP 8)))
               (add-stack-parameter-information (list (cons i #f)) (list (cons i (ptr <int> RSP 8)))))
-      "use stack location for register spilling"))
+      "use stack location for register spilling")
+  (ok (equal? (list (cons i EAX))
+              (add-stack-parameter-information (list (cons i EAX)) (list (cons i (ptr <int> RSP 8)))))
+      "do not use stack location if register already has a location allocated"))
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
