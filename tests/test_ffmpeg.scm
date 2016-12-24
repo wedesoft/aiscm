@@ -39,6 +39,10 @@
 (define video-frame (read-image video))
 (define video-pts2 (video-pts video))
 
+(pts= video 15)
+(read-image video)
+(define video-position (video-pts video))
+
 (define audio-pts0 (audio-pts audio-mono))
 (define audio-mono-frame (read-audio audio-mono))
 (define audio-sample (get audio-mono-frame 0 300))
@@ -127,6 +131,7 @@
     "Stereo audio frame should have 2 as first dimension")
 (ok (eqv? 40 audio-sample)
     "Get a value from a mono audio frame")
+(diagnostics "Following test disabled because number of audio frames depends on FFmpeg version")
 (skip (not (read-audio full-audio)); number of audio frames depends on FFmpeg version
     "Check 'read-audio' returns false after last frame")
 (ok (equal? (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
@@ -134,9 +139,7 @@
 (diagnostics "Following test should not hang")
 (ok (not (read-audio image))
     "Do not hang when reading audio from image")
-(ok (eqv? 15 (pts= video 15))
-    "Seeking should return the time parameter")
-(ok (<= 15 (begin (read-image video) (video-pts video)))
+(ok (<= 15 video-position)
     "Seeking audio/video should update the video position")
 (let [(image (open-ffmpeg-input "fixtures/fubk.png"))]
   (read-audio image)
