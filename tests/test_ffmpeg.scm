@@ -1,3 +1,19 @@
+;; AIscm - Guile extension for numerical arrays and tensors.
+;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;;
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;
 (use-modules (oop goops)
              (srfi srfi-1)
              (aiscm ffmpeg)
@@ -22,6 +38,10 @@
 (define video-pts1 (video-pts video))
 (define video-frame (read-image video))
 (define video-pts2 (video-pts video))
+
+(pts= video 15)
+(read-image video)
+(define video-position (video-pts video))
 
 (define audio-pts0 (audio-pts audio-mono))
 (define audio-mono-frame (read-audio audio-mono))
@@ -111,6 +131,7 @@
     "Stereo audio frame should have 2 as first dimension")
 (ok (eqv? 40 audio-sample)
     "Get a value from a mono audio frame")
+(diagnostics "Following test disabled because number of audio frames depends on FFmpeg version")
 (skip (not (read-audio full-audio)); number of audio frames depends on FFmpeg version
     "Check 'read-audio' returns false after last frame")
 (ok (equal? (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
@@ -118,9 +139,7 @@
 (diagnostics "Following test should not hang")
 (ok (not (read-audio image))
     "Do not hang when reading audio from image")
-(ok (eqv? 15 (pts= video 15))
-    "Seeking should return the time parameter")
-(ok (<= 15 (begin (read-image video) (video-pts video)))
+(ok (<= 15 video-position)
     "Seeking audio/video should update the video position")
 (let [(image (open-ffmpeg-input "fixtures/fubk.png"))]
   (read-audio image)
