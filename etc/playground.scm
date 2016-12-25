@@ -15,6 +15,8 @@
              (aiscm util)
              (guile-tap))
 
+; TODO: spilling of register parameters
+; TODO: loading of stack parameters
 ; TODO: use stack location as spill locations for stack parameters
 ; determine offset in add-spill-information
 ; assign-spill-locations
@@ -68,6 +70,26 @@
             (move-parameters (parameters-to-fetch stack-parameters allocation)
                              allocation
                              (stack-parameter-locations stack-parameters offset)))))
+
+
+(define* (linear-scan-allocate prog #:key (registers default-registers)
+                                          (parameters '()))
+  "Linear scan register allocation for a given program"
+  (let* [(live                (live-analysis prog '())); TODO: specify return values here
+         (temporary-variables (temporary-variables prog))
+         (intervals           (append (live-intervals live (variables prog))
+                                      (unit-intervals temporary-variables)))
+         (predefined          (register-parameter-locations parameters))
+         (allocation          (linear-scan-coloring intervals registers predefined))
+         (temporaries         (temporary-registers allocation temporary-variables))
+         (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
+         (locations           (add-spill-information allocation 8 8))]
+    (adjust-stack-pointer stack-offset
+                          (concatenate (map (lambda (cmd register) (replace-variables cmd locations register))
+                                            prog
+                                            temporaries)))))
+
+
 
 ; TODO: create and use array of initial parameter locations
 
@@ -150,6 +172,21 @@
               (update-parameter-locations (list a b c d e f g)
                                           (map cons (list a b c d e f) (list EDI ESI EDX ECX R8D R9D))
                                           0))
-      "do nothing if only the first six parameters are in registers"))
+      "do nothing if only the first six parameters are in registers")
+
+
+  (ok (equal? (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 42) (RET))))
+      "Allocate a single register")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+      "Allocate a single register using custom list of registers")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+      "Allocate multiple registers")
+  (ok (equal? (list (SUB RSP 8) (MOV ESI 1) (ADD ESI EDI) (MOV EDI ESI) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
+                                    #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
+      "Register allocation with predefined parameter register"))
 
 (run-tests)

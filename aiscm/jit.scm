@@ -38,7 +38,7 @@
             substitute-variables variables get-args input output labels next-indices
             initial-register-use find-available mark-used-till longest-use live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
-            first-argument replace-variables adjust-stack-pointer
+            first-argument replace-variables adjust-stack-pointer default-registers
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
