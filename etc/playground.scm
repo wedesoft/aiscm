@@ -15,7 +15,6 @@
              (aiscm util)
              (guile-tap))
 
-; TODO: spilling of register parameters
 ; TODO: loading of stack parameters
 ; TODO: use stack location as spill locations for stack parameters
 ; determine offset in add-spill-information
@@ -30,13 +29,13 @@
    "Return the parameters which are stored on the stack according to the x86 ABI"
    (drop-up-to parameters 6))
 
-(define (parameters-to-spill register-parameters allocation)
+(define (parameters-to-spill register-parameters locations)
   "Get a list of parameters which need spill code"
-  (filter (compose not (cut is-a? <> <register>) (cut assq-ref allocation <>)) register-parameters))
+  (filter (compose not (cut is-a? <> <register>) (cut assq-ref locations <>)) register-parameters))
 
-(define (parameters-to-fetch stack-parameters allocation)
+(define (parameters-to-fetch stack-parameters locations)
   "Get a list of parameters which need to be fetched"
-  (filter (compose (cut is-a? <> <register>) (cut assq-ref allocation <>)) stack-parameters))
+  (filter (compose (cut is-a? <> <register>) (cut assq-ref locations <>)) stack-parameters))
 
 (define (register-parameter-locations parameters)
   "Create an association list with the initial parameter locations"
@@ -56,19 +55,19 @@
         (map car allocation)
         (map cdr allocation)))
 
-(define (move-parameters parameters allocation initial-locations)
+(define (move-parameters parameters locations initial-locations)
   "Generate spill code for spilled parameters"
-  (map MOV (map (cut assq-ref allocation <>) parameters) (map (cut assq-ref initial-locations <>) parameters)))
+  (map MOV (map (cut assq-ref locations <>) parameters) (map (cut assq-ref initial-locations <>) parameters)))
 
-(define (update-parameter-locations parameters allocation offset)
+(define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
   (let [(register-parameters (register-parameters parameters))
         (stack-parameters    (stack-parameters parameters))]
-    (append (move-parameters (parameters-to-spill register-parameters allocation)
-                             allocation
+    (append (move-parameters (parameters-to-spill register-parameters locations)
+                             locations
                              (register-parameter-locations register-parameters))
-            (move-parameters (parameters-to-fetch stack-parameters allocation)
-                             allocation
+            (move-parameters (parameters-to-fetch stack-parameters locations)
+                             locations
                              (stack-parameter-locations stack-parameters offset)))))
 
 
@@ -85,9 +84,10 @@
          (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
          (locations           (add-spill-information allocation 8 8))]
     (adjust-stack-pointer stack-offset
-                          (concatenate (map (lambda (cmd register) (replace-variables cmd locations register))
-                                            prog
-                                            temporaries)))))
+                          (append (update-parameter-locations parameters locations stack-offset)
+                                  (append-map (lambda (cmd register) (replace-variables cmd locations register))
+                                              prog
+                                              temporaries)))))
 
 
 
@@ -187,6 +187,9 @@
   (ok (equal? (list (SUB RSP 8) (MOV ESI 1) (ADD ESI EDI) (MOV EDI ESI) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                     #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
-      "Register allocation with predefined parameter register"))
+      "Register allocation with predefined parameter register")
+  (ok (equal? (list (SUB RSP 16) (MOV (ptr <int> RSP 8) EDI) (MOV EDI 1) (ADD EDI (ptr <int> RSP 8)) (ADD RSP 16) (RET))
+              (linear-scan-allocate (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI)))
+      "Spill register parameter"))
 
 (run-tests)
