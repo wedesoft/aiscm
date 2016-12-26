@@ -31,7 +31,7 @@
 
 (define (parameters-to-spill register-parameters locations)
   "Get a list of parameters which need spill code"
-  (filter (compose not (cut is-a? <> <register>) (cut assq-ref locations <>)) register-parameters))
+  (filter (compose (cut is-a? <> <address>) (cut assq-ref locations <>)) register-parameters))
 
 (define (parameters-to-fetch stack-parameters locations)
   "Get a list of parameters which need to be fetched"
@@ -39,9 +39,7 @@
 
 (define (register-parameter-locations parameters)
   "Create an association list with the initial parameter locations"
-  (map (lambda (parameter register) (cons parameter (to-type (typecode parameter) register)))
-       parameters
-       (list RDI RSI RDX RCX R8 R9)))
+  (map cons parameters (list RDI RSI RDX RCX R8 R9)))
 
 (define (stack-parameter-locations parameters offset)
   "Determine initial locations of stack parameters"
@@ -57,7 +55,8 @@
 
 (define (move-parameters parameters locations initial-locations)
   "Generate spill code for spilled parameters"
-  (map MOV (map (cut assq-ref locations <>) parameters) (map (cut assq-ref initial-locations <>) parameters)))
+  (let [(adapt (lambda (alist parameter) (to-type (typecode parameter) (assq-ref alist parameter))))]
+    (map MOV (map (cut adapt locations <>) parameters) (map (cut adapt initial-locations <>) parameters))))
 
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
@@ -103,8 +102,8 @@
     "appart from the first six parameters, all parameters are stored on the stack")
 (ok (equal? '() (parameters-to-spill '(a) (list (cons 'a RAX))))
     "a parameter does not need spilling if a register was allocated for it")
-(ok (equal? '(a) (parameters-to-spill '(a) '()))
-    "a parameter needs spilling if no register was allocated for it")
+(ok (equal? '() (parameters-to-spill '(a) '()))
+    "a parameter does not need spilling if it does not need an allocation")
 (ok (equal? '(a) (parameters-to-spill '(a) (list (cons 'a (ptr <int> RSP -8)))))
     "a parameter needs spilling if a stack location was allocated for it")
 (ok (equal? '(g) (parameters-to-fetch '(g) (list (cons 'g RAX))))
@@ -117,10 +116,8 @@
     "initial parameter locations for no parameters")
 (let [(i (var <int>))
       (l (var <long>))]
-  (ok (equal? (list (cons i EDI)) (register-parameter-locations (list i)))
-      "initial parameter location for one integer parameter")
-  (ok (equal? (list (cons l RDI)) (register-parameter-locations (list l)))
-      "initial parameter location for one long integer parameter")
+  (ok (equal? (list (cons i RDI)) (register-parameter-locations (list i)))
+      "initial parameter location for one parameter")
   (ok (equal? (list RDI RSI RDX RCX R8 R9) (map cdr (register-parameter-locations (make-list 6 l))))
       "initial parameter locations for first six parameters")
   (ok (equal? '() (stack-parameter-locations '() 0))
@@ -136,15 +133,15 @@
   (ok (equal? '() (move-parameters '() '() '()))
       "write no parameter to stack")
   (ok (equal? (list (MOV (ptr <int> RSP -8) EDI))
-              (move-parameters (list i) (list (cons i (ptr <int> RSP -8))) (list (cons i EDI))))
+              (move-parameters (list i) (list (cons i (ptr <int> RSP -8))) (list (cons i RDI))))
       "write one parameter to stack")
   (ok (equal? '() (add-stack-parameter-information '() '()))
       "no stack location required")
   (ok (equal? (list (cons i (ptr <int> RSP 8)))
               (add-stack-parameter-information (list (cons i #f)) (list (cons i (ptr <int> RSP 8)))))
       "use stack location for register spilling")
-  (ok (equal? (list (cons i EAX))
-              (add-stack-parameter-information (list (cons i EAX)) (list (cons i (ptr <int> RSP 8)))))
+  (ok (equal? (list (cons i RAX))
+              (add-stack-parameter-information (list (cons i RAX)) (list (cons i (ptr <int> RSP 8)))))
       "do not use stack location if register already has a location allocated"))
 (let [(a (var <int>))
       (b (var <int>))
@@ -152,7 +149,8 @@
       (d (var <int>))
       (e (var <int>))
       (f (var <int>))
-      (g (var <int>))]
+      (g (var <int>))
+      (r (var <int>))]
   (ok (equal? '() (update-parameter-locations '() '() 0))
       "no parameters to move arround")
   (ok (equal? (list (MOV (ptr <int> RSP -8) EDI))
@@ -184,12 +182,15 @@
   (ok (equal? (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
       "Allocate multiple registers")
-  (ok (equal? (list (SUB RSP 8) (MOV ESI 1) (ADD ESI EDI) (MOV EDI ESI) (ADD RSP 8) (RET))
+  (ok (equal? (list (SUB RSP 8) (MOV EDX 1) (ADD EDX EDI) (MOV EDI EDX) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET))
                                     #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
       "Register allocation with predefined parameter register")
   (ok (equal? (list (SUB RSP 16) (MOV (ptr <int> RSP 8) EDI) (MOV EDI 1) (ADD EDI (ptr <int> RSP 8)) (ADD RSP 16) (RET))
-              (linear-scan-allocate (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI)))
-      "Spill register parameter"))
+              (linear-scan-allocate (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI RSI)))
+      "Spill register parameter")
+  (ok (equal? (list (SUB RSP 8) (MOV EDI (ptr <int> RSP 16)) (MOV EAX EDI) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
+      "Fetch register parameter"))
 
 (run-tests)
