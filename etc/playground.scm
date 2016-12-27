@@ -21,6 +21,10 @@
 ; assign-spill-locations
 ; add-spill-information
 
+(define (number-spilled-variables allocation); TODO: do not count stack parameters!
+  "Count the number of spilled variables"
+  (length (unallocated-variables allocation)))
+
 (define (register-parameters parameters)
    "Return the parameters which are stored in registers according to the x86 ABI"
    (take-up-to parameters 6))
@@ -73,15 +77,17 @@
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (parameters '()))
   "Linear scan register allocation for a given program"
-  (let* [(live                (live-analysis prog '())); TODO: specify return values here
-         (temporary-variables (temporary-variables prog))
-         (intervals           (append (live-intervals live (variables prog))
-                                      (unit-intervals temporary-variables)))
-         (predefined          (register-parameter-locations parameters))
-         (allocation          (linear-scan-coloring intervals registers predefined))
-         (temporaries         (temporary-registers allocation temporary-variables))
-         (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
-         (locations           (add-spill-information allocation 8 8))]
+  (let* [(live                 (live-analysis prog '())); TODO: specify return values here
+         (temporary-variables  (temporary-variables prog))
+         (intervals            (append (live-intervals live (variables prog))
+                                       (unit-intervals temporary-variables)))
+         (predefined-registers (register-parameter-locations (register-parameters parameters)))
+         (stack-locations      (stack-parameter-locations (stack-parameters parameters) 24)); TODO: correct offset
+         (colors               (linear-scan-coloring intervals registers predefined-registers))
+         (stack-offset         (* 8 (1+ (number-spilled-variables colors))))
+         (allocation           (add-stack-parameter-information colors stack-locations))
+         (temporaries          (temporary-registers allocation temporary-variables))
+         (locations            (add-spill-information allocation 8 8))]
     (adjust-stack-pointer stack-offset
                           (append (update-parameter-locations parameters locations stack-offset)
                                   (append-map (lambda (cmd register) (replace-variables cmd locations register))
@@ -191,6 +197,15 @@
       "Spill register parameter")
   (ok (equal? (list (SUB RSP 8) (MOV EDI (ptr <int> RSP 16)) (MOV EAX EDI) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
-      "Fetch register parameter"))
+      "Fetch register parameter")
+  (ok (eqv? 0 (number-spilled-variables '()))
+      "count zero spilled variables")
+  (ok (eqv? 1 (number-spilled-variables '((a . #f))))
+      "count one spilled variable")
+  (ok (eqv? 0 (number-spilled-variables (list (cons a RAX))))
+      "ignore allocated variables when counting spilled variables")
+  (skip (equal? (list (SUB RSP 16) (MOV EAX 0) (MOV (ptr <int> RSP 8) EAX) (MOV EAX (ptr <int> RSP 8)) (ADD EAX (ptr <int> RSP 24)) (MOV (ptr <int> RSP 8) EAX) (ADD RSP 16) (RET))
+              (linear-scan-allocate (list (MOV r 10) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
+      "Reuse stack location for spilled stack parameters"))
 
 (run-tests)
