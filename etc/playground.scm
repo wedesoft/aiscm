@@ -21,9 +21,9 @@
 ; assign-spill-locations
 ; add-spill-information
 
-(define (number-spilled-variables allocation); TODO: do not count stack parameters!
+(define (number-spilled-variables allocation stack-parameters)
   "Count the number of spilled variables"
-  (length (unallocated-variables allocation)))
+  (length (lset-difference equal? (unallocated-variables allocation) stack-parameters)))
 
 (define (register-parameters parameters)
    "Return the parameters which are stored in registers according to the x86 ABI"
@@ -82,9 +82,10 @@
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temporary-variables)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
-         (stack-locations      (stack-parameter-locations (stack-parameters parameters) 24)); TODO: correct offset
+         (stack-parameters     (stack-parameters parameters))
          (colors               (linear-scan-coloring intervals registers predefined-registers))
-         (stack-offset         (* 8 (1+ (number-spilled-variables colors))))
+         (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
+         (stack-locations      (stack-parameter-locations stack-parameters stack-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
          (temporaries          (temporary-registers allocation temporary-variables))
          (locations            (add-spill-information allocation 8 8))]
@@ -198,14 +199,18 @@
   (ok (equal? (list (SUB RSP 8) (MOV EDI (ptr <int> RSP 16)) (MOV EAX EDI) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
       "Fetch register parameter")
-  (ok (eqv? 0 (number-spilled-variables '()))
+  (ok (eqv? 0 (number-spilled-variables '() '()))
       "count zero spilled variables")
-  (ok (eqv? 1 (number-spilled-variables '((a . #f))))
+  (ok (eqv? 1 (number-spilled-variables '((a . #f)) '()))
       "count one spilled variable")
-  (ok (eqv? 0 (number-spilled-variables (list (cons a RAX))))
+  (ok (eqv? 0 (number-spilled-variables (list (cons a RAX)) '()))
       "ignore allocated variables when counting spilled variables")
-  (skip (equal? (list (SUB RSP 16) (MOV EAX 0) (MOV (ptr <int> RSP 8) EAX) (MOV EAX (ptr <int> RSP 8)) (ADD EAX (ptr <int> RSP 24)) (MOV (ptr <int> RSP 8) EAX) (ADD RSP 16) (RET))
-              (linear-scan-allocate (list (MOV r 10) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
+  (ok (eqv? 0 (number-spilled-variables '((a . #f)) '(a)))
+      "do not count stack parameters when allocating stack space")
+  (ok (eqv? 1 (number-spilled-variables '((a . #f)) '(b)))
+      "allocate stack space if spilled variable is not a stack parameter")
+  (ok (equal? (list (SUB RSP 16) (MOV EAX 0) (MOV (ptr <int> RSP 8) EAX) (MOV EAX (ptr <int> RSP 8)) (ADD EAX (ptr <int> RSP 24)) (MOV (ptr <int> RSP 8) EAX) (ADD RSP 16) (RET))
+              (linear-scan-allocate (list (MOV r 0) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
       "Reuse stack location for spilled stack parameters"))
 
 (run-tests)

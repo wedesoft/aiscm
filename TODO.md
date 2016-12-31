@@ -1,6 +1,5 @@
 ## Ready
 
-* copyright headers
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
