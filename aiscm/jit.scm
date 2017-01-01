@@ -39,6 +39,9 @@
             initial-register-use find-available mark-used-till longest-use live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             first-argument replace-variables adjust-stack-pointer default-registers
+            register-parameters stack-parameters parameters-to-spill parameters-to-fetch
+            register-parameter-locations stack-parameter-locations update-parameter-locations
+            move-parameters add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate
             callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -312,9 +315,9 @@
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
-(define (number-spilled-variables allocation)
+(define (number-spilled-variables allocation stack-parameters)
   "Count the number of spilled variables"
-  (length (unallocated-variables allocation)))
+  (length (lset-difference eq? (unallocated-variables allocation) stack-parameters)))
 
 (define (temporary-variables prog)
   "Allocate temporary variable for each first argument of an instruction"
@@ -328,19 +331,67 @@
   "Look up register for each temporary variable given the result of a register allocation"
   (map (lambda (var) (let [(reg (assq-ref allocation var))] (and reg (to-type (typecode var) reg)))) variables))
 
+(define (parameters-to-spill register-parameters locations)
+  "Get a list of parameters which need spill code"
+  (filter (compose (cut is-a? <> <address>) (cut assq-ref locations <>)) register-parameters))
+
+(define (parameters-to-fetch stack-parameters locations)
+  "Get a list of parameters which need to be fetched"
+  (filter (compose (cut is-a? <> <register>) (cut assq-ref locations <>)) stack-parameters))
+
+(define (register-parameter-locations parameters)
+  "Create an association list with the initial parameter locations"
+  (map cons parameters (list RDI RSI RDX RCX R8 R9)))
+
+(define (stack-parameter-locations parameters offset)
+  "Determine initial locations of stack parameters"
+  (map (lambda (parameter index) (cons parameter (ptr (typecode parameter) RSP index)))
+       parameters
+       (iota (length parameters) (+ 8 offset) 8)))
+
+(define (add-stack-parameter-information allocation stack-parameter-locations)
+   "Add the stack location for stack parameters which do not have a register allocated"
+   (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
+        (map car allocation)
+        (map cdr allocation)))
+
+(define (move-parameters parameters locations initial-locations)
+  "Generate spill code for spilled parameters"
+  (let [(adapt (lambda (alist parameter) (to-type (typecode parameter) (assq-ref alist parameter))))]
+    (map MOV (map (cut adapt locations <>) parameters) (map (cut adapt initial-locations <>) parameters))))
+
+(define (update-parameter-locations parameters locations offset)
+  "Generate the required code to update the parameter locations according to the register allocation"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (move-parameters (parameters-to-spill register-parameters locations)
+                             locations
+                             (register-parameter-locations register-parameters))
+            (move-parameters (parameters-to-fetch stack-parameters locations)
+                             locations
+                             (stack-parameter-locations stack-parameters offset)))))
+
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
-                                          (predefined '()))
+                                          (parameters '()))
   "Linear scan register allocation for a given program"
-  (let* [(live                (live-analysis prog '())); TODO: specify return values here
-         (temporary-variables (temporary-variables prog))
-         (intervals           (append (live-intervals live (variables prog))
-                                      (unit-intervals temporary-variables)))
-         (allocation          (linear-scan-coloring intervals registers predefined))
-         (temporaries         (temporary-registers allocation temporary-variables))
-         (stack-offset        (* 8 (1+ (number-spilled-variables allocation))))
-         (locations           (add-spill-information allocation 8 8))]
+  (let* [(live                 (live-analysis prog '())); TODO: specify return values here
+         (temporary-variables  (temporary-variables prog))
+         (intervals            (append (live-intervals live (variables prog))
+                                       (unit-intervals temporary-variables)))
+         (predefined-registers (register-parameter-locations (register-parameters parameters)))
+         (stack-parameters     (stack-parameters parameters))
+         (colors               (linear-scan-coloring intervals registers predefined-registers))
+         (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
+         (stack-locations      (stack-parameter-locations stack-parameters stack-offset))
+         (allocation           (add-stack-parameter-information colors stack-locations))
+         (temporaries          (temporary-registers allocation temporary-variables))
+         (locations            (add-spill-information allocation 8 8))]
     (adjust-stack-pointer stack-offset
-                          (concatenate (map (lambda (cmd register) (replace-variables cmd locations register)) prog temporaries)))))
+                          (append (update-parameter-locations parameters locations stack-offset)
+                                  (append-map (lambda (cmd register) (replace-variables cmd locations register))
+                                              prog
+                                              temporaries)))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
@@ -363,9 +414,18 @@
 ; RBP is not included because it may be used as a frame pointer
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
-(define register-parameters (list RDI RSI RDX RCX R8 R9))
+(define parameter-registers (list RDI RSI RDX RCX R8 R9))
 (define (callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RBP RSP R12 R13 R14 R15)))
+
+(define (register-parameters parameters)
+   "Return the parameters which are stored in registers according to the x86 ABI"
+   (take-up-to parameters 6))
+
+(define (stack-parameters parameters)
+   "Return the parameters which are stored on the stack according to the x86 ABI"
+   (drop-up-to parameters 6))
+
 (define (save-registers registers offset)
   (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
        registers (iota (length registers) offset -8)))
@@ -404,7 +464,7 @@
     (let [(value (assq-ref colors parameter))]
       (if (not (is-a? value <register>)) (MOV value (to-type (typecode parameter) register)) #f)))
     parameters
-    register-parameters))
+    parameter-registers))
 (define ((fetch-parameters parameters) colors)
   (filter-map (lambda (parameter offset)
     (let [(value (assq-ref colors parameter))]
@@ -481,7 +541,7 @@
 
 (define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
   (let* [(result-regs  (map cons result-vars (list RAX)))
-         (arg-regs     (map cons arg-vars register-parameters))]
+         (arg-regs     (map cons arg-vars parameter-registers))]
     (spill-blocked-predefines (flatten-code (relabel (filter-blocks instructions)))
                               #:predefined (append result-regs arg-regs)
                               #:blocked    (blocked-intervals instructions)
@@ -976,7 +1036,7 @@
         (remaining-parameters (drop-up-to parameters 6))]
     (append (map (lambda (register parameter)
                    (MOV (to-type (native-equivalent (type parameter)) register) (get (delegate parameter))))
-                 register-parameters
+                 parameter-registers
                  first-six-parameters)
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
             (list body ...)
