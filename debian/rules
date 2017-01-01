@@ -13,4 +13,6 @@ override_dh_auto_install:
 	find $$(pwd)/debian/aiscm -name '*.la' -delete
 
 override_dh_makeshlibs:
-	# NOOP to prevent debuild from invoking ldconfig
+	# NOOP to prevent debuild from adding an ldconfig trigger.
+	# aiscm does not install shared libraries in the library path,
+	# it merely installs native extensions to be loaded by the Guile interpreter.
