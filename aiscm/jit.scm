@@ -36,7 +36,7 @@
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices
-            initial-register-use find-available mark-used-till longest-use live-analysis
+            initial-register-use find-available-register mark-used-till longest-use live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters parameters-to-spill parameters-to-fetch
@@ -211,8 +211,8 @@
   (sort-by live-intervals
            (lambda (live) (if (memv (car live) predefined-variables) -1 (- (cadr live) (/ 1 (+ 2 (cddr live))))))))
 
-(define (find-available availability first-index)
-  "Find element available from the specified first program index onwards"
+(define (find-available-register availability first-index)
+  "Find register available from the specified first program index onwards"
   (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
 
 (define (mark-used-till availability element last-index)
@@ -277,7 +277,7 @@
                (last-index   (cdr interval))
                (variable-use (mark-used-till variable-use variable last-index))
                (register     (or (assq-ref predefined variable)
-                                 (find-available register-use first-index)))
+                                 (find-available-register register-use first-index)))
                (recursion    (lambda (allocation register)
                                (linear-allocate (cdr live-intervals)
                                                 (mark-used-till register-use register last-index)
