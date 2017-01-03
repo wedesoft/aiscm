@@ -27,7 +27,7 @@
   #:export (toplevel-define! super gc-malloc gc-malloc-pointerless destroy xor attach index-of all-but-last
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
             assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
-            pair->list nodes live-intervals overlap color-intervals union difference fixed-point
+            pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm)
