@@ -1,7 +1,18 @@
 #!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
 %:
 	dh $@ --parallel
 
 override_dh_auto_install:
 	$(MAKE) DESTDIR=$$(pwd)/debian/aiscm prefix=/usr install
 	find $$(pwd)/debian/aiscm -name '*.la' -delete
+
+override_dh_makeshlibs:
+	# NOOP to prevent debuild from adding an ldconfig trigger.
+	# aiscm does not install shared libraries in the library path,
+	# it merely installs native extensions to be loaded by the Guile interpreter.
