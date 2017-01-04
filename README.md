@@ -1,6 +1,6 @@
 # [AIscm][1]
 
-[![GPLv3](https://img.shields.io/github/license/wedesoft/aiscm.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](https://travis-ci.org/wedesoft/aiscm.png?branch=master)](https://travis-ci.org/wedesoft/aiscm) [![GitHub](https://img.shields.io/github/release/wedesoft/aiscm.png)](https://github.com/wedesoft/aiscm/releases) [![Guile 2.0.11](http://img.shields.io/badge/Guile-2.0.11-yellow.png)](http://www.gnu.org/software/guile) [![amd64](http://img.shields.io/badge/architecture-amd64-lightgrey.png)](https://en.wikipedia.org/wiki/X86-64) [![DOI](https://zenodo.org/badge/15473832.svg)](https://zenodo.org/badge/latestdoi/15473832)
+[![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](doc/amd64.png)](https://en.wikipedia.org/wiki/X86-64)
 
 [**AIscm**][1] is a **[Guile][2] extension for numerical arrays and tensors**.
 Performance is achieved by means of a JIT compiler.

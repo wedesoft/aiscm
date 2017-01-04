@@ -5,7 +5,7 @@ SUBDIRS = aiscm tests doc bench
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = bootstrap configure.ac README.md TODO.md COPYING
+EXTRA_DIST = bootstrap configure.ac README.md TODO.md COPYING README NEWS AUTHORS
 
 repl: all
 	$(ENVIRONMENT) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y DEBUG=YES $(RUN)

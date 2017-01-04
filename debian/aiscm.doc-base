@@ -1,0 +1,9 @@
+Document: aiscm
+Title: AIscm reference manual
+Author: Jan Wedekind
+Abstract: This manual is for AIscm, the Guile extension for numeric arrays and tensors
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/aiscm/index.html
+Files: /usr/share/doc/aiscm/*.html

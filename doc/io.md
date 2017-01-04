@@ -91,10 +91,6 @@ The following example records 3 seconds of audio data and then plays it back.
 
 ## Video files
 
-<div class="figure">
-<video src="av-sync.mp4" controls></video>
-</div>
-
 The following example shows how to use the FFmpeg interface to open and view a video.
 The video presentation time stamps are used to display the video at the correct speed.
 The method *latency* is used to determine the delay of the audio buffer.
@@ -124,10 +120,6 @@ I.e. the following example will play the [Sintel short film](https://durian.blen
 
 One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
 It is also possible to pass a function returning consecutive audio samples as shown below.
-
-<div class="figure">
-<audio src="test.mp3" controls></audio>
-</div>
 
 ```Scheme
 @../tests/integration/ffaudio.scm@
