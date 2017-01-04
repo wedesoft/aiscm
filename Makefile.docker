@@ -17,6 +17,9 @@ container: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/con
 run: container
 	docker run -t -i -v $(shell pwd):/mnt $(IMAGE) /bin/bash
 
+sign: package
+	cd pkg && debsign -k DA4C8315 $(PACKAGE)_amd64.changes
+
 package: pkg/$(PACKAGE).dsc
 
 pkg/$(PACKAGE).dsc: container
