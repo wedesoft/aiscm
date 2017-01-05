@@ -33,7 +33,7 @@
 
 (define (ignore-spilled-variables variable-use allocation)
   "Remove spilled variables from the variable use list"
-  (filter (compose (cut assq-ref allocation <>) car) variable-use))
+  (filter (compose (lambda (var) (cdr (or (assq var allocation) (cons var #t)))) car) variable-use))
 
 (define (find-available-register availability first-index)
   "Find register available from the specified first program index onwards"
@@ -64,7 +64,7 @@
                                                 (assq-set allocation variable register))))]
           (if register
             (recursion allocation register)
-            (let* [(spill-candidate (longest-use (ignore-spilled-variables variable-use allocation))); TODO: spill self, blocked register
+            (let* [(spill-candidate (longest-use (ignore-spilled-variables variable-use allocation))); TODO: blocked register
                    (register        (assq-ref allocation spill-candidate))]
               (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
@@ -102,6 +102,8 @@
     "do not ignore variables with allocated register")
 (ok (equal? '() (ignore-spilled-variables '((a . 2)) (list (cons 'a #f))))
     "ignore spilled variables")
+(ok (equal? '((a . 2)) (ignore-spilled-variables '((a . 2)) '()))
+    "do not ignore variable if it does not have a location assigned")
 
 (ok (equal? '() (linear-scan-coloring '() '() '() '()))
     "linear scan with no variables returns empty mapping")
