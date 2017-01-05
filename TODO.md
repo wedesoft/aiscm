@@ -1,8 +1,9 @@
 ## Ready
 
-* copyright headers
+* blocked predefined?
+* add Travis link
 * robot speech processing
-* add checks https://wiki.debian.org/HowToPackageForDebian
+* add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
 * put results in live-analysis
