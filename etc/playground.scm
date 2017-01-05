@@ -27,6 +27,14 @@
 
 ; TODO: remove blocked (overlap-interval)
 
+(define (longest-use variable-use); TODO: rename
+  "Select register blocking for the longest time as a spill candidate"
+  (car (argmax cdr variable-use)))
+
+(define (ignore-spilled-variables variable-use allocation)
+  "Remove spilled variables from the variable use list"
+  (filter (compose (cut assq-ref allocation <>) car) variable-use))
+
 (define (find-available-register availability first-index)
   "Find register available from the specified first program index onwards"
   (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
@@ -56,7 +64,7 @@
                                                 (assq-set allocation variable register))))]
           (if register
             (recursion allocation register)
-            (let* [(spill-candidate (longest-use variable-use))
+            (let* [(spill-candidate (longest-use (ignore-spilled-variables variable-use allocation))); TODO: spill self, blocked register
                    (register        (assq-ref allocation spill-candidate))]
               (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
@@ -83,6 +91,18 @@
     "do not ignore register if it is blocked outside the specified interval")
 
 
+(ok (eq? 'a (longest-use '((a . 0))))
+    "spill the one variable if there is no other candidate")
+(ok (eq? 'b (longest-use '((a . 0) (b . 1))))
+    "spill second variable if it is allocated for a longer interval")
+(ok (eq? 'a (longest-use '((a . 1) (b . 0))))
+    "spill first variable if it is allocated for a longer interval")
+
+(ok (equal? '((a . 2)) (ignore-spilled-variables '((a . 2)) (list (cons 'a RAX))))
+    "do not ignore variables with allocated register")
+(ok (equal? '() (ignore-spilled-variables '((a . 2)) (list (cons 'a #f))))
+    "ignore spilled variables")
+
 (ok (equal? '() (linear-scan-coloring '() '() '() '()))
     "linear scan with no variables returns empty mapping")
 (ok (equal? (list (cons 'a RAX)) (linear-scan-coloring '((a . (0 . 0))) (list RAX RCX) '() '()))
@@ -99,12 +119,14 @@
     "mark last variable for spilling if it has a longer live interval")
 (ok (equal? (list (cons 'a #f) (cons 'b RAX)) (linear-scan-coloring '((a . (0 . 3)) (b . (1 . 1))) (list RAX) '() '()))
     "mark first variable for spilling if it has a longer live interval")
+(ok (equal? (list (cons 'a #f) (cons 'b #f) (cons 'c RAX))
+            (linear-scan-coloring '((a . (0 . 5)) (b . (1 . 4)) (c . (2 . 3))) (list RAX) '() '()))
+    "do not spill same variable twice")
 (ok (equal? (list (cons 'a RCX)) (linear-scan-coloring '((a . (0 . 0))) (list RAX RCX) (list (cons 'a RCX)) '()))
     "use predefined register for variable")
 (ok (equal? (list (cons 'a RCX) (cons 'b RAX))
             (linear-scan-coloring '((a . (0 . 1)) (b . (1 . 1))) (list RAX RCX) (list (cons 'a RCX)) '()))
     "predefined registers take priority over normal register allocations")
-
 (let [(a (var <int>))]
   (ok (equal? (list (cons a RCX))
               (linear-scan-coloring (list (cons a '(0 . 1))) (list RAX RCX) '() (list (cons RAX '(1 . 2)))))
