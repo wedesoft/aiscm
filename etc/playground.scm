@@ -64,7 +64,8 @@
                                                 (assq-set allocation variable register))))]
           (if register
             (recursion allocation register)
-            (let* [(spill-candidate (longest-use (ignore-spilled-variables variable-use allocation))); TODO: blocked register
+            (let* [(spill-targets   (ignore-spilled-variables variable-use allocation))
+                   (spill-candidate (longest-use spill-targets)); TODO: blocked register
                    (register        (assq-ref allocation spill-candidate))]
               (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
