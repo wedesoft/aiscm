@@ -36,7 +36,8 @@
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output labels next-indices
-            initial-register-use find-available-register mark-used-till longest-use live-analysis
+            initial-register-use find-available-register mark-used-till longest-use ignore-spilled-variables
+            ignore-blocked-registers live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters parameters-to-spill parameters-to-fetch
@@ -219,9 +220,17 @@
   "Mark element in use up to specified index"
   (assq-set availability element (1+ last-index)))
 
-(define (longest-use availability)
+(define (longest-use variable-use); TODO: rename
   "Select register blocking for the longest time as a spill candidate"
-  (car (argmax cdr availability)))
+  (car (argmax cdr variable-use)))
+
+(define (ignore-spilled-variables variable-use allocation)
+  "Remove spilled variables from the variable use list"
+  (filter (compose (lambda (var) (cdr (or (assq var allocation) (cons var #t)))) car) variable-use))
+
+(define (ignore-blocked-registers availability interval blocked)
+  "Remove blocked registers from the availability list"
+  (apply assq-remove availability ((overlap-interval blocked) interval)))
 
 (define-method (next-indices labels cmd k)
   "Determine next program indices for a statement"
@@ -265,7 +274,7 @@
   (append (register-allocations allocation)
           (assign-spill-locations (unallocated-variables allocation) offset increment)))
 
-(define (linear-scan-coloring live-intervals registers predefined)
+(define (linear-scan-coloring live-intervals registers predefined blocked)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use allocation)
     (if (null? live-intervals)
@@ -276,8 +285,9 @@
                (first-index  (car interval))
                (last-index   (cdr interval))
                (variable-use (mark-used-till variable-use variable last-index))
+               (availability (ignore-blocked-registers register-use interval blocked))
                (register     (or (assq-ref predefined variable)
-                                 (find-available-register register-use first-index)))
+                                 (find-available-register availability first-index)))
                (recursion    (lambda (allocation register)
                                (linear-allocate (cdr live-intervals)
                                                 (mark-used-till register-use register last-index)
@@ -285,7 +295,8 @@
                                                 (assq-set allocation variable register))))]
           (if register
             (recursion allocation register)
-            (let* [(spill-candidate (longest-use variable-use))
+            (let* [(spill-targets   (ignore-spilled-variables variable-use allocation))
+                   (spill-candidate (longest-use spill-targets))
                    (register        (assq-ref allocation spill-candidate))]
               (recursion (assq-set allocation spill-candidate #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
@@ -381,7 +392,7 @@
                                        (unit-intervals temporary-variables)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
          (stack-parameters     (stack-parameters parameters))
-         (colors               (linear-scan-coloring intervals registers predefined-registers))
+         (colors               (linear-scan-coloring intervals registers predefined-registers '())); TODO: pass blocked intervals
          (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
          (stack-locations      (stack-parameter-locations stack-parameters stack-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
