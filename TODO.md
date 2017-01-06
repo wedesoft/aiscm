@@ -1,8 +1,7 @@
 ## Ready
 
-* do not spill variable with blocked register
+* blocked predefined?
 * spill blocked predefined variables
-* add Travis link
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
