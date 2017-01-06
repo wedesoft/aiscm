@@ -1,6 +1,7 @@
 ## Ready
 
-* blocked predefined?
+* save callee-saved registers
+* pass blocked intervals to linear register coloring
 * spill blocked predefined variables
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
