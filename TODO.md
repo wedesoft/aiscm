@@ -1,7 +1,6 @@
 ## Ready
 
 * blocked predefined?
-* move ChangeLog to NEWS and generate ChangeLog using Git
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
