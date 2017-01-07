@@ -628,6 +628,14 @@
     "'blocked-intervals' should work recursively")
 (ok (equal? (list (cons RCX '(0 . 1)) (cons RDX '(0 . 1))) (blocked-intervals (blocked (list RCX RDX) (MOV ECX 2) (RET))))
     "'blocked' with list of registers blocks all of them")
+(let [(r (var <byte>))
+      (a (var <byte>))
+      (b (var <byte>))]
+  (ok (equal? (list (SUB RSP 8) (MOV AL CL) (CBW) (IDIV DL) (MOV CL AL) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV AL a) (CBW) (IDIV b) (MOV r AL) (RET))
+                                    #:registers (list RAX RCX RDX)
+                                    #:blocked (list (cons RAX '(0 . 3)))))
+      "'linear-scan-allocate' should block registers if specified"))
 (let  [(w (var <usint>))]
   (ok (equal? (list (SUB RSP 8) (MOV AX 0) (ADD RSP 8) (RET))
               (virtual-variables '() '() (list (blocked RCX (MOV w 0)) (RET))))

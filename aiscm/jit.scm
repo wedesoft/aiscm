@@ -382,9 +382,9 @@
                              locations
                              (stack-parameter-locations stack-parameters offset)))))
 
-
 (define* (linear-scan-allocate prog #:key (registers default-registers)
-                                          (parameters '()))
+                                          (parameters '())
+                                          (blocked '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog '())); TODO: specify return values here
          (temporary-variables  (temporary-variables prog))
@@ -392,7 +392,7 @@
                                        (unit-intervals temporary-variables)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
          (stack-parameters     (stack-parameters parameters))
-         (colors               (linear-scan-coloring intervals registers predefined-registers '())); TODO: pass blocked intervals
+         (colors               (linear-scan-coloring intervals registers predefined-registers blocked))
          (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
          (stack-locations      (stack-parameter-locations stack-parameters stack-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
