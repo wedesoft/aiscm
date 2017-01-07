@@ -44,8 +44,8 @@
             register-parameter-locations stack-parameter-locations update-parameter-locations
             move-parameters add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
-            sort-live-intervals linear-scan-coloring linear-scan-allocate
-            callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
+            sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
+            select-callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
             stack-pointer fix-stack-position position-stack-frame
             spill-variable save-and-use-registers register-allocate spill-blocked-predefines
             virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
@@ -424,9 +424,10 @@
 ; RSP is not included because it is used as a stack pointer
 ; RBP is not included because it may be used as a frame pointer
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
+(define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define parameter-registers (list RDI RSI RDX RCX R8 R9))
-(define (callee-saved registers)
+(define (select-callee-saved registers)
   (lset-intersection eq? (delete-duplicates registers) (list RBX RBP RSP R12 R13 R14 R15)))
 
 (define (register-parameters parameters)
@@ -483,7 +484,7 @@
     parameters
     (iota (length parameters) 8 8)))
 (define (save-and-use-registers prog colors parameters offset)
-  (let [(need-saving          (callee-saved (map cdr colors)))
+  (let [(need-saving          (select-callee-saved (map cdr colors)))
         (first-six-parameters (take-up-to parameters 6))
         (remaining-parameters (drop-up-to parameters 6))]
     (append (save-registers need-saving offset)
