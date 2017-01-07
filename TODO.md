@@ -1,5 +1,7 @@
 ## Ready
 
+* add 2017 copyright
+* blocked predefined?
 * save callee-saved registers
 * spill blocked predefined variables
 * replace register allocator
