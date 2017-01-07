@@ -1,11 +1,8 @@
 #include <stdlib.h>
 
-int f(int a, int b, int c, int d, int e, int f, int g)
-{
-  return g;
-}
+int g();
 
-int h(int a)
+int f()
 {
-  return f(a, a, a, a, a, a, a);
+  return g();
 }

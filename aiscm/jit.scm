@@ -331,8 +331,8 @@
   (length (lset-difference eq? (unallocated-variables allocation) stack-parameters)))
 
 (define (temporary-variables prog)
-  "Allocate temporary variable for each first argument of an instruction"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))] (and arg (var (typecode arg))))) prog))
+  "Allocate temporary variable for each instruction which has a variable as first argument"
+  (map (lambda (cmd) (let [(arg (first-argument cmd))] (and (is-a? arg <var>) (var (typecode arg))))) prog))
 
 (define (unit-intervals vars)
   "Generate intervals of length one for each temporary variable"
