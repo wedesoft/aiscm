@@ -17,6 +17,6 @@
 
 
 ; save callee-saved registers
-; spill blocked predefined variables
+; spill blocked predefined variables (or remove predefinition and assign from register while blocking it)
 
 (run-tests)

@@ -1,8 +1,9 @@
 ## Ready
 
 * save callee-saved registers
-* pass blocked intervals to linear register coloring
 * spill blocked predefined variables
+* replace register allocator
+* longest-use -> spill-candidate
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)

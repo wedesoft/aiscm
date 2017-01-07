@@ -221,7 +221,7 @@
   (assq-set availability element (1+ last-index)))
 
 (define (longest-use variable-use); TODO: rename
-  "Select register blocking for the longest time as a spill candidate"
+  "Select variable blocking for the longest time as a spill candidate"
   (car (argmax cdr variable-use)))
 
 (define (ignore-spilled-variables variable-use allocation)
@@ -295,10 +295,10 @@
                                                 (assq-set allocation variable register))))]
           (if register
             (recursion allocation register)
-            (let* [(spill-targets   (ignore-spilled-variables variable-use allocation))
-                   (spill-candidate (longest-use spill-targets))
-                   (register        (assq-ref allocation spill-candidate))]
-              (recursion (assq-set allocation spill-candidate #f) register))))))
+            (let* [(spill-targets (ignore-spilled-variables variable-use allocation))
+                   (target        (longest-use spill-targets))
+                   (register      (assq-ref allocation target))]
+              (recursion (assq-set allocation target #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))
                    (initial-register-use registers)
                    '()
