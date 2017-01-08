@@ -254,9 +254,9 @@
   (append (prefixes r r/m) (if8 r #x02 #x03) (postfixes r r/m)))
 
 (define-method (PUSH (r <register>))
-  (append (prefixes r) (opcode #x50 r)))
+  (opcode #x50 r))
 (define-method (POP (r <register>))
-  (append (prefixes r) (opcode #x58 r)))
+  (opcode #x58 r))
 
 (define-method (NOT (r/m <operand>))
   (append (prefixes r/m) (if8 r/m #xf6 #xf7) (postfixes 2 r/m)))
