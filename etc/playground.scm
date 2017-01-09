@@ -16,6 +16,6 @@
              (guile-tap))
 
 
-; spill blocked predefined variables (or remove predefinition and assign from register while blocking it)
+; move blocked predefined variables
 
 (run-tests)

@@ -1,7 +1,7 @@
 ## Ready
 
-* enable EBP
 * blocked predefined?
+* enable EBP
 * save callee-saved registers
 * spill blocked predefined variables
 * replace register allocator

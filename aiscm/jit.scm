@@ -311,7 +311,7 @@
    "Get first argument of machine instruction"
    (car (get-args self)))
 
-(define (replace-variables cmd allocation temporary)
+(define (replace-variables allocation cmd temporary)
   "Replace variables with registers and add spill code if necessary"
   (let* [(primary-argument (first-argument cmd))
          (primary-location (assq-ref allocation primary-argument))]
@@ -413,9 +413,7 @@
       (adjust-stack-pointer
         stack-offset
         (append (update-parameter-locations parameters locations parameter-offset); TODO: refactor update parameter locations
-                (append-map (lambda (cmd register) (replace-variables cmd locations register))
-                            prog
-                            temporaries))))))
+                (append-map (cut replace-variables locations <...>) prog temporaries))))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
