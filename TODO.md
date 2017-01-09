@@ -1,6 +1,5 @@
 ## Ready
 
-* add 2017 copyright
 * enable EBP
 * blocked predefined?
 * save callee-saved registers
