@@ -42,7 +42,7 @@
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters parameters-to-spill parameters-to-fetch
             register-parameter-locations stack-parameter-locations update-parameter-locations
-            move-parameters add-stack-parameter-information
+            used-callee-saved backup-registers move-parameters add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             select-callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -382,6 +382,14 @@
                              locations
                              (stack-parameter-locations stack-parameters offset)))))
 
+(define (used-callee-saved allocation)
+   "Return the list of callee saved registers in use"
+   (delete-duplicates (lset-intersection eq? (map (cut to-type <long> <>) (apply compact (map cdr allocation))) callee-saved)))
+
+(define (backup-registers registers code)
+  "Store register content on stack and restore it after executing the code"
+  (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
+
 (define* (linear-scan-allocate prog #:key (registers default-registers)
                                           (parameters '())
                                           (blocked '()))
@@ -393,16 +401,21 @@
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
          (stack-parameters     (stack-parameters parameters))
          (colors               (linear-scan-coloring intervals registers predefined-registers blocked))
+         (callee-saved         (used-callee-saved colors))
          (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
-         (stack-locations      (stack-parameter-locations stack-parameters stack-offset))
+         (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
+         (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
          (temporaries          (temporary-registers allocation temporary-variables))
          (locations            (add-spill-information allocation 8 8))]
-    (adjust-stack-pointer stack-offset
-                          (append (update-parameter-locations parameters locations stack-offset)
-                                  (append-map (lambda (cmd register) (replace-variables cmd locations register))
-                                              prog
-                                              temporaries)))))
+    (backup-registers
+      callee-saved
+      (adjust-stack-pointer
+        stack-offset
+        (append (update-parameter-locations parameters locations parameter-offset); TODO: refactor update parameter locations
+                (append-map (lambda (cmd register) (replace-variables cmd locations register))
+                            prog
+                            temporaries))))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
