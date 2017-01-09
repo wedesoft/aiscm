@@ -54,7 +54,7 @@ Control all data and machine code down to every single bit and byte.
 * [SymPy: computer algebra in Python](http://www.sympy.org/)
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
 
-Copyright © 2013, 2014, 2015, 2016 Jan Wedekind.
+Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"

@@ -1,6 +1,5 @@
 ## Ready
 
-* add 2017 copyright
 * blocked predefined?
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
