@@ -1,6 +1,7 @@
 ## Ready
 
 * blocked predefined?
+* remove "difference"
 * enable EBP
 * replace register allocator
 * separate module for register allocation

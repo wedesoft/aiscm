@@ -27,6 +27,10 @@
   "Generate code for blocked predefined variables"
   (map (compose MOV car+cdr) blocked-predefined))
 
+(define (non-blocked-predefined predefined blocked-predefined)
+  "Compute the set difference of the predefined variables and the variables with blocked registers"
+  (lset-difference equal? predefined blocked-predefined))
+
 (ok (null? (blocked-predefined '() '() '()))
     "no predefined variables")
 (ok (equal? (list (cons 'a RDI))
@@ -43,5 +47,12 @@
     "no predefined variables with blocked registers to move")
 (ok (equal? (list (MOV a RAX)) (move-blocked-predefined (list (cons a RAX))))
     "copy variable from blocked register")
+
+(ok (equal? (list (cons 'a RDI)) (non-blocked-predefined (list (cons 'a RDI)) '()))
+    "no predefinitions to discard")
+(ok (equal? '() (non-blocked-predefined (list (cons 'a RDI)) (list (cons 'a RDI))))
+    "discard predefined variables which are blocked")
+(ok (equal? (list (cons 'b RSI)) (non-blocked-predefined (list (cons 'a RDI) (cons 'b RSI)) (list (cons 'a RDI))))
+    "only discard predefined variables which are blocked")
 
 (run-tests)
