@@ -2,9 +2,9 @@
 
 * blocked predefined?
 * enable EBP
-* save callee-saved registers
-* spill blocked predefined variables
 * replace register allocator
+* separate module for register allocation
+* test suite with structure
 * longest-use -> spill-candidate
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
