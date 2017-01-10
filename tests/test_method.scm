@@ -41,7 +41,7 @@
       "Query function pointer of method")
   (ok (eq? <int> (return-type method))
       "Query return type of method")
-  (ok (equal? '() (argument-types method))
+  (ok (null? (argument-types method))
       "Query argument list of constant method")
   (ok (eqv? 42 ((jit ctx '() (const (make-native-function (make-native-method <int> '() jit-constant-fun))))))
       "Compile method call to function returning constant value"))

@@ -69,7 +69,7 @@
     "'index' returns index of first matching list element")
 (ok (equal? '(2 3 5) (all-but-last '(2 3 5 7)))
     "'all-but-last' should return a list with the last element removed")
-(ok (equal? '() (drop-up-to '(1 2 3) 4))
+(ok (null? (drop-up-to '(1 2 3) 4))
     "'drop-up-to' returns empty list if drop count is larger than length of list")
 (ok (equal? '(5 6) (drop-up-to '(1 2 3 4 5 6) 4))
     "'drop-up-to' behaves like 'drop' otherwise")

@@ -141,7 +141,7 @@
 (let [(i (parameter <int>))]
   (ok (eqv? 42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))))
       "assign native integer constant to parameter"))
-(ok (equal? '() ((jit ctx '() (lambda () scm-eol))))
+(ok (null? ((jit ctx '() (lambda () scm-eol))))
     "compile function returning empty list")
 (ok (equal? (cons 'a 'b) ((jit ctx (list <obj> <obj>) scm-cons) 'a 'b))
     "call \"cons\" from compiled code")
