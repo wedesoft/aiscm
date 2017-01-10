@@ -390,9 +390,7 @@
   "Store register content on stack and restore it after executing the code"
   (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
 
-(define* (linear-scan-allocate prog #:key (registers default-registers)
-                                          (parameters '())
-                                          (blocked '()))
+(define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog '())); TODO: specify return values here
          (temporary-variables  (temporary-variables prog))
