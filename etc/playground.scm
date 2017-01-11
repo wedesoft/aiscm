@@ -56,7 +56,7 @@
         (append (move-parameters (map car parameters-to-move) locations parameters-to-move)
                 (update-parameter-locations parameters locations parameter-offset); TODO: refactor update parameter locations
                 ; TODO: just move parameters where default location and allocated location are different
-                ; TODO: swapping of parameter locations
+                ; TODO: correct order of copying parameters
                 (append-map (cut replace-variables locations <...>) prog temporaries))))))
 
 (ok (null? (blocked-predefined '() '() '()))
@@ -87,5 +87,18 @@
             (linear-scan-allocate (list (MOV EDI a) (RET))
                                   #:parameters (list a) #:registers (list RDI RAX RCX) #:blocked (list (cons RDI '(0 . 0)))))
     "move parameter variable into another location if the register is blocked")
+
+(define (parameter-locations parameters)
+   "return association list with default locations for the method parameters"
+   (register-parameter-locations parameters))
+
+(ok (null? (parameter-locations '()))
+    "parameter locations for empty set of parameters")
+(ok (equal? (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b)))
+    "parameter location for first parameter")
+(ok (equal? (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX) (cons 'e R8) (cons 'f R9)
+                  (cons 'g (ptr <int> RSP 8)) (cons 'h (ptr <long> RSP 16)))
+            (parameter-locations '(a b c d e f g h)))
+    "parameter locations for register and stack parameters")
 
 (run-tests)

@@ -1,6 +1,8 @@
 ## Ready
 
 * blocked predefined?
+* have replace-variables convert long integer locations
+* simplify tests for parameter-locations
 * remove "difference"
 * enable EBP
 * replace register allocator
