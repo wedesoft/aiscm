@@ -88,17 +88,24 @@
                                   #:parameters (list a) #:registers (list RDI RAX RCX) #:blocked (list (cons RDI '(0 . 0)))))
     "move parameter variable into another location if the register is blocked")
 
-(define (parameter-locations parameters)
-   "return association list with default locations for the method parameters"
-   (register-parameter-locations parameters))
+(define (parameter-locations parameters offset)
+  "return association list with default locations for the method parameters"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (register-parameter-locations register-parameters)
+            (stack-parameter-locations stack-parameters offset))))
 
-(ok (null? (parameter-locations '()))
+(ok (null? (parameter-locations '() 0))
     "parameter locations for empty set of parameters")
-(ok (equal? (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b)))
+(ok (equal? (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b) 0))
     "parameter location for first parameter")
 (ok (equal? (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX) (cons 'e R8) (cons 'f R9)
-                  (cons 'g (ptr <int> RSP 8)) (cons 'h (ptr <long> RSP 16)))
-            (parameter-locations '(a b c d e f g h)))
+                  (cons 'g (ptr <long> RSP 8)) (cons 'h (ptr <long> RSP 16)))
+            (parameter-locations '(a b c d e f g h) 0))
+    "parameter locations for register and stack parameters")
+(ok (equal? (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX) (cons 'e R8) (cons 'f R9)
+                  (cons 'g (ptr <long> RSP 24)) (cons 'h (ptr <long> RSP 32)))
+            (parameter-locations '(a b c d e f g h) 16))
     "parameter locations for register and stack parameters")
 
 (run-tests)
