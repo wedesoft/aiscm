@@ -265,7 +265,7 @@
 
 (define (assign-spill-locations variables offset increment)
   "Assign spill locations to a list of variables"
-  (map (lambda (variable index) (cons variable (ptr (typecode variable) RSP index)))
+  (map (lambda (variable index) (cons variable (ptr <long> RSP index)))
        variables
        (iota (length variables) offset increment)))
 
@@ -340,7 +340,7 @@
 
 (define (temporary-registers allocation variables)
   "Look up register for each temporary variable given the result of a register allocation"
-  (map (lambda (var) (let [(reg (assq-ref allocation var))] (and reg (to-type (typecode var) reg)))) variables))
+  (map (cut assq-ref allocation <>) variables))
 
 (define (parameters-to-spill register-parameters locations)
   "Get a list of parameters which need spill code"
@@ -356,7 +356,7 @@
 
 (define (stack-parameter-locations parameters offset)
   "Determine initial locations of stack parameters"
-  (map (lambda (parameter index) (cons parameter (ptr (typecode parameter) RSP index)))
+  (map (lambda (parameter index) (cons parameter (ptr <long> RSP index)))
        parameters
        (iota (length parameters) (+ 8 offset) 8)))
 
@@ -384,7 +384,7 @@
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
-   (delete-duplicates (lset-intersection eq? (map (cut to-type <long> <>) (apply compact (map cdr allocation))) callee-saved)))
+   (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
 
 (define (backup-registers registers code)
   "Store register content on stack and restore it after executing the code"
