@@ -1,5 +1,6 @@
 ## Ready
 
+* remove move-parameters, parameters-to-spill parameters-to-fetch
 * blocked predefined?
 * have replace-variables convert long integer locations
 * simplify tests for parameter-locations

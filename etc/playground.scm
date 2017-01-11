@@ -31,6 +31,23 @@
   "Compute the set difference of the predefined variables and the variables with blocked registers"
   (lset-difference equal? predefined blocked-predefined))
 
+(define (parameter-locations parameters offset)
+  "return association list with default locations for the method parameters"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (register-parameter-locations register-parameters)
+            (stack-parameter-locations stack-parameters offset))))
+
+(define (update-parameter-locations parameters locations offset)
+  "Generate the required code to update the parameter locations according to the register allocation"
+  (let [(initial-locations (map cdr (parameter-locations parameters offset)))
+        (target-locations  (map (cut assq-ref locations <>) parameters))]
+    (apply compact
+      (map (lambda (parameter initial target)
+             (let [(adapt (cut to-type (typecode parameter) <>))]
+               (if (equal? initial target) #f (MOV (adapt target) (adapt initial)))))
+           parameters initial-locations target-locations))))
+
 (define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog '())); TODO: specify return values here
@@ -53,9 +70,7 @@
       callee-saved
       (adjust-stack-pointer
         stack-offset
-        (append (move-parameters (map car parameters-to-move) locations parameters-to-move)
-                (update-parameter-locations parameters locations parameter-offset); TODO: refactor update parameter locations
-                ; TODO: just move parameters where default location and allocated location are different
+        (append (update-parameter-locations parameters locations parameter-offset)
                 ; TODO: correct order of copying parameters
                 (append-map (cut replace-variables locations <...>) prog temporaries))))))
 
@@ -88,13 +103,6 @@
                                   #:parameters (list a) #:registers (list RDI RAX RCX) #:blocked (list (cons RDI '(0 . 0)))))
     "move parameter variable into another location if the register is blocked")
 
-(define (parameter-locations parameters offset)
-  "return association list with default locations for the method parameters"
-  (let [(register-parameters (register-parameters parameters))
-        (stack-parameters    (stack-parameters parameters))]
-    (append (register-parameter-locations register-parameters)
-            (stack-parameter-locations stack-parameters offset))))
-
 (ok (null? (parameter-locations '() 0))
     "parameter locations for empty set of parameters")
 (ok (equal? (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b) 0))
@@ -107,5 +115,33 @@
                   (cons 'g (ptr <long> RSP 24)) (cons 'h (ptr <long> RSP 32)))
             (parameter-locations '(a b c d e f g h) 16))
     "parameter locations for register and stack parameters")
+
+(let [(a (var <int>))
+      (b (var <int>))
+      (c (var <int>))
+      (d (var <int>))
+      (e (var <int>))
+      (f (var <int>))
+      (g (var <int>))
+      (r (var <int>))]
+  (ok (null? (update-parameter-locations '() '() 0))
+      "no parameters to move arround")
+  (ok (equal? (list (MOV (ptr <int> RSP -8) EDI))
+              (update-parameter-locations (list a) (list (cons a (ptr <long> RSP -8))) 0))
+      "spill a register parameter")
+  (ok (equal? (list (MOV EAX (ptr <int> RSP 8)))
+              (update-parameter-locations (list a b c d e f g)
+                                          (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 RAX))
+                                          0))
+      "load a stack parameter")
+  (ok (equal? (list (MOV EAX (ptr <int> RSP 24)))
+              (update-parameter-locations (list a b c d e f g)
+                                          (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 RAX))
+                                          16))
+      "load a stack parameter taking into account the stack pointer offset")
+  (ok (null? (update-parameter-locations (list a b c d e f g)
+                                         (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 (ptr <long> RSP 24)))
+                                         16))
+      "leave parameter on stack"))
 
 (run-tests)
