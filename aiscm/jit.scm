@@ -39,9 +39,10 @@
             initial-register-use find-available-register mark-used-till longest-use ignore-spilled-variables
             ignore-blocked-registers live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
+            blocked-predefined move-blocked-predefined non-blocked-predefined
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters parameters-to-spill parameters-to-fetch
-            register-parameter-locations stack-parameter-locations update-parameter-locations
+            register-parameter-locations stack-parameter-locations parameter-locations update-parameter-locations
             used-callee-saved backup-registers move-parameters add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
@@ -274,6 +275,18 @@
   (append (register-allocations allocation)
           (assign-spill-locations (unallocated-variables allocation) offset increment)))
 
+(define (blocked-predefined predefined intervals blocked)
+  "Get blocked predefined registers"
+  (filter (compose not null? (overlap-interval blocked) (cut assq-ref intervals <>) car) predefined))
+
+(define (move-blocked-predefined blocked-predefined)
+  "Generate code for blocked predefined variables"
+  (map (compose MOV car+cdr) blocked-predefined))
+
+(define (non-blocked-predefined predefined blocked-predefined)
+  "Compute the set difference of the predefined variables and the variables with blocked registers"
+  (lset-difference equal? predefined blocked-predefined))
+
 (define (linear-scan-coloring live-intervals registers predefined blocked)
   "Linear scan register allocation based on live intervals"
   (define (linear-allocate live-intervals register-use variable-use allocation)
@@ -359,6 +372,13 @@
   (map (lambda (parameter index) (cons parameter (ptr <long> RSP index)))
        parameters
        (iota (length parameters) (+ 8 offset) 8)))
+
+(define (parameter-locations parameters offset)
+  "return association list with default locations for the method parameters"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (register-parameter-locations register-parameters)
+            (stack-parameter-locations stack-parameters offset))))
 
 (define (add-stack-parameter-information allocation stack-parameter-locations)
    "Add the stack location for stack parameters which do not have a register allocated"
@@ -537,7 +557,7 @@
     (lambda (prog colors parameters offset)
       (position-stack-frame (save-and-use-registers prog colors parameters offset) offset))))
 
-(define (blocked-predefined blocked predefined)
+(define (predefined-to-spill blocked predefined)
   (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
 
 (define (spill-blocked-predefines prog . args)
@@ -546,7 +566,7 @@
                          (registers default-registers)
                          (parameters '())
                          (offset -8)]
-    (let [(conflict (blocked-predefined blocked predefined))]
+    (let [(conflict (predefined-to-spill blocked predefined))]
       (if conflict
         (let* [(target   (car conflict))
                (location (ptr (typecode target) stack-pointer offset))]
