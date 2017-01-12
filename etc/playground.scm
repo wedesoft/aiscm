@@ -15,8 +15,4 @@
              (aiscm util)
              (guile-tap))
 
-
-; remove predefinitions where register is blocked
-; add code for moving values
-
 (run-tests)

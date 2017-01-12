@@ -1,7 +1,7 @@
 ## Ready
 
-* remove move-parameters, parameters-to-spill parameters-to-fetch
-* blocked predefined?
+* parameter-locations should just return a list (not an alist)
+* ordered moving of parameters
 * have replace-variables convert long integer locations
 * simplify tests for parameter-locations
 * remove "difference"

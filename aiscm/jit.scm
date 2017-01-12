@@ -41,9 +41,9 @@
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined
             first-argument replace-variables adjust-stack-pointer default-registers
-            register-parameters stack-parameters parameters-to-spill parameters-to-fetch
+            register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations update-parameter-locations
-            used-callee-saved backup-registers move-parameters add-stack-parameter-information
+            used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             select-callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -355,14 +355,6 @@
   "Look up register for each temporary variable given the result of a register allocation"
   (map (cut assq-ref allocation <>) variables))
 
-(define (parameters-to-spill register-parameters locations)
-  "Get a list of parameters which need spill code"
-  (filter (compose (cut is-a? <> <address>) (cut assq-ref locations <>)) register-parameters))
-
-(define (parameters-to-fetch stack-parameters locations)
-  "Get a list of parameters which need to be fetched"
-  (filter (compose (cut is-a? <> <register>) (cut assq-ref locations <>)) stack-parameters))
-
 (define (register-parameter-locations parameters)
   "Create an association list with the initial parameter locations"
   (map cons parameters (list RDI RSI RDX RCX R8 R9)))
@@ -385,11 +377,6 @@
    (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
         (map car allocation)
         (map cdr allocation)))
-
-(define (move-parameters parameters locations initial-locations)
-  "Generate spill code for spilled parameters"
-  (let [(adapt (lambda (alist parameter) (to-type (typecode parameter) (assq-ref alist parameter))))]
-    (map MOV (map (cut adapt locations <>) parameters) (map (cut adapt initial-locations <>) parameters))))
 
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
