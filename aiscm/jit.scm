@@ -369,8 +369,8 @@
   "return association list with default locations for the method parameters"
   (let [(register-parameters (register-parameters parameters))
         (stack-parameters    (stack-parameters parameters))]
-    (append (register-parameter-locations register-parameters)
-            (stack-parameter-locations stack-parameters offset))))
+    (map cdr (append (register-parameter-locations register-parameters)
+                     (stack-parameter-locations stack-parameters offset)))))
 
 (define (add-stack-parameter-information allocation stack-parameter-locations)
    "Add the stack location for stack parameters which do not have a register allocated"
@@ -380,7 +380,7 @@
 
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
-  (let [(initial-locations (map cdr (parameter-locations parameters offset)))
+  (let [(initial-locations (parameter-locations parameters offset))
         (target-locations  (map (cut assq-ref locations <>) parameters))]
     (apply compact
       (map (lambda (parameter initial target)

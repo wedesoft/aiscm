@@ -219,14 +219,12 @@
 
   (ok (null? (parameter-locations '() 0))
       "parameter locations for empty set of parameters")
-  (ok (equal? (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b) 0))
+  (ok (equal? (list RDI RSI) (parameter-locations '(a b) 0))
       "parameter location for first parameter")
-  (ok (equal? (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX) (cons 'e R8) (cons 'f R9)
-                    (cons 'g (ptr <long> RSP 8)) (cons 'h (ptr <long> RSP 16)))
+  (ok (equal? (list RDI RSI RDX RCX R8 R9 (ptr <long> RSP 8) (ptr <long> RSP 16))
               (parameter-locations '(a b c d e f g h) 0))
       "parameter locations for register and stack parameters")
-  (ok (equal? (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX) (cons 'e R8) (cons 'f R9)
-                    (cons 'g (ptr <long> RSP 24)) (cons 'h (ptr <long> RSP 32)))
+  (ok (equal? (list RDI RSI RDX RCX R8 R9 (ptr <long> RSP 24) (ptr <long> RSP 32))
               (parameter-locations '(a b c d e f g h) 16))
       "parameter locations for register and stack parameters")
 

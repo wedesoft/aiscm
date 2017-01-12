@@ -1,12 +1,9 @@
 ## Ready
 
-* parameter-locations should just return a list (not an alist)
 * ordered moving of parameters
-* have replace-variables convert long integer locations
-* simplify tests for parameter-locations
 * remove "difference"
-* enable EBP
 * replace register allocator
+* enable EBP
 * separate module for register allocation
 * test suite with structure
 * longest-use -> spill-candidate
