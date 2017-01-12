@@ -393,14 +393,13 @@
 
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
-  (let [(register-parameters (register-parameters parameters))
-        (stack-parameters    (stack-parameters parameters))]
-    (append (move-parameters (parameters-to-spill register-parameters locations)
-                             locations
-                             (register-parameter-locations register-parameters))
-            (move-parameters (parameters-to-fetch stack-parameters locations)
-                             locations
-                             (stack-parameter-locations stack-parameters offset)))))
+  (let [(initial-locations (map cdr (parameter-locations parameters offset)))
+        (target-locations  (map (cut assq-ref locations <>) parameters))]
+    (apply compact
+      (map (lambda (parameter initial target)
+             (let [(adapt (cut to-type (typecode parameter) <>))]
+               (and target (not (equal? initial target)) (MOV (adapt target) (adapt initial)))))
+           parameters initial-locations target-locations))))
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
@@ -417,8 +416,10 @@
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temporary-variables)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
+         (parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
+         (remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
          (stack-parameters     (stack-parameters parameters))
-         (colors               (linear-scan-coloring intervals registers predefined-registers blocked))
+         (colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
          (callee-saved         (used-callee-saved colors))
          (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
          (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
@@ -430,9 +431,9 @@
       callee-saved
       (adjust-stack-pointer
         stack-offset
-        (append (update-parameter-locations parameters locations parameter-offset); TODO: refactor update parameter locations
+        (append (update-parameter-locations parameters locations parameter-offset)
+                ; TODO: correct order of copying parameters
                 (append-map (cut replace-variables locations <...>) prog temporaries))))))
-
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
 ; methods to replace stack pointer placeholder with RSP + offset
