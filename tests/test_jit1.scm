@@ -357,7 +357,7 @@
               (update-parameter-locations (list a) (list (cons a (ptr <long> RSP -8))) 0))
       "spill a register parameter")
   (ok (null? (update-parameter-locations (list a) '() 0))
-      "ignore parameters which are not used") 
+      "ignore parameters which are not used")
   (ok (equal? (list (MOV EAX (ptr <int> RSP 8)))
               (update-parameter-locations (list a b c d e f g)
                                           (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 RAX))

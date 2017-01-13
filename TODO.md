@@ -1,5 +1,6 @@
 ## Ready
 
+* (if ... ... #f) ->  (and ... ...)
 * ordered moving of parameters
 * remove "difference"
 * replace register allocator
