@@ -345,6 +345,11 @@
 (ok (equal? (list (SUB RSP 8) (NOP) (ADD RSP 8) (RET)) (adjust-stack-pointer 8 (list (NOP) (RET))))
     "adjust stack pointer offset at beginning and end of program")
 
+(ok (not (need-to-copy-first (list (cons 'a RSI) (cons 'b RDX)) (list (cons 'a RAX) (cons 'b RCX)) 'a 'b))
+    "no need to copy RSI to RAX before RDX to RCX")
+(ok (need-to-copy-first (list (cons 'a RSI) (cons 'b RDX)) (list (cons 'a RAX) (cons 'b RSI)) 'a 'b)
+    "RSI needs to be copied to RAX before copying RDX to RSI")
+
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
@@ -373,7 +378,10 @@
   (ok (null? (update-parameter-locations (list a b c d e f g)
                                          (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 (ptr <long> RSP 24)))
                                          16))
-      "leave parameter on stack"))
+      "leave parameter on stack")
+  (ok (equal? (list (MOV EAX ESI) (MOV ESI EDI))
+              (update-parameter-locations (list a b) (map cons (list a b) (list RSI RAX)) 0))
+      "adjust order of copy operations to avoid overwriting parameters"))
 
 (let [(a (var <int>))
       (b (var <int>))

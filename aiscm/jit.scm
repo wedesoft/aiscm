@@ -42,7 +42,8 @@
             blocked-predefined move-blocked-predefined non-blocked-predefined
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters
-            register-parameter-locations stack-parameter-locations parameter-locations update-parameter-locations
+            register-parameter-locations stack-parameter-locations parameter-locations
+            need-to-copy-first update-parameter-locations
             used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
@@ -378,15 +379,21 @@
         (map car allocation)
         (map cdr allocation)))
 
+(define (need-to-copy-first initial targets a b)
+  "Check whether parameter A needs to be copied before B given INITIAL and TARGETS locations"
+  (eq? (assq-ref initial a) (assq-ref targets b)))
+
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
-  (let [(initial-locations (map cdr (parameter-locations parameters offset)))
-        (target-locations  (map (cut assq-ref locations <>) parameters))]
+  (let* [(initial            (parameter-locations parameters offset))
+         (ordered-parameters (partial-sort parameters (cut need-to-copy-first initial locations <...>)))]
     (apply compact
-      (map (lambda (parameter initial target)
-             (let [(adapt (cut to-type (typecode parameter) <>))]
-               (and target (not (equal? initial target)) (MOV (adapt target) (adapt initial)))))
-           parameters initial-locations target-locations))))
+      (map (lambda (parameter)
+             (let [(source (assq-ref initial parameter))
+                   (destination (assq-ref locations parameter))
+                   (adapt (cut to-type (typecode parameter) <>))]
+               (and destination (not (equal? source destination)) (MOV (adapt destination) (adapt source)))))
+           ordered-parameters))))
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
