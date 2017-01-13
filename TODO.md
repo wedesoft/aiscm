@@ -1,5 +1,6 @@
 ## Ready
 
+* rename target to destination
 * (if ... ... #f) ->  (and ... ...)
 * ordered moving of parameters
 * remove "difference"
