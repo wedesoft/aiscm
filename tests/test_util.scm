@@ -111,10 +111,26 @@
     "'assq-remove' should support removing multiple keys")
 (ok (equal? '((a . 1) (a . 2) (a . 3) (b . 1) (b . 2) (b . 3)) (product '(a b) '(1 2 3)))
     "'product' should create a product set of two lists")
+
 (ok (equal? '((a . 1) (b . 2) (c . 3)) (sort-by '((c . 3) (a . 1) (b . 2)) cdr))
     "'sort-by' should sort arguments by the values of the supplied function")
+
 (ok (equal? '(1 3 5 0 2 4) (sort-by-pred (iota 6) even?))
     "'sort-by-pred' sorts by boolean result of predicate")
+
+(ok (null? (partial-sort '() <))
+    "partial sorting of empty list")
+(ok (equal? '(2 3) (partial-sort '(2 3) <))
+    "list of integers already sorted")
+(ok (equal? '(3 5) (partial-sort '(5 3) <))
+    "order list of two integers")
+(ok (equal? '(5 5) (partial-sort '(5 5) <))
+    "order list of two equal integers")
+(ok (equal? '(7 3) (partial-sort '(7 3) (const #f)))
+    "return items if order is not defined")
+(ok (equal? '(3 1 2) (partial-sort '(1 2 3) (lambda (x y) (eqv? x 3))))
+    "perform partial ordering")
+
 (ok (equal? '(a . 1) (argmin cdr '((c . 3) (a . 1) (b . 2))))
     "Get element with minimum of argument")
 (ok (equal? '(c . 3) (argmax cdr '((c . 3) (a . 1) (b . 2))))

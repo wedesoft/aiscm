@@ -26,7 +26,7 @@
   #:use-module (system foreign)
   #:export (toplevel-define! super gc-malloc gc-malloc-pointerless destroy xor attach index-of all-but-last
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
-            assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
+            assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
             first-index last-index compact index-groups update-intervals
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
@@ -122,8 +122,22 @@
 (define (assq-set alist key val) (alist-set eq? alist key val))
 (define (assq-remove alist . keys) (filter (compose not (cut memv <> keys) car) alist))
 (define (product lst1 lst2) (append-map (lambda (x) (map (cut cons x <>) lst2)) lst1))
-(define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
-(define (sort-by-pred lst pred) (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
+
+(define (sort-by lst fun)
+  "Sort LST by return values of FUN"
+  (sort-list lst (lambda args (apply < (map fun args)))))
+
+(define (sort-by-pred lst pred)
+  "Sort LST by boolean return value of PRED"
+  (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
+
+(define (partial-sort lst less)
+  "Sort the list LST. LESS is a partial order used for comparing elements."
+  (or (and (null? lst) '())
+      (if (every (compose not (cut less <> (car lst))) (cdr lst))
+          (cons (car lst) (partial-sort (cdr lst) less))
+          (partial-sort (cycle lst) less))))
+
 (define (argop op fun lst)
   (let* [(vals  (map fun lst))
          (opval (apply op vals))]
