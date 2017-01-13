@@ -7,6 +7,7 @@
 * replace register allocator
 * enable EBP
 * separate module for register allocation
+* ffmpeg output
 * test suite with structure
 * longest-use -> spill-candidate
 * robot speech processing
