@@ -685,7 +685,11 @@
   (ok (equal? (list (SUB RSP 8) (MOV EAX EDI) (MOV EDI EAX) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV EDI a) (RET))
                                     #:parameters (list a) #:registers (list RDI RAX RCX) #:blocked (list (cons RDI '(0 . 0)))))
-      "move parameter variable into another location if the register is blocked"))
+      "move parameter variable into another location if the register is blocked")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV r 42) (MOV b 0) (RET)) #:results (list r)))
+      "when allocating registers preserve result variables up to RET statement"))
+
 (let  [(w (var <usint>))]
   (ok (equal? (list (SUB RSP 8) (MOV AX 0) (ADD RSP 8) (RET))
               (virtual-variables '() '() (list (blocked RCX (MOV w 0)) (RET))))

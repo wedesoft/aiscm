@@ -15,4 +15,11 @@
              (aiscm util)
              (guile-tap))
 
+(define r (var <int>))
+(define x (var <int>))
+
+(ok (equal? (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (ADD RSP 8) (RET))
+            (linear-scan-allocate (list (MOV r 42) (MOV x 0) (RET)) #:results (list r)))
+    "when allocating registers preserve result variables up to RET statement")
+
 (run-tests)

@@ -403,9 +403,9 @@
   "Store register content on stack and restore it after executing the code"
   (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
 
-(define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()))
+(define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
-  (let* [(live                 (live-analysis prog '())); TODO: specify return values here
+  (let* [(live                 (live-analysis prog results)); TODO: specify return values here
          (temporary-variables  (temporary-variables prog))
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temporary-variables)))
@@ -426,8 +426,8 @@
       (adjust-stack-pointer
         stack-offset
         (append (update-parameter-locations parameters locations parameter-offset)
-                ; TODO: correct order of copying parameters
                 (append-map (cut replace-variables locations <...>) prog temporaries))))))
+
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
 ; methods to replace stack pointer placeholder with RSP + offset
