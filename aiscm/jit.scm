@@ -405,7 +405,7 @@
 
 (define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
-  (let* [(live                 (live-analysis prog results)); TODO: specify return values here
+  (let* [(live                 (live-analysis prog results))
          (temporary-variables  (temporary-variables prog))
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temporary-variables)))

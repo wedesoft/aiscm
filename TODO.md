@@ -1,5 +1,6 @@
 ## Ready
 
+* make copy method (see part of update-parameter-locations) to copy result to RAX if not there already
 * rename target to destination
 * (if ... ... #f) ->  (and ... ...)
 * ordered moving of parameters
