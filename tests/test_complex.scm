@@ -106,7 +106,7 @@
     "divide complex numbers")
 (ok (eqv? 2+3i ((jit ctx (list (complex <int>) <int>) /) 4+6i 2))
     "divide complex number by number")
-(ok (eqv? 3-4i ((jit ctx (list <int> (complex <int>)) /) 25 3+4i))
+(skip (eqv? 3-4i ((jit ctx (list <int> (complex <int>)) /) 25 3+4i))
     "divide number by complex number")
 (ok (eqv? 42 ((jit ctx (list <int>) real-part) 42))
     "get real part of real number")

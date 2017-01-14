@@ -278,7 +278,8 @@
 
 (define (blocked-predefined predefined intervals blocked)
   "Get blocked predefined registers"
-  (filter (compose not null? (overlap-interval blocked) (cut assq-ref intervals <>) car) predefined))
+  (let [(interval (compose (cut assq-ref intervals <>) car))]
+  (filter (compose not null? (overlap-interval blocked) interval) (filter interval predefined))))
 
 (define (move-blocked-predefined blocked-predefined)
   "Generate code for blocked predefined variables"
@@ -585,11 +586,11 @@
                                       #:offset     (- offset 8)))))
       (apply register-allocate (cons prog args))))))
 
-(define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
+(define* (virtual-variables results parameters instructions #:key (registers default-registers))
   (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))
                         #:registers registers
-                        #:parameters arg-vars
-                        #:results result-vars
+                        #:parameters parameters
+                        #:results results
                         #:blocked (blocked-intervals instructions)))
 
 (define (repeat n . body)

@@ -299,6 +299,8 @@
     "ignore predefined variables if no registers are blocked")
 (ok (null? (blocked-predefined (list (cons 'a RDI)) '((a . (0 . 2))) (list (cons RDI '(3 . 4)))))
     "ignore predefined variables if the associated register is not blocked")
+(ok (null? (blocked-predefined (list (cons 'a RDI)) '() (list (cons RDI '(2 . 3)))))
+    "ignore unused variable when checking for blocked registers")
 
 (ok (null? (move-blocked-predefined '()))
     "no predefined variables with blocked registers to move")
