@@ -216,9 +216,14 @@
     (for-each (lambda (arg offset len) (bytevector-copy! arg 0 retval offset len))
               lst offsets lengths)
     retval))
-(define (objdump code) (let [(filename (tmpnam))]
-  (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
-  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
+
+(define (objdump code)
+  "dump machine CODE to temporary file and deassemble using the 'objdump' tool"
+  (let [(filename (tmpnam))]
+    (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
+    (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))
+    code))
+
 (define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
 (define (map-select select fun1 fun2 . lsts) (apply map (lambda (val . args) (apply (if val fun1 fun2) args)) select lsts))
 (define (symbol-list n) (map (lambda _ (gensym)) (iota n)))

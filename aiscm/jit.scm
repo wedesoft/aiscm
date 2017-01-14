@@ -43,8 +43,8 @@
             first-argument replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations
-            need-to-copy-first update-parameter-locations
-            used-callee-saved backup-registers add-stack-parameter-information
+            need-to-copy-first move-variable-content update-parameter-locations
+            place-result-variable used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             select-callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
@@ -383,17 +383,25 @@
   "Check whether parameter A needs to be copied before B given INITIAL and TARGETS locations"
   (eq? (assq-ref initial a) (assq-ref targets b)))
 
+(define (move-variable-content variable source destination)
+  "move VARIABLE content from SOURCE to DESTINATION unless source and destination are the same"
+  (let [(adapt (cut to-type (typecode variable) <>))]
+    (if (or (not destination) (equal? source destination)) '() (MOV (adapt destination) (adapt source)))))
+
 (define (update-parameter-locations parameters locations offset)
   "Generate the required code to update the parameter locations according to the register allocation"
   (let* [(initial            (parameter-locations parameters offset))
          (ordered-parameters (partial-sort parameters (cut need-to-copy-first initial locations <...>)))]
-    (apply compact
+    (filter (compose not null?)
       (map (lambda (parameter)
-             (let [(source (assq-ref initial parameter))
-                   (destination (assq-ref locations parameter))
-                   (adapt (cut to-type (typecode parameter) <>))]
-               (and destination (not (equal? source destination)) (MOV (adapt destination) (adapt source)))))
+             (move-variable-content parameter
+                                    (assq-ref initial parameter)
+                                    (assq-ref locations parameter)))
            ordered-parameters))))
+
+(define (place-result-variable results locations code)
+  "add code for placing result variable in register RAX if required"
+  (attach (append (all-but-last code) (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results)) (RET)))
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
@@ -421,12 +429,11 @@
          (allocation           (add-stack-parameter-information colors stack-locations))
          (temporaries          (temporary-registers allocation temporary-variables))
          (locations            (add-spill-information allocation 8 8))]
-    (backup-registers
-      callee-saved
-      (adjust-stack-pointer
-        stack-offset
-        (append (update-parameter-locations parameters locations parameter-offset)
-                (append-map (cut replace-variables locations <...>) prog temporaries))))))
+    (backup-registers callee-saved
+      (adjust-stack-pointer stack-offset
+        (place-result-variable results locations
+          (append (update-parameter-locations parameters locations parameter-offset)
+                  (append-map (cut replace-variables locations <...>) prog temporaries)))))))
 
 ; stack pointer placeholder
 (define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))

@@ -383,6 +383,16 @@
               (update-parameter-locations (list a b) (map cons (list a b) (list RSI RAX)) 0))
       "adjust order of copy operations to avoid overwriting parameters"))
 
+(let [(a (var <int>))]
+  (ok (null? (move-variable-content a RCX RCX))
+      "no need to move variable content if source and destination location are the same")
+  (ok (equal? (MOV ECX EDX) (move-variable-content a RDX RCX))
+      "move variable content from RDX to RCX")
+  (ok (null? (move-variable-content a (ptr <long> RSP 24) (ptr <long> RSP 24)))
+      "no need to move variable if stack locations are the same")
+  (ok (null? (move-variable-content a RSI #f))
+      "no need to move variable if destination is undefined"))
+
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
@@ -428,6 +438,7 @@
       "return a temporary register")
   (ok (equal? (list #f) (temporary-registers '() (list #f)))
       "return false if no temporary variable was required for a statement")
+
   (ok (equal? (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV a 42) (RET))))
       "Allocate a single register")
@@ -459,6 +470,10 @@
   (ok (equal? (list (SUB RSP 16) (MOV EAX 0) (MOV (ptr <int> RSP 8) EAX) (MOV EAX (ptr <int> RSP 8)) (ADD EAX (ptr <int> RSP 24)) (MOV (ptr <int> RSP 8) EAX) (ADD RSP 16) (RET))
               (linear-scan-allocate (list (MOV r 0) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
       "Reuse stack location for spilled stack parameters")
+  (ok (equal? (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
+              (linear-scan-allocate (list (MOV r a) (RET)) #:parameters (list a) #:results (list r)))
+      "Copy result to RAX register before restoring stack pointer and returning")
+
   (ok (equal? a (first-argument (ADD a b)))
       "get first argument of ADD statement")
   (ok (not (first-argument (ADD CX DX)))
@@ -534,6 +549,13 @@
   (ok (equal? (list (MOV EAX 42) 'x (RET))
               (flatten-code (spill-variable a (ptr <int> RSP -8) (list (MOV EAX 42) 'x (RET)))))
       "Variable spilling ignores machine code and labels"))
+
+(let [(r (var <int>))]
+  (ok (equal? (list (NOP) (RET)) (place-result-variable '() '() (list (NOP) (RET))))
+      "return unmodified code if there is no result variable")
+  (ok (equal? (list (NOP) (MOV EAX EDI) (RET)) (place-result-variable (list r) (list (cons r RDI)) (list (NOP) (RET))))
+      "copy result variable into RAX if it is in another location"))
+
 (ok (null? (used-callee-saved '()))
     "no registers in use")
 (ok (equal? (list RBX) (used-callee-saved (list (cons 'a RBX))))
@@ -544,6 +566,7 @@
     "ignore caller saved register")
 (ok (null?  (used-callee-saved (list (cons 'a #f))))
     "ignore variables without allocated register")
+
 (ok (equal? (list (PUSH RBX) (NOP) (POP RBX) (RET)) (backup-registers (list RBX) (list (NOP) (RET))))
     "backup one register")
 (ok (equal? (list (PUSH RBX) (PUSH RBP) (NOP) (POP RBP) (POP RBX) (RET)) (backup-registers (list RBX RBP) (list (NOP) (RET))))
@@ -686,7 +709,7 @@
               (linear-scan-allocate (list (MOV EDI a) (RET))
                                     #:parameters (list a) #:registers (list RDI RAX RCX) #:blocked (list (cons RDI '(0 . 0)))))
       "move parameter variable into another location if the register is blocked")
-  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (ADD RSP 8) (RET))
+  (ok (equal? (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (MOV EAX ECX) (ADD RSP 8) (RET))
               (linear-scan-allocate (list (MOV r 42) (MOV b 0) (RET)) #:results (list r)))
       "when allocating registers preserve result variables up to RET statement"))
 
