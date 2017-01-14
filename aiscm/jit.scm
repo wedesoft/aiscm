@@ -401,7 +401,10 @@
 
 (define (place-result-variable results locations code)
   "add code for placing result variable in register RAX if required"
-  (attach (append (all-but-last code) (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results)) (RET)))
+  (filter (compose not null?)
+          (attach (append (all-but-last code)
+                          (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
+                  (RET))))
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
@@ -583,13 +586,11 @@
       (apply register-allocate (cons prog args))))))
 
 (define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
-  (let* [(result-regs  (map cons result-vars (list RAX)))
-         (arg-regs     (map cons arg-vars parameter-registers))]
-    (spill-blocked-predefines (flatten-code (relabel (filter-blocks instructions)))
-                              #:predefined (append result-regs arg-regs)
-                              #:blocked    (blocked-intervals instructions)
-                              #:registers  registers
-                              #:parameters arg-vars)))
+  (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))
+                        #:registers registers
+                        #:parameters arg-vars
+                        #:results result-vars
+                        #:blocked (blocked-intervals instructions)))
 
 (define (repeat n . body)
   (let [(i (var (typecode n)))]
