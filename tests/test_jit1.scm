@@ -301,6 +301,8 @@
     "ignore predefined variables if the associated register is not blocked")
 (ok (null? (blocked-predefined (list (cons 'a RDI)) '() (list (cons RDI '(2 . 3)))))
     "ignore unused variable when checking for blocked registers")
+(ok (null? (blocked-predefined (list (cons 'a RDI)) '((a . (0 . 2))) (list (cons RAX '(1 . 3)))))
+    "only consider register associated with variable when blocking")
 
 (ok (null? (move-blocked-predefined '()))
     "no predefined variables with blocked registers to move")

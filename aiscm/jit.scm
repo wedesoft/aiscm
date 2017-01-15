@@ -278,8 +278,13 @@
 
 (define (blocked-predefined predefined intervals blocked)
   "Get blocked predefined registers"
-  (let [(interval (compose (cut assq-ref intervals <>) car))]
-  (filter (compose not null? (overlap-interval blocked) interval) (filter interval predefined))))
+  (filter
+    (lambda (pair)
+      (let [(variable (car pair))
+            (register (cdr pair))]
+        (and (assq-ref intervals variable)
+             (memv register ((overlap-interval blocked) (assq-ref intervals variable))))))
+    predefined))
 
 (define (move-blocked-predefined blocked-predefined)
   "Generate code for blocked predefined variables"

@@ -8,6 +8,7 @@
              (aiscm mem)
              (aiscm pointer)
              (aiscm rgb)
+             (aiscm complex)
              (aiscm obj)
              (aiscm asm)
              (aiscm jit)
