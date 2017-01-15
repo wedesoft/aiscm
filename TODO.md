@@ -1,6 +1,5 @@
 ## Ready
 
-* failing test: calling native method with seven arguments
 * hanging test: divide number by complex number
 * failing test: minor value of RGB and byte sequence
 * failing test: convert integer RGB sequence to object RGB sequence

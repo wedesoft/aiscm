@@ -57,7 +57,7 @@
 (ok (eqv? 5 ((jit ctx (list <int> <obj> <obj>)
                   (lambda (x y z) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z)))) 10 2 3))
     "Convert result of expression before passing to native function call")
-(todo (eqv? 42 ((jit ctx (list <int> <int>)
+(ok (eqv? 42 ((jit ctx (list <int> <int>)
                    (lambda (a b) (make-native-function (make-native-method <int> (make-list 7 <int>) jit-seven-arguments) a a a a a a b))) 123 42))
     "Compile function call with seven arguments (requires stack parameters)")
 (ok (equal? '(#t #f) (map (jit ctx (list <bool>) (cut make-native-function (make-native-method <bool> (list <bool>) jit-boolean-not) <>)) '(#f #t)))
