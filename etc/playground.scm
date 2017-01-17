@@ -28,7 +28,7 @@
                  (and (memv primary-argument (output cmd)) (MOV primary-location register))))
       (let [(spilled-pointers (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
         (attach (map (compose (cut MOV temporary <>) location) spilled-pointers)
-                (substitute-variables cmd (fold-right (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointers)))))))
+                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointers)))))))
 
 
 (define (get-ptr-args cmd)
