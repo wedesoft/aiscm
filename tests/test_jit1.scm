@@ -482,6 +482,7 @@
       "get first argument of ADD statement")
   (ok (not (first-argument (ADD CX DX)))
       "return false if statement is compiled already")
+
   (ok (equal? (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) RAX))
       "only put instruction into a list if there are no variables to replace")
   (ok (equal? (list (MOV ESI ECX)) (replace-variables (list (cons a RCX)) (MOV ESI a) RAX))
@@ -502,6 +503,7 @@
   (ok (equal? (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX))
               (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) RAX))
       "write output value in temporary register to the stack")
+
   (ok (equal? (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
               (virtual-variables (list a) (list b c) (list (MOV a b) (ADD a c) (RET))))
       "'virtual-variables' uses the specified variables as parameters")
