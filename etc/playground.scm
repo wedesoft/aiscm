@@ -18,18 +18,18 @@
 
 (define (replace-variables allocation cmd temporary)
   "Replace variables with registers and add spill code if necessary"
-  (let* [(primary-argument (first-argument cmd))
-         (primary-location (assq-ref allocation primary-argument))]
+  (let* [(location         (cut assq-ref allocation <>))
+         (primary-argument (first-argument cmd))
+         (primary-location (location primary-argument))]
     (if (is-a? primary-location <address>)
       (let [(register (to-type (typecode primary-argument) temporary))]
         (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
                  (substitute-variables cmd (assq-set allocation primary-argument temporary))
                  (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (let [(problem (filter (compose (cut is-a? <> <address>) (cut assq-ref allocation <>)) (get-ptr-args cmd)))]
-      (if (null? problem)
-        (list (substitute-variables cmd allocation))
-        (list (MOV temporary (assq-ref allocation (car problem)))
-              (substitute-variables cmd (assq-set allocation (car problem) temporary))))))))
+      (let [(spilled-pointers (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
+        (attach (map (compose (cut MOV temporary <>) location) spilled-pointers)
+                (substitute-variables cmd (fold-right (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointers)))))))
+
 
 (define (get-ptr-args cmd)
   "get variables used as a pointer"
