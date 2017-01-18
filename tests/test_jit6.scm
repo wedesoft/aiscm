@@ -145,7 +145,7 @@
     "convert boolean to object")
 (ok (equal? (list (rgb 2 3 5)) (to-list (to-type (rgb <obj>) (seq (rgb 2 3 5)))))
     "convert integer RGB sequence to object RGB sequence")
-(todo (equal? (list (rgb 2 3 5)) (to-list (to-type (rgb <int>) (seq (rgb <obj>) (rgb 2 3 5)))))
+(ok (equal? (list (rgb 2 3 5)) (to-list (to-type (rgb <int>) (seq (rgb <obj>) (rgb 2 3 5)))))
     "convert object RGB sequence to integer RGB sequence")
 (ok (eqv? 7 ((jit ctx (list <obj> <int>) +) 3 4))
     "plus for object and integer")

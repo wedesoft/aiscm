@@ -359,7 +359,10 @@
 
 (define (temporary-variables prog)
   "Allocate temporary variable for each instruction which has a variable as first argument"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))] (and (is-a? arg <var>) (var (typecode arg))))) prog))
+  (map (lambda (cmd) (let [(arg (first-argument cmd))]
+         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
+             (and (is-a? arg <var>) (var (typecode arg))))))
+       prog))
 
 (define (unit-intervals vars)
   "Generate intervals of length one for each temporary variable"
@@ -430,9 +433,9 @@
 (define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog results))
-         (temporary-variables  (temporary-variables prog))
+         (temp-vars            (temporary-variables prog))
          (intervals            (append (live-intervals live (variables prog))
-                                       (unit-intervals temporary-variables)))
+                                       (unit-intervals temp-vars)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
          (parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
          (remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
@@ -443,7 +446,7 @@
          (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
          (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
-         (temporaries          (temporary-registers allocation temporary-variables))
+         (temporaries          (temporary-registers allocation temp-vars))
          (locations            (add-spill-information allocation 8 8))]
     (backup-registers callee-saved
       (adjust-stack-pointer stack-offset

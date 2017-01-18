@@ -427,6 +427,7 @@
       "do not count stack parameters when allocating stack space")
   (ok (eqv? 1 (number-spilled-variables '((a . #f)) '(b)))
       "allocate stack space if spilled variable is not a stack parameter")
+
   (ok (null? (temporary-variables '()))
       "an empty program needs no temporary variables")
   (ok (equal? (list <var>) (map class-of (temporary-variables (list (MOV a 0)))))
@@ -439,6 +440,11 @@
       "it should not create a temporary variable if the statement does not contain variables")
   (ok (equal? (list #f) (temporary-variables (list (MOV EAX a))))
       "it should not create a temporary variable if the first argument is not a variable")
+  (ok (equal? (list <var>) (map class-of (temporary-variables (list (MOV (ptr <int> p) a)))))
+      "create temporary variable for pointer argument to instruction")
+  (ok (equal? (list <long>) (map typecode (temporary-variables (list (MOV (ptr <int> p) a)))))
+      "temporary variable for pointer argument needs to be long integer")
+
   (ok (null? (unit-intervals '()))
       "create empty list of unit intervals")
   (ok (equal? '((a . (0 . 0))) (unit-intervals '(a)))
