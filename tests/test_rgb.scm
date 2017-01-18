@@ -233,7 +233,7 @@
 (ok (equal? (list (rgb 2 2 3)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) max)
                                          (rgb 1 2 3) (seq <byte> 2))))
     "major value of RGB and byte sequence")
-(skip (equal? (list (rgb 1 2 2)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) min)
+(ok (equal? (list (rgb 1 2 2)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) min)
                                          (rgb 1 2 3) (seq <byte> 2))))
     "minor value of RGB and byte sequence")
 (ok (equal? (list (rgb 2 7 11) (rgb 3 7 11) (rgb 5 7 11)) (to-list (rgb (seq 2 3 5) 7 11)))
