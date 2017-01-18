@@ -35,7 +35,7 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
-            substitute-variables variables get-args input output labels next-indices
+            substitute-variables variables get-args input output get-ptr-args labels next-indices
             initial-register-use find-available-register mark-used-till longest-use ignore-spilled-variables
             ignore-blocked-registers live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
@@ -83,6 +83,10 @@
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
 (define-method (equal? (a <cmd>) (b <cmd>)) (equal? (object-slots a) (object-slots b)))
+
+(define (get-ptr-args cmd)
+  "get variables used as a pointer in a command"
+  (filter (cut is-a? <> <var>) (append-map get-args (filter (cut is-a? <> <ptr>) (get-args cmd)))))
 
 (define-syntax-rule (mutating-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -333,14 +337,17 @@
 
 (define (replace-variables allocation cmd temporary)
   "Replace variables with registers and add spill code if necessary"
-  (let* [(primary-argument (first-argument cmd))
-         (primary-location (assq-ref allocation primary-argument))]
+  (let* [(location         (cut assq-ref allocation <>))
+         (primary-argument (first-argument cmd))
+         (primary-location (location primary-argument))]
     (if (is-a? primary-location <address>)
       (let [(register (to-type (typecode primary-argument) temporary))]
         (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
                  (substitute-variables cmd (assq-set allocation primary-argument temporary))
                  (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (list (substitute-variables cmd allocation)))))
+      (let [(spilled-pointers (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
+        (attach (map (compose (cut MOV temporary <>) location) spilled-pointers)
+                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointers)))))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"

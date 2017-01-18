@@ -50,7 +50,8 @@
 (ok (eq? <double> (native-equivalent <double>))
     "single-precision floating point number is it's own equivalent")
 (let [(a (var <int>))
-      (b (var <int>))]
+      (b (var <int>))
+      (p (var <long>))]
   (ok (equal? (list b) (input (MOV a b)))
       "Get input variables of MOV")
   (ok (equal? (list a b) (input (ADD a b)))
@@ -67,9 +68,18 @@
       "Get arguments of command")
   (ok (equal?  (list a b) (variables (list (MOV a 0) (MOV b a))))
       "Get variables of a program")
-  (let [(p (var <long>))]
-    (ok (equal?  (list a p) (variables (list (MOV a 0) (MOV (ptr <int> p) a))))
-        "Get variables of a program using a pointer"))
+  (ok (equal?  (list a p) (variables (list (MOV a 0) (MOV (ptr <int> p) a))))
+      "Get variables of a program using a pointer")
+
+  (ok (null? (get-ptr-args (MOV a 42)))
+      "command without any pointer arguments")
+  (ok (equal? (list p) (get-ptr-args (MOV (ptr <int> p) 42)))
+      "get pointer argument of a command")
+  (ok (null? (get-ptr-args (MOV EAX 42)))
+      "compiled command without variables does not have pointer arguments")
+  (ok (equal? (list p) (get-ptr-args (MOV (ptr <int> p 16) 42)))
+      "only return variable arguments of pointer")
+
   (ok (equal? (list (MOV ECX 42)) (substitute-variables (list (MOV a 42)) (list (cons a RCX))))
       "Substitute integer variable with register")
   (ok (equal? (MOV b 0) (substitute-variables (MOV a 0) (list (cons a b))))
@@ -405,7 +415,8 @@
       (f (var <int>))
       (g (var <int>))
       (r (var <int>))
-      (x (var <sint>))]
+      (x (var <sint>))
+      (p (var <long>))]
   (ok (eqv? 0 (number-spilled-variables '() '()))
       "count zero spilled variables")
   (ok (eqv? 1 (number-spilled-variables '((a . #f)) '()))
@@ -503,6 +514,15 @@
   (ok (equal? (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX))
               (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) RAX))
       "write output value in temporary register to the stack")
+  (ok (equal? (list (MOV RAX (ptr <long> RSP 32)) (MOV EDX (ptr <int> RAX 8)))
+              (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV a (ptr <int> p 8)) RAX))
+      "use temporary variable to implement reading from pointer to pointer")
+  (ok (equal? (list (MOV EDX (ptr <int> RCX 8)))
+              (replace-variables (list (cons a RDX) (cons p RCX)) (MOV a (ptr <int> p 8)) RAX))
+      "do not use temporary variable when reading from register pointer")
+  (ok (equal? (list (MOV RAX (ptr <long> RSP 32)) (MOV (ptr <int> RAX 8) EDX))
+              (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) RAX))
+      "use temporary variable to implement writing to pointer to pointer")
 
   (ok (equal? (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
               (virtual-variables (list a) (list b c) (list (MOV a b) (ADD a c) (RET))))
