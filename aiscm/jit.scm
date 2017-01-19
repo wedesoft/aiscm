@@ -158,7 +158,8 @@
 (define-class <var> ()
   (type   #:init-keyword #:type   #:getter typecode)
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
-(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
+(define-method (write (self <var>) port)
+  (format port "~a:~a" (symbol->string (slot-ref self 'symbol)) (class-name (slot-ref self 'type))))
 (define-method (size-of (self <var>)) (size-of (typecode self)))
 (define-class <ptr> ()
   (type #:init-keyword #:type #:getter typecode)
@@ -178,8 +179,9 @@
 (define-method (substitute-variables self alist) self)
 
 (define-method (substitute-variables (self <var>) alist)
+  "replace variable with associated value if there is one"
   (let [(target (assq-ref alist self))]
-    (if (is-a? target <register>)
+    (if (or (is-a? target <register>) (is-a? target <address>))
       (to-type (typecode self) target)
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
@@ -340,14 +342,16 @@
   (let* [(location         (cut assq-ref allocation <>))
          (primary-argument (first-argument cmd))
          (primary-location (location primary-argument))]
+    ; cases requiring more than one temporary variable are not handled at the moment
     (if (is-a? primary-location <address>)
       (let [(register (to-type (typecode primary-argument) temporary))]
         (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
                  (substitute-variables cmd (assq-set allocation primary-argument temporary))
                  (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (let [(spilled-pointers (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
-        (attach (map (compose (cut MOV temporary <>) location) spilled-pointers)
-                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointers)))))))
+      (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
+        ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
+        (attach (map (compose (cut MOV temporary <>) location) spilled-pointer)
+                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointer)))))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
@@ -845,7 +849,8 @@
 (define (operation-code target op out args)
   "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
-    (lambda intermediates (apply op (operand out) (map operand intermediates)))))
+    (lambda intermediates
+      (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
   "Adapter for machine code without side effects on its arguments"
   (operation-code (reduce coerce #f (map type args)) op out args))

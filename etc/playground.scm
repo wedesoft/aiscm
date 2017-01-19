@@ -16,48 +16,10 @@
              (aiscm util)
              (guile-tap))
 
-(define (temporary-variables prog)
-  "Allocate temporary variable for each instruction which has a variable as first argument"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))]
-    (or (and (not (null? (get-ptr-args cmd))) (var <long>)) (and (is-a? arg <var>) (var (typecode arg)))))) prog))
-
-(define a (var <int>))
-(define x (var <sint>))
-(define p (var <long>))
-
-(ok (null? (temporary-variables '()))
-    "an empty program needs no temporary variables")
-(ok (equal? (list <var>) (map class-of (temporary-variables (list (MOV a 0)))))
-    "create temporary variable for first argument of instruction")
-(ok (not (equal? (list a) (temporary-variables (list (MOV a 0)))))
-    "temporary variable should be distinct from first argument of instruction")
-(ok (equal? (list <sint>) (map typecode (temporary-variables (list (MOV x 0)))))
-    "temporary variable should have correct type")
-(ok (equal? (list #f) (temporary-variables (list (MOV EAX 0))))
-    "it should not create a temporary variable if the statement does not contain variables")
-(ok (equal? (list #f) (temporary-variables (list (MOV EAX a))))
-    "it should not create a temporary variable if the first argument is not a variable")
-(ok (equal? (list <var>) (map class-of (temporary-variables (list (MOV (ptr <int> p) a)))))
-    "create temporary variable for pointer argument to instruction")
-(ok (equal? (list <long>) (map typecode (temporary-variables (list (MOV (ptr <int> p) a)))))
-    "temporary variable for pointer argument needs to be long integer")
-
-(temporary-variables (list (MOV (ptr <int> (var <long>)) (var <int>))))
-(map typecode (temporary-variables (list (MOV (var <int>) (ptr <int> (var <long>))))))
-
-; (mov-unsigned R13 (ptr <obj> (ptr <long> RSP 80) 8))
-; (mov-unsigned (ptr <obj> (ptr <long> RSP 72) 8) R13)
-
-; (replace-variables (list (cons a R13) (cons p (ptr <long> RSP 80))) (mov-unsigned a (ptr <int> p 8)) RAX)
-
-
 (define ctx (make <context>))
-
 (define context ctx)
-(define classes (list (sequence (rgb <int>))))
-(define proc (cut to-type (rgb <obj>) <>))
-
-;(jit context classes proc)
+(define classes (list <ubytergb> (sequence <byte>)))
+(define proc min)
 
 (define vars         (map skeleton classes))
 (define expr         (apply proc (map parameter vars)))

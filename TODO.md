@@ -1,6 +1,5 @@
 ## Ready
 
-* test failing sometimes: minor value of RGB and byte sequence?
 * remove old register allocator
 * rename target to destination
 * (if ... ... #f) ->  (and ... ...)

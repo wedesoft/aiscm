@@ -131,9 +131,13 @@
       "Substitution works with 'IMUL' and three arguments")
   (ok (equal? (CMP ECX EDX) (substitute-variables (CMP a b) (list (cons a RCX) (cons b RDX))))
       "Substitution works with 'CMP'")
-  (let [(u (var <ubyte>))]
+  (let [(u (var <ubyte>))
+        (x (var <sint>))]
     (ok (equal? (SETB CL) (substitute-variables (SETB u) (list (cons u RCX))))
-        "Substitution works with 'SETB'")))
+        "Substitution works with 'SETB'")
+    (ok (equal? (MOVZX DI (ptr <ubyte> RSP 24))
+                (substitute-variables (mov-unsigned x u) (list (cons x RDI) (cons u (ptr <long> RSP 24)))))
+        "Use correct type when substituting variable with pointer")))
 (ok (equal? (MOV AX CX) (mov-signed AX CX))
     "copy signed 16-bit value")
 (ok (equal? (MOVSX EAX CX) (mov-signed EAX CX))

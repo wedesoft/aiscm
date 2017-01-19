@@ -46,7 +46,7 @@
     "unequal pointers")
 (ok (not (equal? p1-bool p1-byte))
     "unequal pointers (different type)")
-(ok (equal? "#<<pointer<int<32,signed>>> p>"
+(ok (equal? "#<<pointer<int<32,signed>>> p:<int<64,signed>>>"
             (call-with-output-string (lambda (port) (display (make (pointer <int>) #:value p) port))))
     "display short integer object")
 (ok (equal? (make <bool> #:value #t) (fetch p1-bool))
