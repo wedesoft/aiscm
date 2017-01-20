@@ -28,7 +28,7 @@
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
             assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
-            first-index last-index compact index-groups update-intervals
+            first-index last-index compact
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm)
   #:export-syntax (define-class* template-class synchronise))
@@ -160,28 +160,12 @@
   (map
     (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
     variables))
+
 (define ((overlap-interval intervals) interval)
   "Get list of variables with overlapping intervals"
   (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
                                     (<= (cadr x) (cdr interval)))) intervals)))
-(define ((overlap intervals) var)
-  "Get variables with overlapping live intervals"
-  (let [(interval (assq-ref intervals var))]
-    ((overlap-interval intervals) interval)))
 
-(define* (color-intervals intervals nodes colors #:key (predefined '()) (blocked '()))
-  (if (null? nodes) predefined
-    (let* [(target    (argmin (compose length (overlap intervals)) nodes))
-           (color-map (color-intervals (assq-remove intervals target)
-                                       (delete target nodes)
-                                       colors
-                                       #:predefined predefined
-                                       #:blocked blocked))
-           (adjacent  ((overlap intervals) target))
-           (busy      (append (map (cut assq-ref color-map <>) adjacent)
-                              ((overlap-interval blocked) (assq-ref intervals target))))
-           (available (find (negate (cut memv <> busy)) colors))]
-      (cons (cons target available) color-map))))
 (define (first-index pred lst)
   (if (null? lst) #f
     (if (pred (car lst)) 0
@@ -193,17 +177,7 @@
       (if idx (1+ idx)
         (if (pred (car lst)) 0 #f)))))
 (define (compact . args) (filter identity args))
-(define (index-groups lst)
-  (let* [(length-list       (map length lst))
-         (integrated-length (integral length-list))
-         (start-points      (cons 0 (all-but-last integrated-length)))
-         (end-points        (map 1- integrated-length))]
-    (map cons start-points end-points)))
-(define (update-intervals intervals groups)
-  (map (lambda (pair)
-         (cons (car pair)
-               (cons (car (list-ref groups (cadr pair)))
-                     (cdr (list-ref groups (cddr pair)))))) intervals))
+
 (define (bytevector-sub bv offset len)
   (let [(retval (make-bytevector len))]
     (bytevector-copy! bv offset retval 0 len)

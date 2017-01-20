@@ -32,24 +32,6 @@
 
 (define ctx (make <context>))
 
-(ok (equal? (MOV AX 0) (fix-stack-position (MOV AX 0) 123))
-    "setting stack position does not affect operations not involving pointers")
-(ok (equal? (MOV (ptr <byte> RSP 0) AL) (fix-stack-position (MOV (ptr <byte> stack-pointer 0) AL) 0))
-    "setting stack position replaces the stack pointer placeholder with RSP")
-(let [(p (var <long>))]
-  (ok (equal? (MOV (ptr <byte> p) AL) (fix-stack-position (MOV (ptr <byte> p) AL) 0))
-      "setting stack position ignores other pointer variables"))
-(ok (equal? (MOV (ptr <byte> RSP 8) AL) (fix-stack-position (MOV (ptr <byte> stack-pointer 0) AL) -8))
-    "setting stack position takes the pointer offset into account")
-(ok (equal? (MOV (ptr <byte> RSP 24) AL) (fix-stack-position (MOV (ptr <byte> stack-pointer 8) AL) -16))
-    "stack pointer adjustment and pointer offset get added")
-(ok (equal? (list (MOV (ptr <byte> RSP 0) AL)) (fix-stack-position (list (MOV (ptr <byte> stack-pointer 0) AL)) 0))
-    "apply stack position adjustment to each command in a list")
-(ok (equal? (list (SUB RSP 8) (NOP) (ADD RSP 8) (RET)) (position-stack-frame (list (NOP) (RET)) -8))
-    "positioning the stack pointer replaces the stack-pointer place holder")
-(ok (equal? (list (SUB RSP 8) (MOV (ptr <byte> RSP 24) AL) (ADD RSP 8) (RET))
-            (position-stack-frame (list (MOV (ptr <byte> stack-pointer 16) AL) (RET)) -8))
-    "positioning the stack pointer also adjusts pointer offsets")
 (let [(a (parameter <int>))]
   (ok (equal? (MOV EDI (get (delegate a))) (car (pass-parameters (list a) (NOP))))
       "Passing register parameters creates copy instructions"))
