@@ -1,11 +1,7 @@
 ## Ready
 
-* remove old register allocator
-* rename target to destination
 * (if ... ... #f) ->  (and ... ...)
-* ordered moving of parameters
 * remove "difference"
-* enable EBP
 * separate module for register allocation
 * ffmpeg output
 * test suite with structure

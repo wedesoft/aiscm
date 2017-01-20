@@ -425,7 +425,7 @@
 
 ; RSP is not included because it is used as a stack pointer
 ; RBP is not included because it may be used as a frame pointer
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 R12 R13 R14 R15 RBX RBP))
 (define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define parameter-registers (list RDI RSI RDX RCX R8 R9))
