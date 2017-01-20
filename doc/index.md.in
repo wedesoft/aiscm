@@ -32,14 +32,16 @@ Control all data and machine code down to every single bit and byte.
 
 ## External links
 
-* [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
-* [Vigracket: Vigra bindings for Racket](https://github.com/BSeppke/vigracket)
+* [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
+* [DyNet: dynamic neural networks library](https://github.com/clab/dynet)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)
+* [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
+* [PyTorch: Tensors and dynamic neural networks in Python with strong GPU acceleration](http://pytorch.org/)
 * [Tensorflow: numerical computing with dataflow graphs](https://www.tensorflow.org/)
 * [Numpy: Python library implementing n-dimensional arrays](http://www.numpy.org/)
-* [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python](http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf)
-* [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
+* [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
+* [Vigracket: Vigra bindings for Racket](https://github.com/BSeppke/vigracket)
 * [Ceemple C++ OpenCV IDE](http://www.ceemple.com/)
 * [Arrayfire: accelerated computing library](http://arrayfire.com/)
 * [Halide: a language for image processing and computational photography](http://halide-lang.org/)
