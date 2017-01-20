@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@
   #:use-module (system foreign)
   #:export (toplevel-define! super gc-malloc gc-malloc-pointerless destroy xor attach index-of all-but-last
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
-            assq-set assq-remove product sort-by sort-by-pred argmin argmax gather
-            pair->list nodes live-intervals overlap color-intervals union difference fixed-point
-            first-index last-index compact index-groups update-intervals
+            assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
+            pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
+            first-index last-index compact
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm)
   #:export-syntax (define-class* template-class synchronise))
@@ -80,7 +80,7 @@
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index-of a b)
   (let [(tail (member a (reverse b)))]
-    (if tail (length (cdr tail)) #f)))
+    (and tail (length (cdr tail)))))
 
 (define (all-but-last lst)
   "Return all but last element of LST."
@@ -120,10 +120,24 @@
       (cons (cons key val) (cdr alist))
       (cons (car alist) (assq-set (cdr alist) key val)))))
 (define (assq-set alist key val) (alist-set eq? alist key val))
-(define (assq-remove alist key) (filter (compose not (cut eq? key <>) car) alist))
+(define (assq-remove alist . keys) (filter (compose not (cut memv <> keys) car) alist))
 (define (product lst1 lst2) (append-map (lambda (x) (map (cut cons x <>) lst2)) lst1))
-(define (sort-by lst fun) (sort-list lst (lambda args (apply < (map fun args)))))
-(define (sort-by-pred lst pred) (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
+
+(define (sort-by lst fun)
+  "Sort LST by return values of FUN"
+  (sort-list lst (lambda args (apply < (map fun args)))))
+
+(define (sort-by-pred lst pred)
+  "Sort LST by boolean return value of PRED"
+  (sort-by lst (lambda (arg) (if (pred arg) 1 0))))
+
+(define (partial-sort lst less)
+  "Sort the list LST. LESS is a partial order used for comparing elements."
+  (or (and (null? lst) '())
+      (if (every (compose not (cut less <> (car lst))) (cdr lst))
+          (cons (car lst) (partial-sort (cdr lst) less))
+          (partial-sort (cycle lst) less))))
+
 (define (argop op fun lst)
   (let* [(vals  (map fun lst))
          (opval (apply op vals))]
@@ -139,57 +153,32 @@
     (if (compare? initial successor)
       initial
       (fixed-point successor iteration compare?))))
-(define (union . args) (apply lset-union (cons eq? args)))
-(define (difference . args) (apply lset-difference (cons eq? args)))
+(define (union . args) (apply lset-union (cons equal? args)))
+(define (difference . args) (apply lset-difference (cons equal? args)))
 (define (pair->list pair) (list (car pair) (cdr pair)))
 (define (live-intervals live variables)
   (map
     (lambda (v) (cons v (cons (first-index (cut memv v <>) live) (last-index (cut memv v <>) live))))
     variables))
+
 (define ((overlap-interval intervals) interval)
   "Get list of variables with overlapping intervals"
   (map car (filter (lambda (x) (and (>= (cddr x) (car interval))
                                     (<= (cadr x) (cdr interval)))) intervals)))
-(define ((overlap intervals) var)
-  "Get variables with overlapping live intervals"
-  (let [(interval (assq-ref intervals var))]
-    ((overlap-interval intervals) interval)))
 
-(define* (color-intervals intervals nodes colors #:key (predefined '()) (blocked '()))
-  (if (null? nodes) predefined
-    (let* [(target    (argmin (compose length (overlap intervals)) nodes))
-           (color-map (color-intervals (assq-remove intervals target)
-                                       (delete target nodes)
-                                       colors
-                                       #:predefined predefined
-                                       #:blocked blocked))
-           (adjacent  ((overlap intervals) target))
-           (busy      (append (map (cut assq-ref color-map <>) adjacent)
-                              ((overlap-interval blocked) (assq-ref intervals target))))
-           (available (find (negate (cut memv <> busy)) colors))]
-      (cons (cons target available) color-map))))
 (define (first-index pred lst)
-  (if (null? lst) #f
-    (if (pred (car lst)) 0
-      (let [(idx (first-index pred (cdr lst)))]
-        (if idx (1+ idx) #f)))))
+  (and (not (null? lst))
+       (if (pred (car lst))
+           0
+           (let [(idx (first-index pred (cdr lst)))]
+             (and idx (1+ idx))))))
 (define (last-index pred lst)
-  (if (null? lst) #f
-    (let [(idx (last-index pred (cdr lst)))]
-      (if idx (1+ idx)
-        (if (pred (car lst)) 0 #f)))))
+  (and (not (null? lst))
+       (let [(idx (last-index pred (cdr lst)))]
+         (if idx (1+ idx)
+           (and (pred (car lst)) 0)))))
 (define (compact . args) (filter identity args))
-(define (index-groups lst)
-  (let* [(length-list       (map length lst))
-         (integrated-length (integral length-list))
-         (start-points      (cons 0 (all-but-last integrated-length)))
-         (end-points        (map 1- integrated-length))]
-    (map cons start-points end-points)))
-(define (update-intervals intervals groups)
-  (map (lambda (pair)
-         (cons (car pair)
-               (cons (car (list-ref groups (cadr pair)))
-                     (cdr (list-ref groups (cddr pair)))))) intervals))
+
 (define (bytevector-sub bv offset len)
   (let [(retval (make-bytevector len))]
     (bytevector-copy! bv offset retval 0 len)
@@ -202,9 +191,14 @@
     (for-each (lambda (arg offset len) (bytevector-copy! arg 0 retval offset len))
               lst offsets lengths)
     retval))
-(define (objdump code) (let [(filename (tmpnam))]
-  (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
-  (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))))
+
+(define (objdump code)
+  "dump machine CODE to temporary file and deassemble using the 'objdump' tool"
+  (let [(filename (tmpnam))]
+    (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
+    (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))
+    code))
+
 (define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
 (define (map-select select fun1 fun2 . lsts) (apply map (lambda (val . args) (apply (if val fun1 fun2) args)) select lsts))
 (define (symbol-list n) (map (lambda _ (gensym)) (iota n)))

@@ -11,14 +11,17 @@ ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUI
 RUN = $(GUILE) -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
-					 aiscm.gif fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
+					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
-					 debian.png ubuntu.png source.png package.png fubk-colours.png sintel.jpg v4l2.jpg
+					 aiscm.gif debian.png ubuntu.png source.png package.png \
+					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
+					 buttondown.css
 
-EXTRA_DIST = includes.scm buttondown.css index.md.in installation.md assembler.md io.md array.md \
-						 operation.md aiscm.gif debian.png ubuntu.png source.png package.png dependencies.sh \
-						 fubk-colours.png sintel.jpg v4l2.jpg \
-						 gplv3.png amd64.png
+EXTRA_DIST = includes.scm dependencies.sh \
+						 index.md.in installation.md assembler.md io.md array.md operation.md \
+						 aiscm.gif debian.png ubuntu.png source.png package.png \
+						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
+						 buttondown.css
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg *.html *.tmp
 

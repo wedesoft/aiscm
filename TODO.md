@@ -1,16 +1,30 @@
 ## Ready
 
-* copyright headers
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
+    (tensor [i] (get m i 1))
+    (tensor [i j] (* (s i) (s j)))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+    (tensor [i j] (* (s i) (s j)))
+* NArray-like reshaping, other narray stuff
+* diagonal injection, convolution, median, dilation, ...
+* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating point exception (SIGFPE)
+* record arrays, extendable type matching, map?, inject?
+* fractions, \*\*
+* separate function for defining operation for array?
+* separate module for register allocation
+* ffmpeg output
+* test suite with structure
+* Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
+  multi-threading, SIMD, memory access (cache)
 * robot speech processing
-* add checks https://wiki.debian.org/HowToPackageForDebian
+* add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
-* put results in live-analysis
-* register allocation: registers, stack pointer, live intervals, blocked intervals, predefined, overlap, spill variable,
-  parameters, stack parameters
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
-* improve run-time performance of register allocator (linear-scan register allocator?)
-* spill blocked registers into other register
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
 * index manipulation on function expressions
@@ -35,15 +49,14 @@
 * fftw3, hypercomplex, kinect, linalg, opencv, qt4
 * predator tracker
 * <-> Guile 6.7.5 Arrays
-* floating point exception (SIGFPE)
 * create relocatable code and use linker to insert calls with relative addresses
 * use C parser to get method types? C++ binary interace? Qt bindings?
 * use (ice-9 match) to simplify and translate assembler code?
+  https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
 * ffmpeg output (writing videos)
 * Conways way of life in one line of code
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * keywords: data structures,digital signal processing,tensors,input/output (check standard theosaurus)
 * deduct sample time from delay in ffplay.scm
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
@@ -63,14 +76,6 @@
 * conditional/select
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * complex abs (magnitude), complex arg (and real)
 * video -> panorama stitching (multiresolution)
 * web server
@@ -82,11 +87,6 @@
 * SLAM, inverse depth images
 * camera calibration
 * marker recognition
-* NArray-like reshaping, other narray stuff
-* diagonal injection, convolution, median, dilation, ...
-* separate function for defining operation for array?
-* record arrays, extendable type matching, map?, inject?
-* fractions, \*\*
 * x11 display: error handling for 'show', timing
 * separate register allocation for better testing (<-> RSpec, Clojure Midje?),
   copy blocked predefined variables instead of spilling them

@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@
     "unequal pointers")
 (ok (not (equal? p1-bool p1-byte))
     "unequal pointers (different type)")
-(ok (equal? "#<<pointer<int<32,signed>>> p>"
+(ok (equal? "#<<pointer<int<32,signed>>> p:<int<64,signed>>>"
             (call-with-output-string (lambda (port) (display (make (pointer <int>) #:value p) port))))
     "display short integer object")
 (ok (equal? (make <bool> #:value #t) (fetch p1-bool))
