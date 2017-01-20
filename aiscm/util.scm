@@ -80,7 +80,7 @@
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index-of a b)
   (let [(tail (member a (reverse b)))]
-    (if tail (length (cdr tail)) #f)))
+    (and tail (length (cdr tail)))))
 
 (define (all-but-last lst)
   "Return all but last element of LST."
@@ -167,15 +167,16 @@
                                     (<= (cadr x) (cdr interval)))) intervals)))
 
 (define (first-index pred lst)
-  (if (null? lst) #f
-    (if (pred (car lst)) 0
-      (let [(idx (first-index pred (cdr lst)))]
-        (if idx (1+ idx) #f)))))
+  (and (not (null? lst))
+       (if (pred (car lst))
+           0
+           (let [(idx (first-index pred (cdr lst)))]
+             (and idx (1+ idx))))))
 (define (last-index pred lst)
-  (if (null? lst) #f
-    (let [(idx (last-index pred (cdr lst)))]
-      (if idx (1+ idx)
-        (if (pred (car lst)) 0 #f)))))
+  (and (not (null? lst))
+       (let [(idx (last-index pred (cdr lst)))]
+         (if idx (1+ idx)
+           (and (pred (car lst)) 0)))))
 (define (compact . args) (filter identity args))
 
 (define (bytevector-sub bv offset len)
