@@ -3,6 +3,8 @@
 * separate module for register allocation
 * ffmpeg output
 * test suite with structure
+* Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
+  multi-threading, SIMD, memory access (cache)
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
