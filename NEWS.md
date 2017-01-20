@@ -1,4 +1,4 @@
-# aiscm (0.9.3-1)
+# aiscm (0.10.1-1)
 
 * aiscm/jit.scm: switch to faster linear scan register allocator
 * install CSS style sheets and some icons with HTML documentation
