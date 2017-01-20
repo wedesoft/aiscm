@@ -153,8 +153,8 @@
     (if (compare? initial successor)
       initial
       (fixed-point successor iteration compare?))))
-(define (union . args) (apply lset-union (cons eq? args)))
-(define (difference . args) (apply lset-difference (cons eq? args)))
+(define (union . args) (apply lset-union (cons equal? args)))
+(define (difference . args) (apply lset-difference (cons equal? args)))
 (define (pair->list pair) (list (car pair) (cdr pair)))
 (define (live-intervals live variables)
   (map

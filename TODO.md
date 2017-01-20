@@ -1,7 +1,6 @@
 ## Ready
 
 * (if ... ... #f) ->  (and ... ...)
-* remove "difference"
 * separate module for register allocation
 * ffmpeg output
 * test suite with structure

@@ -295,7 +295,7 @@
 
 (define (non-blocked-predefined predefined blocked-predefined)
   "Compute the set difference of the predefined variables and the variables with blocked registers"
-  (lset-difference equal? predefined blocked-predefined))
+  (difference predefined blocked-predefined))
 
 (define (linear-scan-coloring live-intervals registers predefined blocked)
   "Linear scan register allocation based on live intervals"
@@ -356,7 +356,7 @@
 
 (define (number-spilled-variables allocation stack-parameters)
   "Count the number of spilled variables"
-  (length (lset-difference eq? (unallocated-variables allocation) stack-parameters)))
+  (length (difference (unallocated-variables allocation) stack-parameters)))
 
 (define (temporary-variables prog)
   "Allocate temporary variable for each instruction which has a variable as first argument"
