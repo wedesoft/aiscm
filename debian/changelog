@@ -1,7 +1,6 @@
 aiscm (0.10.1-1) UNRELEASED; urgency=low
 
-  * aiscm/jit.scm: switch to faster linear scan register allocator
-  * install CSS style sheets and some icons with HTML documentation
+  - New upstream release
 
  -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jan 2017 20:49:00 +0000
 
