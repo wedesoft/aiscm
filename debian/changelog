@@ -1,3 +1,10 @@
+aiscm (0.10.1-1) UNRELEASED; urgency=low
+
+  * aiscm/jit.scm: switch to faster linear scan register allocator
+  * install CSS style sheets and some icons with HTML documentation
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jan 2017 20:49:00 +0000
+
 aiscm (0.9.2-1) unstable; urgency=low
 
   - Create new package for Debian. Closes: #848078

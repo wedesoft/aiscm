@@ -1,3 +1,9 @@
+# aiscm (0.10.1-1)
+
+* aiscm/jit.scm: switch to faster linear scan register allocator
+* install CSS style sheets and some icons with HTML documentation
+
+
 # aiscm (0.9.2-1)
 
 * test/test_ffmpeg.scm: extract pixel value earlier in test
