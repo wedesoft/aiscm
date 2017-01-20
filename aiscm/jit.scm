@@ -36,7 +36,7 @@
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
             substitute-variables variables get-args input output get-ptr-args labels next-indices
-            initial-register-use find-available-register mark-used-till longest-use ignore-spilled-variables
+            initial-register-use find-available-register mark-used-till spill-candidate ignore-spilled-variables
             ignore-blocked-registers live-analysis
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined
@@ -225,7 +225,7 @@
   "Mark element in use up to specified index"
   (assq-set availability element (1+ last-index)))
 
-(define (longest-use variable-use); TODO: rename
+(define (spill-candidate variable-use)
   "Select variable blocking for the longest time as a spill candidate"
   (car (argmax cdr variable-use)))
 
@@ -319,7 +319,7 @@
           (if register
             (recursion allocation register)
             (let* [(spill-targets (ignore-spilled-variables variable-use allocation))
-                   (target        (longest-use spill-targets))
+                   (target        (spill-candidate spill-targets))
                    (register      (assq-ref allocation target))]
               (recursion (assq-set allocation target #f) register))))))
   (linear-allocate (sort-live-intervals live-intervals (map car predefined))

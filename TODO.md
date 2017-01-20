@@ -3,22 +3,11 @@
 * separate module for register allocation
 * ffmpeg output
 * test suite with structure
-* longest-use -> spill-candidate
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * fix lintian issues: https://mentors.debian.net/package/aiscm
-* register spilling
-* parameters (register/stack)
-* use RAX for temporary retrieval of spilled variables (or RDX?)
-* force "output" of each command into (temporary) register
-* blocked registers
-* put results in live-analysis
-* register allocation: registers, stack pointer, live intervals, blocked intervals, predefined, overlap, spill variable,
-  parameters, stack parameters
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
-* improve run-time performance of register allocator (linear-scan register allocator?)
-* spill blocked registers into other register
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
 * index manipulation on function expressions

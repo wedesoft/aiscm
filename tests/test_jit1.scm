@@ -183,11 +183,11 @@
 (ok (equal? (list (cons RAX 1) (cons RCX 9)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
     "mark second register as used")
 
-(ok (eq? 'a (longest-use '((a . 0))))
+(ok (eq? 'a (spill-candidate '((a . 0))))
     "spill the one variable if there is no other candidate")
-(ok (eq? 'b (longest-use '((a . 0) (b . 1))))
+(ok (eq? 'b (spill-candidate '((a . 0) (b . 1))))
     "spill second variable if it is allocated for a longer interval")
-(ok (eq? 'a (longest-use '((a . 1) (b . 0))))
+(ok (eq? 'a (spill-candidate '((a . 1) (b . 0))))
     "spill first variable if it is allocated for a longer interval")
 
 (ok (equal? '((a . 2)) (ignore-spilled-variables '((a . 2)) (list (cons 'a RAX))))
