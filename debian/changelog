@@ -1,8 +1,14 @@
-aiscm (0.9.2-1+xenial1) UNRELEASED; urgency=low
+aiscm (0.10.1-1+xenial1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Trusty
 
- -- Jan Wedekind <jan@wedesoft.de>  Thu, 15 Dec 2016 19:54:15 +0000
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jan 2017 20:49:00 +0000
+
+aiscm (0.10.1-1) UNRELEASED; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jan 2017 20:49:00 +0000
 
 aiscm (0.9.2-1) unstable; urgency=low
 

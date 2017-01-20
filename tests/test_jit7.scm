@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@
 (let [(i (parameter <int>))]
   (ok (eqv? 42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))))
       "assign native integer constant to parameter"))
-(ok (equal? '() ((jit ctx '() (lambda () scm-eol))))
+(ok (null? ((jit ctx '() (lambda () scm-eol))))
     "compile function returning empty list")
 (ok (equal? (cons 'a 'b) ((jit ctx (list <obj> <obj>) scm-cons) 'a 'b))
     "call \"cons\" from compiled code")
