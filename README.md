@@ -1,6 +1,6 @@
 # [AIscm][1]
 
-[![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](doc/amd64.png)](https://en.wikipedia.org/wiki/X86-64)
+[![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](doc/amd64.png)](https://en.wikipedia.org/wiki/X86-64) [![Travis CI](doc/travis.png)](https://travis-ci.org/wedesoft/aiscm)
 
 [**AIscm**][1] is a **[Guile][2] extension for numerical arrays and tensors**.
 Performance is achieved by means of a JIT compiler.

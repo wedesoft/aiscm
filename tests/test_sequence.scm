@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@
 (ok (equal? "#<sequence<int<8,unsigned>>>:\n(100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 ...)"
       (call-with-output-string (lambda (port) (write (to-array (make-list 40 100)) port))))
     "Write longer sequence object")
-(ok (equal? "#<<sequence<int<8,signed>>> c (a) (b)>"
+(ok (equal? "#<<sequence<int<8,signed>>> c:<int<64,signed>> (a:<int<64,signed>>) (b:<int<64,signed>>)>"
       (let [(s (make (sequence <byte>) #:value c #:shape (list a) #:strides (list b)))]
         (call-with-output-string (lambda (port) (write s port)))))
     "Write sequence object made from variables")

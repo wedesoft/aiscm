@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
       "Query function pointer of method")
   (ok (eq? <int> (return-type method))
       "Query return type of method")
-  (ok (equal? '() (argument-types method))
+  (ok (null? (argument-types method))
       "Query argument list of constant method")
   (ok (eqv? 42 ((jit ctx '() (const (make-native-function (make-native-method <int> '() jit-constant-fun))))))
       "Compile method call to function returning constant value"))

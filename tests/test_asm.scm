@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -338,19 +338,21 @@
     "NOP # no operation")
 (ok (eqv? i1 ((asm ctx <int> '() (list (MOV EAX i1) (NOP) (NOP) (RET)))))
     "Function with some NOP statements inside")
-(ok (equal? '(#x52) (PUSH EDX))
-    "PUSH EDX")
-(ok (equal? '(#x57) (PUSH EDI))
-    "PUSH EDI")
-(ok (equal? '(#x5a) (POP EDX))
-    "POP EDX")
-(ok (equal? '(#x5f) (POP EDI))
-    "POP EDI")
-(ok (eqv? i1 ((asm ctx <long> '() (list (MOV EDX i1) (PUSH EDX) (POP EAX) (RET)))))
-    "Use 32-bit PUSH and POP")
+(ok (equal? '(#x48 #x52) (PUSH RDX))
+    "PUSH RDX")
+(ok (equal? '(#x48 #x57) (PUSH RDI))
+    "PUSH RDI")
+(ok (equal? '(#x49 #x54) (PUSH R12))
+    "PUSH R12")
+(ok (equal? '(#x48 #x5a) (POP RDX))
+    "POP RDX")
+(ok (equal? '(#x48 #x5f) (POP RDI))
+    "POP RDI")
+(ok (equal? '(#x49 #x5c) (POP R12))
+    "POP R12")
 (ok (eqv? l1 ((asm ctx <long> '() (list (MOV RDX l1) (PUSH RDX) (POP RAX) (RET)))))
     "Use 64-bit PUSH and POP")
-(ok (eqv? w1 ((asm ctx <long> '() (list (MOV DX w1) (PUSH DX) (POP AX) (RET)))))
+(ok (eqv? w1 ((asm ctx <sint> '() (list (MOV DX w1) (PUSH DX) (POP AX) (RET)))))
     "Use 16-bit PUSH and POP")
 (ok (eqv? i1 ((asm ctx <int> '() (list (MOV RCX (idata)) (MOV EAX (ptr <int> RCX)) (RET)))))
     "Load integer from address in RCX")

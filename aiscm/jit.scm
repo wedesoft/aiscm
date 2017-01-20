@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -35,13 +35,19 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
   #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
-            substitute-variables variables get-args input output labels next-indices
-            initial-register-use find-available mark-used-till longest-use live-analysis
-            linear-scan linear-scan-allocate adjust-stack-pointer
-            callee-saved save-registers load-registers blocked repeat mov-signed mov-unsigned
-            stack-pointer fix-stack-position position-stack-frame
-            spill-variable save-and-use-registers register-allocate spill-blocked-predefines
-            virtual-variables flatten-code relabel idle-live fetch-parameters spill-parameters
+            substitute-variables variables get-args input output get-ptr-args labels next-indices
+            initial-register-use find-available-register mark-used-till spill-candidate ignore-spilled-variables
+            ignore-blocked-registers live-analysis
+            unallocated-variables register-allocations assign-spill-locations add-spill-information
+            blocked-predefined move-blocked-predefined non-blocked-predefined
+            first-argument replace-variables adjust-stack-pointer default-registers
+            register-parameters stack-parameters
+            register-parameter-locations stack-parameter-locations parameter-locations
+            need-to-copy-first move-variable-content update-parameter-locations
+            place-result-variable used-callee-saved backup-registers add-stack-parameter-information
+            number-spilled-variables temporary-variables unit-intervals temporary-registers
+            sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
+            blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step setup increment body arguments operand insert-intermediate
@@ -74,6 +80,10 @@
 (define-method (write (self <cmd>) port)
   (write (cons (generic-function-name (get-op self)) (get-args self)) port))
 (define-method (equal? (a <cmd>) (b <cmd>)) (equal? (object-slots a) (object-slots b)))
+
+(define (get-ptr-args cmd)
+  "get variables used as a pointer in a command"
+  (filter (cut is-a? <> <var>) (append-map get-args (filter (cut is-a? <> <ptr>) (get-args cmd)))))
 
 (define-syntax-rule (mutating-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -145,7 +155,8 @@
 (define-class <var> ()
   (type   #:init-keyword #:type   #:getter typecode)
   (symbol #:init-keyword #:symbol #:init-form (gensym)))
-(define-method (write (self <var>) port) (write (slot-ref self 'symbol) port))
+(define-method (write (self <var>) port)
+  (format port "~a:~a" (symbol->string (slot-ref self 'symbol)) (class-name (slot-ref self 'type))))
 (define-method (size-of (self <var>)) (size-of (typecode self)))
 (define-class <ptr> ()
   (type #:init-keyword #:type #:getter typecode)
@@ -165,8 +176,9 @@
 (define-method (substitute-variables self alist) self)
 
 (define-method (substitute-variables (self <var>) alist)
+  "replace variable with associated value if there is one"
   (let [(target (assq-ref alist self))]
-    (if (is-a? target <register>)
+    (if (or (is-a? target <register>) (is-a? target <address>))
       (to-type (typecode self) target)
       (or target self))))
 (define-method (substitute-variables (self <ptr>) alist)
@@ -196,21 +208,34 @@
   "Get positions of labels in program"
   (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 
-(define (initial-register-use lst)
+(define (initial-register-use registers)
   "Initially all registers are available from index zero on"
-  (map (cut cons <> 0) lst))
+  (map (cut cons <> 0) registers))
 
-(define (find-available availability first-index)
-  "Find element available from the specified first program index onwards"
+(define (sort-live-intervals live-intervals predefined-variables)
+  "Sort live intervals predefined variables first and then lexically by start point and length of interval"
+  (sort-by live-intervals
+           (lambda (live) (if (memv (car live) predefined-variables) -1 (- (cadr live) (/ 1 (+ 2 (cddr live))))))))
+
+(define (find-available-register availability first-index)
+  "Find register available from the specified first program index onwards"
   (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
 
 (define (mark-used-till availability element last-index)
   "Mark element in use up to specified index"
   (assq-set availability element (1+ last-index)))
 
-(define (longest-use availability)
-  "Select register blocking for the longest time as a spill candidate"
-  (car (argmax cdr availability)))
+(define (spill-candidate variable-use)
+  "Select variable blocking for the longest time as a spill candidate"
+  (car (argmax cdr variable-use)))
+
+(define (ignore-spilled-variables variable-use allocation)
+  "Remove spilled variables from the variable use list"
+  (filter (compose (lambda (var) (cdr (or (assq var allocation) (cons var #t)))) car) variable-use))
+
+(define (ignore-blocked-registers availability interval blocked)
+  "Remove blocked registers from the availability list"
+  (apply assq-remove availability ((overlap-interval blocked) interval)))
 
 (define-method (next-indices labels cmd k)
   "Determine next program indices for a statement"
@@ -235,77 +260,216 @@
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
 
-(define (linear-allocate live-intervals register-use variable-use . result)
-  "Recursively perform one-pass register allocation"
-  (if (null? live-intervals)
-      result
-      (let* [(candidate    (car live-intervals))
-             (variable     (car candidate))
-             (interval     (cdr candidate))
-             (first-index  (car interval))
-             (last-index   (cdr interval))
-             (variable-use (mark-used-till variable-use variable last-index))
-             (register     (find-available register-use first-index))
-             (recursion    (lambda (result register)
-                             (apply linear-allocate
-                                     (cdr live-intervals)
-                                     (mark-used-till register-use register last-index)
-                                     variable-use
-                                     (assq-set result variable register))))]
-        (if register
-          (recursion result register)
-          (let* [(spill-candidate (longest-use variable-use))
-                 (register        (assq-ref result spill-candidate))]
-            (recursion (assq-set result spill-candidate #f) register))))))
+(define (unallocated-variables allocation)
+   "Return a list of unallocated variables"
+   (map car (filter (compose not cdr) allocation)))
 
-(define (linear-scan live-intervals registers)
+(define (register-allocations allocation)
+   "Return a list of variables with register allocated"
+   (filter cdr allocation))
+
+(define (assign-spill-locations variables offset increment)
+  "Assign spill locations to a list of variables"
+  (map (lambda (variable index) (cons variable (ptr <long> RSP index)))
+       variables
+       (iota (length variables) offset increment)))
+
+(define (add-spill-information allocation offset increment)
+  "Allocate spill locations for spilled variables"
+  (append (register-allocations allocation)
+          (assign-spill-locations (unallocated-variables allocation) offset increment)))
+
+(define (blocked-predefined predefined intervals blocked)
+  "Get blocked predefined registers"
+  (filter
+    (lambda (pair)
+      (let [(variable (car pair))
+            (register (cdr pair))]
+        (and (assq-ref intervals variable)
+             (memv register ((overlap-interval blocked) (assq-ref intervals variable))))))
+    predefined))
+
+(define (move-blocked-predefined blocked-predefined)
+  "Generate code for blocked predefined variables"
+  (map (compose MOV car+cdr) blocked-predefined))
+
+(define (non-blocked-predefined predefined blocked-predefined)
+  "Compute the set difference of the predefined variables and the variables with blocked registers"
+  (difference predefined blocked-predefined))
+
+(define (linear-scan-coloring live-intervals registers predefined blocked)
   "Linear scan register allocation based on live intervals"
-  (linear-allocate (sort-by live-intervals cadr)
+  (define (linear-allocate live-intervals register-use variable-use allocation)
+    (if (null? live-intervals)
+        allocation
+        (let* [(candidate    (car live-intervals))
+               (variable     (car candidate))
+               (interval     (cdr candidate))
+               (first-index  (car interval))
+               (last-index   (cdr interval))
+               (variable-use (mark-used-till variable-use variable last-index))
+               (availability (ignore-blocked-registers register-use interval blocked))
+               (register     (or (assq-ref predefined variable)
+                                 (find-available-register availability first-index)))
+               (recursion    (lambda (allocation register)
+                               (linear-allocate (cdr live-intervals)
+                                                (mark-used-till register-use register last-index)
+                                                variable-use
+                                                (assq-set allocation variable register))))]
+          (if register
+            (recursion allocation register)
+            (let* [(spill-targets (ignore-spilled-variables variable-use allocation))
+                   (target        (spill-candidate spill-targets))
+                   (register      (assq-ref allocation target))]
+              (recursion (assq-set allocation target #f) register))))))
+  (linear-allocate (sort-live-intervals live-intervals (map car predefined))
                    (initial-register-use registers)
+                   '()
                    '()))
+
+(define-method (first-argument self)
+   "Return false for compiled instructions"
+   #f)
+(define-method (first-argument (self <cmd>))
+   "Get first argument of machine instruction"
+   (car (get-args self)))
+
+(define (replace-variables allocation cmd temporary)
+  "Replace variables with registers and add spill code if necessary"
+  (let* [(location         (cut assq-ref allocation <>))
+         (primary-argument (first-argument cmd))
+         (primary-location (location primary-argument))]
+    ; cases requiring more than one temporary variable are not handled at the moment
+    (if (is-a? primary-location <address>)
+      (let [(register (to-type (typecode primary-argument) temporary))]
+        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
+                 (substitute-variables cmd (assq-set allocation primary-argument temporary))
+                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
+      (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
+        ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
+        (attach (map (compose (cut MOV temporary <>) location) spilled-pointer)
+                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointer)))))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
-(define (linear-scan-allocate prog)
-  "Linear scan register allocation for a given program"
-  (let* [(live         (live-analysis prog '())); TODO: specify return values here
-         (all-vars     (variables prog))
-         (intervals    (live-intervals live all-vars))
-         (substitution (linear-scan intervals default-registers))]
-    (adjust-stack-pointer 8 (substitute-variables prog substitution))))
+(define (number-spilled-variables allocation stack-parameters)
+  "Count the number of spilled variables"
+  (length (difference (unallocated-variables allocation) stack-parameters)))
 
-; stack pointer placeholder
-(define stack-pointer (make <var> #:type <long> #:symbol 'stack-pointer))
-; methods to replace stack pointer placeholder with RSP + offset
-(define-method (fix-stack-position self offset) self)
-(define-method (fix-stack-position (self <cmd>) offset)
-  (apply (get-op self) (map (cut fix-stack-position <> offset) (get-args self))))
-(define-method (fix-stack-position (self <ptr>) offset)
-  (if (equal? stack-pointer (car (get-args self)))
-    (apply ptr (list (typecode self) RSP (- (cadr (get-args self)) offset)))
-    self))
-(define-method (fix-stack-position (self <list>) offset) (map (cut fix-stack-position <> offset) self))
+(define (temporary-variables prog)
+  "Allocate temporary variable for each instruction which has a variable as first argument"
+  (map (lambda (cmd) (let [(arg (first-argument cmd))]
+         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
+             (and (is-a? arg <var>) (var (typecode arg))))))
+       prog))
 
-(define (position-stack-frame prog offset)
-  (append (list (SUB RSP (- offset)))
-          (all-but-last (fix-stack-position prog offset))
-          (list (ADD RSP (- offset)) (RET))))
+(define (unit-intervals vars)
+  "Generate intervals of length one for each temporary variable"
+  (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
+
+(define (temporary-registers allocation variables)
+  "Look up register for each temporary variable given the result of a register allocation"
+  (map (cut assq-ref allocation <>) variables))
+
+(define (register-parameter-locations parameters)
+  "Create an association list with the initial parameter locations"
+  (map cons parameters (list RDI RSI RDX RCX R8 R9)))
+
+(define (stack-parameter-locations parameters offset)
+  "Determine initial locations of stack parameters"
+  (map (lambda (parameter index) (cons parameter (ptr <long> RSP index)))
+       parameters
+       (iota (length parameters) (+ 8 offset) 8)))
+
+(define (parameter-locations parameters offset)
+  "return association list with default locations for the method parameters"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (register-parameter-locations register-parameters)
+            (stack-parameter-locations stack-parameters offset))))
+
+(define (add-stack-parameter-information allocation stack-parameter-locations)
+   "Add the stack location for stack parameters which do not have a register allocated"
+   (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
+        (map car allocation)
+        (map cdr allocation)))
+
+(define (need-to-copy-first initial targets a b)
+  "Check whether parameter A needs to be copied before B given INITIAL and TARGETS locations"
+  (eq? (assq-ref initial a) (assq-ref targets b)))
+
+(define (move-variable-content variable source destination)
+  "move VARIABLE content from SOURCE to DESTINATION unless source and destination are the same"
+  (let [(adapt (cut to-type (typecode variable) <>))]
+    (if (or (not destination) (equal? source destination)) '() (MOV (adapt destination) (adapt source)))))
+
+(define (update-parameter-locations parameters locations offset)
+  "Generate the required code to update the parameter locations according to the register allocation"
+  (let* [(initial            (parameter-locations parameters offset))
+         (ordered-parameters (partial-sort parameters (cut need-to-copy-first initial locations <...>)))]
+    (filter (compose not null?)
+      (map (lambda (parameter)
+             (move-variable-content parameter
+                                    (assq-ref initial parameter)
+                                    (assq-ref locations parameter)))
+           ordered-parameters))))
+
+(define (place-result-variable results locations code)
+  "add code for placing result variable in register RAX if required"
+  (filter (compose not null?)
+          (attach (append (all-but-last code)
+                          (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
+                  (RET))))
 
 ; RSP is not included because it is used as a stack pointer
 ; RBP is not included because it may be used as a frame pointer
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 RBX R12 R13 R14 R15))
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 R12 R13 R14 R15 RBX RBP))
+(define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
-(define register-parameters (list RDI RSI RDX RCX R8 R9))
-(define (callee-saved registers)
-  (lset-intersection eq? (delete-duplicates registers) (list RBX RBP RSP R12 R13 R14 R15)))
-(define (save-registers registers offset)
-  (map (lambda (register offset) (MOV (ptr <long> stack-pointer offset) register))
-       registers (iota (length registers) offset -8)))
-(define (load-registers registers offset)
-  (map (lambda (register offset) (MOV register (ptr <long> stack-pointer offset)))
-       registers (iota (length registers) offset -8)))
+(define parameter-registers (list RDI RSI RDX RCX R8 R9))
+
+(define (used-callee-saved allocation)
+   "Return the list of callee saved registers in use"
+   (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
+
+(define (backup-registers registers code)
+  "Store register content on stack and restore it after executing the code"
+  (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
+
+(define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
+  "Linear scan register allocation for a given program"
+  (let* [(live                 (live-analysis prog results))
+         (temp-vars            (temporary-variables prog))
+         (intervals            (append (live-intervals live (variables prog))
+                                       (unit-intervals temp-vars)))
+         (predefined-registers (register-parameter-locations (register-parameters parameters)))
+         (parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
+         (remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
+         (stack-parameters     (stack-parameters parameters))
+         (colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
+         (callee-saved         (used-callee-saved colors))
+         (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
+         (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
+         (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
+         (allocation           (add-stack-parameter-information colors stack-locations))
+         (temporaries          (temporary-registers allocation temp-vars))
+         (locations            (add-spill-information allocation 8 8))]
+    (backup-registers callee-saved
+      (adjust-stack-pointer stack-offset
+        (place-result-variable results locations
+          (append (update-parameter-locations parameters locations parameter-offset)
+                  (append-map (cut replace-variables locations <...>) prog temporaries)))))))
+
+(define (register-parameters parameters)
+   "Return the parameters which are stored in registers according to the x86 ABI"
+   (take-up-to parameters 6))
+
+(define (stack-parameters parameters)
+   "Return the parameters which are stored on the stack according to the x86 ABI"
+   (drop-up-to parameters 6))
+
 (define (relabel prog)
   (let* [(labels       (filter symbol? prog))
          (replacements (map (compose gensym symbol->string) labels))
@@ -321,106 +485,12 @@
   (let [(instruction? (lambda (x) (and (list? x) (not (every integer? x)))))]
     (concatenate (map-if instruction? flatten-code list prog))))
 
-; replace target with a temporary variable and add instructions for fetching and storing it as required
-(define ((insert-temporary target) cmd)
-  (let [(temporary (var (typecode target)))]
-    (compact
-      (and (memv target (input cmd)) (MOV temporary target))
-      (substitute-variables cmd (list (cons target temporary)))
-      (and (memv target (output cmd)) (MOV target temporary)))))
-(define (spill-variable target location prog)
-  (substitute-variables (map (insert-temporary target) prog) (list (cons target location))))
-
-(define ((idle-live prog live) var)
-  (count (lambda (cmd active) (and (not (memv var (variables cmd))) (memv var active))) prog live))
-(define ((spill-parameters parameters) colors)
-  (filter-map (lambda (parameter register)
-    (let [(value (assq-ref colors parameter))]
-      (if (not (is-a? value <register>)) (MOV value (to-type (typecode parameter) register)) #f)))
-    parameters
-    register-parameters))
-(define ((fetch-parameters parameters) colors)
-  (filter-map (lambda (parameter offset)
-    (let [(value (assq-ref colors parameter))]
-      (if (is-a? value <register>) (MOV (to-type (typecode parameter) value) (ptr (typecode parameter) stack-pointer offset)) #f)))
-    parameters
-    (iota (length parameters) 8 8)))
-(define (save-and-use-registers prog colors parameters offset)
-  (let [(need-saving          (callee-saved (map cdr colors)))
-        (first-six-parameters (take-up-to parameters 6))
-        (remaining-parameters (drop-up-to parameters 6))]
-    (append (save-registers need-saving offset)
-            ((spill-parameters first-six-parameters) colors)
-            ((fetch-parameters remaining-parameters) colors)
-            (all-but-last (substitute-variables prog colors))
-            (load-registers need-saving offset)
-            (list (RET)))))
-
-(define (with-spilled-variable target location prog predefined blocked fun)
-  (let* [(spill-code (spill-variable target location prog))]
-    (fun (flatten-code spill-code)
-         (assq-set predefined target location)
-         (update-intervals blocked (index-groups spill-code)))))
-
-(define (with-register-allocation prog predefined blocked registers parameters offset fun)
-  (let* [(live       (live-analysis prog '()))
-         (all-vars   (delete stack-pointer (variables prog)))
-         (vars       (difference all-vars (map car predefined)))
-         (intervals  (live-intervals live all-vars))
-         (adjacent   (overlap intervals))
-         (colors     (color-intervals intervals vars registers #:predefined predefined #:blocked blocked))
-         (unassigned (find (compose not cdr) (reverse colors)))]
-    (if unassigned
-      (let* [(target       (argmax (idle-live prog live) (adjacent (car unassigned))))
-             (stack-param? (and (index-of target parameters) (>= (index-of target parameters) 6)))
-             (new-offset   (if stack-param? offset (- offset 8)))
-             (displacement (if stack-param? (* 8 (- (index-of target parameters) 5)) offset))
-             (location     (ptr (typecode target) stack-pointer displacement))]
-        (with-spilled-variable target location prog predefined blocked
-          (lambda (prog predefined blocked)
-            (with-register-allocation prog predefined blocked registers parameters new-offset fun))))
-      (fun prog colors parameters offset))))
-
-(define* (register-allocate prog #:key (predefined '())
-                                       (blocked '())
-                                       (registers default-registers)
-                                       (parameters '())
-                                       (offset -8))
-  (with-register-allocation prog predefined blocked registers parameters offset
-    (lambda (prog colors parameters offset)
-      (position-stack-frame (save-and-use-registers prog colors parameters offset) offset))))
-
-(define (blocked-predefined blocked predefined)
-  (find (lambda (x) (memv (cdr x) (map car blocked))) predefined))
-
-(define (spill-blocked-predefines prog . args)
-  (let-keywords args #f [(predefined '())
-                         (blocked '())
-                         (registers default-registers)
-                         (parameters '())
-                         (offset -8)]
-    (let [(conflict (blocked-predefined blocked predefined))]
-      (if conflict
-        (let* [(target   (car conflict))
-               (location (ptr (typecode target) stack-pointer offset))]
-        (with-spilled-variable target location prog predefined blocked
-          (lambda (prog predefined blocked)
-            (spill-blocked-predefines prog
-                                      #:predefined predefined
-                                      #:blocked    blocked
-                                      #:registers  registers
-                                      #:parameters parameters
-                                      #:offset     (- offset 8)))))
-      (apply register-allocate (cons prog args))))))
-
-(define* (virtual-variables result-vars arg-vars instructions #:key (registers default-registers))
-  (let* [(result-regs  (map cons result-vars (list RAX)))
-         (arg-regs     (map cons arg-vars register-parameters))]
-    (spill-blocked-predefines (flatten-code (relabel (filter-blocks instructions)))
-                              #:predefined (append result-regs arg-regs)
-                              #:blocked    (blocked-intervals instructions)
-                              #:registers  registers
-                              #:parameters arg-vars)))
+(define* (virtual-variables results parameters instructions #:key (registers default-registers))
+  (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))
+                        #:registers registers
+                        #:parameters parameters
+                        #:results results
+                        #:blocked (blocked-intervals instructions)))
 
 (define (repeat n . body)
   (let [(i (var (typecode n)))]
@@ -659,7 +729,8 @@
 (define (operation-code target op out args)
   "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
-    (lambda intermediates (apply op (operand out) (map operand intermediates)))))
+    (lambda intermediates
+      (apply op (operand out) (map operand intermediates)))))
 (define ((functional-code op) out args)
   "Adapter for machine code without side effects on its arguments"
   (operation-code (reduce coerce #f (map type args)) op out args))
@@ -910,7 +981,7 @@
         (remaining-parameters (drop-up-to parameters 6))]
     (append (map (lambda (register parameter)
                    (MOV (to-type (native-equivalent (type parameter)) register) (get (delegate parameter))))
-                 register-parameters
+                 parameter-registers
                  first-six-parameters)
             (map (lambda (parameter) (PUSH (get (delegate parameter)))) remaining-parameters)
             (list body ...)

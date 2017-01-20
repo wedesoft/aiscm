@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -207,7 +207,7 @@
       (c (parameter <ubyte>))
       (r (parameter <long>))]
   (skip (equal? (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
-              (register-allocate (flatten-code (attach ((term (+ a b c)) r) (RET)))))
+              (linear-scan-allocate (flatten-code (attach ((term (+ a b c)) r) (RET)))))
       "Coerce to output value when using multiple mutating operations"))
 (ok (equal? 9 ((jit ctx (list <int> <int> <int>) +) 2 3 4))
     "Compiling and run plus operation with three numbers")
@@ -259,8 +259,8 @@
 (let [(r (parameter <ubyte>))
       (a (parameter <ubyte>))
       (b (parameter <ubyte>))]
-  (ok (equal? (list (SUB RSP 8) (MOV DL CL) (CMP DL AL) (JNBE #x2) (MOV DL AL) (ADD RSP 8) (RET))
-              (resolve-jumps (register-allocate (attach (flatten-code ((term (max a b)) r)) (RET)))))
+  (ok (equal? (list (SUB RSP 8) (MOV DL AL) (CMP DL SIL) (JNBE #x3) (MOV DL SIL) (ADD RSP 8) (RET))
+              (resolve-jumps (linear-scan-allocate (attach (flatten-code ((term (max a b)) r)) (RET)))))
       "handle lack of support for 8-bit conditional move"))
 (ok (equal? -1 ((jit ctx (list <byte> <byte>) min) -1 1))
     "get minor number of signed bytes")
