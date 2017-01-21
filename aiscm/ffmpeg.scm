@@ -47,24 +47,29 @@
         (cons AV_SAMPLE_FMT_FLTP <float> )
         (cons AV_SAMPLE_FMT_DBLP <double>)))
 
-(define (open-input file-name)
+(define (open-ffmpeg-input file-name)
+  "Open audio/video FILE-NAME using FFmpeg library"
   (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
-(define (open-ffmpeg-input file-name) (open-input file-name))
 
-(define-method (shape (self <ffmpeg>)) (ffmpeg-shape (slot-ref self 'ffmpeg)))
-(define (frame-rate self) (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
+(define-method (shape (self <ffmpeg>))
+  "Get two-dimensional shape of video frames"
+  (ffmpeg-shape (slot-ref self 'ffmpeg)))
+
+(define (frame-rate self)
+  "Query (average) frame rate of video"
+  (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
 
 (define (import-audio-frame self lst)
+  "Compose audio frame from timestamp, type, shape, data pointer, and size"
   (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
         (array-type (lambda (type) (multiarray (assq-ref audio-types type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
-             (cons
-               pts
-               (array (array-type type) shape (memory data size))))
+                   (cons pts (array (array-type type) shape (memory data size))))
            lst)))
 
 (define (import-video-frame self lst)
+  "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
   (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
     (apply (lambda (pts format shape offsets pitches data size)
              (cons
@@ -78,10 +83,12 @@
                        #:mem     (memory data size)))))
            lst)))
 
-(define (ffmpeg-buffer-push self slot pts-and-frame)
-  (slot-set! self slot (attach (slot-ref self slot) pts-and-frame)) #t)
+(define (ffmpeg-buffer-push self buffer pts-and-frame)
+  "Store frame and time stamp in the specified buffer"
+  (slot-set! self buffer (attach (slot-ref self buffer) pts-and-frame)) #t)
 
 (define (ffmpeg-buffer-pop self buffer clock)
+  "Retrieve frame and timestamp from the specified buffer"
   (let [(lst (slot-ref self buffer))]
     (and
       (not (null? lst))
@@ -91,6 +98,7 @@
         (cdar lst)))))
 
 (define (buffer-audio/video self)
+  "Decode and buffer audio/video frames"
   (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
     (if lst
        (case (car lst)
@@ -99,16 +107,27 @@
        #f)))
 
 (define-method (read-audio (self <ffmpeg>))
+  "Retrieve the next audio frame"
   (or (ffmpeg-buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
+
 (define-method (read-image (self <ffmpeg>))
+  "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
 (define (pts= self position)
+  "Set audio/video position (in seconds)"
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)
   (ffmpeg-flush (slot-ref self 'ffmpeg))
   position)
 
-(define-method (channels (self <ffmpeg>)) (ffmpeg-channels (slot-ref self 'ffmpeg)))
-(define-method (rate (self <ffmpeg>)) (ffmpeg-rate (slot-ref self 'ffmpeg)))
+(define-method (channels (self <ffmpeg>))
+  "Query number of audio channels"
+  (ffmpeg-channels (slot-ref self 'ffmpeg)))
+
+(define-method (rate (self <ffmpeg>))
+  "Get audio sampling rate of file"
+  (ffmpeg-rate (slot-ref self 'ffmpeg)))
+
 (define-method (typecode (self <ffmpeg>))
+  "Query audio type of file"
   (assq-ref audio-types (ffmpeg-typecode (slot-ref self 'ffmpeg))))
