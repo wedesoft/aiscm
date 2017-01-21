@@ -30,6 +30,7 @@
             ffmpeg-buffer-push ffmpeg-buffer-pop)
   #:re-export (read-image read-audio rate channels typecode))
 
+
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
@@ -38,14 +39,13 @@
                (video-buffer #:init-value '())
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
-(define audio-formats
-  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
-        (cons <sint>   AV_SAMPLE_FMT_S16P)
-        (cons <int>    AV_SAMPLE_FMT_S32P)
-        (cons <float>  AV_SAMPLE_FMT_FLTP)
-        (cons <double> AV_SAMPLE_FMT_DBLP)))
-(define audio-types (alist-invert audio-formats))
-(define (audio-format->type fmt) (assq-ref audio-types fmt))
+
+(define audio-types
+  (list (cons AV_SAMPLE_FMT_U8P  <ubyte> )
+        (cons AV_SAMPLE_FMT_S16P <sint>  )
+        (cons AV_SAMPLE_FMT_S32P <int>   )
+        (cons AV_SAMPLE_FMT_FLTP <float> )
+        (cons AV_SAMPLE_FMT_DBLP <double>)))
 
 (define (open-input file-name)
   (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
@@ -56,7 +56,7 @@
 
 (define (import-audio-frame self lst)
   (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-        (array-type (lambda (type) (multiarray (audio-format->type type) 2)))
+        (array-type (lambda (type) (multiarray (assq-ref audio-types type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
              (cons
@@ -111,4 +111,4 @@
 (define-method (channels (self <ffmpeg>)) (ffmpeg-channels (slot-ref self 'ffmpeg)))
 (define-method (rate (self <ffmpeg>)) (ffmpeg-rate (slot-ref self 'ffmpeg)))
 (define-method (typecode (self <ffmpeg>))
-  (audio-format->type (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+  (assq-ref audio-types (ffmpeg-typecode (slot-ref self 'ffmpeg))))

@@ -24,7 +24,6 @@
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
-* fix lintian issues: https://mentors.debian.net/package/aiscm
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
