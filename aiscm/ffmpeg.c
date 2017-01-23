@@ -145,7 +145,7 @@ static AVCodecContext *open_codec(SCM scm_self, struct ffmpeg_t *self, SCM scm_f
   return dec_ctx;
 }
 
-SCM open_ffmpeg(SCM scm_file_name, SCM scm_debug)
+SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
 {
   SCM retval;
   struct ffmpeg_t *self;
@@ -159,13 +159,13 @@ SCM open_ffmpeg(SCM scm_file_name, SCM scm_debug)
   err = avformat_open_input(&self->fmt_ctx, file_name, NULL, NULL);
   if (err < 0) {
     ffmpeg_destroy(retval);
-    scm_misc_error("open-ffmpeg", "Error opening file '~a': ~a", scm_list_2(scm_file_name, get_error_text(err)));
+    scm_misc_error("make-ffmpeg-input", "Error opening file '~a': ~a", scm_list_2(scm_file_name, get_error_text(err)));
   };
 
   err = avformat_find_stream_info(self->fmt_ctx, NULL);
   if (err < 0) {
     ffmpeg_destroy(retval);
-    scm_misc_error("open-ffmpeg", "No stream information in file '~a': ~a", scm_list_2(scm_file_name, get_error_text(err)));
+    scm_misc_error("make-ffmpeg-input", "No stream information in file '~a': ~a", scm_list_2(scm_file_name, get_error_text(err)));
   };
 
   // TODO: only open desired streams
@@ -378,7 +378,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_S32P",scm_from_int(AV_SAMPLE_FMT_S32P));
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
-  scm_c_define_gsubr("open-ffmpeg", 2, 0, 0, open_ffmpeg);
+  scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
