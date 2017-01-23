@@ -27,6 +27,9 @@
              (guile-tap))
 (load-extension "libguile-aiscm-tests" "init_tests")
 
+(define output-file (tmpnam))
+(define output-video (open-ffmpeg-output output-file))
+
 (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
 (define audio-stereo (open-ffmpeg-input "fixtures/test.mp3"))

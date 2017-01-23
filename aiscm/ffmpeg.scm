@@ -26,7 +26,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input frame-rate video-pts audio-pts pts=
+  #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             ffmpeg-buffer-push ffmpeg-buffer-pop)
   #:re-export (read-image read-audio rate channels typecode))
 
@@ -48,8 +48,12 @@
         (cons AV_SAMPLE_FMT_DBLP <double>)))
 
 (define (open-ffmpeg-input file-name)
-  "Open audio/video FILE-NAME using FFmpeg library"
+  "Open audio/video input file FILE-NAME using FFmpeg library"
   (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
+
+(define (open-ffmpeg-output file-name)
+  "Open audio/video output file FILE-NAME using FFmpeg library"
+  0)
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
