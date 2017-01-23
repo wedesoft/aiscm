@@ -150,7 +150,7 @@
     "copy with zero extension")
 (ok (equal? (MOV CL SIL) (mov-unsigned CL ESI))
     "copy part of unsigned value")
-(ok (equal? (MOV RAX RCX) (mov-unsigned RAX ECX)); TODO: map to MOV EAX ECX
+(ok (equal? (MOV EAX ECX) (mov-unsigned RAX ECX)); TODO: map to MOV EAX ECX
     "zero-extending 32-bit value is done by default")
 (ok (equal? '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
     "'labels' should extract indices of labels")
@@ -757,7 +757,7 @@
   (ok (equal? (list (list (get out)) (list (get in)) (list (list (mov-signed (get out) (get in))) (RET)))
               (assemble (list out) (list in) (code out in)))
       "generate code for identity function"))
-(ok (equal? (list (SUB RSP 8) (MOV RAX RCX) (ADD RSP 8) (RET))
+(ok (equal? (list (SUB RSP 8) (MOV EAX ECX) (ADD RSP 8) (RET))
             (linear-scan-allocate (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
     "Use default zero-extension for 32-bit numbers")
 (ok (eqv? 42 ((jit ctx (list <int>) identity) 42))
