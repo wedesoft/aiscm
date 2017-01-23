@@ -95,14 +95,15 @@
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
 (define (mov-part a b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
+(define (movzx32 a b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
 (define (mov-cmd movxx movxx32 a b)
   (cond
         ((eqv? (size-of a) (size-of b)) MOV)
         ((<    (size-of a) (size-of b)) mov-part)
         ((eqv? (size-of b) 4)           movxx32)
         (else                           movxx)))
-(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX a b) a b))
-(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX MOV   a b) a b))
+(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX   a b) a b))
+(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX movzx32 a b) a b))
 (define (mov a b)
   (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
 

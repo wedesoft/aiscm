@@ -1,6 +1,5 @@
 ## Ready
 
-* (+ (seq (rgb (integer 32 unsigned)) (rgb 1 2 3)) (seq (integer 16 signed) 0))
 * ffmpeg output (writing videos)
 * tensor sum
 * fast live analysis
