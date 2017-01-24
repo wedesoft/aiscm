@@ -199,7 +199,7 @@ SCM make_ffmpeg_output(SCM scm_file_name)
   SCM_NEWSMOB(retval, ffmpeg_tag, self);
 
   int err;
-  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, NULL, file_name); // TODO: select container
+  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, "mpeg", file_name); // TODO: audodetect or select container
   if (err < 0) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error creating output context for file '~a': ~a",
@@ -209,6 +209,7 @@ SCM make_ffmpeg_output(SCM scm_file_name)
   AVCodec *codec = avcodec_find_encoder(self->fmt_ctx->oformat->video_codec);
   if (!codec) {
     ffmpeg_destroy(retval);
+    // TODO: check avcodec_get_name is supported
     scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
                    scm_list_1(scm_from_locale_string(avcodec_get_name(self->fmt_ctx->oformat->video_codec))));
   }
