@@ -90,6 +90,8 @@
     "'open-ffmpeg-output' creates an FFmpeg object")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
+(ok (equal? '(16 2) (shape output-video))
+    "Check frame size of output video")
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
 (ok (throws? (shape audio-mono))

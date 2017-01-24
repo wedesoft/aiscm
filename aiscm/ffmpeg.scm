@@ -53,7 +53,7 @@
 
 (define (open-ffmpeg-output file-name)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (make <ffmpeg> #:ffmpeg 'dummy))
+  (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name)))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"

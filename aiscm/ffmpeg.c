@@ -188,6 +188,43 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
+SCM make_ffmpeg_output(SCM scm_file_name)
+{
+  SCM retval;
+  struct ffmpeg_t *self;
+  const char *file_name = scm_to_locale_string(scm_file_name);
+  self = (struct ffmpeg_t *)scm_gc_calloc(sizeof(struct ffmpeg_t), "ffmpeg");
+  self->video_stream_idx = -1;
+  self->audio_stream_idx = -1;
+  SCM_NEWSMOB(retval, ffmpeg_tag, self);
+
+  int err;
+  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, NULL, file_name); // TODO: select container
+  if (err < 0) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error creating output context for file '~a': ~a",
+                   scm_list_2(scm_file_name, get_error_text(err)));
+  };
+
+  AVCodec *codec = avcodec_find_encoder(self->fmt_ctx->oformat->video_codec);
+  if (!codec) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
+                   scm_list_1(scm_from_locale_string(avcodec_get_name(self->fmt_ctx->oformat->video_codec))));
+  }
+
+  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, codec); // TODO: does this need a corresponding destructor call?
+  if (!video_stream) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
+                   scm_list_1(scm_file_name));
+  };
+  video_stream->id = self->fmt_ctx->nb_streams - 1;
+  AVCodecContext *video_enc_ctx = video_stream->codec;
+
+  return retval;
+}
+
 SCM ffmpeg_shape(SCM scm_self)
 {
   AVCodecContext *ctx = video_dec_ctx(get_self(scm_self));
@@ -379,6 +416,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
+  scm_c_define_gsubr("make-ffmpeg-output", 1, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);

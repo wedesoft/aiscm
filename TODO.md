@@ -1,6 +1,7 @@
 ## Ready
 
 * ffmpeg output (writing videos)
+  select format, select codecs, audio/video, audio only, video only
 * tensor sum
 * fast live analysis
 * parameter passing for sequences, map, tensor operations, replace fill and other?
