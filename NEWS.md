@@ -1,10 +1,15 @@
-# aiscm (0.10.1-1)
+# aiscm (0.10.2)
+
+* aiscm/jit.scm: Bugfix for zero-expanding 32-bit integer
+
+
+# aiscm (0.10.1)
 
 * aiscm/jit.scm: switch to faster linear scan register allocator
 * install CSS style sheets and some icons with HTML documentation
 
 
-# aiscm (0.9.2-1)
+# aiscm (0.9.2)
 
 * test/test_ffmpeg.scm: extract pixel value earlier in test
 * aiscm/jit.scm: compile code to allocate return values
@@ -12,32 +17,32 @@
 * working on tensor expressions
 
 
-# aiscm (0.9.1-1)
+# aiscm (0.9.1)
 
 * aiscm/jit.scm: compile code to allocate return values
 * support for native constants
 * working on tensor expressions
 
 
-# aiscm (0.8.3-1)
+# aiscm (0.8.3)
 
 * object rgb and object complex values
 * refactored native method calls
 * improved docker build
 
 
-# aiscm (0.8.2-1)
+# aiscm (0.8.2)
 
 * temporarily match floating point numbers to objects
 
 
-# aiscm (0.8.1-1)
+# aiscm (0.8.1)
 
 * refactored type conversions
 * type conversions of method arguments
 
 
-# aiscm (0.7.1-1)
+# aiscm (0.7.1)
 
 * doc/installation.md: updated installation documentation
 * aiscm/aiscm.xpm: added installation documentation
@@ -48,24 +53,24 @@
 * renamed "match" to "native-type"
 
 
-# aiscm (0.6.2-2)
+# aiscm (0.6.2)
 
 * Make releases for different distros
 
 
-# aiscm (0.6.2-1)
+# aiscm (0.6.2)
 
 * fix package dependencies (do not use aliases)
 
 
-# aiscm (0.6.1-1)
+# aiscm (0.6.1)
 
 * Pulse audio input and output using asynchronous API
 * ring buffer for first-in first-out (FIFO) buffering of data
 * improved documentation
 
 
-# aiscm (0.5.1-1)
+# aiscm (0.5.1)
 
 * aiscm/ffmpeg.scm: reading video/audio files using FFmpeg
 * aiscm/pulse.c: initialise "error" integer to PA_OK
@@ -76,20 +81,20 @@
 * updated documentation
 
 
-# aiscm (0.4.2-1)
+# aiscm (0.4.2)
 
 * compose RGB and complex values from arrays
 * added some documentation
 * aiscm/jit.scm: refactored dispatching code
 
 
-# aiscm (0.4.1-1)
+# aiscm (0.4.1)
 
 * refactored jit compiler
 * aiscm/jit.scm: tensor implementation (WIP)
 
 
-# aiscm (0.3.1-1)
+# aiscm (0.3.1)
 
 * aiscm/asm.scm: support for CMOVcc
 * aiscm/jit.scm: major and minor number, =0, !=0, &&, ||
@@ -99,7 +104,7 @@
 * n-ary operations &&, ||
 
 
-# aiscm (0.2.3-1)
+# aiscm (0.2.3)
 
 * aiscm/jit.scm: refactored code
 * aiscm/asm.scm: support for AH, CH, DH, and BH
@@ -109,7 +114,7 @@
 * RGB operations
 
 
-# aiscm (0.2.2-1)
+# aiscm (0.2.2)
 
 * aiscm/xorg.scm: convert array to image before displaying
 * aiscm/rgb.scm: support for RGB values
@@ -117,7 +122,7 @@
 * changed garbage collector settings for benchmark
 
 
-# aiscm (0.2.1-1)
+# aiscm (0.2.1)
 
 * aiscm/jit.scm: code fragments
 * aiscm/op.scm: array operators based on code fragments
@@ -126,7 +131,7 @@
 * boolean operations
 
 
-# aiscm (0.1.8-1)
+# aiscm (0.1.8)
 
 * IDIV and DIV using blocked registers
 * Shortcuts 'seq' and 'arr'
@@ -134,12 +139,12 @@
 * Added benchmark
 
 
-# aiscm (0.1.7-1)
+# aiscm (0.1.7)
 
 * Packaging new version
 
 
-# aiscm (0.1.6-2)
+# aiscm (0.1.6)
 
 * Initial release.
 * Updated dependencies.
