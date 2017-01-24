@@ -28,7 +28,7 @@
 (load-extension "libguile-aiscm-tests" "init_tests")
 
 (define output-file (tmpnam))
-(define output-video (open-ffmpeg-output output-file))
+(define output-video (open-ffmpeg-output output-file #:shape '(16 2) #:frame-rate (/ 25 2)))
 
 (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -101,7 +101,9 @@
 (ok (is-a? video-frame <image>)
     "Check that video frame is an image object")
 (ok (eqv? 25 (frame-rate input-video))
-    "Get frame rate of video")
+    "Get frame rate of input video")
+(ok (eqv? (/ 25 2) (frame-rate output-video))
+    "Get frame rate of output video")
 (ok (throws? (frame-rate audio-mono))
     "Audio file does not have a frame rate")
 (ok (not (cadr (list (read-image image) (read-image image))))

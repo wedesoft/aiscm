@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm ffmpeg)
+  #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
@@ -51,9 +52,10 @@
   "Open audio/video input file FILE-NAME using FFmpeg library"
   (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name (equal? "YES" (getenv "DEBUG")))))
 
-(define (open-ffmpeg-output file-name)
+(define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name)))
+  (let-keywords initargs #f (shape frame-rate)
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name shape frame-rate))))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
