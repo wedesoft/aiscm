@@ -1,6 +1,7 @@
 ## Ready
 
 * ffmpeg output (writing videos)
+* use -module -shared -avoid-version
 * tensor sum
 * fast live analysis
 * parameter passing for sequences, map, tensor operations, replace fill and other?
