@@ -28,7 +28,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            ffmpeg-buffer-push ffmpeg-buffer-pop)
+            video-bit-rate ffmpeg-buffer-push ffmpeg-buffer-pop)
   #:re-export (read-image read-audio rate channels typecode))
 
 
@@ -54,8 +54,8 @@
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (let-keywords initargs #f (shape frame-rate)
-    (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name shape frame-rate))))
+  (let-keywords initargs #f (shape frame-rate video-bit-rate)
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name shape frame-rate video-bit-rate))))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
@@ -64,6 +64,10 @@
 (define (frame-rate self)
   "Query (average) frame rate of video"
   (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
+
+(define (video-bit-rate self)
+  "Query bit rate of video stream"
+  (ffmpeg-video-bit-rate (slot-ref self 'ffmpeg)))
 
 (define (import-audio-frame self lst)
   "Compose audio frame from timestamp, type, shape, data pointer, and size"

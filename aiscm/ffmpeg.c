@@ -188,7 +188,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
-SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate)
+SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM scm_video_bit_rate)
 {
   SCM retval;
   struct ffmpeg_t *self;
@@ -220,18 +220,32 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate)
     scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
                    scm_list_1(scm_file_name));
   };
-  int video_stream_id  =self->fmt_ctx->nb_streams - 1;
-  video_stream->id = video_stream_id;
-  self->video_stream_idx = video_stream_id;
+
+  // Set stream number
+  video_stream->id = self->fmt_ctx->nb_streams - 1;
+  self->video_stream_idx = video_stream->id;
+
+  // Get codec context
   self->video_codec_ctx = video_stream->codec;
 
+  // Set encoder bit rate
+  self->video_codec_ctx->bit_rate = scm_to_int(scm_video_bit_rate);
+
+  // Set video frame width and height
   self->video_codec_ctx->width = scm_to_int(scm_car(scm_shape));
   self->video_codec_ctx->height = scm_to_int(scm_cadr(scm_shape));
 
+  // Set pixel format
+  self->video_codec_ctx->pix_fmt = PIX_FMT_YUV420P;
+
+  // Set video frame rate
   video_stream->avg_frame_rate = av_make_q(scm_to_int(scm_numerator(scm_frame_rate)),
                                            scm_to_int(scm_denominator(scm_frame_rate)));
   video_stream->time_base = av_inv_q(video_stream->avg_frame_rate);
 
+  // Some formats want stream headers to be separate.
+  if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
+      self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
   return retval;
 }
 
@@ -256,6 +270,12 @@ SCM ffmpeg_frame_rate(SCM scm_self)
 {
   AVRational avg_frame_rate = video_stream(get_self(scm_self))->avg_frame_rate;
   return rational(avg_frame_rate.num, avg_frame_rate.den);
+}
+
+SCM ffmpeg_video_bit_rate(SCM scm_self)
+{
+  AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
+  return scm_from_int(ctx->bit_rate);
 }
 
 SCM ffmpeg_seek(SCM scm_self, SCM scm_position)
@@ -426,9 +446,10 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 3, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 4, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
+  scm_c_define_gsubr("ffmpeg-video-bit-rate", 1, 0, 0, ffmpeg_video_bit_rate);
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);

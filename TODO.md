@@ -1,7 +1,7 @@
 ## Ready
 
 * ffmpeg output (writing videos)
-  select format, select codecs, audio/video, audio only, video only
+  select format, select codecs, audio/video, audio only, video only, aspect ratio, audio bit rate
 * use -module -shared -avoid-version
 * tensor sum
 * fast live analysis
