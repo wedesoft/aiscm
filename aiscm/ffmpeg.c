@@ -188,7 +188,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
-SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM scm_video_bit_rate)
+SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM scm_video_bit_rate, SCM scm_aspect_ratio)
 {
   SCM retval;
   struct ffmpeg_t *self;
@@ -248,7 +248,13 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   // Set video frame rate
   video_stream->avg_frame_rate = av_make_q(scm_to_int(scm_numerator(scm_frame_rate)),
                                            scm_to_int(scm_denominator(scm_frame_rate)));
-  video_stream->time_base = av_inv_q(video_stream->avg_frame_rate);
+  video_stream->time_base.num = video_stream->avg_frame_rate.den;
+  video_stream->time_base.den = video_stream->avg_frame_rate.num;
+
+  // Set aspect ratio
+  video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
+  video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
+  self->video_codec_ctx->sample_aspect_ratio = video_stream->sample_aspect_ratio;
 
   // Some formats want stream headers to be separate.
   if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -281,8 +287,13 @@ SCM ffmpeg_frame_rate(SCM scm_self)
 
 SCM ffmpeg_video_bit_rate(SCM scm_self)
 {
-  AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
-  return scm_from_int(ctx->bit_rate);
+  return scm_from_int(video_codec_ctx(get_self(scm_self))->bit_rate);
+}
+
+SCM ffmpeg_aspect_ratio(SCM scm_self)
+{
+  AVRational aspect_ratio = video_stream(get_self(scm_self))->sample_aspect_ratio;
+  return rational(aspect_ratio.num, aspect_ratio.den);
 }
 
 SCM ffmpeg_seek(SCM scm_self, SCM scm_position)
@@ -453,10 +464,11 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 4, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 5, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
   scm_c_define_gsubr("ffmpeg-video-bit-rate", 1, 0, 0, ffmpeg_video_bit_rate);
+  scm_c_define_gsubr("ffmpeg-aspect-ratio", 1, 0, 0, ffmpeg_aspect_ratio);
   scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);

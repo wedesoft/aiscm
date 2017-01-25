@@ -28,7 +28,11 @@
 (load-extension "libguile-aiscm-tests" "init_tests")
 
 (define output-file (tmpnam))
-(define output-video (open-ffmpeg-output output-file #:shape '(16 2) #:frame-rate (/ 25 2) #:video-bit-rate 1000000))
+(define output-video (open-ffmpeg-output output-file
+                                         #:shape '(16 2)
+                                         #:frame-rate (/ 25 2)
+                                         #:video-bit-rate 1000000
+                                         #:aspect-ratio (/ 16 11)))
 
 (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -102,12 +106,16 @@
     "Check that video frame is an image object")
 (ok (eqv? 25 (frame-rate input-video))
     "Get frame rate of input video")
-(ok (eqv? (/ 25 2) (frame-rate output-video))
+(ok (equal? (/ 25 2) (frame-rate output-video))
     "Get frame rate of output video")
 (ok (throws? (frame-rate audio-mono))
     "Audio file does not have a frame rate")
 (ok (eqv? 1000000 (video-bit-rate output-video))
     "Get video bit-rate of output video")
+(ok (equal? (/ 0 1) (aspect-ratio input-video))
+    "Get aspect ratio of input video (here not explicitely defined)")
+(ok (equal? (/ 16 11) (aspect-ratio output-video))
+    "Get aspect ratio of output video")
 (ok (not (cadr (list (read-image image) (read-image image))))
     "Image has only one video frame")
 (ok (equal? (rgb 154 154 154) video-pixel)

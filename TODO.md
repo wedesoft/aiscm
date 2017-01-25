@@ -2,6 +2,7 @@
 
 * ffmpeg output (writing videos)
   select aspect ratio, format, select codecs, audio/video, audio only, video only, audio bit rate
+  video player with aspect ratio
 * use -module -shared -avoid-version
 * tensor sum
 * fast live analysis
