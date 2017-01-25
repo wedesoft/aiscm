@@ -1,5 +1,9 @@
 ## Ready
 
+* ffmpeg output (writing videos)
+* use -module -shared -avoid-version
+* tensor sum
+* fast live analysis
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
     (tensor [i] ((roll m) i))
@@ -8,6 +12,8 @@
     (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
     (tensor [i j] (* (s i) (s j)))
+* GNOME video widget
+* uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
 * floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
@@ -16,14 +22,12 @@
 * fractions, \*\*
 * separate function for defining operation for array?
 * separate module for register allocation
-* ffmpeg output
 * test suite with structure
 * Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
   multi-threading, SIMD, memory access (cache)
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
-* fix lintian issues: https://mentors.debian.net/package/aiscm
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
@@ -54,7 +58,6 @@
 * use (ice-9 match) to simplify and translate assembler code?
   https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
-* ffmpeg output (writing videos)
 * Conways way of life in one line of code
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * keywords: data structures,digital signal processing,tensors,input/output (check standard theosaurus)
@@ -99,9 +102,6 @@
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
 * RET keeps return value and callee-saved stuff alive
 * weird error when including sequence but not pointer
-
-## Planned
-
 * slimv, tcp/ip, attach
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
