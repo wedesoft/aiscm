@@ -40,5 +40,7 @@
 (ok (equal? '((((3 3) (3 3)) ((3 3) (3 3))) (((3 3) (3 3)) ((3 3) (3 3))))
             (to-list (+ (arr (((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2)))) 1)))
     "add 1 to 4D array")
+(ok (equal? '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
+    "add unsigned integer and integer array")
 (run-tests)
 
