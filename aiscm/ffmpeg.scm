@@ -71,7 +71,8 @@
 
 (define (aspect-ratio self)
   "Query pixel aspect ratio of video"
-  (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))
+  (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
+    (if (zero? ratio) 1 ratio)))
 
 (define (import-audio-frame self lst)
   "Compose audio frame from timestamp, type, shape, data pointer, and size"
