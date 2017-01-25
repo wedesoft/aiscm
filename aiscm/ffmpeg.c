@@ -206,12 +206,13 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
                    scm_list_2(scm_file_name, get_error_text(err)));
   };
 
-  AVCodec *codec = avcodec_find_encoder(self->fmt_ctx->oformat->video_codec);
+  enum AVCodecID codec_id = self->fmt_ctx->oformat->video_codec;
+  AVCodec *codec = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
   if (!codec) {
     ffmpeg_destroy(retval);
     // TODO: check avcodec_get_name is supported
     scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
-                   scm_list_1(scm_from_locale_string(avcodec_get_name(self->fmt_ctx->oformat->video_codec))));
+                   scm_list_1(scm_from_locale_string(avcodec_get_name(codec_id))));
   }
 
   AVStream *video_stream = avformat_new_stream(self->fmt_ctx, codec); // TODO: does this need a corresponding destructor call?
@@ -228,12 +229,18 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   // Get codec context
   self->video_codec_ctx = video_stream->codec;
 
+  // Set codec id
+  self->video_codec_ctx->codec_id = codec_id;
+
   // Set encoder bit rate
   self->video_codec_ctx->bit_rate = scm_to_int(scm_video_bit_rate);
 
   // Set video frame width and height
   self->video_codec_ctx->width = scm_to_int(scm_car(scm_shape));
   self->video_codec_ctx->height = scm_to_int(scm_cadr(scm_shape));
+
+  // Set intra frame lower limit
+  self->video_codec_ctx->gop_size = 12;
 
   // Set pixel format
   self->video_codec_ctx->pix_fmt = PIX_FMT_YUV420P;
