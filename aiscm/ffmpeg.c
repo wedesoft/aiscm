@@ -22,8 +22,10 @@
 #include "ffmpeg-helpers.h"
 
 // http://dranger.com/ffmpeg/
-// https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/demuxing_decoding.c
-// https://github.com/FFmpeg/FFmpeg/blob/n2.6.9/doc/examples/filtering_video.c
+// https://github.com/FFmpeg/FFmpeg/tree/n2.6.9/doc/examples
+// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/demuxing_decoding.c
+// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/filtering_video.c
+// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/muxing.c
 
 #ifndef HAVE_FRAME_ALLOC
 #warning "av_frame_alloc not defined"

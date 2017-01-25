@@ -56,3 +56,18 @@ cd aiscm-*
 make -j
 sudo make install
 ```
+
+## Recommendations
+
+It is recommended to enable a REPL with history and colorized output.
+*I.e.* install [guile-colorized][1] and then create a file ```~/.guile``` with the following content.
+
+```
+(use-modules (ice-9 readline))
+(activate-readline)
+
+(use-modules (ice-9 colorized))
+(activate-colorized)
+```
+
+[1]: https://github.com/NalaGinrut/guile-colorized

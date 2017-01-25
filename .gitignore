@@ -7,6 +7,7 @@
 *.gz
 *.bz2
 *.xz
+*.asc
 *~
 *.info
 *.trs

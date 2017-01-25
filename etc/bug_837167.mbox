@@ -1,0 +1,1565 @@
+From jan@wedesoft.de Fri Sep 09 16:29:35 2016
+Received: (at submit) by bugs.debian.org; 9 Sep 2016 16:29:35 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-8.4 required=4.0 tests=BAYES_00,FOURLA,HAS_PACKAGE,
+	SPF_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 38; hammy, 144; neutral, 42; spammy,
+	2. spammytokens:0.998-1--firstin, 0.967-+--visit hammytokens:0.000-+--dget,
+	0.000-+--gpl3, 0.000-+--GPL3, 0.000-+--UD:2-2.dsc, 0.000-+--gpl-3
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1biOgJ-00078L-95
+	for submit@bugs.debian.org; Fri, 09 Sep 2016 16:29:35 +0000
+Received: from wedemob (unknown [176.12.107.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 0A2C91530665
+	for <submit@bugs.debian.org>; Fri,  9 Sep 2016 18:29:25 +0200 (CEST)
+Date: Fri, 9 Sep 2016 17:29:24 +0100 (BST)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+To: Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: RFS: aiscm/0.6.2-2
+Message-ID: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Delivered-To: submit@bugs.debian.org
+
+Package: sponsorship-requests
+Severity: normal
+
+Dear mentors,
+
+I am looking for a sponsor for my package "aiscm":
+
+   * Package name    : aiscm
+     Version         : 0.6.2-2
+     Upstream Author : Jan Wedekind
+   * URL             : http://wedesoft.github.io/aiscm/
+   * License         : GPL-3+
+     Section         : lisp
+
+    It builds those binary packages:
+
+      aiscm - Guile computer vision extension
+
+aiscm is a real-time computer vision extension for the Guile programming 
+language. Performance in Scheme is achieved by means of an AMD64 JIT 
+compiler.
+
+    To access further information about this package, please visit the 
+following URL:
+
+    https://github.com/wedesoft/aiscm/tree/RFS
+
+
+    Alternatively, one can download the package with dget using this 
+command:
+
+    dget -x http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.6.2-2.dsc
+
+    More information about aiscm can be obtained from 
+http://wedesoft.github.io/aiscm/.
+
+    Changes since the last upload:
+
+    - Make releases for different distros
+    - fix package dependencies (do not use aliases)
+    - Pulse audio input and output using asynchronous API
+    - ring buffer for first-in first-out (FIFO) buffering of data
+    - improved documentation
+
+
+    Regards,
+    Jan Wedekind
+
+
+From wrar@debian.org Mon Dec 12 17:41:23 2016
+Received: (at submit) by bugs.debian.org; 12 Dec 2016 17:41:23 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-12.5 required=4.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,SPF_HELO_PASS,URIBL_CNKR
+	autolearn=ham autolearn_force=no version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 11; hammy, 148; neutral, 35; spammy,
+	0. spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--H*f:sk:alpine.,
+	 0.000-+--H*UA:NeoMutt, 0.000-+--H*u:NeoMutt, 0.000-+--dget
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cGUbL-00078U-E8; Mon, 12 Dec 2016 17:41:23 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=7Zoob4jCMCUQ9nqyRMZLYMq7aJ4Tp7/Se7hwQCmRhFM=; b=1m3IGtAK9jZ/mTChn0ZfZ3GF0Z
+	r+DckFhQxfsyOVYMZPYzGYizG8vWnyILddoi+kU+s6XIuS64PuuEELkdzv2eldtxRdhoWhm+RuUw1
+	hb/9p0Giko1iDHJ6LVhTPWQjZ7JJEHmZsGHtDm+jRNijY5WWHuMZSGxs/0RujwBtUS60=;
+Received: from [78.153.27.163] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cGUbJ-0003Fu-Ea; Mon, 12 Dec 2016 18:41:21 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 884F42000446; Mon, 12 Dec 2016 22:41:17 +0500 (+05)
+Date: Mon, 12 Dec 2016 22:41:17 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>, 837167@bugs.debian.org
+Cc: Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="27kgudh3grlrmbuh"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--27kgudh3grlrmbuh
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Control: tags -1 + moreinfo
+
+On Fri, Sep 09, 2016 at 05:29:24PM +0100, Jan Wedekind wrote:
+> Dear mentors,
+>=20
+> I am looking for a sponsor for my package "aiscm":
+>=20
+>   * Package name    : aiscm
+>     Version         : 0.6.2-2
+>     Upstream Author : Jan Wedekind
+>   * URL             : http://wedesoft.github.io/aiscm/
+>   * License         : GPL-3+
+>     Section         : lisp
+There is no such package in the archive. Is this a new package? If yes,
+please follow the procedures outlined at
+https://mentors.debian.net/intro-maintainers
+
+>    Alternatively, one can download the package with dget using this comma=
+nd:
+>=20
+>    dget -x http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.=
+6.2-2.dsc
+There is no such file, btw.
+
+
+--=20
+WBR, wRAR
+
+--27kgudh3grlrmbuh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhO4T0tFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+NGcQAJcDvRY7U1dUt/TqkyRwynssNHckgMbmFC8d1f2g53NqOafvk3STHYmb4xr/
+tYhlT8ZDuFp1Nat5PYIDp6wf/8NjfyAKXKcXBVrjfHvYgdbiMHgyyv7v90GgwSUG
+yxWD/arjrNNDdNG3qUgLj6eR2jwPsWIjZqCHmt84j3MOVVf1XktMRTN90830vFgL
++IZmzI8T3k5eBjaL3NI6wLRMBqNy3J6rM2wYu2CJMjlaVL06lXq19lJcCc9P72+L
+z6ox5CQ2xk5dOhhIJ1JoKGlOw9X0xd6JI9lhuozhODM2FrF/IB2EuNvxtapFAMRO
+mX9bpCBx+0fBrrqDwIF26yPFYHtPYQKw5UdSx571xMxF5uUuQDA8iqMyHRUgpvRC
+uU65cKpoBsrXs3Nd2AsXrLBs0sRoR6+M+FrnLcmho2O++YcASN2hwKXHPtbCMYIB
+URarPthq0XZNbsYIoPOSh6tOY97LwVAGnjvPtD9q8FtEPPTVAizRxHbN45aNujih
+/E94ZSZtWiA/lO77OfSz7oMt6b93VAw/MpnHoC92YF6E8HgDC1XBWvUeZYnty9xC
+mICr85bK6baQlLq7ieF2y75g80Ir+1ttl7JKkXMTOA3EprOh07wOnAKeuUfZunml
+61rUCXZvUBTxWcHqK3SEXeqKU7hTQf+C9iNqeePnA36r4jeZ
+=fR6T
+-----END PGP SIGNATURE-----
+
+--27kgudh3grlrmbuh--
+
+
+From jan@wedesoft.de Mon Dec 12 21:58:28 2016
+Received: (at submit) by bugs.debian.org; 12 Dec 2016 21:58:28 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.5 required=4.0 tests=BAYES_00,HAS_BUG_NUMBER,
+	SPF_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 25; hammy, 148; neutral, 90; spammy,
+	2. spammytokens:1.000-1--carly, 1.000-1--Carly hammytokens:0.000-+--UD:xz,
+	0.000-+--UD:tar.xz, 0.000-+--UD:debian.tar.xz, 0.000-+--UD:1-1.dsc,
+	0.000-+--UD:1.orig.tar.gz
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cGYc8-0006Zd-3R; Mon, 12 Dec 2016 21:58:28 +0000
+Received: from wedemob.home (host86-166-210-155.range86-166.btcentralplus.com [86.166.210.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 9835A153077C;
+	Mon, 12 Dec 2016 22:51:36 +0100 (CET)
+Date: Mon, 12 Dec 2016 21:51:36 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612122123230.15602@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: delayed 403 seconds by postgrey-1.35 at buxtehude; Mon, 12 Dec 2016 21:58:27 UTC
+Delivered-To: submit@bugs.debian.org
+
+Lyn/Carly
+
+On Mon, 12 Dec 2016, Andrey Rahmatullin wrote:
+
+> Control: tags -1 + moreinfo
+>
+> On Fri, Sep 09, 2016 at 05:29:24PM +0100, Jan Wedekind wrote:
+>> Dear mentors,
+>>
+>> I am looking for a sponsor for my package "aiscm":
+>>
+>>   * Package name    : aiscm
+>>     Version         : 0.6.2-2
+>>     Upstream Author : Jan Wedekind
+>>   * URL             : http://wedesoft.github.io/aiscm/
+>>   * License         : GPL-3+
+>>     Section         : lisp
+> There is no such package in the archive. Is this a new package? If yes,
+> please follow the procedures outlined at
+> https://mentors.debian.net/intro-maintainers
+>
+
+Hi Andrey,
+Thanks for your email. The version 0.6.2-2 is three months old. 
+Here is the most recent version:
+
+    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.dsc
+    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1.orig.tar.gz
+    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.debian.tar.xz
+
+I tried to upload it to mentors.debian.net but I didn't manage to figure 
+out how to create a "changes" file as required by "dput". Let me know if 
+it is necessary to upload it to mentors.debian.net in which case 
+I'll have another look at it.
+
+>
+>>    Alternatively, one can download the package with dget using this command:
+>>
+>>    dget -x http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.6.2-2.dsc
+> There is no such file, btw.
+>
+
+The updated URL is.
+
+     dget -x http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.dsc
+
+>
+> -- 
+> WBR, wRAR
+>
+
+
+From wrar@debian.org Tue Dec 13 06:14:33 2016
+Received: (at submit) by bugs.debian.org; 13 Dec 2016 06:14:33 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-11.4 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	DKIM_SIGNED,DKIM_VALID,FOURLA,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,
+	SPF_HELO_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 13; hammy, 150; neutral, 124; spammy,
+	0. spammytokens: hammytokens:0.000-+--UD:xz, 0.000-+--UD:tar.xz,
+	0.000-+--UD:debian.tar.xz, 0.000-+--H*c:pgp-sha512, 0.000-+--UD:1-1.dsc
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cGgMD-0007PA-Cg; Tue, 13 Dec 2016 06:14:33 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=7nrlpd+ZkkQSjcG7jJmKjO3h4UXfhiv0DlyAnQ5Oxhs=; b=2mTzcRf7m3M9mHy5VUugrFPSZy
+	6qe/odWUuNFHeGcc28aGQIbwDYNsEe832w45Or7TJSq6koTEcv5hmSnpEfK9Gs1EMD/QK622YvJrd
+	UzHI0R9UjYcMFwvTHFORZ2xOKUG2njf3W/SkYYA9I7LE6oblqjSAAdUMklTyOAQsieGg=;
+Received: from [78.153.19.230] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cGgMB-0007KD-DY; Tue, 13 Dec 2016 07:14:31 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 77758200536F; Tue, 13 Dec 2016 11:14:27 +0500 (+05)
+Date: Tue, 13 Dec 2016 11:14:27 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167@bugs.debian.org,
+	Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+ <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="rgalvbqt6fbx6qjw"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1612122123230.15602@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--rgalvbqt6fbx6qjw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Dec 12, 2016 at 09:51:36PM +0000, Jan Wedekind wrote:
+> > There is no such package in the archive. Is this a new package? If yes,
+> > please follow the procedures outlined at
+> > https://mentors.debian.net/intro-maintainers
+> >=20
+>=20
+> Hi Andrey,
+> Thanks for your email. The version 0.6.2-2 is three months old. Here is t=
+he
+> most recent version:
+>=20
+>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.dsc
+>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1.orig=
+=2Etar.gz
+>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.de=
+bian.tar.xz
+It has the same problem, you need to open the ITP bug and close it in the
+first and the only changelog entry, see
+https://www.debian.org/doc/manuals/developers-reference/ch05.en.html#newpac=
+kage
+if you've missed that part in the mentors link I gave you.
+Other problems:
+- the package doesn't build in a clean sid chroot:=20
+not ok 19 - Check a pixel in the first video frame of the video (ERROR: In =
+procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8520>)
+FAIL: test_ffmpeg.scm 19 - Check a pixel in the first video frame of the vi=
+deo (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized smo=
+b 55c544fd8520>)
+- you shouldn't list shared lib dependencies explicitly, they should be
+  found automatically
+- current standards version is 3.9.8.
+
+> I tried to upload it to mentors.debian.net but I didn't manage to figure =
+out
+> how to create a "changes" file as required by "dput".=20
+By building the package.
+
+> Let me know if it is
+> necessary to upload it to mentors.debian.net in which case I'll have anot=
+her
+> look at it.
+No, it is not necessary, as you already have a dget-able link.
+
+--=20
+WBR, wRAR
+
+--rgalvbqt6fbx6qjw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhPkcMtFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+AnoQAKTnLKrC3R+y+PtAmjtRwR7yqpyjv3z5Of28V4hreaBBBWxFcyYw5T6jce2d
+kRodNVLCOMWpxzH0Pw6p8eqbablLe0ZCSG+WIAMb1zZc31bVBnM+N8YtBgQ9g0lb
+XuTbTqq+oXbETpIddFccwjKMKcziB8NFhdDIiDNDuBcpZlByG2jjzU6ot0Z+dlFN
+t2AxDdw02UQoabbsTrQU9d1tS6QAlSReLbtnFCrTPQJVm/eHp4UWtwDxNz+0UnME
+Q9Z/Aryu+2fRnhHdBaeowdNOiL9ThgJ9e66r4mmU6NmCLDYVXZRBM2lkKs0EGxJK
+Yy0QH8mzMSHDxykeXLPms5ksC5LUrdc7lXg7aBF1hraMPNslVLpSbsBWHwpkYIym
+YgEM6Xxcyk50fqavBp4GjZY2sSH4lW2vFyTaeoPn7FyPuXmHOmuiB55oSjDMT0fw
+pBlFg508z3sf9ufQaxaY4QXQRAmAJ7HiFZAS0t6pl3miAJ0AiqLpcLSXTErYwSBe
+egRfX8wua+TTk+Bv8gNHwI9Z4UO9WhC77alzVE7WuEY7Vu2IEPFnWWWW8HA3gPct
+NTN8UHW1/s3ryb1gZ7bori8XI1RdjBCyllXgPFK7I0y5+PhVFJKd+eAjJNpjX1Ru
+d7SCAJmFEZsfiE+S2q85t4+27KykeQa7ZFnY40C0CFrj6yqU
+=t7KS
+-----END PGP SIGNATURE-----
+
+--rgalvbqt6fbx6qjw--
+
+
+From bartm@quantz.debian.org Tue Dec 13 22:23:57 2016
+Received: (at control) by bugs.debian.org; 13 Dec 2016 22:23:57 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,RCVD_IN_DNSWL_MED,
+	RP_MATCHES_RCVD autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 4; hammy, 62; neutral, 19; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*r:41c8, 0.000-+--H*F:U*bartm,
+	0.000-+--H*RU:sk:quantz., 0.000-+--H*r:sk:quantz., 0.000-+--H*MI:quantz
+Return-path: <bartm@quantz.debian.org>
+Received: from quantz.debian.org ([2001:41c8:1000:21::21:28])
+	from C=NA,ST=NA,L=Ankh Morpork,O=Debian SMTP,OU=Debian SMTP CA,CN=quantz.debian.org,EMAIL=hostmaster@quantz.debian.org (verified)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+	(Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUL-00056G-G0
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:57 +0000
+Received: from bartm by quantz.debian.org with local (Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUK-0000dy-0L
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:56 +0000
+To: control@bugs.debian.org
+Subject: aiscm: block ITP 848078 by RFS 837167
+Message-Id: <E1cGvUK-0000dy-0L@quantz.debian.org>
+From: Bart Martens <bartm@quantz.debian.org>
+Date: Tue, 13 Dec 2016 22:23:56 +0000
+Delivered-To: control@bugs.debian.org
+
+block 848078 by 837167
+stop
+
+
+From bartm@quantz.debian.org Tue Dec 13 22:23:57 2016
+Received: (at control) by bugs.debian.org; 13 Dec 2016 22:23:57 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,RCVD_IN_DNSWL_MED,
+	RP_MATCHES_RCVD autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 0; hammy, 72; neutral, 19; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*r:41c8, 0.000-+--H*F:U*bartm,
+	0.000-+--H*RU:sk:quantz., 0.000-+--H*r:sk:quantz., 0.000-+--H*MI:quantz
+Return-path: <bartm@quantz.debian.org>
+Received: from quantz.debian.org ([2001:41c8:1000:21::21:28])
+	from C=NA,ST=NA,L=Ankh Morpork,O=Debian SMTP,OU=Debian SMTP CA,CN=quantz.debian.org,EMAIL=hostmaster@quantz.debian.org (verified)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+	(Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUL-00056K-KE
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:57 +0000
+Received: from bartm by quantz.debian.org with local (Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUK-0000e5-4c
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:56 +0000
+To: control@bugs.debian.org
+Subject: RFS: aiscm/0.6.2-2 [ITP]
+Message-Id: <E1cGvUK-0000e5-4c@quantz.debian.org>
+From: Bart Martens <bartm@quantz.debian.org>
+Date: Tue, 13 Dec 2016 22:23:56 +0000
+Delivered-To: control@bugs.debian.org
+
+retitle 837167 RFS: aiscm/0.6.2-2 [ITP]
+stop
+
+Adding [ITP].
+
+
+From bartm@quantz.debian.org Tue Dec 13 22:23:57 2016
+Received: (at control) by bugs.debian.org; 13 Dec 2016 22:23:57 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-9.0 required=4.0 tests=BAYES_00,RCVD_IN_DNSWL_MED,
+	RP_MATCHES_RCVD,TVD_SPACE_RATIO,VALID_BTS_CONTROL autolearn=ham
+	autolearn_force=no version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 2; hammy, 70; neutral, 18; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*r:41c8, 0.000-+--H*F:U*bartm,
+	0.000-+--H*RU:sk:quantz., 0.000-+--H*r:sk:quantz., 0.000-+--H*MI:quantz
+Return-path: <bartm@quantz.debian.org>
+Received: from quantz.debian.org ([2001:41c8:1000:21::21:28])
+	from C=NA,ST=NA,L=Ankh Morpork,O=Debian SMTP,OU=Debian SMTP CA,CN=quantz.debian.org,EMAIL=hostmaster@quantz.debian.org (verified)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+	(Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUL-00056L-Ko
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:57 +0000
+Received: from bartm by quantz.debian.org with local (Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cGvUK-0000e8-6i
+	for control@bugs.debian.org; Tue, 13 Dec 2016 22:23:56 +0000
+To: control@bugs.debian.org
+Subject: RFS: aiscm/0.6.2-2 [ITP]
+Message-Id: <E1cGvUK-0000e8-6i@quantz.debian.org>
+From: Bart Martens <bartm@quantz.debian.org>
+Date: Tue, 13 Dec 2016 22:23:56 +0000
+Delivered-To: control@bugs.debian.org
+
+severity 837167 wishlist
+
+
+From jan@wedesoft.de Tue Dec 13 22:48:41 2016
+Received: (at submit) by bugs.debian.org; 13 Dec 2016 22:48:41 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-4.4 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	FOURLA,HAS_BUG_NUMBER,SPF_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 8; hammy, 150; neutral, 167; spammy,
+	0. spammytokens: hammytokens:0.000-+--UD:xz, 0.000-+--UD:tar.xz,
+	0.000-+--UD:debian.tar.xz, 0.000-+--UD:1-1.dsc, 0.000-+--pbuilder
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cGvsH-0007MA-09; Tue, 13 Dec 2016 22:48:41 +0000
+Received: from wedemob.home (host86-166-210-155.range86-166.btcentralplus.com [86.166.210.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id C26401530761;
+	Tue, 13 Dec 2016 23:48:33 +0100 (CET)
+Date: Tue, 13 Dec 2016 22:48:32 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612132218160.5158@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Delivered-To: submit@bugs.debian.org
+
+On Tue, 13 Dec 2016, Andrey Rahmatullin wrote:
+
+> On Mon, Dec 12, 2016 at 09:51:36PM +0000, Jan Wedekind wrote:
+>>> There is no such package in the archive. Is this a new package? If yes,
+>>> please follow the procedures outlined at
+>>> https://mentors.debian.net/intro-maintainers
+>>>
+>>
+>> Hi Andrey,
+>> Thanks for your email. The version 0.6.2-2 is three months old. Here is the
+>> most recent version:
+>>
+>>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.dsc
+>>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1.orig.tar.gz
+>>    http://wedesoft.github.io/aiscm/apt/pool/main/a/aiscm/aiscm_0.9.1-1.debian.tar.xz
+> It has the same problem, you need to open the ITP bug and close it in the
+> first and the only changelog entry, see
+> https://www.debian.org/doc/manuals/developers-reference/ch05.en.html#newpackage
+> if you've missed that part in the mentors link I gave you.
+
+Ok, thanks. I filed an ITP here:
+
+     https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=848078
+
+> Other problems:
+> - the package doesn't build in a clean sid chroot:
+> not ok 19 - Check a pixel in the first video frame of the video (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8520>)
+> FAIL: test_ffmpeg.scm 19 - Check a pixel in the first video frame of the video (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8520>)
+
+I have not managed to reproduce the failing test (even using pbuilder). 
+Can you let me know how you created the chroot environment with the 
+failing test?
+
+> - you shouldn't list shared lib dependencies explicitly, they should be
+>  found automatically
+
+Ok, thanks for letting me know. I removed the explicit shared lib 
+dependencies.
+
+> - current standards version is 3.9.8.
+
+Ok, I updated the version number.
+
+>
+>> I tried to upload it to mentors.debian.net but I didn't manage to figure out
+>> how to create a "changes" file as required by "dput".
+> By building the package.
+>
+>> Let me know if it is
+>> necessary to upload it to mentors.debian.net in which case I'll have another
+>> look at it.
+> No, it is not necessary, as you already have a dget-able link.
+>
+
+I managed to upload the updated version aiscm-0.9.2 to mentors.debian.net 
+(not sure why I didn't notice the "changes" file before):
+
+     https://mentors.debian.net/package/aiscm
+
+Regards
+Jan
+
+
+From bartm@quantz.debian.org Wed Dec 14 04:27:50 2016
+Received: (at control) by bugs.debian.org; 14 Dec 2016 04:27:50 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,RCVD_IN_DNSWL_MED,
+	RP_MATCHES_RCVD autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 6; hammy, 69; neutral, 19; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*r:41c8, 0.000-+--H*F:U*bartm,
+	0.000-+--H*RU:sk:quantz., 0.000-+--H*r:sk:quantz., 0.000-+--H*MI:quantz
+Return-path: <bartm@quantz.debian.org>
+Received: from quantz.debian.org ([2001:41c8:1000:21::21:28])
+	from C=NA,ST=NA,L=Ankh Morpork,O=Debian SMTP,OU=Debian SMTP CA,CN=quantz.debian.org,EMAIL=hostmaster@quantz.debian.org (verified)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+	(Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cH1AU-0003aB-Mq
+	for control@bugs.debian.org; Wed, 14 Dec 2016 04:27:50 +0000
+Received: from bartm by quantz.debian.org with local (Exim 4.84_2)
+	(envelope-from <bartm@quantz.debian.org>)
+	id 1cH1AT-0003xz-5Z
+	for control@bugs.debian.org; Wed, 14 Dec 2016 04:27:49 +0000
+To: control@bugs.debian.org
+Subject: retitle to RFS: aiscm/0.9.2-1 [ITP]
+Message-Id: <E1cH1AT-0003xz-5Z@quantz.debian.org>
+From: Bart Martens <bartm@quantz.debian.org>
+Date: Wed, 14 Dec 2016 04:27:49 +0000
+Delivered-To: control@bugs.debian.org
+
+retitle 837167 RFS: aiscm/0.9.2-1 [ITP]
+stop
+
+I see that the package at mentors has version 0.9.2-1
+so I retitle the RFS to match that version.
+
+
+From wrar@debian.org Wed Dec 14 15:54:13 2016
+Received: (at submit) by bugs.debian.org; 14 Dec 2016 15:54:13 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-12.9 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	DKIM_SIGNED,DKIM_VALID,FOURLA,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,
+	SPF_HELO_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 8; hammy, 130; neutral, 29; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--pbuilder,
+	0.000-+--H*u:NeoMutt, 0.000-+--H*UA:NeoMutt, 0.000-+--H*f:sk:alpine.
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cHBsj-0002qY-Hr; Wed, 14 Dec 2016 15:54:13 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=BuxWeXWK+faCFsPD/eTxBoRc8DlW5bJPmGVZlWYCRSI=; b=agtwWF0W+byHjrHXIzdvvha4Nv
+	S/tVUgpPsYua4Y7F6x0PCB31FuUZMJYYs2Y/zOFOZO00yAcJcreVwaqNEUKS8rpsfNB/Z/58aa424
+	Oa+6MfdzYqhB+gzpj4txV2tZMQpTQZXk173ZcWccPLo1g1DlSwxOn8KQcj+g8Nzcg8Z4=;
+Received: from [78.153.26.105] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cHBsh-00005Z-0B; Wed, 14 Dec 2016 16:54:11 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 620FF2003605; Wed, 14 Dec 2016 20:54:07 +0500 (+05)
+Date: Wed, 14 Dec 2016 20:54:07 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167@bugs.debian.org,
+	Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+ <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+ <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+ <alpine.DEB.2.11.1612132218160.5158@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="arlolmupz2rnromo"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1612132218160.5158@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--arlolmupz2rnromo
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Dec 13, 2016 at 10:48:32PM +0000, Jan Wedekind wrote:
+> > Other problems:
+> > - the package doesn't build in a clean sid chroot:
+> > not ok 19 - Check a pixel in the first video frame of the video (ERROR:=
+ In procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8=
+520>)
+> > FAIL: test_ffmpeg.scm 19 - Check a pixel in the first video frame of th=
+e video (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized=
+ smob 55c544fd8520>)
+>=20
+> I have not managed to reproduce the failing test (even using pbuilder). C=
+an
+> you let me know how you created the chroot environment with the failing
+> test?
+It's an usual sbuild sid-amd64 chroot.
+
+--=20
+WBR, wRAR
+
+--arlolmupz2rnromo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhRax8tFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+m4AQAKAM7RpS9+ivAnWT0n9sSzEbkURezo74z05yrVU82iIAG+9ZzRl3WWx7jDED
+vlRBNm31RaOwOxWrZV0ZH8RneaznUOMQq2K1up8GyXLghaEdc3ThJNRwwf3XoYBH
+4GbffZ9Wef7rZk20xVNEqgKFtjpByW7qmc23ElhQTM5/hF8JTixnlx27MLwjbumY
+PV/gE4dYQBlUN/UWLsfbBhp+E2M9v3bBjv8ZwoyWWVWSSqBWIGJ7QRPYyGfC4gMR
+J4pIQS42jbIGdtB8x1PJoJa7xmnMdoQaHRYQy1kn47+N1LOqJPtrhI5ogFfjTvBG
+Q6cSGQBnryxedzZ+C694fgNJIiq5focqXX1cdygvTxv6qkfQE8D5+gQPqkot5HGP
+aR24w3t7NN7JBfwgxhwOXH6JQN00gPR/5E8y46HTjXAewj+bwQJsTERy/SmbBYWe
+1kuZhu6opKjrcEIDeDAEAstZOVvg231tpwafgI+MLtvijBT/iJClXj04JQuO63md
+tnQQNI9N7DFfJgnljAtA2WqvtltBGPfDHny/FBOQ6ceiuOru2kvxBJJdLKNVspql
+zNipLBD6ivbOJ54YTGiEonZdzb9qhMSrnY30v2YzLa3W+89pPnPbcm9cp1VIfu1k
+hbpUWCjGkhpA+DNhbrCpxwShMuVZOVpzDAVgn0qD5r0WGmZJ
+=7fYS
+-----END PGP SIGNATURE-----
+
+--arlolmupz2rnromo--
+
+
+From jan@wedesoft.de Fri Dec 16 20:30:37 2016
+Received: (at submit) by bugs.debian.org; 16 Dec 2016 20:30:37 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.9 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	FOURLA,HAS_BUG_NUMBER,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 10; hammy, 149; neutral, 42; spammy,
+	1. spammytokens:0.912-+--H*R:D*de hammytokens:0.000-+--pbuilder,
+	0.000-+--H*f:sk:alpine., 0.000-+--H*MI:sk:alpine., 0.000-+--H*u:2013-08-11,
+	0.000-+--H*UA:2013-08-11
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cHz9J-0005kk-Fk; Fri, 16 Dec 2016 20:30:37 +0000
+Received: from wedemob.home (host86-163-163-140.range86-163.btcentralplus.com [86.163.163.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id A4D571530768;
+	Fri, 16 Dec 2016 21:30:28 +0100 (CET)
+Date: Fri, 16 Dec 2016 20:30:27 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612152042290.3202@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Delivered-To: submit@bugs.debian.org
+
+On Wed, 14 Dec 2016, Andrey Rahmatullin wrote:
+
+> On Tue, Dec 13, 2016 at 10:48:32PM +0000, Jan Wedekind wrote:
+>>> Other problems:
+>>> - the package doesn't build in a clean sid chroot:
+>>> not ok 19 - Check a pixel in the first video frame of the video (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8520>)
+>>> FAIL: test_ffmpeg.scm 19 - Check a pixel in the first video frame of the video (ERROR: In procedure #f: Wrong type (expecting ffmpeg): #<finalized smob 55c544fd8520>)
+>>
+>> I have not managed to reproduce the failing test (even using pbuilder). Can
+>> you let me know how you created the chroot environment with the failing
+>> test?
+> It's an usual sbuild sid-amd64 chroot.
+>
+
+Ok, thanks. I managed to reproduce the failing test. There seems to be a 
+new side effect in ffmpeg. The test passes when the pixel is read 
+immediately after the image is decoded. I have uploaded the modified 
+package here:
+
+     https://mentors.debian.net/package/aiscm
+
+Regards
+Jan
+
+
+From wrar@debian.org Sat Dec 17 12:11:00 2016
+Received: (at submit) by bugs.debian.org; 17 Dec 2016 12:11:00 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-11.5 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	DKIM_SIGNED,DKIM_VALID,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,
+	SPF_HELO_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 21; hammy, 144; neutral, 42; spammy,
+	0. spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--H*UA:NeoMutt,
+	0.000-+--H*u:NeoMutt, 0.000-+--H*f:sk:alpine., 0.000-+--H*MI:sk:alpine.
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cIDpM-0005Q2-KL; Sat, 17 Dec 2016 12:11:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=Esyracx/Sx7evmUJZJRCjnvAyKCrzplu+Bh40N+OCQI=; b=sL3jDxYJOc80uQv5SB7D1llwG9
+	sVReIzVIFQB4u1qNFNGrf8k9dffTKtFKhwgzm5xlZKGT66S+gbYC7qUPjFB3xgY3j70169fpIktzn
+	i6HJ/TrvYKIo2aqvk6pWWyiSoZd3yumVKvzMvSzz+6UX3eH15gFw2HXhStB9CAb5RvUQ=;
+Received: from [78.153.22.182] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cIDpK-0002Tk-Fw; Sat, 17 Dec 2016 13:10:58 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 40D1C2049A25; Sat, 17 Dec 2016 17:10:55 +0500 (+05)
+Date: Sat, 17 Dec 2016 17:10:55 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167@bugs.debian.org,
+	Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+ <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+ <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+ <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+ <alpine.DEB.2.11.1612152042290.3202@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="z4o5skdh5fwautiq"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1612152042290.3202@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--z4o5skdh5fwautiq
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+You shouldn't put upstream changes into d/changelog.
+
+Your package has quite a lot of lintian problems, some of them are even
+listed on the mentors, page. Did you see them? Here is the full list:
+W: aiscm source: diff-contains-substvars debian/substvars
+I: aiscm source: debian-watch-file-is-missing
+I: aiscm: hardening-no-fortify-functions usr/lib/x86_64-linux-gnu/guile/2.0=
+/extensions/libguile-aiscm-v4l2.so.0.0.0
+I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extension=
+s/libguile-aiscm-ffmpeg.so.0.0.0
+I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extension=
+s/libguile-aiscm-image.so.0.0.0
+I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extension=
+s/libguile-aiscm-jit.so.0.0.0
+I: aiscm: hardening-no-bindnow ... use --no-tag-display-limit to see all (o=
+r pipe to a file/program)
+I: aiscm: extended-description-is-probably-too-short
+X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://im=
+g.shields.io/github/license/wedesoft/aiscm.png)
+X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://tr=
+avis-ci.org/wedesoft/aiscm.png?branch=3Dmaster)
+X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://im=
+g.shields.io/github/release/wedesoft/aiscm.png)
+X: aiscm: privacy-breach-generic ... use --no-tag-display-limit to see all =
+(or pipe to a file/program)
+I: aiscm: arch-dep-package-has-big-usr-share 3285kB 79%
+I: aiscm: possible-documentation-but-no-doc-base-registration
+W: aiscm: package-has-unnecessary-activation-of-ldconfig-trigger
+
+You have an autopkgtest file with "make check" in it. How is that supposed
+to check the installed package?
+
+The current recommended debhelper compat level is 10.
+
+--=20
+WBR, wRAR
+
+--z4o5skdh5fwautiq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhVK08tFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+gygP/jPVJsBrIZssRcHo8EdxX4/f22Mij+hKt+Oy29pKQVhfwFrKowazkIHf19Nr
+ja1+osVzB6lJcSJfIN1dR5MnWvPm/RdW5BQjJHOZON1ao1tvXXtJUWMU8QuT2a2b
+g/iJRyyo2CNryoWHIKlmrav9nru6078FNhuKeRaTHABVEkDtyLZkUjV5zvvKotPe
+yUJfi5DDobDg6DpL/7N1nHTH4LwlLtr1jbHCFwqEN15cbDldgMi9zqf7PwxC4bFo
+7D5QBo/kK9+l7QQMrOap0ByvuZuqKP5pUBJXkf3Cy/e69kBvGNcOg/0R/+Pvb9dv
+7K30q2PDGAaFZHRfh5m9CvzEcXgsjB4mSjY2C4IIbTUHWaeO30aYgNNoqJE6+7HE
+oS6BrvXHJcAMtD6YZC3zkJqWBUPRozHamFRaEzHFHInO9NO6HpWL+th4kpSfHlxx
+Ady+H6yQAj2jAKILQEHQv/Wy3HOL8LNwJAwB6DPbHDR3ncV3rIYe/c7pMda885E9
+yCFJ+GnDOtlWLVUryOO6Am2RfFECsIm8bNjxx6xLy9PI1z0k/KI3/7OurpYF37n8
+uTwdNmRDH2Eg7XqlLH0mH8u3hz3A1+q/3gb0tPpsHLww82l+u/GlGPOMOFBYCdfv
+ZgsnCXsmZ94gaWT7/MsXyr+pZeOEmDSTE/tBHBVl/mdtoieW
+=Fb5g
+-----END PGP SIGNATURE-----
+
+--z4o5skdh5fwautiq--
+
+
+From jan@wedesoft.de Mon Dec 19 20:09:30 2016
+Received: (at submit) by bugs.debian.org; 19 Dec 2016 20:09:30 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-4.5 required=4.0 tests=BAYES_00,DIGITS_LETTERS,
+	HAS_BUG_NUMBER,SPF_PASS,URIBL_CNKR autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 6; hammy, 150; neutral, 85; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*f:sk:alpine., 0.000-+--H*MI:sk:alpine.,
+	0.000-+--autopkgtest, 0.000-+--sk:hardeni, 0.000-+--UD:0.0
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cJ4FV-0000OM-PL; Mon, 19 Dec 2016 20:09:29 +0000
+Received: from wedemob.home (host86-163-163-140.range86-163.btcentralplus.com [86.163.163.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 79A171530769;
+	Mon, 19 Dec 2016 21:09:21 +0100 (CET)
+Date: Mon, 19 Dec 2016 20:09:20 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612191929120.17446@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name> <alpine.DEB.2.11.1612152042290.3202@wedemob> <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Delivered-To: submit@bugs.debian.org
+
+On Sat, 17 Dec 2016, Andrey Rahmatullin wrote:
+
+> You shouldn't put upstream changes into d/changelog.
+>
+> Your package has quite a lot of lintian problems, some of them are even
+> listed on the mentors, page. Did you see them? Here is the full list:
+> W: aiscm source: diff-contains-substvars debian/substvars
+> I: aiscm source: debian-watch-file-is-missing
+> I: aiscm: hardening-no-fortify-functions usr/lib/x86_64-linux-gnu/guile/2.0/extensions/libguile-aiscm-v4l2.so.0.0.0
+> I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extensions/libguile-aiscm-ffmpeg.so.0.0.0
+> I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extensions/libguile-aiscm-image.so.0.0.0
+> I: aiscm: hardening-no-bindnow usr/lib/x86_64-linux-gnu/guile/2.0/extensions/libguile-aiscm-jit.so.0.0.0
+> I: aiscm: hardening-no-bindnow ... use --no-tag-display-limit to see all (or pipe to a file/program)
+> I: aiscm: extended-description-is-probably-too-short
+> X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://img.shields.io/github/license/wedesoft/aiscm.png)
+> X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://travis-ci.org/wedesoft/aiscm.png?branch=master)
+> X: aiscm: privacy-breach-generic usr/share/doc/aiscm/index.html (https://img.shields.io/github/release/wedesoft/aiscm.png)
+> X: aiscm: privacy-breach-generic ... use --no-tag-display-limit to see all (or pipe to a file/program)
+> I: aiscm: arch-dep-package-has-big-usr-share 3285kB 79%
+> I: aiscm: possible-documentation-but-no-doc-base-registration
+> W: aiscm: package-has-unnecessary-activation-of-ldconfig-trigger
+
+Yes, I noticed the lintian issues on the mentors page. Sorry for not 
+looking into it earlier.
+
+> You have an autopkgtest file with "make check" in it. How is that supposed
+> to check the installed package?
+
+Ok, I misunderstood how autopkgtest works. I have removed the autopkgtest 
+use for the moment.
+
+> The current recommended debhelper compat level is 10.
+
+Ok, I have updated the debhelper level to 10.
+
+The updated package is here:
+
+     https://mentors.debian.net/package/aiscm
+
+Regards
+Jan
+
+
+From jan@wedesoft.de Thu Dec 22 12:32:30 2016
+Received: (at submit) by bugs.debian.org; 22 Dec 2016 12:32:30 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,HAS_BUG_NUMBER,
+	SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 15; hammy, 120; neutral, 36; spammy,
+	1. spammytokens:0.912-+--H*R:D*de hammytokens:0.000-+--H*f:sk:alpine.,
+	0.000-+--H*MI:sk:alpine., 0.000-+--sk:hardeni, 0.000-+--lintian,
+	0.000-+--H*u:2013-08-11
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cK2Xu-0002o5-1P; Thu, 22 Dec 2016 12:32:30 +0000
+Received: from [10.10.11.55] (salt-ext.roke.co.uk [109.207.29.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 417D71530791;
+	Thu, 22 Dec 2016 13:32:21 +0100 (CET)
+Date: Thu, 22 Dec 2016 12:32:20 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>, 837167@bugs.debian.org
+cc: Debian Bug Tracking System <submit@bugs.debian.org>, 
+    debian-bugs-dist@lists.debian.org, 
+    Debian Mentors <package-sponsorship-requests@lists.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612221228280.6510@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name> <alpine.DEB.2.11.1612152042290.3202@wedemob> <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Delivered-To: submit@bugs.debian.org
+
+On Sat, 17 Dec 2016, Andrey Rahmatullin wrote:
+
+> You shouldn't put upstream changes into d/changelog.
+I have removed those by the way.
+>
+> Your package has quite a lot of lintian problems, some of them are even
+> listed on the mentors, page.
+
+There is one final unresolved issue: "hardening-no-fortify-functions" 
+(certainty: wild-guess) even though GCC is now run with hardening options. 
+Can I leave it as it is, do I need to override the lintian warning, or do 
+I need to file a bug report for the lintian warning?
+
+Regards
+Jan
+
+
+From wrar@debian.org Thu Dec 22 12:34:55 2016
+Received: (at 837167) by bugs.debian.org; 22 Dec 2016 12:34:55 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-14.0 required=4.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,SPF_HELO_PASS
+	autolearn=ham autolearn_force=no version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 8; hammy, 112; neutral, 33; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--H*UA:NeoMutt,
+	0.000-+--H*u:NeoMutt, 0.000-+--H*f:sk:alpine., 0.000-+--H*MI:sk:alpine.
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cK2aF-0003Bd-3Z
+	for 837167@bugs.debian.org; Thu, 22 Dec 2016 12:34:55 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=++QDCAL610i12ohoiIdYzlMhQ/h2baybnn1OpsESI38=; b=g/2wKtLn46XDSLk1Y/8oYaO/0u
+	YVtj/E6Cm1pa4/FVBegy48gKBKMovUhFeHgWom+qswzys2OwaeSGKpLp/Gcvp1IGRJgPcLRtNjPCJ
+	f0pBc5DhBPhezRXmhCUTsi8A+GyKSAUP0m9dgy8pWx8DAqUfpQdTQBp6I1KGLey7kBic=;
+Received: from [78.153.29.67] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cK2aC-00083D-3R; Thu, 22 Dec 2016 13:34:52 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 298D820006EC; Thu, 22 Dec 2016 17:34:48 +0500 (+05)
+Date: Thu, 22 Dec 2016 17:34:48 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167@bugs.debian.org
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20161222123448.72oelvipzmwjn3fw@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+ <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+ <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+ <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+ <alpine.DEB.2.11.1612152042290.3202@wedemob>
+ <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+ <alpine.DEB.2.11.1612221228280.6510@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dy6an7gbbgb65wxi"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1612221228280.6510@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+
+
+--dy6an7gbbgb65wxi
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Dec 22, 2016 at 12:32:20PM +0000, Jan Wedekind wrote:
+> There is one final unresolved issue: "hardening-no-fortify-functions"
+> (certainty: wild-guess) even though GCC is now run with hardening options.
+> Can I leave it as it is, do I need to override the lintian warning, or do=
+ I
+> need to file a bug report for the lintian warning?
+You should use blhc to check if the flags are passed correctly for all
+cases. This tag is sometimes a false positive.
+
+--=20
+WBR, wRAR
+
+--dy6an7gbbgb65wxi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhbyGItFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+Qc4P/jLJcvdZEXryPKSQUmy4wsZCr+5I+xVbElewhAxQiW1HWYrCgWZSq7vvorrJ
+qW6j/Oe9dbdb/akjh1RfCyyzmXOweAwSzV/7LRX1iLKp6lPQJfdHODSE3NAPxiax
+5B/JEzB4d0qT8mKUwsdC/LlOEpfY3+tNhUUjzxKPseu/Y+nqGgepKRaWg+IAVj6e
+bC1XWy3c0TOLSLF1Sxak7iBGX7ivU74O9SIZnT5GImxPqcDS1EnzUJ24dZ7o+hkf
+hly4N2xvWymK1RSAUpVk80Ye5I7XwTEwTImTPLCjWxBkqDTMirbReuQRCtzer/6G
+LDXBFbFRQ+RNFbLuhJQz2rKEXdWt5yHxUlAerJaKzWnJWvMmaeWaREVXqNaIw+HD
+JLv/amYclcDiOhdOClWtv58gDJEudd1b8OjB2hb0GPE2DzeiZS4eYGTM1LCC4jkg
+XuEgn+CQYYthyhCW13BO2MekoMWSv5o86DZwUbNdHuydMvja4HQPGXM0yH3/NdZB
+lXGUdZ0ELOE3YNt4spqWkC5loqD9blLyegbC/3Hpxq1ifmWQ7LUUoSMDinxLN0Sy
+nnrJWNGeNi7Zr/khhtpIJOs/bAmYhsrsm5uksK3SuggD+WqAySbnolytrGlTcAiX
+B3MHyD5ajivi1IH/FgpIGn5kNAlmmm+sdga1excEJVUYQeRj
+=FSAx
+-----END PGP SIGNATURE-----
+
+--dy6an7gbbgb65wxi--
+
+
+From jan@wedesoft.de Thu Dec 22 21:54:45 2016
+Received: (at 837167) by bugs.debian.org; 22 Dec 2016 21:54:46 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,HAS_BUG_NUMBER,
+	SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 10; hammy, 131; neutral, 36; spammy,
+	1. spammytokens:0.912-+--H*R:D*de hammytokens:0.000-+--H*f:sk:alpine.,
+	0.000-+--H*MI:sk:alpine., 0.000-+--sk:hardeni, 0.000-+--lintian,
+	0.000-+--H*u:2013-08-11
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cKBK1-00049i-OD
+	for 837167@bugs.debian.org; Thu, 22 Dec 2016 21:54:45 +0000
+Received: from wedemob.home (host86-163-163-140.range86-163.btcentralplus.com [86.163.163.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 996FC153073A;
+	Thu, 22 Dec 2016 22:54:36 +0100 (CET)
+Date: Thu, 22 Dec 2016 21:54:35 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20161222123448.72oelvipzmwjn3fw@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1612222151150.11355@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name> <alpine.DEB.2.11.1612152042290.3202@wedemob> <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name> <alpine.DEB.2.11.1612221228280.6510@wedemob> <20161222123448.72oelvipzmwjn3fw@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+
+On Thu, 22 Dec 2016, Andrey Rahmatullin wrote:
+
+> On Thu, Dec 22, 2016 at 12:32:20PM +0000, Jan Wedekind wrote:
+>> There is one final unresolved issue: "hardening-no-fortify-functions"
+>> (certainty: wild-guess) even though GCC is now run with hardening options.
+>> Can I leave it as it is, do I need to override the lintian warning, or do I
+>> need to file a bug report for the lintian warning?
+> You should use blhc to check if the flags are passed correctly for all
+> cases. This tag is sometimes a false positive.
+
+Ok,
+
+     blhc aiscm*.build
+
+does not output anything. I verified that blhc works by running it on an 
+edited build file, too.
+
+
+From wrar@debian.org Sun Jan 01 11:55:01 2017
+Received: (at submit) by bugs.debian.org; 1 Jan 2017 11:55:02 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-13.9 required=4.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FOURLA,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,SPF_HELO_PASS
+	autolearn=ham autolearn_force=no version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 11; hammy, 98; neutral, 21; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--H*UA:NeoMutt,
+	0.000-+--H*u:NeoMutt, 0.000-+--H*f:sk:alpine., 0.000-+--H*UA:1.7.1
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cNej7-0002oS-Mi; Sun, 01 Jan 2017 11:55:01 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=d0A/hfbIwjNiIEkUXYUOHAMn9L1oqoihjfXn/YIoxxo=; b=zY8lw3jFg5G/a0YG6+T0sC9wjI
+	7fuOTN/zjHJaGU3lPw/2CJUTAlX0x6kzmyqGXVD8qtfkyxekgxQ67mD20jiJL6GNRuVxyjUyVnoJE
+	BvU+Xz30Q3DAhd2giCl8Gq3O/r+WIbgRn6fZwWtg+Bhv1AjW3/rwpkajTfiqJbO1gQKQ=;
+Received: from [78.153.25.15] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cNej4-0000kj-IZ; Sun, 01 Jan 2017 12:54:58 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id 8BC1B2000C6E; Sun,  1 Jan 2017 16:54:54 +0500 (+05)
+Date: Sun, 1 Jan 2017 16:54:54 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167@bugs.debian.org,
+	Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20170101115454.dkfb4gwsqbff2ktc@belkar.wrar.name>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob>
+ <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+ <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+ <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+ <alpine.DEB.2.11.1612152042290.3202@wedemob>
+ <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+ <alpine.DEB.2.11.1612191929120.17446@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="m3dunf6gwo6gm5kj"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1612191929120.17446@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--m3dunf6gwo6gm5kj
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+You have
+
+override_dh_makeshlibs:
+    # NOOP to prevent debuild from invoking ldconfig
+
+Debuild doesn't invoke ldconfig. If it's done to avoid adding an ldconfig
+trigger you should explain that and explain why it is added because it's
+not clear why do you need manual actions here.
+
+--=20
+WBR, wRAR
+
+--m3dunf6gwo6gm5kj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlho7gktFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+r2UP/3+B7w7L1PWwBPpk0upF57TGaG+vIKkA9BUYgT/j8znyGhlZtw9/tZS+4Po8
+vU38nKcT5SVMgTNpBZeyTLhK85X0c5kTZpAh+BLSoKlnaM/3yuqayI1pIOmpU/Z/
+a9+Nv1/Kq4AyJzxv4SM8Lm4bw2xthN5uEKMjM5a29EE+gagUzQGg4hSUJhjsDYVw
+dGWTsIzoXW/yn01wAXz5Rgp123Fx7vpDEmby4Xxy7hTBBjRjOkgaaKZ0mVEuAGZh
+o7y2AvhwIss6JXfhEri8Ahqcz9Lqb0Nz5+29UZ/thznWHf0HwT9nBbWmUejGvXSh
+TNxTM9UHkm2vLfr10FfaBOS4S/MElSnIb7GVcjyJoqltpRLnbbz0CiNTwcRWqIbG
++qDRcU+1P/15OJlQ9E/CoMMYVxVWetJrfqfhVkKRkNAB4OgODwU0smImlQKgBzGq
+qq1/sTqhRDOMJZgMoWFNKRR/qfypWRCJKW0QfwbAQtK5+ROSc6oHUQRSfUQ4cuLI
+B2ybg9GNX5chtVuVw9cIucvtzzY60UVN6gXKZm8QCWBC9xpyzVAIW6cGf4LXp5Dc
++zZLPs/Z/1drFYeUR63NZd6IDiwLAWShsP0kiImZzGoC/inBV3yETpt5vzr7fwUZ
+TGASW1wn0jJYT/1tQNr66czTXORHcHCStIXr9xz4FuqJs8Kj
+=L0x1
+-----END PGP SIGNATURE-----
+
+--m3dunf6gwo6gm5kj--
+
+
+From jan@wedesoft.de Sun Jan 01 21:58:12 2017
+Received: (at submit) by bugs.debian.org; 1 Jan 2017 21:58:12 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-6.9 required=4.0 tests=BAYES_00,FOURLA,
+	HAS_BUG_NUMBER,RCVD_IN_DNSWL_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 6; hammy, 142; neutral, 24; spammy, 1.
+	spammytokens:0.912-+--H*R:D*de hammytokens:0.000-+--H*f:sk:alpine.,
+	0.000-+--H*MI:sk:alpine., 0.000-+--debuild, 0.000-+--H*u:2013-08-11,
+	0.000-+--H*UA:2013-08-11
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cNo8q-0006KN-L4; Sun, 01 Jan 2017 21:58:12 +0000
+Received: from wedemob.home (host86-163-163-140.range86-163.btcentralplus.com [86.163.163.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id C2E9C1530674;
+	Sun,  1 Jan 2017 22:58:02 +0100 (CET)
+Date: Sun, 1 Jan 2017 21:58:00 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20170101115454.dkfb4gwsqbff2ktc@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1701012133070.16145@wedemob>
+References: <alpine.DEB.2.11.1609091727510.24456@wedemob> <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name> <alpine.DEB.2.11.1612152042290.3202@wedemob> <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name> <alpine.DEB.2.11.1612191929120.17446@wedemob> <20170101115454.dkfb4gwsqbff2ktc@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Delivered-To: submit@bugs.debian.org
+
+On Sun, 1 Jan 2017, Andrey Rahmatullin wrote:
+
+> You have
+>
+> override_dh_makeshlibs:
+>    # NOOP to prevent debuild from invoking ldconfig
+>
+> Debuild doesn't invoke ldconfig. If it's done to avoid adding an ldconfig
+> trigger you should explain that and explain why it is added because it's
+> not clear why do you need manual actions here.
+>
+> -- 
+> WBR, wRAR
+>
+
+Ok, I have changed the documentation as follows:
+
+     override_dh_makeshlibs:
+         # NOOP to prevent debuild from adding an ldconfig trigger.
+         # aiscm does not install shared libraries in the library path,
+         # it merely installs native extensions to be loaded by the Guile interpreter.
+
+The extension builds shared libraries but does not install them in the 
+library path.
+
+
+From wrar@debian.org Mon Jan 02 16:09:02 2017
+Received: (at submit) by bugs.debian.org; 2 Jan 2017 16:09:02 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-14.0 required=4.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FROMDEVELOPER,HAS_BUG_NUMBER,PGPSIGNATURE,SPF_HELO_PASS
+	autolearn=ham autolearn_force=no version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 13; hammy, 81; neutral, 19; spammy, 0.
+	spammytokens: hammytokens:0.000-+--H*c:pgp-sha512, 0.000-+--H*u:NeoMutt,
+	0.000-+--H*UA:NeoMutt, 0.000-+--H*f:sk:alpine., 0.000-+--H*UA:1.7.1
+Return-path: <wrar@debian.org>
+Received: from wrar.name ([78.47.88.245] helo=durkon.wrar.name)
+	by buxtehude.debian.org with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.84_2)
+	(envelope-from <wrar@debian.org>)
+	id 1cO5AT-000130-Uk; Mon, 02 Jan 2017 16:09:02 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wrar.name;
+	 s=20160710; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=tOHOWOSIL6Lv+yCSEcu0qz+ig6x27VyKRTMvXe2oV0c=; b=gMcXp7lUnopMcSmbvxbVYojKT4
+	RgJYhuxNzaoGluzWB5IX3hfVRw8M+Sb/az560m5SdvqY/CJuV5k8OEi2Sz+mpK++QUGEGjPVMyN6x
+	1Pi4aNYiRDAz9fdm8SqQNf2FrJMdjRZbSrxS2UqLUTV/IHJi8fwejrOCZ83taKLL6STU=;
+Received: from [78.153.20.178] (helo=belkar.wrar.name)
+	by durkon.wrar.name with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.88)
+	(envelope-from <wrar@debian.org>)
+	id 1cO5AQ-0002cX-U6; Mon, 02 Jan 2017 17:08:59 +0100
+Received: by belkar.wrar.name (Postfix, from userid 1000)
+	id B663E2003688; Mon,  2 Jan 2017 21:08:55 +0500 (+05)
+Date: Mon, 2 Jan 2017 21:08:55 +0500
+From: Andrey Rahmatullin <wrar@debian.org>
+To: Jan Wedekind <jan@wedesoft.de>
+Cc: 837167-done@bugs.debian.org,
+	Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+Message-ID: <20170102160855.mfjd5hdkx256w4m5@belkar.wrar.name>
+References: <20161212174117.itwfycgdo546d72m@belkar.wrar.name>
+ <alpine.DEB.2.11.1612122123230.15602@wedemob>
+ <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name>
+ <alpine.DEB.2.11.1612132218160.5158@wedemob>
+ <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+ <alpine.DEB.2.11.1612152042290.3202@wedemob>
+ <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name>
+ <alpine.DEB.2.11.1612191929120.17446@wedemob>
+ <20170101115454.dkfb4gwsqbff2ktc@belkar.wrar.name>
+ <alpine.DEB.2.11.1701012133070.16145@wedemob>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="o5uufeaohbauj3s6"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1701012133070.16145@wedemob>
+X-Operating-System: Debian Sid
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: NeoMutt/20161126 (1.7.1)
+Delivered-To: submit@bugs.debian.org
+
+
+--o5uufeaohbauj3s6
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Uploaded, thanks!
+
+--=20
+WBR, wRAR
+
+--o5uufeaohbauj3s6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJhBAABCgBLFiEEolIP6gqGcKZh3YxVM2L3AxpJkuEFAlhqexctFIAAAAAAFQAP
+cGthLWFkZHJlc3NAZ251cGcub3Jnd3JhckBkZWJpYW4ub3JnAAoJEDNi9wMaSZLh
+9TkP/2E+uCEdWs4uqxGSb1upG4vDts6Tv2pc/c6Kn9bgBGxCcUvWg3nN1CJqNfaz
+XCGLB0BhSyAWdm60V8r7k8HnpCOcrBmJe6VdCukWyvaJpzZ4C3YXWuGDoFY3JG/s
+TEeb/Q+v2gmJWsrsCwHZ//uLtSzqWsd1Bvnc9PQ36+n1BZBbNvCllUkt97QAox3j
+gbmpnkE1AaeG3PXus9jJ5ufxzG7tZ9JziNxwSkiOFsG8FHannbTkozLRpi04szTq
+0GZoxfb6M22ifwKyA3outOY4dULmYAqAyCzukSHDpefyyozs1FQyzIBVREEWQrUc
++jx3oSEUQ5D8qcw7GoXVWCka2c6OE45lrz0jQeE6qHgamsfXFWjEdujGGt0eoXsp
+CIul+e8QJSrtpQrUQ+hPbCbL+vFjYuO3mcVCDct7HFvM5tGluFLh94ZkkRFNkQpd
+5ayrmZa+NhJ3xGIzgfBvx68iHXx//VZlM8hm2QhDXCJjqUIffaCWgmfOGTA2KoDG
+cpl5a1jzlkeDUgvTve0gfXxKYlfXfAm5KxVEctnQBiiqbQtFy9fa3O7AyUToA+UO
+4tr938T3oaqgmjIPfWTn8IZgQdIDY4ZL31bU8d5uxsNBjCNYr9zSkUAR9uoxXAm6
+zluRHnudJYWaHYhZtN6SaGaYkzkyx2+kZjjYruC3bTt7+hUH
+=YY/4
+-----END PGP SIGNATURE-----
+
+--o5uufeaohbauj3s6--
+
+
+From jan@wedesoft.de Mon Jan 02 20:09:59 2017
+Received: (at submit) by bugs.debian.org; 2 Jan 2017 20:09:59 +0000
+X-Spam-Checker-Version: SpamAssassin 3.4.0-bugs.debian.org_2005_01_02
+	(2014-02-07) on buxtehude.debian.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-7.0 required=4.0 tests=BAYES_00,HAS_BUG_NUMBER,
+	RCVD_IN_DNSWL_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0-bugs.debian.org_2005_01_02
+X-Spam-Bayes: score:0.0000 Tokens: new, 7; hammy, 110; neutral, 24; spammy, 1.
+	spammytokens:0.912-+--H*R:D*de hammytokens:0.000-+--H*f:sk:alpine.,
+	0.000-+--H*MI:sk:alpine., 0.000-+--H*u:2013-08-11, 0.000-+--H*UA:2013-08-11,
+	0.000-+--H*f:sk:2016121
+Return-path: <jan@wedesoft.de>
+Received: from basicbox4.server-home.net ([195.137.212.26])
+	by buxtehude.debian.org with esmtps (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:256)
+	(Exim 4.84_2)
+	(envelope-from <jan@wedesoft.de>)
+	id 1cO8vf-0006Y9-6i
+	for submit@bugs.debian.org; Mon, 02 Jan 2017 20:09:59 +0000
+Received: from wedemob.home (host86-163-163-140.range86-163.btcentralplus.com [86.163.163.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by basicbox4.server-home.net (Postfix) with ESMTPSA id 3FC54153072B;
+	Mon,  2 Jan 2017 21:09:50 +0100 (CET)
+Date: Mon, 2 Jan 2017 20:09:49 +0000 (GMT)
+From: Jan Wedekind <jan@wedesoft.de>
+X-X-Sender: jan@wedemob
+Reply-To: Jan Wedekind <jan@wedesoft.de>
+To: Andrey Rahmatullin <wrar@debian.org>
+cc: 837167-done@bugs.debian.org, 
+    Debian Bug Tracking System <submit@bugs.debian.org>
+Subject: Re: Bug#837167: RFS: aiscm/0.6.2-2
+In-Reply-To: <20170102160855.mfjd5hdkx256w4m5@belkar.wrar.name>
+Message-ID: <alpine.DEB.2.11.1701022008440.6344@wedemob>
+References: <20161212174117.itwfycgdo546d72m@belkar.wrar.name> <alpine.DEB.2.11.1612122123230.15602@wedemob> <20161213061427.d2y2546qay4xlf2t@belkar.wrar.name> <alpine.DEB.2.11.1612132218160.5158@wedemob> <20161214155407.gflsndq35rmro444@belkar.wrar.name>
+ <alpine.DEB.2.11.1612152042290.3202@wedemob> <20161217121055.dbcvlabvoulffwt5@belkar.wrar.name> <alpine.DEB.2.11.1612191929120.17446@wedemob> <20170101115454.dkfb4gwsqbff2ktc@belkar.wrar.name> <alpine.DEB.2.11.1701012133070.16145@wedemob>
+ <20170102160855.mfjd5hdkx256w4m5@belkar.wrar.name>
+User-Agent: Alpine 2.11 (DEB 23 2013-08-11)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Delivered-To: submit@bugs.debian.org
+
+On Mon, 2 Jan 2017, Andrey Rahmatullin wrote:
+> Uploaded, thanks!
+>
+> -- 
+> WBR, wRAR
+>
+
+Thanks for reviewing the aiscm package. Your comments have helped 
+improve the package a lot.
+
+Regards
+Jan
+
+
+

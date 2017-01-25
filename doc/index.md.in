@@ -13,8 +13,9 @@ Control all data and machine code down to every single bit and byte.
 <p><a href="installation.html" title="Installation"><strong>Installation</strong> <img src="aiscm.gif" alt=""/> <strong>Installation</strong></a></p>
 </div>
 
-## Features
+## Documentation
 
+* [Installation](installation.html "Installation")
 * [Built-in assembler](assembler.html "Built-in assembler")
 * [Input/output](io.html "Input/output")
 * [Array operations](array.html "Array operations")
@@ -24,11 +25,15 @@ Control all data and machine code down to every single bit and byte.
 * [Github page](https://github.com/wedesoft/aiscm)
 * [Gitlab page](https://gitlab.com/wedesoft/aiscm)
 * [Bitbucket page](https://bitbucket.org/wedesoft/aiscm)
+* [Initial package review email thread](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=837167)
+* [Debian package list entry](https://packages.debian.org/sid/aiscm)
+* [Ubuntu Launchpad entry](https://launchpad.net/ubuntu/+source/aiscm/)
 
 ## Credits
 
 * Jan Wedekind: software development
 * Andrey Rahmatullin: Debian package sponsor
+* Gianfranco Costamagna: Ubuntu package
 
 ## External links
 
