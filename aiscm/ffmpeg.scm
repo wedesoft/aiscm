@@ -29,7 +29,7 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
-  #:re-export (read-image read-audio rate channels typecode))
+  #:re-export (destroy read-image read-audio rate channels typecode))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -56,6 +56,8 @@
   "Open audio/video output file FILE-NAME using FFmpeg library"
   (let-keywords initargs #f (shape frame-rate video-bit-rate aspect-ratio)
     (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name shape frame-rate video-bit-rate aspect-ratio))))
+
+(define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"

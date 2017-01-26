@@ -44,6 +44,7 @@ struct ffmpeg_t {
   AVCodecContext *audio_codec_ctx;
   int video_stream_idx;
   int audio_stream_idx;
+  char header_written;
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *frame;
@@ -98,6 +99,10 @@ SCM ffmpeg_destroy(SCM scm_self)
     av_frame_unref(self->frame);
     av_frame_free(&self->frame);
     self->frame = NULL;
+  };
+  if (self->header_written) {
+    av_write_trailer(self->fmt_ctx);
+    self->header_written = 0;
   };
   if (self->orig_pkt.data) {
     av_free_packet(&self->orig_pkt);
@@ -259,6 +264,16 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   // Some formats want stream headers to be separate.
   if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
       self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+  // Write video file header
+  err = avformat_write_header(self->fmt_ctx, NULL);
+  if (err < 0) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error writing header of video '~a': ~a",
+                   scm_list_2(scm_file_name, get_error_text(err)));
+  };
+  self->header_written = 1;
+
   return retval;
 }
 
@@ -466,6 +481,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
   scm_c_define_gsubr("make-ffmpeg-output", 5, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
+  scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
   scm_c_define_gsubr("ffmpeg-video-bit-rate", 1, 0, 0, ffmpeg_video_bit_rate);
   scm_c_define_gsubr("ffmpeg-aspect-ratio", 1, 0, 0, ffmpeg_aspect_ratio);
