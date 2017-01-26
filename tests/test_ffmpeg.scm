@@ -27,7 +27,7 @@
              (guile-tap))
 (load-extension "libguile-aiscm-tests" "init_tests")
 
-(define output-file (tmpnam))
+(define output-file (string-append (tmpnam) ".mpg"))
 (define output-video (open-ffmpeg-output output-file
                                          #:shape '(352 288)
                                          #:frame-rate 25
