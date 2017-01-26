@@ -205,7 +205,7 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
 
   int err;
   err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, "mpeg", file_name); // TODO: audodetect or select container
-  if (err < 0) {
+  if (!self->fmt_ctx) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error creating output context for file '~a': ~a",
                    scm_list_2(scm_file_name, get_error_text(err)));
@@ -264,6 +264,12 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   // Some formats want stream headers to be separate.
   if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
       self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+  // TODO: avcodec_open2, refactor open_codec?
+
+  // TODO: dump format
+
+  // TODO: open file
 
   // Write video file header
   err = avformat_write_header(self->fmt_ctx, NULL);

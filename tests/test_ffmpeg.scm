@@ -92,6 +92,8 @@
     "'open-ffmpeg-input' creates an FFmpeg object")
 (ok (is-a? output-video <ffmpeg>)
     "'open-ffmpeg-output' creates an FFmpeg object")
+(ok (throws? (open-ffmpeg-output "no-such-folder/test.mpg"))
+    "Throw error if output file cannot be written")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
 (ok (equal? '(16 2) (shape output-video))

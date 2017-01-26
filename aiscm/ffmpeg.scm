@@ -55,7 +55,11 @@
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
   (let-keywords initargs #f (shape frame-rate video-bit-rate aspect-ratio)
-    (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name shape frame-rate video-bit-rate aspect-ratio))))
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name
+                                                shape
+                                                frame-rate
+                                                (or video-bit-rate (apply * 3 shape))
+                                                (or aspect-ratio 1)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
