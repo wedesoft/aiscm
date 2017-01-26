@@ -193,7 +193,12 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   return retval;
 }
 
-SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM scm_video_bit_rate, SCM scm_aspect_ratio)
+SCM make_ffmpeg_output(SCM scm_file_name,
+                       SCM scm_shape,
+                       SCM scm_frame_rate,
+                       SCM scm_video_bit_rate,
+                       SCM scm_aspect_ratio,
+                       SCM scm_debug)
 {
   SCM retval;
   struct ffmpeg_t *self;
@@ -284,7 +289,7 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
                               get_error_text(err)));
   }
 
-  av_dump_format(self->fmt_ctx, 0, file_name, 1);// TODO: only in debug mode
+  if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
   /* open the output file, if needed */
   if (!(self->fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
@@ -510,7 +515,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 5, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 6, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
