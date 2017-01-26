@@ -212,15 +212,20 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   };
 
   enum AVCodecID codec_id = self->fmt_ctx->oformat->video_codec;
-  AVCodec *codec = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
-  if (!codec) {
+  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "File format does not support video encoding", SCM_EOL);
+  };
+
+  AVCodec *enc = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
+  if (!enc) {
     ffmpeg_destroy(retval);
     // TODO: check avcodec_get_name is supported
     scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
                    scm_list_1(scm_from_locale_string(avcodec_get_name(codec_id))));
   }
 
-  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, codec); // TODO: does this need a corresponding destructor call?
+  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc); // TODO: does this need a corresponding destructor call?
   if (!video_stream) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
@@ -232,44 +237,64 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   self->video_stream_idx = video_stream->id;
 
   // Get codec context
-  self->video_codec_ctx = video_stream->codec;
+  AVCodecContext *c = video_stream->codec;
+  self->video_codec_ctx = c;
 
   // Set codec id
-  self->video_codec_ctx->codec_id = codec_id;
+  c->codec_id = codec_id;
+  c->codec_type = AVMEDIA_TYPE_VIDEO;
 
   // Set encoder bit rate
-  self->video_codec_ctx->bit_rate = scm_to_int(scm_video_bit_rate);
+  c->bit_rate = scm_to_int(scm_video_bit_rate);
 
   // Set video frame width and height
-  self->video_codec_ctx->width = scm_to_int(scm_car(scm_shape));
-  self->video_codec_ctx->height = scm_to_int(scm_cadr(scm_shape));
-
-  // Set intra frame lower limit
-  self->video_codec_ctx->gop_size = 12;
-
-  // Set pixel format
-  self->video_codec_ctx->pix_fmt = PIX_FMT_YUV420P;
+  c->width = scm_to_int(scm_car(scm_shape));
+  c->height = scm_to_int(scm_cadr(scm_shape));
 
   // Set video frame rate
   video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
   video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
   video_stream->time_base.num = video_stream->avg_frame_rate.den;
   video_stream->time_base.den = video_stream->avg_frame_rate.num;
+  c->time_base = video_stream->time_base;
+
+  // Set intra frame lower limit
+  c->gop_size = 12;
+
+  // Set pixel format
+  c->pix_fmt = PIX_FMT_YUV420P;
+
+  if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) c->mb_decision = 2;
 
   // Set aspect ratio
   video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
   video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
-  self->video_codec_ctx->sample_aspect_ratio = video_stream->sample_aspect_ratio;
+  c->sample_aspect_ratio = video_stream->sample_aspect_ratio;
 
   // Some formats want stream headers to be separate.
   if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-      self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+      c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-  // TODO: avcodec_open2, refactor open_codec?
+  // TODO: refactor open_codec?
+  err = avcodec_open2(c, enc, NULL);
+  if (err < 0) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Could not configure video codec '~a': ~a",
+                   scm_list_2(scm_from_locale_string(avcodec_get_name(codec_id)),
+                              get_error_text(err)));
+  }
 
-  // TODO: dump format
+  av_dump_format(self->fmt_ctx, 0, file_name, 1);// TODO: only in debug mode
 
-  // TODO: open file
+  /* open the output file, if needed */
+  if (!(self->fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+    int err = avio_open(&self->fmt_ctx->pb, file_name, AVIO_FLAG_WRITE);
+    if (err < 0) {
+      ffmpeg_destroy(retval);
+      scm_misc_error("make-ffmpeg-output", "Could not open '~a': ~a",
+                     scm_list_2(scm_file_name, get_error_text(err)));
+    }
+  }
 
   // Write video file header
   err = avformat_write_header(self->fmt_ctx, NULL);

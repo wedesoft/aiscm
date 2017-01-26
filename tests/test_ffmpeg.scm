@@ -29,8 +29,8 @@
 
 (define output-file (tmpnam))
 (define output-video (open-ffmpeg-output output-file
-                                         #:shape '(16 2)
-                                         #:frame-rate (/ 25 2)
+                                         #:shape '(352 288)
+                                         #:frame-rate 25
                                          #:video-bit-rate 1000000
                                          #:aspect-ratio (/ 16 11)))
 
@@ -96,7 +96,7 @@
     "Throw error if output file cannot be written")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
-(ok (equal? '(16 2) (shape output-video))
+(ok (equal? '(352 288) (shape output-video))
     "Check frame size of output video")
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
@@ -108,7 +108,7 @@
     "Check that video frame is an image object")
 (ok (eqv? 25 (frame-rate input-video))
     "Get frame rate of input video")
-(ok (equal? (/ 25 2) (frame-rate output-video))
+(ok (equal? 25 (frame-rate output-video))
     "Get frame rate of output video")
 (ok (throws? (frame-rate audio-mono))
     "Audio file does not have a frame rate")
