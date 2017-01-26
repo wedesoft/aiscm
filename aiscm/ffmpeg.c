@@ -251,8 +251,8 @@ SCM make_ffmpeg_output(SCM scm_file_name, SCM scm_shape, SCM scm_frame_rate, SCM
   self->video_codec_ctx->pix_fmt = PIX_FMT_YUV420P;
 
   // Set video frame rate
-  video_stream->avg_frame_rate = av_make_q(scm_to_int(scm_numerator(scm_frame_rate)),
-                                           scm_to_int(scm_denominator(scm_frame_rate)));
+  video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
+  video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
   video_stream->time_base.num = video_stream->avg_frame_rate.den;
   video_stream->time_base.den = video_stream->avg_frame_rate.num;
 
