@@ -194,6 +194,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
 }
 
 SCM make_ffmpeg_output(SCM scm_file_name,
+                       SCM scm_format_name,
                        SCM scm_shape,
                        SCM scm_frame_rate,
                        SCM scm_video_bit_rate,
@@ -209,15 +210,18 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   SCM_NEWSMOB(retval, ffmpeg_tag, self);
 
   int err;
-  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, "mpeg", file_name); // TODO: audodetect or select container
+  const char *format_name = NULL;
+  if (!scm_is_false(scm_format_name)) format_name = scm_to_locale_string(scm_symbol_to_string(scm_format_name));
+  printf("format-name %s\n", format_name);// TODO: remove this
+  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, format_name, file_name); // TODO: audodetect or select container
   if (!self->fmt_ctx) {
     ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error creating output context for file '~a': ~a",
+    scm_misc_error("make-ffmpeg-output", "Error initializing output format for file '~a': ~a",
                    scm_list_2(scm_file_name, get_error_text(err)));
   };
 
   enum AVCodecID codec_id = self->fmt_ctx->oformat->video_codec;
-  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test
+  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "File format does not support video encoding", SCM_EOL);
   };
@@ -225,12 +229,11 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   AVCodec *enc = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
   if (!enc) {
     ffmpeg_destroy(retval);
-    // TODO: check avcodec_get_name is supported
     scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
                    scm_list_1(scm_from_locale_string(avcodec_get_name(codec_id))));
   }
 
-  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc); // TODO: does this need a corresponding destructor call?
+  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc);
   if (!video_stream) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
@@ -515,7 +518,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 6, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 7, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);

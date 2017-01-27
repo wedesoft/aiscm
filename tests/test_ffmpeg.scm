@@ -29,6 +29,7 @@
 
 (define output-file (string-append (tmpnam) ".mpg"))
 (define output-video (open-ffmpeg-output output-file
+                                         #:format-name 'mpeg
                                          #:shape '(352 288)
                                          #:frame-rate 25
                                          #:video-bit-rate 1000000
@@ -94,6 +95,8 @@
     "'open-ffmpeg-output' creates an FFmpeg object")
 (ok (throws? (open-ffmpeg-output "no-such-folder/test.mpg"))
     "Throw error if output file cannot be written")
+(ok (throws? (open-ffmpeg-output (string-append (tmp) ".avi") #:format-name 'nosuchformat))
+    "Throw error if output format is not known")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
 (ok (equal? '(352 288) (shape output-video))
