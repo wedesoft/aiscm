@@ -220,8 +220,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   int err;
   const char *format_name = NULL;
   if (!scm_is_false(scm_format_name)) format_name = scm_to_locale_string(scm_symbol_to_string(scm_format_name));
-  printf("format-name %s\n", format_name);// TODO: remove this
-  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, format_name, file_name); // TODO: audodetect or select container
+  err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, format_name, file_name);
   if (!self->fmt_ctx) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error initializing output format for file '~a': ~a",
