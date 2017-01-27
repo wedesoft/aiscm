@@ -45,6 +45,7 @@ struct ffmpeg_t {
   int video_stream_idx;
   int audio_stream_idx;
   char header_written;
+  char output_file;
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *frame;
@@ -116,8 +117,15 @@ SCM ffmpeg_destroy(SCM scm_self)
     avcodec_close(self->video_codec_ctx);
     self->video_codec_ctx = NULL;
   };
-  if (self->fmt_ctx) {
-    avformat_close_input(&self->fmt_ctx);
+  if (self->output_file) {
+    avio_close(self->fmt_ctx->pb);
+    self->output_file = 0;
+  };
+  if (self->fmt_ctx) {// TODO: close streams
+    if (self->fmt_ctx->iformat)
+      avformat_close_input(&self->fmt_ctx);
+    else
+      avformat_free_context(self->fmt_ctx);
     self->fmt_ctx = NULL;
   };
   return SCM_UNSPECIFIED;
@@ -302,6 +310,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
       scm_misc_error("make-ffmpeg-output", "Could not open '~a': ~a",
                      scm_list_2(scm_file_name, get_error_text(err)));
     }
+    self->output_file = 1;
   }
 
   // Write video file header

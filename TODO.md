@@ -1,7 +1,7 @@
 ## Ready
 
 * ffmpeg output (writing videos)
-  write header/trailer, close file, test video (red->x, green->y, blue->time)
+  close file, test video (red->x, green->y, blue->time)
   select format, select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio
   check avcodec\_get\_name is supported
