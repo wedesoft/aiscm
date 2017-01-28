@@ -29,7 +29,7 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
-  #:re-export (destroy read-image read-audio rate channels typecode))
+  #:re-export (destroy read-image write-image read-audio rate channels typecode))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -136,6 +136,10 @@
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
+
+(define-method (write-image (img <sequence<>>) (self <ffmpeg>))
+  "Write video frame to output video"
+  img)
 
 (define (pts= self position)
   "Set audio/video position (in seconds)"

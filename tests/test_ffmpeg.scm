@@ -27,13 +27,19 @@
              (guile-tap))
 (load-extension "libguile-aiscm-tests" "init_tests")
 
-(define output-file (string-append (tmpnam) ".mpg"))
+(define colour-values
+  (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
+(define colour-img (to-array colour-values))
+
+(define output-file (string-append (tmpnam) ".avi"))
 (define output-video (open-ffmpeg-output output-file
-                                         #:format-name 'mpeg
-                                         #:shape '(352 288)
+                                         #:format-name 'avi
+                                         #:shape '(16 2)
                                          #:frame-rate 25
-                                         #:video-bit-rate 1000000
+                                         #:video-bit-rate 100000
                                          #:aspect-ratio (/ 16 11)))
+
+(write-image colour-img output-video)
 
 (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -99,7 +105,7 @@
     "Throw error if output format is not known")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
-(ok (equal? '(352 288) (shape output-video))
+(ok (equal? '(16 2) (shape output-video))
     "Check frame size of output video")
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
@@ -115,7 +121,7 @@
     "Get frame rate of output video")
 (ok (throws? (frame-rate audio-mono))
     "Audio file does not have a frame rate")
-(ok (eqv? 1000000 (video-bit-rate output-video))
+(ok (eqv? 100000 (video-bit-rate output-video))
     "Get video bit-rate of output video")
 (ok (equal? 1 (aspect-ratio input-video))
     "Get aspect ratio of input video")

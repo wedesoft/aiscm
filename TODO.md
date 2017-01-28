@@ -1,11 +1,12 @@
 ## Ready
 
-* ffmpeg output (writing videos)
-  close file, test video (red->x, green->y, blue->time)
-  select format, select codecs, audio/video, audio only, video only, audio bit rate
+* ffmpeg output (writing videos), see IO_XVIDEO code in aiscm/xorg.c for colorspace conversions
+  test video (red->x, green->y, blue->time)
+  select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio
   check avcodec\_get\_name is supported
 * use -module -shared -avoid-version
+* integration tests for XVideo, OpenGL, and XImage
 * tensor sum
 * fast live analysis
 * parameter passing for sequences, map, tensor operations, replace fill and other?
