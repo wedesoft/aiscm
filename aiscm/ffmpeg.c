@@ -23,9 +23,9 @@
 
 // http://dranger.com/ffmpeg/
 // https://github.com/FFmpeg/FFmpeg/tree/n2.6.9/doc/examples
-// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/demuxing_decoding.c
-// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/filtering_video.c
-// https://github.com/FFmpeg/FFmpeg/raw/n2.6.9/doc/examples/muxing.c
+// https://raw.githubusercontent.com/FFmpeg/FFmpeg/n2.6.9/doc/examples/demuxing_decoding.c
+// https://raw.githubusercontent.com/FFmpeg/FFmpeg/n2.6.9/doc/examples/filtering_video.c
+// https://raw.githubusercontent.com/FFmpeg/FFmpeg/n2.6.9/doc/examples/muxing.c
 
 #ifndef HAVE_FRAME_ALLOC
 #warning "av_frame_alloc not defined"
@@ -139,23 +139,29 @@ size_t free_ffmpeg(SCM scm_self)
   return 0;
 }
 
-static AVCodecContext *open_codec(SCM scm_self, struct ffmpeg_t *self, SCM scm_file_name,
-                                  int stream_idx, const char *media_type)
+static AVCodecContext *open_codec(SCM scm_self, AVCodecContext *codec_ctx, AVCodec *codec,
+                                  const char *media_type, SCM scm_file_name)
 {
-  AVCodecContext *dec_ctx = self->fmt_ctx->streams[stream_idx]->codec;
+  int err = avcodec_open2(codec_ctx, codec, NULL);
+  if (err < 0) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("open-codec", "Failed to open ~a codec for file '~a'",
+                   scm_list_2(scm_from_locale_string(media_type), scm_file_name));
+  };
+  return codec_ctx;
+}
+
+static AVCodecContext *open_decoder(SCM scm_self, SCM scm_file_name,
+                                    AVStream *stream, const char *media_type)
+{
+  AVCodecContext *dec_ctx = stream->codec;
   AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
   if (!dec) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
-  // av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
-  if (avcodec_open2(dec_ctx, dec, NULL) < 0) {
-    ffmpeg_destroy(scm_self);
-    scm_misc_error("open-codec", "Failed to open ~a codec for file '~a'",
-                   scm_list_2(scm_from_locale_string(media_type), scm_file_name));
-  };
-  return dec_ctx;
+  return open_codec(scm_self, dec_ctx, dec, media_type, scm_file_name);
 }
 
 SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
@@ -184,11 +190,11 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   // TODO: only open desired streams
   self->video_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
   if (self->video_stream_idx >= 0)
-    self->video_codec_ctx = open_codec(retval, self, scm_file_name, self->video_stream_idx, "video");
+    self->video_codec_ctx = open_decoder(retval, scm_file_name, video_stream(self), "video");
 
   self->audio_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
   if (self->audio_stream_idx >= 0)
-    self->audio_codec_ctx = open_codec(retval, self, scm_file_name, self->audio_stream_idx, "audio");
+    self->audio_codec_ctx = open_decoder(retval, scm_file_name, audio_stream(self), "audio");
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 0);
 
@@ -290,14 +296,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
       c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-  // TODO: refactor open_codec?
-  err = avcodec_open2(c, enc, NULL);
-  if (err < 0) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Could not configure video codec '~a': ~a",
-                   scm_list_2(scm_from_locale_string(avcodec_get_name(codec_id)),
-                              get_error_text(err)));
-  }
+  open_codec(retval, c, enc, "video", scm_file_name);
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
