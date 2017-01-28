@@ -498,6 +498,11 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
+SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
+{
+  return scm_image;
+}
+
 SCM ffmpeg_channels(SCM scm_self)
 {
   return scm_from_int(audio_codec_ctx(get_self(scm_self))->channels);
@@ -535,6 +540,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
+  scm_c_define_gsubr("ffmpeg-write-video", 2, 0, 0, ffmpeg_write_video);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

@@ -137,8 +137,13 @@
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
-(define-method (write-image (img <sequence<>>) (self <ffmpeg>))
+(define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output video"
+  (ffmpeg-write-video (slot-ref self 'ffmpeg) img))
+
+(define-method (write-image (img <sequence<>>) (self <ffmpeg>))
+  "Write array representing video frame to output video"
+  (write-image (to-image img) self)
   img)
 
 (define (pts= self position)
