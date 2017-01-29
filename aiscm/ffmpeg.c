@@ -320,6 +320,17 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   };
   self->header_written = 1;
 
+  // Allocate frame
+  self->frame = av_frame_alloc();
+  self->frame->format = AV_PIX_FMT_YUV420P;
+  self->frame->width = scm_to_int(scm_car(scm_shape));
+  self->frame->height = scm_to_int(scm_cadr(scm_shape));
+  err = av_frame_get_buffer(self->frame, 32);
+  if (err < 0) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating frame buffer: ~a",
+                   scm_list_1(get_error_text(err)));
+  };
   return retval;
 }
 
@@ -500,6 +511,14 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
 
 SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
 {
+  // TODO: AVFMT_RAWPICTURE
+  struct ffmpeg_t *self = get_self(scm_self);
+  AVCodecContext *codec = video_codec_ctx(self);
+
+  // Make frame writeable
+  int err = av_frame_make_writable(self->frame);
+  if (err < 0) scm_misc_error("ffmpeg-write-video", "Error making frame writeable", SCM_EOL);
+
   return scm_image;
 }
 
