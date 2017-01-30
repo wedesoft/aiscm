@@ -122,7 +122,9 @@
   "Convert image by mutating result location"
   (let [(dest-type   (descriptor self))
         (source-type (descriptor source))]
-    (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type)
+    (if (eq? (get-format source) 'MJPG)
+      (mjpeg-to-yuv420p (get-memory (get-mem source)) (car (shape self)) (cadr (shape self)) (get-memory (get-mem self)) (get-offsets self))
+      (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type))
     self))
 
 (define-method (convert (self <image>)
@@ -138,13 +140,11 @@
                (equal? pitches (default-pitches fmt (car shape))))
         (let* [(source-mem      (get-mem self))
                (size            (image-size fmt pitches (cadr shape)))
-               (dest-mem        (memalign size 16))]
-          (mjpeg-to-yuv420p (get-memory source-mem)
-                            (car shape)
-                            (cadr shape)
-                            (get-memory dest-mem)
-                            offsets)
-          (make <image> #:format fmt #:shape shape #:mem dest-mem))
+               (dest-mem        (memalign size 16))
+               (destination     (make <image> #:format fmt
+                                              #:shape shape
+                                              #:mem dest-mem))]
+          (convert-from! destination self))
         (convert (convert self 'YV12) fmt shape offsets pitches))
       (let* [(size        (image-size fmt pitches (cadr shape)))
              (destination (make <image> #:format fmt
