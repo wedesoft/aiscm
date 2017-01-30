@@ -30,7 +30,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
-            get-format get-mem convert to-image symbol->format format->symbol)
+            get-format get-mem convert to-image symbol->format format->symbol convert-from!)
   #:re-export (to-array))
 
 (load-extension "libguile-aiscm-image" "init_image")
@@ -117,6 +117,14 @@
          (base          (get-memory mem))
          (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
     (make <mem> #:memory memory #:base base #:size size)))
+
+(define-method (convert-from! (self <image>) (source <image>))
+  "Convert image by mutating result location"
+  (let [(dest-type   (descriptor self))
+        (source-type (descriptor source))]
+    (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type)
+    self))
+
 (define-method (convert (self <image>)
                         (fmt <symbol>)
                         (shape <list>)
@@ -138,15 +146,13 @@
                             offsets)
           (make <image> #:format fmt #:shape shape #:mem dest-mem))
         (convert (convert self 'YV12) fmt shape offsets pitches))
-      (let* [(source-mem (get-mem self)); TODO: refactor with cond
-             (size       (image-size fmt pitches (cadr shape)))
-             (dest-mem   (memalign size 16))]
-        (image-convert (get-memory source-mem) source-type (get-memory dest-mem) dest-type)
-        (make <image> #:format  fmt
-                      #:shape   shape
-                      #:mem     dest-mem
-                      #:offsets offsets
-                      #:pitches pitches)))))
+      (let* [(size        (image-size fmt pitches (cadr shape)))
+             (destination (make <image> #:format fmt
+                                        #:shape   shape
+                                        #:mem     (memalign size 16)
+                                        #:offsets offsets
+                                        #:pitches pitches))]
+        (convert-from! destination self)))))
 (define-method (convert (self <image>) (format <symbol>) (shape <list>))
   (let* [(pitches (default-pitches format (car shape)))
          (offsets (default-offsets format pitches (cadr shape)))]

@@ -1,5 +1,7 @@
 ## Ready
 
+* MJPG conversion tests
+* convert-from! for MJPG
 * ffmpeg output (writing videos), use image-convert (convert with target image)
   test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate

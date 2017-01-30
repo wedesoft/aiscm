@@ -32,6 +32,7 @@
 (define m (to-array <ubyte> l))
 (define mem (value m))
 (define img (make <image> #:format 'GRAY #:shape '(8 1) #:mem mem))
+
 (diagnostics "following test only works with recent version of libswscale")
 (ok (equal? #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))
   "conversion to BGR")
@@ -71,4 +72,10 @@
   "Convert RGB symbol to format number and back")
 (ok (eq? 'I420 (format->symbol (symbol->format 'I420)))
   "Convert I420 symbol to format number and back")
+
+(define target (to-image (arr (0 0 0 0 0 0 0 0))))
+(convert-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
+(ok (equal? #vu8(1 2 3 4 6 7 8 9) (read-bytes (get-mem target) 8))
+    "Write conversion result to a target image")
+
 (run-tests)
