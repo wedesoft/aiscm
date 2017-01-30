@@ -1,6 +1,6 @@
 ## Ready
 
-* ffmpeg output (writing videos), see IO_XVIDEO code in aiscm/xorg.c for colorspace conversions
+* ffmpeg output (writing videos), use image-convert (convert with target image)
   test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio

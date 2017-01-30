@@ -517,7 +517,30 @@ SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
 
   // Make frame writeable
   int err = av_frame_make_writable(self->frame);
-  if (err < 0) scm_misc_error("ffmpeg-write-video", "Error making frame writeable", SCM_EOL);
+  if (err < 0)
+    scm_misc_error("ffmpeg-write-video", "Error making frame writeable: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  // TODO: convert frame to YV12
+  AVPacket pkt = { 0 };
+  av_init_packet(&pkt);
+
+  // Encode the video frame
+  int got_packet;
+  err = avcodec_encode_video2(codec, &pkt, self->frame, &got_packet);
+  if (err < 0)
+    scm_misc_error("ffmpeg-write-video", "Error encoding video frame: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  // Write any new video packets
+  if (got_packet) {
+    av_packet_rescale_ts(&pkt, codec->time_base, video_stream(self)->time_base);
+    pkt.stream_index = self->video_stream_idx;
+    err = av_interleaved_write_frame(self->fmt_ctx, &pkt);
+    if (err < 0)
+      scm_misc_error("ffmpeg-write-video", "Error writing video frame: ~a",
+                     scm_list_1(get_error_text(err)));
+  };
 
   return scm_image;
 }
