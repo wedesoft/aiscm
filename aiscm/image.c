@@ -70,12 +70,12 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   return SCM_UNDEFINED;
 }
 
-SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_width, SCM scm_height, SCM scm_dest_ptr, SCM scm_offsets)
+SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM scm_offsets)
 {
   void *source_ptr = scm_to_pointer(scm_source_ptr);
   void *dest_ptr = scm_to_pointer(scm_dest_ptr);
-  int width = scm_to_int(scm_width);
-  int height = scm_to_int(scm_height);
+  int width = scm_to_int(scm_car(scm_shape));
+  int height = scm_to_int(scm_cadr(scm_shape));
   int offsets[3];
   memset(offsets, 0, sizeof(offsets));
   scm_to_array(scm_offsets, offsets);
@@ -94,5 +94,5 @@ void init_image(void)
   scm_c_define("AV_PIX_FMT_UYVY422", scm_from_int(AV_PIX_FMT_UYVY422));
   scm_c_define("AV_PIX_FMT_YUYV422", scm_from_int(AV_PIX_FMT_YUYV422));
   scm_c_define_gsubr("image-convert", 4, 0, 0, image_convert);
-  scm_c_define_gsubr("mjpeg-to-yuv420p", 5, 0, 0, mjpeg_to_yuv420p);
+  scm_c_define_gsubr("mjpeg-to-yuv420p", 4, 0, 0, mjpeg_to_yuv420p);
 }
