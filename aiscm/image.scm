@@ -123,7 +123,11 @@
   (let [(dest-type   (descriptor self))
         (source-type (descriptor source))]
     (if (eq? (get-format source) 'MJPG)
-      (mjpeg-to-yuv420p (get-memory (get-mem source)) (shape self) (get-memory (get-mem self)) (get-offsets self))
+      (if (and (memv (get-format self) '(YV12 I420))
+               (equal? (shape self) (shape source))
+               (equal? (get-pitches self) (default-pitches 'YV12 (car (shape self)))))
+        (mjpeg-to-yuv420p (get-memory (get-mem source)) (shape self) (get-memory (get-mem self)) (get-offsets self))
+        (convert-from! self (convert source 'YV12)))
       (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type))
     self))
 
@@ -132,24 +136,13 @@
                         (shape <list>)
                         (offsets <list>)
                         (pitches <list>))
-  (let [(source-type (descriptor self))
-        (dest-type   (descriptor fmt shape offsets pitches))
-        (dest-size   (image-size fmt pitches (cadr shape)))]
-    (if (eq? (get-format self) 'MJPG)
-      (if (and (eqv? (symbol->format fmt) AV_PIX_FMT_YUV420P)
-               (equal? (slot-ref self 'shape) shape)
-               (equal? pitches (default-pitches fmt (car shape))))
-        (let [(destination     (make <image> #:format fmt
-                                             #:shape shape
-                                             #:mem (memalign dest-size 16)))]
-          (convert-from! destination self))
-        (convert (convert self 'YV12) fmt shape offsets pitches))
-      (let [(destination (make <image> #:format  fmt
-                                       #:shape   shape
-                                       #:mem     (memalign dest-size 16)
-                                       #:offsets offsets
-                                       #:pitches pitches))]
-        (convert-from! destination self)))))
+  (let* [(dest-size   (image-size fmt pitches (cadr shape)))
+         (destination (make <image> #:format fmt
+                                    #:shape shape
+                                    #:mem (memalign dest-size 16)
+                                    #:offsets offsets
+                                    #:pitches pitches))]
+        (convert-from! destination self)))
 (define-method (convert (self <image>) (format <symbol>) (shape <list>))
   (let* [(pitches (default-pitches format (car shape)))
          (offsets (default-offsets format pitches (cadr shape)))]
