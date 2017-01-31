@@ -91,20 +91,21 @@
                    (cons pts (array (array-type type) shape (memory data size))))
            lst)))
 
+(define (video-frame format shape offsets pitches data size)
+  "Construct a video frame from the specified information"
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
+    (make <image>
+          #:format  (format->symbol format)
+          #:shape   shape
+          #:offsets offsets
+          #:pitches pitches
+          #:mem     (memory data size))))
+
 (define (import-video-frame self lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (apply (lambda (pts format shape offsets pitches data size)
-             (cons
-               pts
-               (duplicate
-                 (make <image>
-                       #:format  (format->symbol format)
-                       #:shape   shape
-                       #:offsets offsets
-                       #:pitches pitches
-                       #:mem     (memory data size)))))
-           lst)))
+  (let [(pts    (car lst))
+        (frame  (apply video-frame (cdr lst)))]
+    (cons pts frame)))
 
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"

@@ -534,6 +534,8 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
+static SCM scm_convert_from;
+
 SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
 {
   // TODO: AVFMT_RAWPICTURE
@@ -572,6 +574,7 @@ SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
 
 void init_ffmpeg(void)
 {
+  scm_convert_from = scm_c_public_ref("aiscm image", "convert-from!");
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
   av_register_all();
