@@ -28,7 +28,8 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
+            ffmpeg-video-frame)
   #:re-export (destroy read-image write-image read-audio rate channels typecode))
 
 
@@ -105,7 +106,7 @@
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
   (let [(pts    (car lst))
         (frame  (apply video-frame (cdr lst)))]
-    (cons pts frame)))
+    (cons pts (duplicate frame))))
 
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"
@@ -140,7 +141,9 @@
 
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output video"
-  (ffmpeg-write-video (slot-ref self 'ffmpeg) img))
+  (let [(output-frame (apply video-frame (ffmpeg-video-frame (slot-ref self 'ffmpeg))))]
+    (convert-from! output-frame img)
+    (ffmpeg-write-video (slot-ref self 'ffmpeg))))
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))
   "Write array representing video frame to output video"

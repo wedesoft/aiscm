@@ -468,7 +468,15 @@ SCM list_video_frame_info(struct ffmpeg_t *self)
 
 SCM ffmpeg_video_frame(SCM scm_self)
 {
-  return list_video_frame_info(get_self(scm_self));
+  struct ffmpeg_t *self = get_self(scm_self);
+
+  // Make frame writeable
+  int err = av_frame_make_writable(self->frame);
+  if (err < 0)
+    scm_misc_error("ffmpeg-write-video", "Error making frame writeable: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  return list_video_frame_info(self);
 }
 
 static SCM list_timestamped_video(struct ffmpeg_t *self)
@@ -542,19 +550,16 @@ SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
   struct ffmpeg_t *self = get_self(scm_self);
   AVCodecContext *codec = video_codec_ctx(self);
 
-  // Make frame writeable
-  int err = av_frame_make_writable(self->frame);
-  if (err < 0)
-    scm_misc_error("ffmpeg-write-video", "Error making frame writeable: ~a",
-                   scm_list_1(get_error_text(err)));
-
   // TODO: convert frame to YV12
+  // scm_call_2(scm_convert_from, ..., scm_image);
+
+  // Initialise data packet
   AVPacket pkt = { 0 };
   av_init_packet(&pkt);
 
   // Encode the video frame
   int got_packet;
-  err = avcodec_encode_video2(codec, &pkt, self->frame, &got_packet);
+  int err = avcodec_encode_video2(codec, &pkt, self->frame, &got_packet);
   if (err < 0)
     scm_misc_error("ffmpeg-write-video", "Error encoding video frame: ~a",
                    scm_list_1(get_error_text(err)));
