@@ -1,6 +1,7 @@
 ## Ready
 
-* convert-from! for MJPG (get image info into Scheme)
+* test scm\_to\_array, test scm\_to\_long and scm\_from\_long
+* test return value of write-image, writing of video frame
 * timestamp sorted?
 * ffmpeg output (writing videos), use image-convert (convert with target image)
   test video (red->x, green->y, blue->time)

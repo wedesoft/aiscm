@@ -143,7 +143,8 @@
   "Write video frame to output video"
   (let [(output-frame (apply video-frame (ffmpeg-video-frame (slot-ref self 'ffmpeg))))]
     (convert-from! output-frame img)
-    (ffmpeg-write-video (slot-ref self 'ffmpeg))))
+    (ffmpeg-write-video (slot-ref self 'ffmpeg)))
+  img)
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))
   "Write array representing video frame to output video"

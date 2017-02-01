@@ -283,7 +283,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   c->gop_size = 12;
 
   // Set pixel format
-  c->pix_fmt = PIX_FMT_YUV420P;
+  c->pix_fmt = AV_PIX_FMT_YUV420P;
 
   if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) c->mb_decision = 2;
 
@@ -297,6 +297,23 @@ SCM make_ffmpeg_output(SCM scm_file_name,
       c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
   open_codec(retval, c, enc, "video", scm_file_name);
+
+  // Allocate frame
+  self->frame = av_frame_alloc();
+  memset(self->frame, sizeof(AVFrame), 0);
+  if (!self->frame) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating frame", SCM_EOL);
+  };
+  self->frame->format = c->pix_fmt;
+  self->frame->width = scm_to_int(scm_car(scm_shape));
+  self->frame->height = scm_to_int(scm_cadr(scm_shape));
+  err = av_frame_get_buffer(self->frame, 32);
+  if (err < 0) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating frame buffer: ~a",
+                   scm_list_1(get_error_text(err)));
+  };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
@@ -320,17 +337,6 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   };
   self->header_written = 1;
 
-  // Allocate frame
-  self->frame = av_frame_alloc();
-  self->frame->format = AV_PIX_FMT_YUV420P;
-  self->frame->width = scm_to_int(scm_car(scm_shape));
-  self->frame->height = scm_to_int(scm_cadr(scm_shape));
-  err = av_frame_get_buffer(self->frame, 32);
-  if (err < 0) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error allocating frame buffer: ~a",
-                   scm_list_1(get_error_text(err)));
-  };
   return retval;
 }
 
@@ -448,8 +454,14 @@ static SCM decode_audio(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
 
 SCM list_video_frame_info(struct ffmpeg_t *self)
 {
-  int offsets[AV_NUM_DATA_POINTERS];
+  // note that the pointer offsets can be negative for FFmpeg frames because av_frame_get_buffer
+  // allocates separate memory locations for each image plane.
+  int64_t offsets[AV_NUM_DATA_POINTERS];
   offsets_from_pointers(self->frame->data, offsets, AV_NUM_DATA_POINTERS);
+
+  int64_t linesize[AV_NUM_DATA_POINTERS];
+  int_array_to_long(linesize, self->frame->linesize, AV_NUM_DATA_POINTERS);
+
 #ifdef HAVE_IMAGE_BUFFER_SIZE
   int size = av_image_get_buffer_size(self->frame->format, self->frame->width, self->frame->height, 32);
 #else
@@ -460,7 +472,7 @@ SCM list_video_frame_info(struct ffmpeg_t *self)
   return scm_list_n(scm_from_int(self->frame->format),
                     scm_list_2(scm_from_int(self->frame->width), scm_from_int(self->frame->height)),
                     from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
-                    from_non_zero_array(self->frame->linesize, AV_NUM_DATA_POINTERS, 1),
+                    from_non_zero_array(linesize, AV_NUM_DATA_POINTERS, 1),
                     scm_from_pointer(*self->frame->data, NULL),
                     scm_from_int(size),
                     SCM_UNDEFINED);
@@ -473,7 +485,7 @@ SCM ffmpeg_video_frame(SCM scm_self)
   // Make frame writeable
   int err = av_frame_make_writable(self->frame);
   if (err < 0)
-    scm_misc_error("ffmpeg-write-video", "Error making frame writeable: ~a",
+    scm_misc_error("ffmpeg-video-frame", "Error making frame writeable: ~a",
                    scm_list_1(get_error_text(err)));
 
   return list_video_frame_info(self);
@@ -544,14 +556,11 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
 
 static SCM scm_convert_from;
 
-SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
+SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
   struct ffmpeg_t *self = get_self(scm_self);
   AVCodecContext *codec = video_codec_ctx(self);
-
-  // TODO: convert frame to YV12
-  // scm_call_2(scm_convert_from, ..., scm_image);
 
   // Initialise data packet
   AVPacket pkt = { 0 };
@@ -574,16 +583,16 @@ SCM ffmpeg_write_video(SCM scm_self, SCM scm_image)
                      scm_list_1(get_error_text(err)));
   };
 
-  return scm_image;
+  return SCM_UNDEFINED;
 }
 
 void init_ffmpeg(void)
 {
+  av_register_all();
+  avformat_network_init();
   scm_convert_from = scm_c_public_ref("aiscm image", "convert-from!");
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
-  av_register_all();
-  avformat_network_init();
   scm_c_define("AV_SAMPLE_FMT_U8P" ,scm_from_int(AV_SAMPLE_FMT_U8P ));
   scm_c_define("AV_SAMPLE_FMT_S16P",scm_from_int(AV_SAMPLE_FMT_S16P));
   scm_c_define("AV_SAMPLE_FMT_S32P",scm_from_int(AV_SAMPLE_FMT_S32P));
@@ -601,7 +610,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-video-frame", 1, 0, 0, ffmpeg_video_frame);
-  scm_c_define_gsubr("ffmpeg-write-video", 2, 0, 0, ffmpeg_write_video);
+  scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

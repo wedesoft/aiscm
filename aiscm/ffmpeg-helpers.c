@@ -13,23 +13,29 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
 #include "ffmpeg-helpers.h"
 
 
+void int_array_to_long(int64_t destination[], int32_t source[], int n)
+{
+  int i;
+  for (i=0; i<n; i++)
+    *destination++ = *source++;
+}
+
 // Convert array of integer offsets to Scheme array.
-SCM from_non_zero_array(int source[], int upto, int atleast)
+SCM from_non_zero_array(int64_t source[], int upto, int atleast)
 {
   SCM retval;
   if (atleast > 0 || (upto > 0 && *source))
-    retval = scm_cons(scm_from_int(*source), from_non_zero_array(source + 1, upto - 1, atleast - 1));
+    retval = scm_cons(scm_from_long(*source), from_non_zero_array(source + 1, upto - 1, atleast - 1));
   else
     retval = SCM_EOL;
   return retval;
 }
 
 // Get offsets from pointer array.
-void offsets_from_pointers(uint8_t *pointers[], int offsets[], int n)
+void offsets_from_pointers(uint8_t *pointers[], int64_t offsets[], int n)
 {
   int i;
   for (i=0; i<n; i++)

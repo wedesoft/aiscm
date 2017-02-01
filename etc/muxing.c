@@ -68,13 +68,13 @@ typedef struct OutputStream {
 
 static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt)
 {
-    AVRational *time_base = &fmt_ctx->streams[pkt->stream_index]->time_base;
+    //AVRational *time_base = &fmt_ctx->streams[pkt->stream_index]->time_base;
 
-    printf("pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s stream_index:%d\n",
-           av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, time_base),
-           av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, time_base),
-           av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base),
-           pkt->stream_index);
+    //printf("pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s stream_index:%d\n",
+    //       av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, time_base),
+    //       av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, time_base),
+    //       av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base),
+    //       pkt->stream_index);
 }
 
 static int write_frame(AVFormatContext *fmt_ctx, const AVRational *time_base, AVStream *st, AVPacket *pkt)
@@ -377,6 +377,7 @@ static AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
         exit(1);
     }
 
+    printf("%ld %ld %ld\n", picture->data[0], picture->data[1], picture->data[2]);
     return picture;
 }
 

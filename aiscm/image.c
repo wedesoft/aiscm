@@ -20,25 +20,33 @@
 #include <libguile.h>
 
 
-void scm_to_array(SCM source, int dest[])
+void scm_to_int_array(SCM source, int32_t dest[])
 {
   if (!scm_is_null_and_not_nil(source)) {
     *dest = scm_to_int(scm_car(source));
-    scm_to_array(scm_cdr(source), dest + 1);
+    scm_to_int_array(scm_cdr(source), dest + 1);
+  };
+}
+
+void scm_to_long_array(SCM source, int64_t dest[])
+{
+  if (!scm_is_null_and_not_nil(source)) {
+    *dest = scm_to_long(scm_car(source));
+    scm_to_long_array(scm_cdr(source), dest + 1);
   };
 }
 
 void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
-                 uint8_t *data[], int pitches[], void *ptr)
+                 uint8_t *data[], int32_t pitches[], void *ptr)
 {
   int i;
-  int offsets[8];
+  int64_t offsets[8];
   memset(offsets, 0, sizeof(offsets));
   *format = scm_to_int(scm_car(scm_type));
   *width = scm_to_int(scm_caadr(scm_type)),
   *height = scm_to_int(scm_cadadr(scm_type));
-  scm_to_array(scm_caddr(scm_type), offsets);
-  scm_to_array(scm_cadddr(scm_type), pitches);
+  scm_to_long_array(scm_caddr(scm_type), offsets);
+  scm_to_int_array(scm_cadddr(scm_type), pitches);
   for (i=0; i<8; i++) data[i] = (uint8_t *)ptr + offsets[i];
 }
 
@@ -48,7 +56,7 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   int width, height;
   void *ptr = scm_to_pointer(scm_ptr);
   uint8_t *source_data[8];
-  int source_pitches[8];
+  int32_t source_pitches[8];
   memset(source_pitches, 0, sizeof(source_pitches));
   image_setup(scm_source_type, &format, &width, &height, source_data, source_pitches, ptr);
 
@@ -56,7 +64,7 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
   int dest_width, dest_height;
   void *dest_ptr = scm_to_pointer(scm_dest_ptr);
   uint8_t *dest_data[8];
-  int dest_pitches[8];
+  int32_t dest_pitches[8];
   memset(dest_pitches, 0, sizeof(dest_pitches));
   image_setup(scm_dest_type, &dest_format, &dest_width, &dest_height, dest_data, dest_pitches, dest_ptr);
 
@@ -76,9 +84,9 @@ SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM sc
   void *dest_ptr = scm_to_pointer(scm_dest_ptr);
   int width = scm_to_int(scm_car(scm_shape));
   int height = scm_to_int(scm_cadr(scm_shape));
-  int offsets[3];
+  int64_t offsets[3];
   memset(offsets, 0, sizeof(offsets));
-  scm_to_array(scm_offsets, offsets);
+  scm_to_long_array(scm_offsets, offsets);
   decode_jpeg_raw(source_ptr, width * height * 2, Y4M_ILACE_NONE, 0, width, height,
                   dest_ptr + offsets[0], dest_ptr + offsets[2], dest_ptr + offsets[1]);
   return SCM_UNDEFINED;
