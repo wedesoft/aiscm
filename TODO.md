@@ -1,6 +1,5 @@
 ## Ready
 
-* test scm\_to\_array, test scm\_to\_long and scm\_from\_long
 * test return value of write-image, writing of video frame
 * protect against writing to ffmpeg input
 * timestamp sorted?

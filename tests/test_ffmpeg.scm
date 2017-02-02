@@ -87,6 +87,8 @@
     "Convert integer array to Scheme array stopping at first zero element")
 (ok (equal? '(0) (from-array-at-least-one))
     "Convert zero array with minimum number of elements")
+(ok (equal? (list (ash 42 32)) (from-array-long-integers))
+    "Convert long integer array element to Scheme")
 (ok (first-offset-is-zero)
     "First value of offset-array is zero")
 (ok (second-offset-correct)

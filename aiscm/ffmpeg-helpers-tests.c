@@ -56,6 +56,12 @@ SCM from_array_at_least_one(void)
   return from_non_zero_array(array, 3, 1);
 }
 
+SCM from_array_long_integers(void)
+{
+  int64_t array[1] = {42L << 32};
+  return from_non_zero_array(array, 1, 1);
+}
+
 SCM first_offset_is_zero(void)
 {
   uint8_t buffer[1024];
@@ -130,6 +136,7 @@ void init_ffmpeg_helpers_tests(void)
   scm_c_define_gsubr("from-array-three-elements", 0, 0, 0, from_array_three_elements);
   scm_c_define_gsubr("from-array-stop-at-zero", 0, 0, 0, from_array_stop_at_zero);
   scm_c_define_gsubr("from-array-at-least-one", 0, 0, 0, from_array_at_least_one);
+  scm_c_define_gsubr("from-array-long-integers", 0, 0, 0, from_array_long_integers);
   scm_c_define_gsubr("first-offset-is-zero", 0, 0, 0, first_offset_is_zero);
   scm_c_define_gsubr("second-offset-correct", 0, 0, 0, second_offset_correct);
   scm_c_define_gsubr("zero-offset-for-null-pointer", 0, 0, 0, zero_offset_for_null_pointer);

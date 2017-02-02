@@ -35,14 +35,14 @@ SCM scm_to_long_array_one_element(SCM source)
 {
   long dest[1];
   scm_to_long_array(source, dest);
-  return scm_from_bool(dest[0] == (123 << 32));
+  return scm_from_bool(dest[0] == (123L << 32));
 }
 
 SCM scm_to_long_array_second_element(SCM source)
 {
   long dest[2];
   scm_to_long_array(source, dest);
-  return scm_from_bool(dest[1] == (456 << 32));
+  return scm_from_bool(dest[1] == (456L << 32));
 }
 
 void init_image_helpers_tests(void)
