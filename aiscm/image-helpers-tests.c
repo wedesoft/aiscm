@@ -24,7 +24,31 @@ SCM scm_to_int_array_one_element(SCM source)
   return scm_from_bool(dest[0] == 123);
 }
 
+SCM scm_to_int_array_second_element(SCM source)
+{
+  int dest[2];
+  scm_to_int_array(source, dest);
+  return scm_from_bool(dest[1] == 456);
+}
+
+SCM scm_to_long_array_one_element(SCM source)
+{
+  long dest[1];
+  scm_to_long_array(source, dest);
+  return scm_from_bool(dest[0] == (123 << 32));
+}
+
+SCM scm_to_long_array_second_element(SCM source)
+{
+  long dest[2];
+  scm_to_long_array(source, dest);
+  return scm_from_bool(dest[1] == (456 << 32));
+}
+
 void init_image_helpers_tests(void)
 {
   scm_c_define_gsubr("scm-to-int-array-one-element", 1, 0, 0, scm_to_int_array_one_element);
+  scm_c_define_gsubr("scm-to-int-array-second-element", 1, 0, 0, scm_to_int_array_second_element);
+  scm_c_define_gsubr("scm-to-long-array-one-element", 1, 0, 0, scm_to_long_array_one_element);
+  scm_c_define_gsubr("scm-to-long-array-second-element", 1, 0, 0, scm_to_long_array_second_element);
 }
