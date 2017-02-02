@@ -17,18 +17,14 @@
 #include "image-helpers.h"
 
 
-void scm_to_int_array(SCM source, int32_t dest[])
+SCM scm_to_int_array_one_element(SCM source)
 {
-  if (!scm_is_null_and_not_nil(source)) {
-    *dest = scm_to_int(scm_car(source));
-    scm_to_int_array(scm_cdr(source), dest + 1);
-  };
+  int dest[1];
+  scm_to_int_array(source, dest);
+  return scm_from_bool(dest[0] == 123);
 }
 
-void scm_to_long_array(SCM source, int64_t dest[])
+void init_image_helpers_tests(void)
 {
-  if (!scm_is_null_and_not_nil(source)) {
-    *dest = scm_to_long(scm_car(source));
-    scm_to_long_array(scm_cdr(source), dest + 1);
-  };
+  scm_c_define_gsubr("scm-to-int-array-one-element", 1, 0, 0, scm_to_int_array_one_element);
 }

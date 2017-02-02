@@ -17,7 +17,8 @@ noinst_HEADERS = ffmpeg-helpers.h image-helpers.h ringbuffer.h
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
 
-libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c jit-tests.c
+libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c jit-tests.c \
+																	image-helpers.c image-helpers-tests.c
 libguile_aiscm_tests_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
 libguile_aiscm_tests_la_LIBADD = $(GUILE_LIBS)
