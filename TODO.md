@@ -2,9 +2,9 @@
 
 * test scm\_to\_array, test scm\_to\_long and scm\_from\_long
 * test return value of write-image, writing of video frame
+* protect against writing to ffmpeg input
 * timestamp sorted?
-* ffmpeg output (writing videos), use image-convert (convert with target image)
-  test video (red->x, green->y, blue->time)
+* ffmpeg test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio
   check avcodec\_get\_name is supported

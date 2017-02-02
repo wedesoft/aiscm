@@ -12,7 +12,7 @@ extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-ai
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
-noinst_HEADERS = ffmpeg-helpers.h ringbuffer.h
+noinst_HEADERS = ffmpeg-helpers.h image-helpers.h ringbuffer.h
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
@@ -42,7 +42,7 @@ libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_C
 libguile_aiscm_ffmpeg_la_LDFLAGS = -no-undefined
 libguile_aiscm_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS) $(AVCODEC_LIBS) $(AVUTIL_LIBS)
 
-libguile_aiscm_image_la_SOURCES = image.c
+libguile_aiscm_image_la_SOURCES = image.c image-helpers.c
 libguile_aiscm_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
 libguile_aiscm_image_la_LDFLAGS = -no-undefined
 libguile_aiscm_image_la_LIBADD = $(GUILE_LIBS) $(SWSCALE_LIBS) $(MJPEG_LIBS) -llavjpeg
