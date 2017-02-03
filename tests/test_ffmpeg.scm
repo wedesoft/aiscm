@@ -29,7 +29,8 @@
 
 (define colour-values
   (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
-(define colour-img (to-array colour-values))
+(define colour-array (to-array colour-values))
+(define colour-image (to-image colour-array))
 
 (define output-file (string-append (tmpnam) ".avi"))
 (define output-video (open-ffmpeg-output output-file
@@ -39,7 +40,8 @@
                                          #:video-bit-rate 100000
                                          #:aspect-ratio (/ 16 11)))
 
-(write-image colour-img output-video)
+(define write-array-return (write-image colour-array output-video))
+(define write-image-return (write-image colour-image output-video))
 
 (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -50,7 +52,7 @@
 (define video-frame (read-image input-video))
 (define video-pixel (get (to-array video-frame) 10 270))
 (define video-pts1 (video-pts input-video))
-(define video-frame (read-image input-video))
+(read-image input-video)
 (define video-pts2 (video-pts input-video))
 
 (pts= input-video 15)
@@ -115,6 +117,12 @@
     "Check frame size of input video")
 (ok (equal? '(16 2) (shape output-video))
     "Check frame size of output video")
+
+(ok (eq? write-array-return  colour-array)
+    "Writing a 2D array with 'write-image' returns the input array")
+(ok (eq? write-image-return  colour-image)
+    "Writing an image with 'write-image' returns the input image")
+
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
 (ok (throws? (shape audio-mono))

@@ -1,6 +1,5 @@
 ## Ready
 
-* test return value of write-image, writing of video frame
 * protect against writing to ffmpeg input
 * timestamp sorted?
 * ffmpeg test video (red->x, green->y, blue->time)
