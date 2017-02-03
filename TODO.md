@@ -1,6 +1,5 @@
 ## Ready
 
-* protect against writing to ffmpeg input
 * timestamp sorted?
 * ffmpeg test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate

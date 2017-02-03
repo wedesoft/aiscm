@@ -92,6 +92,11 @@ static AVStream *audio_stream(struct ffmpeg_t *self)
   return self->fmt_ctx->streams[self->audio_stream_idx];
 }
 
+static char is_input_context(struct ffmpeg_t *self)
+{
+  return self->fmt_ctx->iformat != NULL;
+}
+
 SCM ffmpeg_destroy(SCM scm_self)
 {
   scm_assert_smob_type(ffmpeg_tag, scm_self);
@@ -122,7 +127,7 @@ SCM ffmpeg_destroy(SCM scm_self)
     self->output_file = 0;
   };
   if (self->fmt_ctx) {// TODO: close streams
-    if (self->fmt_ctx->iformat)
+    if (is_input_context(self))
       avformat_close_input(&self->fmt_ctx);
     else
       avformat_free_context(self->fmt_ctx);
@@ -533,6 +538,9 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   SCM retval = SCM_BOOL_F;
 
   struct ffmpeg_t *self = get_self(scm_self);
+
+  if (!is_input_context(self))
+    scm_misc_error("ffmpeg-read-audio/video", "Attempt to read frame from FFmpeg output object", SCM_EOL);
 
   av_frame_unref(self->frame);
 

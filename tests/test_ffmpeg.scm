@@ -110,9 +110,9 @@
 (ok (is-a? output-video <ffmpeg>)
     "'open-ffmpeg-output' creates an FFmpeg object")
 (ok (throws? (open-ffmpeg-output "no-such-folder/test.mpg"))
-    "Throw error if output file cannot be written")
-(ok (throws? (open-ffmpeg-output (string-append (tmp) ".avi") #:format-name 'nosuchformat))
-    "Throw error if output format is not known")
+    "Throw exception if output file cannot be written")
+(ok (throws? (open-ffmpeg-output (string-append (tmpnam) ".avi") #:format-name 'nosuchformat))
+    "Throw exception if output format is not known")
 (ok (equal? '(640 360) (shape input-video))
     "Check frame size of input video")
 (ok (equal? '(16 2) (shape output-video))
@@ -122,6 +122,9 @@
     "Writing a 2D array with 'write-image' returns the input array")
 (ok (eq? write-image-return  colour-image)
     "Writing an image with 'write-image' returns the input image")
+
+(ok (throws? (read-image (open-ffmpeg-output (string-append (tmpnam) ".avi"))))
+    "Throw exception when trying to read from output video")
 
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")
