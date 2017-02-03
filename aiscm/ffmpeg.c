@@ -381,8 +381,12 @@ SCM ffmpeg_aspect_ratio(SCM scm_self)
 
 SCM ffmpeg_seek(SCM scm_self, SCM scm_position)
 {
+  struct ffmpeg_t *self = get_self(scm_self);
+  if (!is_input_context(self))
+    scm_misc_error("ffmpeg-seek", "Attempt to seek in FFmpeg output video", SCM_EOL);
+
   int64_t position = (int64_t)(scm_to_double(scm_position) * AV_TIME_BASE);
-  av_seek_frame(get_self(scm_self)->fmt_ctx, -1, position, AVSEEK_FLAG_ANY);// TODO: check error
+  av_seek_frame(self->fmt_ctx, -1, position, AVSEEK_FLAG_ANY);// TODO: check error
   return scm_position;
 }
 
@@ -483,14 +487,16 @@ SCM list_video_frame_info(struct ffmpeg_t *self)
                     SCM_UNDEFINED);
 }
 
-SCM ffmpeg_video_frame(SCM scm_self)
+SCM ffmpeg_target_video_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
+  if (is_input_context(self))
+    scm_misc_error("ffmpeg-seek", "Attempt to write to FFmpeg input video", SCM_EOL);
 
   // Make frame writeable
   int err = av_frame_make_writable(self->frame);
   if (err < 0)
-    scm_misc_error("ffmpeg-video-frame", "Error making frame writeable: ~a",
+    scm_misc_error("ffmpeg-target-video-frame", "Error making frame writeable: ~a",
                    scm_list_1(get_error_text(err)));
 
   return list_video_frame_info(self);
@@ -540,7 +546,7 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   struct ffmpeg_t *self = get_self(scm_self);
 
   if (!is_input_context(self))
-    scm_misc_error("ffmpeg-read-audio/video", "Attempt to read frame from FFmpeg output object", SCM_EOL);
+    scm_misc_error("ffmpeg-read-audio/video", "Attempt to read frame from FFmpeg output video", SCM_EOL);
 
   av_frame_unref(self->frame);
 
@@ -568,6 +574,7 @@ SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
   struct ffmpeg_t *self = get_self(scm_self);
+
   AVCodecContext *codec = video_codec_ctx(self);
 
   // Initialise data packet
@@ -617,7 +624,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
   scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
   scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
-  scm_c_define_gsubr("ffmpeg-video-frame", 1, 0, 0, ffmpeg_video_frame);
+  scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);

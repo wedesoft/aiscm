@@ -1,6 +1,7 @@
 ## Ready
 
-* timestamp sorted?
+* test pixel in output video
+* output video timestamps
 * ffmpeg test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio

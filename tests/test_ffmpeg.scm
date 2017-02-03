@@ -125,6 +125,10 @@
 
 (ok (throws? (read-image (open-ffmpeg-output (string-append (tmpnam) ".avi"))))
     "Throw exception when trying to read from output video")
+(ok (throws? (pts= (open-ffmpeg-output (string-append (tmpnam) ".avi")) 10))
+    "Throw exception when trying to seek in output video")
+(ok (throws? (write-image colour-image (open-ffmpeg-input "fixtures/av-sync.mp4")))
+    "Throw exception when trying to write to input video")
 
 (ok (throws? (open-ffmpeg-input "fixtures/no-such-file.avi"))
     "Throw error if file does not exist")

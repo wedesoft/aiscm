@@ -28,8 +28,7 @@
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            ffmpeg-video-frame)
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
   #:re-export (destroy read-image write-image read-audio rate channels typecode))
 
 
@@ -141,7 +140,7 @@
 
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output video"
-  (let [(output-frame (apply video-frame (ffmpeg-video-frame (slot-ref self 'ffmpeg))))]
+  (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
     (convert-from! output-frame img)
     (ffmpeg-write-video (slot-ref self 'ffmpeg)))
   img)
