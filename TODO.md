@@ -1,11 +1,12 @@
 ## Ready
 
-* test pixel in output video
 * output video timestamps
 * ffmpeg test video (red->x, green->y, blue->time)
   select codecs, audio/video, audio only, video only, audio bit rate
   video player with aspect ratio
   check avcodec\_get\_name is supported
+* test suite with contexts and fixture variables (order of statement execution)
+* test pixel in output video
 * use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
 * tensor sum
@@ -28,7 +29,6 @@
 * fractions, \*\*
 * separate function for defining operation for array?
 * separate module for register allocation
-* test suite with structure
 * Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
   multi-threading, SIMD, memory access (cache)
 * robot speech processing

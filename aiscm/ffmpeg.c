@@ -44,6 +44,7 @@ struct ffmpeg_t {
   AVCodecContext *audio_codec_ctx;
   int video_stream_idx;
   int audio_stream_idx;
+  long output_video_pts;
   char header_written;
   char output_file;
   AVPacket pkt;
@@ -574,6 +575,11 @@ SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
   struct ffmpeg_t *self = get_self(scm_self);
+  if (is_input_context(self))
+    scm_misc_error("ffmpeg-write-video", "Attempt to write to FFmpeg input video", SCM_EOL);
+
+  // Set frame timestamp
+  self->frame->pts = self->output_video_pts++;
 
   AVCodecContext *codec = video_codec_ctx(self);
 
