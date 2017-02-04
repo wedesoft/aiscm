@@ -472,7 +472,6 @@ SCM list_video_frame_info(struct ffmpeg_t *self)
 #ifdef HAVE_IMAGE_BUFFER_SIZE
   int size = av_image_get_buffer_size(self->frame->format, self->frame->width, self->frame->height, 32);
 #else
-#warning "av_image_get_buffer_size not defined"
   int size = avpicture_get_size(self->frame->format, self->frame->width, self->frame->height);
 #endif
 
