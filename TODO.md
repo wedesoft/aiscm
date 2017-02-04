@@ -1,10 +1,9 @@
 ## Ready
 
-* output video timestamps
-* ffmpeg test video (red->x, green->y, blue->time)
-  select codecs, audio/video, audio only, video only, audio bit rate
-  video player with aspect ratio
-  check avcodec\_get\_name is supported
+* check avcodec\_get\_name is supported
+* audio/video, audio only, video only, audio bit rate
+* select video codec, select audio codec
+* video player with aspect ratio
 * test suite with contexts and fixture variables (order of statement execution)
 * test pixel in output video
 * use -module -shared -avoid-version
