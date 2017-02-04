@@ -69,8 +69,13 @@ AC_MSG_CHECKING([for av_frame_alloc])
 AC_TRY_LINK([#include <libavutil/frame.h>],
             [av_frame_alloc()],
             [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is defined (replacing avcodec_alloc_frame)])],
-            [AC_MSG_RESULT([no])])
+             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is supported])],
+            [AC_MSG_RESULT([no])
+             AC_MSG_CHECKING([for avcodec_alloc_frame])
+             AC_TRY_LINK([#include <libavutil/frame.h>],
+                         [avcodec_alloc_frame()],
+                         [AC_MSG_RESULT([yes])],
+                         [AC_MSG_RESULT([no])])])
 AC_MSG_CHECKING([for av_image_get_buffer_size])
 AC_TRY_LINK([#include <libavutil/imgutils.h>],
             [av_image_get_buffer_size(0, 320, 240, 32)],
