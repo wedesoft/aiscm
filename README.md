@@ -82,7 +82,7 @@ make reintegration
 
 * [AIscm homepage][1]
 * [AIscm installation][6]
-* [Debian sbuild[3] (installed from jessie-backports because of [bug 827315][7])
+* [Debian sbuild][3] (installed from jessie-backports because of [bug 827315][7])
 * [Docker][4]
 * [managing Debian packages][5]
 

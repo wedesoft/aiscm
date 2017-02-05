@@ -3,14 +3,14 @@ tmux set mouse-resize-pane on
 tmux set mouse-select-pane on
 tmux set mouse-select-window on
 tmux split-window -d -h
-tmux split-window -d -p 30
-tmux split-window -d -p 50
+tmux split-window -d -p 70
+#tmux split-window -d -p 50
 tmux select-pane -t0
 tmux send-keys "make repl -j 4" C-m
 tmux select-pane -t1
-tmux send-keys "cd etc" C-m
-tmux send-keys "./playground.sh" C-m
-tmux select-pane -t3
+#tmux send-keys "cd etc" C-m
+#tmux send-keys "./playground.sh" C-m
+tmux select-pane -t2
 tmux send-keys "vim" C-m
 sleep 1
 tmux send-keys C-O C-O
