@@ -194,7 +194,7 @@
 
 (define (objdump code)
   "dump machine CODE to temporary file and deassemble using the 'objdump' tool"
-  (let [(filename (tmpnam))]
+  (let [(filename (string-append (tmpnam) ".bin"))]
     (call-with-output-file filename (cut put-bytevector <> (u8-list->bytevector (flatten code))))
     (system (format #f "objdump -D -b binary -Mintel -mi386:x86-64 ~a" filename))
     code))

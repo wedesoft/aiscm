@@ -69,14 +69,26 @@ AC_MSG_CHECKING([for av_frame_alloc])
 AC_TRY_LINK([#include <libavutil/frame.h>],
             [av_frame_alloc()],
             [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is defined (replacing avcodec_alloc_frame)])],
-            [AC_MSG_RESULT([no])])
+             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is supported])],
+            [AC_MSG_RESULT([no])
+             AC_MSG_CHECKING([for avcodec_alloc_frame])
+             AC_TRY_LINK([#include <libavutil/frame.h>],
+                         [avcodec_alloc_frame()],
+                         [AC_MSG_RESULT([yes])],
+                         [AC_MSG_RESULT([no])
+                          AC_MSG_ERROR([No support for av_frame_alloc or avcodec_alloc_frame])])])
 AC_MSG_CHECKING([for av_image_get_buffer_size])
 AC_TRY_LINK([#include <libavutil/imgutils.h>],
             [av_image_get_buffer_size(0, 320, 240, 32)],
             [AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_IMAGE_BUFFER_SIZE,1,[use av_image_get_buffer_size to get buffer size])],
-            [AC_MSG_RESULT([no])])
+            [AC_MSG_RESULT([no])
+             AC_MSG_CHECKING([for avpicture_get_size])
+             AC_TRY_LINK([#include <libavutil/imgutils.h>],
+                         [avpicture_get_size(0, 320, 240)],
+                         [AC_MSG_RESULT([yes])],
+                         [AC_MSG_RESULT([no])
+                          AC_MSG_ERROR([No support for av_image_get_buffer_size or avpicture_get_size])])])
 LIBS="$old_LIBS"
 
 LIBS="$LIBS -lXpm"

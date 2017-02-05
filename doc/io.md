@@ -9,7 +9,7 @@ An image can be read from disk using *read-image* which uses the ImageMagick lib
 @../tests/integration/read_image.scm@
 ```
 
-Analogous *write-image* writes an image to disk.
+*write-image* writes an image to disk.
 
 ```Scheme
 @../tests/integration/write_image.scm@
@@ -20,7 +20,7 @@ Analogous *write-image* writes an image to disk.
 ## Xorg display
 ### Images
 
-As shown above, you can display images using the method *show* as follows:
+As shown above, you can display images using the method *show*:
 
 ```Scheme
 @../tests/integration/read_image.scm@
@@ -114,6 +114,13 @@ I.e. the following example will play the [Sintel short film](https://durian.blen
 
 ```Scheme
 @../tests/integration/ffstream.scm@
+```
+
+The *FFmpeg* bindings can also be used to write a video stream to a file.
+The file format is determined by the file name extension.
+
+```Scheme
+@../tests/integration/ffwritevideo.scm@
 ```
 
 ## Audio files
