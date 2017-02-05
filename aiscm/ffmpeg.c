@@ -303,7 +303,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   // Allocate frame
   self->frame = av_frame_alloc();
-  memset(self->frame, sizeof(AVFrame), 0);
+  memset(self->frame, 0, sizeof(AVFrame));
   if (!self->frame) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating frame", SCM_EOL);
