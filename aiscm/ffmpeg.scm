@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm ffmpeg)
+  #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
@@ -26,9 +27,9 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input frame-rate video-pts audio-pts pts=
-            ffmpeg-buffer-push ffmpeg-buffer-pop)
-  #:re-export (read-image read-audio rate channels typecode))
+  #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
+  #:re-export (destroy read-image write-image read-audio rate channels typecode))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -48,8 +49,21 @@
         (cons AV_SAMPLE_FMT_DBLP <double>)))
 
 (define (open-ffmpeg-input file-name)
-  "Open audio/video FILE-NAME using FFmpeg library"
-  (make <ffmpeg> #:ffmpeg (open-ffmpeg file-name (equal? "YES" (getenv "DEBUG")))))
+  "Open audio/video input file FILE-NAME using FFmpeg library"
+  (let [(debug (equal? "YES" (getenv "DEBUG")))]
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
+
+(define (open-ffmpeg-output file-name . initargs)
+  "Open audio/video output file FILE-NAME using FFmpeg library"
+  (let-keywords initargs #f (shape frame-rate video-bit-rate aspect-ratio format-name)
+    (let* [(shape          (or shape '(384 288)))
+           (frame-rate     (or frame-rate 25))
+           (video-bit-rate (or video-bit-rate (apply * 3 shape)))
+           (aspect-ratio   (or aspect-ratio 1))
+           (debug          (equal? "YES" (getenv "DEBUG")))]
+      (make <ffmpeg> #:ffmpeg (make-ffmpeg-output file-name format-name shape frame-rate video-bit-rate aspect-ratio debug)))))
+
+(define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
@@ -58,6 +72,15 @@
 (define (frame-rate self)
   "Query (average) frame rate of video"
   (ffmpeg-frame-rate (slot-ref self 'ffmpeg)))
+
+(define (video-bit-rate self)
+  "Query bit rate of video stream"
+  (ffmpeg-video-bit-rate (slot-ref self 'ffmpeg)))
+
+(define (aspect-ratio self)
+  "Query pixel aspect ratio of video"
+  (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
+    (if (zero? ratio) 1 ratio)))
 
 (define (import-audio-frame self lst)
   "Compose audio frame from timestamp, type, shape, data pointer, and size"
@@ -68,20 +91,21 @@
                    (cons pts (array (array-type type) shape (memory data size))))
            lst)))
 
+(define (video-frame format shape offsets pitches data size)
+  "Construct a video frame from the specified information"
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
+    (make <image>
+          #:format  (format->symbol format)
+          #:shape   shape
+          #:offsets offsets
+          #:pitches pitches
+          #:mem     (memory data size))))
+
 (define (import-video-frame self lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (apply (lambda (pts format shape offsets pitches data size)
-             (cons
-               pts
-               (duplicate
-                 (make <image>
-                       #:format  (format->symbol format)
-                       #:shape   shape
-                       #:offsets offsets
-                       #:pitches pitches
-                       #:mem     (memory data size)))))
-           lst)))
+  (let [(pts    (car lst))
+        (frame  (apply video-frame (cdr lst)))]
+    (cons pts (duplicate frame))))
 
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"
@@ -113,6 +137,18 @@
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
+
+(define-method (write-image (img <image>) (self <ffmpeg>))
+  "Write video frame to output video"
+  (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
+    (convert-from! output-frame img)
+    (ffmpeg-write-video (slot-ref self 'ffmpeg)))
+  img)
+
+(define-method (write-image (img <sequence<>>) (self <ffmpeg>))
+  "Write array representing video frame to output video"
+  (write-image (to-image img) self)
+  img)
 
 (define (pts= self position)
   "Set audio/video position (in seconds)"

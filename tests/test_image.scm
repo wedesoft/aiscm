@@ -16,6 +16,7 @@
 ;;
 (use-modules (oop goops)
              (rnrs bytevectors)
+             (ice-9 binary-ports)
              (system foreign)
              (srfi srfi-1)
              (aiscm mem)
@@ -27,11 +28,28 @@
              (aiscm rgb)
              (aiscm image)
              (guile-tap))
+(load-extension "libguile-aiscm-tests" "init_tests")
+
+
 (define l '((2 3 5 7) (11 13 17 19)))
 (define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
 (define m (to-array <ubyte> l))
 (define mem (value m))
 (define img (make <image> #:format 'GRAY #:shape '(8 1) #:mem mem))
+
+(define mjpeg-bytes (call-with-input-file "fixtures/leds.mjpeg" get-bytevector-all #:binary #t))
+(define mjpeg-data (make <mem> #:size (bytevector-length mjpeg-bytes)))
+(write-bytes mjpeg-data mjpeg-bytes)
+(define mjpeg-frame (make <image> #:format 'MJPG #:shape '(320 240) #:mem mjpeg-data))
+
+(ok (scm-to-int-array-one-element '(123))
+    "Convert first element of Scheme array to integer")
+(ok (scm-to-int-array-second-element '(123 456))
+    "Convert second element of Scheme array to integer")
+(ok (scm-to-long-array-one-element (list (ash 123 32)))
+    "Convert first element of Scheme array to long integer")
+(ok (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32)))
+    "Convert second element of Scheme array to long integer")
 (diagnostics "following test only works with recent version of libswscale")
 (ok (equal? #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))
   "conversion to BGR")
@@ -71,4 +89,13 @@
   "Convert RGB symbol to format number and back")
 (ok (eq? 'I420 (format->symbol (symbol->format 'I420)))
   "Convert I420 symbol to format number and back")
+
+(ok (equal? (rgb 51 58 42) (get (to-array mjpeg-frame) 32 56))
+    "Convert MJPEG frame to RGB and test a pixel")
+
+(define target (to-image (arr (0 0 0 0 0 0 0 0))))
+(convert-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
+(ok (equal? #vu8(1 2 3 4 6 7 8 9) (read-bytes (get-mem target) 8))
+    "Write conversion result to a target image")
+
 (run-tests)

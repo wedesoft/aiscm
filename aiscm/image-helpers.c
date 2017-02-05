@@ -14,27 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef __AISCM_RINGBUFFER_H
-#define __AISCM_RINGBUFFER_H
+#include "image-helpers.h"
 
-struct ringbuffer_t {
-  int fill;
-  int read_offset;
-  int write_offset;
-  int size;
-  char *buffer;
-};
 
-typedef void (*ringbuffer_callback_t)(char *data, int count, void *userdata);
+void scm_to_int_array(SCM source, int32_t dest[])
+{
+  if (!scm_is_null_and_not_nil(source)) {
+    *dest = scm_to_int(scm_car(source));
+    scm_to_int_array(scm_cdr(source), dest + 1);
+  };
+}
 
-void ringbuffer_init(struct ringbuffer_t *ringbuffer, int size);
-
-void ringbuffer_destroy(struct ringbuffer_t *ringbuffer);
-
-void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_callback_t callback, void *userdata);
-
-void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count);
-
-void ringbuffer_flush(struct ringbuffer_t *ringbuffer);
-
-#endif
+void scm_to_long_array(SCM source, int64_t dest[])
+{
+  if (!scm_is_null_and_not_nil(source)) {
+    *dest = scm_to_long(scm_car(source));
+    scm_to_long_array(scm_cdr(source), dest + 1);
+  };
+}
