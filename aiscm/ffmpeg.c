@@ -237,10 +237,14 @@ SCM make_ffmpeg_output(SCM scm_file_name,
                    scm_list_2(scm_file_name, get_error_text(err)));
   };
 #else
-  AVOutputFormat *format = av_guess_format(format_name, file_name, NULL);
+  AVOutputFormat *format;
+  if (format_name)
+    format = av_guess_format(format_name, NULL, NULL);
+  else
+    format = av_guess_format(NULL, file_name, NULL);
   if (!format) {
     ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Unable to guess file format for file '~a'",
+    scm_misc_error("make-ffmpeg-output", "Unable to determine file format for file '~a'",
                    scm_list_1(scm_file_name));
   };
   self->fmt_ctx = avformat_alloc_context();
@@ -327,10 +331,10 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   memset(self->frame, 0, sizeof(AVFrame));
   int width = scm_to_int(scm_car(scm_shape));
   int height = scm_to_int(scm_cadr(scm_shape));
-#ifdef HAVE_AV_FRAME_GET_BUFFER
   self->frame->format = c->pix_fmt;
   self->frame->width = width;
   self->frame->height = height;
+#ifdef HAVE_AV_FRAME_GET_BUFFER
   err = av_frame_get_buffer(self->frame, 32);
   if (err < 0) {
     ffmpeg_destroy(retval);
@@ -623,7 +627,12 @@ SCM ffmpeg_write_video(SCM scm_self)
 
   // Write any new video packets
   if (got_packet) {
+#ifdef HAVE_AV_PACKET_RESCALE_TS
     av_packet_rescale_ts(&pkt, codec->time_base, video_stream(self)->time_base);
+#else
+    if (codec->coded_frame->pts != AV_NOPTS_VALUE)
+      pkt.pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, video_stream(self)->time_base);
+#endif
     pkt.stream_index = self->video_stream_idx;
     err = av_interleaved_write_frame(self->fmt_ctx, &pkt);
     if (err < 0)
