@@ -72,7 +72,7 @@ AC_TRY_LINK([#include <libavutil/frame.h>],
              AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is supported])],
             [AC_MSG_RESULT([no])
              AC_MSG_CHECKING([for avcodec_alloc_frame])
-             AC_TRY_LINK([#include <libavutil/frame.h>],
+             AC_TRY_LINK([#include <libavcodec/avcodec.h>],
                          [avcodec_alloc_frame()],
                          [AC_MSG_RESULT([yes])],
                          [AC_MSG_RESULT([no])

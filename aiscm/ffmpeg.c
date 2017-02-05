@@ -246,7 +246,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   if (!enc) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
-                   scm_list_1(scm_from_locale_string(avcodec_get_name(codec_id))));
+                   scm_list_1(scm_from_locale_string(avcodec_descriptor_get(codec_id)->name)));
   }
 
   AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc);
@@ -303,7 +303,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   // Allocate frame
   self->frame = av_frame_alloc();
-  memset(self->frame, sizeof(AVFrame), 0);
+  memset(self->frame, 0, sizeof(AVFrame));
   if (!self->frame) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating frame", SCM_EOL);
