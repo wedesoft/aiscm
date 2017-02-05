@@ -64,7 +64,7 @@ AC_SUBST(AVFORMAT_CFLAGS)
 AC_SUBST(AVFORMAT_LIBS)
 
 old_LIBS="$LIBS"
-LIBS="$LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
+LIBS="$LIBS $AVFORMAT_LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
 AC_MSG_CHECKING([for av_frame_alloc])
 AC_TRY_LINK([#include <libavutil/frame.h>],
             [av_frame_alloc()],
@@ -89,6 +89,24 @@ AC_TRY_LINK([#include <libavutil/imgutils.h>],
                          [AC_MSG_RESULT([yes])],
                          [AC_MSG_RESULT([no])
                           AC_MSG_ERROR([No support for av_image_get_buffer_size or avpicture_get_size])])])
+AC_MSG_CHECKING([for avformat_alloc_output_context2])
+AC_TRY_LINK([#include <libavformat/avformat.h>],
+            [avformat_alloc_output_context2(0, 0, 0, 0)],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_AVFORMAT_ALLOC_OUTPUT_CONTEXT2,1,[use avformat_alloc_output_context2 to initialise output context])],
+            [AC_MSG_RESULT([no])])
+AC_MSG_CHECKING([for av_frame_get_buffer])
+AC_TRY_LINK([#include <libavutil/frame.h>],
+            [av_frame_get_buffer(0, 32)],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_AV_FRAME_GET_BUFFER,1,[use av_frame_get_buffer to initialise output frames])],
+            [AC_MSG_RESULT([no])])
+AC_MSG_CHECKING([for av_frame_make_writable])
+AC_TRY_LINK([#include <libavutil/frame.h>],
+            [av_frame_make_writable(0)],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_AV_FRAME_MAKE_WRITABLE,1,[call to av_frame_make_writable required])],
+            [AC_MSG_RESULT([no])])
 LIBS="$old_LIBS"
 
 LIBS="$LIBS -lXpm"

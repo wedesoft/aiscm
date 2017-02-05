@@ -1,6 +1,5 @@
 ## Ready
 
-* check avcodec\_get\_name is supported
 * audio/video, audio only, video only, audio bit rate
 * select video codec, select audio codec
 * video player with aspect ratio
