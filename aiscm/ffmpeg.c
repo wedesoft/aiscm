@@ -229,12 +229,29 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   int err;
   const char *format_name = NULL;
   if (!scm_is_false(scm_format_name)) format_name = scm_to_locale_string(scm_symbol_to_string(scm_format_name));
+#ifdef HAVE_AVFORMAT_ALLOC_OUTPUT_CONTEXT2
   err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, format_name, file_name);
   if (!self->fmt_ctx) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error initializing output format for file '~a': ~a",
                    scm_list_2(scm_file_name, get_error_text(err)));
   };
+#else
+  AVOutputFormat *format = av_guess_format(format_name, file_name, NULL);
+  if (!format) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Unable to guess file format for file '~a'",
+                   scm_list_1(scm_file_name));
+  };
+  self->fmt_ctx = avformat_alloc_context();
+  if (!self->fmt_ctx) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error initializing output format for file '~a'",
+                   scm_list_1(scm_file_name));
+  };
+  self->fmt_ctx->oformat = format;
+  strncpy(self->fmt_ctx->filename, file_name, sizeof(self->fmt_ctx->filename));
+#endif
 
   enum AVCodecID codec_id = self->fmt_ctx->oformat->video_codec;
   if (codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
@@ -303,20 +320,32 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   // Allocate frame
   self->frame = av_frame_alloc();
-  memset(self->frame, 0, sizeof(AVFrame));
   if (!self->frame) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating frame", SCM_EOL);
   };
+  memset(self->frame, 0, sizeof(AVFrame));
+  int width = scm_to_int(scm_car(scm_shape));
+  int height = scm_to_int(scm_cadr(scm_shape));
+#ifdef HAVE_AV_FRAME_GET_BUFFER
   self->frame->format = c->pix_fmt;
-  self->frame->width = scm_to_int(scm_car(scm_shape));
-  self->frame->height = scm_to_int(scm_cadr(scm_shape));
+  self->frame->width = width;
+  self->frame->height = height;
   err = av_frame_get_buffer(self->frame, 32);
   if (err < 0) {
     ffmpeg_destroy(retval);
     scm_misc_error("make-ffmpeg-output", "Error allocating frame buffer: ~a",
                    scm_list_1(get_error_text(err)));
   };
+#else
+  int size = avpicture_get_size(c->pix_fmt, width, height);
+  uint8_t *frame_buffer = (uint8_t *)av_malloc(size);
+  if (!frame_buffer) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating frame memory", SCM_EOL);
+  };
+  avpicture_fill((AVPicture *)self->frame, frame_buffer, c->pix_fmt, width, height);
+#endif
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
@@ -490,11 +519,13 @@ SCM ffmpeg_target_video_frame(SCM scm_self)
   if (is_input_context(self))
     scm_misc_error("ffmpeg-seek", "Attempt to write to FFmpeg input video", SCM_EOL);
 
+#ifdef HAVE_AV_FRAME_MAKE_WRITABLE
   // Make frame writeable
   int err = av_frame_make_writable(self->frame);
   if (err < 0)
     scm_misc_error("ffmpeg-target-video-frame", "Error making frame writeable: ~a",
                    scm_list_1(get_error_text(err)));
+#endif
 
   return list_video_frame_info(self);
 }
