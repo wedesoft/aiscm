@@ -14,47 +14,47 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (oop goops)
-             (aiscm element)
-             (aiscm mem)
+(use-modules (srfi srfi-64)
+             (oop goops)
              (ice-9 regex)
              (system foreign)
-             (guile-tap))
+             (aiscm element)
+             (aiscm mem))
+
+
+(test-begin "aiscm mem")
+
 (define m (make <mem> #:size 10))
-(ok (>= (pointer-address (get-memory m)) (pointer-address (slot-ref m 'base)))
-   "memory pointer should be greater or equal base pointer")
-(ok (equal? (get-memory m) (get-memory (make <mem> #:base (get-memory m) #:size 10)))
-  "default value for memory slot is value of base")
-(ok (eqv? 10 (get-size m))
-  "'get-size' returns size of allocated memory")
-(ok (equal? (slot-ref m 'base) (slot-ref (+ m 6) 'base))
-  "base pointer is copied when creating pointer with offset")
-(ok (equal? (+ m 1) (+ m 1))
-  "equal mem objects")
-(ok (not (equal? (+ m 1) (+ m 2)))
-  "unequal mem objects")
-(ok (eqv? 4 (get-size (+ m 6)))
-  "pointer operations keep track of memory size")
-(ok (throws? (+ m -1))
-  "throw exception when pointer offset is negative")
-(ok (equal? #vu8(2 3 5)
-  (begin (write-bytes m #vu8(2 3 5 7)) (read-bytes m 3)))
-  "writing and reading to/from memory")
-(ok (equal? #vu8(3 5 7)
-  (begin (write-bytes m #vu8(2 3 5 7)) (read-bytes (+ m 1) 3)))
-  "writing and reading with offset to/from memory")
-(ok (equal? #vu8(2 2 1 1)
-  (begin (write-bytes m #vu8(1 1 1 1)) (write-bytes m #vu8(2 2))
-    (read-bytes m 4)))
-  "writing with overlap and reading back")
-(ok (throws? (read-bytes m 11))
-  "throw exception when reading past memory boundary")
-(ok (throws? (write-bytes m #vu8(1 2 3 4 5 6 7 8 9 10 11)))
-  "throw exception when attempting to write past memory boundary")
-(ok (string-match "^#<<mem> #x[0-9a-f]* 10>$"
-  (call-with-output-string (lambda (port) (display m port))))
-  "display mem object")
-(ok (string-match "^#<<mem> #x[0-9a-f]* 10>$"
-  (call-with-output-string (lambda (port) (write m port))))
-  "write mem object")
-(run-tests)
+
+(test-assert "memory pointer should be greater or equal base pointer"
+  (>= (pointer-address (get-memory m)) (pointer-address (slot-ref m 'base))))
+(test-equal "default value for memory slot is value of base"
+  (get-memory m) (get-memory (make <mem> #:base (get-memory m) #:size 10)))
+(test-eqv "'get-size' returns size of allocated memory"
+  10 (get-size m))
+(test-equal "base pointer is copied when creating pointer with offset"
+  (slot-ref m 'base) (slot-ref (+ m 6) 'base))
+(test-equal "equal mem objects"
+  (+ m 1) (+ m 1))
+(test-assert "unequal mem objects"
+  (not (equal? (+ m 1) (+ m 2))))
+(test-eqv "pointer operations keep track of memory size"
+  4 (get-size (+ m 6)))
+(test-error "throw exception when pointer offset is negative"
+  'misc-error (+ m -1))
+(test-equal "writing and reading to/from memory"
+  #vu8(2 3 5) (begin (write-bytes m #vu8(2 3 5 7)) (read-bytes m 3)))
+(test-equal "writing and reading with offset to/from memory"
+  #vu8(3 5 7) (begin (write-bytes m #vu8(2 3 5 7)) (read-bytes (+ m 1) 3)))
+(test-equal "writing with overlap and reading back"
+  #vu8(2 2 1 1) (begin (write-bytes m #vu8(1 1 1 1)) (write-bytes m #vu8(2 2)) (read-bytes m 4)))
+(test-error "throw exception when reading past memory boundary"
+  'misc-error (read-bytes m 11))
+(test-error "throw exception when attempting to write past memory boundary"
+  'misc-error (write-bytes m #vu8(1 2 3 4 5 6 7 8 9 10 11)))
+(test-assert "display mem object"
+  (string-match "^#<<mem> #x[0-9a-f]* 10>$" (call-with-output-string (lambda (port) (display m port)))))
+(test-assert "write mem object"
+  (string-match "^#<<mem> #x[0-9a-f]* 10>$" (call-with-output-string (lambda (port) (write m port)))))
+
+(test-end "aiscm mem")

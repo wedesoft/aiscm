@@ -4,15 +4,14 @@ SUBDIRS = integration fixtures
 
 TEST_EXTENSIONS = .scm
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
-SCM_LOG_COMPILE = $(GUILE) -L $(top_builddir) -L $(srcdir)
-SCM_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh --comments
+SCM_LOG_DRIVER = $(GUILE) -L $(top_builddir) -L $(srcdir) $(top_srcdir)/build-aux/test-driver.scm
 
-TESTS = test_mem.scm test_bool.scm test_int.scm test_float.scm test_rgb.scm test_pointer.scm \
-				test_sequence.scm test_asm.scm test_jit1.scm test_jit2.scm test_jit3.scm test_jit4.scm test_jit5.scm test_jit6.scm \
-				test_jit7.scm test_op.scm test_util.scm test_image.scm test_complex.scm test_magick.scm test_pulse.scm test_ffmpeg.scm \
-				test_ringbuffer.scm test_obj.scm test_method.scm
+TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg.scm test_float.scm test_image.scm \
+				test_int.scm test_jit1.scm test_jit2.scm test_jit3.scm test_jit4.scm test_jit5.scm test_jit6.scm \
+				test_jit7.scm test_magick.scm test_mem.scm test_method.scm test_obj.scm test_op.scm test_pointer.scm \
+				test_pulse.scm test_rgb.scm test_ringbuffer.scm test_sequence.scm test_util.scm
 
-EXTRA_DIST = guile-tap.scm $(TESTS)
+EXTRA_DIST = $(TESTS)
 
 CLEANFILES = *~ *.tmp *.log *.trs
 

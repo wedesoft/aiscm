@@ -14,49 +14,54 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (aiscm magick)
+(use-modules (srfi srfi-64)
+             (aiscm magick)
              (aiscm element)
              (aiscm pointer)
              (aiscm sequence)
              (aiscm jit)
-             (aiscm rgb)
-             (guile-tap))
+             (aiscm rgb))
+
+
+(test-begin "aiscm magick")
+
 (define ramp (read-image "fixtures/ramp.png"))
 (define index (read-image "fixtures/index.png"))
-(ok (equal? '(6 4) (shape ramp))
-    "Check size of loaded image")
-(ok (equal? (rgb 2 1 128) (get ramp 2 1))
-    "Check pixel of loaded RGB image")
-(ok (throws? (read-image "fixtures/nonexistent.png"))
-    "Throw exception if file not found")
-(ok (equal? 18 (get index 2 1))
-    "Check pixel of loaded greyscale image")
+(test-equal "Check size of loaded image"
+  '(6 4) (shape ramp))
+(test-equal "Check pixel of loaded RGB image"
+  (rgb 2 1 128) (get ramp 2 1))
+(test-error "Throw exception if file not found"
+  'misc-error (read-image "fixtures/nonexistent.png"))
+(test-equal "Check pixel of loaded greyscale image"
+  18 (get index 2 1))
 (define grey-file-name (string-append (tmpnam) ".png"))
 (define grey-values '((1 2 3) (4 5 6)))
 (define grey-img (to-array grey-values))
 (define retval (write-image grey-img grey-file-name))
-(ok (eq? retval grey-img)
-    "Writing image should return input image")
+(test-eq "Writing image should return input image"
+  retval grey-img)
 (define grey (read-image grey-file-name))
-(diagnostics "following test works with ImageMagick 6.8.9")
-(skip (equal? grey-values (to-list grey))
-    "Check content of saved greyscale image")
-(ok (throws? (write-image grey-img "fixtures/nosuchdir/tmp.png"))
-    "Should handle errors when writing image")
+(test-skip 1)
+(test-assert "Check content of saved greyscale image"
+  (equal? grey-values (to-list grey)))
+(test-error "Should handle errors when writing image"
+  'misc-error (write-image grey-img "fixtures/nosuchdir/tmp.png"))
 (define colour-file-name (string-append (tmpnam) ".png"))
 (define colour-values
   (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
 (define colour-img (to-array colour-values))
 (write-image colour-img colour-file-name)
 (define colour (read-image colour-file-name))
-(ok (equal? colour-values (to-list colour))
-    "Check content of saved colour image")
-(ok (throws? (write-image (make (multiarray <int> 2) #:shape '(6 4)) "fixtures/tmp.png"))
-    "Make sure image type is supported")
-(ok (throws? (write-image (make (sequence <int>) #:size 8) "fixtures/tmp.png"))
-    "Make sure image has two dimensions")
+(test-equal "Check content of saved colour image"
+  colour-values (to-list colour))
+(test-error "Make sure image type is supported"
+  'misc-error (write-image (make (multiarray <int> 2) #:shape '(6 4)) "fixtures/tmp.png"))
+(test-error "Make sure image has two dimensions"
+  'misc-error (throws? (write-image (make (sequence <int>) #:size 8) "fixtures/tmp.png")))
 (define rolled-file-name (string-append (tmpnam) ".png"))
 (write-image (roll colour-img) rolled-file-name)
-(ok (equal? colour-values (to-list (roll (read-image rolled-file-name))))
-    "Write image with non-default strides (pitches)")
-(run-tests)
+(test-equal "Write image with non-default strides (pitches)"
+  colour-values (to-list (roll (read-image rolled-file-name))))
+
+(test-end "aiscm magick")

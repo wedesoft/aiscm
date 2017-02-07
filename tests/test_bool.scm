@@ -14,88 +14,92 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (aiscm element)
+(use-modules (srfi srfi-64)
+             (oop goops)
+             (aiscm element)
              (aiscm bool)
              (aiscm int)
-             (aiscm jit)
-             (oop goops)
-             (guile-tap))
+             (aiscm jit))
+
+
+(test-begin "aiscm bool")
+
 (define bool-false (make <bool> #:value #f))
 (define bool-true (make <bool> #:value #t))
-(ok (equal? bool-false bool-false)
-    "equality of booleans")
-(ok (not (equal? bool-false bool-true))
-    "equality of booleans")
-(ok (not (equal? bool-true bool-false))
-    "equality of booleans")
-(ok (equal? bool-true bool-true)
-    "equality of booleans")
-(ok (not (get bool-false))
-    "get boolean value from bool-false")
-(ok (get bool-true)
-    "get boolean value from bool-true")
-(ok (not (equal? bool-true bool-false))
-    "unequal boolean objects")
-(ok (eqv? 1 (size-of <bool>))
-    "storage size of booleans")
-(ok (equal? #vu8(0) (pack bool-false))
-    "pack 'false' value")
-(ok (equal? #vu8(1) (pack bool-true))
-    "pack 'true' value")
-(ok (eqv? 1 (size bool-true))
-    "querying element size of boolean")
-(ok (null? (shape bool-true))
-    "querying shape of boolean")
-(ok (equal? bool-false (unpack <bool> #vu8(0)))
-    "unpack 'false' value")
-(ok (equal? bool-true (unpack <bool> #vu8(1)))
-    "unpack 'true' value")
-(ok (equal? "#<<bool> #f>"
-            (call-with-output-string (lambda (port) (display bool-false port))))
-    "display boolean object")
-(ok (equal? "#<<bool> #f>"
-            (call-with-output-string (lambda (port) (write bool-false port))))
-    "write boolean object")
-(ok (equal? <bool> (native-type #f))
-    "type matching for #f")
-(ok (equal? <bool> (native-type #t))
-    "type matching for #t")
-(ok (equal? <bool> (native-type #f #t))
-    "type matching for multiple booleans")
-(ok (get bool-true)
-    "get value of true")
-(ok (not (get bool-false))
-    "get value of false")
-(ok (let [(b (make <bool> #:value #f))] (set b #t) (get b))
-    "set boolean to true")
-(ok (not (let [(b (make <bool> #:value #t))] (set b #f) (get b)))
-    "set boolean to false")
-(ok (set (make <bool> #:value #f) #t)
-    "return value of setting boolean to true")
-(ok (not (set (make <bool> #:value #t) #f))
-    "return value of setting boolean to false")
-(ok (eq? #t (build <bool> '(#t)))
-    "build boolean 'true'")
-(ok (eq? #f (build <bool> '(#f)))
-    "build boolean 'false'")
-(ok (equal? '(0) (unbuild <bool> #f))
-    "'unbuild' returns 0 for false")
-(ok (equal? '(1) (unbuild <bool> #t))
-    "'unbuild' returns 1 for true")
-(ok (equal? '(#f #f #f #t) (map && '(#f #f #t #t) '(#f #t #f #t)))
-    "'&&' behaves like 'and'")
-(ok (not (&& #t #t #f))
-    "'&&' with three arguments")
-(ok (&& #t #t #t #t)
-    "'&&' with four arguments")
-(ok (equal? '(#f #t #t #t) (map || '(#f #f #t #t) '(#f #t #f #t)))
-    "'||' behaves like 'or'")
-(ok (not (|| #f #f #f))
-    "'||' with three arguments")
-(ok (|| #f #f #f #t)
-    "'||' with four arguments")
-(ok (equal? '(#t #f) (map ! '(#f #t)))
-   "'!' is like 'not'")
-(ok (pointerless? <bool>)
-    "boolean memory is pointerless")
-(run-tests)
+
+(test-equal "equality of booleans"
+  bool-false bool-false)
+(test-assert "equality of booleans"
+  (not (equal? bool-false bool-true)))
+(test-assert "equality of booleans"
+  (not (equal? bool-true bool-false)))
+(test-equal "equality of booleans" 
+  bool-true bool-true)
+(test-assert "get boolean value from bool-false"
+  (not (get bool-false)))
+(test-assert "get boolean value from bool-true"
+  (get bool-true))
+(test-assert "unequal boolean objects"
+  (not (equal? bool-true bool-false)))
+(test-eqv "storage size of booleans"
+  1 (size-of <bool>))
+(test-equal "pack 'false' value" 
+  #vu8(0) (pack bool-false))
+(test-equal "pack 'true' value"
+  #vu8(1) (pack bool-true))
+(test-eqv "querying element size of boolean"
+  1 (size bool-true))
+(test-assert "querying shape of boolean"
+  (null? (shape bool-true)))
+(test-equal "unpack 'false' value" 
+  bool-false (unpack <bool> #vu8(0)))
+(test-equal "unpack 'true' value" 
+  bool-true (unpack <bool> #vu8(1)))
+(test-equal "display boolean object" 
+  "#<<bool> #f>" (call-with-output-string (lambda (port) (display bool-false port))))
+(test-equal "write boolean object"
+  "#<<bool> #f>" (call-with-output-string (lambda (port) (write bool-false port))))
+(test-equal "type matching for #f"
+  <bool> (native-type #f))
+(test-equal "type matching for #t"
+  <bool> (native-type #t))
+(test-equal "type matching for multiple booleans"
+  <bool> (native-type #f #t))
+(test-assert "get value of true"
+  (get bool-true))
+(test-assert "get value of false"
+  (not (get bool-false)))
+(test-assert "set boolean to true"
+  (let [(b (make <bool> #:value #f))] (set b #t) (get b)))
+(test-assert "set boolean to false"
+  (not (let [(b (make <bool> #:value #t))] (set b #f) (get b))))
+(test-assert "return value of setting boolean to true"
+  (set (make <bool> #:value #f) #t))
+(test-assert "return value of setting boolean to false"
+  (not (set (make <bool> #:value #t) #f)))
+(test-eq "build boolean 'true'"
+  #t (build <bool> '(#t)))
+(test-eq "build boolean 'false'"
+  #f (build <bool> '(#f)))
+(test-equal "'unbuild' returns 0 for false"
+  '(0) (unbuild <bool> #f))
+(test-equal "'unbuild' returns 1 for true"
+  '(1) (unbuild <bool> #t))
+(test-equal "'&&' behaves like 'and'"
+  '(#f #f #f #t) (map && '(#f #f #t #t) '(#f #t #f #t)))
+(test-assert "'&&' with three arguments"
+  (not (&& #t #t #f)))
+(test-assert "'&&' with four arguments"
+  (&& #t #t #t #t))
+(test-equal "'||' behaves like 'or'"
+  '(#f #t #t #t) (map || '(#f #f #t #t) '(#f #t #f #t)))
+(test-assert "'||' with three arguments"
+  (not (|| #f #f #f)))
+(test-assert "'||' with four arguments"
+  (|| #f #f #f #t))
+(test-equal "'!' is like 'not'"
+  '(#t #f) (map ! '(#f #t)))
+(test-assert "boolean memory is pointerless"
+  (pointerless? <bool>))
+
+(test-end "aiscm bool")
