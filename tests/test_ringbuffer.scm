@@ -14,33 +14,36 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (guile-tap))
+(use-modules (srfi srfi-64))
+
+
+(test-begin "aiscm ringbuffer")
 
 (load-extension "libguile-aiscm-tests" "init_tests")
 
-(ok (ringbuffer-fetch-empty)
-    "Fetching from empty ring buffer should return no data")
-(ok (ringbuffer-initial-size)
-    "Ring buffer initial size is as specified")
-(ok (ringbuffer-add-data)
-    "Adding data to ring buffer sets fill")
-(ok (ringbuffer-store-and-fetch)
-    "Ring buffer should allow fetching stored data")
-(ok (ringbuffer-store-appends-data)
-    "Adding more data to ring buffer appends to it")
-(ok (ringbuffer-fetch-limit)
-    "Do not fetch more than the specified number of bytes")
-(ok (ringbuffer-fetching-advances)
-    "Fetching from ring buffer advances it")
-(ok (ringbuffer-storing-respects-offset)
-    "Storing to ring buffer should be aware of offset")
-(ok (ringbuffer-wrap-around)
-    "Ring buffer should wrap around")
-(ok (ringbuffer-grow)
-    "Ringbuffer should grow n size if required")
-(ok (ringbuffer-wrap-write)
-    "Ringbuffer writing should wrap around")
-(ok (ringbuffer-flushing)
-    "Flushing ring buffer should empty it")
-(run-tests)
+(test-assert "Fetching from empty ring buffer should return no data"
+  (ringbuffer-fetch-empty))
+(test-assert "Ring buffer initial size is as specified"
+  (ringbuffer-initial-size))
+(test-assert "Adding data to ring buffer sets fill"
+  (ringbuffer-add-data))
+(test-assert "Ring buffer should allow fetching stored data"
+  (ringbuffer-store-and-fetch))
+(test-assert "Adding more data to ring buffer appends to it"
+  (ringbuffer-store-appends-data))
+(test-assert "Do not fetch more than the specified number of bytes"
+  (ringbuffer-fetch-limit))
+(test-assert "Fetching from ring buffer advances it"
+  (ringbuffer-fetching-advances))
+(test-assert "Storing to ring buffer should be aware of offset"
+  (ringbuffer-storing-respects-offset))
+(test-assert "Ring buffer should wrap around"
+  (ringbuffer-wrap-around))
+(test-assert "Ringbuffer should grow n size if required"
+  (ringbuffer-grow))
+(test-assert "Ringbuffer writing should wrap around"
+  (ringbuffer-wrap-write))
+(test-assert "Flushing ring buffer should empty it"
+  (ringbuffer-flushing))
 
+(test-end "aiscm ringbuffer")
