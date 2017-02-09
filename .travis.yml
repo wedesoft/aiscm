@@ -2,7 +2,7 @@ sudo: required
 dist: trusty
 branches:
   only:
-    - master
+    - ubuntu/trusty
 language: c
 compiler:
   - gcc
