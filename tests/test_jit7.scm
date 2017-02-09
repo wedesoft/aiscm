@@ -24,8 +24,10 @@
              (aiscm rgb)
              (aiscm obj)
              (aiscm pointer)
-             (aiscm sequence)
-             (guile-tap))
+             (aiscm sequence))
+
+
+(test-begin "aiscm jit7")
 
 (define ctx (make <context>))
 (define i (var <long>))
@@ -33,126 +35,129 @@
 
 (let* [(s  (skeleton (sequence <int>)))
        (sx (parameter s))]
-  (ok (eq? (value s) (value (delegate (delegate sx))))
-      "sequence parameter maintains pointer")
-  (ok (eq? (index sx) (index (delegate sx)))
-      "index of parameter and index of parameters content should match")
-  (ok (eq? (dimension s) (get (delegate (dimension sx))))
-      "sequence parameter should maintain dimension")
-  (ok (eq? (stride s) (get (delegate (stride (delegate sx)))))
-      "sequence parameter should maintain stride")
-  (ok (eq? (sequence <int>) (type sx))
-      "sequence parameter maintains type")
-  (ok (eq? i (index (subst (delegate sx) (index sx) i)))
-      "substitution should replace the lookup index")
-  (ok (eq? i (index (get sx i)))
-      "retrieving an element by index should replace with the index")
-  (ok (eq? (iterator (delegate sx)) (iterator sx))
-      "retrieve iterator pointer from tensor parameter")
-  (ok (eq? (step (delegate sx)) (step sx))
-      "retrieve step variable from tensor parameter")
-  (ok (not (eq? (step sx) (iterator sx)))
-      "step and iterator need to be distinct variables")
-  (ok (is-a? (delegate (project sx)) (pointer <int>))
-      "projected 1D array tensor should contain pointer"))
+  (test-eq "sequence parameter maintains pointer"
+    (value s) (value (delegate (delegate sx))))
+  (test-eq "index of parameter and index of parameters content should match"
+    (index sx) (index (delegate sx)))
+  (test-eq "sequence parameter should maintain dimension"
+    (dimension s) (get (delegate (dimension sx))))
+  (test-eq "sequence parameter should maintain stride"
+    (stride s) (get (delegate (stride (delegate sx)))))
+  (test-eq "sequence parameter maintains type"
+    (sequence <int>) (type sx))
+  (test-eq "substitution should replace the lookup index"
+    i (index (subst (delegate sx) (index sx) i)))
+  (test-eq "retrieving an element by index should replace with the index"
+    i (index (get sx i)))
+  (test-eq "retrieve iterator pointer from tensor parameter"
+    (iterator (delegate sx)) (iterator sx))
+  (test-eq "retrieve step variable from tensor parameter"
+    (step (delegate sx)) (step sx))
+  (test-assert "step and iterator need to be distinct variables"
+    (not (eq? (step sx) (iterator sx))))
+  (test-assert "projected 1D array tensor should contain pointer"
+    (is-a? (delegate (project sx)) (pointer <int>))))
 (let* [(m  (skeleton (multiarray <int> 2)))
        (mx (parameter m))]
-  (ok (equal? (shape m) (map (compose get delegate) (shape mx)))
-      "2D array parameter should maintain the shape")
-  (ok (equal? (strides m) (map (compose get delegate) (strides mx)))
-      "2D array parameter should maintain the strides")
-  (ok (equal? (index mx) (index (delegate (delegate mx))))
-      "first index of parameter should have a match")
-  (ok (equal? (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
-      "second index of parameter should have a match")
-  (ok (eq? i (index (subst (delegate (delegate mx)) (index mx) i)))
-    "subst should allow replacing first index")
-  (ok (eq? i (index (delegate (subst (delegate (delegate mx)) (index (delegate mx)) i))))
-    "subst should allow replacing second index")
-  (ok (eq? (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
-    "replacing the second index should maintain the first one")
-  (ok (eq? i (index (delegate (get mx i))))
-    "retrieving an element should replace with the index")
+  (test-equal "2D array parameter should maintain the shape"
+    (shape m) (map (compose get delegate) (shape mx)))
+  (test-equal "2D array parameter should maintain the strides"
+    (strides m) (map (compose get delegate) (strides mx)))
+  (test-equal "first index of parameter should have a match"
+    (index mx) (index (delegate (delegate mx))))
+  (test-equal "second index of parameter should have a match"
+    (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
+  (test-eq "subst should allow replacing first index"
+    i (index (subst (delegate (delegate mx)) (index mx) i)))
+  (test-eq "subst should allow replacing second index"
+    i (index (delegate (subst (delegate (delegate mx)) (index (delegate mx)) i))))
+  (test-eq "replacing the second index should maintain the first one"
+    (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
+  (test-eq "retrieving an element should replace with the index"
+    i (index (delegate (get mx i))))
   (let [(tr (indexer (car (shape mx)) i (indexer (cadr (shape mx)) j (get (get mx j) i))))]
-    (ok (equal? (list (dimension mx) (dimension (project mx)))
-                (list (dimension (project tr)) (dimension tr)))
-        "swap dimensions when transposing")
-    (ok (equal? (list (stride mx) (stride (project mx)))
-                (list (stride (project tr)) (stride tr)))
-        "swap strides when transposing")
-    (ok (equal? (list (step mx) (step (project mx)))
-                (list (step (project tr)) (step tr)))
-        "swap step variables when transposing")
-    (ok (equal? (list (iterator mx) (iterator (project mx)))
-                (list (iterator (project tr)) (iterator tr)))
-        "swap iterator variables when transposing")))
+    (test-equal "swap dimensions when transposing"
+      (list (dimension mx) (dimension (project mx))) (list (dimension (project tr)) (dimension tr)))
+    (test-equal "swap strides when transposing"
+      (list (stride mx) (stride (project mx))) (list (stride (project tr)) (stride tr)))
+    (test-equal "swap step variables when transposing"
+      (list (step mx) (step (project mx))) (list (step (project tr)) (step tr)))
+    (test-equal "swap iterator variables when transposing"
+      (list (iterator mx) (iterator (project mx))) (list (iterator (project tr)) (iterator tr)))))
 (let [(s (seq <int> 2 3 5))
       (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
       (r (arr <int> (2 3 5) (7 11 13)))]
   (let [(op (lambda (s) (indexer (dimension s) i (get s i))))]
-    (ok (equal? (to-list s) (to-list ((jit ctx (list (sequence <int>)) op) s)))
-        "compile and run trivial 1D tensor function"))
-  (ok (equal? (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (indexer (car (shape s)) i (get s i)))) s)))
-      "reconstitute a 1D tensor in compiled code")
-  (ok (equal? (to-list m)
-              (to-list ((jit ctx (list (class-of m))
-                (lambda (m) (indexer (cadr (shape m)) j (indexer (car (shape m)) i (get (get m j) i))))) m)))
-      "reconstitute a square 2D tensor")
-  (ok (equal? (to-list (roll m))
-              (to-list ((jit ctx (list (class-of m))
-                (lambda (m) (indexer (car (shape m)) i (indexer (cadr (shape m)) j (get (get m j) i))))) m)))
-      "switch dimensions of a 2D tensor")
-  (ok (equal? (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
-      "tensor macro provides local variable")
-  (ok (equal? (to-list (roll r))
-              (to-list ((jit ctx (list (class-of r))
-                (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i))))) r)))
-      "switch dimensions of a non-square 2D tensor"))
-(ok (equal? '(a) ((jit ctx (list <obj>) package-return-content) 'a))
-    "generate code to package an object in a list")
-(ok (equal? '(2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
-    "generate code to return the content of an RGB value")
-(ok (equal? '(2 3 5) ((jit ctx (list <int> <int> <int>) build-list) 2 3 5))
-    "build a list of values in compiled code")
+    (test-equal "compile and run trivial 1D tensor function"
+      (to-list s) (to-list ((jit ctx (list (sequence <int>)) op) s))))
+  (test-equal "reconstitute a 1D tensor in compiled code"
+    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (indexer (car (shape s)) i (get s i)))) s)))
+  (test-equal "reconstitute a square 2D tensor"
+    (to-list m)
+    (to-list ((jit ctx (list (class-of m))
+                   (lambda (m) (indexer (cadr (shape m)) j (indexer (car (shape m)) i (get (get m j) i)))))
+              m)))
+  (test-equal "switch dimensions of a 2D tensor"
+    (to-list (roll m))
+    (to-list ((jit ctx (list (class-of m))
+                   (lambda (m) (indexer (car (shape m)) i (indexer (cadr (shape m)) j (get (get m j) i)))))
+              m)))
+  (test-equal "tensor macro provides local variable"
+    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
+  (test-equal "switch dimensions of a non-square 2D tensor"
+    (to-list (roll r))
+    (to-list ((jit ctx (list (class-of r))
+                   (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i)))))
+              r))))
+(test-equal "generate code to package an object in a list"
+  '(a) ((jit ctx (list <obj>) package-return-content) 'a))
+(test-equal "generate code to return the content of an RGB value"
+  '(2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
+(test-equal "build a list of values in compiled code"
+  '(2 3 5) ((jit ctx (list <int> <int> <int>) build-list) 2 3 5))
 (let [(i (skeleton <int>))]
-  (ok (equal? '(123) (address->scm ((asm ctx <long> (list <int>) (apply virtual-variables
-                       (apply assemble (generate-return-code (list i) (parameter <int>) (parameter i))))) 123)))
-      "generate code create, define, and package return value"))
-(ok (eqv? 3 ((jit ctx (list (sequence <ubyte>)) dimension) (seq 2 3 5)))
-    "get dimension of sequence")
-(ok (eqv? 1 ((jit ctx (list (sequence <ubyte>)) stride) (seq 2 3 5)))
-    "get stride of sequence")
-(ok (eqv? 5 ((jit ctx (list <int>) *) 5))
-    "number multiplied with nothing returns same number")
-(ok (equal? '(2 3 5) (to-list (* (seq 2 3 5))))
-    "sequence multiplied with nothing returns same sequence")
-(ok (eqv? 2 ((jit ctx (list <sint>) size-of) 42))
-    "determine size of integer in compiled code")
-(ok (eqv? 6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
-    "determine size of sequence (compiled)")
+  (test-equal "generate code create, define, and package return value"
+    '(123)
+    (address->scm ((asm ctx <long> (list <int>)
+                        (apply virtual-variables (apply assemble (generate-return-code (list i)
+                                                        (parameter <int>) (parameter i)))))
+                   123))))
+(test-eqv "get dimension of sequence"
+  3 ((jit ctx (list (sequence <ubyte>)) dimension) (seq 2 3 5)))
+(test-eqv "get stride of sequence"
+  1 ((jit ctx (list (sequence <ubyte>)) stride) (seq 2 3 5)))
+(test-eqv "number multiplied with nothing returns same number"
+  5 ((jit ctx (list <int>) *) 5))
+(test-equal "sequence multiplied with nothing returns same sequence"
+  '(2 3 5) (to-list (* (seq 2 3 5))))
+(test-eqv "determine size of integer in compiled code"
+  2 ((jit ctx (list <sint>) size-of) 42))
+(test-eqv "determine size of sequence (compiled)"
+  6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
 (let [(m (parameter (multiarray <int> 2)))
       (c (parameter <byte>))]
-  (ok (equal? (shape m) (shape (~ m)))
-      "shape of unary function expression is shape of argument")
-  (ok (equal? (shape m) (shape (+ c m)))
-      "shape of scalar plus array expression")
-  (ok (equal? (shape m) (shape (+ m c)))
-      "shape of array plus scalar expression"))
+  (test-equal "shape of unary function expression is shape of argument"
+    (shape m) (shape (~ m)))
+  (test-equal "shape of scalar plus array expression"
+    (shape m) (shape (+ c m)))
+  (test-equal "shape of array plus scalar expression"
+    (shape m) (shape (+ m c))))
 (let [(i (parameter <int>))]
-  (ok (eqv? 42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42))))))
-      "assign native integer constant to parameter"))
-(ok (null? ((jit ctx '() (lambda () scm-eol))))
-    "compile function returning empty list")
-(ok (equal? (cons 'a 'b) ((jit ctx (list <obj> <obj>) scm-cons) 'a 'b))
-    "call \"cons\" from compiled code")
-(ok (equal? '(a) ((jit ctx (list <obj>) (cut scm-cons <> scm-eol)) 'a))
-    "compile function putting object into a one-element list")
-(ok (equal? '(42) ((jit ctx (list <int>) (cut scm-cons <> scm-eol)) 42))
-    "compile function putting integer into a one-element list")
-(ok (equal? '(170) ((jit ctx (list <int> <int>) (lambda (i j) (scm-cons (+ i j) scm-eol))) 100 70))
-    "compile function putting result of expression into a one-element list")
-(ok ((jit ctx (list <ulong>) scm-gc-malloc-pointerless) 128)
-    "allocate memory in compiled method")
-(ok ((jit ctx (list <ulong>) scm-gc-malloc) 128)
-    "allocate memory in compiled method")
-(run-tests)
+  (test-eqv "assign native integer constant to parameter"
+    42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))
+(test-assert "compile function returning empty list"
+  (null? ((jit ctx '() (lambda () scm-eol)))))
+(test-equal "call \"cons\" from compiled code"
+  (cons 'a 'b) ((jit ctx (list <obj> <obj>) scm-cons) 'a 'b))
+(test-equal "compile function putting object into a one-element list"
+  '(a) ((jit ctx (list <obj>) (cut scm-cons <> scm-eol)) 'a))
+(test-equal "compile function putting integer into a one-element list"
+  '(42) ((jit ctx (list <int>) (cut scm-cons <> scm-eol)) 42))
+(test-equal "compile function putting result of expression into a one-element list"
+  '(170) ((jit ctx (list <int> <int>) (lambda (i j) (scm-cons (+ i j) scm-eol))) 100 70))
+(test-assert "allocate memory in compiled method"
+  ((jit ctx (list <ulong>) scm-gc-malloc-pointerless) 128))
+(test-assert "allocate memory in compiled method"
+  ((jit ctx (list <ulong>) scm-gc-malloc) 128))
+
+(test-end "aiscm jit7")

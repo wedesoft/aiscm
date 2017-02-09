@@ -14,7 +14,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (oop goops)
+(use-modules (srfi srfi-64)
+             (oop goops)
              (aiscm util)
              (aiscm element)
              (aiscm bool)
@@ -25,13 +26,14 @@
              (aiscm asm)
              (aiscm jit)
              (aiscm sequence)
-             (aiscm op)
-             (guile-tap))
-(ok (equal? '(3 3 3) (to-list (fill <byte> '(3) 3)))
-    "fill byte sequence")
-(ok (equal? '(3 3 3) (to-list (fill <int> '(3) 3)))
-    "fill integer sequence")
+             (aiscm op))
 
-; ------------------------------------------------------------------------------
 
-(run-tests)
+(test-begin "aiscm op")
+
+(test-equal "fill byte sequence"
+  '(3 3 3) (to-list (fill <byte> '(3) 3)))
+(test-equal "fill integer sequence"
+  '(3 3 3) (to-list (fill <int> '(3) 3)))
+
+(test-end "aiscm op")

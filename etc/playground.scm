@@ -13,8 +13,7 @@
              (aiscm asm)
              (aiscm jit)
              (aiscm method)
-             (aiscm util)
-             (guile-tap))
+             (aiscm util))
 
 (define ctx (make <context>))
 (define context ctx)
@@ -53,5 +52,3 @@
 (define locations            (add-spill-information allocation 8 8))
 
 ;(append-map (cut replace-variables locations <...>) prog temporaries)
-
-(run-tests)
