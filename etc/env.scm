@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm sequence) (aiscm pointer) (aiscm element) (aiscm int) (aiscm op) (aiscm util) (srfi srfi-1) (guile-tap))
+(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm sequence) (aiscm pointer) (aiscm element) (aiscm int) (aiscm op) (aiscm util) (srfi srfi-1))
 
 (define-class <lookup> ()
   (term   #:init-keyword #:term   #:getter term)

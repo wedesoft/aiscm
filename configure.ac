@@ -6,7 +6,7 @@ AC_INIT([aiscm], [0.10.2], [jan@wedesoft.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
-AC_REQUIRE_AUX_FILE([tap-driver.sh])
+AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_EXTRA_RECURSIVE_TARGETS([bench recheck integration reintegration])
 LT_INIT
 AC_PROG_CC
@@ -184,6 +184,8 @@ AC_OUTPUT(Makefile
           tests/Makefile
           tests/integration/Makefile
           tests/fixtures/Makefile
+          srfi/Makefile
+          srfi/srfi-64/Makefile
           bench/Makefile
           doc/Makefile
           doc/index.md,

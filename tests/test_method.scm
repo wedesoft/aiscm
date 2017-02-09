@@ -14,15 +14,18 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (oop goops)
-             (srfi srfi-26)
+(use-modules (srfi srfi-26)
+             (srfi srfi-64)
+             (oop goops)
              (aiscm asm)
              (aiscm jit)
              (aiscm bool)
              (aiscm int)
              (aiscm obj)
-             (aiscm method)
-             (guile-tap))
+             (aiscm method))
+
+
+(test-begin "aiscm method")
 
 (define ctx (make <context>))
 
@@ -37,37 +40,45 @@
 (define jit-boolean-not     (dynamic-func "jit_boolean_not"     guile-aiscm-tests))
 
 (let [(method (make-native-method <int> '() jit-constant-fun))]
-  (ok (equal? jit-constant-fun (function-pointer method))
-      "Query function pointer of method")
-  (ok (eq? <int> (return-type method))
-      "Query return type of method")
-  (ok (null? (argument-types method))
-      "Query argument list of constant method")
-  (ok (eqv? 42 ((jit ctx '() (const (make-native-function (make-native-method <int> '() jit-constant-fun))))))
-      "Compile method call to function returning constant value"))
-(ok (eqv? 63 ((jit ctx (list <int>)
-                   (lambda (x) (+ x (make-native-function (make-native-method <int> (list <int>) jit-constant-fun))))) 21))
-    "Compile function call and plus operation to test that caller-saved registers get blocked")
-(ok (eqv? 2 ((jit ctx (list <int> <int>)
-                  (lambda (x y) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) y x))) 5 7))
-    "Compile function call taking two arguments after swapping them")
-(ok (eqv? 5 ((jit ctx (make-list 3 <int>)
-                  (lambda (x y z) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z)))) 10 2 3))
-    "Pass result of expression to function call")
-(ok (eqv? 5 ((jit ctx (list <int> <obj> <obj>)
-                  (lambda (x y z) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z)))) 10 2 3))
-    "Convert result of expression before passing to native function call")
-(ok (eqv? 42 ((jit ctx (list <int> <int>)
-                   (lambda (a b) (make-native-function (make-native-method <int> (make-list 7 <int>) jit-seven-arguments) a a a a a a b))) 123 42))
-    "Compile function call with seven arguments (requires stack parameters)")
-(ok (equal? '(#t #f) (map (jit ctx (list <bool>) (cut make-native-function (make-native-method <bool> (list <bool>) jit-boolean-not) <>)) '(#f #t)))
-    "Compile and run native boolean negation function")
-(ok (equal? 42 ((jit ctx (list <int>) (cut make-native-function (make-native-method <int> (list <int>) cabs) <>)) -42))
-    "call C standard library abs function")
-(ok (eq? <int> (return-type (native-value <int> 42)))
-    "check type of native value")
-(ok (eqv? 42 (get (native-value <int> 42)))
-    "check value of native value")
-(ok (eqv? 42 ((jit ctx '() (lambda () (native-const <int> 42)))))
-    "put native constant into compiled code")
-(run-tests)
+  (test-equal "Query function pointer of method"
+    jit-constant-fun (function-pointer method))
+  (test-eq "Query return type of method"
+    <int> (return-type method))
+  (test-assert "Query argument list of constant method"
+    (null? (argument-types method)))
+  (test-eqv "Compile method call to function returning constant value"
+    42 ((jit ctx '() (const (make-native-function (make-native-method <int> '() jit-constant-fun)))))))
+(test-eqv "Compile function call and plus operation to test that caller-saved registers get blocked"
+  63 ((jit ctx (list <int>)
+           (lambda (x) (+ x (make-native-function (make-native-method <int> (list <int>) jit-constant-fun)))))
+      21))
+(test-eqv "Compile function call taking two arguments after swapping them"
+  2 ((jit ctx (list <int> <int>)
+          (lambda (x y) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) y x)))
+      5 7))
+(test-eqv "Pass result of expression to function call"
+  5 ((jit ctx (make-list 3 <int>)
+          (lambda (x y z) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z))))
+     10 2 3))
+(test-eqv "Convert result of expression before passing to native function call"
+  5 ((jit ctx (list <int> <obj> <obj>)
+          (lambda (x y z) (make-native-function (make-native-method <int> (list <int> <int>) jit-subtracting-fun) x (+ y z))))
+     10 2 3))
+(test-eqv "Compile function call with seven arguments (requires stack parameters)"
+  42 ((jit ctx (list <int> <int>)
+           (lambda (a b) (make-native-function (make-native-method <int> (make-list 7 <int>) jit-seven-arguments) a a a a a a b)))
+      123 42))
+(test-equal "Compile and run native boolean negation function"
+  '(#t #f)
+  (map (jit ctx (list <bool>) (cut make-native-function (make-native-method <bool> (list <bool>) jit-boolean-not) <>))
+       '(#f #t)))
+(test-equal "call C standard library abs function"
+  42 ((jit ctx (list <int>) (cut make-native-function (make-native-method <int> (list <int>) cabs) <>)) -42))
+(test-eq "check type of native value"
+  <int> (return-type (native-value <int> 42)))
+(test-eqv "check value of native value"
+  42 (get (native-value <int> 42)))
+(test-eqv "put native constant into compiled code"
+  42 ((jit ctx '() (lambda () (native-const <int> 42)))))
+
+(test-end "aiscm method")
