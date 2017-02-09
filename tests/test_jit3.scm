@@ -14,10 +14,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (oop goops)
-             (rnrs bytevectors)
-             (srfi srfi-1)
+(use-modules (srfi srfi-1)
              (srfi srfi-26)
+             (srfi srfi-64)
+             (rnrs bytevectors)
+             (oop goops)
              (aiscm util)
              (aiscm asm)
              (aiscm mem)
@@ -28,15 +29,18 @@
              (aiscm sequence)
              (aiscm bool)
              (aiscm rgb)
-             (aiscm complex)
-             (guile-tap))
+             (aiscm complex))
+
+(test-begin "aiscm jit3")
+
 (define ctx (make <context>))
-(ok (equal? '((1 1 2) (3 4 5)) (to-list (- (arr (2 3 5) (7 9 11)) (arr (1 2 3) (4 5 6)))))
-    "subtract 2D array from each other")
-(ok (equal? '(((-1 2 -3) (4 -5 6))) (to-list (- (arr ((1 -2 3) (-4 5 -6))))))
-    "negate 3D array")
-(ok (equal? '((3 4 5) (7 8 9)) (to-list (+ (seq 0 1) (arr (3 4 5) (6 7 8)))))
-    "add 1D and 2D array")
-(ok (equal? '((3 4 5) (7 8 9)) (to-list (+ (arr (3 4 5) (6 7 8)) (seq 0 1))))
-    "add 2D and 1D array")
-(run-tests)
+(test-equal "subtract 2D array from each other"
+  '((1 1 2) (3 4 5)) (to-list (- (arr (2 3 5) (7 9 11)) (arr (1 2 3) (4 5 6)))))
+(test-equal "negate 3D array"
+  '(((-1 2 -3) (4 -5 6))) (to-list (- (arr ((1 -2 3) (-4 5 -6))))))
+(test-equal "add 1D and 2D array"
+  '((3 4 5) (7 8 9)) (to-list (+ (seq 0 1) (arr (3 4 5) (6 7 8)))))
+(test-equal "add 2D and 1D array"
+  '((3 4 5) (7 8 9)) (to-list (+ (arr (3 4 5) (6 7 8)) (seq 0 1))))
+
+(test-begin "aiscm jit3")

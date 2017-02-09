@@ -15,11 +15,15 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-1)
+             (srfi srfi-64)
              (oop goops)
              (system foreign)
              (rnrs bytevectors)
-             (aiscm util)
-             (guile-tap))
+             (aiscm util))
+
+
+(test-begin "aiscm util")
+
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))
@@ -31,173 +35,168 @@
 (define-class <values> ()
   (a #:init-keyword #:a)
   (b #:init-keyword #:b))
-(ok (eqv? 0 a)
-    "'toplevel-define! should create a definition for the given symbol")
-(ok (eq? <number> (super <complex>))
-    "'super' returns the first direct superclass")
-(ok (eq? <meta<test<>>> (class-of <test<>>))
-    "'define-class*' should define class and meta-class")
-(ok (eq? 42 (get-t (make <test<>> #:t 42)))
-    "'define-class*' creates the specified slots")
-(ok (eqv? 5 (toplevel-define! 'abc 5))
-    "'toplevel-define! should return the value of the definition")
-(ok (eq? <test<32>> (template-class (test 32) <test<>>))
-    "retrieve template class by it's arguments")
-(ok (eq? <meta<test<32>>> (class-of (template-class (test 32) <test<>>)))
-    "meta class of template class")
-(ok (equal? <test<>> (super (template-class (test 32) <test<>>)))
-    "base class of template class")
-(ok (equal? <meta<test<>>> (super (class-of (template-class (test 32) <test<>>))))
-    "base class of meta class of template class")
-(ok (eq? '<test<32>> (class-name <test<32>>))
-    "class-name of template class")
-(ok (eq? '<test<pair>> (class-name (template-class (test <pair>) <test<>>)))
-    "class-name of template class with class arguments")
-(ok (eq? '<test<32,pair>> (class-name (template-class (test 32 <pair>) <test<>>)))
-    "class-name of template class with multiple arguments")
-(ok (eqv? 42 (tplus8 (make <test<8>> #:t 34)))
-    "template class can have methods")
-(ok (is8? <test<8>>)
-    "meta classes can have methods")
-(ok (equal? '(#f #t #t #f) (map xor '(#f #f #t #t) '(#f #t #f #t)))
-    "exclusive-or for booleans")
-(ok (equal? '(1 2 3) (attach '(1 2) 3))
-    "'attach' should add an element at the end of the list")
-(ok (not (index-of 4 '(2 3 5 7)))
-    "'index' returns #f if value is not element of list")
-(ok (eqv? 2 (index-of 5 '(2 3 5 7)))
-    "'index' returns index of first matching list element")
-(ok (equal? '(2 3 5) (all-but-last '(2 3 5 7)))
-    "'all-but-last' should return a list with the last element removed")
-(ok (null? (drop-up-to '(1 2 3) 4))
-    "'drop-up-to' returns empty list if drop count is larger than length of list")
-(ok (equal? '(5 6) (drop-up-to '(1 2 3 4 5 6) 4))
-    "'drop-up-to' behaves like 'drop' otherwise")
-(ok (equal? '(1 2 3) (take-up-to '(1 2 3 4 5) 3))
-    "'take-up-to' returns first elements")
-(ok (equal? '(1 2) (take-up-to '(1 2) 3))
-    "'take-up-to' returns all elements if list is smaller")
-(ok (equal? '(1 2 3 4) (flatten '(1 (2 3) ((4)))))
-    "'flatten' flattens a list")
-(ok (equal? '(2 3 4 1) (cycle '(1 2 3 4)))
-    "'cycle' should cycle the elements of a list")
-(ok (equal? '(4 1 2 3) (uncycle '(1 2 3 4)))
-    "'uncycle' should reverse cycle the elements of a list")
-(ok (equal? '(1 2 3 4) (cycle-times '(1 2 3 4) 0))
-    "cycling an array 0 times")
-(ok (equal? '(1 2 3 4) (cycle-times '(1 2 3 4) 0))
-    "cycling an array 0 times")
-(ok (equal? '(2 3 4 1) (cycle-times '(1 2 3 4) 1))
-    "cycling an array 1 times")
-(ok (equal? '(3 4 1 2) (cycle-times '(1 2 3 4) 2))
-    "cycling an array 2 times")
-(ok (equal? '(4 1 2 3) (cycle-times '(1 2 3 4) -1))
-    "cycling an array -1 times")
-(ok (equal? '(3 4 1 2) (cycle-times '(1 2 3 4) -2))
-    "cycling an array -2 times")
-(ok (equal? '(1 3 6 10) (integral '(1 2 3 4)))
-    "'integral' should compute the accumulative sum of a list")
-(ok (equal? '((1 . a) (2 . b)) (alist-invert '((a . 1) (b . 2))))
-    "'alist-invert' should invert an association list")
-(ok (equal? '((3 . c)) (assq-set '() 3 'c))
-    "'assq-set' should work with empty association list")
-(ok (equal? '((1 . a) (2 . b) (3 . c)) (assq-set '((1 . a) (2 . b)) 3 'c))
-    "'assq-set' should append new associations")
-(ok (equal? '((1 . a) (2 . c)) (assq-set '((1 . a) (2 . b)) 2 'c))
-    "'assq-set' should override old associations")
-(ok (equal? '((a . red) (c . blue)) (assq-remove '((a . red) (b . green) (c . blue)) 'b))
-    "'assq-remove' should remove entry with specified key")
-(ok (equal? '((c . blue)) (assq-remove '((a . red) (b . green) (c . blue)) 'b 'a))
-    "'assq-remove' should support removing multiple keys")
-(ok (equal? '((a . 1) (a . 2) (a . 3) (b . 1) (b . 2) (b . 3)) (product '(a b) '(1 2 3)))
-    "'product' should create a product set of two lists")
+(test-eqv "'toplevel-define! should create a definition for the given symbol"
+  0 a)
+(test-eq "'super' returns the first direct superclass"
+  <number> (super <complex>))
+(test-eq "'define-class*' should define class and meta-class"
+  <meta<test<>>> (class-of <test<>>))
+(test-eq "'define-class*' creates the specified slots"
+  42 (get-t (make <test<>> #:t 42)))
+(test-eqv "'toplevel-define! should return the value of the definition"
+  5 (toplevel-define! 'abc 5))
+(test-eq "retrieve template class by it's arguments"
+  <test<32>> (template-class (test 32) <test<>>))
+(test-eq "meta class of template class"
+  <meta<test<32>>> (class-of (template-class (test 32) <test<>>)))
+(test-equal "base class of template class"
+  <test<>> (super (template-class (test 32) <test<>>)))
+(test-equal "base class of meta class of template class"
+  <meta<test<>>> (super (class-of (template-class (test 32) <test<>>))))
+(test-eq "class-name of template class"
+  '<test<32>> (class-name <test<32>>))
+(test-eq "class-name of template class with class arguments"
+  '<test<pair>> (class-name (template-class (test <pair>) <test<>>)))
+(test-eq "class-name of template class with multiple arguments"
+  '<test<32,pair>> (class-name (template-class (test 32 <pair>) <test<>>)))
+(test-eqv "template class can have methods"
+  42 (tplus8 (make <test<8>> #:t 34)))
+(test-assert "meta classes can have methods"
+  (is8? <test<8>>))
+(test-equal "exclusive-or for booleans"
+  '(#f #t #t #f) (map xor '(#f #f #t #t) '(#f #t #f #t)))
+(test-equal "'attach' should add an element at the end of the list"
+  '(1 2 3) (attach '(1 2) 3))
+(test-assert "'index' returns #f if value is not element of list"
+  (not (index-of 4 '(2 3 5 7))))
+(test-eqv "'index' returns index of first matching list element"
+  2 (index-of 5 '(2 3 5 7)))
+(test-equal "'all-but-last' should return a list with the last element removed"
+  '(2 3 5) (all-but-last '(2 3 5 7)))
+(test-assert "'drop-up-to' returns empty list if drop count is larger than length of list"
+  (null? (drop-up-to '(1 2 3) 4)))
+(test-equal "'drop-up-to' behaves like 'drop' otherwise"
+  '(5 6) (drop-up-to '(1 2 3 4 5 6) 4))
+(test-equal "'take-up-to' returns first elements"
+  '(1 2 3) (take-up-to '(1 2 3 4 5) 3))
+(test-equal "'take-up-to' returns all elements if list is smaller"
+  '(1 2) (take-up-to '(1 2) 3))
+(test-equal "'flatten' flattens a list"
+  '(1 2 3 4) (flatten '(1 (2 3) ((4)))))
+(test-equal "'cycle' should cycle the elements of a list"
+  '(2 3 4 1) (cycle '(1 2 3 4)))
+(test-equal "'uncycle' should reverse cycle the elements of a list"
+  '(4 1 2 3) (uncycle '(1 2 3 4)))
+(test-equal "cycling an array 0 times"
+  '(1 2 3 4) (cycle-times '(1 2 3 4) 0))
+(test-equal "cycling an array 0 times"
+  '(1 2 3 4) (cycle-times '(1 2 3 4) 0))
+(test-equal "cycling an array 1 times"
+  '(2 3 4 1) (cycle-times '(1 2 3 4) 1))
+(test-equal "cycling an array 2 times"
+  '(3 4 1 2) (cycle-times '(1 2 3 4) 2))
+(test-equal "cycling an array -1 times"
+  '(4 1 2 3) (cycle-times '(1 2 3 4) -1))
+(test-equal "cycling an array -2 times"
+  '(3 4 1 2) (cycle-times '(1 2 3 4) -2))
+(test-equal "'integral' should compute the accumulative sum of a list"
+  '(1 3 6 10) (integral '(1 2 3 4)))
+(test-equal "'alist-invert' should invert an association list"
+  '((1 . a) (2 . b)) (alist-invert '((a . 1) (b . 2))))
+(test-equal "'assq-set' should work with empty association list"
+  '((3 . c)) (assq-set '() 3 'c))
+(test-equal "'assq-set' should append new associations"
+  '((1 . a) (2 . b) (3 . c)) (assq-set '((1 . a) (2 . b)) 3 'c))
+(test-equal "'assq-set' should override old associations"
+  '((1 . a) (2 . c)) (assq-set '((1 . a) (2 . b)) 2 'c))
+(test-equal "'assq-remove' should remove entry with specified key"
+  '((a . red) (c . blue)) (assq-remove '((a . red) (b . green) (c . blue)) 'b))
+(test-equal "'assq-remove' should support removing multiple keys"
+  '((c . blue)) (assq-remove '((a . red) (b . green) (c . blue)) 'b 'a))
+(test-equal "'product' should create a product set of two lists"
+  '((a . 1) (a . 2) (a . 3) (b . 1) (b . 2) (b . 3)) (product '(a b) '(1 2 3)))
 
-(ok (equal? '((a . 1) (b . 2) (c . 3)) (sort-by '((c . 3) (a . 1) (b . 2)) cdr))
-    "'sort-by' should sort arguments by the values of the supplied function")
+(test-equal "'sort-by' should sort arguments by the values of the supplied function"
+  '((a . 1) (b . 2) (c . 3)) (sort-by '((c . 3) (a . 1) (b . 2)) cdr))
 
-(ok (equal? '(1 3 5 0 2 4) (sort-by-pred (iota 6) even?))
-    "'sort-by-pred' sorts by boolean result of predicate")
+(test-equal "'sort-by-pred' sorts by boolean result of predicate"
+  '(1 3 5 0 2 4) (sort-by-pred (iota 6) even?))
 
-(ok (null? (partial-sort '() <))
-    "partial sorting of empty list")
-(ok (equal? '(2 3) (partial-sort '(2 3) <))
-    "list of integers already sorted")
-(ok (equal? '(3 5) (partial-sort '(5 3) <))
-    "order list of two integers")
-(ok (equal? '(5 5) (partial-sort '(5 5) <))
-    "order list of two equal integers")
-(ok (equal? '(7 3) (partial-sort '(7 3) (const #f)))
-    "return items if order is not defined")
-(ok (equal? '(3 1 2) (partial-sort '(1 2 3) (lambda (x y) (eqv? x 3))))
-    "perform partial ordering")
+(test-assert "partial sorting of empty list"
+  (null? (partial-sort '() <)))
+(test-equal "list of integers already sorted"
+  '(2 3) (partial-sort '(2 3) <))
+(test-equal "order list of two integers"
+  '(3 5) (partial-sort '(5 3) <))
+(test-equal "order list of two equal integers"
+  '(5 5) (partial-sort '(5 5) <))
+(test-equal "return items if order is not defined"
+  '(7 3) (partial-sort '(7 3) (const #f)))
+(test-equal "perform partial ordering"
+  '(3 1 2) (partial-sort '(1 2 3) (lambda (x y) (eqv? x 3))))
 
-(ok (equal? '(a . 1) (argmin cdr '((c . 3) (a . 1) (b . 2))))
-    "Get element with minimum of argument")
-(ok (equal? '(c . 3) (argmax cdr '((c . 3) (a . 1) (b . 2))))
-    "Get element with maximum of argument")
-(ok (equal? '((0 1) (2 3 4) (5 6 7 8 9)) (gather '(2 3 5) (iota 10)))
-    "'gather' groups elements into groups of specified size")
-(ok (< (abs (- (sqrt 2)
-               (fixed-point 1
-                            (lambda (x) (* 0.5 (+ (/ 2 x) x)))
-                            (lambda (a b) (< (abs (- a b)) 1e-5)))))
-       1e-5)
-    "Fixed point iteration")
-(ok (lset= eqv? '(1 2 3) (union '(1 2) '(2 3)))
-    "'union' should merge two sets")
-(ok (lset= eqv? '(1) (difference '(1 2) '(2 3)))
-    "'difference' should return the set difference")
-(ok (equal? '(a b) (pair->list '(a . b)))
-    "Convert pair to list")
-(ok (lset= equal?
-           '((a . (0 . 1)) (b . (1 . 2)) (c . (2 . 2)))
-           (live-intervals '((a) (a b) (b c) ()) '(a b c)))
-    "Determine live intervals")
-(ok (equal? '((a b) (a b c) (b c))
-            (map (overlap-interval '((a . (0 . 1)) (b . (1 . 2)) (c . (2 . 2)))) '((0 . 1) (1 . 2) (2 . 2))))
-    "Determine variables with overlapping intervals for an interval")
-(ok (equal? 2 (first-index (lambda (x) (> x 4)) '(2 3 5 7 0)))
-    "Return index of first element for given predicate")
-(ok (not (first-index (lambda (x) (> x 7)) '(2 3 5 7 0)))
-    "Return false if there is no element for given predicate")
-(ok (equal? 3 (last-index (lambda (x) (> x 4)) '(2 3 5 7 0)))
-    "Return index of last element for given predicate")
-(ok (not (last-index (lambda (x) (> x 7)) '(2 3 5 7 0)))
-    "Return false if there is no element for given predicate")
-(ok (equal? '(1 2 3) (compact 1 2 #f 3 #f))
-    "Remove false elements from arguments")
-(ok (equal? #vu8(3 5) (bytevector-sub #vu8(2 3 5 7 11) 1 2))
-    "Extract part of byte vector")
-(ok (equal? #vu8(2 3 5 7 11 13) (bytevector-concat (list #vu8(2 3) #vu8(5 7 11) #vu8(13))))
-    "concatenate byte vectors")
-(ok (equal? '(1 -2 3 -4 5) (map-if even? - + '(1 2 3 4 5)))
-    "conditional map")
-(ok (equal? '(1 5 8) (map-if (compose even? car list) - + '(2 3 5) '(1 2 3)))
-    "conditional map with multiple arguments")
-(ok (equal? '(1 5 8) (map-select '(#t #f #f) - + '(2 3 5) '(1 2 3)))
-    "selective map with multiple arguments")
-(ok (equal? (make-list 5 #t) (map symbol? (symbol-list 5)))
-    "generate 5 symbols")
-(ok (equal? '((a <tag>) (b <tag>) (c <tag>)) (typed-header '(a b c) '<tag>))
-    "Add type tags to method header")
-(ok (let [(t (clock))] (>= (elapsed t) 0))
-    "Clock starts with zero")
-(ok (let [(t (clock))] (sleep 1) (>= (elapsed t) 1))
-    "Check clock has advanced after 1 second")
-(ok (let [(t (clock))] (usleep 100000) (>= (elapsed t) 0.1))
-    "Check clock has advanced after 100 milliseconds")
-(ok (let [(t (clock))] (usleep 100000) (< (elapsed t) 0.2))
-    "Check clock has not advanced too much after 100 milliseconds")
-(ok (let [(t (clock))] (synchronise #t 1 (compose sleep inexact->exact round)) (>= (elapsed t) 1))
-    "Wait for one second")
-(ok (not (throws? (synchronise #t -1 (compose sleep inexact->exact round))))
-    "Do not attempt to wait negative time")
-(ok (eqv? 42 (synchronise 42 0 identity))
-    "Return specified result after synchronisation")
-(ok (equal? '(2 3) (object-slots (make <values> #:a 2 #:b 3)))
-    "Retrieve slot values from object")
-(ok (eq? (pointer-address (scm->pointer 123)) (scm->address 123))
-    "convert Scheme object to address")
-(ok (eq? 123 (address->scm (scm->address 123)))
-    "convert address to Scheme object")
-(run-tests)
+(test-equal "Get element with minimum of argument"
+  '(a . 1) (argmin cdr '((c . 3) (a . 1) (b . 2))))
+(test-equal "Get element with maximum of argument"
+  '(c . 3) (argmax cdr '((c . 3) (a . 1) (b . 2))))
+(test-equal "'gather' groups elements into groups of specified size"
+  '((0 1) (2 3 4) (5 6 7 8 9)) (gather '(2 3 5) (iota 10)))
+(test-approximate "Fixed point iteration"
+  (sqrt 2) (fixed-point 1 (lambda (x) (* 0.5 (+ (/ 2 x) x))) (lambda (a b) (< (abs (- a b)) 1e-5))) 1e-5)
+(test-assert "'union' should merge two sets"
+  (lset= eqv? '(1 2 3) (union '(1 2) '(2 3))))
+(test-assert "'difference' should return the set difference"
+  (lset= eqv? '(1) (difference '(1 2) '(2 3))))
+(test-equal "Convert pair to list"
+  '(a b) (pair->list '(a . b)))
+(test-assert "Determine live intervals"
+  (lset= equal?  '((a . (0 . 1)) (b . (1 . 2)) (c . (2 . 2))) (live-intervals '((a) (a b) (b c) ()) '(a b c))))
+(test-equal "Determine variables with overlapping intervals for an interval"
+  '((a b) (a b c) (b c))
+  (map (overlap-interval '((a . (0 . 1)) (b . (1 . 2)) (c . (2 . 2)))) '((0 . 1) (1 . 2) (2 . 2))))
+(test-equal "Return index of first element for given predicate"
+  2 (first-index (lambda (x) (> x 4)) '(2 3 5 7 0)))
+(test-assert "Return false if there is no element for given predicate"
+  (not (first-index (lambda (x) (> x 7)) '(2 3 5 7 0))))
+(test-equal "Return index of last element for given predicate"
+  3 (last-index (lambda (x) (> x 4)) '(2 3 5 7 0)))
+(test-assert "Return false if there is no element for given predicate"
+  (not (last-index (lambda (x) (> x 7)) '(2 3 5 7 0))))
+(test-equal "Remove false elements from arguments"
+  '(1 2 3) (compact 1 2 #f 3 #f))
+(test-equal "Extract part of byte vector"
+  #vu8(3 5) (bytevector-sub #vu8(2 3 5 7 11) 1 2))
+(test-equal "concatenate byte vectors"
+  #vu8(2 3 5 7 11 13) (bytevector-concat (list #vu8(2 3) #vu8(5 7 11) #vu8(13))))
+(test-equal "conditional map"
+  '(1 -2 3 -4 5) (map-if even? - + '(1 2 3 4 5)))
+(test-equal "conditional map with multiple arguments"
+  '(1 5 8) (map-if (compose even? car list) - + '(2 3 5) '(1 2 3)))
+(test-equal "selective map with multiple arguments"
+  '(1 5 8) (map-select '(#t #f #f) - + '(2 3 5) '(1 2 3)))
+(test-equal "generate 5 symbols"
+  (make-list 5 #t) (map symbol? (symbol-list 5)))
+(test-equal "Add type tags to method header"
+  '((a <tag>) (b <tag>) (c <tag>)) (typed-header '(a b c) '<tag>))
+(test-assert "Clock starts with zero"
+  (let [(t (clock))] (>= (elapsed t) 0)))
+(test-assert "Check clock has advanced after 1 second"
+  (let [(t (clock))] (sleep 1) (>= (elapsed t) 1)))
+(test-assert "Check clock has advanced after 100 milliseconds"
+  (let [(t (clock))] (usleep 100000) (>= (elapsed t) 0.1)))
+(test-assert "Check clock has not advanced too much after 100 milliseconds"
+  (let [(t (clock))] (usleep 100000) (< (elapsed t) 0.2)))
+(test-assert "Wait for one second"
+  (let [(t (clock))] (synchronise #t 1 (compose sleep inexact->exact round)) (>= (elapsed t) 1)))
+(test-assert "Do not attempt to wait negative time"
+  (synchronise #t -1 (compose sleep inexact->exact round)))
+(test-eqv "Return specified result after synchronisation"
+  42 (synchronise 42 0 identity))
+(test-equal "Retrieve slot values from object"
+  '(2 3) (object-slots (make <values> #:a 2 #:b 3)))
+(test-eq "convert Scheme object to address"
+  (pointer-address (scm->pointer 123)) (scm->address 123))
+(test-eq "convert address to Scheme object"
+  123 (address->scm (scm->address 123)))
+
+(test-end "aiscm util")

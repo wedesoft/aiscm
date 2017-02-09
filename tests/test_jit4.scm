@@ -14,10 +14,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (oop goops)
-             (rnrs bytevectors)
-             (srfi srfi-1)
+(use-modules (srfi srfi-1)
              (srfi srfi-26)
+             (srfi srfi-64)
+             (oop goops)
+             (rnrs bytevectors)
              (aiscm util)
              (aiscm asm)
              (aiscm mem)
@@ -28,19 +29,22 @@
              (aiscm sequence)
              (aiscm bool)
              (aiscm rgb)
-             (aiscm complex)
-             (guile-tap))
-(define ctx (make <context>))
-(ok (equal? '(((2 3 4) (5 6 7))) (to-list (+ (arr ((1 2 3) (4 5 6))) 1)))
-    "add scalar to 3D array")
-(ok (equal? '(((2 3 4) (5 6 7))) (to-list (+ 1 (arr ((1 2 3) (4 5 6))))))
-    "add 3D array to scalar")
-(ok (equal? '(((2 4 6) (8 10 12))) (let [(m (arr ((1 2 3) (4 5 6))))] (to-list (+ m m))))
-    "add two 3D arrays")
-(ok (equal? '((((3 3) (3 3)) ((3 3) (3 3))) (((3 3) (3 3)) ((3 3) (3 3))))
-            (to-list (+ (arr (((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2)))) 1)))
-    "add 1 to 4D array")
-(ok (equal? '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
-    "add unsigned integer and integer array")
-(run-tests)
+             (aiscm complex))
 
+
+(test-begin "aiscm jit4")
+
+(define ctx (make <context>))
+(test-equal "add scalar to 3D array"
+  '(((2 3 4) (5 6 7))) (to-list (+ (arr ((1 2 3) (4 5 6))) 1)))
+(test-equal "add 3D array to scalar"
+  '(((2 3 4) (5 6 7))) (to-list (+ 1 (arr ((1 2 3) (4 5 6))))))
+(test-equal "add two 3D arrays"
+  '(((2 4 6) (8 10 12))) (let [(m (arr ((1 2 3) (4 5 6))))] (to-list (+ m m))))
+(test-equal "add 1 to 4D array"
+  '((((3 3) (3 3)) ((3 3) (3 3))) (((3 3) (3 3)) ((3 3) (3 3))))
+  (to-list (+ (arr (((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2)))) 1)))
+(test-equal "add unsigned integer and integer array"
+  '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
+
+(test-begin "aiscm jit4")
