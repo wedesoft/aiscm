@@ -97,7 +97,6 @@ static char is_input_context(struct ffmpeg_t *self)
 
 SCM ffmpeg_destroy(SCM scm_self)
 {
-  scm_assert_smob_type(ffmpeg_tag, scm_self);
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->frame) {
     av_frame_unref(self->frame);
