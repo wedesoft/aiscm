@@ -2,6 +2,7 @@
 
 * record audio, audio bitrate
 * record audio/video
+* check audio/video frame can be written
 * tensor sum
 * Debian sid FFmpeg API changes
 * fix dts error for mp4 output (Ubuntu Trusty)

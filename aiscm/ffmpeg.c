@@ -157,13 +157,13 @@ static AVCodecContext *open_decoder(SCM scm_self, SCM scm_file_name,
                                     AVStream *stream, const char *media_type)
 {
   AVCodecContext *dec_ctx = stream->codec;
-  AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
-  if (!dec) {
+  AVCodec *decoder = avcodec_find_decoder(dec_ctx->codec_id);
+  if (!decoder) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
-  return open_codec(scm_self, dec_ctx, dec, media_type, scm_file_name);
+  return open_codec(scm_self, dec_ctx, decoder, media_type, scm_file_name);
 }
 
 SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
@@ -208,6 +208,36 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
 
   return retval;
 }
+
+static AVCodec *find_encoder(SCM scm_self, enum AVCodecID codec_id, const char *output_type)
+{
+  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "File format does not support ~a encoding",
+                   scm_list_1(scm_from_locale_string(output_type)));
+  };
+
+  AVCodec *retval = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
+  if (!retval) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "Error finding encoder for codec '~a'",
+                   scm_list_1(scm_from_locale_string(avcodec_descriptor_get(codec_id)->name)));
+  };
+
+  return retval;
+}
+
+static AVStream *open_stream(SCM scm_self, AVCodec *encoder, const char *output_type, SCM scm_file_name)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  AVStream *retval = avformat_new_stream(self->fmt_ctx, encoder);
+  if (!retval) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "Error allocating ~a stream for file '~a'",
+                   scm_list_2(scm_from_locale_string(output_type), scm_file_name));
+  };
+  return retval;
+};
 
 SCM make_ffmpeg_output(SCM scm_file_name,
                        SCM scm_format_name,
@@ -262,24 +292,10 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   char have_video = scm_is_true(scm_have_video);
   if (have_video) {
     enum AVCodecID video_codec_id = self->fmt_ctx->oformat->video_codec;
-    if (video_codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
-      ffmpeg_destroy(retval);
-      scm_misc_error("make-ffmpeg-output", "File format does not support video encoding", SCM_EOL);
-    };
 
-    AVCodec *enc = avcodec_find_encoder(video_codec_id);// TODO: autodetect or select video codec
-    if (!enc) {
-      ffmpeg_destroy(retval);
-      scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
-                     scm_list_1(scm_from_locale_string(avcodec_descriptor_get(video_codec_id)->name)));
-    }
+    AVCodec *video_encoder = find_encoder(retval, video_codec_id, "video");
 
-    AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc);
-    if (!video_stream) {
-      ffmpeg_destroy(retval);
-      scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
-                     scm_list_1(scm_file_name));
-    };
+    AVStream *video_stream = open_stream(retval, video_encoder, "video", scm_file_name);
 
     // Set stream number
     video_stream->id = self->fmt_ctx->nb_streams - 1;
@@ -324,7 +340,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    open_codec(retval, c, enc, "video", scm_file_name);
+    open_codec(retval, c, video_encoder, "video", scm_file_name);
 
     // Allocate frame
     self->frame = av_frame_alloc();
@@ -358,7 +374,8 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   char have_audio = scm_is_true(scm_have_audio);
   if (have_audio) {
-    // TODO: refactor using above
+    enum AVCodecID audio_codec_id = self->fmt_ctx->oformat->audio_codec;
+    AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
