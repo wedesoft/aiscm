@@ -227,7 +227,7 @@ static AVCodec *find_encoder(SCM scm_self, enum AVCodecID codec_id, const char *
   return retval;
 }
 
-static AVStream *open_stream(SCM scm_self, AVCodec *encoder, const char *output_type, SCM scm_file_name)
+static AVStream *open_stream(SCM scm_self, AVCodec *encoder, int *stream_idx, const char *output_type, SCM scm_file_name)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   AVStream *retval = avformat_new_stream(self->fmt_ctx, encoder);
@@ -236,6 +236,8 @@ static AVStream *open_stream(SCM scm_self, AVCodec *encoder, const char *output_
     scm_misc_error("make-ffmpeg-output", "Error allocating ~a stream for file '~a'",
                    scm_list_2(scm_from_locale_string(output_type), scm_file_name));
   };
+  retval->id = self->fmt_ctx->nb_streams - 1;
+  *stream_idx = retval->id;
   return retval;
 };
 
@@ -291,15 +293,10 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   char have_video = scm_is_true(scm_have_video);
   if (have_video) {
+    // Open codec and video stream
     enum AVCodecID video_codec_id = self->fmt_ctx->oformat->video_codec;
-
     AVCodec *video_encoder = find_encoder(retval, video_codec_id, "video");
-
-    AVStream *video_stream = open_stream(retval, video_encoder, "video", scm_file_name);
-
-    // Set stream number
-    video_stream->id = self->fmt_ctx->nb_streams - 1;
-    self->video_stream_idx = video_stream->id;
+    AVStream *video_stream = open_stream(retval, video_encoder, &self->video_stream_idx, "video", scm_file_name);
 
     // Get codec context
     AVCodecContext *c = video_stream->codec;
@@ -374,13 +371,15 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   char have_audio = scm_is_true(scm_have_audio);
   if (have_audio) {
+    // Open audio codec and stream
     enum AVCodecID audio_codec_id = self->fmt_ctx->oformat->audio_codec;
     AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
+    AVStream *audio_stream = open_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
-  /* open the output file, if needed */
+  // Open the output file if needed
   if (!(self->fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
     int err = avio_open(&self->fmt_ctx->pb, file_name, AVIO_FLAG_WRITE);
     if (err < 0) {
