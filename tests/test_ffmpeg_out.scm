@@ -29,14 +29,17 @@
 
 (test-begin "aiscm ffmpeg")
 
+(test-skip 1)
 (test-begin "video output")
   (define colour-values
     (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
   (define colour-array (to-array colour-values))
   (define colour-image (to-image colour-array))
 
-  (define output-file (string-append (tmpnam) ".avi"))
-  (define output-video (open-ffmpeg-output output-file
+  (test-assert "'open-ffmpeg-output' creates an output video by default"
+    (frame-rate (open-ffmpeg-output (string-append (tmpnam) ".avi"))))
+
+  (define output-video (open-ffmpeg-output (string-append (tmpnam) ".avi")
                                            #:format-name 'avi
                                            #:shape '(16 2)
                                            #:frame-rate 25
@@ -68,6 +71,16 @@
     'misc-error (open-ffmpeg-output "no-such-folder/test.mpg"))
   (test-error "Throw exception if output format is not known"
     'misc-error (open-ffmpeg-output (string-append (tmpnam) ".avi") #:format-name 'nosuchformat))
+  (test-error "Throw exception when trying to write video to audio file"
+    'misc-error (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:shape '(384 288) #:frame-rate 10))
+  ; TODO: test error when attempting to write video to MP3 file
 (test-end "video output")
+
+(test-begin "audio output")
+  (test-expect-fail 1)
+  (test-assert "'open-ffmpeg-output' can create an audio file"
+    (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:sample-rate 44100))
+
+(test-end "audio output")
 
 (test-end "aiscm ffmpeg")

@@ -1,12 +1,14 @@
 ## Ready
 
-* test pixel in output video
-* audio/video, audio only, video only, audio bit rate
+* record audio, audio bitrate
+* record audio/video
+* tensor sum
+* Debian sid FFmpeg API changes
+* fix dts error for mp4 output (Ubuntu Trusty)
 * select video codec, select audio codec
 * video player with aspect ratio
 * use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
-* tensor sum
 * fast live analysis
 * parameter passing for sequences, map, tensor operations, replace fill and other?
     (accessors s) -> ((pointer stride count) ...) which pointer?
