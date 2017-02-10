@@ -77,10 +77,10 @@
 (test-end "video output")
 
 (test-begin "audio output")
-  (test-expect-fail 1)
   (test-assert "'open-ffmpeg-output' can create an audio file"
     (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:sample-rate 44100))
-
+  ; TODO: more parameters
+  ; TODO: test writing audio packets
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
