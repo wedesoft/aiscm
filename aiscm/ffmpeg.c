@@ -33,6 +33,8 @@
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
 
+#define PIX_FMT AV_PIX_FMT_YUV420P
+
 static scm_t_bits ffmpeg_tag;
 
 struct ffmpeg_t {
@@ -227,7 +229,7 @@ static AVCodec *find_encoder(SCM scm_self, enum AVCodecID codec_id, const char *
   return retval;
 }
 
-static AVStream *open_stream(SCM scm_self, AVCodec *encoder, int *stream_idx, const char *output_type, SCM scm_file_name)
+static AVStream *open_output_stream(SCM scm_self, AVCodec *encoder, int *stream_idx, const char *output_type, SCM scm_file_name)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   AVStream *retval = avformat_new_stream(self->fmt_ctx, encoder);
@@ -240,6 +242,46 @@ static AVStream *open_stream(SCM scm_self, AVCodec *encoder, int *stream_idx, co
   *stream_idx = retval->id;
   return retval;
 };
+
+static AVCodecContext *open_output_video_codec(AVStream *video_stream, enum AVCodecID video_codec_id, SCM scm_video_bit_rate,
+                                               SCM scm_shape, SCM scm_frame_rate, SCM scm_aspect_ratio)
+{
+  // Get codec context
+  AVCodecContext *retval = video_stream->codec;
+
+  // Set codec id
+  retval->codec_id = video_codec_id;
+  retval->codec_type = AVMEDIA_TYPE_VIDEO;
+
+  // Set encoder bit rate
+  retval->bit_rate = scm_to_int(scm_video_bit_rate);
+
+  // Set video frame width and height
+  retval->width = scm_to_int(scm_car(scm_shape));
+  retval->height = scm_to_int(scm_cadr(scm_shape));
+
+  // Set video frame rate
+  video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
+  video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
+  video_stream->time_base.num = video_stream->avg_frame_rate.den;
+  video_stream->time_base.den = video_stream->avg_frame_rate.num;
+  retval->time_base = video_stream->time_base;
+
+  // Set intra frame lower limit
+  retval->gop_size = 12;
+
+  // Set pixel format
+  retval->pix_fmt = PIX_FMT;
+
+  if (retval->codec_id == AV_CODEC_ID_MPEG1VIDEO) retval->mb_decision = 2;
+
+  // Set aspect ratio
+  video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
+  video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
+  retval->sample_aspect_ratio = video_stream->sample_aspect_ratio;
+
+  return retval;
+}
 
 SCM make_ffmpeg_output(SCM scm_file_name,
                        SCM scm_format_name,
@@ -296,48 +338,17 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     // Open codec and video stream
     enum AVCodecID video_codec_id = self->fmt_ctx->oformat->video_codec;
     AVCodec *video_encoder = find_encoder(retval, video_codec_id, "video");
-    AVStream *video_stream = open_stream(retval, video_encoder, &self->video_stream_idx, "video", scm_file_name);
+    AVStream *video_stream = open_output_stream(retval, video_encoder, &self->video_stream_idx, "video", scm_file_name);
 
-    // Get codec context
-    AVCodecContext *c = video_stream->codec;
-    self->video_codec_ctx = c;
-
-    // Set codec id
-    c->codec_id = video_codec_id;
-    c->codec_type = AVMEDIA_TYPE_VIDEO;
-
-    // Set encoder bit rate
-    c->bit_rate = scm_to_int(scm_video_bit_rate);
-
-    // Set video frame width and height
-    c->width = scm_to_int(scm_car(scm_shape));
-    c->height = scm_to_int(scm_cadr(scm_shape));
-
-    // Set video frame rate
-    video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
-    video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
-    video_stream->time_base.num = video_stream->avg_frame_rate.den;
-    video_stream->time_base.den = video_stream->avg_frame_rate.num;
-    c->time_base = video_stream->time_base;
-
-    // Set intra frame lower limit
-    c->gop_size = 12;
-
-    // Set pixel format
-    c->pix_fmt = AV_PIX_FMT_YUV420P;
-
-    if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) c->mb_decision = 2;
-
-    // Set aspect ratio
-    video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
-    video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
-    c->sample_aspect_ratio = video_stream->sample_aspect_ratio;
+    // Open output video codec
+    self->video_codec_ctx =
+      open_output_video_codec(video_stream, video_codec_id, scm_video_bit_rate, scm_shape, scm_frame_rate, scm_aspect_ratio);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-        c->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-    open_codec(retval, c, video_encoder, "video", scm_file_name);
+    open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
 
     // Allocate frame
     self->frame = av_frame_alloc();
@@ -348,7 +359,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     memset(self->frame, 0, sizeof(AVFrame));
     int width = scm_to_int(scm_car(scm_shape));
     int height = scm_to_int(scm_cadr(scm_shape));
-    self->frame->format = c->pix_fmt;
+    self->frame->format = PIX_FMT;
     self->frame->width = width;
     self->frame->height = height;
 #ifdef HAVE_AV_FRAME_GET_BUFFER
@@ -359,13 +370,13 @@ SCM make_ffmpeg_output(SCM scm_file_name,
                      scm_list_1(get_error_text(err)));
     };
 #else
-    int size = avpicture_get_size(c->pix_fmt, width, height);
+    int size = avpicture_get_size(PIX_FMT, width, height);
     uint8_t *frame_buffer = (uint8_t *)av_malloc(size);
     if (!frame_buffer) {
       ffmpeg_destroy(retval);
       scm_misc_error("make-ffmpeg-output", "Error allocating frame memory", SCM_EOL);
     };
-    avpicture_fill((AVPicture *)self->frame, frame_buffer, c->pix_fmt, width, height);
+    avpicture_fill((AVPicture *)self->frame, frame_buffer, PIX_FMT, width, height);
 #endif
   };
 
@@ -374,7 +385,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     // Open audio codec and stream
     enum AVCodecID audio_codec_id = self->fmt_ctx->oformat->audio_codec;
     AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
-    AVStream *audio_stream = open_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
+    AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
