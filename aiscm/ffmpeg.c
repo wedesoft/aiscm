@@ -33,6 +33,8 @@
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
 
+#define PIX_FMT AV_PIX_FMT_YUV420P
+
 static scm_t_bits ffmpeg_tag;
 
 struct ffmpeg_t {
@@ -97,7 +99,6 @@ static char is_input_context(struct ffmpeg_t *self)
 
 SCM ffmpeg_destroy(SCM scm_self)
 {
-  scm_assert_smob_type(ffmpeg_tag, scm_self);
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->frame) {
     av_frame_unref(self->frame);
@@ -158,13 +159,24 @@ static AVCodecContext *open_decoder(SCM scm_self, SCM scm_file_name,
                                     AVStream *stream, const char *media_type)
 {
   AVCodecContext *dec_ctx = stream->codec;
-  AVCodec *dec = avcodec_find_decoder(dec_ctx->codec_id);
-  if (!dec) {
+  AVCodec *decoder = avcodec_find_decoder(dec_ctx->codec_id);
+  if (!decoder) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
-  return open_codec(scm_self, dec_ctx, dec, media_type, scm_file_name);
+  return open_codec(scm_self, dec_ctx, decoder, media_type, scm_file_name);
+}
+
+static AVFrame *allocate_frame(SCM scm_self)
+{
+  AVFrame *retval = av_frame_alloc();
+  if (!retval) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("allocate-frame", "Error allocating frame", SCM_EOL);
+  };
+  memset(retval, 0, sizeof(AVFrame));
+  return retval;
 }
 
 SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
@@ -191,22 +203,150 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   };
 
   // TODO: only open desired streams
+  // Open video stream
   self->video_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
   if (self->video_stream_idx >= 0)
     self->video_codec_ctx = open_decoder(retval, scm_file_name, video_stream(self), "video");
 
+  // Open audio stream
   self->audio_stream_idx = av_find_best_stream(self->fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
   if (self->audio_stream_idx >= 0)
     self->audio_codec_ctx = open_decoder(retval, scm_file_name, audio_stream(self), "audio");
 
+  // Print debug information
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 0);
 
-  self->frame = av_frame_alloc();
+  // Allocate input frame
+  self->frame = allocate_frame(retval);
 
+  // Initialise data packet
   av_init_packet(&self->pkt);
   self->pkt.data = NULL;
   self->pkt.size = 0;
 
+  return retval;
+}
+
+static AVCodec *find_encoder(SCM scm_self, enum AVCodecID codec_id, const char *output_type)
+{
+  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "File format does not support ~a encoding",
+                   scm_list_1(scm_from_locale_string(output_type)));
+  };
+
+  AVCodec *retval = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
+  if (!retval) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "Error finding encoder for codec '~a'",
+                   scm_list_1(scm_from_locale_string(avcodec_descriptor_get(codec_id)->name)));
+  };
+
+  return retval;
+}
+
+static AVStream *open_output_stream(SCM scm_self, AVCodec *encoder, int *stream_idx, const char *output_type, SCM scm_file_name)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  AVStream *retval = avformat_new_stream(self->fmt_ctx, encoder);
+  if (!retval) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("make-ffmpeg-output", "Error allocating ~a stream for file '~a'",
+                   scm_list_2(scm_from_locale_string(output_type), scm_file_name));
+  };
+  retval->id = self->fmt_ctx->nb_streams - 1;
+  *stream_idx = retval->id;
+  return retval;
+};
+
+static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum AVCodecID video_codec_id,
+    SCM scm_video_bit_rate, SCM scm_shape, SCM scm_frame_rate, SCM scm_aspect_ratio)
+{
+  // Get codec context
+  AVCodecContext *retval = video_stream->codec;
+
+  // Set codec id
+  retval->codec_id = video_codec_id;
+  retval->codec_type = AVMEDIA_TYPE_VIDEO;
+
+  // Set encoder bit rate
+  retval->bit_rate = scm_to_int(scm_video_bit_rate);
+
+  // Set video frame width and height
+  retval->width = scm_to_int(scm_car(scm_shape));
+  retval->height = scm_to_int(scm_cadr(scm_shape));
+
+  // Set video frame rate
+  video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
+  video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
+  video_stream->time_base.num = video_stream->avg_frame_rate.den;
+  video_stream->time_base.den = video_stream->avg_frame_rate.num;
+  retval->time_base = video_stream->time_base;
+
+  // Set intra frame lower limit
+  retval->gop_size = 12;
+
+  // Set pixel format
+  retval->pix_fmt = PIX_FMT;
+
+  if (retval->codec_id == AV_CODEC_ID_MPEG1VIDEO) retval->mb_decision = 2;
+
+  // Set aspect ratio
+  video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
+  video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
+  retval->sample_aspect_ratio = video_stream->sample_aspect_ratio;
+
+  return retval;
+}
+
+static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
+    SCM scm_sample_rate)
+{
+  // Get codec context
+  AVCodecContext *retval = audio_stream->codec;
+
+  // Set sample format, TODO: use parameter
+  retval->sample_fmt = AV_SAMPLE_FMT_FLTP;
+
+  // Set sample rate
+  retval->sample_rate = scm_to_int(scm_sample_rate);
+  audio_stream->time_base.num = 1;
+  audio_stream->time_base.den = retval->sample_rate;
+
+  // Set channels
+  retval->channels = 2; // TODO: use parameter
+  retval->channel_layout = av_get_default_channel_layout(2);
+
+  // Set bit rate, TODO: use parameter
+  retval->bit_rate = 64000;
+
+  return retval;
+}
+
+static AVFrame *allocate_output_frame(SCM scm_self, SCM scm_shape)
+{
+  AVFrame *retval = allocate_frame(scm_self);
+  int width = scm_to_int(scm_car(scm_shape));
+  int height = scm_to_int(scm_cadr(scm_shape));
+  retval->format = PIX_FMT;
+  retval->width = width;
+  retval->height = height;
+#ifdef HAVE_AV_FRAME_GET_BUFFER
+  int err = av_frame_get_buffer(retval, 32);
+  if (err < 0) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("allocate-output-frame", "Error allocating frame buffer: ~a",
+                   scm_list_1(get_error_text(err)));
+  };
+#else
+  int size = avpicture_get_size(PIX_FMT, width, height);
+  uint8_t *frame_buffer = (uint8_t *)av_malloc(size);
+  if (!frame_buffer) {
+    ffmpeg_destroy(retval);
+    scm_misc_error("make-ffmpeg-output", "Error allocating frame memory", SCM_EOL);
+  };
+  avpicture_fill((AVPicture *)retval, frame_buffer, PIX_FMT, width, height);
+#endif
   return retval;
 }
 
@@ -216,6 +356,9 @@ SCM make_ffmpeg_output(SCM scm_file_name,
                        SCM scm_frame_rate,
                        SCM scm_video_bit_rate,
                        SCM scm_aspect_ratio,
+                       SCM scm_have_video,
+                       SCM scm_sample_rate,
+                       SCM scm_have_audio,
                        SCM scm_debug)
 {
   SCM retval;
@@ -257,103 +400,43 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   strncpy(self->fmt_ctx->filename, file_name, sizeof(self->fmt_ctx->filename));
 #endif
 
-  enum AVCodecID codec_id = self->fmt_ctx->oformat->video_codec;
-  if (codec_id == AV_CODEC_ID_NONE) {// TODO: test (needs wav or mp3 container selection above first)
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "File format does not support video encoding", SCM_EOL);
+  char have_video = scm_is_true(scm_have_video);
+  if (have_video) {
+    // Open codec and video stream
+    enum AVCodecID video_codec_id = self->fmt_ctx->oformat->video_codec;
+    AVCodec *video_encoder = find_encoder(retval, video_codec_id, "video");
+    AVStream *video_stream = open_output_stream(retval, video_encoder, &self->video_stream_idx, "video", scm_file_name);
+
+    // Configure the output video codec
+    self->video_codec_ctx =
+      configure_output_video_codec(video_stream, video_codec_id, scm_video_bit_rate, scm_shape, scm_frame_rate, scm_aspect_ratio);
+
+    // Some formats want stream headers to be separate.
+    if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
+        self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // Open output video codec
+    open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
+
+    // Allocate frame
+    self->frame = allocate_output_frame(retval, scm_shape);
   };
 
-  AVCodec *enc = avcodec_find_encoder(codec_id);// TODO: autodetect or select video codec
-  if (!enc) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error finding video encoder for codec '~a'",
-                   scm_list_1(scm_from_locale_string(avcodec_descriptor_get(codec_id)->name)));
-  }
+  char have_audio = scm_is_true(scm_have_audio);
+  if (have_audio) {
+    // Open audio codec and stream
+    enum AVCodecID audio_codec_id = self->fmt_ctx->oformat->audio_codec;
+    AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
+    AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
 
-  AVStream *video_stream = avformat_new_stream(self->fmt_ctx, enc);
-  if (!video_stream) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error allocating video stream for file '~a'",
-                   scm_list_1(scm_file_name));
+    // Configure the output audio codec
+    self->audio_codec_ctx =
+      configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate);
   };
-
-  // Set stream number
-  video_stream->id = self->fmt_ctx->nb_streams - 1;
-  self->video_stream_idx = video_stream->id;
-
-  // Get codec context
-  AVCodecContext *c = video_stream->codec;
-  self->video_codec_ctx = c;
-
-  // Set codec id
-  c->codec_id = codec_id;
-  c->codec_type = AVMEDIA_TYPE_VIDEO;
-
-  // Set encoder bit rate
-  c->bit_rate = scm_to_int(scm_video_bit_rate);
-
-  // Set video frame width and height
-  c->width = scm_to_int(scm_car(scm_shape));
-  c->height = scm_to_int(scm_cadr(scm_shape));
-
-  // Set video frame rate
-  video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
-  video_stream->avg_frame_rate.den = scm_to_int(scm_denominator(scm_frame_rate));
-  video_stream->time_base.num = video_stream->avg_frame_rate.den;
-  video_stream->time_base.den = video_stream->avg_frame_rate.num;
-  c->time_base = video_stream->time_base;
-
-  // Set intra frame lower limit
-  c->gop_size = 12;
-
-  // Set pixel format
-  c->pix_fmt = AV_PIX_FMT_YUV420P;
-
-  if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) c->mb_decision = 2;
-
-  // Set aspect ratio
-  video_stream->sample_aspect_ratio.num = scm_to_int(scm_numerator(scm_aspect_ratio));
-  video_stream->sample_aspect_ratio.den = scm_to_int(scm_denominator(scm_aspect_ratio));
-  c->sample_aspect_ratio = video_stream->sample_aspect_ratio;
-
-  // Some formats want stream headers to be separate.
-  if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-      c->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
-  open_codec(retval, c, enc, "video", scm_file_name);
-
-  // Allocate frame
-  self->frame = av_frame_alloc();
-  if (!self->frame) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error allocating frame", SCM_EOL);
-  };
-  memset(self->frame, 0, sizeof(AVFrame));
-  int width = scm_to_int(scm_car(scm_shape));
-  int height = scm_to_int(scm_cadr(scm_shape));
-  self->frame->format = c->pix_fmt;
-  self->frame->width = width;
-  self->frame->height = height;
-#ifdef HAVE_AV_FRAME_GET_BUFFER
-  err = av_frame_get_buffer(self->frame, 32);
-  if (err < 0) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error allocating frame buffer: ~a",
-                   scm_list_1(get_error_text(err)));
-  };
-#else
-  int size = avpicture_get_size(c->pix_fmt, width, height);
-  uint8_t *frame_buffer = (uint8_t *)av_malloc(size);
-  if (!frame_buffer) {
-    ffmpeg_destroy(retval);
-    scm_misc_error("make-ffmpeg-output", "Error allocating frame memory", SCM_EOL);
-  };
-  avpicture_fill((AVPicture *)self->frame, frame_buffer, c->pix_fmt, width, height);
-#endif
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
 
-  /* open the output file, if needed */
+  // Open the output file if needed
   if (!(self->fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
     int err = avio_open(&self->fmt_ctx->pb, file_name, AVIO_FLAG_WRITE);
     if (err < 0) {
@@ -656,7 +739,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 7, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 10, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
