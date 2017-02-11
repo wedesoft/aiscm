@@ -433,6 +433,13 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     self->audio_codec_ctx =
       configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate);
 
+    // Some formats want stream headers to be separate.
+    if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
+        self->audio_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // Open output audio codec
+    open_codec(retval, self->audio_codec_ctx, audio_encoder, "audio", scm_file_name);
+
     // TODO: allocate audio frame
   };
 
