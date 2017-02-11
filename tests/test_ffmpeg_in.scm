@@ -117,13 +117,15 @@
   (test-assert "Seeking audio/video should update the video position"
     (<= 15 (video-pts input-video)))
 
+  (destroy input-video)
+
   (define full-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
   (define images (map (lambda _ (read-image full-video)) (iota 2253)))
-
   (test-assert "Check last image of video was read"
     (last images))
   (test-assert "Check 'read-image' returns false after last frame"
     (not (read-image full-video)))
+  (destroy full-video)
 
   (test-error "Throw exception when trying to write to input video"
     'misc-error (write-image colour-image (open-ffmpeg-input "fixtures/av-sync.mp4")))
@@ -145,52 +147,14 @@
     'misc-error (rate image))
   (test-error "Image does not have an audio sample type"
     'misc-error (typecode image))
+  (destroy image)
 
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (read-audio image)
   (test-assert "Cache video data when reading audio"
     (read-image image))
+  (destroy image)
 (test-end "image input")
-
-(test-begin "video output")
-  (define colour-values
-    (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
-  (define colour-array (to-array colour-values))
-  (define colour-image (to-image colour-array))
-
-  (define output-file (string-append (tmpnam) ".avi"))
-  (define output-video (open-ffmpeg-output output-file
-                                           #:format-name 'avi
-                                           #:shape '(16 2)
-                                           #:frame-rate 25
-                                           #:video-bit-rate 100000
-                                           #:aspect-ratio (/ 16 11)))
-
-  (test-assert "'open-ffmpeg-output' creates an FFmpeg object"
-    (is-a? output-video <ffmpeg>))
-  (test-equal "Check frame size of output video"
-    '(16 2) (shape output-video))
-  (test-eqv "Get video bit-rate of output video"
-    100000 (video-bit-rate output-video))
-  (test-equal "Get aspect ratio of output video"
-    (/ 16 11) (aspect-ratio output-video))
-  (test-equal "Get frame rate of output video"
-    25 (frame-rate output-video))
-
-  (test-eq "Writing a 2D array with 'write-image' returns the input array"
-    colour-array (write-image colour-array output-video))
-  (test-eq "Writing an image with 'write-image' returns the input image"
-    colour-image (write-image colour-image output-video))
-
-  (test-error "Throw exception if output file cannot be written"
-    'misc-error (open-ffmpeg-output "no-such-folder/test.mpg"))
-  (test-error "Throw exception if output format is not known"
-    'misc-error (open-ffmpeg-output (string-append (tmpnam) ".avi") #:format-name 'nosuchformat))
-  (test-error "Throw exception when trying to read from output video"
-    'misc-error (read-image (open-ffmpeg-output (string-append (tmpnam) ".avi"))))
-  (test-error "Throw exception when trying to seek in output video"
-    'misc-error (pts= (open-ffmpeg-output (string-append (tmpnam) ".avi")) 10))
-(test-end "video output")
 
 (test-begin "audio input")
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -226,12 +190,14 @@
 
   (test-equal "Check first three audio frame time stamps"
     (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
+  (destroy audio-mono)
 
   (define audio-stereo (open-ffmpeg-input "fixtures/test.mp3"))
-  (define audio-stereo-frame (read-audio audio-stereo))
 
   (test-eqv "Stereo audio frame should have 2 as first dimension"
-    2 (car (shape audio-stereo-frame)))
+    2 (car (shape (read-audio audio-stereo))))
+
+  (destroy audio-stereo)
 
   (define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
   (define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
@@ -239,6 +205,7 @@
   (test-skip 1)
   (test-assert "Check 'read-audio' returns false after last frame"
     (not (read-audio full-audio))); number of audio frames depends on FFmpeg version
+  (destroy full-audio)
 (test-end "audio input")
 
 (test-end "aiscm ffmpeg")
