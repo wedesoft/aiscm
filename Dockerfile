@@ -20,6 +20,7 @@ RUN apt-get install -q -y libpulse-dev
 RUN apt-get install -q -y imagemagick libmagickcore-dev
 RUN apt-get install -q -y libswscale-dev libavutil-dev libavcodec-dev libavformat-dev
 RUN apt-get install -q -y libxpm-dev
+RUN apt-get install -q -y colorgcc
 RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
