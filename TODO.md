@@ -2,6 +2,7 @@
 
 * record audio, audio bitrate
 * record audio/video
+* open-video-output, open-audio-output, ...
 * check audio/video frame can be written
 * tensor sum
 * Debian sid FFmpeg API changes

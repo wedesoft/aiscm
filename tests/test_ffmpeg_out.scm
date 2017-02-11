@@ -79,6 +79,14 @@
 (test-begin "audio output")
   (test-assert "'open-ffmpeg-output' can create an audio file"
     (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:sample-rate 44100))
+
+  (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
+                                           #:format-name 'mp3
+                                           #:channels 2))
+
+  (test-eqv "Get number of audio channels"
+    2 (channels output-audio))
+
   ; TODO: more parameters
   ; TODO: test writing audio packets
 (test-end "audio output")

@@ -300,7 +300,7 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
 }
 
 static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
-    SCM scm_sample_rate)
+    SCM scm_sample_rate, SCM scm_channels)
 {
   // Get codec context
   AVCodecContext *retval = audio_stream->codec;
@@ -314,7 +314,7 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
   audio_stream->time_base.den = retval->sample_rate;
 
   // Set channels
-  retval->channels = 2; // TODO: use parameter
+  retval->channels = scm_to_int(scm_channels);
   retval->channel_layout = av_get_default_channel_layout(2);
 
   // Set bit rate, TODO: use parameter
@@ -357,7 +357,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
                        SCM scm_video_bit_rate,
                        SCM scm_aspect_ratio,
                        SCM scm_have_video,
-                       SCM scm_sample_rate,
+                       SCM scm_audio_parameters,
                        SCM scm_have_audio,
                        SCM scm_debug)
 {
@@ -429,9 +429,12 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
     AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
 
+    SCM scm_sample_rate = scm_car(scm_audio_parameters);
+    SCM scm_channels = scm_cadr(scm_audio_parameters);
+
     // Configure the output audio codec
     self->audio_codec_ctx =
-      configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate);
+      configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate, scm_channels);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
