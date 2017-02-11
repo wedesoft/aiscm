@@ -342,7 +342,7 @@ static AVFrame *allocate_output_frame(SCM scm_self, SCM scm_shape)
   int size = avpicture_get_size(PIX_FMT, width, height);
   uint8_t *frame_buffer = (uint8_t *)av_malloc(size);
   if (!frame_buffer) {
-    ffmpeg_destroy(retval);
+    ffmpeg_destroy(scm_self);
     scm_misc_error("make-ffmpeg-output", "Error allocating frame memory", SCM_EOL);
   };
   avpicture_fill((AVPicture *)retval, frame_buffer, PIX_FMT, width, height);
@@ -432,6 +432,8 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     // Configure the output audio codec
     self->audio_codec_ctx =
       configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate);
+
+    // TODO: allocate audio frame
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
