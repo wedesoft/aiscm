@@ -300,7 +300,7 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
 }
 
 static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
-    SCM scm_sample_rate, SCM scm_channels)
+    SCM scm_rate, SCM scm_channels, SCM scm_audio_bit_rate)
 {
   // Get codec context
   AVCodecContext *retval = audio_stream->codec;
@@ -309,7 +309,7 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
   retval->sample_fmt = AV_SAMPLE_FMT_FLTP;
 
   // Set sample rate
-  retval->sample_rate = scm_to_int(scm_sample_rate);
+  retval->sample_rate = scm_to_int(scm_rate);
   audio_stream->time_base.num = 1;
   audio_stream->time_base.den = retval->sample_rate;
 
@@ -317,8 +317,8 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
   retval->channels = scm_to_int(scm_channels);
   retval->channel_layout = av_get_default_channel_layout(2);
 
-  // Set bit rate, TODO: use parameter
-  retval->bit_rate = 64000;
+  // Set bit rate
+  retval->bit_rate = scm_to_int(scm_audio_bit_rate);
 
   return retval;
 }
@@ -433,12 +433,13 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
 
     // Get audio parameters
-    SCM scm_sample_rate = scm_car(scm_audio_parameters);
-    SCM scm_channels    = scm_cadr(scm_audio_parameters);
+    SCM scm_rate           = scm_car(scm_audio_parameters);
+    SCM scm_channels       = scm_cadr(scm_audio_parameters);
+    SCM scm_audio_bit_rate = scm_caddr(scm_audio_parameters);
 
     // Configure the output audio codec
     self->audio_codec_ctx =
-      configure_output_audio_codec(audio_stream, audio_codec_id, scm_sample_rate, scm_channels);
+      configure_output_audio_codec(audio_stream, audio_codec_id, scm_rate, scm_channels, scm_audio_bit_rate);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)

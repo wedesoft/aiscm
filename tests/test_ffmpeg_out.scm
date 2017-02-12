@@ -82,10 +82,14 @@
 
   (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
                                            #:format-name 'mp3
-                                           #:channels 2))
+                                           #:rate 44100
+                                           #:channels 2
+                                           #:audio-bit-rate 64000))
 
   (test-eqv "Get number of audio channels"
     2 (channels output-audio))
+  (test-eqv "Get sample rate"
+    44100 (rate output-audio))
 
   ; TODO: more parameters
   ; TODO: test writing audio packets

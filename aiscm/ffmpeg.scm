@@ -55,20 +55,21 @@
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (let-keywords initargs #f (format-name shape frame-rate video-bit-rate aspect-ratio sample-rate channels)
-    (let* [(have-audio     (or sample-rate channels))
+  (let-keywords initargs #f (format-name shape frame-rate video-bit-rate aspect-ratio channels rate audio-bit-rate)
+    (let* [(have-audio     (or rate channels audio-bit-rate))
            (have-video     (or (not have-audio) shape frame-rate video-bit-rate aspect-ratio))
            (shape          (or shape '(384 288)))
            (frame-rate     (or frame-rate 25))
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
-           (sample-rate    (or sample-rate 44100))
+           (rate           (or rate 44100))
            (channels       (or channels 2))
+           (audio-bit-rate (or audio-bit-rate (round (/ (* 3 rate) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list sample-rate channels) have-audio
+                                         (list rate channels audio-bit-rate) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
