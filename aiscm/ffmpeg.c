@@ -300,13 +300,13 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
 }
 
 static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
-    SCM scm_rate, SCM scm_channels, SCM scm_audio_bit_rate)
+    SCM scm_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_typecode)
 {
   // Get codec context
   AVCodecContext *retval = audio_stream->codec;
 
   // Set sample format, TODO: use parameter
-  retval->sample_fmt = AV_SAMPLE_FMT_FLTP;
+  retval->sample_fmt = scm_to_int(scm_typecode);
 
   // Set sample rate
   retval->sample_rate = scm_to_int(scm_rate);
@@ -436,10 +436,11 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     SCM scm_rate           = scm_car(scm_audio_parameters);
     SCM scm_channels       = scm_cadr(scm_audio_parameters);
     SCM scm_audio_bit_rate = scm_caddr(scm_audio_parameters);
+    SCM scm_typecode       = scm_cadddr(scm_audio_parameters);
 
     // Configure the output audio codec
     self->audio_codec_ctx =
-      configure_output_audio_codec(audio_stream, audio_codec_id, scm_rate, scm_channels, scm_audio_bit_rate);
+      configure_output_audio_codec(audio_stream, audio_codec_id, scm_rate, scm_channels, scm_audio_bit_rate, scm_typecode);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -750,8 +751,11 @@ void init_ffmpeg(void)
   scm_convert_from = scm_c_public_ref("aiscm image", "convert-from!");
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
+  scm_c_define("AV_SAMPLE_FMT_U8"  ,scm_from_int(AV_SAMPLE_FMT_U8  ));
   scm_c_define("AV_SAMPLE_FMT_U8P" ,scm_from_int(AV_SAMPLE_FMT_U8P ));
+  scm_c_define("AV_SAMPLE_FMT_S16" ,scm_from_int(AV_SAMPLE_FMT_S16 ));
   scm_c_define("AV_SAMPLE_FMT_S16P",scm_from_int(AV_SAMPLE_FMT_S16P));
+  scm_c_define("AV_SAMPLE_FMT_S32" ,scm_from_int(AV_SAMPLE_FMT_S32 ));
   scm_c_define("AV_SAMPLE_FMT_S32P",scm_from_int(AV_SAMPLE_FMT_S32P));
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));

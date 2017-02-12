@@ -27,8 +27,12 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
+  #:export (<ffmpeg>
+            AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S16P
+            AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
+            open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
+            type->ffmpeg-type ffmpeg-type->type)
   #:re-export (destroy read-image write-image read-audio rate channels typecode))
 
 
@@ -41,12 +45,19 @@
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 
-(define audio-types
-  (list (cons AV_SAMPLE_FMT_U8P  <ubyte> )
-        (cons AV_SAMPLE_FMT_S16P <sint>  )
-        (cons AV_SAMPLE_FMT_S32P <int>   )
-        (cons AV_SAMPLE_FMT_FLTP <float> )
-        (cons AV_SAMPLE_FMT_DBLP <double>)))
+(define typemap
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
+        (cons <sint>   AV_SAMPLE_FMT_S16P)
+        (cons <int>    AV_SAMPLE_FMT_S32P)
+        (cons <float>  AV_SAMPLE_FMT_FLTP)
+        (cons <double> AV_SAMPLE_FMT_DBLP)))
+(define inverse-typemap (alist-invert typemap))
+(define (type->ffmpeg-type type)
+  "Convert type class to FFmpeg type tag"
+  (or (assq-ref typemap type) (aiscm-error 'type->ffmpeg-type "Type ~a not supported by FFmpeg audio" type)))
+(define (ffmpeg-type->type ffmpeg-type)
+  "Convert FFmpeg audio type tag to type class"
+  (assq-ref inverse-typemap ffmpeg-type))
 
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
@@ -55,7 +66,9 @@
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (let-keywords initargs #f (format-name shape frame-rate video-bit-rate aspect-ratio channels rate audio-bit-rate)
+  (let-keywords initargs #f (format-name
+                             shape frame-rate video-bit-rate aspect-ratio
+                             channels rate typecode audio-bit-rate)
     (let* [(have-audio     (or rate channels audio-bit-rate))
            (have-video     (or (not have-audio) shape frame-rate video-bit-rate aspect-ratio))
            (shape          (or shape '(384 288)))
@@ -63,13 +76,14 @@
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
            (rate           (or rate 44100))
+           (typecode       (or typecode <int>)); TODO: change to float
            (channels       (or channels 2))
            (audio-bit-rate (or audio-bit-rate (round (/ (* 3 rate) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list rate channels audio-bit-rate) have-audio
+                                         (list rate channels audio-bit-rate (type->ffmpeg-type typecode)) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
@@ -94,7 +108,7 @@
 (define (import-audio-frame self lst)
   "Compose audio frame from timestamp, type, shape, data pointer, and size"
   (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-        (array-type (lambda (type) (multiarray (assq-ref audio-types type) 2)))
+        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
                    (cons pts (array (array-type type) shape (memory data size))))
@@ -175,4 +189,4 @@
 
 (define-method (typecode (self <ffmpeg>))
   "Query audio type of file"
-  (assq-ref audio-types (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+  (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))
