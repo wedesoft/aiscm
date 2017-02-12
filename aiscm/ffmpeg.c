@@ -352,10 +352,7 @@ static AVFrame *allocate_output_frame(SCM scm_self, SCM scm_shape)
 
 SCM make_ffmpeg_output(SCM scm_file_name,
                        SCM scm_format_name,
-                       SCM scm_shape,
-                       SCM scm_frame_rate,
-                       SCM scm_video_bit_rate,
-                       SCM scm_aspect_ratio,
+                       SCM scm_video_parameters,
                        SCM scm_have_video,
                        SCM scm_audio_parameters,
                        SCM scm_have_audio,
@@ -407,6 +404,12 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     AVCodec *video_encoder = find_encoder(retval, video_codec_id, "video");
     AVStream *video_stream = open_output_stream(retval, video_encoder, &self->video_stream_idx, "video", scm_file_name);
 
+    // Get video parameters
+    SCM scm_shape          = scm_car(scm_video_parameters);
+    SCM scm_frame_rate     = scm_cadr(scm_video_parameters);
+    SCM scm_video_bit_rate = scm_caddr(scm_video_parameters);
+    SCM scm_aspect_ratio   = scm_cadddr(scm_video_parameters);
+
     // Configure the output video codec
     self->video_codec_ctx =
       configure_output_video_codec(video_stream, video_codec_id, scm_video_bit_rate, scm_shape, scm_frame_rate, scm_aspect_ratio);
@@ -429,8 +432,9 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     AVCodec *audio_encoder = find_encoder(retval, audio_codec_id, "audio");
     AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
 
+    // Get audio parameters
     SCM scm_sample_rate = scm_car(scm_audio_parameters);
-    SCM scm_channels = scm_cadr(scm_audio_parameters);
+    SCM scm_channels    = scm_cadr(scm_audio_parameters);
 
     // Configure the output audio codec
     self->audio_codec_ctx =
@@ -751,7 +755,7 @@ void init_ffmpeg(void)
   scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
   scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
   scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 10, 0, 0, make_ffmpeg_output);
+  scm_c_define_gsubr("make-ffmpeg-output", 7, 0, 0, make_ffmpeg_output);
   scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
   scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
   scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);

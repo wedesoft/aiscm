@@ -66,8 +66,10 @@
            (channels       (or channels 2))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
-            #:ffmpeg (make-ffmpeg-output file-name format-name shape frame-rate video-bit-rate aspect-ratio have-video
-                                         (list sample-rate channels) have-audio debug)))))
+            #:ffmpeg (make-ffmpeg-output file-name format-name
+                                         (list shape frame-rate video-bit-rate aspect-ratio) have-video
+                                         (list sample-rate channels) have-audio
+                                         debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
