@@ -125,7 +125,7 @@ SCM ffmpeg_destroy(SCM scm_self)
     avio_close(self->fmt_ctx->pb);
     self->output_file = 0;
   };
-  if (self->fmt_ctx) {// TODO: close streams
+  if (self->fmt_ctx) {
     if (is_input_context(self))
       avformat_close_input(&self->fmt_ctx);
     else
@@ -320,14 +320,16 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
   // Set bit rate
   retval->bit_rate = scm_to_int(scm_audio_bit_rate);
 
+  // TODO: allocate audio frame
+
   return retval;
 }
 
-static AVFrame *allocate_output_frame(SCM scm_self, SCM scm_shape)
+static AVFrame *allocate_output_video_frame(SCM scm_self, AVCodecContext *video_context)
 {
   AVFrame *retval = allocate_frame(scm_self);
-  int width = scm_to_int(scm_car(scm_shape));
-  int height = scm_to_int(scm_cadr(scm_shape));
+  int width = video_context->width;
+  int height = video_context->height;
   retval->format = PIX_FMT;
   retval->width = width;
   retval->height = height;
@@ -348,6 +350,11 @@ static AVFrame *allocate_output_frame(SCM scm_self, SCM scm_shape)
   avpicture_fill((AVPicture *)retval, frame_buffer, PIX_FMT, width, height);
 #endif
   return retval;
+}
+
+static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_codec)
+{
+  // TODO: allocate frame
 }
 
 SCM make_ffmpeg_output(SCM scm_file_name,
@@ -422,7 +429,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
 
     // Allocate frame
-    self->frame = allocate_output_frame(retval, scm_shape);
+    self->frame = allocate_output_video_frame(retval, self->video_codec_ctx);
   };
 
   char have_audio = scm_is_true(scm_have_audio);
@@ -449,7 +456,8 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     // Open output audio codec
     open_codec(retval, self->audio_codec_ctx, audio_encoder, "audio", scm_file_name);
 
-    // TODO: allocate audio frame
+    // Allocate audio frame
+    self->frame = allocate_output_audio_frame(retval, self->audio_codec_ctx);
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
