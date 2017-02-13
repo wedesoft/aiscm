@@ -111,8 +111,9 @@
   (test-eq "Get audio sample type"
     <sint> (typecode output-audio))
 
-  ; TODO: more parameters
-  ; TODO: test writing audio packets
+  (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (test-equal "Writing audio samples returns samples"
+    samples (write-audio samples output-audio))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

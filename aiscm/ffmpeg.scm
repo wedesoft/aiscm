@@ -33,7 +33,7 @@
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
             type->ffmpeg-type ffmpeg-type->type)
-  #:re-export (destroy read-image write-image read-audio rate channels typecode))
+  #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -161,8 +161,12 @@
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
+(define-method (write-audio (audio <sequence<>>) (self <ffmpeg>))
+  "Write audio frame to output file"
+  audio)
+
 (define-method (write-image (img <image>) (self <ffmpeg>))
-  "Write video frame to output video"
+  "Write video frame to output file"
   (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
     (convert-from! output-frame img)
     (ffmpeg-write-video (slot-ref self 'ffmpeg)))
