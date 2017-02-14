@@ -61,8 +61,10 @@
         (cons <float> PA_SAMPLE_FLOAT32LE)))
 (define inverse-typemap (alist-invert typemap))
 (define (type->pulse-type type)
+  "convert type class to Pulse audio type tag"
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
+  "convert Pulse audio type tag to type class"
   (assq-ref inverse-typemap pulse-type))
 (define-method (destroy (self <pulse>))
   (pulsedev-destroy (slot-ref self 'pulsedev)))

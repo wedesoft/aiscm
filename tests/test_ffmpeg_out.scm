@@ -76,11 +76,44 @@
   ; TODO: test error when attempting to write video to MP3 file
 (test-end "video output")
 
+(test-begin "type conversions")
+  (test-eqv "convert unsigned byte to FFmpeg audio type"
+    AV_SAMPLE_FMT_U8P (type->ffmpeg-type <ubyte>))
+  (test-eqv "convert short integer to FFmpeg audio type"
+    AV_SAMPLE_FMT_S16P (type->ffmpeg-type <sint>))
+  (test-eqv "convert integer to FFmpeg audio type"
+    AV_SAMPLE_FMT_S32P (type->ffmpeg-type <int>))
+  (test-eqv "convert floating-point to FFmpeg audio type"
+    AV_SAMPLE_FMT_FLTP (type->ffmpeg-type <float>))
+  (test-eqv "convert floating-point to FFmpeg audio type"
+    AV_SAMPLE_FMT_DBLP (type->ffmpeg-type <double>))
+  (test-error "throw error if type not supported by FFmpeg audio"
+    'misc-error (type->ffmpeg-type <usint>))
+  (test-eq "convert FFmpeg audio short integer to integer type"
+    <sint> (ffmpeg-type->type AV_SAMPLE_FMT_S16P))
+(test-end "type conversions")
+
 (test-begin "audio output")
   (test-assert "'open-ffmpeg-output' can create an audio file"
-    (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:sample-rate 44100))
-  ; TODO: more parameters
-  ; TODO: test writing audio packets
+    (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:rate 44100))
+
+  (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
+                                           #:format-name 'mp3
+                                           #:rate 44100
+                                           #:typecode <sint>
+                                           #:channels 2
+                                           #:audio-bit-rate 64000))
+
+  (test-eqv "Get number of audio channels"
+    2 (channels output-audio))
+  (test-eqv "Get sample rate"
+    44100 (rate output-audio))
+  (test-eq "Get audio sample type"
+    <sint> (typecode output-audio))
+
+  (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (test-equal "Writing audio samples returns samples"
+    samples (write-audio samples output-audio))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

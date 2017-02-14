@@ -1,7 +1,11 @@
 ## Ready
 
-* record audio, audio bitrate
+* pulse audio: reexport pointer stuff
+* allocate audio buffer
+* record audio
 * record audio/video
+* negotiate sampling rate, channels, buffer size
+* open-video-output, open-audio-output, ...
 * check audio/video frame can be written
 * tensor sum
 * Debian sid FFmpeg API changes
