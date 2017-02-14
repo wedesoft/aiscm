@@ -322,7 +322,7 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
 
   // Set channels
   retval->channels = scm_to_int(scm_channels);
-  retval->channel_layout = av_get_default_channel_layout(2);
+  retval->channel_layout = av_get_default_channel_layout(retval->channels);
 
   // Set bit rate
   retval->bit_rate = scm_to_int(scm_audio_bit_rate);
