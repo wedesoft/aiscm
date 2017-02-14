@@ -365,15 +365,25 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   retval->sample_rate = audio_codec->sample_rate;
 
   if (audio_codec->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE)
-    retval->nb_samples = 65536;
+    retval->nb_samples = 2 * FF_MIN_BUFFER_SIZE;
   else
     retval->nb_samples = audio_codec->frame_size;
 
+#ifdef HAVE_AV_FRAME_GET_BUFFER
   int err = av_frame_get_buffer(retval, 0);
   if (err < 0) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("allocate-output-audio-frame", "Error allocating audio frame memory", SCM_EOL);
   };
+#else
+  int channels = av_get_channel_layout_nb_channels(retval->channel_layout);
+  int linesize;
+  int err = av_samples_alloc(retval->data, retval->linesize[0], channels, retval->nb_samples, retval->format, 0);
+  if (err < 0) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("allocate-output-audio-frame", "Could not allocate audio buffer", SCM_EOL);
+  };
+#endif
   return retval;
 }
 
