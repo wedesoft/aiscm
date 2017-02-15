@@ -168,7 +168,7 @@
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output file"
   (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
-    (convert-from! output-frame img)
+    (convert-image-from! output-frame img)
     (ffmpeg-write-video (slot-ref self 'ffmpeg)))
   img)
 

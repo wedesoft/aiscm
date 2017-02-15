@@ -55,21 +55,21 @@
 (test-assert "Convert second element of Scheme array to long integer"
   (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32))))
 (test-equal "conversion to BGR"
-  #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))
+  #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert-image img 'BGR)) 6))
 (test-equal "shape of scaled image"
-  '(16 2) (shape (convert img 'BGRA '(16 2))))
+  '(16 2) (shape (convert-image img 'BGRA '(16 2))))
 (test-assert "duplicated image should be different"
   (not (eq? img (duplicate img))))
 (test-equal "values of image with scaled height"
-  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (get-mem (convert img 'GRAY '(8 2))) 16))
+  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (get-mem (convert-image img 'GRAY '(8 2))) 16))
 (test-equal "correct application of custom pitches"
-  2 (bytevector-u8-ref (read-bytes (get-mem (convert img 'GRAY '(8 2) '(0) '(16))) 32) 16))
+  2 (bytevector-u8-ref (read-bytes (get-mem (convert-image img 'GRAY '(8 2) '(0) '(16))) 32) 16))
 (test-equal "'to-array' should convert the image to a 2D array"
   '((2 3 5 7 11 13 17 19)) (to-list (to-array img)))
 (test-equal "'to-array' should convert the image to a colour image"
-  (list (rgb 1 1 1) (rgb 2 2 2) (rgb 3 3 3)) (to-list (crop 3 (project (to-array (convert img 'UYVY))))))
+  (list (rgb 1 1 1) (rgb 2 2 2) (rgb 3 3 3)) (to-list (crop 3 (project (to-array (convert-image img 'UYVY))))))
 (test-equal "'to-array' should take pitches (strides) into account"
-  '(2 2) (to-list (project (roll (to-array (convert img 'GRAY '(8  2) '(0) '(16)))))))
+  '(2 2) (to-list (project (roll (to-array (convert-image img 'GRAY '(8  2) '(0) '(16)))))))
 (test-equal "'to-image' converts to grayscale image"
   'GRAY (get-format (to-image m)))
 (test-assert "'to-image' for an image has no effect"
@@ -95,7 +95,7 @@
   (rgb 51 58 42) (get (to-array mjpeg-frame) 32 56))
 
 (define target (to-image (arr (0 0 0 0 0 0 0 0))))
-(convert-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
+(convert-image-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
 (test-equal "Write conversion result to a target image"
   #vu8(1 2 3 4 6 7 8 9) (read-bytes (get-mem target) 8))
 

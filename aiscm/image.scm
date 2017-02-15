@@ -30,7 +30,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
-            get-format get-mem convert to-image symbol->format format->symbol convert-from!)
+            get-format get-mem convert-image to-image symbol->format format->symbol convert-image-from!)
   #:re-export (to-array))
 
 (load-extension "libguile-aiscm-image" "init_image")
@@ -118,7 +118,7 @@
          (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
     (make <mem> #:memory memory #:base base #:size size)))
 
-(define-method (convert-from! (self <image>) (source <image>))
+(define-method (convert-image-from! (self <image>) (source <image>))
   "Convert image by mutating result location"
   (let [(dest-type   (descriptor self))
         (source-type (descriptor source))]
@@ -127,29 +127,25 @@
                (equal? (shape self) (shape source))
                (equal? (get-pitches self) (default-pitches 'YV12 (car (shape self)))))
         (mjpeg-to-yuv420p (get-memory (get-mem source)) (shape self) (get-memory (get-mem self)) (get-offsets self))
-        (convert-from! self (convert source 'YV12)))
+        (convert-image-from! self (convert-image source 'YV12)))
       (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type))
     self))
 
-(define-method (convert (self <image>)
-                        (fmt <symbol>)
-                        (shape <list>)
-                        (offsets <list>)
-                        (pitches <list>))
+(define-method (convert-image (self <image>) (fmt <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
   (let* [(dest-size   (image-size fmt pitches (cadr shape)))
          (destination (make <image> #:format fmt
                                     #:shape shape
                                     #:mem (memalign dest-size 16)
                                     #:offsets offsets
                                     #:pitches pitches))]
-        (convert-from! destination self)))
-(define-method (convert (self <image>) (format <symbol>) (shape <list>))
+        (convert-image-from! destination self)))
+(define-method (convert-image (self <image>) (format <symbol>) (shape <list>))
   (let* [(pitches (default-pitches format (car shape)))
          (offsets (default-offsets format pitches (cadr shape)))]
-    (convert self format shape offsets pitches)))
-(define-method (convert (self <image>) (format <symbol>))
-  (convert self format (shape self)))
-(define-method (duplicate (self <image>)) (convert self (get-format self)))
+    (convert-image self format shape offsets pitches)))
+(define-method (convert-image (self <image>) (format <symbol>))
+  (convert-image self format (shape self)))
+(define-method (duplicate (self <image>)) (convert-image self (get-format self)))
 (define-method (write (self <image>) port)
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 (define-method (to-array (self <image>))
@@ -164,7 +160,7 @@
                    (size    (image-size 'BGR pitches (cadr shape)))
                    (mem     (get-mem self))]
               (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
-    (else   (to-array (convert self 'RGB)))))
+    (else   (to-array (convert-image self 'RGB)))))
 (define-method (to-image (self <image>)) self)
 (define-method (to-image (self <sequence<>>))
   (cond ((equal? <ubyte> (typecode self))

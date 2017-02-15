@@ -787,7 +787,7 @@ void init_ffmpeg(void)
 {
   av_register_all();
   avformat_network_init();
-  scm_convert_from = scm_c_public_ref("aiscm image", "convert-from!");
+  scm_convert_from = scm_c_public_ref("aiscm image", "convert-image-from!");
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
   scm_c_define("AV_SAMPLE_FMT_U8"  ,scm_from_int(AV_SAMPLE_FMT_U8  ));
