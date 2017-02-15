@@ -27,12 +27,12 @@
 (define l '((2 3) (5 7) (11 13) (17 19)))
 (define m (to-array <sint> l))
 (define mem (value m))
-(define samples (make <samples> #:typecode <sint> #:count 4 #:channels 2 #:planar #f #:mem mem))
+(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:planar #f #:mem mem))
 
 (test-eq "query typecode of samples"
   <sint> (typecode samples))
-(test-eqv "query number of samples"
-  4 (count samples))
+(test-equal "query shape of samples"
+  '(2 4) (shape samples))
 (test-eqv "query number of channels"
   2 (channels samples))
 (test-assert "query whether samples are planar"

@@ -3,11 +3,14 @@
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:export (<samples> <meta<samples>> count planar?)
-  #:re-export (typecode channels))
+  #:re-export (typecode shape channels))
 
 (define-class* <samples> <object> <meta<samples>> <class>
               (typecode #:init-keyword #:typecode #:getter typecode)
-              (count    #:init-keyword #:count    #:getter count   )
-              (channels #:init-keyword #:channels #:getter channels)
+              (shape    #:init-keyword #:shape    #:getter shape   )
               (offsets  #:init-keyword #:offsets  #:getter offsets )
               (planar   #:init-keyword #:planar   #:getter planar? ))
+
+(define-method (channels (self <samples>))
+  "Get number of audio channels of audio samples"
+  (car (shape self)))
