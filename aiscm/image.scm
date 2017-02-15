@@ -35,11 +35,11 @@
 
 (load-extension "libguile-aiscm-image" "init_image")
 (define-class* <image> <object> <meta<image>> <class>
-              (format #:init-keyword #:format #:getter get-format)
-              (shape #:init-keyword #:shape #:getter shape)
+              (format  #:init-keyword #:format  #:getter get-format )
+              (shape   #:init-keyword #:shape   #:getter shape      )
               (offsets #:init-keyword #:offsets #:getter get-offsets)
               (pitches #:init-keyword #:pitches #:getter get-pitches)
-              (mem #:init-keyword #:mem #:getter get-mem))
+              (mem     #:init-keyword #:mem     #:getter get-mem    ))
 (define-method (initialize (self <image>) initargs)
   (let-keywords initargs #f (format shape offsets pitches mem)
     (let* [(pitches (or pitches (default-pitches format (car shape))))
