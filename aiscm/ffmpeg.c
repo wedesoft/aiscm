@@ -377,8 +377,8 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   };
 #else
   int channels = av_get_channel_layout_nb_channels(retval->channel_layout);
-  int linesize;
-  int err = av_samples_alloc(retval->data, retval->linesize[0], channels, retval->nb_samples, retval->format, 0);
+  int err = av_samples_alloc(retval->data, &retval->linesize[0], channels, retval->nb_samples, retval->format, 0);
+  // TODO: need av_freep?
   if (err < 0) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("allocate-output-audio-frame", "Could not allocate audio buffer", SCM_EOL);

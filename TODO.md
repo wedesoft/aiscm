@@ -1,5 +1,6 @@
 ## Ready
 
+* audio software resampling wrappers
 * pulse audio: reexport pointer stuff
 * allocate audio buffer
 * record audio
