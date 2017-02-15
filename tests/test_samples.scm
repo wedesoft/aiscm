@@ -16,8 +16,26 @@
 ;;
 (use-modules (srfi srfi-64)
              (oop goops)
+             (aiscm element)
              (aiscm int)
+             (aiscm sequence)
              (aiscm samples))
 
 
-(define samples (make <samples> #:format <sint> #:count 8 #:channels 2 #:planar #t))
+(test-begin "aiscm samples")
+
+(define l '((2 3) (5 7) (11 13) (17 19)))
+(define m (to-array <sint> l))
+(define mem (value m))
+(define samples (make <samples> #:typecode <sint> #:count 4 #:channels 2 #:planar #f #:mem mem))
+
+(test-eq "query typecode of samples"
+  <sint> (typecode samples))
+(test-eqv "query number of samples"
+  4 (count samples))
+(test-eqv "query number of channels"
+  2 (channels samples))
+(test-assert "query whether samples are planar"
+  (not (planar? samples)))
+
+(test-end "aiscm samples")
