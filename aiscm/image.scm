@@ -33,14 +33,18 @@
             get-format convert-image to-image symbol->format format->symbol convert-image-from!)
   #:re-export (to-array))
 
+
 (load-extension "libguile-aiscm-image" "init_image")
+
 (define-class* <image> <object> <meta<image>> <class>
               (format  #:init-keyword #:format  #:getter get-format)
               (shape   #:init-keyword #:shape   #:getter shape     )
               (offsets #:init-keyword #:offsets #:getter offsets   )
               (pitches #:init-keyword #:pitches #:getter pitches   )
               (mem     #:init-keyword #:mem                        ))
+
 (define-method (initialize (self <image>) initargs)
+  "Constructor for images"
   (let-keywords initargs #f (format shape offsets pitches mem)
     (let* [(pitches (or pitches (default-pitches format (car shape))))
            (offsets (or offsets (default-offsets format pitches (cadr shape))))]
@@ -49,6 +53,7 @@
                               #:offsets offsets
                               #:pitches pitches
                               #:mem mem)))))
+
 (define formats
   (list (cons 'RGB  AV_PIX_FMT_RGB24)
         (cons 'BGR  AV_PIX_FMT_BGR24)
@@ -59,9 +64,13 @@
         (cons 'UYVY AV_PIX_FMT_UYVY422)
         (cons 'YUY2 AV_PIX_FMT_YUYV422)
         (cons 'MJPG 0)))
+
 (define symbols (alist-invert formats))
+
 (define (symbol->format sym) (assq-ref formats sym))
+
 (define (format->symbol fmt) (assq-ref symbols fmt))
+
 (define (image-size format pitches height)
   (case format
     ((RGB)  (* (car pitches) height))
@@ -73,6 +82,7 @@
     ((UYVY) (* (car pitches) height 2))
     ((YUY2) (* (car pitches) height 2))
     ((MJPG) (* (car pitches) height 2))))
+
 (define (default-offsets format pitches height)
   (case format
     ((RGB)  (list 0))
@@ -88,6 +98,7 @@
     ((UYVY) (list 0))
     ((YUY2) (list 0))
     ((MJPG) (list 0))))
+
 (define (default-pitches format width)
   (case format
     ((RGB)  (list (* width 3)))
@@ -99,17 +110,21 @@
     ((UYVY) (list (* 2 (logand (+ width 3) (lognot #x3)))))
     ((YUY2) (list (* 2 (logand (+ width 3) (lognot #x3)))))
     ((MJPG) (list))))
+
 (define (warp lst indices) (map (cut list-ref lst <>) indices))
+
 (define-method (descriptor (format <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
   (list (symbol->format format)
         shape
         (if (eqv? format 'YV12) (warp offsets '(0 2 1)) offsets)
         (if (eqv? format 'YV12) (warp pitches '(0 2 1)) pitches)))
+
 (define-method (descriptor (self <image>))
   (descriptor (get-format self)
               (shape self)
               (offsets self)
               (pitches self)))
+
 (define (memalign size alignment)
   (let* [(offset        (1- alignment))
          (extended-size (+ size offset))
@@ -119,7 +134,7 @@
     (make <mem> #:memory memory #:base base #:size size)))
 
 (define-method (convert-image-from! (self <image>) (source <image>))
-  "Convert image by mutating result location"
+  "Convert image and write it to the specified target location"
   (let [(dest-type   (descriptor self))
         (source-type (descriptor source))]
     (if (eq? (get-format source) 'MJPG)
@@ -132,6 +147,7 @@
     self))
 
 (define-method (convert-image (self <image>) (fmt <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
+  "Convert image using the specified attributes"
   (let* [(dest-size   (image-size fmt pitches (cadr shape)))
          (destination (make <image> #:format fmt
                                     #:shape shape
@@ -139,15 +155,20 @@
                                     #:offsets offsets
                                     #:pitches pitches))]
         (convert-image-from! destination self)))
+
 (define-method (convert-image (self <image>) (format <symbol>) (shape <list>))
   (let* [(pitches (default-pitches format (car shape)))
          (offsets (default-offsets format pitches (cadr shape)))]
     (convert-image self format shape offsets pitches)))
+
 (define-method (convert-image (self <image>) (format <symbol>))
   (convert-image self format (shape self)))
+
 (define-method (duplicate (self <image>)) (convert-image self (get-format self)))
+
 (define-method (write (self <image>) port)
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
+
 (define-method (to-array (self <image>))
   (case (get-format self)
     ((GRAY) (let* [(shape   (shape self))
@@ -161,7 +182,9 @@
                    (mem     (slot-ref self 'mem))]
               (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
     (else   (to-array (convert-image self 'RGB)))))
+
 (define-method (to-image (self <image>)) self)
+
 (define-method (to-image (self <sequence<>>))
   (cond ((equal? <ubyte> (typecode self))
          (if (= (car (strides self)) 1)

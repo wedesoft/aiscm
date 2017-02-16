@@ -27,7 +27,7 @@
 (define l '((2 3) (5 7) (11 13) (17 19)))
 (define m (to-array <sint> l))
 (define mem (value m))
-(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:planar #f #:mem mem))
+(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 44100 #:planar #f #:mem mem))
 (define array (arr <int> (2 3) (5 7) (11 13) (17 19)))
 
 (test-eq "query typecode of samples"
@@ -36,6 +36,8 @@
   '(2 4) (shape samples))
 (test-eqv "query number of channels"
   2 (channels samples))
+(test-eqv "query sampling rate"
+  44100 (rate samples))
 (test-assert "query whether samples are planar"
   (not (planar? samples)))
 (test-eq "check data is memorized"
@@ -50,5 +52,12 @@
   '(2 4) (shape (to-samples array)))
 (test-eq "check sample memory is initialised when converting from array"
   (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
+(test-equal "packed audio has one offset which is zero"
+  '(0) (slot-ref samples 'offsets))
+(test-expect-fail 2)
+(test-eq "convert samples to integer"
+  <int> (typecode (convert-samples samples <int> 44100 #f)))
+(test-equal "content of converted array"
+  l (to-list (to-array (convert-samples samples <int> 44100 #f))))
 
 (test-end "aiscm samples")

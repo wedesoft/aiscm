@@ -2,6 +2,7 @@
 
 * audio software resampling wrappers
 * pulse audio: reexport pointer stuff
+* module libraries without version numbers
 * allocate audio buffer
 * record audio
 * record audio/video
