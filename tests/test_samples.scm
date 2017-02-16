@@ -54,7 +54,7 @@
   (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref samples 'offsets))
-(test-expect-fail 2)
+(test-skip 2)
 (test-eq "convert samples to integer"
   <int> (typecode (convert-samples samples <int> 44100 #f)))
 (test-equal "content of converted array"
