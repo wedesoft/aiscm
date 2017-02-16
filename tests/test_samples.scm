@@ -28,6 +28,7 @@
 (define m (to-array <sint> l))
 (define mem (value m))
 (define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:planar #f #:mem mem))
+(define array (arr <int> (2 3) (5 7) (11 13) (17 19)))
 
 (test-eq "query typecode of samples"
   <sint> (typecode samples))
@@ -41,5 +42,13 @@
   mem (slot-ref samples 'mem))
 (test-equal "'to-array' should convert the audio samples to a 2D array"
   l (to-list (to-array samples)))
+(test-eq "check sample type when converting array to samples"
+  <int> (typecode (to-samples array)))
+(test-assert "check samples are not marked as planar"
+  (not (planar? (to-samples array))))
+(test-equal "check samples converted from array have the right shape"
+  '(2 4) (shape (to-samples array)))
+(test-eq "check sample memory is initialised when converting from array"
+  (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
 
 (test-end "aiscm samples")

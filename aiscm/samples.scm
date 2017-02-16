@@ -3,7 +3,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm sequence)
-  #:export (<samples> <meta<samples>> count planar?)
+  #:export (<samples> <meta<samples>> count planar? to-samples)
   #:re-export (typecode shape channels to-array))
 
 (define-class* <samples> <object> <meta<samples>> <class>
@@ -20,3 +20,7 @@
 (define-method (to-array (self <samples>))
   "Convert audio samples to a numerical array"
   (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem)))
+
+(define-method (to-samples (self <sequence<>>))
+  "Convert numerical array to audio samples"
+  (make <samples> #:typecode (typecode self) #:shape (shape self) #:planar #f #:mem (slot-ref self 'value)))
