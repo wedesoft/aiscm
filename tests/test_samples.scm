@@ -39,5 +39,7 @@
   (not (planar? samples)))
 (test-eq "check data is memorized"
   mem (slot-ref samples 'mem))
+(test-equal "'to-array' should convert the audio samples to a 2D array"
+  l (to-list (to-array samples)))
 
 (test-end "aiscm samples")
