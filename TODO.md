@@ -5,6 +5,7 @@
 * allocate audio buffer
 * record audio
 * record audio/video
+* run integration tests in Docker container
 * negotiate sampling rate, channels, buffer size
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written

@@ -55,15 +55,15 @@
 (test-assert "Convert second element of Scheme array to long integer"
   (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32))))
 (test-equal "conversion to BGR"
-  #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert-image img 'BGR)) 6))
+  #vu8(2 2 2 3 3 3) (read-bytes (slot-ref (convert-image img 'BGR) 'mem) 6))
 (test-equal "shape of scaled image"
   '(16 2) (shape (convert-image img 'BGRA '(16 2))))
 (test-assert "duplicated image should be different"
   (not (eq? img (duplicate img))))
 (test-equal "values of image with scaled height"
-  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (get-mem (convert-image img 'GRAY '(8 2))) 16))
+  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (slot-ref (convert-image img 'GRAY '(8 2)) 'mem) 16))
 (test-equal "correct application of custom pitches"
-  2 (bytevector-u8-ref (read-bytes (get-mem (convert-image img 'GRAY '(8 2) '(0) '(16))) 32) 16))
+  2 (bytevector-u8-ref (read-bytes (slot-ref (convert-image img 'GRAY '(8 2) '(0) '(16)) 'mem) 32) 16))
 (test-equal "'to-array' should convert the image to a 2D array"
   '((2 3 5 7 11 13 17 19)) (to-list (to-array img)))
 (test-equal "'to-array' should convert the image to a colour image"
@@ -79,7 +79,7 @@
 (test-equal "Converting from unsigned byte multiarray to image and back preserves data"
   l (to-list (to-array (to-image m))))
 (test-equal "Conversion to image ensures compacting of pixel lines"
-  #vu8(1 3 2 4) (read-bytes (get-mem (to-image (roll (arr (1 2) (3 4))))) 4))
+  #vu8(1 3 2 4) (read-bytes (slot-ref (to-image (roll (arr (1 2) (3 4)))) 'mem) 4))
 (test-equal "Converting from integer multiarray to image and back converts to byte data"
   l (to-list (to-array (to-image (to-array <int> l)))))
 (test-equal "Convert RGB array to image"
@@ -97,6 +97,6 @@
 (define target (to-image (arr (0 0 0 0 0 0 0 0))))
 (convert-image-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
 (test-equal "Write conversion result to a target image"
-  #vu8(1 2 3 4 6 7 8 9) (read-bytes (get-mem target) 8))
+  #vu8(1 2 3 4 6 7 8 9) (read-bytes (slot-ref target 'mem) 8))
 
 (test-end "aiscm image")

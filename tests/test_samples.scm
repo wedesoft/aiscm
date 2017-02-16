@@ -37,5 +37,7 @@
   2 (channels samples))
 (test-assert "query whether samples are planar"
   (not (planar? samples)))
+(test-eq "check data is memorized"
+  mem (slot-ref samples 'mem))
 
 (test-end "aiscm samples")

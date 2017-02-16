@@ -30,7 +30,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm op)
   #:export (<image> <meta<image>>
-            get-format get-mem convert-image to-image symbol->format format->symbol convert-image-from!)
+            get-format convert-image to-image symbol->format format->symbol convert-image-from!)
   #:re-export (to-array))
 
 (load-extension "libguile-aiscm-image" "init_image")
@@ -39,7 +39,7 @@
               (shape   #:init-keyword #:shape   #:getter shape     )
               (offsets #:init-keyword #:offsets #:getter offsets   )
               (pitches #:init-keyword #:pitches #:getter pitches   )
-              (mem     #:init-keyword #:mem     #:getter get-mem   ))
+              (mem     #:init-keyword #:mem                        ))
 (define-method (initialize (self <image>) initargs)
   (let-keywords initargs #f (format shape offsets pitches mem)
     (let* [(pitches (or pitches (default-pitches format (car shape))))
@@ -126,9 +126,9 @@
       (if (and (memv (get-format self) '(YV12 I420))
                (equal? (shape self) (shape source))
                (equal? (pitches self) (default-pitches 'YV12 (car (shape self)))))
-        (mjpeg-to-yuv420p (get-memory (get-mem source)) (shape self) (get-memory (get-mem self)) (offsets self))
+        (mjpeg-to-yuv420p (get-memory (slot-ref source 'mem)) (shape self) (get-memory (slot-ref self 'mem)) (offsets self))
         (convert-image-from! self (convert-image source 'YV12)))
-      (image-convert (get-memory (get-mem source)) source-type (get-memory (get-mem self)) dest-type))
+      (image-convert (get-memory (slot-ref source 'mem)) source-type (get-memory (slot-ref self 'mem)) dest-type))
     self))
 
 (define-method (convert-image (self <image>) (fmt <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
@@ -153,12 +153,12 @@
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (pitches self))
                    (size    (image-size 'GRAY pitches (cadr shape)))
-                   (mem     (get-mem self))]
+                   (mem     (slot-ref self 'mem))]
               (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
     ((RGB)  (let* [(shape   (shape self))
                    (pitches (pitches self))
                    (size    (image-size 'BGR pitches (cadr shape)))
-                   (mem     (get-mem self))]
+                   (mem     (slot-ref self 'mem))]
               (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
     (else   (to-array (convert-image self 'RGB)))))
 (define-method (to-image (self <image>)) self)

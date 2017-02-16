@@ -9,7 +9,8 @@
               (typecode #:init-keyword #:typecode #:getter typecode)
               (shape    #:init-keyword #:shape    #:getter shape   )
               (offsets  #:init-keyword #:offsets  #:getter offsets )
-              (planar   #:init-keyword #:planar   #:getter planar? ))
+              (planar   #:init-keyword #:planar   #:getter planar? )
+              (mem      #:init-keyword #:mem                       ))
 
 (define-method (channels (self <samples>))
   "Get number of audio channels of audio samples"
