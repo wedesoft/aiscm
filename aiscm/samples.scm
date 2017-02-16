@@ -8,7 +8,7 @@
   #:export (<samples> <meta<samples>> count planar? to-samples convert-samples)
   #:re-export (typecode shape channels rate to-array))
 
-;(load-extension "libguile-aiscm-samples" "init_samples")
+(load-extension "libguile-aiscm-samples" "init_samples")
 
 (define-class* <samples> <object> <meta<samples>> <class>
               (typecode #:init-keyword #:typecode #:getter typecode)
