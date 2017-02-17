@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <libguile.h>
-#include <libswresample/swresample.h>
+// #include <libswresample/swresample.h>
 
 
 SCM samples_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
