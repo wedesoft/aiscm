@@ -15,11 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <libguile.h>
+#include <libavutil/channel_layout.h>
 #include <libswresample/swresample.h>
 
 
 SCM samples_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
+  SwrContext *swr_ctx =
+    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S32, 44100, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, 44100, 0, NULL);
+  if (!swr_ctx)
+    scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
+  swr_free(&swr_ctx);
   return SCM_UNDEFINED;
 }
 
