@@ -19,12 +19,24 @@
 #include <libswresample/swresample.h>
 
 
-SCM samples_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
+SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
   SwrContext *swr_ctx =
     swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S32, 44100, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, 44100, 0, NULL);
   if (!swr_ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
+  int err = swr_init(swr_ctx);
+  if (err < 0)
+    scm_misc_error("samples-convert", "Could not initialize resampler context", SCM_EOL);
+
+  uint8_t *source_ptr = scm_to_pointer(scm_source_ptr);
+  int source_samples = scm_to_int(scm_cadadr(scm_source_type));
+
+  uint8_t *dest_ptr = scm_to_pointer(scm_dest_ptr);
+  int dest_samples = scm_to_int(scm_cadadr(scm_dest_type));
+
+  swr_convert(swr_ctx, &dest_ptr, dest_samples, (const uint8_t **)&source_ptr, source_samples);
+
   swr_free(&swr_ctx);
   return SCM_UNDEFINED;
 }

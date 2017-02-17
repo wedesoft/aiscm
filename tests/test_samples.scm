@@ -59,8 +59,7 @@
   <int> (typecode (convert-samples samples <int> 44100 #f)))
 (test-eqv "size of converted sample data"
   32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
-(test-expect-fail 1)
 (test-equal "content of converted array"
-  l (to-list (to-array (convert-samples samples <int> 44100 #f))))
+  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 44100 #f))))
 
 (test-end "aiscm samples")
