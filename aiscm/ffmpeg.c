@@ -322,7 +322,7 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
 
   // Set channels
   retval->channels = scm_to_int(scm_channels);
-  retval->channel_layout = av_get_default_channel_layout(2);
+  retval->channel_layout = av_get_default_channel_layout(retval->channels);
 
   // Set bit rate
   retval->bit_rate = scm_to_int(scm_audio_bit_rate);
@@ -365,15 +365,25 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   retval->sample_rate = audio_codec->sample_rate;
 
   if (audio_codec->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE)
-    retval->nb_samples = 65536;
+    retval->nb_samples = 2 * FF_MIN_BUFFER_SIZE;
   else
     retval->nb_samples = audio_codec->frame_size;
 
+#ifdef HAVE_AV_FRAME_GET_BUFFER
   int err = av_frame_get_buffer(retval, 0);
   if (err < 0) {
     ffmpeg_destroy(scm_self);
     scm_misc_error("allocate-output-audio-frame", "Error allocating audio frame memory", SCM_EOL);
   };
+#else
+  int channels = av_get_channel_layout_nb_channels(retval->channel_layout);
+  int err = av_samples_alloc(retval->data, &retval->linesize[0], channels, retval->nb_samples, retval->format, 0);
+  // TODO: need av_freep?
+  if (err < 0) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("allocate-output-audio-frame", "Could not allocate audio buffer", SCM_EOL);
+  };
+#endif
   return retval;
 }
 
@@ -730,8 +740,6 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
-static SCM scm_convert_from;
-
 SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
@@ -777,7 +785,6 @@ void init_ffmpeg(void)
 {
   av_register_all();
   avformat_network_init();
-  scm_convert_from = scm_c_public_ref("aiscm image", "convert-from!");
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
   scm_c_define("AV_SAMPLE_FMT_U8"  ,scm_from_int(AV_SAMPLE_FMT_U8  ));

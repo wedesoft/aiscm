@@ -467,7 +467,7 @@ SCM window_hide(SCM scm_self)
   return scm_self;
 }
 
-static SCM scm_convert;
+static SCM scm_convert_image;
 
 void gl_error(const char *context)
 {
@@ -529,7 +529,7 @@ void window_paint(struct window_t *self, int x11_event)
     switch (self->io) {
       case IO_XIMAGE: {
         if (SCM_UNBNDP(self->scm_converted))
-          self->scm_converted = scm_call_3(scm_convert,
+          self->scm_converted = scm_call_3(scm_convert_image,
                                            self->scm_image,
                                            scm_from_locale_symbol("BGRA"),
                                            scm_list_2(scm_from_int(self->width),
@@ -547,7 +547,7 @@ void window_paint(struct window_t *self, int x11_event)
         break;}
       case IO_OPENGL: {
         if (SCM_UNBNDP(self->scm_converted))
-          self->scm_converted = scm_call_2(scm_convert,
+          self->scm_converted = scm_call_2(scm_convert_image,
                                            self->scm_image,
                                            scm_from_locale_symbol("RGB"));
         GLXContext context =
@@ -600,7 +600,7 @@ void window_paint(struct window_t *self, int x11_event)
         if (SCM_UNBNDP(self->scm_converted)) {
           SCM scm_offsets = scm_int_list(self->xv_image->num_planes, self->xv_image->offsets);
           SCM scm_pitches = scm_int_list(self->xv_image->num_planes, self->xv_image->pitches);
-          self->scm_converted = scm_call_5(scm_convert,
+          self->scm_converted = scm_call_5(scm_convert_image,
                                            self->scm_image,
                                            scm_car(scm_target),
                                            scm_shape,
@@ -619,7 +619,7 @@ void window_paint(struct window_t *self, int x11_event)
 
 void init_xorg(void)
 {
-  scm_convert = scm_c_public_ref("aiscm image", "convert");
+  scm_convert_image = scm_c_public_ref("aiscm image", "convert-image");
   display_tag = scm_make_smob_type("display", sizeof(struct display_t));
   window_tag = scm_make_smob_type("window", sizeof(struct window_t));
   scm_set_smob_free(display_tag, free_display);

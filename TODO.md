@@ -1,9 +1,13 @@
 ## Ready
 
+* convert type+planar to swr-format
+* audio software resampling wrappers
 * pulse audio: reexport pointer stuff
+* module libraries without version numbers
 * allocate audio buffer
 * record audio
 * record audio/video
+* run integration tests in Docker container
 * negotiate sampling rate, channels, buffer size
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written
