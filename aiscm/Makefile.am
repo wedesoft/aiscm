@@ -71,9 +71,9 @@ libguile_aiscm_xorg_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv -lXpm
 
 libguile_aiscm_samples_la_SOURCES = samples.c
-libguile_aiscm_samples_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_samples_la_CFLAGS = $(GUILE_CFLAGS) $(SWRESAMPLE_CFLAGS)
 libguile_aiscm_samples_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS) $(SWRESAMPLE_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

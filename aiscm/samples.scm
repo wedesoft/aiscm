@@ -51,7 +51,7 @@
                             #:typecode typecode
                             #:shape (shape self)
                             #:planar planar
-                            #:mem (make <mem> #:size size #:pointerless #t))); TODO: compute size
+                            #:mem (make <mem> #:size size #:pointerless #t)))
          (dest-type   (descriptor destination))
          (source-type (descriptor self))]
     (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
