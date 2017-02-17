@@ -46,12 +46,13 @@
 
 (define (convert-samples self typecode rate planar)
   "Convert audio samples using the specified attributes"
-  (let* [(destination (make <samples>
+  (let* [(size        (apply * (size-of typecode) (shape self)))
+         (destination (make <samples>
                             #:typecode typecode
                             #:shape (shape self)
                             #:planar planar
-                            #:mem (make <mem> #:size 1000 #:pointerless #t))); TODO: compute size
+                            #:mem (make <mem> #:size size #:pointerless #t))); TODO: compute size
          (dest-type   (descriptor destination))
          (source-type (descriptor self))]
     (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
-    self))
+    destination))

@@ -18,6 +18,7 @@
              (oop goops)
              (aiscm element)
              (aiscm int)
+             (aiscm mem)
              (aiscm sequence)
              (aiscm samples))
 
@@ -54,9 +55,11 @@
   (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref samples 'offsets))
-(test-skip 2)
 (test-eq "convert samples to integer"
   <int> (typecode (convert-samples samples <int> 44100 #f)))
+(test-eqv "size of converted sample data"
+  32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
+(test-expect-fail 1)
 (test-equal "content of converted array"
   l (to-list (to-array (convert-samples samples <int> 44100 #f))))
 

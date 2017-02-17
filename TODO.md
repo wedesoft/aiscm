@@ -1,5 +1,6 @@
 ## Ready
 
+* convert type+planar to swr-format
 * audio software resampling wrappers
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
