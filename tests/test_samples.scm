@@ -18,6 +18,7 @@
              (oop goops)
              (aiscm element)
              (aiscm int)
+             (aiscm float)
              (aiscm mem)
              (aiscm sequence)
              (aiscm samples))
@@ -61,5 +62,36 @@
   32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
 (test-equal "content of converted array"
   (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 44100 #f))))
+
+(test-begin "type conversions")
+  (test-eq "test packed unsigned byte format tag"
+    AV_SAMPLE_FMT_U8   (type+planar->avtype <ubyte> #f))
+  (test-eq "test packed signed short integer format tag"
+    AV_SAMPLE_FMT_S16  (type+planar->avtype <sint> #f))
+  (test-eq "test packed signed integer format tag"
+    AV_SAMPLE_FMT_S32  (type+planar->avtype <int> #f))
+  (test-eq "test packed floating point format tag"
+    AV_SAMPLE_FMT_FLT  (type+planar->avtype <float> #f))
+  (test-eq "test packed double precision floating point format tag"
+    AV_SAMPLE_FMT_DBL  (type+planar->avtype <double> #f))
+  (test-eq "test planar unsigned byte format tag"
+    AV_SAMPLE_FMT_U8P  (type+planar->avtype <ubyte> #t))
+  (test-eq "test planar signed short integer format tag"
+    AV_SAMPLE_FMT_S16P (type+planar->avtype <sint> #t))
+  (test-eq "test planar signed integer format tag"
+    AV_SAMPLE_FMT_S32P (type+planar->avtype <int> #t))
+  (test-eq "test planar floating point format tag"
+    AV_SAMPLE_FMT_FLTP (type+planar->avtype <float> #t))
+  (test-eq "test planar double precision floating point format tag"
+    AV_SAMPLE_FMT_DBLP (type+planar->avtype <double> #t))
+  (test-error "throw error if type not supported by FFmpeg audio"
+    'misc-error (type+planar->avtype <byte> #f))
+  (test-eq "convert packed  unsigned byte type tag to type"
+    <ubyte> (avtype->type AV_SAMPLE_FMT_U8))
+  (test-eq "convert signed short integer type tag to type"
+    <sint> (avtype->type AV_SAMPLE_FMT_S16))
+  (test-eq "convert planar unsigned byte type tag to type"
+    <ubyte> (avtype->type AV_SAMPLE_FMT_U8P))
+(test-end "type conversions")
 
 (test-end "aiscm samples")

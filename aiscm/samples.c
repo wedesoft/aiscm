@@ -44,4 +44,14 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
 void init_samples(void)
 {
   scm_c_define_gsubr("samples-convert", 4, 0, 0, samples_convert);
+  scm_c_define("AV_SAMPLE_FMT_U8"  ,scm_from_int(AV_SAMPLE_FMT_U8  ));
+  scm_c_define("AV_SAMPLE_FMT_S16" ,scm_from_int(AV_SAMPLE_FMT_S16 ));
+  scm_c_define("AV_SAMPLE_FMT_S32" ,scm_from_int(AV_SAMPLE_FMT_S32 ));
+  scm_c_define("AV_SAMPLE_FMT_FLT" ,scm_from_int(AV_SAMPLE_FMT_FLT ));
+  scm_c_define("AV_SAMPLE_FMT_DBL" ,scm_from_int(AV_SAMPLE_FMT_DBL ));
+  scm_c_define("AV_SAMPLE_FMT_U8P" ,scm_from_int(AV_SAMPLE_FMT_U8P ));
+  scm_c_define("AV_SAMPLE_FMT_S16P",scm_from_int(AV_SAMPLE_FMT_S16P));
+  scm_c_define("AV_SAMPLE_FMT_S32P",scm_from_int(AV_SAMPLE_FMT_S32P));
+  scm_c_define("AV_SAMPLE_FMT_FLTP",scm_from_int(AV_SAMPLE_FMT_FLTP));
+  scm_c_define("AV_SAMPLE_FMT_DBLP",scm_from_int(AV_SAMPLE_FMT_DBLP));
 }

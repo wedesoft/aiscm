@@ -4,8 +4,13 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm float)
   #:use-module (aiscm sequence)
-  #:export (<samples> <meta<samples>> count planar? to-samples convert-samples)
+  #:export (<samples> <meta<samples>>
+            AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
+            AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
+            count planar? to-samples convert-samples type+planar->avtype avtype->type)
   #:re-export (typecode shape channels rate to-array))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
@@ -56,3 +61,29 @@
          (source-type (descriptor self))]
     (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
     destination))
+
+(define typemap-packed
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )
+        (cons <sint>   AV_SAMPLE_FMT_S16 )
+        (cons <int>    AV_SAMPLE_FMT_S32 )
+        (cons <float>  AV_SAMPLE_FMT_FLT )
+        (cons <double> AV_SAMPLE_FMT_DBL )))
+
+(define typemap-planar
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
+        (cons <sint>   AV_SAMPLE_FMT_S16P)
+        (cons <int>    AV_SAMPLE_FMT_S32P)
+        (cons <float>  AV_SAMPLE_FMT_FLTP)
+        (cons <double> AV_SAMPLE_FMT_DBLP)))
+
+(define inverse-typemap
+  (append (alist-invert typemap-packed) (alist-invert typemap-planar)))
+
+(define (type+planar->avtype type planar)
+  "Convert type and planar/packed information to type tag"
+  (or (assq-ref (if planar typemap-planar typemap-packed) type)
+      (aiscm-error 'type+planar->avtype "Type ~a not supported by FFmpeg audio" type)))
+
+(define (avtype->type avtype)
+  "Get type information for type tag"
+  (assq-ref inverse-typemap avtype))

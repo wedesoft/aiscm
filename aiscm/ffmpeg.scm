@@ -25,14 +25,12 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm float)
   #:use-module (aiscm mem)
+  #:use-module (aiscm samples)
   #:use-module (aiscm image)
   #:use-module (aiscm util)
   #:export (<ffmpeg>
-            AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S16P
-            AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            type->ffmpeg-type ffmpeg-type->type)
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -52,12 +50,6 @@
         (cons <float>  AV_SAMPLE_FMT_FLTP)
         (cons <double> AV_SAMPLE_FMT_DBLP)))
 (define inverse-typemap (alist-invert typemap))
-(define (type->ffmpeg-type type)
-  "Convert type class to FFmpeg type tag"
-  (or (assq-ref typemap type) (aiscm-error 'type->ffmpeg-type "Type ~a not supported by FFmpeg audio" type)))
-(define (ffmpeg-type->type ffmpeg-type)
-  "Convert FFmpeg audio type tag to type class"
-  (assq-ref inverse-typemap ffmpeg-type))
 
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
@@ -83,7 +75,7 @@
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list rate channels audio-bit-rate (type->ffmpeg-type typecode)) have-audio
+                                         (list rate channels audio-bit-rate (type+planar->avtype typecode #t)) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))

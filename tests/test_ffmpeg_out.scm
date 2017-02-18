@@ -23,6 +23,7 @@
              (aiscm float)
              (aiscm rgb)
              (aiscm image)
+             (aiscm samples)
              (aiscm pointer)
              (aiscm sequence))
 
@@ -75,23 +76,6 @@
     'misc-error (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:shape '(384 288) #:frame-rate 10))
   ; TODO: test error when attempting to write video to MP3 file
 (test-end "video output")
-
-(test-begin "type conversions")
-  (test-eqv "convert unsigned byte to FFmpeg audio type"
-    AV_SAMPLE_FMT_U8P (type->ffmpeg-type <ubyte>))
-  (test-eqv "convert short integer to FFmpeg audio type"
-    AV_SAMPLE_FMT_S16P (type->ffmpeg-type <sint>))
-  (test-eqv "convert integer to FFmpeg audio type"
-    AV_SAMPLE_FMT_S32P (type->ffmpeg-type <int>))
-  (test-eqv "convert floating-point to FFmpeg audio type"
-    AV_SAMPLE_FMT_FLTP (type->ffmpeg-type <float>))
-  (test-eqv "convert floating-point to FFmpeg audio type"
-    AV_SAMPLE_FMT_DBLP (type->ffmpeg-type <double>))
-  (test-error "throw error if type not supported by FFmpeg audio"
-    'misc-error (type->ffmpeg-type <usint>))
-  (test-eq "convert FFmpeg audio short integer to integer type"
-    <sint> (ffmpeg-type->type AV_SAMPLE_FMT_S16P))
-(test-end "type conversions")
 
 (test-begin "audio output")
   (test-assert "'open-ffmpeg-output' can create an audio file"
