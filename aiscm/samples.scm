@@ -46,22 +46,6 @@
   "Convert numerical array to audio samples"
   (make <samples> #:typecode (typecode self) #:shape (shape self) #:planar #f #:mem (slot-ref self 'value)))
 
-(define (descriptor self)
-  (list (typecode self) (shape self) (rate self) (offsets self) (planar? self)))
-
-(define (convert-samples self typecode rate planar)
-  "Convert audio samples using the specified attributes"
-  (let* [(size        (apply * (size-of typecode) (shape self)))
-         (destination (make <samples>
-                            #:typecode typecode
-                            #:shape (shape self)
-                            #:planar planar
-                            #:mem (make <mem> #:size size #:pointerless #t)))
-         (dest-type   (descriptor destination))
-         (source-type (descriptor self))]
-    (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
-    destination))
-
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )
         (cons <sint>   AV_SAMPLE_FMT_S16 )
@@ -87,3 +71,19 @@
 (define (avtype->type avtype)
   "Get type information for type tag"
   (assq-ref inverse-typemap avtype))
+
+(define (descriptor self)
+  (list (type+planar->avtype (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))
+
+(define (convert-samples self typecode rate planar)
+  "Convert audio samples using the specified attributes"
+  (let* [(size        (apply * (size-of typecode) (shape self)))
+         (destination (make <samples>
+                            #:typecode typecode
+                            #:shape (shape self)
+                            #:planar planar
+                            #:mem (make <mem> #:size size #:pointerless #t)))
+         (dest-type   (descriptor destination))
+         (source-type (descriptor self))]
+    (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
+    destination))

@@ -56,12 +56,6 @@
   (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref samples 'offsets))
-(test-eq "convert samples to integer"
-  <int> (typecode (convert-samples samples <int> 44100 #f)))
-(test-eqv "size of converted sample data"
-  32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
-(test-equal "content of converted array"
-  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 44100 #f))))
 
 (test-begin "type conversions")
   (test-eq "test packed unsigned byte format tag"
@@ -93,5 +87,16 @@
   (test-eq "convert planar unsigned byte type tag to type"
     <ubyte> (avtype->type AV_SAMPLE_FMT_U8P))
 (test-end "type conversions")
+
+(test-eq "convert samples to integer"
+  <int> (typecode (convert-samples samples <int> 44100 #f)))
+(test-eqv "size of converted sample data"
+  32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
+(test-equal "content of converted array"
+  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 44100 #f))))
+(test-eq "trivial conversion from short integer to short integer"
+  <sint> (typecode (convert-samples samples <sint> 44100 #f)))
+(test-equal "content of trivial conversion"
+  l (to-list (to-array (convert-samples samples <sint> 44100 #f))))
 
 (test-end "aiscm samples")

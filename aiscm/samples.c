@@ -21,8 +21,11 @@
 
 SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
+  enum AVSampleFormat source_format = scm_to_int(scm_car(scm_source_type));
+  enum AVSampleFormat dest_format = scm_to_int(scm_car(scm_dest_type));
+
   SwrContext *swr_ctx =
-    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S32, 44100, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, 44100, 0, NULL);
+    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, dest_format, 44100, AV_CH_LAYOUT_STEREO, source_format, 44100, 0, NULL);
   if (!swr_ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
   int err = swr_init(swr_ctx);
