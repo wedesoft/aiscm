@@ -29,7 +29,7 @@
 (define l '((2 3) (5 7) (11 13) (17 19)))
 (define m (to-array <sint> l))
 (define mem (value m))
-(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 44100 #:planar #f #:mem mem))
+(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:mem mem))
 (define array (arr <int> (2 3) (5 7) (11 13) (17 19)))
 
 (test-eq "query typecode of samples"
@@ -39,7 +39,7 @@
 (test-eqv "query number of channels"
   2 (channels samples))
 (test-eqv "query sampling rate"
-  44100 (rate samples))
+  22050 (rate samples))
 (test-assert "query whether samples are planar"
   (not (planar? samples)))
 (test-eq "check data is memorized"
@@ -89,14 +89,16 @@
 (test-end "type conversions")
 
 (test-eq "convert samples to integer"
-  <int> (typecode (convert-samples samples <int> 44100 #f)))
+  <int> (typecode (convert-samples samples <int> 22050 #f)))
 (test-eqv "size of converted sample data"
-  32 (slot-ref (slot-ref (convert-samples samples <int> 44100 #f) 'mem) 'size))
+  32 (slot-ref (slot-ref (convert-samples samples <int> 22050 #f) 'mem) 'size))
 (test-equal "content of converted array"
-  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 44100 #f))))
+  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 22050 #f))))
 (test-eq "trivial conversion from short integer to short integer"
-  <sint> (typecode (convert-samples samples <sint> 44100 #f)))
+  <sint> (typecode (convert-samples samples <sint> 22050 #f)))
 (test-equal "content of trivial conversion"
-  l (to-list (to-array (convert-samples samples <sint> 44100 #f))))
+  l (to-list (to-array (convert-samples samples <sint> 22050 #f))))
+(test-equal "increasing sampling rate increases the sample size"
+  '(2 8) (shape (convert-samples samples <sint> 44100 #f)))
 
 (test-end "aiscm samples")

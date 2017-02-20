@@ -1,6 +1,8 @@
 ## Ready
 
-* convert type+planar to swr-format
+* convert mono sample
+* ensure samples compact
+* change sampling rate
 * audio software resampling wrappers
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers

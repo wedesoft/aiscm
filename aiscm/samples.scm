@@ -77,11 +77,14 @@
 
 (define (convert-samples self typecode rate planar)
   "Convert audio samples using the specified attributes"
-  (let* [(size        (apply * (size-of typecode) (shape self)))
+  (let* [(channels    (car (shape  self)))
+         (samples     (/ (* (cadr (shape self)) rate) (slot-ref self 'rate)))
+         (size        (* (size-of typecode) channels samples))
          (destination (make <samples>
                             #:typecode typecode
-                            #:shape (shape self)
-                            #:planar planar
+                            #:shape (list channels samples)
+                            #:rate rate
+                            #:planar #f
                             #:mem (make <mem> #:size size #:pointerless #t)))
          (dest-type   (descriptor destination))
          (source-type (descriptor self))]

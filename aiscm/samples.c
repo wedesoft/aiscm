@@ -23,14 +23,18 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
 {
   enum AVSampleFormat source_format = scm_to_int(scm_car(scm_source_type));
   enum AVSampleFormat dest_format = scm_to_int(scm_car(scm_dest_type));
+  int source_rate = scm_to_int(scm_caddr(scm_source_type));
+  int dest_rate = scm_to_int(scm_caddr(scm_dest_type));
 
   SwrContext *swr_ctx =
-    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, dest_format, 44100, AV_CH_LAYOUT_STEREO, source_format, 44100, 0, NULL);
+    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, dest_format, dest_rate, AV_CH_LAYOUT_STEREO, source_format, source_rate, 0, NULL);
   if (!swr_ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
   int err = swr_init(swr_ctx);
-  if (err < 0)
+  if (err < 0) {
+    swr_free(&swr_ctx);
     scm_misc_error("samples-convert", "Could not initialize resampler context", SCM_EOL);
+  };
 
   uint8_t *source_ptr = scm_to_pointer(scm_source_ptr);
   int source_samples = scm_to_int(scm_cadadr(scm_source_type));
@@ -38,7 +42,11 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   uint8_t *dest_ptr = scm_to_pointer(scm_dest_ptr);
   int dest_samples = scm_to_int(scm_cadadr(scm_dest_type));
 
-  swr_convert(swr_ctx, &dest_ptr, dest_samples, (const uint8_t **)&source_ptr, source_samples);
+  err = swr_convert(swr_ctx, &dest_ptr, dest_samples, (const uint8_t **)&source_ptr, source_samples);
+  if (err < 0) {
+    swr_free(&swr_ctx);
+    scm_misc_error("samples-convert", "Error converting samples", SCM_EOL);
+  };
 
   swr_free(&swr_ctx);
   return SCM_UNDEFINED;
