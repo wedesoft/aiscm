@@ -42,6 +42,7 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   uint8_t *dest_ptr = scm_to_pointer(scm_dest_ptr);
   int dest_samples = scm_to_int(scm_cadadr(scm_dest_type));
 
+  // Note: delay (swr_get_delay) not supported, i.e. converting to a different sampling rate is not supported.
   err = swr_convert(swr_ctx, &dest_ptr, dest_samples, (const uint8_t **)&source_ptr, source_samples);
   if (err < 0) {
     swr_free(&swr_ctx);

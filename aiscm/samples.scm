@@ -75,15 +75,13 @@
 (define (descriptor self)
   (list (type+planar->avtype (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))
 
-(define (convert-samples self typecode rate planar)
+(define (convert-samples self typecode planar)
   "Convert audio samples using the specified attributes"
-  (let* [(channels    (car (shape  self)))
-         (samples     (/ (* (cadr (shape self)) rate) (slot-ref self 'rate)))
-         (size        (* (size-of typecode) channels samples))
+  (let* [(size        (apply * (size-of typecode) (shape self)))
          (destination (make <samples>
                             #:typecode typecode
-                            #:shape (list channels samples)
-                            #:rate rate
+                            #:shape (shape self)
+                            #:rate (rate self)
                             #:planar #f
                             #:mem (make <mem> #:size size #:pointerless #t)))
          (dest-type   (descriptor destination))

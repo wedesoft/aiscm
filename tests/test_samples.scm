@@ -91,18 +91,14 @@
 (test-end "type conversions")
 
 (test-eq "convert samples to integer"
-  <int> (typecode (convert-samples samples <int> 22050 #f)))
+  <int> (typecode (convert-samples samples <int> #f)))
 (test-eqv "size of converted sample data"
-  32 (slot-ref (slot-ref (convert-samples samples <int> 22050 #f) 'mem) 'size))
+  32 (slot-ref (slot-ref (convert-samples samples <int> #f) 'mem) 'size))
 (test-equal "content of converted array"
-  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> 22050 #f))))
+  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> #f))))
 (test-eq "trivial conversion from short integer to short integer"
-  <sint> (typecode (convert-samples samples <sint> 22050 #f)))
+  <sint> (typecode (convert-samples samples <sint> #f)))
 (test-equal "content of trivial conversion"
-  l (to-list (to-array (convert-samples samples <sint> 22050 #f))))
-(test-equal "increasing sampling rate increases the sample size"
-  '(2 8) (shape (convert-samples samples <sint> 44100 #f)))
-(test-equal "increasing sampling rate increases the sample size"
-  '(2 8) (shape (convert-samples samples <sint> 44100 #f)))
+  l (to-list (to-array (convert-samples samples <sint> #f))))
 
 (test-end "aiscm samples")
