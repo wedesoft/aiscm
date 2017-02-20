@@ -42,9 +42,9 @@
   "Convert audio samples to a numerical array"
   (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem)))
 
-(define-method (to-samples (self <sequence<>>))
+(define-method (to-samples (self <sequence<>>) (rate <integer>))
   "Convert numerical array to audio samples"
-  (make <samples> #:typecode (typecode self) #:shape (shape self) #:planar #f #:mem (slot-ref self 'value)))
+  (make <samples> #:typecode (typecode self) #:shape (shape self) #:planar #f #:rate rate #:mem (slot-ref self 'value)))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )

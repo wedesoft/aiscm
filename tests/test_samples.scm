@@ -47,13 +47,15 @@
 (test-equal "'to-array' should convert the audio samples to a 2D array"
   l (to-list (to-array samples)))
 (test-eq "check sample type when converting array to samples"
-  <int> (typecode (to-samples array)))
+  <int> (typecode (to-samples array 22050)))
 (test-assert "check samples are not marked as planar"
-  (not (planar? (to-samples array))))
+  (not (planar? (to-samples array 22050))))
 (test-equal "check samples converted from array have the right shape"
-  '(2 4) (shape (to-samples array)))
+  '(2 4) (shape (to-samples array 22050)))
 (test-eq "check sample memory is initialised when converting from array"
-  (slot-ref array 'value) (slot-ref (to-samples array) 'mem))
+  (slot-ref array 'value) (slot-ref (to-samples array 22050) 'mem))
+(test-eqv "use specified sampling rate when converting from array to samples"
+  22050 (rate (to-samples array 22050)))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref samples 'offsets))
 
@@ -98,6 +100,8 @@
   <sint> (typecode (convert-samples samples <sint> 22050 #f)))
 (test-equal "content of trivial conversion"
   l (to-list (to-array (convert-samples samples <sint> 22050 #f))))
+(test-equal "increasing sampling rate increases the sample size"
+  '(2 8) (shape (convert-samples samples <sint> 44100 #f)))
 (test-equal "increasing sampling rate increases the sample size"
   '(2 8) (shape (convert-samples samples <sint> 44100 #f)))
 
