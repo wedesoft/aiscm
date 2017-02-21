@@ -27,7 +27,7 @@
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
   (let-keywords initargs #f (typecode shape rate planar mem)
-    (let [(offsets '(0))]
+    (let [(offsets (if planar (list 0 (* (size-of typecode) (cadr shape))) '(0)))]
       (next-method self (list #:typecode typecode
                               #:shape    shape
                               #:rate     rate
@@ -43,11 +43,11 @@
   "Convert audio samples to a numerical array"
   (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem)))
 
-(define (to-samples self rate planar)
+(define (to-samples self rate)
   "Convert numerical array to audio samples"
   (let [(shape     (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
         (compacted (ensure-default-strides self))]
-    (make <samples> #:typecode (typecode self) #:shape shape #:planar planar #:rate rate #:mem (slot-ref compacted 'value))))
+    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref compacted 'value))))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )
@@ -85,7 +85,7 @@
                             #:typecode typecode
                             #:shape (shape self)
                             #:rate (rate self)
-                            #:planar #f
+                            #:planar planar
                             #:mem (make <mem> #:size size #:pointerless #t)))
          (dest-type   (descriptor destination))
          (source-type (descriptor self))]

@@ -34,6 +34,11 @@
 (define mono-values '(2 3 5 7))
 (define mono-array (to-array <sint> mono-values))
 
+(define planar-values '((2 5 11 17) (3 7 13 19)))
+(define planar-array (roll (to-array <sint> planar-values)))
+(define planar-mem (value planar-array))
+(define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:mem planar-mem))
+
 (test-eq "query typecode of samples"
   <sint> (typecode stereo-samples))
 (test-equal "query shape of samples"
@@ -49,15 +54,15 @@
 (test-equal "'to-array' should convert the audio samples to a 2D array"
   stereo-values (to-list (to-array stereo-samples)))
 (test-eq "check sample type when converting array to samples"
-  <sint> (typecode (to-samples stereo-array 22050 #f)))
+  <sint> (typecode (to-samples stereo-array 22050)))
 (test-assert "check samples are not marked as planar"
-  (not (planar? (to-samples stereo-array 22050 #f))))
+  (not (planar? (to-samples stereo-array 22050))))
 (test-equal "check samples converted from array have the right shape"
-  '(2 4) (shape (to-samples stereo-array 22050 #f)))
+  '(2 4) (shape (to-samples stereo-array 22050)))
 (test-eq "check sample memory is initialised when converting from array"
-  (slot-ref stereo-array 'value) (slot-ref (to-samples stereo-array 22050 #f) 'mem))
+  (slot-ref stereo-array 'value) (slot-ref (to-samples stereo-array 22050) 'mem))
 (test-eqv "use specified sampling rate when converting from array to samples"
-  22050 (rate (to-samples stereo-array 22050 #f)))
+  22050 (rate (to-samples stereo-array 22050)))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref stereo-samples 'offsets))
 
@@ -103,13 +108,17 @@
 (test-equal "content of trivial conversion"
   stereo-values (to-list (to-array (convert-samples stereo-samples <sint> #f))))
 (test-equal "check shape of mono samples is two-dimensional"
-  '(1 4) (shape (to-samples mono-array 22050 #f)))
+  '(1 4) (shape (to-samples mono-array 22050)))
 (test-equal "check samples get compacted"
-  '((2) (5) (11) (17)) (to-list (to-array (to-samples (get (roll stereo-array) 0) 22050 #f))))
-(test-assert "create planar audio sample"
-  (planar? (to-samples stereo-array 22050 #t)))
-(test-expect-fail 1)
+  '((2) (5) (11) (17)) (to-list (to-array (to-samples (get (roll stereo-array) 0) 22050))))
+(test-assert "planar audio sample is marked as such"
+  (planar? planar-samples))
 (test-equal "planar audio has offsets including element size"
-  '(0 8) (slot-ref (to-samples stereo-array 22050 #t) 'offsets))
+  '(0 8) (slot-ref planar-samples 'offsets))
+(test-expect-fail 2)
+(test-equal "convert planar to packed audio samples"
+  stereo-values (to-list (to-array (convert-samples planar-samples <sint> #f))))
+(test-equal "pack audio samples before converting to array"
+  stereo-values (to-list (to-array planar-samples)))
 
 (test-end "aiscm samples")
