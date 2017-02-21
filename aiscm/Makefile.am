@@ -20,7 +20,7 @@ cache_DATA = $(site_DATA:.scm=.go)
 AISCM_LDFLAGS = -no-undefined -module -shared -avoid-version
 
 libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c jit-tests.c \
-																	image-helpers.c image-helpers-tests.c
+																	image-helpers.c image-helpers-tests.c samples-helpers.c samples-helpers-tests.c
 libguile_aiscm_tests_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
 libguile_aiscm_tests_la_LIBADD = $(GUILE_LIBS)
@@ -70,7 +70,7 @@ libguile_aiscm_xorg_la_CFLAGS = $(GUILE_CFLAGS) $(X_CFLAGS)
 libguile_aiscm_xorg_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_xorg_la_LIBADD = $(GUILE_LIBS) $(GL_LIBS) $(X_PRE_LIBS) $(X_LIBS) -lX11 $(X_EXTRA_LIBS) -lXv -lXpm
 
-libguile_aiscm_samples_la_SOURCES = samples.c
+libguile_aiscm_samples_la_SOURCES = samples.c samples-helpers.c
 libguile_aiscm_samples_la_CFLAGS = $(GUILE_CFLAGS) $(SWRESAMPLE_CFLAGS)
 libguile_aiscm_samples_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS) $(SWRESAMPLE_LIBS)

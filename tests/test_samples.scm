@@ -26,6 +26,8 @@
 
 (test-begin "aiscm samples")
 
+(load-extension "libguile-aiscm-tests" "init_tests")
+
 (define stereo-values '((2 3) (5 7) (11 13) (17 19)))
 (define stereo-array (to-array <sint> stereo-values))
 (define stereo-mem (value stereo-array))
@@ -38,6 +40,13 @@
 (define planar-array (roll (to-array <sint> planar-values)))
 (define planar-mem (value planar-array))
 (define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:mem planar-mem))
+
+(test-begin "convert offsets to pointers")
+  (test-assert "Test first pointer"
+    (first-pointer-from-offset))
+  (test-assert "Test second pointer"
+    (second-pointer-from-offset))
+(test-end "convert offsets to pointers")
 
 (test-eq "query typecode of samples"
   <sint> (typecode stereo-samples))

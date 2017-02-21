@@ -1,6 +1,7 @@
 ## Ready
 
 * planar samples and corresponding conversions
+* replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * allocate audio buffer

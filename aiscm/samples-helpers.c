@@ -13,21 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-#include <libguile.h>
+#include "samples-helpers.h"
 
 
-void init_ringbuffer_tests(void);
-void init_ffmpeg_helpers_tests(void);
-void init_jit_tests(void);
-void init_image_helpers_tests(void);
-void init_samples_helpers_tests(void);
-
-void init_tests(void)
+void pointers_from_offsets(uint8_t *pointer, int64_t offsets[], uint8_t *pointers[], int n)
 {
-  init_ringbuffer_tests();
-  init_ffmpeg_helpers_tests();
-  init_jit_tests();
-  init_image_helpers_tests();
-  init_samples_helpers_tests();
+  int i;
+  for (i=0; i<n; i++)
+    pointers[i] = pointer + offsets[i];
 }

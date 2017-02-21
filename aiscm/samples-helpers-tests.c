@@ -14,20 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <libguile.h>
+#include "samples-helpers.h"
 
-
-void init_ringbuffer_tests(void);
-void init_ffmpeg_helpers_tests(void);
-void init_jit_tests(void);
-void init_image_helpers_tests(void);
-void init_samples_helpers_tests(void);
-
-void init_tests(void)
+SCM first_pointer_from_offset(void)
 {
-  init_ringbuffer_tests();
-  init_ffmpeg_helpers_tests();
-  init_jit_tests();
-  init_image_helpers_tests();
-  init_samples_helpers_tests();
+  uint8_t buffer[4] = {2, 3, 5, 7};
+  uint8_t *p = &buffer[0];
+  uint8_t *data[1];
+  int64_t offsets[1] = {3};
+  pointers_from_offsets(p, offsets, data, 1);
+  return scm_from_bool(7 == *data[0]);
+}
+
+SCM second_pointer_from_offset(void)
+{
+  uint8_t buffer[4] = {2, 3, 5, 7};
+  uint8_t *p = &buffer[0];
+  uint8_t *data[2];
+  int64_t offsets[2] = {3, 2};
+  pointers_from_offsets(p, offsets, data, 2);
+  return scm_from_bool(5 == *data[1]);
+}
+
+void init_samples_helpers_tests(void)
+{
+  scm_c_define_gsubr("first-pointer-from-offset" , 0, 0, 0, first_pointer_from_offset );
+  scm_c_define_gsubr("second-pointer-from-offset", 0, 0, 0, second_pointer_from_offset);
 }
