@@ -43,11 +43,11 @@
   "Convert audio samples to a numerical array"
   (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem)))
 
-(define-method (to-samples (self <sequence<>>) (rate <integer>))
+(define (to-samples self rate planar)
   "Convert numerical array to audio samples"
-  (let [(shape (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
+  (let [(shape     (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
         (compacted (ensure-default-strides self))]
-    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref compacted 'value))))
+    (make <samples> #:typecode (typecode self) #:shape shape #:planar planar #:rate rate #:mem (slot-ref compacted 'value))))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )
