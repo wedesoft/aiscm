@@ -44,7 +44,8 @@
 
 (define-method (to-samples (self <sequence<>>) (rate <integer>))
   "Convert numerical array to audio samples"
-  (make <samples> #:typecode (typecode self) #:shape (shape self) #:planar #f #:rate rate #:mem (slot-ref self 'value)))
+  (let [(shape (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))]
+    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref self 'value))))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )

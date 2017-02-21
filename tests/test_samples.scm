@@ -26,38 +26,42 @@
 
 (test-begin "aiscm samples")
 
-(define l '((2 3) (5 7) (11 13) (17 19)))
-(define m (to-array <sint> l))
-(define mem (value m))
-(define samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:mem mem))
-(define array (arr <int> (2 3) (5 7) (11 13) (17 19)))
+(define stereo-values '((2 3) (5 7) (11 13) (17 19)))
+(define stereo-array (to-array <sint> stereo-values))
+(define stereo-mem (value stereo-array))
+(define stereo-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:mem stereo-mem))
+
+(define mono-values '(2 3 5 7))
+(define mono-array (to-array <sint> mono-values))
 
 (test-eq "query typecode of samples"
-  <sint> (typecode samples))
+  <sint> (typecode stereo-samples))
 (test-equal "query shape of samples"
-  '(2 4) (shape samples))
+  '(2 4) (shape stereo-samples))
 (test-eqv "query number of channels"
-  2 (channels samples))
+  2 (channels stereo-samples))
 (test-eqv "query sampling rate"
-  22050 (rate samples))
+  22050 (rate stereo-samples))
 (test-assert "query whether samples are planar"
-  (not (planar? samples)))
+  (not (planar? stereo-samples)))
 (test-eq "check data is memorized"
-  mem (slot-ref samples 'mem))
+  stereo-mem (slot-ref stereo-samples 'mem))
 (test-equal "'to-array' should convert the audio samples to a 2D array"
-  l (to-list (to-array samples)))
+  stereo-values (to-list (to-array stereo-samples)))
 (test-eq "check sample type when converting array to samples"
-  <int> (typecode (to-samples array 22050)))
+  <sint> (typecode (to-samples stereo-array 22050)))
 (test-assert "check samples are not marked as planar"
-  (not (planar? (to-samples array 22050))))
+  (not (planar? (to-samples stereo-array 22050))))
 (test-equal "check samples converted from array have the right shape"
-  '(2 4) (shape (to-samples array 22050)))
+  '(2 4) (shape (to-samples stereo-array 22050)))
 (test-eq "check sample memory is initialised when converting from array"
-  (slot-ref array 'value) (slot-ref (to-samples array 22050) 'mem))
+  (slot-ref stereo-array 'value) (slot-ref (to-samples stereo-array 22050) 'mem))
 (test-eqv "use specified sampling rate when converting from array to samples"
-  22050 (rate (to-samples array 22050)))
+  22050 (rate (to-samples stereo-array 22050)))
 (test-equal "packed audio has one offset which is zero"
-  '(0) (slot-ref samples 'offsets))
+  '(0) (slot-ref stereo-samples 'offsets))
+(test-equal "check shape of mono samples is two-dimensional"
+  '(1 4) (shape (to-samples mono-array 22050)))
 
 (test-begin "type conversions")
   (test-eq "test packed unsigned byte format tag"
@@ -91,14 +95,14 @@
 (test-end "type conversions")
 
 (test-eq "convert samples to integer"
-  <int> (typecode (convert-samples samples <int> #f)))
+  <int> (typecode (convert-samples stereo-samples <int> #f)))
 (test-eqv "size of converted sample data"
-  32 (slot-ref (slot-ref (convert-samples samples <int> #f) 'mem) 'size))
+  32 (slot-ref (slot-ref (convert-samples stereo-samples <int> #f) 'mem) 'size))
 (test-equal "content of converted array"
-  (map (cut map (cut ash <> 16) <>) l) (to-list (to-array (convert-samples samples <int> #f))))
+  (map (cut map (cut ash <> 16) <>) stereo-values) (to-list (to-array (convert-samples stereo-samples <int> #f))))
 (test-eq "trivial conversion from short integer to short integer"
-  <sint> (typecode (convert-samples samples <sint> #f)))
+  <sint> (typecode (convert-samples stereo-samples <sint> #f)))
 (test-equal "content of trivial conversion"
-  l (to-list (to-array (convert-samples samples <sint> #f))))
+  stereo-values (to-list (to-array (convert-samples stereo-samples <sint> #f))))
 
 (test-end "aiscm samples")
