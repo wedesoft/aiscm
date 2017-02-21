@@ -17,6 +17,8 @@
 #include <libguile.h>
 #include <libavutil/channel_layout.h>
 #include <libswresample/swresample.h>
+#include "samples-helpers.h"
+#include "image-helpers.h"
 
 
 SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
@@ -25,6 +27,16 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   enum AVSampleFormat dest_format = scm_to_int(scm_car(scm_dest_type));
   int source_rate = scm_to_int(scm_caddr(scm_source_type));
   int dest_rate = scm_to_int(scm_caddr(scm_dest_type));
+
+  int64_t source_offsets[AV_NUM_DATA_POINTERS];
+  scm_to_long_array(scm_cadddr(scm_source_type), source_offsets);
+  uint8_t *source_data[AV_NUM_DATA_POINTERS];
+  pointers_from_offsets(scm_to_pointer(scm_source_ptr), source_offsets, source_data, AV_NUM_DATA_POINTERS);
+
+  int64_t dest_offsets[AV_NUM_DATA_POINTERS];
+  scm_to_long_array(scm_cadddr(scm_dest_type), dest_offsets);
+  uint8_t *dest_data[AV_NUM_DATA_POINTERS];
+  pointers_from_offsets(scm_to_pointer(scm_dest_ptr), dest_offsets, dest_data, AV_NUM_DATA_POINTERS);
 
   SwrContext *swr_ctx =
     swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, dest_format, dest_rate, AV_CH_LAYOUT_STEREO, source_format, source_rate, 0, NULL);
@@ -43,7 +55,7 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   int dest_samples = scm_to_int(scm_cadadr(scm_dest_type));
 
   // Note: delay (swr_get_delay) not supported, i.e. converting to a different sampling rate is not supported.
-  err = swr_convert(swr_ctx, &dest_ptr, dest_samples, (const uint8_t **)&source_ptr, source_samples);
+  err = swr_convert(swr_ctx, dest_data, dest_samples, (const uint8_t **)source_data, source_samples);
   if (err < 0) {
     swr_free(&swr_ctx);
     scm_misc_error("samples-convert", "Error converting samples", SCM_EOL);
