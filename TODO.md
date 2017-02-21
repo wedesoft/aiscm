@@ -1,9 +1,6 @@
 ## Ready
 
-* convert mono sample
-* ensure samples compact
-* change sampling rate
-* audio software resampling wrappers
+* planar samples and corresponding conversions
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * allocate audio buffer

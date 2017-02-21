@@ -7,6 +7,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm float)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm jit)
   #:export (<samples> <meta<samples>>
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
@@ -44,8 +45,9 @@
 
 (define-method (to-samples (self <sequence<>>) (rate <integer>))
   "Convert numerical array to audio samples"
-  (let [(shape (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))]
-    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref self 'value))))
+  (let [(shape (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
+        (compacted (ensure-default-strides self))]
+    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref compacted 'value))))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )

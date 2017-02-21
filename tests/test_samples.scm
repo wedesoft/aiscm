@@ -60,8 +60,6 @@
   22050 (rate (to-samples stereo-array 22050)))
 (test-equal "packed audio has one offset which is zero"
   '(0) (slot-ref stereo-samples 'offsets))
-(test-equal "check shape of mono samples is two-dimensional"
-  '(1 4) (shape (to-samples mono-array 22050)))
 
 (test-begin "type conversions")
   (test-eq "test packed unsigned byte format tag"
@@ -104,5 +102,9 @@
   <sint> (typecode (convert-samples stereo-samples <sint> #f)))
 (test-equal "content of trivial conversion"
   stereo-values (to-list (to-array (convert-samples stereo-samples <sint> #f))))
+(test-equal "check shape of mono samples is two-dimensional"
+  '(1 4) (shape (to-samples mono-array 22050)))
+(test-equal "check samples get compacted"
+  '((2) (5) (11) (17)) (to-list (to-array (to-samples (get (roll stereo-array) 0) 22050))))
 
 (test-end "aiscm samples")
