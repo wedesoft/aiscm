@@ -126,7 +126,6 @@
   '(0 8) (slot-ref planar-samples 'offsets))
 (test-equal "convert planar to packed audio samples"
   stereo-values (to-list (to-array (convert-samples planar-samples <sint> #f))))
-(test-expect-fail 1)
 (test-equal "pack audio samples before converting to array"
   stereo-values (to-list (to-array planar-samples)))
 

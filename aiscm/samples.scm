@@ -41,7 +41,9 @@
 
 (define-method (to-array (self <samples>))
   "Convert audio samples to a numerical array"
-  (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem)))
+  (if (planar? self)
+      (to-array (convert-samples self (typecode self) #f))
+      (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem))))
 
 (define (to-samples self rate)
   "Convert numerical array to audio samples"

@@ -1,6 +1,6 @@
 ## Ready
 
-* planar samples and corresponding conversions
+* offsets for audio with more than two channels
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
