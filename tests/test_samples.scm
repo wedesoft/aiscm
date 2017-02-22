@@ -41,6 +41,11 @@
 (define planar-mem (value planar-array))
 (define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:mem planar-mem))
 
+(define surround-array (arr <sint> (1 2 3 4 5 6) (2 3 4 5 6 7)))
+(define surround-samples (to-samples surround-array 44100))
+
+(define surround)
+
 (test-begin "convert offsets to pointers")
   (test-assert "Test first pointer"
     (first-pointer-from-offset))
@@ -128,5 +133,8 @@
   stereo-values (to-list (to-array (convert-samples planar-samples <sint> #f))))
 (test-equal "pack audio samples before converting to array"
   stereo-values (to-list (to-array planar-samples)))
+(test-equal "planar surround samples have 6 offsets"
+  '(0 4 8 12 16 20) (slot-ref (convert-samples surround-samples <sint> #t) 'offsets))
+
 
 (test-end "aiscm samples")

@@ -1,6 +1,7 @@
 (define-module (aiscm samples)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (srfi srfi-1)
   #:use-module (aiscm mem)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
@@ -27,7 +28,7 @@
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
   (let-keywords initargs #f (typecode shape rate planar mem)
-    (let [(offsets (if planar (list 0 (* (size-of typecode) (cadr shape))) '(0)))]
+    (let [(offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0)))]
       (next-method self (list #:typecode typecode
                               #:shape    shape
                               #:rate     rate
