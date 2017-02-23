@@ -38,8 +38,11 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   uint8_t *dest_data[AV_NUM_DATA_POINTERS];
   pointers_from_offsets(scm_to_pointer(scm_dest_ptr), dest_offsets, dest_data, AV_NUM_DATA_POINTERS);
 
+  int64_t source_layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_source_type)));
+  int64_t dest_layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_dest_type)));
+
   SwrContext *swr_ctx =
-    swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, dest_format, dest_rate, AV_CH_LAYOUT_STEREO, source_format, source_rate, 0, NULL);
+    swr_alloc_set_opts(NULL, dest_layout, dest_format, dest_rate, source_layout, source_format, source_rate, 0, NULL);
   if (!swr_ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
   int err = swr_init(swr_ctx);

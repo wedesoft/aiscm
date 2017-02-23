@@ -135,6 +135,7 @@
   stereo-values (to-list (to-array planar-samples)))
 (test-equal "planar surround samples have 6 offsets"
   '(0 4 8 12 16 20) (slot-ref (convert-samples surround-samples <sint> #t) 'offsets))
-
+(test-equal "converting planar surround samples to array should recover all data"
+  (to-list surround-array) (to-list (to-array (convert-samples surround-samples <sint> #t))))
 
 (test-end "aiscm samples")
