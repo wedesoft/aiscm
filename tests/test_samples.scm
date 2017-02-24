@@ -138,4 +138,9 @@
 (test-equal "converting planar surround samples to array should recover all data"
   (to-list surround-array) (to-list (to-array (convert-samples surround-samples <sint> #t))))
 
+(define target (to-samples (arr (0 0 0 0 0 0 0 0)) 44100))
+(convert-samples-from! target (to-samples (arr (1 2 3 4 6 7 8 9)) 44100))
+(test-equal "Write conversion result to a target sample set"
+  #vu8(1 2 3 4 6 7 8 9) (read-bytes (slot-ref target 'mem) 8))
+
 (test-end "aiscm samples")

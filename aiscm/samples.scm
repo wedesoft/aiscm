@@ -12,7 +12,7 @@
   #:export (<samples> <meta<samples>>
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
-            count planar? to-samples convert-samples type+planar->avtype avtype->type)
+            count planar? to-samples convert-samples convert-samples-from! type+planar->avtype avtype->type)
   #:re-export (typecode shape channels rate to-array))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
@@ -81,6 +81,12 @@
 (define (descriptor self)
   (list (type+planar->avtype (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))
 
+(define (convert-samples-from! destination source)
+  "Convert audio samples from source to destination format"
+  (let [(source-type (descriptor source))
+        (dest-type   (descriptor destination))]
+    (samples-convert (get-memory (slot-ref source 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)))
+
 (define (convert-samples self typecode planar)
   "Convert audio samples using the specified attributes"
   (let* [(size        (apply * (size-of typecode) (shape self)))
@@ -89,8 +95,6 @@
                             #:shape (shape self)
                             #:rate (rate self)
                             #:planar planar
-                            #:mem (make <mem> #:size size #:pointerless #t)))
-         (dest-type   (descriptor destination))
-         (source-type (descriptor self))]
-    (samples-convert (get-memory (slot-ref self 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)
+                            #:mem (make <mem> #:size size #:pointerless #t)))]
+    (convert-samples-from! destination self)
     destination))
