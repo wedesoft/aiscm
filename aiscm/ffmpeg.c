@@ -778,7 +778,12 @@ SCM ffmpeg_write_video(SCM scm_self)
                      scm_list_1(get_error_text(err)));
   };
 
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
+}
+
+SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
+{
+  return SCM_UNSPECIFIED;
 }
 
 void init_ffmpeg(void)
@@ -800,6 +805,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
+  scm_c_define_gsubr("ffmpeg-write-audio", 3, 0, 0, ffmpeg_write_audio);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

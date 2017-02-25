@@ -88,7 +88,7 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_mem, SCM scm_file_
   DestroyExceptionInfo(exception_info);
   if (scm_reason != SCM_UNDEFINED)
     scm_misc_error("magick-write-image", "~a", scm_list_1(scm_reason));
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 void init_magick(void)

@@ -27,6 +27,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm samples)
   #:use-module (aiscm image)
+  #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
@@ -153,9 +154,10 @@
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
-(define-method (write-audio (audio <sequence<>>) (self <ffmpeg>))
+(define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
   "Write audio frame to output file"
-  audio)
+  (ffmpeg-write-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples))
+  samples)
 
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output file"

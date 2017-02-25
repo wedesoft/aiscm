@@ -65,7 +65,7 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   };
 
   swr_free(&swr_ctx);
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 void init_samples(void)

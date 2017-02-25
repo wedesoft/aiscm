@@ -7,7 +7,7 @@ SCM allocation(SCM scm_size)
   int n = scm_to_int(scm_size);
   ret = malloc(n * sizeof(int));
   free(ret);
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 SCM negate(SCM scm_ptr, SCM scm_stride, SCM scm_size)
@@ -21,7 +21,7 @@ SCM negate(SCM scm_ptr, SCM scm_stride, SCM scm_size)
   for (r=ret; r!=rend; r+=s, p+=s)
     *r = -*p;
   free(ret);
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 void init_bench(void)
