@@ -20,6 +20,7 @@
 #include <libavformat/avformat.h>
 #include "config.h"
 #include "ffmpeg-helpers.h"
+#include "ringbuffer.h"
 
 // http://dranger.com/ffmpeg/
 // https://github.com/FFmpeg/FFmpeg/tree/n2.6.9/doc/examples
@@ -50,6 +51,7 @@ struct ffmpeg_t {
   AVPacket orig_pkt;
   AVFrame *video_frame;
   AVFrame *audio_frame;
+  struct ringbuffer_t audio_buffer;
 };
 
 static SCM get_error_text(int err)
@@ -110,6 +112,10 @@ SCM ffmpeg_destroy(SCM scm_self)
     av_frame_unref(self->audio_frame);
     av_frame_free(&self->audio_frame);
     self->audio_frame = NULL;
+  };
+  if (self->audio_buffer.buffer) {
+    ringbuffer_destroy(&self->audio_buffer);
+    self->audio_buffer.buffer = NULL;
   };
   if (self->header_written) {
     av_write_trailer(self->fmt_ctx);
@@ -488,6 +494,9 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Allocate audio frame
     self->audio_frame = allocate_output_audio_frame(retval, self->audio_codec_ctx);
+
+    // Initialise audio buffer
+    ringbuffer_init(&self->audio_buffer, 1024);
   };
 
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 1);
@@ -783,6 +792,8 @@ SCM ffmpeg_write_video(SCM scm_self)
 
 SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
+  struct ffmpeg_t *self = get_self(scm_self);
+  ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
   return SCM_UNSPECIFIED;
 }
 
