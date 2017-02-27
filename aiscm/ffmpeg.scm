@@ -57,6 +57,14 @@
   (let [(debug (equal? "YES" (getenv "DEBUG")))]
     (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
 
+(define (select-rate rate)
+  (if (number? rate)
+    (lambda (rates)
+      (if (and rates (not (memv rate rates)))
+        (aiscm-error 'select-rate "Sampling rate ~a not supported (supported rates are ~a)" rate rates))
+      rate)
+    rate))
+
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
   (let-keywords initargs #f (format-name
@@ -68,15 +76,15 @@
            (frame-rate     (or frame-rate 25))
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
-           (rate           (or rate 44100))
+           (select-rate    (select-rate (or rate 44100)))
            (typecode       (or typecode <int>)); TODO: change to float
            (channels       (or channels 2))
-           (audio-bit-rate (or audio-bit-rate (round (/ (* 3 rate) 2))))
+           (audio-bit-rate (or audio-bit-rate (round (/ (* 3 44100) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list rate channels audio-bit-rate (type+planar->avtype typecode #t)) have-audio
+                                         (list select-rate channels audio-bit-rate (type+planar->avtype typecode #t)) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))

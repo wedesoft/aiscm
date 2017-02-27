@@ -1,7 +1,7 @@
 ## Ready
 
-* buffer size, sample format
-* specify correct layout (number of channels) when converting
+* negotiate sample format
+* catch exception from callback and call destructor (V4L2, FFmpeg output)
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers

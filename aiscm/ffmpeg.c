@@ -313,13 +313,25 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
 }
 
 static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
-    SCM scm_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_sample_format)
+    SCM scm_select_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_sample_format)
 {
   // Get codec context
   AVCodecContext *retval = audio_stream->codec;
 
   // Set sample format, TODO: use parameter
   retval->sample_fmt = scm_to_int(scm_sample_format);
+
+  // Select sample rate
+  SCM scm_rates;
+  const AVCodec *codec = retval->codec;
+  if (codec->supported_samplerates) {
+    scm_rates = SCM_EOL;
+    int i;
+    for (i=0; codec->supported_samplerates[i]; i++)
+      scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
+  } else
+    scm_rates = SCM_BOOL_F;
+  SCM scm_rate = scm_call_1(scm_select_rate, scm_rates);
 
   // Set sample rate
   retval->sample_rate = scm_to_int(scm_rate);
@@ -476,14 +488,14 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     AVStream *audio_stream = open_output_stream(retval, audio_encoder, &self->audio_stream_idx, "audio", scm_file_name);
 
     // Get audio parameters
-    SCM scm_rate           = scm_car(scm_audio_parameters);
+    SCM scm_select_rate    = scm_car(scm_audio_parameters);
     SCM scm_channels       = scm_cadr(scm_audio_parameters);
     SCM scm_audio_bit_rate = scm_caddr(scm_audio_parameters);
     SCM scm_sample_format  = scm_cadddr(scm_audio_parameters);
 
     // Configure the output audio codec
     self->audio_codec_ctx =
-      configure_output_audio_codec(audio_stream, audio_codec_id, scm_rate, scm_channels, scm_audio_bit_rate, scm_sample_format);
+      configure_output_audio_codec(audio_stream, audio_codec_id, scm_select_rate, scm_channels, scm_audio_bit_rate, scm_sample_format);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)

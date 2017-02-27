@@ -98,6 +98,13 @@
   (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
+
+  (define negotiate-audio-rate (open-ffmpeg-output (string-append (tmpnam) ".mp3")
+                                                   #:format-name 'mp3
+                                                   #:rate (lambda (rates) 22050)))
+  (test-eqv "Set audio rate using a method"
+    22050 (rate negotiate-audio-rate))
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
