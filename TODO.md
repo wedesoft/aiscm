@@ -1,6 +1,7 @@
 ## Ready
 
-* offsets for audio with more than two channels
+* buffer size, sample format
+* specify correct layout (number of channels) when converting
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
