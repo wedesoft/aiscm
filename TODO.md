@@ -1,7 +1,9 @@
 ## Ready
 
-* negotiate sample format
+* image-helpers.c -> util-helpers.c
+* test exception handling
 * catch exception from callback and call destructor (V4L2, FFmpeg output)
+* negotiate sample format
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
