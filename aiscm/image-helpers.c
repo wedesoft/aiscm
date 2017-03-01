@@ -49,7 +49,9 @@ static SCM do_clean_up(void *data, SCM tag, SCM throw_args)
   struct cleanup_t *args = (struct cleanup_t *)data;
   SCM scm_object = args->scm_object;
   SCM (*cleanup_method)(SCM) = args->cleanup_method;
-  return (*cleanup_method)(scm_object);
+  (*cleanup_method)(scm_object);
+  scm_throw(tag, throw_args);
+  return SCM_UNDEFINED;
 }
 
 SCM clean_up_on_failure(SCM scm_object, SCM (*cleanup_method)(SCM), SCM scm_fun, SCM scm_arg)

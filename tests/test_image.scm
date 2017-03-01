@@ -58,7 +58,9 @@
   (test-eqv "Call Scheme function without exception occurring"
     42 (call-scheme-function (lambda (arg) (car arg)) '(42)))
   (test-assert "Clean up object when exception occurs"
-    (cleanup-after-exception (lambda (arg) (/ 1 0))))
+    (cleanup-when-exception (lambda (arg) (/ 1 0))))
+  (test-error "Throw exception after cleaning up object"
+    'misc-error (throw-exception-after-cleanup (lambda (arg) (/ 1 0))))
 (test-end "helper methods")
 
 (test-equal "conversion to BGR"
