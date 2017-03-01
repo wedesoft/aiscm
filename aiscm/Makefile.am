@@ -40,7 +40,7 @@ libguile_aiscm_obj_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_obj_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_obj_la_LIBADD = $(GUILE_LIBS)
 
-libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c ffmpeg-helpers.c ringbuffer.c
+libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c ffmpeg-helpers.c ringbuffer.c image-helpers.c
 libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)
 libguile_aiscm_ffmpeg_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS) $(AVCODEC_LIBS) $(AVUTIL_LIBS)
@@ -60,7 +60,7 @@ libguile_aiscm_pulse_la_CFLAGS = $(GUILE_CFLAGS) $(PULSE_CFLAGS) $(PTHREAD_CFLAG
 libguile_aiscm_pulse_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_pulse_la_LIBADD = $(GUILE_LIBS) $(PULSE_LIBS) $(PTHREAD_LIBS)
 
-libguile_aiscm_v4l2_la_SOURCES = v4l2.c
+libguile_aiscm_v4l2_la_SOURCES = v4l2.c image-helpers.c
 libguile_aiscm_v4l2_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_v4l2_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_v4l2_la_LIBADD = $(GUILE_LIBS)

@@ -21,6 +21,8 @@
 #include "config.h"
 #include "ffmpeg-helpers.h"
 #include "ringbuffer.h"
+#include "image-helpers.h"
+
 
 // http://dranger.com/ffmpeg/
 // https://github.com/FFmpeg/FFmpeg/tree/n2.6.9/doc/examples
@@ -312,7 +314,7 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
   return retval;
 }
 
-static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum AVCodecID audio_codec_id,
+static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audio_stream, enum AVCodecID audio_codec_id,
     SCM scm_select_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_sample_format)
 {
   // Get codec context
@@ -331,7 +333,7 @@ static AVCodecContext *configure_output_audio_codec(AVStream *audio_stream, enum
       scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
   } else
     scm_rates = SCM_BOOL_F;
-  SCM scm_rate = scm_call_1(scm_select_rate, scm_rates);
+  SCM scm_rate = clean_up_on_failure(scm_self, ffmpeg_destroy, scm_select_rate, scm_rates);
 
   // Set sample rate
   retval->sample_rate = scm_to_int(scm_rate);
@@ -495,7 +497,8 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Configure the output audio codec
     self->audio_codec_ctx =
-      configure_output_audio_codec(audio_stream, audio_codec_id, scm_select_rate, scm_channels, scm_audio_bit_rate, scm_sample_format);
+      configure_output_audio_codec(retval, audio_stream, audio_codec_id,
+                                   scm_select_rate, scm_channels, scm_audio_bit_rate, scm_sample_format);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
