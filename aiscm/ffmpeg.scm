@@ -32,7 +32,7 @@
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            select-sample-format)
+            select-sample-typecode typecodes-of-sample-formats)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -67,15 +67,19 @@
       rate)
     rate))
 
-(define (select-sample-format typecode supported-types)
+(define (select-sample-typecode typecode supported-types)
   "Select the internal sample type for the FFmpeg encoder buffer.
   The type needs to be the same or larger than the type of the audio samples provided."
   (let* [(rank           (lambda (t) (+ (size-of t) (if (is-a? t <meta<float<>>>) 1 0))))
          (sufficient?    (lambda (t) (<= (rank typecode) (rank t))))
          (relevant-types (filter sufficient? (sort-by supported-types rank)))]
     (if (null? relevant-types)
-      (aiscm-error 'select-sample-format "Sample type ~a or larger type is not supported" typecode)
+      (aiscm-error 'select-sample-typecode "Sample type ~a or larger type is not supported" typecode)
       (car relevant-types))))
+
+(define (typecodes-of-sample-formats sample-formats)
+  "Get typecodes for a list of supported sample types"
+  (delete-duplicates (map avtype->type sample-formats)))
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"

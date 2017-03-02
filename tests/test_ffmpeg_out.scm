@@ -105,24 +105,36 @@
   (test-eqv "Set audio rate using a method"
     22050 (rate negotiate-audio-rate))
 
-  (test-eq "Select short integer sample format if it is supported"
-    <sint> (select-sample-format <sint> (list <sint>)))
-  (test-eq "Select larger type if desired type is not supported"
-    <int> (select-sample-format <sint> (list <int>)))
-  (test-eq "Select short integer sample format if it is the last supported one"
-    <sint> (select-sample-format <sint> (list <int> <sint>)))
-  (test-eq "Select short integer sample format if it is the first supported one"
-    <sint> (select-sample-format <sint> (list <sint> <int>)))
-  (test-eq "Select largest integer format if the desired format is not supported"
-    <int> (select-sample-format <sint> (list <ubyte> <int>)))
-  (test-eq "Select largest integer format if the desired format is not supported (regardless of order)"
-    <int> (select-sample-format <sint> (list <int> <ubyte>)))
-  (test-error "Throw exception if all supported types are smaller"
-    'misc-error (select-sample-format <sint> (list <ubyte>)))
-  (test-eq "Prefer integer format if desired format is integer"
-    <int> (select-sample-format <int> (list <float> <int>)))
-  (test-eq "Switch to floating point if required"
-    <float> (select-sample-format <int> (list <sint> <float>)))
+  (test-begin "select-sample-typecode")
+    (test-eq "Select short integer sample format if it is supported"
+      <sint> (select-sample-typecode <sint> (list <sint>)))
+    (test-eq "Select larger type if desired type is not supported"
+      <int> (select-sample-typecode <sint> (list <int>)))
+    (test-eq "Select short integer sample format if it is the last supported one"
+      <sint> (select-sample-typecode <sint> (list <int> <sint>)))
+    (test-eq "Select short integer sample format if it is the first supported one"
+      <sint> (select-sample-typecode <sint> (list <sint> <int>)))
+    (test-eq "Select largest integer format if the desired format is not supported"
+      <int> (select-sample-typecode <sint> (list <ubyte> <int>)))
+    (test-eq "Select largest integer format if the desired format is not supported (regardless of order)"
+      <int> (select-sample-typecode <sint> (list <int> <ubyte>)))
+    (test-error "Throw exception if all supported types are smaller"
+      'misc-error (select-sample-typecode <sint> (list <ubyte>)))
+    (test-eq "Prefer integer format if desired format is integer"
+      <int> (select-sample-typecode <int> (list <float> <int>)))
+    (test-eq "Switch to floating point if required"
+      <float> (select-sample-typecode <int> (list <sint> <float>)))
+  (test-end "select-sample-typecode")
+
+  (test-begin "typecodes-of-sample-formats")
+    (test-equal "No supported sample types means no supported typecodes"
+      '() (typecodes-of-sample-formats '()))
+    (test-equal "Get the typecode of a packed sample format"
+      (list <ubyte>) (typecodes-of-sample-formats (list AV_SAMPLE_FMT_U8)))
+    (test-equal "Omit duplicate typecodes"
+      (list <float>) (typecodes-of-sample-formats (list AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_FLTP)))
+  (test-end "typecodes-of-sample-formats")
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

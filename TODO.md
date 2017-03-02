@@ -1,6 +1,6 @@
 ## Ready
 
-* negotiate sample format (floating point formats, errors)
+* select sample format (given supported formats and a supported type)
 * image-helpers.c -> util-helpers.c
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
