@@ -1,7 +1,7 @@
 ## Ready
 
+* negotiate sample format (floating point formats, errors)
 * image-helpers.c -> util-helpers.c
-* negotiate sample format
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers

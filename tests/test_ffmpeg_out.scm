@@ -105,6 +105,18 @@
   (test-eqv "Set audio rate using a method"
     22050 (rate negotiate-audio-rate))
 
+  (test-eq "Select short integer sample format if it is supported"
+    <sint> (select-sample-format <sint> (list <sint>)))
+  (test-eq "Select larger type if desired type is not supported"
+    <int> (select-sample-format <sint> (list <int>)))
+  (test-eq "Select short integer sample format if it is the last supported one"
+    <sint> (select-sample-format <sint> (list <int> <sint>)))
+  (test-eq "Select short integer sample format if it is the first supported one"
+    <sint> (select-sample-format <sint> (list <sint> <int>)))
+  (test-eq "Select largest integer format if the desired format is not supported"
+    <int> (select-sample-format <sint> (list <ubyte> <int>)))
+  (test-eq "Select largest integer format if the desired format is not supported (regardless of order)"
+    <int> (select-sample-format <sint> (list <int> <ubyte>)))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

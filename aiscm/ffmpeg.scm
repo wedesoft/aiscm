@@ -31,7 +31,8 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
+            select-sample-format)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -58,12 +59,18 @@
     (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
 
 (define (select-rate rate)
+  "Check that the sample rate is supported or raise an exception"
   (if (number? rate)
     (lambda (rates)
       (if (and rates (not (memv rate rates)))
         (aiscm-error 'select-rate "Sampling rate ~a not supported (supported rates are ~a)" rate rates))
       rate)
     rate))
+
+(define (select-sample-format typecode supported-types)
+  "Select the internal sample type for the FFmpeg encoder buffer.
+  The type needs to be the same or larger than the type of the audio samples provided."
+  (car (filter (lambda (t) (<= (size-of typecode) (size-of t))) (sort-by supported-types size-of))))
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
