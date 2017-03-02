@@ -117,6 +117,12 @@
     <int> (select-sample-format <sint> (list <ubyte> <int>)))
   (test-eq "Select largest integer format if the desired format is not supported (regardless of order)"
     <int> (select-sample-format <sint> (list <int> <ubyte>)))
+  (test-error "Throw exception if all supported types are smaller"
+    'misc-error (select-sample-format <sint> (list <ubyte>)))
+  (test-eq "Prefer integer format if desired format is integer"
+    <int> (select-sample-format <int> (list <float> <int>)))
+  (test-eq "Switch to floating point if required"
+    <float> (select-sample-format <int> (list <sint> <float>)))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

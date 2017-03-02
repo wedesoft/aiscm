@@ -70,7 +70,12 @@
 (define (select-sample-format typecode supported-types)
   "Select the internal sample type for the FFmpeg encoder buffer.
   The type needs to be the same or larger than the type of the audio samples provided."
-  (car (filter (lambda (t) (<= (size-of typecode) (size-of t))) (sort-by supported-types size-of))))
+  (let* [(rank           (lambda (t) (+ (size-of t) (if (is-a? t <meta<float<>>>) 1 0))))
+         (sufficient?    (lambda (t) (<= (rank typecode) (rank t))))
+         (relevant-types (filter sufficient? (sort-by supported-types rank)))]
+    (if (null? relevant-types)
+      (aiscm-error 'select-sample-format "Sample type ~a or larger type is not supported" typecode)
+      (car relevant-types))))
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
