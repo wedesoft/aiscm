@@ -32,7 +32,7 @@
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            select-sample-typecode typecodes-of-sample-formats)
+            select-sample-typecode typecodes-of-sample-formats select-sample-format)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -80,6 +80,12 @@
 (define (typecodes-of-sample-formats sample-formats)
   "Get typecodes for a list of supported sample types"
   (delete-duplicates (map avtype->type sample-formats)))
+
+(define (select-sample-format typecode sample-formats)
+  "Select sample format with spcecified typecode. Prefer packed format over planar format."
+  (let [(packed (type+planar->avtype typecode #f))
+        (planar (type+planar->avtype typecode #t))]
+    (if (memv packed sample-formats) packed planar)))
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"

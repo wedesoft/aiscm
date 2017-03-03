@@ -135,6 +135,21 @@
       (list <float>) (typecodes-of-sample-formats (list AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_FLTP)))
   (test-end "typecodes-of-sample-formats")
 
+  (test-begin "select-sample-format")
+    (test-eqv "Select format if it the typecode is matching"
+      AV_SAMPLE_FMT_S32 (select-sample-format <int> (list AV_SAMPLE_FMT_S32)))
+    (test-eqv "Ignore formats with different typecode"
+      AV_SAMPLE_FMT_S32 (select-sample-format <int> (list AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32)))
+    (test-eqv "Ignore formats with different typecode regardless of order"
+      AV_SAMPLE_FMT_S32 (select-sample-format <int> (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S16)))
+    (test-eqv "Select planar format if packed format is not supported"
+      AV_SAMPLE_FMT_S32P (select-sample-format <int> (list AV_SAMPLE_FMT_S32P)))
+    (test-eqv "Select planar format if packed format is not supported (short integer case)"
+      AV_SAMPLE_FMT_S16P (select-sample-format <sint> (list AV_SAMPLE_FMT_S16P)))
+    (test-eqv "Prefer packed format"
+      AV_SAMPLE_FMT_S32 (select-sample-format <int> (list AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_S32)))
+  (test-end "select-sample-format")
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
