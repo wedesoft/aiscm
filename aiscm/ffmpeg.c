@@ -315,20 +315,31 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
 }
 
 static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audio_stream, enum AVCodecID audio_codec_id,
-    SCM scm_select_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_sample_format)
+    SCM scm_select_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_select_format)
 {
   // Get codec context
   AVCodecContext *retval = audio_stream->codec;
+  const AVCodec *codec = retval->codec;
 
-  // Set sample format, TODO: use parameter
+  // Select sample format
+  SCM scm_sample_formats = SCM_EOL;
+  if (codec->sample_fmts) {
+    int i;
+    for (i=0; codec->sample_fmts[i] != AV_SAMPLE_FMT_NONE; i++)
+      scm_sample_formats = scm_cons(scm_from_int(codec->sample_fmts[i]), scm_sample_formats);
+  };
+  SCM scm_sample_format = clean_up_on_failure(scm_self, ffmpeg_destroy, scm_select_format, scm_sample_formats);
+
+  // Set sample format
   retval->sample_fmt = scm_to_int(scm_sample_format);
 
   // Select sample rate
-  const AVCodec *codec = retval->codec;
-  SCM scm_rates = SCM_EOL; 
-  int i;
-  for (i=0; codec->supported_samplerates[i]; i++)
-    scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
+  SCM scm_rates = SCM_EOL;
+  if (codec->supported_samplerates) {
+    int i;
+    for (i=0; codec->supported_samplerates[i] != 0; i++)
+      scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
+  };
   SCM scm_rate = clean_up_on_failure(scm_self, ffmpeg_destroy, scm_select_rate, scm_rates);
 
   // Set sample rate
@@ -489,12 +500,12 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     SCM scm_select_rate    = scm_car(scm_audio_parameters);
     SCM scm_channels       = scm_cadr(scm_audio_parameters);
     SCM scm_audio_bit_rate = scm_caddr(scm_audio_parameters);
-    SCM scm_sample_format  = scm_cadddr(scm_audio_parameters);
+    SCM scm_select_format  = scm_cadddr(scm_audio_parameters);
 
     // Configure the output audio codec
     self->audio_codec_ctx =
       configure_output_audio_codec(retval, audio_stream, audio_codec_id,
-                                   scm_select_rate, scm_channels, scm_audio_bit_rate, scm_sample_format);
+                                   scm_select_rate, scm_channels, scm_audio_bit_rate, scm_select_format);
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)

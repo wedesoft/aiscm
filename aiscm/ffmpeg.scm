@@ -107,13 +107,14 @@
            (select-rate    (select-rate (or rate 44100)))
            (typecode       (or typecode <float>))
            (sample-format  (type+planar->sample-format typecode #t))
+           (select-format  (select-sample-format typecode))
            (channels       (or channels 2))
            (audio-bit-rate (or audio-bit-rate (round (/ (* 3 44100) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list select-rate channels audio-bit-rate sample-format) have-audio
+                                         (list select-rate channels audio-bit-rate select-format) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
