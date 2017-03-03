@@ -324,15 +324,11 @@ static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audi
   retval->sample_fmt = scm_to_int(scm_sample_format);
 
   // Select sample rate
-  SCM scm_rates;
   const AVCodec *codec = retval->codec;
-  if (codec->supported_samplerates) {
-    scm_rates = SCM_EOL;
-    int i;
-    for (i=0; codec->supported_samplerates[i]; i++)
-      scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
-  } else
-    scm_rates = SCM_BOOL_F;
+  SCM scm_rates = SCM_EOL; 
+  int i;
+  for (i=0; codec->supported_samplerates[i]; i++)
+    scm_rates = scm_cons(scm_from_int(codec->supported_samplerates[i]), scm_rates);
   SCM scm_rate = clean_up_on_failure(scm_self, ffmpeg_destroy, scm_select_rate, scm_rates);
 
   // Set sample rate

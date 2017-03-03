@@ -99,6 +99,19 @@
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
 
+  (test-begin "select-rate")
+    (test-eqv "Return specified rate if supported"
+      44100 ((select-rate 44100) '(44100)))
+    (test-error "Throw exception if sample rate is not supported"
+      'misc-error ((select-rate 44100) '(22050)))
+    (test-error "Throw exception if sample rate is not supported"
+      'misc-error ((select-rate 44100) '(22050)))
+    (test-eqv "Use function if supplied"
+      22050 ((select-rate last) '(44100 22050)))
+    (test-eqv "Return desired rate if empty list is supplied"
+      8000 ((select-rate 8000) '()))
+  (test-end "select-rate")
+
   (define negotiate-audio-rate (open-ffmpeg-output (string-append (tmpnam) ".mp3")
                                                    #:format-name 'mp3
                                                    #:rate (lambda (rates) 22050)))

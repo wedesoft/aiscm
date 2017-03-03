@@ -32,7 +32,7 @@
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            select-sample-typecode typecodes-of-sample-formats select-sample-format)
+            select-rate select-sample-typecode typecodes-of-sample-formats select-sample-format)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -62,9 +62,9 @@
   "Check that the sample rate is supported or raise an exception"
   (if (number? rate)
     (lambda (rates)
-      (if (and rates (not (memv rate rates)))
-        (aiscm-error 'select-rate "Sampling rate ~a not supported (supported rates are ~a)" rate rates))
-      rate)
+      (if (or (null? rates) (memv rate rates))
+        rate
+        (aiscm-error 'select-rate "Sampling rate ~a not supported (supported rates are ~a)" rate rates)))
     rate))
 
 (define (select-sample-typecode typecode supported-types)
