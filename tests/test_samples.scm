@@ -82,33 +82,33 @@
 
 (test-begin "type conversions")
   (test-eq "test packed unsigned byte format tag"
-    AV_SAMPLE_FMT_U8   (type+planar->avtype <ubyte> #f))
+    AV_SAMPLE_FMT_U8   (type+planar->sample-format <ubyte> #f))
   (test-eq "test packed signed short integer format tag"
-    AV_SAMPLE_FMT_S16  (type+planar->avtype <sint> #f))
+    AV_SAMPLE_FMT_S16  (type+planar->sample-format <sint> #f))
   (test-eq "test packed signed integer format tag"
-    AV_SAMPLE_FMT_S32  (type+planar->avtype <int> #f))
+    AV_SAMPLE_FMT_S32  (type+planar->sample-format <int> #f))
   (test-eq "test packed floating point format tag"
-    AV_SAMPLE_FMT_FLT  (type+planar->avtype <float> #f))
+    AV_SAMPLE_FMT_FLT  (type+planar->sample-format <float> #f))
   (test-eq "test packed double precision floating point format tag"
-    AV_SAMPLE_FMT_DBL  (type+planar->avtype <double> #f))
+    AV_SAMPLE_FMT_DBL  (type+planar->sample-format <double> #f))
   (test-eq "test planar unsigned byte format tag"
-    AV_SAMPLE_FMT_U8P  (type+planar->avtype <ubyte> #t))
+    AV_SAMPLE_FMT_U8P  (type+planar->sample-format <ubyte> #t))
   (test-eq "test planar signed short integer format tag"
-    AV_SAMPLE_FMT_S16P (type+planar->avtype <sint> #t))
+    AV_SAMPLE_FMT_S16P (type+planar->sample-format <sint> #t))
   (test-eq "test planar signed integer format tag"
-    AV_SAMPLE_FMT_S32P (type+planar->avtype <int> #t))
+    AV_SAMPLE_FMT_S32P (type+planar->sample-format <int> #t))
   (test-eq "test planar floating point format tag"
-    AV_SAMPLE_FMT_FLTP (type+planar->avtype <float> #t))
+    AV_SAMPLE_FMT_FLTP (type+planar->sample-format <float> #t))
   (test-eq "test planar double precision floating point format tag"
-    AV_SAMPLE_FMT_DBLP (type+planar->avtype <double> #t))
+    AV_SAMPLE_FMT_DBLP (type+planar->sample-format <double> #t))
   (test-error "throw error if type not supported by FFmpeg audio"
-    'misc-error (type+planar->avtype <byte> #f))
+    'misc-error (type+planar->sample-format <byte> #f))
   (test-eq "convert packed  unsigned byte type tag to type"
-    <ubyte> (avtype->type AV_SAMPLE_FMT_U8))
+    <ubyte> (sample-format->type AV_SAMPLE_FMT_U8))
   (test-eq "convert signed short integer type tag to type"
-    <sint> (avtype->type AV_SAMPLE_FMT_S16))
+    <sint> (sample-format->type AV_SAMPLE_FMT_S16))
   (test-eq "convert planar unsigned byte type tag to type"
-    <ubyte> (avtype->type AV_SAMPLE_FMT_U8P))
+    <ubyte> (sample-format->type AV_SAMPLE_FMT_U8P))
 (test-end "type conversions")
 
 (test-eq "convert samples to integer"

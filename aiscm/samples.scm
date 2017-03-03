@@ -12,7 +12,7 @@
   #:export (<samples> <meta<samples>>
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
-            count planar? to-samples convert-samples convert-samples-from! type+planar->avtype avtype->type)
+            count planar? to-samples convert-samples convert-samples-from! type+planar->sample-format sample-format->type)
   #:re-export (typecode shape channels rate to-array))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
@@ -69,17 +69,17 @@
 (define inverse-typemap
   (append (alist-invert typemap-packed) (alist-invert typemap-planar)))
 
-(define (type+planar->avtype type planar)
+(define (type+planar->sample-format type planar)
   "Convert type and planar/packed information to type tag"
   (or (assq-ref (if planar typemap-planar typemap-packed) type)
-      (aiscm-error 'type+planar->avtype "Type ~a not supported by FFmpeg audio" type)))
+      (aiscm-error 'type+planar->sample-format "Type ~a not supported by FFmpeg audio" type)))
 
-(define (avtype->type avtype)
+(define (sample-format->type sample-format)
   "Get type information for type tag"
-  (assq-ref inverse-typemap avtype))
+  (assq-ref inverse-typemap sample-format))
 
 (define (descriptor self)
-  (list (type+planar->avtype (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))
+  (list (type+planar->sample-format (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))
 
 (define (convert-samples-from! destination source)
   "Convert audio samples from source to destination format"

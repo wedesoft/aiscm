@@ -81,12 +81,12 @@
 
 (define (typecodes-of-sample-formats sample-formats)
   "Get typecodes for a list of supported sample types"
-  (delete-duplicates (map avtype->type sample-formats)))
+  (delete-duplicates (map sample-format->type sample-formats)))
 
 (define (select-sample-format typecode sample-formats)
   "Select sample format with spcecified typecode. Prefer packed format over planar format."
-  (let [(packed (type+planar->avtype typecode #f))
-        (planar (type+planar->avtype typecode #t))]
+  (let [(packed (type+planar->sample-format typecode #f))
+        (planar (type+planar->sample-format typecode #t))]
     (if (memv packed sample-formats) packed planar)))
 
 (define (open-ffmpeg-output file-name . initargs)
@@ -102,14 +102,14 @@
            (aspect-ratio   (or aspect-ratio 1))
            (select-rate    (select-rate (or rate 44100)))
            (typecode       (or typecode <float>))
-           (avtype         (type+planar->avtype typecode #t))
+           (sample-format  (type+planar->sample-format typecode #t))
            (channels       (or channels 2))
            (audio-bit-rate (or audio-bit-rate (round (/ (* 3 44100) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list select-rate channels audio-bit-rate avtype) have-audio
+                                         (list select-rate channels audio-bit-rate sample-format) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
