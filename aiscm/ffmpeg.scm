@@ -101,14 +101,15 @@
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
            (select-rate    (select-rate (or rate 44100)))
-           (typecode       (or typecode <int>)); TODO: change to float
+           (typecode       (or typecode <float>))
+           (avtype         (type+planar->avtype typecode #t))
            (channels       (or channels 2))
            (audio-bit-rate (or audio-bit-rate (round (/ (* 3 44100) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
-                                         (list select-rate channels audio-bit-rate (type+planar->avtype typecode #t)) have-audio
+                                         (list select-rate channels audio-bit-rate avtype) have-audio
                                          debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
