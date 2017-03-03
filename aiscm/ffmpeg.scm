@@ -31,8 +31,8 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop
-            select-rate select-sample-typecode typecodes-of-sample-formats best-sample-format)
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate
+            select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -88,6 +88,10 @@
   (let [(packed (type+planar->sample-format selected-type #f))
         (planar (type+planar->sample-format selected-type #t))]
     (if (memv packed sample-formats) packed planar)))
+
+(define* ((select-sample-format typecode) supported-formats)
+  "Select most suitable sample format for audio encoding"
+  (best-sample-format (select-sample-typecode typecode (typecodes-of-sample-formats supported-formats)) supported-formats))
 
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"

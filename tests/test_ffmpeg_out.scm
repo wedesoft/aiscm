@@ -167,6 +167,15 @@
       AV_SAMPLE_FMT_S32P (best-sample-format <int> '()))
   (test-end "best-sample-format")
 
+  (test-begin "select-sample-format")
+    (test-eqv "Select packed format if supported"
+      AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32)))
+    (test-eqv "Select nearest larger type if necessary"
+      AV_SAMPLE_FMT_FLT ((select-sample-format <int>) (list AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_FLT)))
+    (test-eqv "Prefer packed format"
+      AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P)))
+  (test-end "select-sample-format")
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
