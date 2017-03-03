@@ -73,9 +73,11 @@
   (let* [(rank           (lambda (t) (+ (size-of t) (if (is-a? t <meta<float<>>>) 1 0))))
          (sufficient?    (lambda (t) (<= (rank typecode) (rank t))))
          (relevant-types (filter sufficient? (sort-by supported-types rank)))]
-    (if (null? relevant-types)
-      (aiscm-error 'select-sample-typecode "Sample type ~a or larger type is not supported" typecode)
-      (car relevant-types))))
+    (if (null? supported-types)
+      typecode
+      (if (null? relevant-types)
+        (aiscm-error 'select-sample-typecode "Sample type ~a or larger type is not supported" typecode)
+        (car relevant-types)))))
 
 (define (typecodes-of-sample-formats sample-formats)
   "Get typecodes for a list of supported sample types"

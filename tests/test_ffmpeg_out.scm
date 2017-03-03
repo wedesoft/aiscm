@@ -137,6 +137,8 @@
       <int> (select-sample-typecode <int> (list <float> <int>)))
     (test-eq "Switch to floating point if required"
       <float> (select-sample-typecode <int> (list <sint> <float>)))
+    (test-eq "Select specified sample format if no supported format is specified"
+      <float> (select-sample-typecode <float> '()))
   (test-end "select-sample-typecode")
 
   (test-begin "typecodes-of-sample-formats")
@@ -161,6 +163,8 @@
       AV_SAMPLE_FMT_S16P (select-sample-format <sint> (list AV_SAMPLE_FMT_S16P)))
     (test-eqv "Prefer packed format"
       AV_SAMPLE_FMT_S32 (select-sample-format <int> (list AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_S32)))
+    (test-eqv "Specify planar format if list of supported formats is empty"
+      AV_SAMPLE_FMT_S32P (select-sample-format <int> '()))
   (test-end "select-sample-format")
 
 (test-end "audio output")
