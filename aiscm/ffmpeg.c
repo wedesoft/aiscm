@@ -816,9 +816,13 @@ SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
+  int channels = av_get_channel_layout_nb_channels(self->audio_frame->channel_layout);
+  int size = av_samples_get_buffer_size(NULL, channels, self->audio_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
   printf("audio buffer bytes = %d\n", self->audio_buffer.fill);
-  printf("encoding buffer samples = %d\n", self->audio_frame->nb_samples);
+  printf("number of samples = %d\n", self->audio_frame->nb_samples);
   printf("sample format = %d\n", self->audio_codec_ctx->sample_fmt);
+  printf("channels = %d\n", channels);
+  printf("size = %d\n", size);
   return SCM_UNSPECIFIED;
 }
 
