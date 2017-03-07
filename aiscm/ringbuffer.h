@@ -25,7 +25,7 @@ struct ringbuffer_t {
   char *buffer;
 };
 
-typedef void (*ringbuffer_callback_t)(char *data, int count, void *userdata);
+typedef void (*ringbuffer_callback_t)(char *data, int count, int offset, void *userdata);
 
 void ringbuffer_init(struct ringbuffer_t *ringbuffer, int size);
 

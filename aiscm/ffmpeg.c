@@ -812,17 +812,28 @@ SCM ffmpeg_write_video(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
+{
+  AVFrame *frame = (AVFrame *)userdata;
+  memcpy(frame->data[0] + offset, data, count);
+}
+
 SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
   int channels = av_get_channel_layout_nb_channels(self->audio_frame->channel_layout);
-  int size = av_samples_get_buffer_size(NULL, channels, self->audio_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
-  printf("audio buffer bytes = %d\n", self->audio_buffer.fill);
-  printf("number of samples = %d\n", self->audio_frame->nb_samples);
-  printf("sample format = %d\n", self->audio_codec_ctx->sample_fmt);
-  printf("channels = %d\n", channels);
-  printf("size = %d\n", size);
+  int frame_size = av_samples_get_buffer_size(NULL, channels, self->audio_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
+  /*
+  while (self->audio_buffer.fill >= frame_size) {
+    ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_frame);
+    printf("audio buffer bytes = %d\n", self->audio_buffer.fill);
+    printf("number of samples = %d\n", self->audio_frame->nb_samples);
+    printf("sample format = %d\n", self->audio_codec_ctx->sample_fmt);
+    printf("channels = %d\n", channels);
+    printf("size = %d\n", frame_size);
+  };
+  */
   return SCM_UNSPECIFIED;
 }
 

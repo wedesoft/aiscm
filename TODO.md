@@ -1,7 +1,6 @@
 ## Ready
 
-* select sample format (given supported formats and a supported type)
-* selection with empty rate list or empty format list
+* conversion to target type (and planar if necessary)
 * image-helpers.c -> util-helpers.c
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff

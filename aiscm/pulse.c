@@ -83,7 +83,7 @@ size_t free_pulsedev(SCM scm_self)
   return 0;
 }
 
-static void write_from_ringbuffer(char *data, int count, void *userdata)
+static void write_from_ringbuffer(char *data, int count, int offset, void *userdata)
 {
   pa_stream_write((pa_stream *)userdata, data, count, NULL, 0LL, PA_SEEK_RELATIVE);
 }
@@ -243,11 +243,9 @@ SCM pulsedev_latency(SCM scm_self)
   return scm_from_double(1e-6 * latency_usec(self));
 }
 
-static void fetch_callback(char *data, int count, void *userdata)
+static void fetch_callback(char *data, int count, int offset, void *userdata)
 {
-  void **p = (void **)userdata;
-  memcpy(*p, data, count);
-  *p += count;
+  memcpy(userdata + offset, data, count);
 }
 
 SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open
@@ -257,10 +255,9 @@ SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still 
   pa_threaded_mainloop_lock(mainloop);
   int bytes = scm_to_int(scm_bytes);
   void *buffer = scm_gc_malloc_pointerless(bytes, "aiscm pulse frame");
-  void *p = buffer;
   while (self->audio_buffer.fill < bytes)
     pa_threaded_mainloop_wait(mainloop);
-  ringbuffer_fetch(&self->audio_buffer, bytes, fetch_callback, &p);
+  ringbuffer_fetch(&self->audio_buffer, bytes, fetch_callback, buffer);
   pa_threaded_mainloop_unlock(mainloop);
   return scm_from_pointer(buffer, NULL);
 }
