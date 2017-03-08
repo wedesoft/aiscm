@@ -52,7 +52,8 @@ struct ffmpeg_t {
   AVPacket pkt;
   AVPacket orig_pkt;
   AVFrame *video_frame;
-  AVFrame *audio_frame;
+  AVFrame *audio_packed_frame;
+  AVFrame *audio_target_frame;
   struct ringbuffer_t audio_buffer;
 };
 
@@ -110,10 +111,15 @@ SCM ffmpeg_destroy(SCM scm_self)
     av_frame_free(&self->video_frame);
     self->video_frame = NULL;
   };
-  if (self->audio_frame) {
-    av_frame_unref(self->audio_frame);
-    av_frame_free(&self->audio_frame);
-    self->audio_frame = NULL;
+  if (self->audio_packed_frame) {
+    av_frame_unref(self->audio_packed_frame);
+    av_frame_free(&self->audio_packed_frame);
+    self->audio_packed_frame = NULL;
+  };
+  if (self->audio_target_frame) {
+    av_frame_unref(self->audio_target_frame);
+    av_frame_free(&self->audio_target_frame);
+    self->audio_target_frame = NULL;
   };
   if (self->audio_buffer.buffer) {
     ringbuffer_destroy(&self->audio_buffer);
@@ -232,7 +238,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
 
   // Allocate input frames
   self->video_frame = allocate_frame(retval);
-  self->audio_frame = allocate_frame(retval);
+  self->audio_target_frame = allocate_frame(retval);
 
   // Initialise data packet
   av_init_packet(&self->pkt);
@@ -384,10 +390,10 @@ static AVFrame *allocate_output_video_frame(SCM scm_self, AVCodecContext *video_
   return retval;
 }
 
-static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_codec)
+static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_codec, enum AVSampleFormat sample_fmt)
 {
   AVFrame *retval = allocate_frame(scm_self);
-  retval->format = audio_codec->sample_fmt;
+  retval->format = sample_fmt;
   retval->channel_layout = audio_codec->channel_layout;
   retval->sample_rate = audio_codec->sample_rate;
 
@@ -515,7 +521,10 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     open_codec(retval, self->audio_codec_ctx, audio_encoder, "audio", scm_file_name);
 
     // Allocate audio frame
-    self->audio_frame = allocate_output_audio_frame(retval, self->audio_codec_ctx);
+    self->audio_target_frame =
+      allocate_output_audio_frame(retval, self->audio_codec_ctx, self->audio_codec_ctx->sample_fmt);
+    self->audio_packed_frame =
+      allocate_output_audio_frame(retval, self->audio_codec_ctx, av_get_alt_sample_fmt(self->audio_codec_ctx->sample_fmt, 0));
 
     // Initialise audio buffer
     ringbuffer_init(&self->audio_buffer, 1024);
@@ -757,8 +766,8 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
     int reading_cache = packet_empty(self);
 
     if (self->pkt.stream_index == self->audio_stream_idx) {
-      av_frame_unref(self->audio_frame);
-      retval = decode_audio(self, &self->pkt, self->audio_frame);
+      av_frame_unref(self->audio_target_frame);
+      retval = decode_audio(self, &self->pkt, self->audio_target_frame);
     } else if (self->pkt.stream_index == self->video_stream_idx) {
       av_frame_unref(self->video_frame);
       retval = decode_video(self, &self->pkt, self->video_frame);
@@ -822,18 +831,19 @@ SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
-  int channels = av_get_channel_layout_nb_channels(self->audio_frame->channel_layout);
-  int frame_size = av_samples_get_buffer_size(NULL, channels, self->audio_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
-  /*
+  int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
+  int frame_size =
+    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
+
   while (self->audio_buffer.fill >= frame_size) {
-    ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_frame);
+    ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
     printf("audio buffer bytes = %d\n", self->audio_buffer.fill);
-    printf("number of samples = %d\n", self->audio_frame->nb_samples);
+    printf("number of samples = %d\n", self->audio_packed_frame->nb_samples);
     printf("sample format = %d\n", self->audio_codec_ctx->sample_fmt);
     printf("channels = %d\n", channels);
     printf("size = %d\n", frame_size);
   };
-  */
+
   return SCM_UNSPECIFIED;
 }
 
