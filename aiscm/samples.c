@@ -21,25 +21,38 @@
 #include "image-helpers.h"
 
 
+static void samples_setup(SCM scm_type, enum AVSampleFormat *format, int *rate, int64_t *layout, int *samples,
+                          int64_t offsets[], uint8_t *data[], void *ptr)
+{
+  *format = scm_to_int(scm_car(scm_type));
+  *rate = scm_to_int(scm_caddr(scm_type));
+  *layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_type)));
+  *samples = scm_to_int(scm_cadadr(scm_type));
+  scm_to_long_array(scm_cadddr(scm_type), offsets);
+  pointers_from_offsets(ptr, offsets, data, AV_NUM_DATA_POINTERS);
+}
+
 SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_dest_type)
 {
-  enum AVSampleFormat source_format = scm_to_int(scm_car(scm_source_type));
-  enum AVSampleFormat dest_format = scm_to_int(scm_car(scm_dest_type));
-  int source_rate = scm_to_int(scm_caddr(scm_source_type));
-  int dest_rate = scm_to_int(scm_caddr(scm_dest_type));
-
+  enum AVSampleFormat source_format;
+  int source_rate;
+  int64_t source_layout;
+  int source_samples;
   int64_t source_offsets[AV_NUM_DATA_POINTERS];
-  scm_to_long_array(scm_cadddr(scm_source_type), source_offsets);
   uint8_t *source_data[AV_NUM_DATA_POINTERS];
-  pointers_from_offsets(scm_to_pointer(scm_source_ptr), source_offsets, source_data, AV_NUM_DATA_POINTERS);
+  void *source_ptr = scm_to_pointer(scm_source_ptr);
+  samples_setup(scm_source_type, &source_format, &source_rate, &source_layout, &source_samples,
+                source_offsets, source_data, source_ptr);
 
+  enum AVSampleFormat dest_format;
+  int dest_rate;
+  int64_t dest_layout;
+  int dest_samples;
   int64_t dest_offsets[AV_NUM_DATA_POINTERS];
-  scm_to_long_array(scm_cadddr(scm_dest_type), dest_offsets);
   uint8_t *dest_data[AV_NUM_DATA_POINTERS];
-  pointers_from_offsets(scm_to_pointer(scm_dest_ptr), dest_offsets, dest_data, AV_NUM_DATA_POINTERS);
-
-  int64_t source_layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_source_type)));
-  int64_t dest_layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_dest_type)));
+  void *dest_ptr = scm_to_pointer(scm_dest_ptr);
+  samples_setup(scm_dest_type, &dest_format, &dest_rate, &dest_layout, &dest_samples,
+                dest_offsets, dest_data, dest_ptr);
 
   SwrContext *swr_ctx =
     swr_alloc_set_opts(NULL, dest_layout, dest_format, dest_rate, source_layout, source_format, source_rate, 0, NULL);
@@ -50,12 +63,6 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
     swr_free(&swr_ctx);
     scm_misc_error("samples-convert", "Could not initialize resampler context", SCM_EOL);
   };
-
-  uint8_t *source_ptr = scm_to_pointer(scm_source_ptr);
-  int source_samples = scm_to_int(scm_cadadr(scm_source_type));
-
-  uint8_t *dest_ptr = scm_to_pointer(scm_dest_ptr);
-  int dest_samples = scm_to_int(scm_cadadr(scm_dest_type));
 
   // Note: delay (swr_get_delay) not supported, i.e. converting to a different sampling rate is not supported.
   err = swr_convert(swr_ctx, dest_data, dest_samples, (const uint8_t **)source_data, source_samples);

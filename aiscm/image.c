@@ -21,8 +21,8 @@
 #include "image-helpers.h"
 
 
-void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
-                 uint8_t *data[], int32_t pitches[], void *ptr)
+static void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
+                        uint8_t *data[], int32_t pitches[], void *ptr)
 {
   int i;
   int64_t offsets[8];
