@@ -44,7 +44,7 @@
 (define surround-array (arr <sint> (1 2 3 4 5 6) (2 3 4 5 6 7)))
 (define surround-samples (to-samples surround-array 44100))
 
-(define surround)
+(define custom-offsets (make <samples> #:typecode <sint> #:shape '(2 3) #:rate 22050 #:offsets '(0 8) #:planar #t #:mem planar-mem))
 
 (test-begin "convert offsets to pointers")
   (test-assert "Test first pointer"
@@ -109,6 +109,10 @@
     <sint> (sample-format->type AV_SAMPLE_FMT_S16))
   (test-eq "convert planar unsigned byte type tag to type"
     <ubyte> (sample-format->type AV_SAMPLE_FMT_U8P))
+  (test-assert "identify planar sample format"
+    (sample-format->planar AV_SAMPLE_FMT_S32P))
+  (test-assert "identify packed sample format"
+    (not (sample-format->planar AV_SAMPLE_FMT_S32)))
 (test-end "type conversions")
 
 (test-eq "convert samples to integer"
@@ -143,4 +147,6 @@
 (test-equal "Write conversion result to a target sample set"
   #vu8(1 2 3 4 6 7 8 9) (read-bytes (slot-ref target 'mem) 8))
 
+(test-equal "create samples with custom offsets"
+  '(0 8) (slot-ref custom-offsets 'offsets))
 (test-end "aiscm samples")

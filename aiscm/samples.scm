@@ -12,7 +12,8 @@
   #:export (<samples> <meta<samples>>
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
-            count planar? to-samples convert-samples convert-samples-from! type+planar->sample-format sample-format->type)
+            count planar? to-samples convert-samples convert-samples-from! type+planar->sample-format
+            sample-format->type sample-format->planar)
   #:re-export (typecode shape channels rate to-array))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
@@ -27,8 +28,8 @@
 
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
-  (let-keywords initargs #f (typecode shape rate planar mem)
-    (let [(offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0)))]
+  (let-keywords initargs #f (typecode shape rate offsets planar mem)
+    (let [(offsets (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))]
       (next-method self (list #:typecode typecode
                               #:shape    shape
                               #:rate     rate
@@ -77,6 +78,10 @@
 (define (sample-format->type sample-format)
   "Get type information for type tag"
   (assq-ref inverse-typemap sample-format))
+
+(define (sample-format->planar sample-format)
+  "Check whether a sample format is planar"
+  (not (memv sample-format (map cdr typemap-packed))))
 
 (define (descriptor self)
   (list (type+planar->sample-format (typecode self) (planar? self)) (shape self) (rate self) (offsets self)))

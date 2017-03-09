@@ -32,7 +32,8 @@
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
-            select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format)
+            select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
+            target-audio-frame)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -155,6 +156,16 @@
           #:pitches pitches
           #:mem     (memory data size))))
 
+(define (audio-frame sample-format shape rate offsets data size)
+  "Construct an audio frame from the specified information"
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
+    (make <samples> #:typecode (sample-format->type sample-format)
+                    #:shape    shape
+                    #:rate     rate
+                    #:offsets  offsets
+                    #:planar   (sample-format->planar sample-format)
+                    #:mem      (memory data size))))
+
 (define (import-video-frame self lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
   (let [(pts    (car lst))
@@ -192,13 +203,17 @@
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
+(define (target-audio-frame self)
+  "Get target audio frame for audio encoding"
+  (apply audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
+
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
-  "Write audio frame to output file"
+  "Write audio frame to output stream"
   (ffmpeg-write-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples))
   samples)
 
 (define (target-video-frame self)
-  "Get target video frame to populate for encoding video"
+  "Get target video frame for video encoding"
   (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))
 
 (define-method (write-image (img <image>) (self <ffmpeg>))

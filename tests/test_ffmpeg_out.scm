@@ -30,7 +30,6 @@
 
 (test-begin "aiscm ffmpeg")
 
-(test-skip 1)
 (test-begin "video output")
   (define colour-values
     (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
@@ -60,6 +59,8 @@
 
   (test-equal "Get shape of target video frame"
     '(16 2) (shape (target-video-frame output-video)))
+  (test-eq "Get format of target video frame"
+    'I420 (get-format (target-video-frame output-video)))
 
   (test-eq "Writing a 2D array with 'write-image' returns the input array"
     colour-array (write-image colour-array output-video))
@@ -179,6 +180,12 @@
       AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P)))
   (test-end "select-sample-format")
 
+  (test-eq "Get type of target audio frame"
+    <sint> (typecode (target-audio-frame output-audio)))
+  (test-eqv "Get channels of target audio frame"
+    2 (channels (target-audio-frame output-audio)))
+  (test-eqv "Get rate of target audio frame"
+    44100 (rate (target-audio-frame output-audio)))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

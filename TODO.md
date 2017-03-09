@@ -1,9 +1,13 @@
 ## Ready
 
-* test target video/audio frame
+* intermediate/packed audio frame
 * conversion to target type (and planar if necessary)
+* encode audio
+* refactor list\_timestamped\_audio
+* refactor import-audio-frame (return samples instead of array)
 * use libavresample if libswresample is not present
 ```
+https://autotools.io/pkgconfig/pkg_check_modules.html
 PKG_CHECK_MODULES([UDEV], [libudev],
    [AC_DEFINE([HAVE_UDEV], [1], [Use UDEV])],
       [PKG_CHECK_MODULES([HAL], [hal],
