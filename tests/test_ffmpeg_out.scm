@@ -58,6 +58,9 @@
   (test-equal "Get frame rate of output video"
     25 (frame-rate output-video))
 
+  (test-equal "Get shape of target video frame"
+    '(16 2) (shape (target-video-frame output-video)))
+
   (test-eq "Writing a 2D array with 'write-image' returns the input array"
     colour-array (write-image colour-array output-video))
   (test-eq "Writing an image with 'write-image' returns the input image"

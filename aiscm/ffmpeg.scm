@@ -31,7 +31,7 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
@@ -197,11 +197,14 @@
   (ffmpeg-write-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples))
   samples)
 
+(define (target-video-frame self)
+  "Get target video frame to populate for encoding video"
+  (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))
+
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output file"
-  (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
-    (convert-image-from! output-frame img)
-    (ffmpeg-write-video (slot-ref self 'ffmpeg)))
+  (convert-image-from! (target-video-frame self) img)
+  (ffmpeg-write-video (slot-ref self 'ffmpeg))
   img)
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))

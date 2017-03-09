@@ -1,6 +1,16 @@
 ## Ready
 
+* test target video/audio frame
 * conversion to target type (and planar if necessary)
+* use libavresample if libswresample is not present
+```
+PKG_CHECK_MODULES([UDEV], [libudev],
+   [AC_DEFINE([HAVE_UDEV], [1], [Use UDEV])],
+      [PKG_CHECK_MODULES([HAL], [hal],
+             [AC_DEFINE([HAVE_HAL], [1], [Use HAL])
+                 ])
+      ])
+```
 * image-helpers.c -> util-helpers.c
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
