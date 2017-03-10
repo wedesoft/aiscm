@@ -735,6 +735,12 @@ SCM ffmpeg_target_audio_frame(SCM scm_self)
   return list_audio_frame_info(self, self->audio_target_frame);
 }
 
+SCM ffmpeg_packed_audio_frame(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return list_audio_frame_info(self, self->audio_packed_frame);
+}
+
 static SCM list_timestamped_video(struct ffmpeg_t *self, AVFrame *frame)
 {
   return scm_append(scm_list_2(scm_list_2(scm_from_locale_symbol("video"),
@@ -849,10 +855,17 @@ static void fetch_buffered_audio_data(char *data, int count, int offset, void *u
   memcpy(frame->data[0] + offset, data, count);
 }
 
+SCM ffmpeg_audio_buffer_fill(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return scm_from_int(self->audio_buffer.fill);
+}
+
 SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
+  /*
   int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
   int frame_size =
     av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
@@ -865,7 +878,7 @@ SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
     printf("channels = %d\n", channels);
     printf("size = %d\n", frame_size);
   };
-
+  */
   return SCM_UNSPECIFIED;
 }
 
@@ -888,7 +901,9 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
   scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-target-audio-frame", 1, 0, 0, ffmpeg_target_audio_frame);
+  scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
   scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
+  scm_c_define_gsubr("ffmpeg-audio-buffer-fill", 1, 0, 0, ffmpeg_audio_buffer_fill);
   scm_c_define_gsubr("ffmpeg-write-audio", 3, 0, 0, ffmpeg_write_audio);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);

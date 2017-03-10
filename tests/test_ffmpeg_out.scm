@@ -100,8 +100,13 @@
     <sint> (typecode output-audio))
 
   (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+
+  (test-eqv "Audio buffer fill is zero initially"
+    0 (audio-buffer-fill output-audio))
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
+  (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
+    (size-of samples) (audio-buffer-fill output-audio))
 
   (test-begin "select-rate")
     (test-eqv "Return specified rate if supported"
@@ -186,6 +191,9 @@
     2 (channels (target-audio-frame output-audio)))
   (test-eqv "Get rate of target audio frame"
     44100 (rate (target-audio-frame output-audio)))
+
+  (test-eq "Get type of packed audio frame"
+    <sint> (typecode (packed-audio-frame output-audio)))
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
