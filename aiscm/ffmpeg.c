@@ -861,7 +861,7 @@ SCM ffmpeg_audio_buffer_fill(SCM scm_self)
   return scm_from_int(self->audio_buffer.fill);
 }
 
-SCM ffmpeg_write_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
+SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
@@ -904,7 +904,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
   scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
   scm_c_define_gsubr("ffmpeg-audio-buffer-fill", 1, 0, 0, ffmpeg_audio_buffer_fill);
-  scm_c_define_gsubr("ffmpeg-write-audio", 3, 0, 0, ffmpeg_write_audio);
+  scm_c_define_gsubr("ffmpeg-buffer-audio", 3, 0, 0, ffmpeg_buffer_audio);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

@@ -103,10 +103,13 @@
 
   (test-eqv "Audio buffer fill is zero initially"
     0 (audio-buffer-fill output-audio))
-  (test-equal "Writing audio samples returns samples"
-    samples (write-audio samples output-audio))
+
+  (buffer-audio samples output-audio)
   (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
     (size-of samples) (audio-buffer-fill output-audio))
+
+  (test-equal "Writing audio samples returns samples"
+    samples (write-audio samples output-audio))
 
   (test-begin "select-rate")
     (test-eqv "Return specified rate if supported"

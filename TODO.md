@@ -1,8 +1,8 @@
 ## Ready
 
-* intermediate/packed audio frame
-* conversion to target type (and planar if necessary)
-* encode audio
+* unbuffer/fetch to packed frame
+* convert to target frame
+* encode audio frame
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
 * use libavresample if libswresample is not present
