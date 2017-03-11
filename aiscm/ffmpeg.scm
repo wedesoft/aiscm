@@ -33,7 +33,7 @@
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
-            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio)
+            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -218,6 +218,10 @@
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"
   (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+
+(define (fetch-audio self)
+  "Fetch data from the audio buffer and put it into the samples"
+  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg)))
 
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
   "Write audio frame to output stream"

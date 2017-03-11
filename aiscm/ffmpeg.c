@@ -882,6 +882,16 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
   return SCM_UNSPECIFIED;
 }
 
+SCM ffmpeg_fetch_audio(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
+  int frame_size =
+    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
+  ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
+  return SCM_UNSPECIFIED;
+}
+
 void init_ffmpeg(void)
 {
   av_register_all();
@@ -905,6 +915,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
   scm_c_define_gsubr("ffmpeg-audio-buffer-fill", 1, 0, 0, ffmpeg_audio_buffer_fill);
   scm_c_define_gsubr("ffmpeg-buffer-audio", 3, 0, 0, ffmpeg_buffer_audio);
+  scm_c_define_gsubr("ffmpeg-fetch-audio", 1, 0, 0, ffmpeg_fetch_audio);
   scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
   scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
 }

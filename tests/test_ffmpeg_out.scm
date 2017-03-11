@@ -85,32 +85,6 @@
   (test-assert "'open-ffmpeg-output' can create an audio file"
     (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:rate 44100))
 
-  (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
-                                           #:format-name 'mp3
-                                           #:rate 44100
-                                           #:typecode <sint>
-                                           #:channels 2
-                                           #:audio-bit-rate 64000))
-
-  (test-eqv "Get number of audio channels"
-    2 (channels output-audio))
-  (test-eqv "Get sample rate"
-    44100 (rate output-audio))
-  (test-eq "Get audio sample type"
-    <sint> (typecode output-audio))
-
-  (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
-
-  (test-eqv "Audio buffer fill is zero initially"
-    0 (audio-buffer-fill output-audio))
-
-  (buffer-audio samples output-audio)
-  (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
-    (size-of samples) (audio-buffer-fill output-audio))
-
-  (test-equal "Writing audio samples returns samples"
-    samples (write-audio samples output-audio))
-
   (test-begin "select-rate")
     (test-eqv "Return specified rate if supported"
       44100 ((select-rate 44100) '(44100)))
@@ -188,6 +162,20 @@
       AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P)))
   (test-end "select-sample-format")
 
+  (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
+                                           #:format-name 'mp3
+                                           #:rate 44100
+                                           #:typecode <sint>
+                                           #:channels 2
+                                           #:audio-bit-rate 64000))
+
+  (test-eqv "Get number of audio channels"
+    2 (channels output-audio))
+  (test-eqv "Get sample rate"
+    44100 (rate output-audio))
+  (test-eq "Get audio sample type"
+    <sint> (typecode output-audio))
+
   (test-eq "Get type of target audio frame"
     <sint> (typecode (target-audio-frame output-audio)))
   (test-eqv "Get channels of target audio frame"
@@ -197,6 +185,19 @@
 
   (test-eq "Get type of packed audio frame"
     <sint> (typecode (packed-audio-frame output-audio)))
+
+  (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (test-eqv "Audio buffer fill is zero initially"
+    0 (audio-buffer-fill output-audio))
+  (buffer-audio samples output-audio)
+  (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
+    (size-of samples) (audio-buffer-fill output-audio))
+  (fetch-audio output-audio)
+  (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
+    (- (size-of samples) (apply * 2 (shape (packed-audio-frame output-audio)))) (audio-buffer-fill output-audio))
+  (test-equal "Writing audio samples returns samples"
+    samples (write-audio samples output-audio))
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")
