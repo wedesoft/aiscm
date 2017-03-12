@@ -14,7 +14,7 @@
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
             count planar? to-samples convert-samples convert-samples-from! type+planar->sample-format
             sample-format->type sample-format->planar)
-  #:re-export (typecode shape channels rate to-array))
+  #:re-export (typecode shape channels rate to-array size-of))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
 
@@ -40,6 +40,10 @@
 (define-method (channels (self <samples>))
   "Get number of audio channels of audio samples"
   (car (shape self)))
+
+(define-method (size-of (self <samples>))
+  "Memory size of audio samples in bytes"
+  (apply * (size-of (typecode self)) (shape self)))
 
 (define-method (to-array (self <samples>))
   "Convert audio samples to a numerical array"

@@ -149,4 +149,7 @@
 
 (test-equal "create samples with custom offsets"
   '(0 8) (slot-ref custom-offsets 'offsets))
+
+(test-eqv "Size of stereo samples"
+  16 (size-of stereo-samples))
 (test-end "aiscm samples")

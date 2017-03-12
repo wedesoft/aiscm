@@ -194,7 +194,7 @@
     (size-of samples) (audio-buffer-fill output-audio))
   (fetch-audio output-audio)
   (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
-    (- (size-of samples) (apply * 2 (shape (packed-audio-frame output-audio)))) (audio-buffer-fill output-audio))
+    (- (size-of samples) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
 

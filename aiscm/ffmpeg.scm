@@ -226,6 +226,11 @@
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
   "Write audio frame to output stream"
   (buffer-audio samples self)
+  (let* [(packed     (packed-audio-frame self))
+         (target     (target-audio-frame self))
+         (frame-size (size-of packed))]
+    (while (>= (audio-buffer-fill self) (size-of packed))
+      (fetch-audio self)))
   samples)
 
 (define (target-video-frame self)
