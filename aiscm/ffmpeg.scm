@@ -230,7 +230,8 @@
          (target     (target-audio-frame self))
          (frame-size (size-of packed))]
     (while (>= (audio-buffer-fill self) (size-of packed))
-      (fetch-audio self)))
+      (fetch-audio self); fills "packed" audio frame with samples
+      (convert-samples-from! target packed)))
   samples)
 
 (define (target-video-frame self)

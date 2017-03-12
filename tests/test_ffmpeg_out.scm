@@ -185,6 +185,8 @@
 
   (test-eq "Get type of packed audio frame"
     <sint> (typecode (packed-audio-frame output-audio)))
+  (test-assert "Packed audio frame should be packed"
+    (not (planar? (packed-audio-frame output-audio))))
 
   (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
   (test-eqv "Audio buffer fill is zero initially"

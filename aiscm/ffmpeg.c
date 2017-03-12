@@ -524,7 +524,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     self->audio_target_frame =
       allocate_output_audio_frame(retval, self->audio_codec_ctx, self->audio_codec_ctx->sample_fmt);
     self->audio_packed_frame =
-      allocate_output_audio_frame(retval, self->audio_codec_ctx, av_get_alt_sample_fmt(self->audio_codec_ctx->sample_fmt, 0));
+      allocate_output_audio_frame(retval, self->audio_codec_ctx, av_get_packed_sample_fmt(self->audio_codec_ctx->sample_fmt));
 
     // Initialise audio buffer
     ringbuffer_init(&self->audio_buffer, 1024);
@@ -702,9 +702,9 @@ static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
   int64_t offsets[AV_NUM_DATA_POINTERS];
   offsets_from_pointers(frame->data, offsets, AV_NUM_DATA_POINTERS);
   int frame_size =
-    av_samples_get_buffer_size(NULL, channels, frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
+    av_samples_get_buffer_size(NULL, channels, frame->nb_samples, frame->format, 1);
 
-  return scm_list_n(scm_from_int(self->audio_codec_ctx->sample_fmt),
+  return scm_list_n(scm_from_int(frame->format),
                     scm_list_2(scm_from_int(channels), scm_from_int(frame->nb_samples)),
                     scm_from_int(self->audio_codec_ctx->sample_rate),
                     from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
