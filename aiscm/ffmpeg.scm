@@ -231,7 +231,8 @@
          (frame-size (size-of packed))]
     (while (>= (audio-buffer-fill self) (size-of packed))
       (fetch-audio self); fills "packed" audio frame with samples
-      (convert-samples-from! target packed)))
+      (convert-samples-from! target packed)
+      (ffmpeg-write-audio (slot-ref self 'ffmpeg))))
   samples)
 
 (define (target-video-frame self)

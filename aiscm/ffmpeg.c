@@ -54,6 +54,7 @@ struct ffmpeg_t {
   AVFrame *video_frame;
   AVFrame *audio_packed_frame;
   AVFrame *audio_target_frame;
+  int samples_count;
   struct ringbuffer_t audio_buffer;
 };
 
@@ -352,6 +353,8 @@ static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audi
   retval->sample_rate = scm_to_int(scm_rate);
   audio_stream->time_base.num = 1;
   audio_stream->time_base.den = retval->sample_rate;
+  retval->time_base.num = 1;
+  retval->time_base.den = retval->sample_rate;
 
   // Set channels
   retval->channels = scm_to_int(scm_channels);
@@ -888,10 +891,49 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 SCM ffmpeg_fetch_audio(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
+  AVCodecContext *codec = audio_codec_ctx(self);
   int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
   int frame_size =
-    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
+    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, codec->sample_fmt, 1);
   ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
+  return SCM_UNSPECIFIED;
+}
+
+SCM ffmpeg_write_audio(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  AVCodecContext *codec = audio_codec_ctx(self);
+  AVFrame *audio_frame = self->audio_target_frame;
+  audio_frame->pts = av_rescale_q(self->samples_count, (AVRational){1, codec->sample_rate}, audio_stream(self)->time_base);
+  self->samples_count += audio_frame->nb_samples;
+
+  // Initialise data packet
+  AVPacket pkt = { 0 };
+  av_init_packet(&pkt);
+
+  // Encode the audio frame
+  int got_packet;
+  int err = avcodec_encode_audio2(codec, &pkt, audio_frame, &got_packet);
+  if (err < 0)
+    scm_misc_error("ffmpeg-write-audio", "Error encoding audio frame: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  // Write any new audio packets
+  // TODO: remove redundancy with ffmpeg_write_video
+  if (got_packet) {
+#ifdef HAVE_AV_PACKET_RESCALE_TS
+    av_packet_rescale_ts(&pkt, codec->time_base, audio_stream(self)->time_base);
+#else
+    if (codec->coded_frame->pts != AV_NOPTS_VALUE)
+      pkt.pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, audio_stream(self)->time_base);
+#endif
+    pkt.stream_index = self->audio_stream_idx;
+    err = av_interleaved_write_frame(self->fmt_ctx, &pkt);
+    if (err < 0)
+      scm_misc_error("ffmpeg-write-audio", "Error writing audio frame: ~a",
+                     scm_list_1(get_error_text(err)));
+  };
+
   return SCM_UNSPECIFIED;
 }
 
@@ -901,24 +943,25 @@ void init_ffmpeg(void)
   avformat_network_init();
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
-  scm_c_define_gsubr("make-ffmpeg-input", 2, 0, 0, make_ffmpeg_input);
-  scm_c_define_gsubr("make-ffmpeg-output", 7, 0, 0, make_ffmpeg_output);
-  scm_c_define_gsubr("ffmpeg-shape", 1, 0, 0, ffmpeg_shape);
-  scm_c_define_gsubr("ffmpeg-destroy", 1, 0, 0, ffmpeg_destroy);
-  scm_c_define_gsubr("ffmpeg-frame-rate", 1, 0, 0, ffmpeg_frame_rate);
-  scm_c_define_gsubr("ffmpeg-video-bit-rate", 1, 0, 0, ffmpeg_video_bit_rate);
-  scm_c_define_gsubr("ffmpeg-aspect-ratio", 1, 0, 0, ffmpeg_aspect_ratio);
-  scm_c_define_gsubr("ffmpeg-channels", 1, 0, 0, ffmpeg_channels);
-  scm_c_define_gsubr("ffmpeg-rate", 1, 0, 0, ffmpeg_rate);
-  scm_c_define_gsubr("ffmpeg-typecode", 1, 0, 0, ffmpeg_typecode);
-  scm_c_define_gsubr("ffmpeg-read-audio/video", 1, 0, 0, ffmpeg_read_audio_video);
+  scm_c_define_gsubr("make-ffmpeg-input"        , 2, 0, 0, make_ffmpeg_input        );
+  scm_c_define_gsubr("make-ffmpeg-output"       , 7, 0, 0, make_ffmpeg_output       );
+  scm_c_define_gsubr("ffmpeg-shape"             , 1, 0, 0, ffmpeg_shape             );
+  scm_c_define_gsubr("ffmpeg-destroy"           , 1, 0, 0, ffmpeg_destroy           );
+  scm_c_define_gsubr("ffmpeg-frame-rate"        , 1, 0, 0, ffmpeg_frame_rate        );
+  scm_c_define_gsubr("ffmpeg-video-bit-rate"    , 1, 0, 0, ffmpeg_video_bit_rate    );
+  scm_c_define_gsubr("ffmpeg-aspect-ratio"      , 1, 0, 0, ffmpeg_aspect_ratio      );
+  scm_c_define_gsubr("ffmpeg-channels"          , 1, 0, 0, ffmpeg_channels          );
+  scm_c_define_gsubr("ffmpeg-rate"              , 1, 0, 0, ffmpeg_rate              );
+  scm_c_define_gsubr("ffmpeg-typecode"          , 1, 0, 0, ffmpeg_typecode          );
+  scm_c_define_gsubr("ffmpeg-read-audio/video"  , 1, 0, 0, ffmpeg_read_audio_video  );
   scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-target-audio-frame", 1, 0, 0, ffmpeg_target_audio_frame);
   scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
-  scm_c_define_gsubr("ffmpeg-write-video", 1, 0, 0, ffmpeg_write_video);
-  scm_c_define_gsubr("ffmpeg-audio-buffer-fill", 1, 0, 0, ffmpeg_audio_buffer_fill);
-  scm_c_define_gsubr("ffmpeg-buffer-audio", 3, 0, 0, ffmpeg_buffer_audio);
-  scm_c_define_gsubr("ffmpeg-fetch-audio", 1, 0, 0, ffmpeg_fetch_audio);
-  scm_c_define_gsubr("ffmpeg-seek", 2, 0, 0, ffmpeg_seek);
-  scm_c_define_gsubr("ffmpeg-flush", 1, 0, 0, ffmpeg_flush);
+  scm_c_define_gsubr("ffmpeg-write-video"       , 1, 0, 0, ffmpeg_write_video       );
+  scm_c_define_gsubr("ffmpeg-audio-buffer-fill" , 1, 0, 0, ffmpeg_audio_buffer_fill );
+  scm_c_define_gsubr("ffmpeg-buffer-audio"      , 3, 0, 0, ffmpeg_buffer_audio      );
+  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 1, 0, 0, ffmpeg_fetch_audio       );
+  scm_c_define_gsubr("ffmpeg-write-audio"       , 1, 0, 0, ffmpeg_write_audio       );
+  scm_c_define_gsubr("ffmpeg-seek"              , 2, 0, 0, ffmpeg_seek              );
+  scm_c_define_gsubr("ffmpeg-flush"             , 1, 0, 0, ffmpeg_flush             );
 }

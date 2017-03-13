@@ -1,6 +1,7 @@
 ## Ready
 
-* encode audio frame
+* write trailing audio
+* check output shape and output audio type
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
 * use libavresample if libswresample is not present
