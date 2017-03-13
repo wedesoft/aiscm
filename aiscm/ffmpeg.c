@@ -713,25 +713,28 @@ static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
                     SCM_UNDEFINED);
 }
 
+static void make_frame_writable(AVFrame *frame)
+{
+#ifdef HAVE_AV_FRAME_MAKE_WRITABLE
+  // Make frame writeable
+  int err = av_frame_make_writable(frame);
+  if (err < 0)
+    scm_misc_error("make-frame-writable", "Error making frame writeable: ~a",
+                   scm_list_1(get_error_text(err)));
+#endif
+}
+
 SCM ffmpeg_target_video_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-
-#ifdef HAVE_AV_FRAME_MAKE_WRITABLE
-  // Make frame writeable
-  int err = av_frame_make_writable(self->video_frame);
-  if (err < 0)
-    scm_misc_error("ffmpeg-target-video-frame", "Error making frame writeable: ~a",
-                   scm_list_1(get_error_text(err)));
-#endif
-
+  make_frame_writable(self->video_frame);
   return list_video_frame_info(self, self->video_frame);
 }
 
 SCM ffmpeg_target_audio_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  // TODO: make writeable
+  make_frame_writable(self->audio_target_frame);
   return list_audio_frame_info(self, self->audio_target_frame);
 }
 
