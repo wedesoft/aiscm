@@ -353,8 +353,7 @@ static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audi
   retval->sample_rate = scm_to_int(scm_rate);
   audio_stream->time_base.num = 1;
   audio_stream->time_base.den = retval->sample_rate;
-  retval->time_base.num = 1;
-  retval->time_base.den = retval->sample_rate;
+  retval->time_base = audio_stream->time_base;
 
   // Set channels
   retval->channels = scm_to_int(scm_channels);
@@ -814,6 +813,21 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
+static void write_frame(struct ffmpeg_t *self, AVPacket *packet, AVCodecContext *codec, AVStream *stream, int stream_idx)
+{
+#ifdef HAVE_AV_PACKET_RESCALE_TS
+  av_packet_rescale_ts(packet, codec->time_base, stream->time_base);
+#else
+  if (codec->coded_frame->pts != AV_NOPTS_VALUE)
+    packet->pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, stream->time_base);
+#endif
+  packet->stream_index = stream_idx;
+  int err = av_interleaved_write_frame(self->fmt_ctx, packet);
+  if (err < 0)
+    scm_misc_error("write-frame", "Error writing video frame: ~a",
+                   scm_list_1(get_error_text(err)));
+}
+
 SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
@@ -838,19 +852,8 @@ SCM ffmpeg_write_video(SCM scm_self)
                    scm_list_1(get_error_text(err)));
 
   // Write any new video packets
-  if (got_packet) {
-#ifdef HAVE_AV_PACKET_RESCALE_TS
-    av_packet_rescale_ts(&pkt, codec->time_base, video_stream(self)->time_base);
-#else
-    if (codec->coded_frame->pts != AV_NOPTS_VALUE)
-      pkt.pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, video_stream(self)->time_base);
-#endif
-    pkt.stream_index = self->video_stream_idx;
-    err = av_interleaved_write_frame(self->fmt_ctx, &pkt);
-    if (err < 0)
-      scm_misc_error("ffmpeg-write-video", "Error writing video frame: ~a",
-                     scm_list_1(get_error_text(err)));
-  };
+  if (got_packet)
+    write_frame(self, &pkt, codec, video_stream(self), self->video_stream_idx);
 
   return SCM_UNSPECIFIED;
 }
@@ -919,20 +922,8 @@ SCM ffmpeg_write_audio(SCM scm_self)
                    scm_list_1(get_error_text(err)));
 
   // Write any new audio packets
-  // TODO: remove redundancy with ffmpeg_write_video
-  if (got_packet) {
-#ifdef HAVE_AV_PACKET_RESCALE_TS
-    av_packet_rescale_ts(&pkt, codec->time_base, audio_stream(self)->time_base);
-#else
-    if (codec->coded_frame->pts != AV_NOPTS_VALUE)
-      pkt.pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, audio_stream(self)->time_base);
-#endif
-    pkt.stream_index = self->audio_stream_idx;
-    err = av_interleaved_write_frame(self->fmt_ctx, &pkt);
-    if (err < 0)
-      scm_misc_error("ffmpeg-write-audio", "Error writing audio frame: ~a",
-                     scm_list_1(get_error_text(err)));
-  };
+  if (got_packet)
+    write_frame(self, &pkt, codec, audio_stream(self), self->audio_stream_idx);
 
   return SCM_UNSPECIFIED;
 }
