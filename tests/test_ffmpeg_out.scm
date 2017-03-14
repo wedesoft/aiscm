@@ -200,6 +200,8 @@
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
 
+  (destroy output-audio)
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

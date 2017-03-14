@@ -1,9 +1,10 @@
 ## Ready
 
-* write trailing audio
+* write trailing video and audio
 * check output shape and output audio type
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
+* use audio input buffer for FFmpeg input (instead of returning audio frames)
 * use libavresample if libswresample is not present
 ```
 https://autotools.io/pkgconfig/pkg_check_modules.html

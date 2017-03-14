@@ -104,48 +104,127 @@ static char is_input_context(struct ffmpeg_t *self)
   return self->fmt_ctx->iformat != NULL;
 }
 
+static void write_frame(struct ffmpeg_t *self, AVPacket *packet, AVCodecContext *codec, AVStream *stream, int stream_idx)
+{
+#ifdef HAVE_AV_PACKET_RESCALE_TS
+  av_packet_rescale_ts(packet, codec->time_base, stream->time_base);
+#else
+  if (codec->coded_frame->pts != AV_NOPTS_VALUE)
+    packet->pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, stream->time_base);
+#endif
+  packet->stream_index = stream_idx;
+  int err = av_interleaved_write_frame(self->fmt_ctx, packet);
+  if (err < 0)
+    scm_misc_error("write-frame", "Error writing video frame: ~a",
+                   scm_list_1(get_error_text(err)));
+}
+
+static int encode_video(struct ffmpeg_t *self, AVFrame *video_frame)
+{
+  AVCodecContext *codec = video_codec_ctx(self);
+
+  // Initialise data packet
+  AVPacket pkt = { 0 };
+  av_init_packet(&pkt);
+
+  // Encode the video frame
+  int got_packet;
+  int err = avcodec_encode_video2(codec, &pkt, video_frame, &got_packet);
+  if (err < 0)
+    scm_misc_error("encode-video", "Error encoding video frame: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  // Write any new video packets
+  if (got_packet)
+    write_frame(self, &pkt, codec, video_stream(self), self->video_stream_idx);
+
+  return got_packet;
+}
+
+static int encode_audio(struct ffmpeg_t *self, AVFrame *audio_frame)
+{
+  AVCodecContext *codec = audio_codec_ctx(self);
+
+  // Initialise data packet
+  AVPacket pkt = { 0 };
+  av_init_packet(&pkt);
+
+  // Encode the audio frame
+  int got_packet;
+  int err = avcodec_encode_audio2(codec, &pkt, audio_frame, &got_packet);
+  if (err < 0)
+    scm_misc_error("encode-audio", "Error encoding audio frame: ~a",
+                   scm_list_1(get_error_text(err)));
+
+  // Write any new audio packets
+  if (got_packet)
+    write_frame(self, &pkt, codec, audio_stream(self), self->audio_stream_idx);
+
+  return got_packet;
+}
+
 SCM ffmpeg_destroy(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
+
+  //if (!is_input_context(self) && self->header_written) {
+  //  // Clear audio encoder pipeline
+  //  if (self->audio_codec_ctx)
+  //    while (encode_audio(self, NULL));
+  //
+  //  // Clear video encoder pipeline
+  //  if (self->video_codec_ctx)
+  //    while (encode_video(self, NULL));
+  //};
+
   if (self->video_frame) {
     av_frame_unref(self->video_frame);
     av_frame_free(&self->video_frame);
     self->video_frame = NULL;
   };
+
   if (self->audio_packed_frame) {
     av_frame_unref(self->audio_packed_frame);
     av_frame_free(&self->audio_packed_frame);
     self->audio_packed_frame = NULL;
   };
+
   if (self->audio_target_frame) {
     av_frame_unref(self->audio_target_frame);
     av_frame_free(&self->audio_target_frame);
     self->audio_target_frame = NULL;
   };
+
   if (self->audio_buffer.buffer) {
     ringbuffer_destroy(&self->audio_buffer);
     self->audio_buffer.buffer = NULL;
   };
+
   if (self->header_written) {
     av_write_trailer(self->fmt_ctx);
     self->header_written = 0;
   };
+
   if (self->orig_pkt.data) {
     av_free_packet(&self->orig_pkt);
     self->orig_pkt.data = NULL;
   };
+
   if (self->audio_codec_ctx) {
     avcodec_close(self->audio_codec_ctx);
     self->audio_codec_ctx = NULL;
   };
+
   if (self->video_codec_ctx) {
     avcodec_close(self->video_codec_ctx);
     self->video_codec_ctx = NULL;
   };
+
   if (self->output_file) {
     avio_close(self->fmt_ctx->pb);
     self->output_file = 0;
   };
+
   if (self->fmt_ctx) {
     if (is_input_context(self))
       avformat_close_input(&self->fmt_ctx);
@@ -153,6 +232,7 @@ SCM ffmpeg_destroy(SCM scm_self)
       avformat_free_context(self->fmt_ctx);
     self->fmt_ctx = NULL;
   };
+
   return SCM_UNSPECIFIED;
 }
 
@@ -813,21 +893,6 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
-static void write_frame(struct ffmpeg_t *self, AVPacket *packet, AVCodecContext *codec, AVStream *stream, int stream_idx)
-{
-#ifdef HAVE_AV_PACKET_RESCALE_TS
-  av_packet_rescale_ts(packet, codec->time_base, stream->time_base);
-#else
-  if (codec->coded_frame->pts != AV_NOPTS_VALUE)
-    packet->pts = av_rescale_q(codec->coded_frame->pts, codec->time_base, stream->time_base);
-#endif
-  packet->stream_index = stream_idx;
-  int err = av_interleaved_write_frame(self->fmt_ctx, packet);
-  if (err < 0)
-    scm_misc_error("write-frame", "Error writing video frame: ~a",
-                   scm_list_1(get_error_text(err)));
-}
-
 SCM ffmpeg_write_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
@@ -838,22 +903,7 @@ SCM ffmpeg_write_video(SCM scm_self)
   // Set frame timestamp
   self->video_frame->pts = self->output_video_pts++;
 
-  AVCodecContext *codec = video_codec_ctx(self);
-
-  // Initialise data packet
-  AVPacket pkt = { 0 };
-  av_init_packet(&pkt);
-
-  // Encode the video frame
-  int got_packet;
-  int err = avcodec_encode_video2(codec, &pkt, self->video_frame, &got_packet);
-  if (err < 0)
-    scm_misc_error("ffmpeg-write-video", "Error encoding video frame: ~a",
-                   scm_list_1(get_error_text(err)));
-
-  // Write any new video packets
-  if (got_packet)
-    write_frame(self, &pkt, codec, video_stream(self), self->video_stream_idx);
+  encode_video(self, self->video_frame);
 
   return SCM_UNSPECIFIED;
 }
@@ -874,20 +924,6 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   ringbuffer_store(&self->audio_buffer, scm_to_pointer(scm_data), scm_to_int(scm_bytes));
-  /*
-  int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
-  int frame_size =
-    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, self->audio_codec_ctx->sample_fmt, 1);
-
-  while (self->audio_buffer.fill >= frame_size) {
-    ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
-    printf("audio buffer bytes = %d\n", self->audio_buffer.fill);
-    printf("number of samples = %d\n", self->audio_packed_frame->nb_samples);
-    printf("sample format = %d\n", self->audio_codec_ctx->sample_fmt);
-    printf("channels = %d\n", channels);
-    printf("size = %d\n", frame_size);
-  };
-  */
   return SCM_UNSPECIFIED;
 }
 
@@ -910,21 +946,7 @@ SCM ffmpeg_write_audio(SCM scm_self)
   audio_frame->pts = av_rescale_q(self->samples_count, (AVRational){1, codec->sample_rate}, audio_stream(self)->time_base);
   self->samples_count += audio_frame->nb_samples;
 
-  // Initialise data packet
-  AVPacket pkt = { 0 };
-  av_init_packet(&pkt);
-
-  // Encode the audio frame
-  int got_packet;
-  int err = avcodec_encode_audio2(codec, &pkt, audio_frame, &got_packet);
-  if (err < 0)
-    scm_misc_error("ffmpeg-write-audio", "Error encoding audio frame: ~a",
-                   scm_list_1(get_error_text(err)));
-
-  // Write any new audio packets
-  if (got_packet)
-    write_frame(self, &pkt, codec, audio_stream(self), self->audio_stream_idx);
-
+  encode_audio(self, self->audio_target_frame);
   return SCM_UNSPECIFIED;
 }
 
