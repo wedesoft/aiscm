@@ -167,15 +167,15 @@ SCM ffmpeg_destroy(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
 
-  //if (!is_input_context(self) && self->header_written) {
-  //  // Clear audio encoder pipeline
-  //  if (self->audio_codec_ctx)
-  //    while (encode_audio(self, NULL));
-  //
-  //  // Clear video encoder pipeline
-  //  if (self->video_codec_ctx)
-  //    while (encode_video(self, NULL));
-  //};
+  if (self->header_written) {
+    // Clear audio encoder pipeline
+    if (self->audio_codec_ctx)
+      while (encode_audio(self, NULL));
+
+    // Clear video encoder pipeline
+    if (self->video_codec_ctx)
+      while (encode_video(self, NULL));
+  };
 
   if (self->video_frame) {
     av_frame_unref(self->video_frame);
