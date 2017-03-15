@@ -14,9 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include "config.h"
 #include <libguile.h>
 #include <libavutil/channel_layout.h>
+#include <libavcodec/avcodec.h>
+#ifndef HAVE_SWRESAMPLE
+#include <libavresample/avresample.h>
+#else
 #include <libswresample/swresample.h>
+#endif
 #include "samples-helpers.h"
 #include "image-helpers.h"
 

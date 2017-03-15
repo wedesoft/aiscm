@@ -1,5 +1,6 @@
 ## Ready
 
+* add libswresample (or libavresample) to Docker container
 * check output shape and output audio type
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
