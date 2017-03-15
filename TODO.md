@@ -1,6 +1,5 @@
 ## Ready
 
-* write trailing video and audio
 * check output shape and output audio type
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
@@ -15,6 +14,10 @@ PKG_CHECK_MODULES([UDEV], [libudev],
                  ])
       ])
 ```
+
+* remove scm\_assert\_smob\_type?
+  ERROR: In procedure free-handle: Wrong type argument in position 1: #\<finalized smob 51f7050\>
+  https://github.com/spk121/guile-curl/issues/3
 * image-helpers.c -> util-helpers.c
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
