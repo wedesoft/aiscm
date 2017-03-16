@@ -67,13 +67,11 @@
 * split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
-* call needs to keep variables live, generate code for shuffling variables, use RAX as intermediate if required, use "predefined" as hints
 * ArUco markers robot control
 * fftw3, hypercomplex, kinect, linalg, opencv, qt4
 * predator tracker
 * <-> Guile 6.7.5 Arrays
 * create relocatable code and use linker to insert calls with relative addresses
-* use C parser to get method types? C++ binary interace? Qt bindings?
 * use (ice-9 match) to simplify and translate assembler code?
   https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
@@ -88,8 +86,6 @@
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* use libswresample for audio conversions
-* split up into separate packages
 * inject: equality, sum, mininum, maximum of frames
 * shape of xorg window
 * xorg window set size, fullscreen windows
@@ -117,10 +113,7 @@
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
 * use thumbnail images to illustrate examples
-* update live intervals instead of recomputing
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
-* RET keeps return value and callee-saved stuff alive
-* weird error when including sequence but not pointer
 * slimv, tcp/ip, attach
   http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
 * wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
