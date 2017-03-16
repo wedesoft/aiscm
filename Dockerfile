@@ -16,7 +16,7 @@ RUN apt-get install -q -y pandoc
 RUN apt-get install -q -y libjpeg-dev libmjpegtools-dev
 RUN apt-get install -q -y libpulse-dev
 RUN apt-get install -q -y imagemagick libmagickcore-dev
-RUN apt-get install -q -y libswresample-dev
+RUN apt-get install -q -y libavresample-dev
 RUN apt-get install -q -y libswscale-dev
 RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
