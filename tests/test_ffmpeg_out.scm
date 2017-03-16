@@ -23,13 +23,13 @@
              (aiscm float)
              (aiscm rgb)
              (aiscm image)
+             (aiscm samples)
              (aiscm pointer)
              (aiscm sequence))
 
 
 (test-begin "aiscm ffmpeg")
 
-(test-skip 1)
 (test-begin "video output")
   (define colour-values
     (map (lambda (j) (map (lambda (i) (rgb i j 128)) (iota 8))) (iota 2)))
@@ -57,6 +57,11 @@
   (test-equal "Get frame rate of output video"
     25 (frame-rate output-video))
 
+  (test-equal "Get shape of target video frame"
+    '(16 2) (shape (target-video-frame output-video)))
+  (test-eq "Get format of target video frame"
+    'I420 (get-format (target-video-frame output-video)))
+
   (test-eq "Writing a 2D array with 'write-image' returns the input array"
     colour-array (write-image colour-array output-video))
   (test-eq "Writing an image with 'write-image' returns the input image"
@@ -76,26 +81,86 @@
   ; TODO: test error when attempting to write video to MP3 file
 (test-end "video output")
 
-(test-begin "type conversions")
-  (test-eqv "convert unsigned byte to FFmpeg audio type"
-    AV_SAMPLE_FMT_U8P (type->ffmpeg-type <ubyte>))
-  (test-eqv "convert short integer to FFmpeg audio type"
-    AV_SAMPLE_FMT_S16P (type->ffmpeg-type <sint>))
-  (test-eqv "convert integer to FFmpeg audio type"
-    AV_SAMPLE_FMT_S32P (type->ffmpeg-type <int>))
-  (test-eqv "convert floating-point to FFmpeg audio type"
-    AV_SAMPLE_FMT_FLTP (type->ffmpeg-type <float>))
-  (test-eqv "convert floating-point to FFmpeg audio type"
-    AV_SAMPLE_FMT_DBLP (type->ffmpeg-type <double>))
-  (test-error "throw error if type not supported by FFmpeg audio"
-    'misc-error (type->ffmpeg-type <usint>))
-  (test-eq "convert FFmpeg audio short integer to integer type"
-    <sint> (ffmpeg-type->type AV_SAMPLE_FMT_S16P))
-(test-end "type conversions")
-
 (test-begin "audio output")
   (test-assert "'open-ffmpeg-output' can create an audio file"
     (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:format-name 'mp3 #:rate 44100))
+
+  (test-begin "select-rate")
+    (test-eqv "Return specified rate if supported"
+      44100 ((select-rate 44100) '(44100)))
+    (test-error "Throw exception if sample rate is not supported"
+      'misc-error ((select-rate 44100) '(22050)))
+    (test-error "Throw exception if sample rate is not supported"
+      'misc-error ((select-rate 44100) '(22050)))
+    (test-eqv "Use function if supplied"
+      22050 ((select-rate last) '(44100 22050)))
+    (test-eqv "Return desired rate if empty list is supplied"
+      8000 ((select-rate 8000) '()))
+  (test-end "select-rate")
+
+  (define negotiate-audio-rate (open-ffmpeg-output (string-append (tmpnam) ".mp3")
+                                                   #:format-name 'mp3
+                                                   #:rate (lambda (rates) 22050)))
+  (test-eqv "Set audio rate using a method"
+    22050 (rate negotiate-audio-rate))
+
+  (test-begin "select-sample-typecode")
+    (test-eq "Select short integer sample format if it is supported"
+      <sint> (select-sample-typecode <sint> (list <sint>)))
+    (test-eq "Select larger type if desired type is not supported"
+      <int> (select-sample-typecode <sint> (list <int>)))
+    (test-eq "Select short integer sample format if it is the last supported one"
+      <sint> (select-sample-typecode <sint> (list <int> <sint>)))
+    (test-eq "Select short integer sample format if it is the first supported one"
+      <sint> (select-sample-typecode <sint> (list <sint> <int>)))
+    (test-eq "Select largest integer format if the desired format is not supported"
+      <int> (select-sample-typecode <sint> (list <ubyte> <int>)))
+    (test-eq "Select largest integer format if the desired format is not supported (regardless of order)"
+      <int> (select-sample-typecode <sint> (list <int> <ubyte>)))
+    (test-error "Throw exception if all supported types are smaller"
+      'misc-error (select-sample-typecode <sint> (list <ubyte>)))
+    (test-eq "Prefer integer format if desired format is integer"
+      <int> (select-sample-typecode <int> (list <float> <int>)))
+    (test-eq "Switch to floating point if required"
+      <float> (select-sample-typecode <int> (list <sint> <float>)))
+    (test-eq "Select specified sample format if no supported format is specified"
+      <float> (select-sample-typecode <float> '()))
+  (test-end "select-sample-typecode")
+
+  (test-begin "typecodes-of-sample-formats")
+    (test-equal "No supported sample types means no supported typecodes"
+      '() (typecodes-of-sample-formats '()))
+    (test-equal "Get the typecode of a packed sample format"
+      (list <ubyte>) (typecodes-of-sample-formats (list AV_SAMPLE_FMT_U8)))
+    (test-equal "Omit duplicate typecodes"
+      (list <float>) (typecodes-of-sample-formats (list AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_FLTP)))
+  (test-end "typecodes-of-sample-formats")
+
+  (test-begin "best-sample-format")
+    (test-eqv "Select format if it the typecode is matching"
+      AV_SAMPLE_FMT_S32 (best-sample-format <int> (list AV_SAMPLE_FMT_S32)))
+    (test-eqv "Ignore formats with different typecode"
+      AV_SAMPLE_FMT_S32 (best-sample-format <int> (list AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32)))
+    (test-eqv "Ignore formats with different typecode regardless of order"
+      AV_SAMPLE_FMT_S32 (best-sample-format <int> (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S16)))
+    (test-eqv "Select planar format if packed format is not supported"
+      AV_SAMPLE_FMT_S32P (best-sample-format <int> (list AV_SAMPLE_FMT_S32P)))
+    (test-eqv "Select planar format if packed format is not supported (short integer case)"
+      AV_SAMPLE_FMT_S16P (best-sample-format <sint> (list AV_SAMPLE_FMT_S16P)))
+    (test-eqv "Prefer packed format"
+      AV_SAMPLE_FMT_S32 (best-sample-format <int> (list AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_S32)))
+    (test-eqv "Specify planar format if list of supported formats is empty"
+      AV_SAMPLE_FMT_S32P (best-sample-format <int> '()))
+  (test-end "best-sample-format")
+
+  (test-begin "select-sample-format")
+    (test-eqv "Select packed format if supported"
+      AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32)))
+    (test-eqv "Select nearest larger type if necessary"
+      AV_SAMPLE_FMT_FLT ((select-sample-format <int>) (list AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_FLT)))
+    (test-eqv "Prefer packed format"
+      AV_SAMPLE_FMT_S32 ((select-sample-format <int>) (list AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_S32P)))
+  (test-end "select-sample-format")
 
   (define output-audio (open-ffmpeg-output (string-append (tmpnam) ".mp3")
                                            #:format-name 'mp3
@@ -111,9 +176,32 @@
   (test-eq "Get audio sample type"
     <sint> (typecode output-audio))
 
+  (test-eq "Get type of target audio frame"
+    <sint> (typecode (target-audio-frame output-audio)))
+  (test-eqv "Get channels of target audio frame"
+    2 (channels (target-audio-frame output-audio)))
+  (test-eqv "Get rate of target audio frame"
+    44100 (rate (target-audio-frame output-audio)))
+
+  (test-eq "Get type of packed audio frame"
+    <sint> (typecode (packed-audio-frame output-audio)))
+  (test-assert "Packed audio frame should be packed"
+    (not (planar? (packed-audio-frame output-audio))))
+
   (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (test-eqv "Audio buffer fill is zero initially"
+    0 (audio-buffer-fill output-audio))
+  (buffer-audio samples output-audio)
+  (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
+    (size-of samples) (audio-buffer-fill output-audio))
+  (fetch-audio output-audio)
+  (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
+    (- (size-of samples) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
   (test-equal "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
+
+  (destroy output-audio)
+
 (test-end "audio output")
 
 (test-end "aiscm ffmpeg")

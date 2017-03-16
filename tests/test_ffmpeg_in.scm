@@ -46,14 +46,18 @@
     '(0) (from-array-at-least-one))
   (test-equal "Convert long integer array element to Scheme"
     (list (ash 42 32)) (from-array-long-integers))
-  (test-assert "First value of offset-array is zero"
-    (first-offset-is-zero))
-  (test-assert "Second value of offset-array correct"
-    (second-offset-correct))
-  (test-assert "Set offset values for null pointers to zero"
-    (zero-offset-for-null-pointer))
-  (test-assert "Offsets have 64 bit"
-    (offsets-have-64-bit))
+
+  (test-begin "convert pointers to offsets")
+    (test-assert "First value of offset-array is zero"
+      (first-offset-is-zero))
+    (test-assert "Second value of offset-array correct"
+      (second-offset-correct))
+    (test-assert "Set offset values for null pointers to zero"
+      (zero-offset-for-null-pointer))
+    (test-assert "Offsets have 64 bit"
+      (offsets-have-64-bit))
+  (test-end "convert pointers to offsets")
+
   (test-assert "Pack byte audio sample"
     (pack-byte-audio-sample))
   (test-assert "Pack byte audio samples"

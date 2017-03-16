@@ -21,8 +21,8 @@
 #include "image-helpers.h"
 
 
-void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
-                 uint8_t *data[], int32_t pitches[], void *ptr)
+static void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
+                        uint8_t *data[], int32_t pitches[], void *ptr)
 {
   int i;
   int64_t offsets[8];
@@ -60,7 +60,7 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
             dest_data, dest_pitches);
 
   sws_freeContext(sws_context);
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM scm_offsets)
@@ -74,7 +74,7 @@ SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM sc
   scm_to_long_array(scm_offsets, offsets);
   decode_jpeg_raw(source_ptr, width * height * 2, Y4M_ILACE_NONE, 0, width, height,
                   dest_ptr + offsets[0], dest_ptr + offsets[2], dest_ptr + offsets[1]);
-  return SCM_UNDEFINED;
+  return SCM_UNSPECIFIED;
 }
 
 void init_image(void)

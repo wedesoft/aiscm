@@ -45,10 +45,72 @@ SCM scm_to_long_array_second_element(SCM source)
   return scm_from_bool(dest[1] == (456L << 32));
 }
 
+static scm_t_bits test_type_tag;
+
+struct test_type_t {
+  char *ptr;
+};
+
+SCM cleanup_test_type(SCM scm_self)
+{
+  struct test_type_t *self = (struct test_type_t *)SCM_SMOB_DATA(scm_self);
+  *self->ptr = 1;
+  return SCM_UNSPECIFIED;
+}
+
+SCM call_scheme_function(SCM scm_fun, SCM scm_arg)
+{
+  return clean_up_on_failure(SCM_UNDEFINED, NULL, scm_fun, scm_arg);
+}
+
+static SCM call_clean_up_on_failure(void *data)
+{
+  SCM *body_data = (SCM *)data;
+  SCM test_object = body_data[0];
+  SCM scm_fun = body_data[1];
+  return clean_up_on_failure(test_object, cleanup_test_type, scm_fun, SCM_UNDEFINED);
+}
+
+static SCM ignore_exception(void *data, SCM tag, SCM throw_args)
+{
+  return SCM_BOOL_F;
+}
+
+SCM cleanup_when_exception(SCM scm_fun)
+{
+  char cleaned = 0;
+  SCM test_object;
+  struct test_type_t *self = (struct test_type_t *)scm_gc_calloc(sizeof(struct test_type_t), "testing");
+  SCM_NEWSMOB(test_object, test_type_tag, self);
+  self->ptr = &cleaned;
+  SCM body_data[2];
+  body_data[0] = test_object;
+  body_data[1] = scm_fun;
+  scm_c_catch(SCM_BOOL_T, call_clean_up_on_failure, &body_data, ignore_exception, NULL, NULL, NULL);
+  char retval = cleaned;
+  scm_remember_upto_here_1(test_object);
+  return scm_from_bool(retval);
+}
+
+SCM throw_exception_after_cleanup(SCM scm_fun)
+{
+  char cleaned;
+  SCM test_object;
+  struct test_type_t *self = (struct test_type_t *)scm_gc_calloc(sizeof(struct test_type_t), "testing");
+  SCM_NEWSMOB(test_object, test_type_tag, self);
+  self->ptr = &cleaned;
+  clean_up_on_failure(test_object, cleanup_test_type, scm_fun, SCM_UNDEFINED);
+  return SCM_UNDEFINED;
+}
+
 void init_image_helpers_tests(void)
 {
-  scm_c_define_gsubr("scm-to-int-array-one-element", 1, 0, 0, scm_to_int_array_one_element);
-  scm_c_define_gsubr("scm-to-int-array-second-element", 1, 0, 0, scm_to_int_array_second_element);
-  scm_c_define_gsubr("scm-to-long-array-one-element", 1, 0, 0, scm_to_long_array_one_element);
+  test_type_tag = scm_make_smob_type("test-type", sizeof(struct test_type_t));
+  scm_c_define_gsubr("scm-to-int-array-one-element"    , 1, 0, 0, scm_to_int_array_one_element    );
+  scm_c_define_gsubr("scm-to-int-array-second-element" , 1, 0, 0, scm_to_int_array_second_element );
+  scm_c_define_gsubr("scm-to-long-array-one-element"   , 1, 0, 0, scm_to_long_array_one_element   );
   scm_c_define_gsubr("scm-to-long-array-second-element", 1, 0, 0, scm_to_long_array_second_element);
+  scm_c_define_gsubr("call-scheme-function"            , 2, 0, 0, call_scheme_function            );
+  scm_c_define_gsubr("cleanup-when-exception"          , 1, 0, 0, cleanup_when_exception          );
+  scm_c_define_gsubr("throw-exception-after-cleanup"   , 1, 0, 0, throw_exception_after_cleanup   );
 }

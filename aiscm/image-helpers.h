@@ -23,5 +23,7 @@ void scm_to_int_array(SCM source, int32_t dest[]);
 
 void scm_to_long_array(SCM source, int64_t dest[]);
 
+SCM clean_up_on_failure(SCM scm_object, SCM (*cleanup_method)(SCM), SCM scm_fun, SCM scm_arg);
+
 #endif
 

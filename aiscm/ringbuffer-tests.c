@@ -18,7 +18,7 @@
 #include "ringbuffer.h"
 
 
-static void test_empty_callback(char *data, int count, void *userdata)
+static void test_empty_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 0;
 }
@@ -53,7 +53,7 @@ SCM ringbuffer_add_data(void)
   return retval;
 }
 
-static void test_fetch_callback(char *data, int count, void *userdata)
+static void test_fetch_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 5 && strcmp(data, "test") == 0;
 }
@@ -69,7 +69,7 @@ SCM ringbuffer_store_and_fetch(void)
   return scm_from_bool(retval);
 }
 
-static void test_append_callback(char *data, int count, void *userdata)
+static void test_append_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 9 && strcmp(data, "testmore") == 0;
 }
@@ -86,7 +86,7 @@ SCM ringbuffer_store_appends_data(void)
   return scm_from_bool(retval);
 }
 
-static void test_limit_callback(char *data, int count, void *userdata)
+static void test_limit_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "test", 4) == 0;
 }
@@ -102,7 +102,7 @@ SCM ringbuffer_fetch_limit(void)
   return scm_from_bool(retval);
 }
 
-static void test_advances_callback(char *data, int count, void *userdata)
+static void test_advances_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "more", 4) == 0;
 }
@@ -119,7 +119,7 @@ SCM ringbuffer_fetching_advances(void)
   return scm_from_bool(retval);
 }
 
-static void test_offset_callback(char *data, int count, void *userdata)
+static void test_offset_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 4 && strncmp(data, "cdef", 4) == 0;
 }
@@ -137,29 +137,29 @@ SCM ringbuffer_storing_respects_offset(void)
   return scm_from_bool(retval);
 }
 
-static void test_wrap_callback(char *data, int count, void *userdata)
+static void test_wrap_callback(char *data, int count, int offset, void *userdata)
 {
-  strncat((char *)userdata, data, count);
+  memcpy((char *)userdata + offset, data, count);
 }
 
 SCM ringbuffer_wrap_around(void)
 {
   struct ringbuffer_t ringbuffer;
   ringbuffer_init(&ringbuffer, 4);
-  char buf[7];
-  buf[0] = '\0';
+  char buf[5];
+  buf[4] = '\0';
   ringbuffer_store(&ringbuffer, "abcd", 4);
   ringbuffer_fetch(&ringbuffer, 2, test_wrap_callback, buf);
   ringbuffer_store(&ringbuffer, "ef", 2);
   ringbuffer_fetch(&ringbuffer, 4, test_wrap_callback, buf);
   SCM retval = scm_from_bool(!strncmp(ringbuffer.buffer, "efcd", 4) &&
-                             !strcmp(buf, "abcdef") &&
+                             !strcmp(buf, "cdef") &&
                              ringbuffer.read_offset == 2);
   ringbuffer_destroy(&ringbuffer);
   return retval;
 }
 
-static void test_grow_callback(char *data, int count, void *userdata)
+static void test_grow_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 8 && strncmp(data, "abcdefgh", 8) == 0;
 }
@@ -175,7 +175,7 @@ SCM ringbuffer_grow(void)
   return scm_from_bool(retval);
 }
 
-static void test_wrap_write_callback(char *data, int count, void *userdata)
+static void test_wrap_write_callback(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 2 && strncmp(data, "ef", 2) == 0;
 }
@@ -195,7 +195,7 @@ SCM ringbuffer_wrap_write(void)
   return scm_from_bool(retval);
 }
 
-static void test_flushing(char *data, int count, void *userdata)
+static void test_flushing(char *data, int count, int offset, void *userdata)
 {
   *(char *)userdata = count == 2 && strncmp(data, "cd", 2) == 0;
 }
