@@ -32,3 +32,35 @@ void scm_to_long_array(SCM source, int64_t dest[])
     scm_to_long_array(scm_cdr(source), dest + 1);
   };
 }
+
+static SCM do_function_call(void *data)
+{
+  SCM *args = (SCM *)data;
+  return scm_call_1(args[0], args[1]);
+}
+
+struct cleanup_t {
+  SCM scm_object;
+  SCM (*cleanup_method)(SCM);
+};
+
+static SCM do_clean_up(void *data, SCM tag, SCM throw_args)
+{
+  struct cleanup_t *args = (struct cleanup_t *)data;
+  SCM scm_object = args->scm_object;
+  SCM (*cleanup_method)(SCM) = args->cleanup_method;
+  (*cleanup_method)(scm_object);
+  scm_throw(tag, throw_args);
+  return SCM_UNDEFINED;
+}
+
+SCM clean_up_on_failure(SCM scm_object, SCM (*cleanup_method)(SCM), SCM scm_fun, SCM scm_arg)
+{
+  SCM body_data[2];
+  body_data[0] = scm_fun;
+  body_data[1] = scm_arg;
+  struct cleanup_t handler_data;
+  handler_data.scm_object = scm_object;
+  handler_data.cleanup_method = cleanup_method;
+  return scm_c_catch(SCM_BOOL_T, do_function_call, &body_data, do_clean_up, &handler_data, NULL, NULL);
+}

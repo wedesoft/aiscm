@@ -14,27 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef __AISCM_RINGBUFFER_H
-#define __AISCM_RINGBUFFER_H
+#include "samples-helpers.h"
 
-struct ringbuffer_t {
-  int fill;
-  int read_offset;
-  int write_offset;
-  int size;
-  char *buffer;
-};
+SCM first_pointer_from_offset(void)
+{
+  uint8_t buffer[4] = {2, 3, 5, 7};
+  uint8_t *p = &buffer[0];
+  uint8_t *data[1];
+  int64_t offsets[1] = {3};
+  pointers_from_offsets(p, offsets, data, 1);
+  return scm_from_bool(7 == *data[0]);
+}
 
-typedef void (*ringbuffer_callback_t)(char *data, int count, int offset, void *userdata);
+SCM second_pointer_from_offset(void)
+{
+  uint8_t buffer[4] = {2, 3, 5, 7};
+  uint8_t *p = &buffer[0];
+  uint8_t *data[2];
+  int64_t offsets[2] = {3, 2};
+  pointers_from_offsets(p, offsets, data, 2);
+  return scm_from_bool(5 == *data[1]);
+}
 
-void ringbuffer_init(struct ringbuffer_t *ringbuffer, int size);
-
-void ringbuffer_destroy(struct ringbuffer_t *ringbuffer);
-
-void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_callback_t callback, void *userdata);
-
-void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count);
-
-void ringbuffer_flush(struct ringbuffer_t *ringbuffer);
-
-#endif
+void init_samples_helpers_tests(void)
+{
+  scm_c_define_gsubr("first-pointer-from-offset" , 0, 0, 0, first_pointer_from_offset );
+  scm_c_define_gsubr("second-pointer-from-offset", 0, 0, 0, second_pointer_from_offset);
+}

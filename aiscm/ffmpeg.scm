@@ -25,11 +25,16 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm float)
   #:use-module (aiscm mem)
+  #:use-module (aiscm samples)
   #:use-module (aiscm image)
+  #:use-module (aiscm jit)
   #:use-module (aiscm util)
-  #:export (<ffmpeg> open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop)
-  #:re-export (destroy read-image write-image read-audio rate channels typecode))
+  #:export (<ffmpeg>
+            open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
+            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
+            select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
+            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio)
+  #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -41,32 +46,77 @@
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 
-(define audio-types
-  (list (cons AV_SAMPLE_FMT_U8P  <ubyte> )
-        (cons AV_SAMPLE_FMT_S16P <sint>  )
-        (cons AV_SAMPLE_FMT_S32P <int>   )
-        (cons AV_SAMPLE_FMT_FLTP <float> )
-        (cons AV_SAMPLE_FMT_DBLP <double>)))
+(define typemap
+  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
+        (cons <sint>   AV_SAMPLE_FMT_S16P)
+        (cons <int>    AV_SAMPLE_FMT_S32P)
+        (cons <float>  AV_SAMPLE_FMT_FLTP)
+        (cons <double> AV_SAMPLE_FMT_DBLP)))
+(define inverse-typemap (alist-invert typemap))
 
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
   (let [(debug (equal? "YES" (getenv "DEBUG")))]
     (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
 
+(define (select-rate rate)
+  "Check that the sample rate is supported or raise an exception"
+  (if (number? rate)
+    (lambda (rates)
+      (if (or (null? rates) (memv rate rates))
+        rate
+        (aiscm-error 'select-rate "Sampling rate ~a not supported (supported rates are ~a)" rate rates)))
+    rate))
+
+(define (select-sample-typecode typecode supported-types)
+  "Select the internal sample type for the FFmpeg encoder buffer.
+  The type needs to be the same or larger than the type of the audio samples provided."
+  (let* [(rank           (lambda (t) (+ (size-of t) (if (is-a? t <meta<float<>>>) 1 0))))
+         (sufficient?    (lambda (t) (<= (rank typecode) (rank t))))
+         (relevant-types (filter sufficient? (sort-by supported-types rank)))]
+    (if (null? supported-types)
+      typecode
+      (if (null? relevant-types)
+        (aiscm-error 'select-sample-typecode "Sample type ~a or larger type is not supported" typecode)
+        (car relevant-types)))))
+
+(define (typecodes-of-sample-formats sample-formats)
+  "Get typecodes for a list of supported sample types"
+  (delete-duplicates (map sample-format->type sample-formats)))
+
+(define (best-sample-format selected-type sample-formats)
+  "Select sample format with spcecified typecode. Prefer packed format over planar format."
+  (let [(packed (type+planar->sample-format selected-type #f))
+        (planar (type+planar->sample-format selected-type #t))]
+    (if (memv packed sample-formats) packed planar)))
+
+(define* ((select-sample-format typecode) supported-formats)
+  "Select most suitable sample format for audio encoding"
+  (best-sample-format (select-sample-typecode typecode (typecodes-of-sample-formats supported-formats)) supported-formats))
+
 (define (open-ffmpeg-output file-name . initargs)
   "Open audio/video output file FILE-NAME using FFmpeg library"
-  (let-keywords initargs #f (format-name shape frame-rate video-bit-rate aspect-ratio sample-rate)
-    (let* [(have-audio     (or sample-rate))
+  (let-keywords initargs #f (format-name
+                             shape frame-rate video-bit-rate aspect-ratio
+                             channels rate typecode audio-bit-rate)
+    (let* [(have-audio     (or rate channels audio-bit-rate))
            (have-video     (or (not have-audio) shape frame-rate video-bit-rate aspect-ratio))
            (shape          (or shape '(384 288)))
            (frame-rate     (or frame-rate 25))
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
-           (sample-rate    (or sample-rate 44100))
+           (select-rate    (select-rate (or rate 44100)))
+           (typecode       (or typecode <float>))
+           (sample-format  (type+planar->sample-format typecode #t))
+           (select-format  (select-sample-format typecode))
+           (channels       (or channels 2))
+           (audio-bit-rate (or audio-bit-rate (round (/ (* 3 44100) 2))))
            (debug          (equal? "YES" (getenv "DEBUG")))]
       (make <ffmpeg>
-            #:ffmpeg (make-ffmpeg-output file-name format-name shape frame-rate video-bit-rate aspect-ratio have-video
-                                         sample-rate have-audio debug)))))
+            #:ffmpeg (make-ffmpeg-output file-name format-name
+                                         (list shape frame-rate video-bit-rate aspect-ratio) have-video
+                                         (list select-rate channels audio-bit-rate select-format) have-audio
+                                         debug)))))
 
 (define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
@@ -90,7 +140,7 @@
 (define (import-audio-frame self lst)
   "Compose audio frame from timestamp, type, shape, data pointer, and size"
   (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-        (array-type (lambda (type) (multiarray (assq-ref audio-types type) 2)))
+        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
         (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
     (apply (lambda (pts type shape data size)
                    (cons pts (array (array-type type) shape (memory data size))))
@@ -105,6 +155,16 @@
           #:offsets offsets
           #:pitches pitches
           #:mem     (memory data size))))
+
+(define (audio-frame sample-format shape rate offsets data size)
+  "Construct an audio frame from the specified information"
+  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
+    (make <samples> #:typecode (sample-format->type sample-format)
+                    #:shape    shape
+                    #:rate     rate
+                    #:offsets  offsets
+                    #:planar   (sample-format->planar sample-format)
+                    #:mem      (memory data size))))
 
 (define (import-video-frame self lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
@@ -143,11 +203,46 @@
   "Retrieve the next video frame"
   (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
 
+(define (target-audio-frame self)
+  "Get target audio frame for audio encoding"
+  (apply audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
+
+(define (packed-audio-frame self)
+  "Get packed audio frame for converting from/to audio buffer data"
+  (apply audio-frame (ffmpeg-packed-audio-frame (slot-ref self 'ffmpeg))))
+
+(define (audio-buffer-fill self)
+  "Get number of bytes available in audio buffer"
+  (ffmpeg-audio-buffer-fill (slot-ref self 'ffmpeg)))
+
+(define (buffer-audio samples self)
+  "Append audio data to audio buffer"
+  (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+
+(define (fetch-audio self)
+  "Fetch data from the audio buffer and put it into the samples"
+  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg)))
+
+(define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
+  "Write audio frame to output stream"
+  (buffer-audio samples self)
+  (let* [(packed     (packed-audio-frame self))
+         (target     (target-audio-frame self))
+         (frame-size (size-of packed))]
+    (while (>= (audio-buffer-fill self) (size-of packed))
+      (fetch-audio self); fills "packed" audio frame with samples
+      (convert-samples-from! target packed)
+      (ffmpeg-write-audio (slot-ref self 'ffmpeg))))
+  samples)
+
+(define (target-video-frame self)
+  "Get target video frame for video encoding"
+  (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))
+
 (define-method (write-image (img <image>) (self <ffmpeg>))
-  "Write video frame to output video"
-  (let [(output-frame (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))]
-    (convert-from! output-frame img)
-    (ffmpeg-write-video (slot-ref self 'ffmpeg)))
+  "Write video frame to output file"
+  (convert-image-from! (target-video-frame self) img)
+  (ffmpeg-write-video (slot-ref self 'ffmpeg))
   img)
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))
@@ -171,4 +266,4 @@
 
 (define-method (typecode (self <ffmpeg>))
   "Query audio type of file"
-  (assq-ref audio-types (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+  (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))

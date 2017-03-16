@@ -21,10 +21,9 @@
   #:use-module (system foreign)
   #:use-module (aiscm element)
   #:use-module (aiscm util)
-  #:export (<mem>
-            get-memory
-            read-bytes
-            write-bytes))
+  #:export (<mem> get-memory read-bytes write-bytes))
+
+
 (define-class <mem> ()
   (memory #:init-keyword #:memory #:getter get-memory)
   (base #:init-keyword #:base)

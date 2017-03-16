@@ -61,14 +61,17 @@
         (cons <float> PA_SAMPLE_FLOAT32LE)))
 (define inverse-typemap (alist-invert typemap))
 (define (type->pulse-type type)
+  "convert type class to Pulse audio type tag"
   (or (assq-ref typemap type) (aiscm-error 'type->pulse-type "Type ~a not supported by Pulse audio" type)))
 (define (pulse-type->type pulse-type)
+  "convert Pulse audio type tag to type class"
   (assq-ref inverse-typemap pulse-type))
 (define-method (destroy (self <pulse>))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
 
 (define-method (write-audio (samples <sequence<>>) (self <pulse-play>)); TODO: check type
-  (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+  (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples))
+  samples)
 (define-method (write-audio (samples <procedure>) (self <pulse-play>))
   (let [(result (samples))]
     (while result

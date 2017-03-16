@@ -23,7 +23,9 @@ EXTRA_DIST = includes.scm dependencies.sh \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 						 buttondown.css
 
-CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg *.html *.tmp
+CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
+						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg star-ferry.jpg \
+						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
 
