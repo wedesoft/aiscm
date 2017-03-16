@@ -60,24 +60,56 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   samples_setup(scm_dest_type, &dest_format, &dest_rate, &dest_layout, &dest_samples,
                 dest_offsets, dest_data, dest_ptr);
 
-  SwrContext *swr_ctx =
+#ifndef HAVE_SWRESAMPLE
+  AVAudioResampleContext *ctx = avresample_alloc_context();
+  av_opt_set_int(ctx, "in_channel_layout" , source_layout, 0);
+  av_opt_set_int(ctx, "out_channel_layout", dest_layout  , 0);
+  av_opt_set_int(ctx, "in_sample_rate"    , source_rate  , 0);
+  av_opt_set_int(ctx, "out_sample_rate"   , dest_rate    , 0);
+  av_opt_set_int(ctx, "in_sample_fmt"     , source_format, 0);
+  av_opt_set_int(ctx, "out_sample_fmt"    , dest_format  , 0);
+#else
+  SwrContext *ctx =
     swr_alloc_set_opts(NULL, dest_layout, dest_format, dest_rate, source_layout, source_format, source_rate, 0, NULL);
-  if (!swr_ctx)
+#endif
+  if (!ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
-  int err = swr_init(swr_ctx);
-  if (err < 0) {
-    swr_free(&swr_ctx);
-    scm_misc_error("samples-convert", "Could not initialize resampler context", SCM_EOL);
-  };
 
-  // Note: delay (swr_get_delay) not supported, i.e. converting to a different sampling rate is not supported.
-  err = swr_convert(swr_ctx, dest_data, dest_samples, (const uint8_t **)source_data, source_samples);
+#ifndef HAVE_SWRESAMPLE
+  // TODO: decode AVERROR codes
+  int err = avresample_open(ctx);
   if (err < 0) {
-    swr_free(&swr_ctx);
+    avresample_free(&ctx);
+    scm_misc_error("samples-convert", "Could not initialize AV resampler context", SCM_EOL);
+  };
+#else
+  int err = swr_init(ctx);
+  if (err < 0) {
+    swr_free(&ctx);
+    scm_misc_error("samples-convert", "Could not initialize SW resampler context", SCM_EOL);
+  };
+#endif
+
+#ifndef HAVE_SWRESAMPLE
+  err = avresample_convert(ctx, dest_data, 0, dest_samples, source_data, 0, source_samples);
+  if (err < 0) {
+    avresample_free(&ctx);
     scm_misc_error("samples-convert", "Error converting samples", SCM_EOL);
   };
+#else
+  // Note: delay (swr_get_delay) not supported, i.e. converting to a different sampling rate is not supported.
+  err = swr_convert(ctx, dest_data, dest_samples, (const uint8_t **)source_data, source_samples);
+  if (err < 0) {
+    swr_free(&ctx);
+    scm_misc_error("samples-convert", "Error converting samples", SCM_EOL);
+  };
+#endif
 
-  swr_free(&swr_ctx);
+#ifndef HAVE_SWRESAMPLE
+  avresample_free(&ctx);
+#else
+  swr_free(&ctx);
+#endif
   return SCM_UNSPECIFIED;
 }
 

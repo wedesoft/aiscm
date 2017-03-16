@@ -1,21 +1,9 @@
 ## Ready
 
-* add libswresample (or libavresample) to Docker container
 * check output shape and output audio type
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
 * use audio input buffer for FFmpeg input (instead of returning audio frames)
-* use libavresample if libswresample is not present
-```
-https://autotools.io/pkgconfig/pkg_check_modules.html
-PKG_CHECK_MODULES([UDEV], [libudev],
-   [AC_DEFINE([HAVE_UDEV], [1], [Use UDEV])],
-      [PKG_CHECK_MODULES([HAL], [hal],
-             [AC_DEFINE([HAVE_HAL], [1], [Use HAL])
-                 ])
-      ])
-```
-
 * remove scm\_assert\_smob\_type?
   ERROR: In procedure free-handle: Wrong type argument in position 1: #\<finalized smob 51f7050\>
   https://github.com/spk121/guile-curl/issues/3
