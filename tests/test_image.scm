@@ -46,30 +46,39 @@
 (write-bytes mjpeg-data mjpeg-bytes)
 (define mjpeg-frame (make <image> #:format 'MJPG #:shape '(320 240) #:mem mjpeg-data))
 
-(test-assert "Convert first element of Scheme array to integer"
-  (scm-to-int-array-one-element '(123)))
-(test-assert "Convert second element of Scheme array to integer"
-  (scm-to-int-array-second-element '(123 456)))
-(test-assert "Convert first element of Scheme array to long integer"
-  (scm-to-long-array-one-element (list (ash 123 32))))
-(test-assert "Convert second element of Scheme array to long integer"
-  (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32))))
+(test-begin "helper methods")
+  (test-assert "Convert first element of Scheme array to integer"
+    (scm-to-int-array-one-element '(123)))
+  (test-assert "Convert second element of Scheme array to integer"
+    (scm-to-int-array-second-element '(123 456)))
+  (test-assert "Convert first element of Scheme array to long integer"
+    (scm-to-long-array-one-element (list (ash 123 32))))
+  (test-assert "Convert second element of Scheme array to long integer"
+    (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32))))
+  (test-eqv "Call Scheme function without exception occurring"
+    42 (call-scheme-function (lambda (arg) (car arg)) '(42)))
+  (test-assert "Clean up object when exception occurs"
+    (cleanup-when-exception (lambda (arg) (/ 1 0))))
+  (test-error "Throw exception after cleaning up object"
+    'misc-error (throw-exception-after-cleanup (lambda (arg) (/ 1 0))))
+(test-end "helper methods")
+
 (test-equal "conversion to BGR"
-  #vu8(2 2 2 3 3 3) (read-bytes (get-mem (convert img 'BGR)) 6))
+  #vu8(2 2 2 3 3 3) (read-bytes (slot-ref (convert-image img 'BGR) 'mem) 6))
 (test-equal "shape of scaled image"
-  '(16 2) (shape (convert img 'BGRA '(16 2))))
+  '(16 2) (shape (convert-image img 'BGRA '(16 2))))
 (test-assert "duplicated image should be different"
   (not (eq? img (duplicate img))))
 (test-equal "values of image with scaled height"
-  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (get-mem (convert img 'GRAY '(8 2))) 16))
+  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (read-bytes (slot-ref (convert-image img 'GRAY '(8 2)) 'mem) 16))
 (test-equal "correct application of custom pitches"
-  2 (bytevector-u8-ref (read-bytes (get-mem (convert img 'GRAY '(8 2) '(0) '(16))) 32) 16))
+  2 (bytevector-u8-ref (read-bytes (slot-ref (convert-image img 'GRAY '(8 2) '(0) '(16)) 'mem) 32) 16))
 (test-equal "'to-array' should convert the image to a 2D array"
   '((2 3 5 7 11 13 17 19)) (to-list (to-array img)))
 (test-equal "'to-array' should convert the image to a colour image"
-  (list (rgb 1 1 1) (rgb 2 2 2) (rgb 3 3 3)) (to-list (crop 3 (project (to-array (convert img 'UYVY))))))
+  (list (rgb 1 1 1) (rgb 2 2 2) (rgb 3 3 3)) (to-list (crop 3 (project (to-array (convert-image img 'UYVY))))))
 (test-equal "'to-array' should take pitches (strides) into account"
-  '(2 2) (to-list (project (roll (to-array (convert img 'GRAY '(8  2) '(0) '(16)))))))
+  '(2 2) (to-list (project (roll (to-array (convert-image img 'GRAY '(8  2) '(0) '(16)))))))
 (test-equal "'to-image' converts to grayscale image"
   'GRAY (get-format (to-image m)))
 (test-assert "'to-image' for an image has no effect"
@@ -79,7 +88,7 @@
 (test-equal "Converting from unsigned byte multiarray to image and back preserves data"
   l (to-list (to-array (to-image m))))
 (test-equal "Conversion to image ensures compacting of pixel lines"
-  #vu8(1 3 2 4) (read-bytes (get-mem (to-image (roll (arr (1 2) (3 4))))) 4))
+  #vu8(1 3 2 4) (read-bytes (slot-ref (to-image (roll (arr (1 2) (3 4)))) 'mem) 4))
 (test-equal "Converting from integer multiarray to image and back converts to byte data"
   l (to-list (to-array (to-image (to-array <int> l)))))
 (test-equal "Convert RGB array to image"
@@ -95,8 +104,8 @@
   (rgb 51 58 42) (get (to-array mjpeg-frame) 32 56))
 
 (define target (to-image (arr (0 0 0 0 0 0 0 0))))
-(convert-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
+(convert-image-from! target (to-image (arr (1 2 3 4 6 7 8 9))))
 (test-equal "Write conversion result to a target image"
-  #vu8(1 2 3 4 6 7 8 9) (read-bytes (get-mem target) 8))
+  #vu8(1 2 3 4 6 7 8 9) (read-bytes (slot-ref target 'mem) 8))
 
 (test-end "aiscm image")

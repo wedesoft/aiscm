@@ -23,6 +23,8 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <libguile.h>
+#include "image-helpers.h"
+
 
 static scm_t_bits videodev2_tag;
 
@@ -159,7 +161,8 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
       };
     };
   }
-  SCM scm_selected = scm_call_1(scm_select, scm_selection);
+  SCM scm_selected = clean_up_on_failure(retval, videodev2_destroy, scm_select, scm_selection);
+
   self->format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   self->format.fmt.pix.pixelformat = scm_to_int(scm_car(scm_selected));
   self->format.fmt.pix.width = scm_to_int(scm_cadr(scm_selected));

@@ -1,7 +1,22 @@
 ## Ready
 
-* record audio, audio bitrate
+* check output shape and output audio type
+* refactor list\_timestamped\_audio
+* refactor import-audio-frame (return samples instead of array)
+* use audio input buffer for FFmpeg input (instead of returning audio frames)
+* remove scm\_assert\_smob\_type?
+  ERROR: In procedure free-handle: Wrong type argument in position 1: #\<finalized smob 51f7050\>
+  https://github.com/spk121/guile-curl/issues/3
+* image-helpers.c -> util-helpers.c
+* replace pack\_audio?
+* pulse audio: reexport pointer stuff
+* module libraries without version numbers
+* allocate audio buffer
+* record audio
 * record audio/video
+* run integration tests in Docker container
+* negotiate sampling rate, channels, buffer size
+* open-video-output, open-audio-output, ...
 * check audio/video frame can be written
 * tensor sum
 * Debian sid FFmpeg API changes

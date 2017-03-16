@@ -37,18 +37,18 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
   else {
     int boundary = ringbuffer->size - ringbuffer->read_offset;
     if (count >= boundary) {
-      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, boundary, userdata);
-      (*callback)(ringbuffer->buffer, count - boundary, userdata);
+      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, boundary, 0, userdata);
+      (*callback)(ringbuffer->buffer, count - boundary, boundary, userdata);
       ringbuffer->read_offset = count - boundary;
     } else {
-      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, count, userdata);
+      (*callback)(ringbuffer->buffer + ringbuffer->read_offset, count, 0, userdata);
       ringbuffer->read_offset += count;
     };
     ringbuffer->fill -= count;
   }
 }
 
-static void ringbuffer_copy_callback(char *data, int count, void *userdata)
+static void ringbuffer_copy_callback(char *data, int count, int offset, void *userdata)
 {
   ringbuffer_store((struct ringbuffer_t *)userdata, data, count);
 }
