@@ -50,16 +50,21 @@ static int xioctl(int fd, int request, void *arg)
   return r;
 }
 
+static struct videodev2_t *get_self_no_check(SCM scm_self)
+{
+  return (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+}
+
 static struct videodev2_t *get_self(SCM scm_self)
 {
   scm_assert_smob_type(videodev2_tag, scm_self);
-  return (struct videodev2_t *)SCM_SMOB_DATA(scm_self);
+  return get_self_no_check(scm_self);
 }
 
 SCM videodev2_destroy(SCM scm_self)
 {
   int i;
-  struct videodev2_t *self = get_self(scm_self);
+  struct videodev2_t *self = get_self_no_check(scm_self);
   if (self->capture) {
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     xioctl(self->fd, VIDIOC_STREAMOFF, &type);
@@ -79,7 +84,7 @@ SCM videodev2_destroy(SCM scm_self)
 
 size_t free_videodev2(SCM scm_self)
 {
-  struct videodev2_t *self = get_self(scm_self);
+  struct videodev2_t *self = get_self_no_check(scm_self);
   videodev2_destroy(scm_self);
   scm_gc_free(self, sizeof(struct videodev2_t), "videodev2");
   return 0;

@@ -12,7 +12,7 @@ extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-ai
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
-noinst_HEADERS = ffmpeg-helpers.h image-helpers.h ringbuffer.h
+noinst_HEADERS = ffmpeg-helpers.h image-helpers.h ringbuffer.h samples-helpers.h
 
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
