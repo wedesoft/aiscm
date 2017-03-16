@@ -67,23 +67,33 @@ struct window_t {
   XvImage *xv_image;
 };
 
+static struct display_t *get_display_no_check(SCM scm_self)
+{
+  return (struct display_t *)SCM_SMOB_DATA(scm_self);
+}
+
 static struct display_t *get_display(SCM scm_self)
 {
   scm_assert_smob_type(display_tag, scm_self);
-  return (struct display_t *)SCM_SMOB_DATA(scm_self);
+  return get_display_no_check(scm_self);
+}
+
+static struct window_t *get_window_no_check(SCM scm_self)
+{
+  return (struct window_t *)SCM_SMOB_DATA(scm_self);
 }
 
 static struct window_t *get_window(SCM scm_self)
 {
   scm_assert_smob_type(window_tag, scm_self);
-  return (struct window_t *)SCM_SMOB_DATA(scm_self);
+  return get_window_no_check(scm_self);
 }
 
 SCM window_destroy(SCM scm_self);
 
 SCM display_destroy(SCM scm_self)
 {
-  struct display_t *self = get_display(scm_self);
+  struct display_t *self = get_display_no_check(scm_self);
   while (!scm_is_null_and_not_nil(self->scm_windows))
     window_destroy(scm_car(self->scm_windows));
   if (self->display) {
@@ -95,7 +105,7 @@ SCM display_destroy(SCM scm_self)
 
 size_t free_display(SCM scm_self)
 {
-  struct display_t *self = get_display(scm_self);
+  struct display_t *self = get_display_no_check(scm_self);
   display_destroy(scm_self);
   scm_gc_free(self, sizeof(struct display_t), "display");
   return 0;
@@ -236,7 +246,7 @@ SCM display_set_quit(SCM scm_self, SCM scm_quit)
 
 SCM window_destroy(SCM scm_self)
 {
-  struct window_t *self = get_window(scm_self);
+  struct window_t *self = get_window_no_check(scm_self);
   if (self->xv_image) {
     XFree(self->xv_image);
     self->xv_image = NULL;
@@ -267,7 +277,7 @@ SCM window_destroy(SCM scm_self)
 
 size_t free_window(SCM scm_self)
 {
-  struct window_t *self = get_window(scm_self);
+  struct window_t *self = get_window_no_check(scm_self);
   window_destroy(scm_self);
   scm_gc_free(self, sizeof(struct window_t), "window");
   return 0;

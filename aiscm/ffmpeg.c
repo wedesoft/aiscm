@@ -65,10 +65,15 @@ static SCM get_error_text(int err)
   return scm_from_locale_string(buf);
 }
 
+static struct ffmpeg_t *get_self_no_check(SCM scm_self)
+{
+  return (struct ffmpeg_t *)SCM_SMOB_DATA(scm_self);
+}
+
 static struct ffmpeg_t *get_self(SCM scm_self)
 {
   scm_assert_smob_type(ffmpeg_tag, scm_self);
-  return (struct ffmpeg_t *)SCM_SMOB_DATA(scm_self);
+  return get_self_no_check(scm_self);
 }
 
 static AVCodecContext *video_codec_ctx(struct ffmpeg_t *self)
@@ -165,7 +170,7 @@ static int encode_audio(struct ffmpeg_t *self, AVFrame *audio_frame)
 
 SCM ffmpeg_destroy(SCM scm_self)
 {
-  struct ffmpeg_t *self = get_self(scm_self);
+  struct ffmpeg_t *self = get_self_no_check(scm_self);
 
   if (self->header_written) {
     // Clear audio encoder pipeline
@@ -238,7 +243,7 @@ SCM ffmpeg_destroy(SCM scm_self)
 
 size_t free_ffmpeg(SCM scm_self)
 {
-  struct ffmpeg_t *self = get_self(scm_self);
+  struct ffmpeg_t *self = get_self_no_check(scm_self);
   ffmpeg_destroy(scm_self);
   scm_gc_free(self, sizeof(struct ffmpeg_t), "ffmpeg");
   return 0;

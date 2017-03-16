@@ -36,10 +36,15 @@ struct pulsedev_t {
   pa_stream *stream;
 };
 
+static struct pulsedev_t *get_self_no_check(SCM scm_self)
+{
+  return (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+}
+
 static struct pulsedev_t *get_self(SCM scm_self)
 {
   scm_assert_smob_type(pulsedev_tag, scm_self);
-  return (struct pulsedev_t *)SCM_SMOB_DATA(scm_self);
+  return get_self_no_check(scm_self);
 }
 
 static pa_threaded_mainloop *get_mainloop(struct pulsedev_t *self)
@@ -51,7 +56,7 @@ static pa_threaded_mainloop *get_mainloop(struct pulsedev_t *self)
 
 SCM pulsedev_destroy(SCM scm_self)
 {
-  struct pulsedev_t *self = get_self(scm_self);
+  struct pulsedev_t *self = get_self_no_check(scm_self);
   if (self->stream) {
     pa_stream_disconnect(self->stream);
     pa_stream_unref(self->stream);
@@ -77,7 +82,7 @@ SCM pulsedev_destroy(SCM scm_self)
 
 size_t free_pulsedev(SCM scm_self)
 {
-  struct pulsedev_t *self = get_self(scm_self);
+  struct pulsedev_t *self = get_self_no_check(scm_self);
   pulsedev_destroy(scm_self);
   scm_gc_free(self, sizeof(struct pulsedev_t), "pulse");
   return 0;
