@@ -1,14 +1,13 @@
 ## Ready
 
+* use audio input buffer for FFmpeg input (instead of returning audio frames)
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
-* use audio input buffer for FFmpeg input (instead of returning audio frames)
 * replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
 * run integration tests in Docker container
-* negotiate sampling rate, channels, buffer size
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written
 * tensor sum

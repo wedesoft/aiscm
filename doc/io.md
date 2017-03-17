@@ -1,4 +1,7 @@
 # Input/output
+
+The I/O modules provide sources (and sinks) for video and audio data.
+
 ## Loading/saving images using ImageMagick
 
 An image can be read from disk using *read-image* which uses the ImageMagick library to load the image.
@@ -91,6 +94,8 @@ The following example records 3 seconds of audio data and then plays it back.
 
 ## Video files
 
+### Input
+
 The following example shows how to use the FFmpeg interface to open and view a video.
 The video presentation time stamps are used to display the video at the correct speed.
 The method *latency* is used to determine the delay of the audio buffer.
@@ -105,6 +110,47 @@ The method *pts=* can be used to seek to an absolute position in audio/video str
 @../tests/integration/pts.scm@
 ```
 
+### Output
+
+The *FFmpeg* bindings can also be used to write a video stream to a file.
+By default the file format is determined by the file name extension.
+
+```Scheme
+@../tests/integration/ffwritevideo.scm@
+```
+
+## Audio files
+
+### Input
+
+One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
+It is also possible to pass a function returning consecutive audio samples as shown below.
+
+```Scheme
+@../tests/integration/ffaudio.scm@
+```
+
+### Output
+
+One can write audio samples to an audio file.
+When opening the output file, the sample rate, sample type, and number of channels need to be specified.
+The following sample creates an audio file of 3 seconds length with a 1000 Hz sine wave.
+
+```Scheme
+@../tests/integration/ffwriteaudio.scm@
+```
+
+## Video/Audio files
+
+### Input
+
+Video/audio files usually contain a video and an audio stream.
+The following example displays video frames and plays audio data in a synchronised way.
+
+```Scheme
+@../tests/integration/ffplay.scm@
+```
+
 Note that *FFmpeg* also supports network streaming of video data.
 I.e. the following example will play the [Sintel short film](https://durian.blender.org/) from a web server.
 
@@ -116,18 +162,11 @@ I.e. the following example will play the [Sintel short film](https://durian.blen
 @../tests/integration/ffstream.scm@
 ```
 
-The *FFmpeg* bindings can also be used to write a video stream to a file.
-The file format is determined by the file name extension.
+### Output
+
+When recording video and audio, the methods *write-image* and *write-audio* are used to write video frames and audio samples.
+The following example records video frames using Video4Linux2 and audio samples using Pulse audio.
 
 ```Scheme
-@../tests/integration/ffwritevideo.scm@
-```
-
-## Audio files
-
-One can play samples from an audio file by passing them to the audio device using the *write-audio* method.
-It is also possible to pass a function returning consecutive audio samples as shown below.
-
-```Scheme
-@../tests/integration/ffaudio.scm@
+@../tests/integration/ffwrite.scm@
 ```
