@@ -948,7 +948,7 @@ SCM ffmpeg_write_audio(SCM scm_self)
   struct ffmpeg_t *self = get_self(scm_self);
   AVCodecContext *codec = audio_codec_ctx(self);
   AVFrame *audio_frame = self->audio_target_frame;
-  audio_frame->pts = av_rescale_q(self->samples_count, (AVRational){1, codec->sample_rate}, audio_stream(self)->time_base);
+  audio_frame->pts = av_rescale_q(self->samples_count, (AVRational){1, codec->sample_rate}, codec->time_base);
   self->samples_count += audio_frame->nb_samples;
 
   encode_audio(self, self->audio_target_frame);
