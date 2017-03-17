@@ -21,7 +21,7 @@
 #include "config.h"
 #include "ffmpeg-helpers.h"
 #include "ringbuffer.h"
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 // http://dranger.com/ffmpeg/

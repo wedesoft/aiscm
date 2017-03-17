@@ -4,7 +4,6 @@
 * refactor import-audio-frame (return samples instead of array)
 * use audio input buffer for FFmpeg input (instead of returning audio frames)
 * replace pack\_audio?
-* image-helpers.c -> util-helpers.c
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
