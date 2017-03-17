@@ -1,7 +1,5 @@
 ## Ready
 
-* check output shape and output audio type
-* audio/video synchronisation issue
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
 * use audio input buffer for FFmpeg input (instead of returning audio frames)

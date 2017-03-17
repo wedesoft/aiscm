@@ -217,13 +217,20 @@
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"
-  (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (value (ensure-default-strides samples))) (size-of samples)))
+  (if (not (eqv? (channels self) (channels samples)))
+    (aiscm-error 'buffer-audio "Sample need to have ~a channels but had ~a" (channels self) (channels samples)))
+  (if (not (eq? (typecode self) (typecode samples)))
+    (aiscm-error 'buffer-audio "Expected samples of type ~a but got samples of type ~a" (typecode self) (typecode samples)))
+  (if (not (eqv? (rate self) (rate samples)))
+    (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples))
+  )
+  (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
 
 (define (fetch-audio self)
   "Fetch data from the audio buffer and put it into the samples"
   (ffmpeg-fetch-audio (slot-ref self 'ffmpeg)))
 
-(define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
+(define-method (write-audio (samples <samples>) (self <ffmpeg>))
   "Write audio frame to output stream"
   (buffer-audio samples self)
   (let* [(packed     (packed-audio-frame self))
@@ -233,6 +240,11 @@
       (fetch-audio self); fills "packed" audio frame with samples
       (convert-samples-from! target packed)
       (ffmpeg-write-audio (slot-ref self 'ffmpeg))))
+  samples)
+
+(define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
+  "Write audio data to output stream"
+  (write-audio (to-samples samples (rate self)) self)
   samples)
 
 (define (target-video-frame self)
