@@ -877,7 +877,6 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   if (!is_input_context(self))
     scm_misc_error("ffmpeg-read-audio/video", "Attempt to read frame from FFmpeg output video", SCM_EOL);
 
-
   while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);
 

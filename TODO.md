@@ -1,9 +1,9 @@
 ## Ready
 
+* simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
 * use audio input buffer for FFmpeg input (instead of returning audio frames)
 * refactor list\_timestamped\_audio
 * refactor import-audio-frame (return samples instead of array)
-* replace pack\_audio?
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter

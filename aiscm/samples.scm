@@ -29,7 +29,8 @@
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
   (let-keywords initargs #f (typecode shape rate offsets planar mem)
-    (let [(offsets (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))]
+    (let [(offsets (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))
+          (mem     (or mem (make <mem> #:size (apply * (size-of typecode) shape) #:pointerless #t)))]
       (next-method self (list #:typecode typecode
                               #:shape    shape
                               #:rate     rate

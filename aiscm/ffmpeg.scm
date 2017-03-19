@@ -195,9 +195,9 @@
          ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
        #f)))
 
-(define-method (read-audio (self <ffmpeg>))
-  "Retrieve the next audio frame"
-  (or (ffmpeg-buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
+(define-method (read-audio (self <ffmpeg>) (count <integer>))
+  "Retrieve audio samples from input audio stream"
+  (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))
 
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
@@ -222,8 +222,7 @@
   (if (not (eq? (typecode self) (typecode samples)))
     (aiscm-error 'buffer-audio "Expected samples of type ~a but got samples of type ~a" (typecode self) (typecode samples)))
   (if (not (eqv? (rate self) (rate samples)))
-    (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples))
-  )
+    (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples)))
   (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
 
 (define (fetch-audio self)
