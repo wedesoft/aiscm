@@ -33,7 +33,8 @@
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
-            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio decode-audio/video)
+            target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill
+            buffer-video buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -159,14 +160,6 @@
                   #:planar   (sample-format->planar sample-format)
                   #:mem      (make-memory data size)))
 
-(define (import-video-frame lst)
-  "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
-  (duplicate (apply make-video-frame lst))); TODO: move duplication into buffering code and test
-
-(define (import-audio-frame lst)
-  "Compose audio frame from timestamp, type, shape, rate, offsets, data pointer, and size"
-  (apply make-audio-frame lst))
-
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"
   (slot-set! self buffer (attach (slot-ref self buffer) pts-and-frame)) #t)
@@ -186,8 +179,8 @@
   (let [(lst (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))]
     (and
       lst
-      (let [(import-frame (case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)))]
-        (cons (car lst) (cons (cadr lst) (import-frame (cddr lst))))))))
+      (let [(make-frame (case (car lst) ((audio) make-audio-frame) ((video) make-video-frame)))]
+        (cons (car lst) (cons (cadr lst) (apply make-frame (cddr lst))))))))
 
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
@@ -196,7 +189,7 @@
        info
        (case (car info)
          ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
-         ((video) (ffmpeg-buffer-push self 'video-buffer (cdr info)))))))
+         ((video) (buffer-video (cdr info) self))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
@@ -214,9 +207,17 @@
   "Get packed audio frame for converting from/to audio buffer data"
   (apply make-audio-frame (ffmpeg-packed-audio-frame (slot-ref self 'ffmpeg))))
 
+(define (video-buffer-fill self)
+  "Get number of frames in video buffer"
+  (length (slot-ref self 'video-buffer)))
+
 (define (audio-buffer-fill self)
   "Get number of bytes available in audio buffer"
   (ffmpeg-audio-buffer-fill (slot-ref self 'ffmpeg)))
+
+(define (buffer-video info self)
+  "Buffer a video frame"
+  (ffmpeg-buffer-push self 'video-buffer (cons (car info) (duplicate (cdr info)))))
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"

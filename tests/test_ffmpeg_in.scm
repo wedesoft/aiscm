@@ -153,6 +153,19 @@
   (test-assert "Return false after decoding last frame"
     (not (decode-audio/video image)))
 
+  (test-eqv "Video buffer is empty initially"
+    0 (video-buffer-fill image))
+  (define video-frame (to-image (arr (1 2 3 4) (5 6 7 8))))
+  (buffer-video (cons 123 video-frame) image)
+  (test-eqv "Video buffer contains one frame after buffering a frame"
+    1 (video-buffer-fill image))
+  (test-equal "Timestamp is stored in buffer"
+    123 (caar (slot-ref image 'video-buffer)))
+  (test-equal "Shape of buffered video frame is the same"
+    (shape video-frame) (shape (cdar (slot-ref image 'video-buffer))))
+  (test-assert "Stored frame is a duplicate (i.e. not the same)"
+    (not (eq? video-frame (cdar (slot-ref image 'video-buffer)))))
+
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-assert "Image has only one video frame"
     (not (cadr (list (read-image image) (read-image image)))))
