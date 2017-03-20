@@ -149,6 +149,11 @@
     <image> (class-of (cddr decoded)))
 
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
+  (decode-audio/video image)
+  (test-assert "Return false after decoding last frame"
+    (not (decode-audio/video image)))
+
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-assert "Image has only one video frame"
     (not (cadr (list (read-image image) (read-image image)))))
   (test-skip 1)
@@ -207,23 +212,22 @@
     <sint> (typecode audio-mono))
 
   (define audio-pts0 (audio-pts audio-mono))
-  (test-skip 1)
-  ;(define audio-mono-frame (read-audio audio-mono))
+  (define audio-mono-frame (read-audio audio-mono 4410))
 
-  (test-skip 5)
-  (test-assert "Check that audio frame is an array"
-    (is-a? audio-mono-frame <sequence<>>))
+  (test-assert "Check that audio frame is a set of samples"
+    (is-a? audio-mono-frame <samples>))
+  (test-skip 1)
   (test-eqv "Get a value from a mono audio frame"
     40 (get audio-mono-frame 0 300))
-  (test-eqv "Audio frame should have two dimensions"
-    2 (dimensions audio-mono-frame))
-  (test-eqv "Mono audio frame should have 1 as first dimension"
-    1 (car (shape audio-mono-frame)))
+  (test-eqv "Mono audio frame should have 1 channel"
+    1 (channels audio-mono-frame))
+  (test-equal "Mono audio frame should have the desired shape"
+    '(1 4410) (shape audio-mono-frame))
   (test-eq "Audio frame should have samples of correct type"
     <sint> (typecode audio-mono-frame))
 
   (define audio-pts1 (audio-pts audio-mono))
-  ;(read-audio audio-mono)
+  (read-audio audio-mono 4410)
   (define audio-pts2 (audio-pts audio-mono))
 
   (test-skip 1)
@@ -233,9 +237,8 @@
 
   (define audio-stereo (open-ffmpeg-input "fixtures/test.mp3"))
 
-  (test-skip 1)
-  (test-eqv "Stereo audio frame should have 2 as first dimension"
-    2 (car (shape (read-audio audio-stereo))))
+  (test-eqv "Stereo audio frame should have 2 channels"
+    2 (channels (read-audio audio-stereo 4410)))
 
   (destroy audio-stereo)
 

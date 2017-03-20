@@ -183,16 +183,20 @@
 
 (define (decode-audio/video self)
   "Decode audio/video frames"
-  (let* [(lst          (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg))); TODO: test lst is '#f'
-         (import-frame (case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)))]
-    (cons (car lst) (cons (cadr lst) (import-frame (cddr lst))))))
+  (let [(lst (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))]
+    (and
+      lst
+      (let [(import-frame (case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)))]
+        (cons (car lst) (cons (cadr lst) (import-frame (cddr lst))))))))
 
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
-  (let [(info (decode-audio/video self))]; TODO: test if '#f'
-     (case (car info)
-       ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
-       ((video) (ffmpeg-buffer-push self 'video-buffer (cdr info))))))
+  (let [(info (decode-audio/video self))]
+     (and
+       info
+       (case (car info)
+         ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
+         ((video) (ffmpeg-buffer-push self 'video-buffer (cdr info)))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
