@@ -897,12 +897,12 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
-SCM ffmpeg_write_video(SCM scm_self)
+SCM ffmpeg_encode_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
   struct ffmpeg_t *self = get_self(scm_self);
   if (is_input_context(self))
-    scm_misc_error("ffmpeg-write-video", "Attempt to write to FFmpeg input video", SCM_EOL);
+    scm_misc_error("ffmpeg-encode-video", "Attempt to write to FFmpeg input video", SCM_EOL);
 
   // Set frame timestamp
   self->video_frame->pts = self->output_video_pts++;
@@ -942,7 +942,7 @@ SCM ffmpeg_fetch_audio(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM ffmpeg_write_audio(SCM scm_self)
+SCM ffmpeg_encode_audio(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   AVCodecContext *codec = audio_codec_ctx(self);
@@ -974,11 +974,11 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-target-audio-frame", 1, 0, 0, ffmpeg_target_audio_frame);
   scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
-  scm_c_define_gsubr("ffmpeg-write-video"       , 1, 0, 0, ffmpeg_write_video       );
+  scm_c_define_gsubr("ffmpeg-encode-video"      , 1, 0, 0, ffmpeg_encode_video      );
   scm_c_define_gsubr("ffmpeg-audio-buffer-fill" , 1, 0, 0, ffmpeg_audio_buffer_fill );
   scm_c_define_gsubr("ffmpeg-buffer-audio"      , 3, 0, 0, ffmpeg_buffer_audio      );
   scm_c_define_gsubr("ffmpeg-fetch-audio"       , 1, 0, 0, ffmpeg_fetch_audio       );
-  scm_c_define_gsubr("ffmpeg-write-audio"       , 1, 0, 0, ffmpeg_write_audio       );
+  scm_c_define_gsubr("ffmpeg-encode-audio"      , 1, 0, 0, ffmpeg_encode_audio      );
   scm_c_define_gsubr("ffmpeg-seek"              , 2, 0, 0, ffmpeg_seek              );
   scm_c_define_gsubr("ffmpeg-flush"             , 1, 0, 0, ffmpeg_flush             );
 }

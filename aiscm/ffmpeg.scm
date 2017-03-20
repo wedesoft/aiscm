@@ -233,12 +233,11 @@
   "Write audio frame to output stream"
   (buffer-audio samples self)
   (let* [(packed     (packed-audio-frame self))
-         (target     (target-audio-frame self))
-         (frame-size (size-of packed))]
+         (target     (target-audio-frame self))]
     (while (>= (audio-buffer-fill self) (size-of packed))
       (fetch-audio self); fills "packed" audio frame with samples
       (convert-samples-from! target packed)
-      (ffmpeg-write-audio (slot-ref self 'ffmpeg))))
+      (ffmpeg-encode-audio (slot-ref self 'ffmpeg))))
   samples)
 
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
@@ -253,7 +252,7 @@
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output file"
   (convert-image-from! (target-video-frame self) img)
-  (ffmpeg-write-video (slot-ref self 'ffmpeg))
+  (ffmpeg-encode-video (slot-ref self 'ffmpeg))
   img)
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))
