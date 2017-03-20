@@ -33,7 +33,7 @@
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
-            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio)
+            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -137,40 +137,48 @@
   (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
     (if (zero? ratio) 1 ratio)))
 
-(define (import-audio-frame self lst)
-  "Compose audio frame from timestamp, type, shape, data pointer, and size"
-  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
-        (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
-    (apply (lambda (pts type shape data size)
-                   (cons pts (array (array-type type) shape (memory data size))))
-           lst)))
+;(define (import-audio-frame self lst)
+;  "Compose audio frame from timestamp, type, shape, data pointer, and size"
+;  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
+;        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
+;        (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
+;    (apply (lambda (pts type shape data size)
+;                   (cons pts (array (array-type type) shape (memory data size))))
+;           lst)))
+
+(define (make-memory data size)
+  "Construct a pointerless memory object"
+  (make <mem> #:base data #:size size #:pointerless #t))
 
 (define (make-video-frame format shape offsets pitches data size)
   "Construct a video frame from the specified information"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (make <image>
-          #:format  (format->symbol format)
-          #:shape   shape
-          #:offsets offsets
-          #:pitches pitches
-          #:mem     (memory data size))))
+  (make <image>
+        #:format  (format->symbol format)
+        #:shape   shape
+        #:offsets offsets
+        #:pitches pitches
+        #:mem     (make-memory data size)))
 
 (define (make-audio-frame sample-format shape rate offsets data size)
   "Construct an audio frame from the specified information"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (make <samples> #:typecode (sample-format->type sample-format)
-                    #:shape    shape
-                    #:rate     rate
-                    #:offsets  offsets
-                    #:planar   (sample-format->planar sample-format)
-                    #:mem      (memory data size))))
+  (make <samples> #:typecode (sample-format->type sample-format)
+                  #:shape    shape
+                  #:rate     rate
+                  #:offsets  offsets
+                  #:planar   (sample-format->planar sample-format)
+                  #:mem      (make-memory data size)))
 
-(define (import-video-frame self lst)
+(define (import-video-frame lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
   (let [(pts    (car lst))
         (frame  (apply make-video-frame (cdr lst)))]
-    (cons pts (duplicate frame))))
+    (cons pts (duplicate frame)))); TODO: move duplication into buffering code and test
+
+(define (import-audio-frame lst)
+  "Compose audio frame from timestamp, type, shape, rate, offsets, data pointer, and size"
+  (let [(pts    (car lst)); TODO: redundancy with above
+        (frame  (apply make-audio-frame (cdr lst)))]
+    (cons pts frame)))
 
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"
@@ -186,13 +194,19 @@
         (slot-set! self buffer (cdr lst))
         (cdar lst)))))
 
+(define (decode-audio/video self)
+  "Decode audio/video frames"
+  (let* [(lst          (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg))); TODO: test lst is '#f'
+         (import-frame (case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)))]
+    (cons (car lst) (import-frame (cdr lst)))))
+
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
-  (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
+  (let [(lst (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))]
     (if lst
        (case (car lst)
-         ((audio) (ffmpeg-buffer-push self 'audio-buffer (import-audio-frame self (cdr lst))))
-         ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
+         ((audio) (ffmpeg-buffer-push self 'audio-buffer (import-audio-frame (cdr lst))))
+         ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame (cdr lst)))))
        #f)))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))

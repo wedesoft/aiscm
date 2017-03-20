@@ -1,5 +1,7 @@
 ## Ready
 
+* test import-audio-frame (and import-video-frame)
+* method for buffering audio data and method for buffering video frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
 * use audio input buffer for FFmpeg input (instead of returning audio frames)
 * refactor list\_timestamped\_audio

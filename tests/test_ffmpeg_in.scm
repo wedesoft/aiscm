@@ -139,8 +139,16 @@
 (test-end "video input")
 
 (test-begin "image input")
-  (define image (open-ffmpeg-input "fixtures/fubk.png"))
+  (define decoded (decode-audio/video (open-ffmpeg-input "fixtures/fubk.png")))
 
+  (test-eq "Decoding image data results in a video frame"
+    'video (car decoded))
+  (test-eqv "Decoding image data results a trivial time stamp"
+    0 (cadr decoded))
+  (test-eq "The decoded image is represented as a frame"
+    <image> (class-of (cddr decoded)))
+
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-assert "Image has only one video frame"
     (not (cadr (list (read-image image) (read-image image)))))
   (test-skip 1)
@@ -164,6 +172,12 @@
 (test-end "image input")
 
 (test-begin "audio input")
+  (define decoded (decode-audio/video (open-ffmpeg-input "fixtures/mono.mp3")))
+  (test-eq "Decoding audio data results in an audio frame"
+    'audio (car decoded))
+  (test-eqv "Decoding audio data results a trivial time stamp"
+    0 (cadr decoded))
+
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
   (test-eqv "Audio buffer fill is zero initially"
     0 (audio-buffer-fill audio-mono))
