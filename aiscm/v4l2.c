@@ -23,7 +23,7 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <libguile.h>
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 static scm_t_bits videodev2_tag;

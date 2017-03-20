@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 SCM scm_to_int_array_one_element(SCM source)
@@ -103,7 +103,7 @@ SCM throw_exception_after_cleanup(SCM scm_fun)
   return SCM_UNDEFINED;
 }
 
-void init_image_helpers_tests(void)
+void init_util_helpers_tests(void)
 {
   test_type_tag = scm_make_smob_type("test-type", sizeof(struct test_type_t));
   scm_c_define_gsubr("scm-to-int-array-one-element"    , 1, 0, 0, scm_to_int_array_one_element    );

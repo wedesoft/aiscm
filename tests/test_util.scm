@@ -24,6 +24,25 @@
 
 (test-begin "aiscm util")
 
+(load-extension "libguile-aiscm-tests" "init_tests")
+
+(test-begin "helper methods")
+  (test-assert "Convert first element of Scheme array to integer"
+    (scm-to-int-array-one-element '(123)))
+  (test-assert "Convert second element of Scheme array to integer"
+    (scm-to-int-array-second-element '(123 456)))
+  (test-assert "Convert first element of Scheme array to long integer"
+    (scm-to-long-array-one-element (list (ash 123 32))))
+  (test-assert "Convert second element of Scheme array to long integer"
+    (scm-to-long-array-second-element (list (ash 123 32) (ash 456 32))))
+  (test-eqv "Call Scheme function without exception occurring"
+    42 (call-scheme-function (lambda (arg) (car arg)) '(42)))
+  (test-assert "Clean up object when exception occurs"
+    (cleanup-when-exception (lambda (arg) (/ 1 0))))
+  (test-error "Throw exception after cleaning up object"
+    'misc-error (throw-exception-after-cleanup (lambda (arg) (/ 1 0))))
+(test-end "helper methods")
+
 (toplevel-define! 'a 0)
 (define-class* <test<>> <object> <meta<test<>>> <class>
   (t #:init-keyword #:t #:getter get-t))

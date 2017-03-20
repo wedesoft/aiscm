@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 void scm_to_int_array(SCM source, int32_t dest[])

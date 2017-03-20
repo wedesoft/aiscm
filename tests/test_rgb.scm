@@ -231,9 +231,9 @@
   ((jit ctx (list <ubytergb> <ubytergb>) !=) (rgb 2 3 5) (rgb 2 4 5)))
 (test-assert "Require two RGB values to be unequal (negative result)"
   (not ((jit ctx (list <ubytergb> <ubytergb>) !=) (rgb 2 3 5) (rgb 2 3 5))))
-(test-assert "Compare  RGB value with scalar (negative result)"
+(test-assert "Compare RGB value with scalar (negative result)"
   (not ((jit ctx (list <bytergb> <byte>) =) (rgb 2 3 5) 2)))
-(test-assert "Compare  RGB value with scalar (positive result)"
+(test-assert "Compare RGB value with scalar (positive result)"
   ((jit ctx (list <byte> <bytergb>) =) 3 (rgb 3 3 3)))
 (test-equal "major value of RGB and byte sequence"
   (list (rgb 2 2 3)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) max) (rgb 1 2 3) (seq <byte> 2))))
