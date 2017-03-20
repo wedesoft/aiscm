@@ -137,15 +137,6 @@
   (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
     (if (zero? ratio) 1 ratio)))
 
-;(define (import-audio-frame self lst)
-;  "Compose audio frame from timestamp, type, shape, data pointer, and size"
-;  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-;        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
-;        (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
-;    (apply (lambda (pts type shape data size)
-;                   (cons pts (array (array-type type) shape (memory data size))))
-;           lst)))
-
 (define (make-memory data size)
   "Construct a pointerless memory object"
   (make <mem> #:base data #:size size #:pointerless #t))
@@ -170,15 +161,11 @@
 
 (define (import-video-frame lst)
   "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
-  (let [(pts    (car lst))
-        (frame  (apply make-video-frame (cdr lst)))]
-    (cons pts (duplicate frame)))); TODO: move duplication into buffering code and test
+  (duplicate (apply make-video-frame lst))); TODO: move duplication into buffering code and test
 
 (define (import-audio-frame lst)
   "Compose audio frame from timestamp, type, shape, rate, offsets, data pointer, and size"
-  (let [(pts    (car lst)); TODO: redundancy with above
-        (frame  (apply make-audio-frame (cdr lst)))]
-    (cons pts frame)))
+  (apply make-audio-frame lst))
 
 (define (ffmpeg-buffer-push self buffer pts-and-frame)
   "Store frame and time stamp in the specified buffer"
@@ -198,16 +185,14 @@
   "Decode audio/video frames"
   (let* [(lst          (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg))); TODO: test lst is '#f'
          (import-frame (case (car lst) ((audio) import-audio-frame) ((video) import-video-frame)))]
-    (cons (car lst) (import-frame (cdr lst)))))
+    (cons (car lst) (cons (cadr lst) (import-frame (cddr lst))))))
 
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
-  (let [(lst (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))]
-    (if lst
-       (case (car lst)
-         ((audio) (ffmpeg-buffer-push self 'audio-buffer (import-audio-frame (cdr lst))))
-         ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame (cdr lst)))))
-       #f)))
+  (let [(info (decode-audio/video self))]; TODO: test if '#f'
+     (case (car info)
+       ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
+       ((video) (ffmpeg-buffer-push self 'video-buffer (cdr info))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
