@@ -196,6 +196,7 @@
   (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
      (while (>= (size-of result) (audio-buffer-fill self))
        (buffer-audio/video self))
+     (fetch-audio self result)
      result))
 
 (define-method (read-image (self <ffmpeg>))
@@ -224,7 +225,7 @@
 
 (define (buffer-timestamped-audio info self)
   "Buffer an audio frame"
-  (buffer-audio (cdr info) self))
+  (buffer-audio (convert-samples (cdr info) (typecode self) #f) self))
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"

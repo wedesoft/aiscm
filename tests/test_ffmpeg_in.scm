@@ -247,9 +247,8 @@
 
   (test-assert "Check that audio frame is a set of samples"
     (is-a? audio-mono-frame <samples>))
-  (test-skip 1)
   (test-eqv "Get a value from a mono audio frame"
-    40 (get audio-mono-frame 0 300))
+    40 (get (to-array audio-mono-frame) 0 300))
   (test-eqv "Mono audio frame should have 1 channel"
     1 (channels audio-mono-frame))
   (test-equal "Mono audio frame should have the desired shape"
