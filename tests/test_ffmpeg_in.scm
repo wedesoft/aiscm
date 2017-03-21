@@ -156,7 +156,7 @@
   (test-eqv "Video buffer is empty initially"
     0 (video-buffer-fill image))
   (define video-frame (to-image (arr (1 2 3 4) (5 6 7 8))))
-  (buffer-video (cons 123 video-frame) image)
+  (buffer-timestamped-video (cons 123 video-frame) image)
   (test-eqv "Video buffer contains one frame after buffering a frame"
     1 (video-buffer-fill image))
   (test-equal "Timestamp is stored in buffer"

@@ -34,7 +34,7 @@
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill
-            buffer-video buffer-audio fetch-audio decode-audio/video)
+            buffer-timestamped-video buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -189,7 +189,7 @@
        info
        (case (car info)
          ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
-         ((video) (buffer-video (cdr info) self))))))
+         ((video) (buffer-timestamped-video (cdr info) self))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
@@ -215,7 +215,7 @@
   "Get number of bytes available in audio buffer"
   (ffmpeg-audio-buffer-fill (slot-ref self 'ffmpeg)))
 
-(define (buffer-video info self)
+(define (buffer-timestamped-video info self)
   "Buffer a video frame"
   (ffmpeg-buffer-push self 'video-buffer (cons (car info) (duplicate (cdr info)))))
 
