@@ -51,7 +51,7 @@ struct ffmpeg_t {
   char output_file;
   AVPacket pkt;
   AVPacket orig_pkt;
-  AVFrame *video_frame;
+  AVFrame *video_target_frame;
   AVFrame *audio_packed_frame;
   AVFrame *audio_target_frame;
   int samples_count;
@@ -182,10 +182,10 @@ SCM ffmpeg_destroy(SCM scm_self)
       while (encode_video(self, NULL));
   };
 
-  if (self->video_frame) {
-    av_frame_unref(self->video_frame);
-    av_frame_free(&self->video_frame);
-    self->video_frame = NULL;
+  if (self->video_target_frame) {
+    av_frame_unref(self->video_target_frame);
+    av_frame_free(&self->video_target_frame);
+    self->video_target_frame = NULL;
   };
 
   if (self->audio_packed_frame) {
@@ -323,7 +323,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 0);
 
   // Allocate input frames
-  self->video_frame = allocate_frame(retval);
+  self->video_target_frame = allocate_frame(retval);
   self->audio_target_frame = allocate_frame(retval);
 
   // Initialise data packet
@@ -579,7 +579,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
 
     // Allocate frame
-    self->video_frame = allocate_output_video_frame(retval, self->video_codec_ctx);
+    self->video_target_frame = allocate_output_video_frame(retval, self->video_codec_ctx);
   };
 
   char have_audio = scm_is_true(scm_have_audio);
@@ -804,8 +804,8 @@ static void make_frame_writable(AVFrame *frame)
 SCM ffmpeg_target_video_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  make_frame_writable(self->video_frame);
-  return list_video_frame_info(self, self->video_frame);
+  make_frame_writable(self->video_target_frame);
+  return list_video_frame_info(self, self->video_target_frame);
 }
 
 SCM ffmpeg_target_audio_frame(SCM scm_self)
@@ -876,8 +876,8 @@ SCM ffmpeg_decode_audio_video(SCM scm_self)
       av_frame_unref(self->audio_target_frame);
       retval = decode_audio(self, &self->pkt, self->audio_target_frame);
     } else if (self->pkt.stream_index == self->video_stream_idx) {
-      av_frame_unref(self->video_frame);
-      retval = decode_video(self, &self->pkt, self->video_frame);
+      av_frame_unref(self->video_target_frame);
+      retval = decode_video(self, &self->pkt, self->video_target_frame);
     } else
       consume_packet_data(&self->pkt, self->pkt.size);
 
@@ -895,9 +895,9 @@ SCM ffmpeg_encode_video(SCM scm_self)
     scm_misc_error("ffmpeg-encode-video", "Attempt to write to FFmpeg input video", SCM_EOL);
 
   // Set frame timestamp
-  self->video_frame->pts = self->output_video_pts++;
+  self->video_target_frame->pts = self->output_video_pts++;
 
-  encode_video(self, self->video_frame);
+  encode_video(self, self->video_target_frame);
 
   return SCM_UNSPECIFIED;
 }
