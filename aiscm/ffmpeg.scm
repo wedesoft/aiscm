@@ -236,7 +236,7 @@
     (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples)))
   (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
 
-(define (fetch-audio self)
+(define (fetch-audio self frame); TODO: fill target frame with desired number of packed samples
   "Fetch data from the audio buffer and put it into the samples"
   (ffmpeg-fetch-audio (slot-ref self 'ffmpeg)))
 
@@ -246,7 +246,7 @@
   (let* [(packed     (packed-audio-frame self))
          (target     (target-audio-frame self))]
     (while (>= (audio-buffer-fill self) (size-of packed))
-      (fetch-audio self); fills "packed" audio frame with samples
+      (fetch-audio self packed)
       (convert-samples-from! target packed)
       (ffmpeg-encode-audio (slot-ref self 'ffmpeg))))
   samples)
