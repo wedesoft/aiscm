@@ -1,6 +1,5 @@
 ## Ready
 
-* fill target frame with desired number of packed samples
 * buffer-timestamped-audio with conversion to packed
 * method for buffering audio data and method for buffering video frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
@@ -11,6 +10,7 @@
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
+* augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written

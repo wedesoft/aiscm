@@ -902,12 +902,6 @@ SCM ffmpeg_encode_video(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
-{
-  AVFrame *frame = (AVFrame *)userdata;
-  memcpy(frame->data[0] + offset, data, count);
-}
-
 SCM ffmpeg_audio_buffer_fill(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
@@ -921,14 +915,15 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
   return SCM_UNSPECIFIED;
 }
 
-SCM ffmpeg_fetch_audio(SCM scm_self)
+static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
+{
+  memcpy(userdata + offset, data, count);
+}
+
+SCM ffmpeg_fetch_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  AVCodecContext *codec = audio_codec_ctx(self);
-  int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
-  int frame_size =
-    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, codec->sample_fmt, 1);
-  ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
+  ringbuffer_fetch(&self->audio_buffer, scm_to_int(scm_bytes), fetch_buffered_audio_data, scm_to_pointer(scm_data));
   return SCM_UNSPECIFIED;
 }
 
@@ -967,7 +962,7 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-encode-video"      , 1, 0, 0, ffmpeg_encode_video      );
   scm_c_define_gsubr("ffmpeg-audio-buffer-fill" , 1, 0, 0, ffmpeg_audio_buffer_fill );
   scm_c_define_gsubr("ffmpeg-buffer-audio"      , 3, 0, 0, ffmpeg_buffer_audio      );
-  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 1, 0, 0, ffmpeg_fetch_audio       );
+  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 3, 0, 0, ffmpeg_fetch_audio       );
   scm_c_define_gsubr("ffmpeg-encode-audio"      , 1, 0, 0, ffmpeg_encode_audio      );
   scm_c_define_gsubr("ffmpeg-seek"              , 2, 0, 0, ffmpeg_seek              );
   scm_c_define_gsubr("ffmpeg-flush"             , 1, 0, 0, ffmpeg_flush             );

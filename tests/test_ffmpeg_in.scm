@@ -225,10 +225,15 @@
     <sint> (typecode audio-mono))
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
-  (define audio-frame (to-samples (arr <sint> (1) (2) (3) (4)) 8000))
+  (define audio-frame (to-samples (arr <sint> (2) (3) (5) (7)) 8000))
   (buffer-timestamped-audio (cons 123 audio-frame) audio-mono)
   (test-eqv "Buffering input audio should increase the buffer size"
     8 (audio-buffer-fill audio-mono))
+
+  (define samples (make <samples> #:typecode <sint> #:shape '(1 4) #:rate 8000 #:planar #f))
+  (fetch-audio audio-mono samples)
+  (test-equal "Fetching back buffered audio should maintain the values"
+    '((2) (3) (5) (7)) (to-list (to-array samples)))
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
   (define planar-audio-frame (convert-samples (to-samples (arr <sint> (1) (2) (3) (4)) 8000) <sint> #t))
