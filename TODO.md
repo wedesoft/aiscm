@@ -1,7 +1,7 @@
 ## Ready
 
-* pack and buffer target frame
-* target video frame?
+* fill target frame with desired number of packed samples
+* buffer-timestamped-audio with conversion to packed
 * method for buffering audio data and method for buffering video frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
 * use audio input buffer for FFmpeg input (instead of returning audio frames)
