@@ -34,7 +34,7 @@
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill
-            buffer-timestamped-video buffer-audio fetch-audio decode-audio/video)
+            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -188,12 +188,15 @@
      (and
        info
        (case (car info)
-         ((audio) (ffmpeg-buffer-push self 'audio-buffer (cdr info)))
+         ((audio) (buffer-timestamped-audio (cdr info) self))
          ((video) (buffer-timestamped-video (cdr info) self))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
-  (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))
+  (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
+     (while (>= (size-of result) (audio-buffer-fill self))
+       (buffer-audio/video self))
+     result))
 
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
@@ -218,6 +221,10 @@
 (define (buffer-timestamped-video info self)
   "Buffer a video frame"
   (ffmpeg-buffer-push self 'video-buffer (cons (car info) (duplicate (cdr info)))))
+
+(define (buffer-timestamped-audio info self)
+  "Buffer an audio frame"
+  (buffer-audio (cdr info) self))
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"
