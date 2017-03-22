@@ -280,8 +280,8 @@
     0 (audio-buffer-fill audio-mono))
 
   (pts= audio-mono 35)
-  (test-assert "Do not hang when reaching end of audio stream"
-    (read-audio audio-mono (* 10 44100))); test should not hang
+  (test-assert "Return a smaller frame when attempting to read beyond the end of the audio stream"
+    (< (cadr (shape (read-audio audio-mono 441000))) 441000)); test should not hang
 
   (destroy audio-mono)
 

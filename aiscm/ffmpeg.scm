@@ -195,10 +195,15 @@
   "Retrieve audio samples from input audio stream"
   (and
     (have-audio? self)
-    (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
-       (while (>= (size-of result) (audio-buffer-fill self)) (or (buffer-audio/video self) (break)))
-       (fetch-audio self result)
-       result)))
+    (let [(sample-size (* (size-of (typecode self)) (channels self)))]
+      (while (< (audio-buffer-fill self) (* count sample-size)) (or (buffer-audio/video self) (break)))
+      (let* [(actual (min count (/ (audio-buffer-fill self) sample-size)))
+             (result (make <samples> #:typecode (typecode self)
+                                     #:shape (list (channels self) actual)
+                                     #:rate (rate self)
+                                     #:planar #f))]
+        (fetch-audio self result)
+        result))))
 
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
