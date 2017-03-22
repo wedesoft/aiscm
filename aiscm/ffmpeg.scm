@@ -195,7 +195,7 @@
   "Retrieve audio samples from input audio stream"
   (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
      (while (>= (size-of result) (audio-buffer-fill self))
-       (buffer-audio/video self))
+       (or (buffer-audio/video self) (break)))
      (fetch-audio self result)
      result))
 

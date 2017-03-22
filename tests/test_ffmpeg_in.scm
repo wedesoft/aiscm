@@ -156,7 +156,8 @@
   (test-eqv "Video buffer is empty initially"
     0 (video-buffer-fill image))
   (define video-frame (to-image (arr (1 2 3 4) (5 6 7 8))))
-  (buffer-timestamped-video (cons 123 video-frame) image)
+  (test-assert "Buffering video should return true"
+    (buffer-timestamped-video (cons 123 video-frame) image))
   (test-eqv "Video buffer contains one frame after buffering a frame"
     1 (video-buffer-fill image))
   (test-equal "Timestamp is stored in buffer"
@@ -226,7 +227,8 @@
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
   (define audio-frame (to-samples (arr <sint> (2) (3) (5) (7)) 8000))
-  (buffer-timestamped-audio (cons 123 audio-frame) audio-mono)
+  (test-assert "Buffering audio should return true"
+    (buffer-timestamped-audio (cons 123 audio-frame) audio-mono))
   (test-eqv "Buffering input audio should increase the buffer size"
     8 (audio-buffer-fill audio-mono))
 
@@ -269,7 +271,6 @@
     0 (audio-buffer-fill audio-mono))
 
   (pts= audio-mono 35)
-  (test-skip 1)
   (test-assert "Do not hang when reaching end of audio stream"
     (read-audio audio-mono (* 10 44100))); test should not hang
 
