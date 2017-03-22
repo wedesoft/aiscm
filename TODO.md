@@ -1,6 +1,7 @@
 ## Ready
 
-* handle end of audio input
+* return correctly sized audio frame at end of input
+* read-audio should return false if no audio stream
 * audio, video timestamps
 * only pass timestamp to buffer-timestamped-\*
 * flush buffer when seeking in input video

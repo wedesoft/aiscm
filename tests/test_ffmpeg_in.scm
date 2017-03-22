@@ -88,6 +88,8 @@
 (test-begin "video input")
   (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 
+  (test-assert "Video has video stream"
+    (have-video? input-video))
   (test-assert "'open-ffmpeg-input' creates an FFmpeg object"
     (is-a? input-video <ffmpeg>))
   (test-equal "Check frame size of input video"
@@ -170,7 +172,8 @@
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-assert "Image has only one video frame"
     (not (cadr (list (read-image image) (read-image image)))))
-  (test-skip 1)
+  (test-assert "Image does not have audio data"
+    (not (have-audio? image)))
   (test-assert "Do not hang when reading audio from image"
     (not (read-audio image 4410))); test should not hang
 
@@ -198,6 +201,12 @@
     0 (cadr decoded))
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (test-assert "Audio file does not have a video stream"
+    (not (have-video? audio-mono)))
+  (test-assert "Do not hang when attempting to read an image from an audio file"
+    (not (read-image audio-mono)))
+  (test-assert "Audio input has audio stream"
+    (have-audio? audio-mono))
   (test-eqv "Audio buffer fill is zero initially"
     0 (audio-buffer-fill audio-mono))
   (define audio-samples (read-audio audio-mono 4410))

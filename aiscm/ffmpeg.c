@@ -642,6 +642,18 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   return retval;
 }
 
+SCM ffmpeg_have_video(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return scm_from_bool(self->video_codec_ctx);
+}
+
+SCM ffmpeg_have_audio(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return scm_from_bool(self->audio_codec_ctx);
+}
+
 SCM ffmpeg_shape(SCM scm_self)
 {
   AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
@@ -948,6 +960,8 @@ void init_ffmpeg(void)
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
   scm_c_define_gsubr("make-ffmpeg-input"        , 2, 0, 0, make_ffmpeg_input        );
   scm_c_define_gsubr("make-ffmpeg-output"       , 7, 0, 0, make_ffmpeg_output       );
+  scm_c_define_gsubr("ffmpeg-have-video?"       , 1, 0, 0, ffmpeg_have_video        );
+  scm_c_define_gsubr("ffmpeg-have-audio?"       , 1, 0, 0, ffmpeg_have_audio        );
   scm_c_define_gsubr("ffmpeg-shape"             , 1, 0, 0, ffmpeg_shape             );
   scm_c_define_gsubr("ffmpeg-destroy"           , 1, 0, 0, ffmpeg_destroy           );
   scm_c_define_gsubr("ffmpeg-frame-rate"        , 1, 0, 0, ffmpeg_frame_rate        );

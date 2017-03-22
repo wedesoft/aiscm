@@ -33,7 +33,7 @@
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
-            target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill
+            target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
             buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
@@ -193,15 +193,18 @@
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
-  (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
-     (while (>= (size-of result) (audio-buffer-fill self))
-       (or (buffer-audio/video self) (break)))
-     (fetch-audio self result)
-     result))
+  (and
+    (have-audio? self)
+    (let [(result (make <samples> #:typecode (typecode self) #:shape (list (channels self) count) #:rate (rate self) #:planar #f))]
+       (while (>= (size-of result) (audio-buffer-fill self)) (or (buffer-audio/video self) (break)))
+       (fetch-audio self result)
+       result)))
 
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
-  (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
+  (and (have-video? self)
+       (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts)
+           (and (buffer-audio/video self) (read-image self)))))
 
 (define (target-audio-frame self)
   "Get target audio frame for audio encoding"
@@ -214,6 +217,14 @@
 (define (video-buffer-fill self)
   "Get number of frames in video buffer"
   (length (slot-ref self 'video-buffer)))
+
+(define (have-audio? self)
+  "Check whether the file has an audio stream"
+  (ffmpeg-have-audio? (slot-ref self 'ffmpeg)))
+
+(define (have-video? self)
+   "Check whether the file has a video stream"
+   (ffmpeg-have-video? (slot-ref self 'ffmpeg)))
 
 (define (audio-buffer-fill self)
   "Get number of bytes available in audio buffer"
