@@ -1,7 +1,9 @@
 ## Ready
 
+* buffer-audio/video return value should indicate end of streams
 * handle end of audio input
 * audio, video timestamps
+* only pass timestamp to buffer-timestamped-\*
 * flush buffer when seeking in input video
 * write trailing audio
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio

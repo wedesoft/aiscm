@@ -692,6 +692,7 @@ SCM ffmpeg_flush(SCM scm_self)
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->video_codec_ctx) avcodec_flush_buffers(self->video_codec_ctx);
   if (self->audio_codec_ctx) avcodec_flush_buffers(self->audio_codec_ctx);
+  if (self->audio_buffer.buffer) ringbuffer_flush(&self->audio_buffer);
   return scm_self;
 }
 

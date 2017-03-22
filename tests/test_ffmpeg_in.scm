@@ -263,6 +263,16 @@
   (test-skip 1)
   (test-equal "Check first three audio frame time stamps"
     (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
+
+  (pts= audio-mono 1)
+  (test-eqv "Seeking in the audio stream should flush the audio buffer"
+    0 (audio-buffer-fill audio-mono))
+
+  (pts= audio-mono 35)
+  (test-skip 1)
+  (test-assert "Do not hang when reaching end of audio stream"
+    (read-audio audio-mono (* 10 44100))); test should not hang
+
   (destroy audio-mono)
 
   (define audio-stereo (open-ffmpeg-input "fixtures/test.mp3"))
