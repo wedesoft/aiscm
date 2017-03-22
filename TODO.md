@@ -2,10 +2,9 @@
 
 * audio, video timestamps
 * only pass timestamp to buffer-timestamped-\*
-* flush buffer when seeking in input video
+* flush video buffer when seeking in input video
 * write trailing output audio, check trailing  input audio frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
-* refactor import-audio-frame (return samples instead of array)
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
