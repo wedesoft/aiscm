@@ -5,6 +5,6 @@
 (define record (make <pulse-record> #:typecode <sint> #:channels 2 #:rate 44100))
 (show
   (lambda _
-    (write-audio (read-audio record 4410) output)
+    (write-audio (read-audio record (/ (rate output) (frame-rate output))) output)
     (write-image (read-image input) output)))
 (destroy output)
