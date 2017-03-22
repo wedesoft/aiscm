@@ -282,6 +282,8 @@
   (pts= audio-mono 35)
   (test-assert "Return a smaller frame when attempting to read beyond the end of the audio stream"
     (< (cadr (shape (read-audio audio-mono 441000))) 441000)); test should not hang
+  (test-assert "Check 'read-audio' returns false after last audio sample"
+    (not (read-audio audio-mono 4410)))
 
   (destroy audio-mono)
 

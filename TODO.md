@@ -1,6 +1,5 @@
 ## Ready
 
-* read-audio and read-image should return false if no more data
 * audio, video timestamps
 * only pass timestamp to buffer-timestamped-\*
 * flush buffer when seeking in input video
