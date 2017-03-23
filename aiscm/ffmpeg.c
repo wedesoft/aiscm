@@ -763,9 +763,8 @@ static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
 
 static SCM list_timestamped_audio(struct ffmpeg_t *self, AVFrame *frame)
 {
-  return scm_append(scm_list_2(scm_list_2(scm_from_locale_symbol("audio"),
-                                          scm_product(scm_from_int(frame_timestamp(frame)), time_base(audio_stream(self)))),
-                               list_audio_frame_info(self, frame)));
+  return scm_list_2(scm_from_locale_symbol("audio"),
+                    scm_product(scm_from_int(frame_timestamp(frame)), time_base(audio_stream(self))));
 }
 
 static SCM decode_audio(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
@@ -817,14 +816,16 @@ static void make_frame_writable(AVFrame *frame)
 SCM ffmpeg_target_video_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  make_frame_writable(self->video_target_frame);
+  if (!is_input_context(self))
+    make_frame_writable(self->video_target_frame);
   return list_video_frame_info(self, self->video_target_frame);
 }
 
 SCM ffmpeg_target_audio_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  make_frame_writable(self->audio_target_frame);
+  if (!is_input_context(self))
+    make_frame_writable(self->audio_target_frame);
   return list_audio_frame_info(self, self->audio_target_frame);
 }
 
@@ -836,9 +837,8 @@ SCM ffmpeg_packed_audio_frame(SCM scm_self)
 
 static SCM list_timestamped_video(struct ffmpeg_t *self, AVFrame *frame)
 {
-  return scm_append(scm_list_2(scm_list_2(scm_from_locale_symbol("video"),
-                                          scm_product(scm_from_int(frame_timestamp(frame)), time_base(video_stream(self)))),
-                               list_video_frame_info(self, frame)));
+  return scm_list_2(scm_from_locale_symbol("video"),
+                    scm_product(scm_from_int(frame_timestamp(frame)), time_base(video_stream(self))));
 }
 
 static SCM decode_video(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)

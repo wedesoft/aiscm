@@ -147,25 +147,24 @@
     'video (car decoded))
   (test-eqv "Decoding image data results a trivial time stamp"
     0 (cadr decoded))
-  (test-eq "The decoded image is represented as a frame"
-    <image> (class-of (cddr decoded)))
 
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (decode-audio/video image)
   (test-assert "Return false after decoding last frame"
     (not (decode-audio/video image)))
 
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-eqv "Video buffer is empty initially"
     0 (video-buffer-fill image))
-  (define video-frame (to-image (arr (1 2 3 4) (5 6 7 8))))
+  (decode-audio/video image)
   (test-assert "Buffering video should return true"
-    (buffer-timestamped-video (cons 123 video-frame) image))
+    (buffer-timestamped-video 123 image))
   (test-eqv "Video buffer contains one frame after buffering a frame"
     1 (video-buffer-fill image))
   (test-equal "Timestamp is stored in buffer"
     123 (caar (slot-ref image 'video-buffer)))
   (test-equal "Shape of buffered video frame is the same"
-    (shape video-frame) (shape (cdar (slot-ref image 'video-buffer))))
+    '(384 288) (shape (cdar (slot-ref image 'video-buffer))))
   (test-assert "Stored frame is a duplicate (i.e. not the same)"
     (not (eq? video-frame (cdar (slot-ref image 'video-buffer)))))
 
@@ -234,22 +233,16 @@
     <sint> (typecode audio-mono))
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
-  (define audio-frame (to-samples (arr <sint> (2) (3) (5) (7)) 8000))
+  (decode-audio/video audio-mono)
   (test-assert "Buffering audio should return true"
-    (buffer-timestamped-audio (cons 123 audio-frame) audio-mono))
-  (test-eqv "Buffering input audio should increase the buffer size"
-    8 (audio-buffer-fill audio-mono))
+    (buffer-timestamped-audio 123 audio-mono))
+  (test-assert "Buffering input audio should increase the buffer size"
+    (not (zero? (audio-buffer-fill audio-mono))))
 
-  (define samples (make <samples> #:typecode <sint> #:shape '(1 4) #:rate 8000 #:planar #f))
+  (define samples (to-samples (arr <sint> (2) (3) (5) (7) (3) (4) (6) (8)) 8000))
   (fetch-audio audio-mono samples)
   (test-equal "Fetching back buffered audio should maintain the values"
-    '((2) (3) (5) (7)) (to-list (to-array samples)))
-
-  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
-  (define planar-audio-frame (convert-samples (to-samples (arr <sint> (1) (2) (3) (4)) 8000) <sint> #t))
-  (buffer-timestamped-audio (cons 123 audio-frame) audio-mono)
-  (test-eqv "Buffering planar audio should increase the buffer size"
-    8 (audio-buffer-fill audio-mono))
+    '((0) (0) (0) (0) (0) (0) (0) (0)) (to-list (to-array samples)))
 
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
   (define audio-pts0 (audio-pts audio-mono))

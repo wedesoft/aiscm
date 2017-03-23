@@ -176,11 +176,7 @@
 
 (define (decode-audio/video self)
   "Decode audio/video frames"
-  (let [(lst (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))]
-    (and
-      lst
-      (let [(make-frame (case (car lst) ((audio) make-audio-frame) ((video) make-video-frame)))]
-        (cons (car lst) (cons (cadr lst) (apply make-frame (cddr lst))))))))
+  (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))
 
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
@@ -188,8 +184,8 @@
      (and
        info
        (case (car info)
-         ((audio) (buffer-timestamped-audio (cdr info) self))
-         ((video) (buffer-timestamped-video (cdr info) self))))))
+         ((audio) (buffer-timestamped-audio (cadr info) self))
+         ((video) (buffer-timestamped-video (cadr info) self))))))
 
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
@@ -236,13 +232,13 @@
   "Get number of bytes available in audio buffer"
   (ffmpeg-audio-buffer-fill (slot-ref self 'ffmpeg)))
 
-(define (buffer-timestamped-video info self)
+(define (buffer-timestamped-video timestamp self)
   "Buffer a video frame"
-  (ffmpeg-buffer-push self 'video-buffer (cons (car info) (duplicate (cdr info)))))
+  (ffmpeg-buffer-push self 'video-buffer (cons timestamp (duplicate (target-video-frame self)))))
 
-(define (buffer-timestamped-audio info self)
+(define (buffer-timestamped-audio timestamp self)
   "Buffer an audio frame"
-  (buffer-audio (convert-samples (cdr info) (typecode self) #f) self))
+  (buffer-audio (convert-samples (target-audio-frame self) (typecode self) #f) self))
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"
