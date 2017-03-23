@@ -5,6 +5,7 @@
 * flush video buffer when seeking in input video
 * write trailing output audio, check trailing  input audio frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
+* pulse audio: use samples for reading and writing
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter

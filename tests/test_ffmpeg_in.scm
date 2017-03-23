@@ -186,8 +186,7 @@
   (destroy image)
 
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
-  ;(read-audio image 4410)
-  (test-skip 1)
+  (read-audio image 4410)
   (test-assert "Cache video data when reading audio"
     (read-image image))
   (destroy image)
@@ -293,14 +292,6 @@
     2 (channels (read-audio audio-stereo 4410)))
 
   (destroy audio-stereo)
-
-  ;(define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
-  ;(define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
-
-  (test-skip 1)
-  (test-assert "Check 'read-audio' returns false after last frame"
-    (not (read-audio full-audio))); number of audio frames depends on FFmpeg version
-  ;(destroy full-audio)
 (test-end "audio input")
 
 (test-end "aiscm ffmpeg")
