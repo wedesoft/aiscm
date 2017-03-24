@@ -188,17 +188,28 @@
   (test-assert "Packed audio frame should be packed"
     (not (planar? (packed-audio-frame output-audio))))
 
-  (define samples (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (define data (make (multiarray <sint> 2) #:shape '(2 44100)))
   (test-eqv "Audio buffer fill is zero initially"
     0 (audio-buffer-fill output-audio))
-  (buffer-audio samples output-audio)
+  (buffer-audio (to-samples data 44100) output-audio)
   (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
-    (size-of samples) (audio-buffer-fill output-audio))
-  (fetch-audio output-audio)
+    (size-of data) (audio-buffer-fill output-audio))
+  (fetch-audio output-audio (packed-audio-frame output-audio))
   (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
-    (- (size-of samples) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
-  (test-equal "Writing audio samples returns samples"
+    (- (size-of data) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
+  (test-eq "Writing audio data returns data"
+    data (write-audio data output-audio))
+
+  (define samples (to-samples data 44100))
+  (test-eq "Writing audio samples returns samples"
     samples (write-audio samples output-audio))
+
+  (test-error "Reject audio samples with wrong number of channels"
+    'misc-error (write-audio (make (multiarray <sint> 2) #:shape '(3 44100)) output-audio))
+  (test-error "Reject audio samples with wrong type"
+    'misc-error (write-audio (make (multiarray <int> 2) #:shape '(2 44100)) output-audio))
+  (test-error "Reject audio samples with wrong sampling rate"
+    'misc-error (write-audio (to-samples data 22050) output-audio))
 
   (destroy output-audio)
 

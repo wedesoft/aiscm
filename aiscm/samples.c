@@ -24,7 +24,7 @@
 #include <libswresample/swresample.h>
 #endif
 #include "samples-helpers.h"
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 static void samples_setup(SCM scm_type, enum AVSampleFormat *format, int *rate, int64_t *layout, int *samples,

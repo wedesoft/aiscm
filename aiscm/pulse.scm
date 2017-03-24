@@ -22,6 +22,7 @@
   #:use-module (aiscm int)
   #:use-module (aiscm float)
   #:use-module (aiscm sequence)
+  #:use-module (aiscm samples)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
@@ -72,6 +73,11 @@
 (define-method (write-audio (samples <sequence<>>) (self <pulse-play>)); TODO: check type
   (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples))
   samples)
+
+(define-method (write-audio (samples <samples>) (self <pulse-play>)); TODO: check type
+  (write-audio (to-array samples) self)
+  samples)
+
 (define-method (write-audio (samples <procedure>) (self <pulse-play>))
   (let [(result (samples))]
     (while result
