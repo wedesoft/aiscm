@@ -31,7 +31,7 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
+            video-bit-rate aspect-ratio video-buffer-push video-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
             buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
@@ -159,11 +159,11 @@
                   #:planar   (sample-format->planar sample-format)
                   #:mem      (make-memory data size)))
 
-(define (ffmpeg-buffer-push self pts-and-frame)
+(define (video-buffer-push self pts-and-frame)
   "Store frame and time stamp in the specified buffer"
   (slot-set! self 'video-buffer (attach (slot-ref self 'video-buffer) pts-and-frame)) #t)
 
-(define (ffmpeg-buffer-pop self)
+(define (video-buffer-pop self)
   "Retrieve frame and timestamp from the specified buffer"
   (let [(lst (slot-ref self 'video-buffer))]
     (and
@@ -204,7 +204,7 @@
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
   (and (have-video? self)
-       (or (ffmpeg-buffer-pop self)
+       (or (video-buffer-pop self)
            (and (buffer-audio/video self) (read-image self)))))
 
 (define (target-audio-frame self)
@@ -233,7 +233,7 @@
 
 (define (buffer-timestamped-video timestamp self)
   "Buffer a video frame"
-  (ffmpeg-buffer-push self (cons timestamp (duplicate (target-video-frame self)))))
+  (video-buffer-push self (cons timestamp (duplicate (target-video-frame self)))))
 
 (define (buffer-timestamped-audio timestamp self)
   "Buffer an audio frame"

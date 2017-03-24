@@ -71,16 +71,16 @@
     (video-pts  #:init-value 0))
   (let [(dummy (make <dummy>))]
     (test-assert "Popping buffer should return #f when empty"
-      (not (ffmpeg-buffer-pop dummy))))
+      (not (video-buffer-pop dummy))))
   (let [(dummy (make <dummy>))]
-    (ffmpeg-buffer-push dummy (cons 123 'dummy-frame))
-    (ffmpeg-buffer-push dummy (cons 456 'other-frame))
+    (video-buffer-push dummy (cons 123 'dummy-frame))
+    (video-buffer-push dummy (cons 456 'other-frame))
     (test-eq "Popping buffer should return first frame"
-      'dummy-frame (ffmpeg-buffer-pop dummy))
+      'dummy-frame (video-buffer-pop dummy))
     (test-eq "Popping buffer should set the time stamp"
       123 (slot-ref dummy 'video-pts))
     (test-eq "Popping buffer again should return the second frame"
-      'other-frame (ffmpeg-buffer-pop dummy))
+      'other-frame (video-buffer-pop dummy))
     (test-eq "Popping buffer again should set the time stamp"
       456 (slot-ref dummy 'video-pts)))
 (test-end "helper methods")
