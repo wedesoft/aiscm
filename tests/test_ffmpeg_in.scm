@@ -67,22 +67,22 @@
     (pack-short-int-audio-samples))
 
   (define-class <dummy> ()
-    (buffer #:init-value '())
-    (clock  #:init-value 0))
+    (video-buffer #:init-value '())
+    (video-pts  #:init-value 0))
   (let [(dummy (make <dummy>))]
     (test-assert "Popping buffer should return #f when empty"
-      (not (ffmpeg-buffer-pop dummy 'buffer 'clock))))
+      (not (ffmpeg-buffer-pop dummy))))
   (let [(dummy (make <dummy>))]
-    (ffmpeg-buffer-push dummy 'buffer (cons 123 'dummy-frame))
-    (ffmpeg-buffer-push dummy 'buffer (cons 456 'other-frame))
+    (ffmpeg-buffer-push dummy (cons 123 'dummy-frame))
+    (ffmpeg-buffer-push dummy (cons 456 'other-frame))
     (test-eq "Popping buffer should return first frame"
-      'dummy-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      'dummy-frame (ffmpeg-buffer-pop dummy))
     (test-eq "Popping buffer should set the time stamp"
-      123 (slot-ref dummy 'clock))
+      123 (slot-ref dummy 'video-pts))
     (test-eq "Popping buffer again should return the second frame"
-      'other-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      'other-frame (ffmpeg-buffer-pop dummy))
     (test-eq "Popping buffer again should set the time stamp"
-      456 (slot-ref dummy 'clock)))
+      456 (slot-ref dummy 'video-pts)))
 (test-end "helper methods")
 
 (test-begin "video input")
@@ -259,13 +259,15 @@
   (test-eq "Audio frame should have samples of correct type"
     <sint> (typecode audio-mono-frame))
 
+  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (define audio-pts0 (audio-pts audio-mono))
+  (read-audio audio-mono 800)
   (define audio-pts1 (audio-pts audio-mono))
-  (read-audio audio-mono 4410)
+  (read-audio audio-mono 800)
   (define audio-pts2 (audio-pts audio-mono))
-
   (test-skip 1)
   (test-equal "Check first three audio frame time stamps"
-    (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
+    (list 0 (/ 1 10) (/ 2 10)) (list audio-pts0 audio-pts1 audio-pts2))
 
   (pts= audio-mono 1)
   (test-eqv "Seeking in the audio stream should flush the audio buffer"

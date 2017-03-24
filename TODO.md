@@ -1,5 +1,6 @@
 ## Ready
 
+* ffmpeg-buffer-\* -> video-buffer-\*
 * audio, video timestamps
 * flush video buffer when seeking in input video
 * write trailing output audio, check trailing  input audio frame

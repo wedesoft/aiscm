@@ -42,7 +42,6 @@
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
-               (audio-buffer #:init-value '())
                (video-buffer #:init-value '())
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
@@ -160,18 +159,18 @@
                   #:planar   (sample-format->planar sample-format)
                   #:mem      (make-memory data size)))
 
-(define (ffmpeg-buffer-push self buffer pts-and-frame)
+(define (ffmpeg-buffer-push self pts-and-frame)
   "Store frame and time stamp in the specified buffer"
-  (slot-set! self buffer (attach (slot-ref self buffer) pts-and-frame)) #t)
+  (slot-set! self 'video-buffer (attach (slot-ref self 'video-buffer) pts-and-frame)) #t)
 
-(define (ffmpeg-buffer-pop self buffer clock)
+(define (ffmpeg-buffer-pop self)
   "Retrieve frame and timestamp from the specified buffer"
-  (let [(lst (slot-ref self buffer))]
+  (let [(lst (slot-ref self 'video-buffer))]
     (and
       (not (null? lst))
       (begin
-        (slot-set! self clock  (caar lst))
-        (slot-set! self buffer (cdr lst))
+        (slot-set! self 'video-pts    (caar lst))
+        (slot-set! self 'video-buffer (cdr  lst))
         (cdar lst)))))
 
 (define (decode-audio/video self)
@@ -205,7 +204,7 @@
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
   (and (have-video? self)
-       (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts)
+       (or (ffmpeg-buffer-pop self)
            (and (buffer-audio/video self) (read-image self)))))
 
 (define (target-audio-frame self)
@@ -234,7 +233,7 @@
 
 (define (buffer-timestamped-video timestamp self)
   "Buffer a video frame"
-  (ffmpeg-buffer-push self 'video-buffer (cons timestamp (duplicate (target-video-frame self)))))
+  (ffmpeg-buffer-push self (cons timestamp (duplicate (target-video-frame self)))))
 
 (define (buffer-timestamped-audio timestamp self)
   "Buffer an audio frame"
