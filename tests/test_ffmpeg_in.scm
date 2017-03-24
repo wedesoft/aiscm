@@ -124,6 +124,11 @@
   (test-assert "Seeking audio/video should update the video position"
     (<= 15 (video-pts input-video)))
 
+  (buffer-timestamped-video 15 input-video)
+  (pts= input-video 15)
+  (test-assert "Flush video buffer when seeking in input video"
+    (zero? (video-buffer-fill input-video)))
+
   (destroy input-video)
 
   (define full-video (open-ffmpeg-input "fixtures/av-sync.mp4"))

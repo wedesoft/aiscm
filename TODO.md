@@ -1,7 +1,6 @@
 ## Ready
 
-* audio, video timestamps
-* flush video buffer when seeking in input video
+* audio, video output timestamps
 * write trailing output audio, check trailing  input audio frame
 * simplify "decode\_video" and "list\_timestamped\_audio", remove pack\_audio
 * pulse audio: use samples for reading and writing

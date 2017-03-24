@@ -289,6 +289,7 @@
   "Set audio/video position (in seconds)"
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)
   (ffmpeg-flush (slot-ref self 'ffmpeg))
+  (slot-set! self 'video-buffer '())
   position)
 
 (define-method (channels (self <ffmpeg>))
