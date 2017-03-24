@@ -265,7 +265,6 @@
   (define audio-pts1 (audio-pts audio-mono))
   (read-audio audio-mono 800)
   (define audio-pts2 (audio-pts audio-mono))
-  (test-skip 1)
   (test-equal "Check first three audio frame time stamps"
     (list 0 (/ 1 10) (/ 2 10)) (list audio-pts0 audio-pts1 audio-pts2))
 

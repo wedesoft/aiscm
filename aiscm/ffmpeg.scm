@@ -251,7 +251,8 @@
 
 (define (fetch-audio self samples); TODO: fill target frame with desired number of packed samples
   "Fetch data from the audio buffer and put it into the samples"
-  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
+  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples))
+  (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
 
 (define-method (write-audio (samples <samples>) (self <ffmpeg>))
   "Write audio frame to output stream"
