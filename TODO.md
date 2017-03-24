@@ -1,12 +1,12 @@
 ## Ready
 
-* use audio input buffer for FFmpeg input (instead of returning audio frames)
-* refactor list\_timestamped\_audio
-* refactor import-audio-frame (return samples instead of array)
-* replace pack\_audio?
+* audio, video output timestamps
+* write trailing output audio, check trailing  input audio frame
+* pulse audio: use samples for reading and writing
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
+* augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written

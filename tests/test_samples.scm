@@ -152,4 +152,7 @@
 
 (test-eqv "Size of stereo samples"
   16 (size-of stereo-samples))
+
+(test-eqv "Allocate memory of correct size if not specified"
+  35280 (slot-ref (slot-ref (make <samples> #:typecode <int> #:shape '(2 4410) #:rate 44100 #:planar #f) 'mem) 'size))
 (test-end "aiscm samples")

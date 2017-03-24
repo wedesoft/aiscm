@@ -194,7 +194,7 @@
   (buffer-audio (to-samples data 44100) output-audio)
   (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
     (size-of data) (audio-buffer-fill output-audio))
-  (fetch-audio output-audio)
+  (fetch-audio output-audio (packed-audio-frame output-audio))
   (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
     (- (size-of data) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
   (test-eq "Writing audio data returns data"

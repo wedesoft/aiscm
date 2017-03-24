@@ -51,7 +51,7 @@ struct ffmpeg_t {
   char output_file;
   AVPacket pkt;
   AVPacket orig_pkt;
-  AVFrame *video_frame;
+  AVFrame *video_target_frame;
   AVFrame *audio_packed_frame;
   AVFrame *audio_target_frame;
   int samples_count;
@@ -182,10 +182,10 @@ SCM ffmpeg_destroy(SCM scm_self)
       while (encode_video(self, NULL));
   };
 
-  if (self->video_frame) {
-    av_frame_unref(self->video_frame);
-    av_frame_free(&self->video_frame);
-    self->video_frame = NULL;
+  if (self->video_target_frame) {
+    av_frame_unref(self->video_target_frame);
+    av_frame_free(&self->video_target_frame);
+    self->video_target_frame = NULL;
   };
 
   if (self->audio_packed_frame) {
@@ -323,7 +323,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   if (scm_is_true(scm_debug)) av_dump_format(self->fmt_ctx, 0, file_name, 0);
 
   // Allocate input frames
-  self->video_frame = allocate_frame(retval);
+  self->video_target_frame = allocate_frame(retval);
   self->audio_target_frame = allocate_frame(retval);
 
   // Initialise data packet
@@ -579,7 +579,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
     open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
 
     // Allocate frame
-    self->video_frame = allocate_output_video_frame(retval, self->video_codec_ctx);
+    self->video_target_frame = allocate_output_video_frame(retval, self->video_codec_ctx);
   };
 
   char have_audio = scm_is_true(scm_have_audio);
@@ -642,6 +642,18 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   return retval;
 }
 
+SCM ffmpeg_have_video(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return scm_from_bool(self->video_codec_ctx);
+}
+
+SCM ffmpeg_have_audio(SCM scm_self)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  return scm_from_bool(self->audio_codec_ctx);
+}
+
 SCM ffmpeg_shape(SCM scm_self)
 {
   AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
@@ -692,6 +704,7 @@ SCM ffmpeg_flush(SCM scm_self)
   struct ffmpeg_t *self = get_self(scm_self);
   if (self->video_codec_ctx) avcodec_flush_buffers(self->video_codec_ctx);
   if (self->audio_codec_ctx) avcodec_flush_buffers(self->audio_codec_ctx);
+  if (self->audio_buffer.buffer) ringbuffer_flush(&self->audio_buffer);
   return scm_self;
 }
 
@@ -731,21 +744,27 @@ static int64_t frame_timestamp(AVFrame *frame)
   return retval;
 }
 
+static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
+{
+  int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
+  int64_t offsets[AV_NUM_DATA_POINTERS];
+  offsets_from_pointers(frame->data, offsets, AV_NUM_DATA_POINTERS);
+  int frame_size =
+    av_samples_get_buffer_size(NULL, channels, frame->nb_samples, frame->format, 1);
+
+  return scm_list_n(scm_from_int(frame->format),
+                    scm_list_2(scm_from_int(channels), scm_from_int(frame->nb_samples)),
+                    scm_from_int(self->audio_codec_ctx->sample_rate),
+                    from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
+                    scm_from_pointer(*frame->data, NULL),
+                    scm_from_int(frame_size),
+                    SCM_UNDEFINED);
+}
+
 static SCM list_timestamped_audio(struct ffmpeg_t *self, AVFrame *frame)
 {
-  int data_size = av_get_bytes_per_sample(self->audio_codec_ctx->sample_fmt);
-  int channels = self->audio_codec_ctx->channels;
-  int nb_samples = frame->nb_samples;
-  void *ptr = scm_gc_malloc_pointerless(nb_samples * channels * data_size, "aiscm audio frame");// TODO: is allocation needed?
-  pack_audio(frame->data, channels, nb_samples, data_size, ptr);
-
-  return scm_list_n(scm_from_locale_symbol("audio"),
-                    scm_product(scm_from_int(frame_timestamp(frame)), time_base(audio_stream(self))),
-                    scm_from_int(self->audio_codec_ctx->sample_fmt),
-                    scm_list_2(scm_from_int(channels), scm_from_int(nb_samples)),
-                    scm_from_pointer(ptr, NULL),
-                    scm_from_int(data_size * channels * nb_samples),
-                    SCM_UNDEFINED);
+  return scm_list_2(scm_from_locale_symbol("audio"),
+                    scm_product(scm_from_int(frame_timestamp(frame)), time_base(audio_stream(self))));
 }
 
 static SCM decode_audio(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
@@ -753,7 +772,7 @@ static SCM decode_audio(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
   int got_frame;
   int len = avcodec_decode_audio4(self->audio_codec_ctx, frame, &got_frame, pkt);
   if (len < 0)
-    scm_misc_error("ffmpeg-read-audio/video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+    scm_misc_error("ffmpeg-decode-audio/video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
   consume_packet_data(pkt, FFMIN(pkt->size, len));
   return got_frame ? list_timestamped_audio(self, frame) : SCM_BOOL_F;
 }
@@ -783,23 +802,6 @@ static SCM list_video_frame_info(struct ffmpeg_t *self, AVFrame *frame)
                     SCM_UNDEFINED);
 }
 
-static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
-{
-  int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
-  int64_t offsets[AV_NUM_DATA_POINTERS];
-  offsets_from_pointers(frame->data, offsets, AV_NUM_DATA_POINTERS);
-  int frame_size =
-    av_samples_get_buffer_size(NULL, channels, frame->nb_samples, frame->format, 1);
-
-  return scm_list_n(scm_from_int(frame->format),
-                    scm_list_2(scm_from_int(channels), scm_from_int(frame->nb_samples)),
-                    scm_from_int(self->audio_codec_ctx->sample_rate),
-                    from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
-                    scm_from_pointer(*frame->data, NULL),
-                    scm_from_int(frame_size),
-                    SCM_UNDEFINED);
-}
-
 static void make_frame_writable(AVFrame *frame)
 {
 #ifdef HAVE_AV_FRAME_MAKE_WRITABLE
@@ -814,14 +816,16 @@ static void make_frame_writable(AVFrame *frame)
 SCM ffmpeg_target_video_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  make_frame_writable(self->video_frame);
-  return list_video_frame_info(self, self->video_frame);
+  if (!is_input_context(self))
+    make_frame_writable(self->video_target_frame);
+  return list_video_frame_info(self, self->video_target_frame);
 }
 
 SCM ffmpeg_target_audio_frame(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  make_frame_writable(self->audio_target_frame);
+  if (!is_input_context(self))
+    make_frame_writable(self->audio_target_frame);
   return list_audio_frame_info(self, self->audio_target_frame);
 }
 
@@ -833,9 +837,8 @@ SCM ffmpeg_packed_audio_frame(SCM scm_self)
 
 static SCM list_timestamped_video(struct ffmpeg_t *self, AVFrame *frame)
 {
-  return scm_append(scm_list_2(scm_list_2(scm_from_locale_symbol("video"),
-                                          scm_product(scm_from_int(frame_timestamp(frame)), time_base(video_stream(self)))),
-                               list_video_frame_info(self, frame)));
+  return scm_list_2(scm_from_locale_symbol("video"),
+                    scm_product(scm_from_int(frame_timestamp(frame)), time_base(video_stream(self))));
 }
 
 static SCM decode_video(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
@@ -843,7 +846,7 @@ static SCM decode_video(struct ffmpeg_t *self, AVPacket *pkt, AVFrame *frame)
   int got_frame;
   int len = avcodec_decode_video2(self->video_codec_ctx, frame, &got_frame, pkt);
   if (len < 0)
-    scm_misc_error("ffmpeg-read-audio/video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
+    scm_misc_error("ffmpeg-decode-audio/video", "Error decoding frame: ~a", scm_list_1(get_error_text(len)));
   consume_packet_data(pkt, pkt->size);
   return got_frame ? list_timestamped_video(self, frame) : SCM_BOOL_F;
 }
@@ -868,15 +871,14 @@ SCM ffmpeg_typecode(SCM scm_self)
   return scm_from_int(audio_codec_ctx(get_self(scm_self))->sample_fmt);
 }
 
-SCM ffmpeg_read_audio_video(SCM scm_self)
+SCM ffmpeg_decode_audio_video(SCM scm_self)
 {
   SCM retval = SCM_BOOL_F;
 
   struct ffmpeg_t *self = get_self(scm_self);
 
   if (!is_input_context(self))
-    scm_misc_error("ffmpeg-read-audio/video", "Attempt to read frame from FFmpeg output video", SCM_EOL);
-
+    scm_misc_error("ffmpeg-decode-audio/video", "Attempt to read frame from FFmpeg output video", SCM_EOL);
 
   while (scm_is_false(retval)) {
     if (packet_empty(self)) read_packet(self);
@@ -887,8 +889,8 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
       av_frame_unref(self->audio_target_frame);
       retval = decode_audio(self, &self->pkt, self->audio_target_frame);
     } else if (self->pkt.stream_index == self->video_stream_idx) {
-      av_frame_unref(self->video_frame);
-      retval = decode_video(self, &self->pkt, self->video_frame);
+      av_frame_unref(self->video_target_frame);
+      retval = decode_video(self, &self->pkt, self->video_target_frame);
     } else
       consume_packet_data(&self->pkt, self->pkt.size);
 
@@ -898,25 +900,19 @@ SCM ffmpeg_read_audio_video(SCM scm_self)
   return retval;
 }
 
-SCM ffmpeg_write_video(SCM scm_self)
+SCM ffmpeg_encode_video(SCM scm_self)
 {
   // TODO: AVFMT_RAWPICTURE
   struct ffmpeg_t *self = get_self(scm_self);
   if (is_input_context(self))
-    scm_misc_error("ffmpeg-write-video", "Attempt to write to FFmpeg input video", SCM_EOL);
+    scm_misc_error("ffmpeg-encode-video", "Attempt to write to FFmpeg input video", SCM_EOL);
 
   // Set frame timestamp
-  self->video_frame->pts = self->output_video_pts++;
+  self->video_target_frame->pts = self->output_video_pts++;
 
-  encode_video(self, self->video_frame);
+  encode_video(self, self->video_target_frame);
 
   return SCM_UNSPECIFIED;
-}
-
-static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
-{
-  AVFrame *frame = (AVFrame *)userdata;
-  memcpy(frame->data[0] + offset, data, count);
 }
 
 SCM ffmpeg_audio_buffer_fill(SCM scm_self)
@@ -932,18 +928,19 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
   return SCM_UNSPECIFIED;
 }
 
-SCM ffmpeg_fetch_audio(SCM scm_self)
+static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
+{
+  memcpy(userdata + offset, data, count);
+}
+
+SCM ffmpeg_fetch_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  AVCodecContext *codec = audio_codec_ctx(self);
-  int channels = av_get_channel_layout_nb_channels(self->audio_packed_frame->channel_layout);
-  int frame_size =
-    av_samples_get_buffer_size(NULL, channels, self->audio_packed_frame->nb_samples, codec->sample_fmt, 1);
-  ringbuffer_fetch(&self->audio_buffer, frame_size, fetch_buffered_audio_data, self->audio_packed_frame);
+  ringbuffer_fetch(&self->audio_buffer, scm_to_int(scm_bytes), fetch_buffered_audio_data, scm_to_pointer(scm_data));
   return SCM_UNSPECIFIED;
 }
 
-SCM ffmpeg_write_audio(SCM scm_self)
+SCM ffmpeg_encode_audio(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
   AVCodecContext *codec = audio_codec_ctx(self);
@@ -963,6 +960,8 @@ void init_ffmpeg(void)
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
   scm_c_define_gsubr("make-ffmpeg-input"        , 2, 0, 0, make_ffmpeg_input        );
   scm_c_define_gsubr("make-ffmpeg-output"       , 7, 0, 0, make_ffmpeg_output       );
+  scm_c_define_gsubr("ffmpeg-have-video?"       , 1, 0, 0, ffmpeg_have_video        );
+  scm_c_define_gsubr("ffmpeg-have-audio?"       , 1, 0, 0, ffmpeg_have_audio        );
   scm_c_define_gsubr("ffmpeg-shape"             , 1, 0, 0, ffmpeg_shape             );
   scm_c_define_gsubr("ffmpeg-destroy"           , 1, 0, 0, ffmpeg_destroy           );
   scm_c_define_gsubr("ffmpeg-frame-rate"        , 1, 0, 0, ffmpeg_frame_rate        );
@@ -971,15 +970,15 @@ void init_ffmpeg(void)
   scm_c_define_gsubr("ffmpeg-channels"          , 1, 0, 0, ffmpeg_channels          );
   scm_c_define_gsubr("ffmpeg-rate"              , 1, 0, 0, ffmpeg_rate              );
   scm_c_define_gsubr("ffmpeg-typecode"          , 1, 0, 0, ffmpeg_typecode          );
-  scm_c_define_gsubr("ffmpeg-read-audio/video"  , 1, 0, 0, ffmpeg_read_audio_video  );
+  scm_c_define_gsubr("ffmpeg-decode-audio/video", 1, 0, 0, ffmpeg_decode_audio_video);
   scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
   scm_c_define_gsubr("ffmpeg-target-audio-frame", 1, 0, 0, ffmpeg_target_audio_frame);
   scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
-  scm_c_define_gsubr("ffmpeg-write-video"       , 1, 0, 0, ffmpeg_write_video       );
+  scm_c_define_gsubr("ffmpeg-encode-video"      , 1, 0, 0, ffmpeg_encode_video      );
   scm_c_define_gsubr("ffmpeg-audio-buffer-fill" , 1, 0, 0, ffmpeg_audio_buffer_fill );
   scm_c_define_gsubr("ffmpeg-buffer-audio"      , 3, 0, 0, ffmpeg_buffer_audio      );
-  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 1, 0, 0, ffmpeg_fetch_audio       );
-  scm_c_define_gsubr("ffmpeg-write-audio"       , 1, 0, 0, ffmpeg_write_audio       );
+  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 3, 0, 0, ffmpeg_fetch_audio       );
+  scm_c_define_gsubr("ffmpeg-encode-audio"      , 1, 0, 0, ffmpeg_encode_audio      );
   scm_c_define_gsubr("ffmpeg-seek"              , 2, 0, 0, ffmpeg_seek              );
   scm_c_define_gsubr("ffmpeg-flush"             , 1, 0, 0, ffmpeg_flush             );
 }

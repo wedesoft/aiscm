@@ -18,6 +18,7 @@
              (srfi srfi-64)
              (oop goops)
              (aiscm ffmpeg)
+             (aiscm samples)
              (aiscm element)
              (aiscm int)
              (aiscm float)
@@ -66,27 +67,29 @@
     (pack-short-int-audio-samples))
 
   (define-class <dummy> ()
-    (buffer #:init-value '())
-    (clock  #:init-value 0))
+    (video-buffer #:init-value '())
+    (video-pts  #:init-value 0))
   (let [(dummy (make <dummy>))]
     (test-assert "Popping buffer should return #f when empty"
-      (not (ffmpeg-buffer-pop dummy 'buffer 'clock))))
+      (not (video-buffer-pop dummy))))
   (let [(dummy (make <dummy>))]
-    (ffmpeg-buffer-push dummy 'buffer (cons 123 'dummy-frame))
-    (ffmpeg-buffer-push dummy 'buffer (cons 456 'other-frame))
+    (video-buffer-push dummy (cons 123 'dummy-frame))
+    (video-buffer-push dummy (cons 456 'other-frame))
     (test-eq "Popping buffer should return first frame"
-      'dummy-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      'dummy-frame (video-buffer-pop dummy))
     (test-eq "Popping buffer should set the time stamp"
-      123 (slot-ref dummy 'clock))
+      123 (slot-ref dummy 'video-pts))
     (test-eq "Popping buffer again should return the second frame"
-      'other-frame (ffmpeg-buffer-pop dummy 'buffer 'clock))
+      'other-frame (video-buffer-pop dummy))
     (test-eq "Popping buffer again should set the time stamp"
-      456 (slot-ref dummy 'clock)))
+      456 (slot-ref dummy 'video-pts)))
 (test-end "helper methods")
 
 (test-begin "video input")
   (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 
+  (test-assert "Video has video stream"
+    (have-video? input-video))
   (test-assert "'open-ffmpeg-input' creates an FFmpeg object"
     (is-a? input-video <ffmpeg>))
   (test-equal "Check frame size of input video"
@@ -121,6 +124,11 @@
   (test-assert "Seeking audio/video should update the video position"
     (<= 15 (video-pts input-video)))
 
+  (buffer-timestamped-video 15 input-video)
+  (pts= input-video 15)
+  (test-assert "Flush video buffer when seeking in input video"
+    (zero? (video-buffer-fill input-video)))
+
   (destroy input-video)
 
   (define full-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
@@ -138,12 +146,40 @@
 (test-end "video input")
 
 (test-begin "image input")
-  (define image (open-ffmpeg-input "fixtures/fubk.png"))
+  (define decoded (decode-audio/video (open-ffmpeg-input "fixtures/fubk.png")))
 
+  (test-eq "Decoding image data results in a video frame"
+    'video (car decoded))
+  (test-eqv "Decoding image data results a trivial time stamp"
+    0 (cadr decoded))
+
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
+  (decode-audio/video image)
+  (test-assert "Return false after decoding last frame"
+    (not (decode-audio/video image)))
+
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
+  (test-eqv "Video buffer is empty initially"
+    0 (video-buffer-fill image))
+  (decode-audio/video image)
+  (test-assert "Buffering video should return true"
+    (buffer-timestamped-video 123 image))
+  (test-eqv "Video buffer contains one frame after buffering a frame"
+    1 (video-buffer-fill image))
+  (test-equal "Timestamp is stored in buffer"
+    123 (caar (slot-ref image 'video-buffer)))
+  (test-equal "Shape of buffered video frame is the same"
+    '(384 288) (shape (cdar (slot-ref image 'video-buffer))))
+  (test-assert "Stored frame is a duplicate (i.e. not the same)"
+    (not (eq? video-frame (cdar (slot-ref image 'video-buffer)))))
+
+  (define image (open-ffmpeg-input "fixtures/fubk.png"))
   (test-assert "Image has only one video frame"
     (not (cadr (list (read-image image) (read-image image)))))
+  (test-assert "Image does not have audio data"
+    (not (have-audio? image)))
   (test-assert "Do not hang when reading audio from image"
-    (not (read-audio image))); test should not hang
+    (not (read-audio image 4410))); test should not hang
 
   (test-error "Image does not have audio channels"
     'misc-error (channels image))
@@ -154,11 +190,38 @@
   (destroy image)
 
   (define image (open-ffmpeg-input "fixtures/fubk.png"))
-  (read-audio image)
+  (read-audio image 4410)
   (test-assert "Cache video data when reading audio"
     (read-image image))
   (destroy image)
 (test-end "image input")
+
+(test-begin "audio input")
+  (define decoded (decode-audio/video (open-ffmpeg-input "fixtures/mono.mp3")))
+  (test-eq "Decoding audio data results in an audio frame"
+    'audio (car decoded))
+  (test-eqv "Decoding audio data results a trivial time stamp"
+    0 (cadr decoded))
+
+  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (test-assert "Audio file does not have a video stream"
+    (not (have-video? audio-mono)))
+  (test-assert "Do not hang when attempting to read an image from an audio file"
+    (not (read-image audio-mono)))
+  (test-assert "Audio input has audio stream"
+    (have-audio? audio-mono))
+  (test-eqv "Audio buffer fill is zero initially"
+    0 (audio-buffer-fill audio-mono))
+  (define audio-samples (read-audio audio-mono 4410))
+  (test-equal "Retrieve specified number of audio samples"
+    '(1 4410) (shape audio-samples))
+  (test-eq "Typecode of samples is typecode of input"
+    (typecode audio-mono) (typecode audio-samples))
+  (test-eq "Rate of samples is rate of input"
+    (rate audio-mono) (rate audio-samples))
+  (test-assert "Samples are packed"
+    (not (planar? audio-samples)))
+(test-end "audio input")
 
 (test-begin "audio input")
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
@@ -174,42 +237,60 @@
   (test-eq "Get type of audio samples"
     <sint> (typecode audio-mono))
 
-  (define audio-pts0 (audio-pts audio-mono))
-  (define audio-mono-frame (read-audio audio-mono))
+  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (decode-audio/video audio-mono)
+  (test-assert "Buffering audio should return true"
+    (buffer-timestamped-audio 123 audio-mono))
+  (test-assert "Buffering input audio should increase the buffer size"
+    (not (zero? (audio-buffer-fill audio-mono))))
 
-  (test-assert "Check that audio frame is an array"
-    (is-a? audio-mono-frame <sequence<>>))
+  (define samples (to-samples (arr <sint> (2) (3) (5) (7) (3) (4) (6) (8)) 8000))
+  (fetch-audio audio-mono samples)
+  (test-equal "Fetching back buffered audio should maintain the values"
+    '((0) (0) (0) (0) (0) (0) (0) (0)) (to-list (to-array samples)))
+
+  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (define audio-pts0 (audio-pts audio-mono))
+  (define audio-mono-frame (read-audio audio-mono 4410))
+
+  (test-assert "Check that audio frame is a set of samples"
+    (is-a? audio-mono-frame <samples>))
   (test-eqv "Get a value from a mono audio frame"
-    40 (get audio-mono-frame 0 300))
-  (test-eqv "Audio frame should have two dimensions"
-    2 (dimensions audio-mono-frame))
-  (test-eqv "Mono audio frame should have 1 as first dimension"
-    1 (car (shape audio-mono-frame)))
+    40 (get (to-array audio-mono-frame) 0 300))
+  (test-eqv "Mono audio frame should have 1 channel"
+    1 (channels audio-mono-frame))
+  (test-equal "Mono audio frame should have the desired shape"
+    '(1 4410) (shape audio-mono-frame))
   (test-eq "Audio frame should have samples of correct type"
     <sint> (typecode audio-mono-frame))
 
+  (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
+  (define audio-pts0 (audio-pts audio-mono))
+  (read-audio audio-mono 800)
   (define audio-pts1 (audio-pts audio-mono))
-  (read-audio audio-mono)
+  (read-audio audio-mono 800)
   (define audio-pts2 (audio-pts audio-mono))
-
   (test-equal "Check first three audio frame time stamps"
-    (list 0 0 (/ 3456 48000)) (list audio-pts0 audio-pts1 audio-pts2))
+    (list 0 (/ 1 10) (/ 2 10)) (list audio-pts0 audio-pts1 audio-pts2))
+
+  (pts= audio-mono 1)
+  (test-eqv "Seeking in the audio stream should flush the audio buffer"
+    0 (audio-buffer-fill audio-mono))
+
+  (pts= audio-mono 35)
+  (test-assert "Return a smaller frame when attempting to read beyond the end of the audio stream"
+    (< (cadr (shape (read-audio audio-mono 441000))) 441000)); test should not hang
+  (test-assert "Check 'read-audio' returns false after last audio sample"
+    (not (read-audio audio-mono 4410)))
+
   (destroy audio-mono)
 
   (define audio-stereo (open-ffmpeg-input "fixtures/test.mp3"))
 
-  (test-eqv "Stereo audio frame should have 2 as first dimension"
-    2 (car (shape (read-audio audio-stereo))))
+  (test-eqv "Stereo audio frame should have 2 channels"
+    2 (channels (read-audio audio-stereo 4410)))
 
   (destroy audio-stereo)
-
-  (define full-audio (open-ffmpeg-input "fixtures/test.mp3"))
-  (define samples (map (lambda _ (read-audio full-audio)) (iota 1625)))
-
-  (test-skip 1)
-  (test-assert "Check 'read-audio' returns false after last frame"
-    (not (read-audio full-audio))); number of audio frames depends on FFmpeg version
-  (destroy full-audio)
 (test-end "audio input")
 
 (test-end "aiscm ffmpeg")

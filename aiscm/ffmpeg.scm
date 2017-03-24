@@ -31,9 +31,10 @@
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
-            video-bit-rate aspect-ratio ffmpeg-buffer-push ffmpeg-buffer-pop select-rate target-video-frame
+            video-bit-rate aspect-ratio video-buffer-push video-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
-            target-audio-frame packed-audio-frame audio-buffer-fill buffer-audio fetch-audio)
+            target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
+            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -41,7 +42,6 @@
 
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
-               (audio-buffer #:init-value '())
                (video-buffer #:init-value '())
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
@@ -137,83 +137,107 @@
   (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
     (if (zero? ratio) 1 ratio)))
 
-(define (import-audio-frame self lst)
-  "Compose audio frame from timestamp, type, shape, data pointer, and size"
-  (let [(memory     (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))
-        (array-type (lambda (type) (multiarray (assq-ref inverse-typemap type) 2)))
-        (array      (lambda (array-type shape memory) (make array-type #:shape shape #:value memory)))]
-    (apply (lambda (pts type shape data size)
-                   (cons pts (array (array-type type) shape (memory data size))))
-           lst)))
+(define (make-memory data size)
+  "Construct a pointerless memory object"
+  (make <mem> #:base data #:size size #:pointerless #t))
 
-(define (video-frame format shape offsets pitches data size)
+(define (make-video-frame format shape offsets pitches data size)
   "Construct a video frame from the specified information"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (make <image>
-          #:format  (format->symbol format)
-          #:shape   shape
-          #:offsets offsets
-          #:pitches pitches
-          #:mem     (memory data size))))
+  (make <image>
+        #:format  (format->symbol format)
+        #:shape   shape
+        #:offsets offsets
+        #:pitches pitches
+        #:mem     (make-memory data size)))
 
-(define (audio-frame sample-format shape rate offsets data size)
+(define (make-audio-frame sample-format shape rate offsets data size)
   "Construct an audio frame from the specified information"
-  (let [(memory (lambda (data size) (make <mem> #:base data #:size size #:pointerless #t)))]
-    (make <samples> #:typecode (sample-format->type sample-format)
-                    #:shape    shape
-                    #:rate     rate
-                    #:offsets  offsets
-                    #:planar   (sample-format->planar sample-format)
-                    #:mem      (memory data size))))
+  (make <samples> #:typecode (sample-format->type sample-format)
+                  #:shape    shape
+                  #:rate     rate
+                  #:offsets  offsets
+                  #:planar   (sample-format->planar sample-format)
+                  #:mem      (make-memory data size)))
 
-(define (import-video-frame self lst)
-  "Compose video frame from timestamp, format, shape, offsets, pitches, data pointer, and size"
-  (let [(pts    (car lst))
-        (frame  (apply video-frame (cdr lst)))]
-    (cons pts (duplicate frame))))
-
-(define (ffmpeg-buffer-push self buffer pts-and-frame)
+(define (video-buffer-push self pts-and-frame)
   "Store frame and time stamp in the specified buffer"
-  (slot-set! self buffer (attach (slot-ref self buffer) pts-and-frame)) #t)
+  (slot-set! self 'video-buffer (attach (slot-ref self 'video-buffer) pts-and-frame)) #t)
 
-(define (ffmpeg-buffer-pop self buffer clock)
+(define (video-buffer-pop self)
   "Retrieve frame and timestamp from the specified buffer"
-  (let [(lst (slot-ref self buffer))]
+  (let [(lst (slot-ref self 'video-buffer))]
     (and
       (not (null? lst))
       (begin
-        (slot-set! self clock  (caar lst))
-        (slot-set! self buffer (cdr lst))
+        (slot-set! self 'video-pts    (caar lst))
+        (slot-set! self 'video-buffer (cdr  lst))
         (cdar lst)))))
+
+(define (decode-audio/video self)
+  "Decode audio/video frames"
+  (ffmpeg-decode-audio/video (slot-ref self 'ffmpeg)))
 
 (define (buffer-audio/video self)
   "Decode and buffer audio/video frames"
-  (let [(lst (ffmpeg-read-audio/video (slot-ref self 'ffmpeg)))]
-    (if lst
-       (case (car lst)
-         ((audio) (ffmpeg-buffer-push self 'audio-buffer (import-audio-frame self (cdr lst))))
-         ((video) (ffmpeg-buffer-push self 'video-buffer (import-video-frame self (cdr lst)))))
-       #f)))
+  (let [(info (decode-audio/video self))]
+     (and
+       info
+       (case (car info)
+         ((audio) (buffer-timestamped-audio (cadr info) self))
+         ((video) (buffer-timestamped-video (cadr info) self))))))
 
-(define-method (read-audio (self <ffmpeg>))
-  "Retrieve the next audio frame"
-  (or (ffmpeg-buffer-pop self 'audio-buffer 'audio-pts) (and (buffer-audio/video self) (read-audio self))))
+(define-method (read-audio (self <ffmpeg>) (count <integer>))
+  "Retrieve audio samples from input audio stream"
+  (and
+    (have-audio? self)
+    (let [(sample-size (* (size-of (typecode self)) (channels self)))]
+      (while (< (audio-buffer-fill self) (* count sample-size)) (or (buffer-audio/video self) (break)))
+      (and (not (zero? (audio-buffer-fill self)))
+        (let* [(actual (min count (/ (audio-buffer-fill self) sample-size)))
+               (result (make <samples> #:typecode (typecode self)
+                                       #:shape (list (channels self) actual)
+                                       #:rate (rate self)
+                                       #:planar #f))]
+          (fetch-audio self result)
+          result)))))
 
 (define-method (read-image (self <ffmpeg>))
   "Retrieve the next video frame"
-  (or (ffmpeg-buffer-pop self 'video-buffer 'video-pts) (and (buffer-audio/video self) (read-image self))))
+  (and (have-video? self)
+       (or (video-buffer-pop self)
+           (and (buffer-audio/video self) (read-image self)))))
 
 (define (target-audio-frame self)
   "Get target audio frame for audio encoding"
-  (apply audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
+  (apply make-audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
 
 (define (packed-audio-frame self)
   "Get packed audio frame for converting from/to audio buffer data"
-  (apply audio-frame (ffmpeg-packed-audio-frame (slot-ref self 'ffmpeg))))
+  (apply make-audio-frame (ffmpeg-packed-audio-frame (slot-ref self 'ffmpeg))))
+
+(define (video-buffer-fill self)
+  "Get number of frames in video buffer"
+  (length (slot-ref self 'video-buffer)))
+
+(define (have-audio? self)
+  "Check whether the file has an audio stream"
+  (ffmpeg-have-audio? (slot-ref self 'ffmpeg)))
+
+(define (have-video? self)
+   "Check whether the file has a video stream"
+   (ffmpeg-have-video? (slot-ref self 'ffmpeg)))
 
 (define (audio-buffer-fill self)
   "Get number of bytes available in audio buffer"
   (ffmpeg-audio-buffer-fill (slot-ref self 'ffmpeg)))
+
+(define (buffer-timestamped-video timestamp self)
+  "Buffer a video frame"
+  (video-buffer-push self (cons timestamp (duplicate (target-video-frame self)))))
+
+(define (buffer-timestamped-audio timestamp self)
+  "Buffer an audio frame"
+  (buffer-audio (convert-samples (target-audio-frame self) (typecode self) #f) self))
 
 (define (buffer-audio samples self)
   "Append audio data to audio buffer"
@@ -222,24 +246,23 @@
   (if (not (eq? (typecode self) (typecode samples)))
     (aiscm-error 'buffer-audio "Expected samples of type ~a but got samples of type ~a" (typecode self) (typecode samples)))
   (if (not (eqv? (rate self) (rate samples)))
-    (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples))
-  )
+    (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples)))
   (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
 
-(define (fetch-audio self)
+(define (fetch-audio self samples); TODO: fill target frame with desired number of packed samples
   "Fetch data from the audio buffer and put it into the samples"
-  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg)))
+  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples))
+  (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
 
 (define-method (write-audio (samples <samples>) (self <ffmpeg>))
   "Write audio frame to output stream"
   (buffer-audio samples self)
   (let* [(packed     (packed-audio-frame self))
-         (target     (target-audio-frame self))
-         (frame-size (size-of packed))]
+         (target     (target-audio-frame self))]
     (while (>= (audio-buffer-fill self) (size-of packed))
-      (fetch-audio self); fills "packed" audio frame with samples
+      (fetch-audio self packed)
       (convert-samples-from! target packed)
-      (ffmpeg-write-audio (slot-ref self 'ffmpeg))))
+      (ffmpeg-encode-audio (slot-ref self 'ffmpeg))))
   samples)
 
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
@@ -249,12 +272,12 @@
 
 (define (target-video-frame self)
   "Get target video frame for video encoding"
-  (apply video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))
+  (apply make-video-frame (ffmpeg-target-video-frame (slot-ref self 'ffmpeg))))
 
 (define-method (write-image (img <image>) (self <ffmpeg>))
   "Write video frame to output file"
   (convert-image-from! (target-video-frame self) img)
-  (ffmpeg-write-video (slot-ref self 'ffmpeg))
+  (ffmpeg-encode-video (slot-ref self 'ffmpeg))
   img)
 
 (define-method (write-image (img <sequence<>>) (self <ffmpeg>))
@@ -266,6 +289,7 @@
   "Set audio/video position (in seconds)"
   (ffmpeg-seek (slot-ref self 'ffmpeg) position)
   (ffmpeg-flush (slot-ref self 'ffmpeg))
+  (slot-set! self 'video-buffer '())
   position)
 
 (define-method (channels (self <ffmpeg>))
