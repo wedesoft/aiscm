@@ -13,15 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-#ifndef __AISCM_IMAGE_HELPERS_H
-#define __AISCM_IMAGE_HELPERS_H
+#include "samples-helpers.h"
 
-#include <libguile.h>
 
-void scm_to_int_array(SCM source, int32_t dest[]);
-
-void scm_to_long_array(SCM source, int64_t dest[]);
-
-#endif
-
+void pointers_from_offsets(uint8_t *pointer, int64_t offsets[], uint8_t *pointers[], int n)
+{
+  int i;
+  for (i=0; i<n; i++)
+    pointers[i] = pointer + offsets[i];
+}

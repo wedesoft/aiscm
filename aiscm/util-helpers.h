@@ -14,20 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef __AISCM_IMAGE_HELPERS_H
+#define __AISCM_IMAGE_HELPERS_H
+
 #include <libguile.h>
 
+void scm_to_int_array(SCM source, int32_t dest[]);
 
-void init_ringbuffer_tests(void);
-void init_ffmpeg_helpers_tests(void);
-void init_jit_tests(void);
-void init_util_helpers_tests(void);
-void init_samples_helpers_tests(void);
+void scm_to_long_array(SCM source, int64_t dest[]);
 
-void init_tests(void)
-{
-  init_ringbuffer_tests();
-  init_ffmpeg_helpers_tests();
-  init_jit_tests();
-  init_util_helpers_tests();
-  init_samples_helpers_tests();
-}
+SCM clean_up_on_failure(SCM scm_object, SCM (*cleanup_method)(SCM), SCM scm_fun, SCM scm_arg);
+
+#endif
+

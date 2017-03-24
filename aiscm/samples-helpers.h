@@ -14,20 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef __AISCM_SAMPLES_HELPERS_H
+#define __AISCM_SAMPLES_HELPERS_H
+
 #include <libguile.h>
 
+void pointers_from_offsets(uint8_t *pointer, int64_t offsets[], uint8_t *pointers[], int n);
 
-void init_ringbuffer_tests(void);
-void init_ffmpeg_helpers_tests(void);
-void init_jit_tests(void);
-void init_util_helpers_tests(void);
-void init_samples_helpers_tests(void);
-
-void init_tests(void)
-{
-  init_ringbuffer_tests();
-  init_ffmpeg_helpers_tests();
-  init_jit_tests();
-  init_util_helpers_tests();
-  init_samples_helpers_tests();
-}
+#endif

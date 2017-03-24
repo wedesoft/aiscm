@@ -27,15 +27,20 @@ struct mmap_t {
   int len;
 };
 
+static struct mmap_t *get_self_no_check(SCM scm_self)
+{
+  return (struct mmap_t *)SCM_SMOB_DATA(scm_self);
+}
+
 static struct mmap_t *get_self(SCM scm_self)
 {
   scm_assert_smob_type(mmap_tag, scm_self);
-  return (struct mmap_t *)SCM_SMOB_DATA(scm_self);
+  return get_self_no_check(scm_self);
 }
 
 size_t free_mmap(SCM scm_self)
 {
-  struct mmap_t *self = get_self(scm_self);
+  struct mmap_t *self = get_self_no_check(scm_self);
   munmap(self->mem, self->len);
   scm_gc_free(self, sizeof(struct mmap_t), "mmap");
   return 0;
