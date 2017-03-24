@@ -18,7 +18,7 @@
 #include <yuv4mpeg.h>
 #include <jpegutils.h>
 #include <libguile.h>
-#include "image-helpers.h"
+#include "util-helpers.h"
 
 
 static void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, int *height,
