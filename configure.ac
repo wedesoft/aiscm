@@ -132,7 +132,7 @@ AC_TRY_LINK([#include <X11/xpm.h>],
             [AC_MSG_ERROR([Could not locate Xpm library])])
 LIBS="$old_LIBS"
 
-GUILE_PKG([2.2 2.0 1.8])
+GUILE_PKG([2.2 2.0])
 GUILE_PROGS
 GUILE_FLAGS
 GUILE_SITE_DIR
