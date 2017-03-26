@@ -34,7 +34,8 @@
             video-bit-rate aspect-ratio video-buffer-push video-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
-            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
+            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video
+            crop-audio-frame-size)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -118,7 +119,9 @@
                                          (list select-rate channels audio-bit-rate select-format) have-audio
                                          debug)))))
 
-(define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
+(define-method (destroy (self <ffmpeg>))
+  "Destructor"
+  (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
@@ -254,15 +257,19 @@
   (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples))
   (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
 
-(define-method (write-audio (samples <samples>) (self <ffmpeg>))
-  "Write audio frame to output stream"
-  (buffer-audio samples self)
+(define (encode-audio self)
+  "Encode buffered audio frames"
   (let* [(packed     (packed-audio-frame self))
          (target     (target-audio-frame self))]
     (while (>= (audio-buffer-fill self) (size-of packed))
       (fetch-audio self packed)
       (convert-samples-from! target packed)
-      (ffmpeg-encode-audio (slot-ref self 'ffmpeg))))
+      (ffmpeg-encode-audio (slot-ref self 'ffmpeg)))))
+
+(define-method (write-audio (samples <samples>) (self <ffmpeg>))
+  "Write audio frame to output stream"
+  (buffer-audio samples self)
+  (encode-audio self)
   samples)
 
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
@@ -303,3 +310,7 @@
 (define-method (typecode (self <ffmpeg>))
   "Query audio type of file"
   (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+
+(define (crop-audio-frame-size self size)
+  "Crop encoder audio frames to size of final audio frame (specified size)"
+  (ffmpeg-crop-audio-frame-size (slot-ref self 'ffmpeg) size))

@@ -211,6 +211,12 @@
   (test-error "Reject audio samples with wrong sampling rate"
     'misc-error (write-audio (to-samples data 22050) output-audio))
 
+  (crop-audio-frame-size output-audio 17)
+  (test-eqv "Cropping audio frames to final frame size should resize the target frame"
+    17 (cadr (shape (target-audio-frame output-audio))))
+  (test-eqv "Cropping audio frames to final frame size should resize the packed frame"
+    17 (cadr (shape (packed-audio-frame output-audio))))
+
   (destroy output-audio)
 
 (test-end "audio output")
