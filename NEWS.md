@@ -1,3 +1,7 @@
+# aiscm (0.11.1)
+
+* aiscm/ffmpeg.scm: write video and audio files using FFmpeg
+
 # aiscm (0.10.2)
 
 * aiscm/jit.scm: Bugfix for zero-expanding 32-bit integer

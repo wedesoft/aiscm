@@ -88,6 +88,8 @@
 (test-begin "video input")
   (define input-video (open-ffmpeg-input "fixtures/av-sync.mp4"))
 
+  (test-assert "Video input is an input object"
+    (is-input? input-video))
   (test-assert "Video has video stream"
     (have-video? input-video))
   (test-assert "'open-ffmpeg-input' creates an FFmpeg object"
