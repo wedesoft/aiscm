@@ -30,11 +30,12 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<ffmpeg>
-            open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
+            open-ffmpeg-input open-ffmpeg-output is-input? frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio video-buffer-push video-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
-            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video)
+            buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video
+            crop-audio-frame-size)
   #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
 
 
@@ -43,6 +44,7 @@
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
                (video-buffer #:init-value '())
+               (is-input #:init-keyword #:is-input #:getter is-input?)
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 
@@ -57,7 +59,7 @@
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
   (let [(debug (equal? "YES" (getenv "DEBUG")))]
-    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug) #:is-input #t)))
 
 (define (select-rate rate)
   "Check that the sample rate is supported or raise an exception"
@@ -116,9 +118,16 @@
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
                                          (list select-rate channels audio-bit-rate select-format) have-audio
-                                         debug)))))
+                                         debug)
+            #:is-input #f))))
 
-(define-method (destroy (self <ffmpeg>)) (ffmpeg-destroy (slot-ref self 'ffmpeg)))
+(define-method (destroy (self <ffmpeg>))
+  "Destructor"
+  (if (and (not (is-input? self)) (have-audio? self))
+    (begin
+      (crop-audio-frame-size self (/ (audio-buffer-fill self) (sample-size self)))
+      (encode-audio self)))
+  (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
 (define-method (shape (self <ffmpeg>))
   "Get two-dimensional shape of video frames"
@@ -186,14 +195,18 @@
          ((audio) (buffer-timestamped-audio (cadr info) self))
          ((video) (buffer-timestamped-video (cadr info) self))))))
 
+(define (sample-size self)
+  "Get size of audio sample in bytes"
+  (* (size-of (typecode self)) (channels self)))
+
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
   (and
     (have-audio? self)
-    (let [(sample-size (* (size-of (typecode self)) (channels self)))]
-      (while (< (audio-buffer-fill self) (* count sample-size)) (or (buffer-audio/video self) (break)))
+    (begin
+      (while (< (audio-buffer-fill self) (* count (sample-size self))) (or (buffer-audio/video self) (break)))
       (and (not (zero? (audio-buffer-fill self)))
-        (let* [(actual (min count (/ (audio-buffer-fill self) sample-size)))
+        (let* [(actual (min count (/ (audio-buffer-fill self) (sample-size self))))
                (result (make <samples> #:typecode (typecode self)
                                        #:shape (list (channels self) actual)
                                        #:rate (rate self)
@@ -254,15 +267,19 @@
   (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples))
   (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
 
-(define-method (write-audio (samples <samples>) (self <ffmpeg>))
-  "Write audio frame to output stream"
-  (buffer-audio samples self)
+(define (encode-audio self)
+  "Encode buffered audio frames"
   (let* [(packed     (packed-audio-frame self))
          (target     (target-audio-frame self))]
     (while (>= (audio-buffer-fill self) (size-of packed))
       (fetch-audio self packed)
       (convert-samples-from! target packed)
-      (ffmpeg-encode-audio (slot-ref self 'ffmpeg))))
+      (ffmpeg-encode-audio (slot-ref self 'ffmpeg)))))
+
+(define-method (write-audio (samples <samples>) (self <ffmpeg>))
+  "Write audio frame to output stream"
+  (buffer-audio samples self)
+  (encode-audio self)
   samples)
 
 (define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
@@ -303,3 +320,7 @@
 (define-method (typecode (self <ffmpeg>))
   "Query audio type of file"
   (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+
+(define (crop-audio-frame-size self size)
+  "Crop encoder audio frames to size of final audio frame (specified size)"
+  (if (not (zero? size)) (ffmpeg-crop-audio-frame-size (slot-ref self 'ffmpeg) size)))
