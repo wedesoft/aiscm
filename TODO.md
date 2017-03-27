@@ -1,7 +1,7 @@
 ## Ready
 
+* ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * audio, video output timestamps
-* write trailing output audio, check trailing  input audio frame
 * pulse audio: use samples for reading and writing
 * pulse audio: reexport pointer stuff
 * module libraries without version numbers

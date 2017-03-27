@@ -2,7 +2,7 @@ dnl Run `make -f Makefile.dist` to generate a configure script.
 dnl Then run ./configure to generate a Makefile.
 dnl Finally run make to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.10.2], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.11.1], [jan@wedesoft.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.14])
 AC_CONFIG_MACRO_DIR([m4])
@@ -132,7 +132,7 @@ AC_TRY_LINK([#include <X11/xpm.h>],
             [AC_MSG_ERROR([Could not locate Xpm library])])
 LIBS="$old_LIBS"
 
-GUILE_PKG([2.2 2.0 1.8])
+GUILE_PKG([2.2 2.0])
 GUILE_PROGS
 GUILE_FLAGS
 GUILE_SITE_DIR
