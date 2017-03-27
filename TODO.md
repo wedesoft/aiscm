@@ -1,7 +1,6 @@
 ## Ready
 
-* write trailing output audio if it is an output object
-* ffmpeg-input, ffmpeg-output class (instead of is-input?)
+* ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
 * pulse audio: reexport pointer stuff
