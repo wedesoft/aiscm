@@ -952,33 +952,42 @@ SCM ffmpeg_encode_audio(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+SCM ffmpeg_crop_audio_frame_size(SCM scm_self, SCM scm_size)
+{
+  struct ffmpeg_t *self = get_self(scm_self);
+  self->audio_target_frame->nb_samples = scm_to_int(scm_size);
+  self->audio_packed_frame->nb_samples = scm_to_int(scm_size);
+  return SCM_UNSPECIFIED;
+}
+
 void init_ffmpeg(void)
 {
   av_register_all();
   avformat_network_init();
   ffmpeg_tag = scm_make_smob_type("ffmpeg", sizeof(struct ffmpeg_t));
   scm_set_smob_free(ffmpeg_tag, free_ffmpeg);
-  scm_c_define_gsubr("make-ffmpeg-input"        , 2, 0, 0, make_ffmpeg_input        );
-  scm_c_define_gsubr("make-ffmpeg-output"       , 7, 0, 0, make_ffmpeg_output       );
-  scm_c_define_gsubr("ffmpeg-have-video?"       , 1, 0, 0, ffmpeg_have_video        );
-  scm_c_define_gsubr("ffmpeg-have-audio?"       , 1, 0, 0, ffmpeg_have_audio        );
-  scm_c_define_gsubr("ffmpeg-shape"             , 1, 0, 0, ffmpeg_shape             );
-  scm_c_define_gsubr("ffmpeg-destroy"           , 1, 0, 0, ffmpeg_destroy           );
-  scm_c_define_gsubr("ffmpeg-frame-rate"        , 1, 0, 0, ffmpeg_frame_rate        );
-  scm_c_define_gsubr("ffmpeg-video-bit-rate"    , 1, 0, 0, ffmpeg_video_bit_rate    );
-  scm_c_define_gsubr("ffmpeg-aspect-ratio"      , 1, 0, 0, ffmpeg_aspect_ratio      );
-  scm_c_define_gsubr("ffmpeg-channels"          , 1, 0, 0, ffmpeg_channels          );
-  scm_c_define_gsubr("ffmpeg-rate"              , 1, 0, 0, ffmpeg_rate              );
-  scm_c_define_gsubr("ffmpeg-typecode"          , 1, 0, 0, ffmpeg_typecode          );
-  scm_c_define_gsubr("ffmpeg-decode-audio/video", 1, 0, 0, ffmpeg_decode_audio_video);
-  scm_c_define_gsubr("ffmpeg-target-video-frame", 1, 0, 0, ffmpeg_target_video_frame);
-  scm_c_define_gsubr("ffmpeg-target-audio-frame", 1, 0, 0, ffmpeg_target_audio_frame);
-  scm_c_define_gsubr("ffmpeg-packed-audio-frame", 1, 0, 0, ffmpeg_packed_audio_frame);
-  scm_c_define_gsubr("ffmpeg-encode-video"      , 1, 0, 0, ffmpeg_encode_video      );
-  scm_c_define_gsubr("ffmpeg-audio-buffer-fill" , 1, 0, 0, ffmpeg_audio_buffer_fill );
-  scm_c_define_gsubr("ffmpeg-buffer-audio"      , 3, 0, 0, ffmpeg_buffer_audio      );
-  scm_c_define_gsubr("ffmpeg-fetch-audio"       , 3, 0, 0, ffmpeg_fetch_audio       );
-  scm_c_define_gsubr("ffmpeg-encode-audio"      , 1, 0, 0, ffmpeg_encode_audio      );
-  scm_c_define_gsubr("ffmpeg-seek"              , 2, 0, 0, ffmpeg_seek              );
-  scm_c_define_gsubr("ffmpeg-flush"             , 1, 0, 0, ffmpeg_flush             );
+  scm_c_define_gsubr("make-ffmpeg-input"           , 2, 0, 0, make_ffmpeg_input           );
+  scm_c_define_gsubr("make-ffmpeg-output"          , 7, 0, 0, make_ffmpeg_output          );
+  scm_c_define_gsubr("ffmpeg-have-video?"          , 1, 0, 0, ffmpeg_have_video           );
+  scm_c_define_gsubr("ffmpeg-have-audio?"          , 1, 0, 0, ffmpeg_have_audio           );
+  scm_c_define_gsubr("ffmpeg-shape"                , 1, 0, 0, ffmpeg_shape                );
+  scm_c_define_gsubr("ffmpeg-destroy"              , 1, 0, 0, ffmpeg_destroy              );
+  scm_c_define_gsubr("ffmpeg-frame-rate"           , 1, 0, 0, ffmpeg_frame_rate           );
+  scm_c_define_gsubr("ffmpeg-video-bit-rate"       , 1, 0, 0, ffmpeg_video_bit_rate       );
+  scm_c_define_gsubr("ffmpeg-aspect-ratio"         , 1, 0, 0, ffmpeg_aspect_ratio         );
+  scm_c_define_gsubr("ffmpeg-channels"             , 1, 0, 0, ffmpeg_channels             );
+  scm_c_define_gsubr("ffmpeg-rate"                 , 1, 0, 0, ffmpeg_rate                 );
+  scm_c_define_gsubr("ffmpeg-typecode"             , 1, 0, 0, ffmpeg_typecode             );
+  scm_c_define_gsubr("ffmpeg-decode-audio/video"   , 1, 0, 0, ffmpeg_decode_audio_video   );
+  scm_c_define_gsubr("ffmpeg-target-video-frame"   , 1, 0, 0, ffmpeg_target_video_frame   );
+  scm_c_define_gsubr("ffmpeg-target-audio-frame"   , 1, 0, 0, ffmpeg_target_audio_frame   );
+  scm_c_define_gsubr("ffmpeg-packed-audio-frame"   , 1, 0, 0, ffmpeg_packed_audio_frame   );
+  scm_c_define_gsubr("ffmpeg-encode-video"         , 1, 0, 0, ffmpeg_encode_video         );
+  scm_c_define_gsubr("ffmpeg-audio-buffer-fill"    , 1, 0, 0, ffmpeg_audio_buffer_fill    );
+  scm_c_define_gsubr("ffmpeg-buffer-audio"         , 3, 0, 0, ffmpeg_buffer_audio         );
+  scm_c_define_gsubr("ffmpeg-fetch-audio"          , 3, 0, 0, ffmpeg_fetch_audio          );
+  scm_c_define_gsubr("ffmpeg-encode-audio"         , 1, 0, 0, ffmpeg_encode_audio         );
+  scm_c_define_gsubr("ffmpeg-seek"                 , 2, 0, 0, ffmpeg_seek                 );
+  scm_c_define_gsubr("ffmpeg-flush"                , 1, 0, 0, ffmpeg_flush                );
+  scm_c_define_gsubr("ffmpeg-crop-audio-frame-size", 2, 0, 0, ffmpeg_crop_audio_frame_size);
 }

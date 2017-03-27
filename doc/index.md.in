@@ -4,7 +4,7 @@
 
 This manual is for **AIscm** (version @VERSION@).
 
-[**AIscm**][1] is a **Guile extension for numerical arrays and tensors**.
+[**AIscm**][1] is a **[Guile][2] extension for numerical arrays and tensors**.
 Performance is achieved by means of a JIT compiler.
 
 Control all data and machine code down to every single bit and byte.
