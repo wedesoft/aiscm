@@ -1,0 +1,5 @@
+Component: main
+Origin: AIscm
+Label: AIscm
+Architecture: i386
+Description: Apt repository for AIscm

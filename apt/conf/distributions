@@ -1,0 +1,47 @@
+Origin: AIscm
+Label: AIscm
+Codename: jessie
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30
+
+Origin: AIscm
+Label: AIscm
+Codename: stretch
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30
+
+Origin: AIscm
+Label: AIscm
+Codename: sid
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30
+
+Origin: AIscm
+Label: AIscm
+Codename: trusty
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30
+
+Origin: AIscm
+Label: AIscm
+Codename: xenial
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30
+
+Origin: AIscm
+Label: AIscm
+Codename: bionic
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 4455BC30

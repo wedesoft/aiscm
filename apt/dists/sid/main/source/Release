@@ -1,0 +1,5 @@
+Component: main
+Origin: AIscm
+Label: AIscm
+Architecture: source
+Description: Apt repository for AIscm

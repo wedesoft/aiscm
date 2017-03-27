@@ -1,0 +1,5 @@
+Component: main
+Origin: AIscm
+Label: AIscm
+Architecture: amd64
+Description: Apt repository for AIscm

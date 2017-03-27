@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jan Wedekind">
+  <meta name="dcterms.date" content="2020-09-07">
+  <title>AIscm – Guile extension for numerical arrays and tensors</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="buttondown.css">
+</head>
+<body>
+<h1 id="tensorflow-bindings">Tensorflow bindings</h1>
+<h2 id="basic-xor-example">Basic XOR example</h2>
+<p>The following example demonstrates the <em>Tensorflow</em> bindings using the XOR function as example. The input <em>features</em> and the desired output <em>labels</em> are provided using placeholder values. The network is trained using gradient descent. Finally the network is demonstrated using the input features.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb1-1" title="1">(use-modules (aiscm core) (aiscm tensorflow) (ice<span class="dv">-9</span> format))</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3">(<span class="ex">define</span><span class="fu"> features </span>(arr &lt;float&gt; (<span class="dv">0</span> <span class="dv">0</span>) (<span class="dv">0</span> <span class="dv">1</span>) (<span class="dv">1</span> <span class="dv">0</span>) (<span class="dv">1</span> <span class="dv">1</span>)))</a>
+<a class="sourceLine" id="cb1-4" title="4">(<span class="ex">define</span><span class="fu"> labels </span>(arr &lt;float&gt; (<span class="dv">0</span>) (<span class="dv">1</span>) (<span class="dv">1</span>) (<span class="dv">0</span>)))</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">(<span class="ex">define</span><span class="fu"> s </span>(make-session))</a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8">(<span class="ex">define</span><span class="fu"> x </span>(tf-placeholder #:dtype &lt;float&gt; #:shape &#39;(-<span class="dv">1</span> <span class="dv">2</span>) #:name <span class="st">&quot;x&quot;</span>))</a>
+<a class="sourceLine" id="cb1-9" title="9">(<span class="ex">define</span><span class="fu"> y </span>(tf-placeholder #:dtype &lt;float&gt; #:shape &#39;(-<span class="dv">1</span> <span class="dv">1</span>) #:name <span class="st">&quot;y&quot;</span>))</a>
+<a class="sourceLine" id="cb1-10" title="10">(<span class="ex">define</span><span class="fu"> m1 </span>(tf-variable #:dtype &lt;float&gt; #:shape &#39;(<span class="dv">2</span> <span class="dv">2</span>) #:name <span class="st">&quot;m1&quot;</span>))</a>
+<a class="sourceLine" id="cb1-11" title="11">(run s &#39;() (tf-assign m1 (tf-truncated-normal (tf-shape m1) #:dtype &lt;float&gt;)))</a>
+<a class="sourceLine" id="cb1-12" title="12">(<span class="ex">define</span><span class="fu"> b1 </span>(tf-variable #:dtype &lt;float&gt; #:shape &#39;(<span class="dv">2</span>) #:name <span class="st">&quot;b1&quot;</span>))</a>
+<a class="sourceLine" id="cb1-13" title="13">(run s &#39;() (tf-assign b1 (fill &lt;float&gt; &#39;(<span class="dv">2</span>) <span class="fl">0.0</span>)))</a>
+<a class="sourceLine" id="cb1-14" title="14">(<span class="ex">define</span><span class="fu"> h1 </span>(tf-tanh (tf-add (tf-mat-mul x m1) b1)))</a>
+<a class="sourceLine" id="cb1-15" title="15"></a>
+<a class="sourceLine" id="cb1-16" title="16">(<span class="ex">define</span><span class="fu"> m2 </span>(tf-variable #:dtype &lt;float&gt; #:shape &#39;(<span class="dv">2</span> <span class="dv">1</span>) #:name <span class="st">&quot;m2&quot;</span>))</a>
+<a class="sourceLine" id="cb1-17" title="17">(run s &#39;() (tf-assign m2 (tf-truncated-normal (tf-shape m2) #:dtype &lt;float&gt;)))</a>
+<a class="sourceLine" id="cb1-18" title="18">(<span class="ex">define</span><span class="fu"> b2 </span>(tf-variable #:dtype &lt;float&gt; #:shape &#39;(<span class="dv">1</span>) #:name <span class="st">&quot;b2&quot;</span>))</a>
+<a class="sourceLine" id="cb1-19" title="19">(run s &#39;() (tf-assign b2 (arr &lt;float&gt; <span class="dv">0</span>)))</a>
+<a class="sourceLine" id="cb1-20" title="20">(<span class="ex">define</span><span class="fu"> ys </span>(tf-sigmoid (tf-add (tf-mat-mul h1 m2) b2) #:name <span class="st">&quot;ys&quot;</span>))</a>
+<a class="sourceLine" id="cb1-21" title="21"></a>
+<a class="sourceLine" id="cb1-22" title="22">(<span class="ex">define</span><span class="fu"> one </span>(tf-cast <span class="dv">1</span> #:DstT &lt;float&gt;))</a>
+<a class="sourceLine" id="cb1-23" title="23">(<span class="ex">define</span><span class="fu"> cost </span>(tf-neg (tf-mean (tf-add (tf-mul y (tf-log ys)) (tf-mul (tf-sub one y) (tf-log (tf-sub one ys)))) (arr &lt;int&gt; <span class="dv">0</span> <span class="dv">1</span>))))</a>
+<a class="sourceLine" id="cb1-24" title="24"></a>
+<a class="sourceLine" id="cb1-25" title="25">(<span class="ex">define</span><span class="fu"> vars </span>(<span class="kw">list</span> m1 b1 m2 b2))</a>
+<a class="sourceLine" id="cb1-26" title="26">(<span class="ex">define</span><span class="fu"> gradients </span>(tf-add-gradient cost vars))</a>
+<a class="sourceLine" id="cb1-27" title="27"></a>
+<a class="sourceLine" id="cb1-28" title="28">(<span class="ex">define</span><span class="fu"> alpha </span>(tf-cast <span class="fl">1.0</span> #:DstT &lt;float&gt;))</a>
+<a class="sourceLine" id="cb1-29" title="29">(<span class="ex">define</span><span class="fu"> step </span>(map (<span class="kw">lambda</span> (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))</a>
+<a class="sourceLine" id="cb1-30" title="30"></a>
+<a class="sourceLine" id="cb1-31" title="31">(<span class="kw">for-each</span> (<span class="kw">lambda</span> _ (run s (<span class="kw">list</span> (<span class="kw">cons</span> x features) (<span class="kw">cons</span> y labels)) step)) (iota <span class="dv">250</span>))</a>
+<a class="sourceLine" id="cb1-32" title="32">(format <span class="dv">#t</span> <span class="st">&quot;~a~&amp;&quot;</span> (run s (<span class="kw">list</span> (<span class="kw">cons</span> x features)) ys))</a></code></pre></div>
+<h2 id="mnist-example">MNIST example</h2>
+<p>The MNIST dataset is a benchmark dataset for handwritten digit recognition.</p>
+<figure>
+<img src="mnist.jpg" title="MNIST data set" alt="mnist.jpg" /><figcaption>mnist.jpg</figcaption>
+</figure>
+<p>The following example is a convolutional neural network achieving an error rate below 3%.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb2-1" title="1">(use-modules (oop goops)</a>
+<a class="sourceLine" id="cb2-2" title="2">             (ice<span class="dv">-9</span> binary-ports)</a>
+<a class="sourceLine" id="cb2-3" title="3">             (ice<span class="dv">-9</span> format)</a>
+<a class="sourceLine" id="cb2-4" title="4">             (srfi srfi<span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb2-5" title="5">             (rnrs bytevectors)</a>
+<a class="sourceLine" id="cb2-6" title="6">             (system foreign)</a>
+<a class="sourceLine" id="cb2-7" title="7">             (aiscm core)</a>
+<a class="sourceLine" id="cb2-8" title="8">             (aiscm xorg)</a>
+<a class="sourceLine" id="cb2-9" title="9">             (aiscm util)</a>
+<a class="sourceLine" id="cb2-10" title="10">             (aiscm tensorflow))</a>
+<a class="sourceLine" id="cb2-11" title="11"></a>
+<a class="sourceLine" id="cb2-12" title="12">(<span class="ex">define</span><span class="fu"> </span>(read-images file-name)</a>
+<a class="sourceLine" id="cb2-13" title="13">  (<span class="kw">let*</span> [(f     (open-file file-name <span class="st">&quot;rb&quot;</span>))</a>
+<a class="sourceLine" id="cb2-14" title="14">         (magic (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))</a>
+<a class="sourceLine" id="cb2-15" title="15">         (n     (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))</a>
+<a class="sourceLine" id="cb2-16" title="16">         (h     (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))</a>
+<a class="sourceLine" id="cb2-17" title="17">         (w     (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))]</a>
+<a class="sourceLine" id="cb2-18" title="18">    (<span class="kw">if</span> (<span class="kw">not</span> (<span class="kw">eqv?</span> magic <span class="dv">2051</span>)) (error <span class="st">&quot;Images file has wrong magic number&quot;</span>))</a>
+<a class="sourceLine" id="cb2-19" title="19">    (<span class="kw">let</span> [(bv (get-bytevector-n f (* n h w)))]</a>
+<a class="sourceLine" id="cb2-20" title="20">      (make (multiarray &lt;ubyte&gt; <span class="dv">3</span>) #:memory (bytevector-&gt;pointer bv) #:shape (<span class="kw">list</span> n h w)))))</a>
+<a class="sourceLine" id="cb2-21" title="21"></a>
+<a class="sourceLine" id="cb2-22" title="22">(<span class="ex">define</span><span class="fu"> </span>(read-labels file-name)</a>
+<a class="sourceLine" id="cb2-23" title="23">  (<span class="kw">let*</span> [(f     (open-file file-name <span class="st">&quot;rb&quot;</span>))</a>
+<a class="sourceLine" id="cb2-24" title="24">         (magic (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))</a>
+<a class="sourceLine" id="cb2-25" title="25">         (n     (bytevector-u32-ref (get-bytevector-n f <span class="dv">4</span>) <span class="dv">0</span> (endianness big)))]</a>
+<a class="sourceLine" id="cb2-26" title="26">    (<span class="kw">if</span> (<span class="kw">not</span> (<span class="kw">eqv?</span> magic <span class="dv">2049</span>)) (error <span class="st">&quot;Label file has wrong magic number&quot;</span>))</a>
+<a class="sourceLine" id="cb2-27" title="27">    (<span class="kw">let</span> [(bv (get-bytevector-n f n))]</a>
+<a class="sourceLine" id="cb2-28" title="28">      (make (multiarray &lt;ubyte&gt; <span class="dv">1</span>) #:memory (bytevector-&gt;pointer bv) #:shape (<span class="kw">list</span> n)))))</a>
+<a class="sourceLine" id="cb2-29" title="29"></a>
+<a class="sourceLine" id="cb2-30" title="30"><span class="co">; Load MNIST data set available at http://yann.lecun.com/exdb/mnist/</span></a>
+<a class="sourceLine" id="cb2-31" title="31">(<span class="ex">define</span><span class="fu"> images </span>(read-images <span class="st">&quot;train-images-idx3-ubyte&quot;</span>))</a>
+<a class="sourceLine" id="cb2-32" title="32">(<span class="ex">define</span><span class="fu"> labels </span>(read-labels <span class="st">&quot;train-labels-idx1-ubyte&quot;</span>))</a>
+<a class="sourceLine" id="cb2-33" title="33">(<span class="ex">define</span><span class="fu"> n </span>(<span class="kw">car</span> (shape images)))</a>
+<a class="sourceLine" id="cb2-34" title="34"></a>
+<a class="sourceLine" id="cb2-35" title="35"><span class="co">; Create Tensorflow session</span></a>
+<a class="sourceLine" id="cb2-36" title="36">(<span class="ex">define</span><span class="fu"> s </span>(make-session))</a>
+<a class="sourceLine" id="cb2-37" title="37"></a>
+<a class="sourceLine" id="cb2-38" title="38"><span class="co">; Define placeholders for features (images) and labels</span></a>
+<a class="sourceLine" id="cb2-39" title="39">(<span class="ex">define</span><span class="fu"> x </span>(tf-placeholder #:dtype &lt;ubyte&gt; #:shape &#39;(-<span class="dv">1</span> <span class="dv">28</span> <span class="dv">28</span>)))</a>
+<a class="sourceLine" id="cb2-40" title="40">(<span class="ex">define</span><span class="fu"> y </span>(tf-placeholder #:dtype &lt;ubyte&gt; #:shape &#39;(-<span class="dv">1</span>)))</a>
+<a class="sourceLine" id="cb2-41" title="41"></a>
+<a class="sourceLine" id="cb2-42" title="42"><span class="co">; Determine parameters for feature scaling</span></a>
+<a class="sourceLine" id="cb2-43" title="43">(<span class="ex">define</span><span class="fu"> </span>(sqr x) (* x x))</a>
+<a class="sourceLine" id="cb2-44" title="44">(<span class="ex">define</span><span class="fu"> count </span>(apply * (shape images)))</a>
+<a class="sourceLine" id="cb2-45" title="45">(<span class="ex">define</span><span class="fu"> average </span>(<span class="kw">exact-&gt;inexact</span> (<span class="op">/</span> (sum images) count)))</a>
+<a class="sourceLine" id="cb2-46" title="46">(<span class="ex">define</span><span class="fu"> stddev </span>(<span class="kw">sqrt</span> (<span class="op">/</span> (sum (sqr (<span class="op">-</span> images average))) count)))</a>
+<a class="sourceLine" id="cb2-47" title="47"></a>
+<a class="sourceLine" id="cb2-48" title="48"><span class="co">; Scale features and reshape to 4D array</span></a>
+<a class="sourceLine" id="cb2-49" title="49">(<span class="ex">define</span><span class="fu"> r1 </span>(tf-reshape (tf-mul (<span class="op">/</span> <span class="dv">1</span> stddev) (tf-sub (tf-cast x #:DstT &lt;double&gt;) average)) (arr &lt;int&gt; <span class="dv">-1</span> <span class="dv">28</span> <span class="dv">28</span> <span class="dv">1</span>)))</a>
+<a class="sourceLine" id="cb2-50" title="50"></a>
+<a class="sourceLine" id="cb2-51" title="51"><span class="co">; First convolutional layer with max-pooling and ReLU activation function.</span></a>
+<a class="sourceLine" id="cb2-52" title="52">(<span class="ex">define</span><span class="fu"> k1 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">3</span> <span class="dv">3</span> <span class="dv">1</span> <span class="dv">4</span>)))</a>
+<a class="sourceLine" id="cb2-53" title="53">(<span class="ex">define</span><span class="fu"> b1 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">4</span>)))</a>
+<a class="sourceLine" id="cb2-54" title="54">(<span class="ex">define</span><span class="fu"> c1 </span>(tf-add (tf-conv2d r1 k1 #:strides &#39;(<span class="dv">1</span> <span class="dv">1</span> <span class="dv">1</span> <span class="dv">1</span>) #:padding &#39;VALID) b1))</a>
+<a class="sourceLine" id="cb2-55" title="55">(<span class="ex">define</span><span class="fu"> p1 </span>(tf-relu (tf-max-pool c1 #:strides &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">1</span>) #:ksize &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">1</span>) #:padding &#39;VALID)))</a>
+<a class="sourceLine" id="cb2-56" title="56"></a>
+<a class="sourceLine" id="cb2-57" title="57"><span class="co">; Second convolutional layer with max-pooling and ReLU activation function.</span></a>
+<a class="sourceLine" id="cb2-58" title="58">(<span class="ex">define</span><span class="fu"> k2 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">3</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">16</span>)))</a>
+<a class="sourceLine" id="cb2-59" title="59">(<span class="ex">define</span><span class="fu"> b2 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">16</span>)))</a>
+<a class="sourceLine" id="cb2-60" title="60">(<span class="ex">define</span><span class="fu"> c2 </span>(tf-add (tf-conv2d p1 k2 #:strides &#39;(<span class="dv">1</span> <span class="dv">1</span> <span class="dv">1</span> <span class="dv">1</span>) #:padding &#39;VALID) b2))</a>
+<a class="sourceLine" id="cb2-61" title="61">(<span class="ex">define</span><span class="fu"> p2 </span>(tf-relu (tf-max-pool c2 #:strides &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">1</span>) #:ksize &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">1</span>) #:padding &#39;VALID)))</a>
+<a class="sourceLine" id="cb2-62" title="62"></a>
+<a class="sourceLine" id="cb2-63" title="63"><span class="co">; Reshape to 2D array</span></a>
+<a class="sourceLine" id="cb2-64" title="64">(<span class="ex">define</span><span class="fu"> d </span>(* <span class="dv">5</span> <span class="dv">5</span> <span class="dv">16</span>))</a>
+<a class="sourceLine" id="cb2-65" title="65">(<span class="ex">define</span><span class="fu"> r2 </span>(tf-reshape p2 (to-array &lt;int&gt; (<span class="kw">list</span> <span class="dv">-1</span> d))))</a>
+<a class="sourceLine" id="cb2-66" title="66"></a>
+<a class="sourceLine" id="cb2-67" title="67"><span class="co">; First fully connected layer with bias units and ReLU activation function.</span></a>
+<a class="sourceLine" id="cb2-68" title="68">(<span class="ex">define</span><span class="fu"> m3 </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> d <span class="dv">40</span>)))</a>
+<a class="sourceLine" id="cb2-69" title="69">(<span class="ex">define</span><span class="fu"> b3 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">40</span>)))</a>
+<a class="sourceLine" id="cb2-70" title="70">(<span class="ex">define</span><span class="fu"> l3 </span>(tf-relu (tf-add (tf-mat-mul r2 m3) b3)))</a>
+<a class="sourceLine" id="cb2-71" title="71"></a>
+<a class="sourceLine" id="cb2-72" title="72"><span class="co">; Second fully connected layer with bias units and softmax activation function.</span></a>
+<a class="sourceLine" id="cb2-73" title="73">(<span class="ex">define</span><span class="fu"> m4 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">40</span> <span class="dv">10</span>)))</a>
+<a class="sourceLine" id="cb2-74" title="74">(<span class="ex">define</span><span class="fu"> b4 </span>(tf-variable #:dtype &lt;double&gt; #:shape &#39;(<span class="dv">10</span>)))</a>
+<a class="sourceLine" id="cb2-75" title="75">(<span class="ex">define</span><span class="fu"> l </span>(tf-softmax (tf-add (tf-mat-mul l3 m4) b4)))</a>
+<a class="sourceLine" id="cb2-76" title="76"></a>
+<a class="sourceLine" id="cb2-77" title="77"><span class="co">; Classification result of neural network.</span></a>
+<a class="sourceLine" id="cb2-78" title="78">(<span class="ex">define</span><span class="fu"> prediction </span>(tf-arg-max l <span class="dv">1</span> #:name <span class="st">&quot;prediction&quot;</span>))</a>
+<a class="sourceLine" id="cb2-79" title="79"></a>
+<a class="sourceLine" id="cb2-80" title="80"><span class="co">; Random initialization of network parameters</span></a>
+<a class="sourceLine" id="cb2-81" title="81">(<span class="ex">define</span><span class="fu"> initializers</span></a>
+<a class="sourceLine" id="cb2-82" title="82">  (<span class="kw">list</span> (tf-assign k1 (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> (* <span class="dv">3</span> <span class="dv">3</span>))) (tf-truncated-normal (arr &lt;int&gt; <span class="dv">3</span> <span class="dv">3</span> <span class="dv">1</span> <span class="dv">4</span>) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb2-83" title="83">        (tf-assign b1 (fill &lt;double&gt; &#39;(<span class="dv">4</span>) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb2-84" title="84">        (tf-assign k2 (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> (* <span class="dv">3</span> <span class="dv">3</span> <span class="dv">4</span>))) (tf-truncated-normal (arr &lt;int&gt; <span class="dv">3</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">16</span>) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb2-85" title="85">        (tf-assign b2 (fill &lt;double&gt; &#39;(<span class="dv">16</span>) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb2-86" title="86">        (tf-assign m3 (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> d)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> d <span class="dv">40</span>)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb2-87" title="87">        (tf-assign b3 (fill &lt;double&gt; &#39;(<span class="dv">40</span>) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb2-88" title="88">        (tf-assign m4 (tf-mul (<span class="op">/</span> <span class="dv">2</span> (<span class="kw">sqrt</span> <span class="dv">40</span>)) (tf-truncated-normal (arr &lt;int&gt; <span class="dv">40</span> <span class="dv">10</span>) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb2-89" title="89">        (tf-assign b4 (fill &lt;double&gt; &#39;(<span class="dv">10</span>) <span class="fl">0.0</span>))))</a>
+<a class="sourceLine" id="cb2-90" title="90">(run s &#39;() initializers)</a>
+<a class="sourceLine" id="cb2-91" title="91"></a>
+<a class="sourceLine" id="cb2-92" title="92"><span class="co">; List of all network parameters</span></a>
+<a class="sourceLine" id="cb2-93" title="93">(<span class="ex">define</span><span class="fu"> vars </span>(<span class="kw">list</span> k1 k2 m3 b3 m4 b4))</a>
+<a class="sourceLine" id="cb2-94" title="94"></a>
+<a class="sourceLine" id="cb2-95" title="95"><span class="co">; Logistic loss function</span></a>
+<a class="sourceLine" id="cb2-96" title="96">(<span class="ex">define</span><span class="fu"> yh </span>(tf-one-hot y <span class="dv">10</span> <span class="fl">1.0</span> <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb2-97" title="97">(<span class="ex">define</span><span class="fu"> </span>(safe-log x) (tf-log (tf-maximum x <span class="fl">1e-10</span>)))</a>
+<a class="sourceLine" id="cb2-98" title="98">(<span class="ex">define</span><span class="fu"> </span>(invert x) (tf-sub <span class="fl">1.0</span> x))</a>
+<a class="sourceLine" id="cb2-99" title="99">(<span class="ex">define</span><span class="fu"> loss </span>(tf-neg (tf-mean (tf-add (tf-mul yh (safe-log l)) (tf-mul (invert yh) (safe-log (invert l)))) (arr &lt;int&gt; <span class="dv">0</span> <span class="dv">1</span>))))</a>
+<a class="sourceLine" id="cb2-100" title="100"></a>
+<a class="sourceLine" id="cb2-101" title="101"><span class="co">; Regularization term</span></a>
+<a class="sourceLine" id="cb2-102" title="102">(<span class="ex">define</span><span class="fu"> regularization </span>(tf-add (tf-mean (tf-square (tf-abs m3)) (arr &lt;int&gt; <span class="dv">0</span> <span class="dv">1</span>)) (tf-mean (tf-square (tf-abs m4)) (arr &lt;int&gt; <span class="dv">0</span> <span class="dv">1</span>))))</a>
+<a class="sourceLine" id="cb2-103" title="103"></a>
+<a class="sourceLine" id="cb2-104" title="104"><span class="co">; Overall cost</span></a>
+<a class="sourceLine" id="cb2-105" title="105">(<span class="ex">define</span><span class="fu"> la </span><span class="fl">0.02</span>)</a>
+<a class="sourceLine" id="cb2-106" title="106">(<span class="ex">define</span><span class="fu"> cost </span>(tf-add loss (tf-mul la regularization)))</a>
+<a class="sourceLine" id="cb2-107" title="107"></a>
+<a class="sourceLine" id="cb2-108" title="108"><span class="co">; Implement gradient descent step</span></a>
+<a class="sourceLine" id="cb2-109" title="109">(<span class="ex">define</span><span class="fu"> gradients </span>(tf-add-gradient cost vars))</a>
+<a class="sourceLine" id="cb2-110" title="110">(<span class="ex">define</span><span class="fu"> alpha </span><span class="fl">0.4</span>)</a>
+<a class="sourceLine" id="cb2-111" title="111">(<span class="ex">define</span><span class="fu"> step </span>(map (<span class="kw">lambda</span> (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))</a>
+<a class="sourceLine" id="cb2-112" title="112"></a>
+<a class="sourceLine" id="cb2-113" title="113"><span class="co">; Perform gradient descent</span></a>
+<a class="sourceLine" id="cb2-114" title="114">(<span class="ex">define</span><span class="fu"> j </span><span class="fl">0.0</span>)</a>
+<a class="sourceLine" id="cb2-115" title="115">(<span class="kw">for-each</span></a>
+<a class="sourceLine" id="cb2-116" title="116">  (<span class="kw">lambda</span> (epoch)</a>
+<a class="sourceLine" id="cb2-117" title="117">    (<span class="kw">for-each</span></a>
+<a class="sourceLine" id="cb2-118" title="118">      (<span class="kw">lambda</span> (i)</a>
+<a class="sourceLine" id="cb2-119" title="119">        (<span class="kw">let*</span> [(range (<span class="kw">cons</span> i (<span class="op">+</span> i <span class="dv">50</span>)))</a>
+<a class="sourceLine" id="cb2-120" title="120">               (batch (<span class="kw">list</span> (<span class="kw">cons</span> x (unroll (get images range))) (<span class="kw">cons</span> y (get labels range))))</a>
+<a class="sourceLine" id="cb2-121" title="121">               (js    (run s batch cost))]</a>
+<a class="sourceLine" id="cb2-122" title="122">          (set! j (<span class="op">+</span> (* <span class="fl">0.99</span> j) (* <span class="fl">0.01</span> js)))</a>
+<a class="sourceLine" id="cb2-123" title="123">          (format <span class="dv">#t</span> <span class="st">&quot;\repoch ~2d, ~5d/~5d: ~6,4f&quot;</span> epoch i n j)</a>
+<a class="sourceLine" id="cb2-124" title="124">          (run s batch step)))</a>
+<a class="sourceLine" id="cb2-125" title="125">      (iota (<span class="op">/</span> n <span class="dv">50</span>) <span class="dv">0</span> <span class="dv">50</span>)))</a>
+<a class="sourceLine" id="cb2-126" title="126">  (iota <span class="dv">3</span>))</a>
+<a class="sourceLine" id="cb2-127" title="127">(format <span class="dv">#t</span> <span class="st">&quot;~&amp;&quot;</span>)</a>
+<a class="sourceLine" id="cb2-128" title="128"></a>
+<a class="sourceLine" id="cb2-129" title="129"><span class="co">; Load MNIST test data.</span></a>
+<a class="sourceLine" id="cb2-130" title="130">(<span class="ex">define</span><span class="fu"> test-images </span>(read-images <span class="st">&quot;t10k-images-idx3-ubyte&quot;</span>))</a>
+<a class="sourceLine" id="cb2-131" title="131">(<span class="ex">define</span><span class="fu"> test-labels </span>(read-labels <span class="st">&quot;t10k-labels-idx1-ubyte&quot;</span>))</a>
+<a class="sourceLine" id="cb2-132" title="132">(<span class="ex">define</span><span class="fu"> n-test </span>(<span class="kw">car</span> (shape test-images)))</a>
+<a class="sourceLine" id="cb2-133" title="133"></a>
+<a class="sourceLine" id="cb2-134" title="134"><span class="co">; Display cost function result for (part of) training and test data</span></a>
+<a class="sourceLine" id="cb2-135" title="135">(<span class="ex">define</span><span class="fu"> j </span>(run s (<span class="kw">list</span> (<span class="kw">cons</span> x (unroll (get images &#39;(<span class="dv">0</span> . <span class="dv">10000</span>)))) (<span class="kw">cons</span> y (get labels &#39;(<span class="dv">0</span> . <span class="dv">10000</span>)))) loss))</a>
+<a class="sourceLine" id="cb2-136" title="136">(<span class="ex">define</span><span class="fu"> jt </span>(run s (<span class="kw">list</span> (<span class="kw">cons</span> x test-images) (<span class="kw">cons</span> y test-labels)) loss))</a>
+<a class="sourceLine" id="cb2-137" title="137">(format <span class="dv">#t</span> <span class="st">&quot;train: ~6,4f; test: ~6,4f~&amp;&quot;</span> j jt)</a>
+<a class="sourceLine" id="cb2-138" title="138"></a>
+<a class="sourceLine" id="cb2-139" title="139"><span class="co">; Determine error rate</span></a>
+<a class="sourceLine" id="cb2-140" title="140">(<span class="ex">define</span><span class="fu"> predicted </span>(run s (<span class="kw">list</span> (<span class="kw">cons</span> x test-images)) prediction))</a>
+<a class="sourceLine" id="cb2-141" title="141">(<span class="ex">define</span><span class="fu"> n-correct </span>(sum (where (eq predicted test-labels) <span class="dv">1</span> <span class="dv">0</span>)))</a>
+<a class="sourceLine" id="cb2-142" title="142">(format <span class="dv">#t</span> <span class="st">&quot;error rate: ~6,4f~&amp;&quot;</span> (<span class="op">-</span> <span class="fl">1.0</span> (<span class="op">/</span> n-correct n-test)))</a>
+<a class="sourceLine" id="cb2-143" title="143"></a>
+<a class="sourceLine" id="cb2-144" title="144"><span class="co">; Display individual results</span></a>
+<a class="sourceLine" id="cb2-145" title="145">(<span class="ex">define</span><span class="fu"> time </span>(clock))</a>
+<a class="sourceLine" id="cb2-146" title="146">(<span class="ex">define</span><span class="fu"> i </span><span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb2-147" title="147">(show</a>
+<a class="sourceLine" id="cb2-148" title="148">  (<span class="kw">lambda</span> (dsp)</a>
+<a class="sourceLine" id="cb2-149" title="149">    (set! i (<span class="dv">1</span>+ i))</a>
+<a class="sourceLine" id="cb2-150" title="150">    (<span class="kw">let*</span> [(image (get test-images (<span class="kw">modulo</span> i <span class="dv">10000</span>)))</a>
+<a class="sourceLine" id="cb2-151" title="151">           (pred (get (run s (<span class="kw">list</span> (<span class="kw">cons</span> x image)) prediction) <span class="dv">0</span>))]</a>
+<a class="sourceLine" id="cb2-152" title="152">      (synchronise image (<span class="op">-</span> i (elapsed time)) (event-loop dsp))</a>
+<a class="sourceLine" id="cb2-153" title="153">      (format <span class="dv">#t</span> <span class="st">&quot;~a~&amp;&quot;</span> pred)</a>
+<a class="sourceLine" id="cb2-154" title="154">      image))</a>
+<a class="sourceLine" id="cb2-155" title="155">  #:width <span class="dv">280</span></a>
+<a class="sourceLine" id="cb2-156" title="156">  #:io IO-OPENGL)</a></code></pre></div>
+<h2 id="word-recognition">Word recognition</h2>
+<p>The following code is for recording audio training data. The user has to speak the indicated word. Word boundaries are set by pressing return. The labels are stored as part of the file name. The audio data is stored in multiple MP3 files.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb3-1" title="1">(use-modules (oop goops) (ice<span class="dv">-9</span> format) (ice<span class="dv">-9</span> rdelim) (aiscm core) (aiscm pulse) (aiscm ffmpeg))</a>
+<a class="sourceLine" id="cb3-2" title="2"></a>
+<a class="sourceLine" id="cb3-3" title="3">(<span class="ex">define</span><span class="fu"> words </span>(<span class="kw">list</span> <span class="st">&quot;stop&quot;</span> <span class="st">&quot;go&quot;</span> <span class="st">&quot;left&quot;</span> <span class="st">&quot;right&quot;</span>))</a>
+<a class="sourceLine" id="cb3-4" title="4">(<span class="ex">define</span><span class="fu"> rate </span><span class="dv">11025</span>)</a>
+<a class="sourceLine" id="cb3-5" title="5">(<span class="ex">define</span><span class="fu"> chunk </span><span class="dv">512</span>)<span class="co">; 21.5 chunks per second</span></a>
+<a class="sourceLine" id="cb3-6" title="6">(<span class="ex">define</span><span class="fu"> record </span>(make &lt;pulse-record&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:rate rate))</a>
+<a class="sourceLine" id="cb3-7" title="7">(format <span class="dv">#t</span> <span class="st">&quot;offset? &quot;</span>)</a>
+<a class="sourceLine" id="cb3-8" title="8">(<span class="ex">define</span><span class="fu"> n </span>(<span class="kw">string-&gt;number</span> (read-line)))</a>
+<a class="sourceLine" id="cb3-9" title="9">(<span class="kw">while</span> <span class="dv">#t</span></a>
+<a class="sourceLine" id="cb3-10" title="10">  (<span class="kw">let</span> [(choice (<span class="kw">list-ref</span> words (random (<span class="kw">length</span> words))))]</a>
+<a class="sourceLine" id="cb3-11" title="11">    (format <span class="dv">#t</span> <span class="st">&quot;~d: ~a~&amp;&quot;</span> n choice)</a>
+<a class="sourceLine" id="cb3-12" title="12">    (<span class="kw">if</span> (<span class="kw">not</span> (<span class="kw">eq?</span> (<span class="kw">read-char</span>) <span class="ch">#\newline</span>)) (<span class="kw">break</span>))</a>
+<a class="sourceLine" id="cb3-13" title="13">    (flush record)</a>
+<a class="sourceLine" id="cb3-14" title="14">    (<span class="kw">read-char</span>)</a>
+<a class="sourceLine" id="cb3-15" title="15">    (<span class="kw">let*</span> [(count     (<span class="kw">inexact-&gt;exact</span> (* chunk (<span class="kw">ceiling</span> (<span class="op">/</span> (* rate (latency record)) chunk)))))</a>
+<a class="sourceLine" id="cb3-16" title="16">           (samples   (read-audio record count))</a>
+<a class="sourceLine" id="cb3-17" title="17">           (file-name (format <span class="dv">#f</span> <span class="st">&quot;speech-~5,&#39;0d-~a-~6,&#39;0d.wav&quot;</span> n choice count))</a>
+<a class="sourceLine" id="cb3-18" title="18">           (output (open-ffmpeg-output file-name #:rate rate #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:audio-bit-rate <span class="dv">80000</span>))]</a>
+<a class="sourceLine" id="cb3-19" title="19">      (write-audio samples output)</a>
+<a class="sourceLine" id="cb3-20" title="20">      (destroy output)</a>
+<a class="sourceLine" id="cb3-21" title="21">      (set! n (<span class="dv">1</span>+ n)))))</a></code></pre></div>
+<p>Furthermore background noise (e.g. mobile robot driving) is recorded using the following code.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb4-1" title="1">(use-modules (oop goops) (ice<span class="dv">-9</span> format) (aiscm core) (aiscm pulse) (aiscm ffmpeg))</a>
+<a class="sourceLine" id="cb4-2" title="2"></a>
+<a class="sourceLine" id="cb4-3" title="3">(<span class="ex">define</span><span class="fu"> rate </span><span class="dv">11025</span>)</a>
+<a class="sourceLine" id="cb4-4" title="4">(<span class="ex">define</span><span class="fu"> chunk </span><span class="dv">512</span>)</a>
+<a class="sourceLine" id="cb4-5" title="5">(<span class="ex">define</span><span class="fu"> seconds </span><span class="dv">300</span>)<span class="co">; background noise seconds</span></a>
+<a class="sourceLine" id="cb4-6" title="6">(<span class="ex">define</span><span class="fu"> count </span>(<span class="kw">ceiling</span> (<span class="op">/</span> (* rate seconds) chunk)))</a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8">(format <span class="dv">#t</span> <span class="st">&quot;Recording ~a seconds of background noise~&amp;&quot;</span> seconds)</a>
+<a class="sourceLine" id="cb4-9" title="9">(<span class="ex">define</span><span class="fu"> output </span>(open-ffmpeg-output <span class="st">&quot;background.wav&quot;</span> #:rate rate #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:audio-bit-rate <span class="dv">80000</span>))</a>
+<a class="sourceLine" id="cb4-10" title="10">(<span class="ex">define</span><span class="fu"> record </span>(make &lt;pulse-record&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:rate rate))</a>
+<a class="sourceLine" id="cb4-11" title="11">(<span class="ex">define</span><span class="fu"> samples </span>(read-audio record (* count chunk)))</a>
+<a class="sourceLine" id="cb4-12" title="12">(write-audio samples output)</a>
+<a class="sourceLine" id="cb4-13" title="13">(destroy output)</a></code></pre></div>
+<p>The training program is shown below. The program trains a sequence-to-sequence <em>GRU</em> to classify words. Note that the training takes one hour on a CPU. At the end assignment instructions are created “freezing” the model.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb5-1" title="1">(use-modules (oop goops) (ice<span class="dv">-9</span> ftw) (ice<span class="dv">-9</span> regex) (srfi srfi<span class="dv">-1</span>) (srfi srfi<span class="dv">-26</span>) (aiscm core) (aiscm ffmpeg)</a>
+<a class="sourceLine" id="cb5-2" title="2">             (aiscm samples) (aiscm tensorflow) (aiscm util))</a>
+<a class="sourceLine" id="cb5-3" title="3"></a>
+<a class="sourceLine" id="cb5-4" title="4">(<span class="ex">define</span><span class="fu"> words </span>(<span class="kw">list</span> <span class="st">&quot;stop&quot;</span> <span class="st">&quot;go&quot;</span> <span class="st">&quot;left&quot;</span> <span class="st">&quot;right&quot;</span>))</a>
+<a class="sourceLine" id="cb5-5" title="5">(<span class="ex">define</span><span class="fu"> rate </span><span class="dv">11025</span>)</a>
+<a class="sourceLine" id="cb5-6" title="6">(<span class="ex">define</span><span class="fu"> factor </span>(<span class="op">/</span> <span class="fl">1.0</span> <span class="dv">32768</span>))</a>
+<a class="sourceLine" id="cb5-7" title="7">(<span class="ex">define</span><span class="fu"> chunk </span><span class="dv">512</span>)<span class="co">; 21.5 chunks per second</span></a>
+<a class="sourceLine" id="cb5-8" title="8">(<span class="ex">define</span><span class="fu"> max-delay </span><span class="dv">60</span>)<span class="co">; maximum number of chunks between two spoken words</span></a>
+<a class="sourceLine" id="cb5-9" title="9">(<span class="ex">define</span><span class="fu"> signal </span><span class="dv">10</span>)<span class="co">; number of chunks where signal is kept on</span></a>
+<a class="sourceLine" id="cb5-10" title="10">(<span class="ex">define</span><span class="fu"> chunk2 </span>(<span class="dv">1</span>+ (<span class="op">/</span> chunk <span class="dv">2</span>)))</a>
+<a class="sourceLine" id="cb5-11" title="11">(<span class="ex">define</span><span class="fu"> file-names </span>(filter (cut string-match <span class="st">&quot;speech-.*</span><span class="ch">\\</span><span class="st">.wav&quot;</span> &lt;&gt;) (scandir <span class="st">&quot;.&quot;</span>)))</a>
+<a class="sourceLine" id="cb5-12" title="12">(<span class="ex">define</span><span class="fu"> n-hidden </span><span class="dv">128</span>)</a>
+<a class="sourceLine" id="cb5-13" title="13">(<span class="ex">define</span><span class="fu"> seconds </span><span class="dv">300</span>)<span class="co">; background noise seconds</span></a>
+<a class="sourceLine" id="cb5-14" title="14">(<span class="ex">define</span><span class="fu"> count </span>(<span class="kw">ceiling</span> (<span class="op">/</span> (* rate seconds) chunk)))</a>
+<a class="sourceLine" id="cb5-15" title="15">(<span class="ex">define</span><span class="fu"> window </span><span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb5-16" title="16"></a>
+<a class="sourceLine" id="cb5-17" title="17">(<span class="ex">define</span><span class="fu"> background </span>(reshape (from-samples (read-audio (open-ffmpeg-input <span class="st">&quot;background.wav&quot;</span>) (* count chunk))) (<span class="kw">list</span> count chunk)))</a>
+<a class="sourceLine" id="cb5-18" title="18"></a>
+<a class="sourceLine" id="cb5-19" title="19">(<span class="ex">define</span><span class="fu"> data</span></a>
+<a class="sourceLine" id="cb5-20" title="20">  (map</a>
+<a class="sourceLine" id="cb5-21" title="21">    (<span class="kw">lambda</span> (file-name)</a>
+<a class="sourceLine" id="cb5-22" title="22">      (<span class="kw">let*</span> [(match (string-match <span class="st">&quot;speech-(.*)-(.*)-(.*)</span><span class="ch">\\</span><span class="st">.wav&quot;</span> file-name))</a>
+<a class="sourceLine" id="cb5-23" title="23">             (word  (match:substring match <span class="dv">2</span>))</a>
+<a class="sourceLine" id="cb5-24" title="24">             (index (list-index (cut <span class="kw">equal?</span> word &lt;&gt;) words))</a>
+<a class="sourceLine" id="cb5-25" title="25">             (input (open-ffmpeg-input file-name))</a>
+<a class="sourceLine" id="cb5-26" title="26">             (count (<span class="kw">string-&gt;number</span> (match:substring match <span class="dv">3</span>)))</a>
+<a class="sourceLine" id="cb5-27" title="27">             (n     (<span class="op">/</span> count chunk)) ]</a>
+<a class="sourceLine" id="cb5-28" title="28">        (<span class="kw">cons</span> index (reshape (from-samples (read-audio input count)) (<span class="kw">list</span> n chunk)))))</a>
+<a class="sourceLine" id="cb5-29" title="29">    file-names))</a>
+<a class="sourceLine" id="cb5-30" title="30"></a>
+<a class="sourceLine" id="cb5-31" title="31">(<span class="ex">define</span><span class="fu"> </span>(shift background)</a>
+<a class="sourceLine" id="cb5-32" title="32">  (<span class="kw">let*</span> [(len    (<span class="kw">car</span> (shape background)))</a>
+<a class="sourceLine" id="cb5-33" title="33">         (offset (random len))</a>
+<a class="sourceLine" id="cb5-34" title="34">         (result (make (multiarray &lt;sint&gt; <span class="dv">2</span>) #:shape (shape background)))]</a>
+<a class="sourceLine" id="cb5-35" title="35">    (set result (<span class="kw">cons</span> <span class="dv">0</span> offset) (get background (<span class="kw">cons</span> (<span class="op">-</span> len offset) len)))</a>
+<a class="sourceLine" id="cb5-36" title="36">    (set result (<span class="kw">cons</span> offset len) (get background (<span class="kw">cons</span> <span class="dv">0</span> (<span class="op">-</span> len offset))))</a>
+<a class="sourceLine" id="cb5-37" title="37">    result))</a>
+<a class="sourceLine" id="cb5-38" title="38"></a>
+<a class="sourceLine" id="cb5-39" title="39">(<span class="ex">define</span><span class="fu"> </span>(create-sample offset)</a>
+<a class="sourceLine" id="cb5-40" title="40">  (<span class="kw">let*</span> [(pause     (random max-delay))</a>
+<a class="sourceLine" id="cb5-41" title="41">         (idx       (random (<span class="kw">length</span> data)))</a>
+<a class="sourceLine" id="cb5-42" title="42">         (item      (<span class="kw">list-ref</span> data idx))</a>
+<a class="sourceLine" id="cb5-43" title="43">         (label     (<span class="kw">car</span> item))</a>
+<a class="sourceLine" id="cb5-44" title="44">         (candidate (<span class="kw">cdr</span> item))</a>
+<a class="sourceLine" id="cb5-45" title="45">         (len       (<span class="kw">car</span> (shape candidate)))]</a>
+<a class="sourceLine" id="cb5-46" title="46">    (<span class="kw">if</span> (<span class="op">&gt;=</span> (<span class="op">+</span> offset pause len signal) count)</a>
+<a class="sourceLine" id="cb5-47" title="47">      (<span class="kw">cons</span> (shift background)</a>
+<a class="sourceLine" id="cb5-48" title="48">            (fill &lt;int&gt; (<span class="kw">list</span> (<span class="kw">car</span> (shape background))) <span class="dv">0</span>))</a>
+<a class="sourceLine" id="cb5-49" title="49">      (<span class="kw">let</span> [(sample   (create-sample (<span class="op">+</span> offset pause len signal)))</a>
+<a class="sourceLine" id="cb5-50" title="50">            (interval (<span class="kw">cons</span> (<span class="op">+</span> offset pause) (<span class="op">+</span> offset pause len)))]</a>
+<a class="sourceLine" id="cb5-51" title="51">        (set (<span class="kw">car</span> sample) (<span class="kw">cons</span> <span class="dv">0</span> chunk) interval (<span class="op">+</span> candidate (get background (<span class="kw">cons</span> <span class="dv">0</span> chunk) interval)))</a>
+<a class="sourceLine" id="cb5-52" title="52">        (set (<span class="kw">cdr</span> sample) (<span class="kw">cons</span> (<span class="op">+</span> offset pause len) (<span class="op">+</span> offset pause len signal)) (<span class="dv">1</span>+ label))</a>
+<a class="sourceLine" id="cb5-53" title="53">        sample))))</a>
+<a class="sourceLine" id="cb5-54" title="54"></a>
+<a class="sourceLine" id="cb5-55" title="55">(<span class="ex">define</span><span class="fu"> x </span>(tf-placeholder #:dtype &lt;sint&gt; #:shape (<span class="kw">list</span> <span class="dv">-1</span> chunk) #:name <span class="st">&quot;x&quot;</span>))</a>
+<a class="sourceLine" id="cb5-56" title="56">(<span class="ex">define</span><span class="fu"> y </span>(tf-placeholder #:dtype &lt;int&gt; #:shape &#39;(-<span class="dv">1</span>) #:name <span class="st">&quot;y&quot;</span>))</a>
+<a class="sourceLine" id="cb5-57" title="57">(<span class="ex">define</span><span class="fu"> c </span>(tf-placeholder #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> <span class="dv">1</span> n-hidden) #:name <span class="st">&quot;c&quot;</span>))</a>
+<a class="sourceLine" id="cb5-58" title="58">(<span class="ex">define</span><span class="fu"> y-hot </span>(tf-one-hot y (<span class="dv">1</span>+ (<span class="kw">length</span> words)) <span class="fl">1.0</span> <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb5-59" title="59"></a>
+<a class="sourceLine" id="cb5-60" title="60">(<span class="ex">define</span><span class="fu"> </span>(fourier x) (tf-rfft (tf-mul (tf-cast x #:DstT &lt;float&gt;) (tf-cast factor #:DstT &lt;float&gt;)) (to-array &lt;int&gt; (<span class="kw">list</span> chunk))))</a>
+<a class="sourceLine" id="cb5-61" title="61">(<span class="ex">define</span><span class="fu"> </span>(spectrum x) (<span class="kw">let</span> [(f (fourier x))] (tf-log (tf-add (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT &lt;double&gt;) <span class="fl">1.0</span>))))</a>
+<a class="sourceLine" id="cb5-62" title="62">(<span class="ex">define</span><span class="fu"> </span>(nth x i) (tf-expand-dims (tf-gather x i) <span class="dv">0</span>))</a>
+<a class="sourceLine" id="cb5-63" title="63"></a>
+<a class="sourceLine" id="cb5-64" title="64">(<span class="ex">define</span><span class="fu"> wcc </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> n-hidden n-hidden)))</a>
+<a class="sourceLine" id="cb5-65" title="65">(<span class="ex">define</span><span class="fu"> wcx </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> chunk2 n-hidden)))</a>
+<a class="sourceLine" id="cb5-66" title="66">(<span class="ex">define</span><span class="fu"> bc  </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> n-hidden)))</a>
+<a class="sourceLine" id="cb5-67" title="67">(<span class="ex">define</span><span class="fu"> wuc </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> n-hidden n-hidden)))</a>
+<a class="sourceLine" id="cb5-68" title="68">(<span class="ex">define</span><span class="fu"> wux </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> chunk2 n-hidden)))</a>
+<a class="sourceLine" id="cb5-69" title="69">(<span class="ex">define</span><span class="fu"> bu  </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> n-hidden)))</a>
+<a class="sourceLine" id="cb5-70" title="70">(<span class="ex">define</span><span class="fu"> w   </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> n-hidden <span class="dv">5</span>)))</a>
+<a class="sourceLine" id="cb5-71" title="71">(<span class="ex">define</span><span class="fu"> b   </span>(tf-variable #:dtype &lt;double&gt; #:shape (<span class="kw">list</span> <span class="dv">5</span>)))</a>
+<a class="sourceLine" id="cb5-72" title="72"></a>
+<a class="sourceLine" id="cb5-73" title="73">(<span class="ex">define</span><span class="fu"> vars </span>(<span class="kw">list</span> wcc wcx bc wuc wux bu w b))</a>
+<a class="sourceLine" id="cb5-74" title="74"></a>
+<a class="sourceLine" id="cb5-75" title="75">(<span class="ex">define</span><span class="fu"> initializers</span></a>
+<a class="sourceLine" id="cb5-76" title="76">  (<span class="kw">list</span></a>
+<a class="sourceLine" id="cb5-77" title="77">    (tf-assign wcc (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> n-hidden)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> n-hidden n-hidden)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-78" title="78">    (tf-assign wcx (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> chunk2)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> chunk2 n-hidden)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-79" title="79">    (tf-assign bc  (fill &lt;double&gt; (<span class="kw">list</span> n-hidden) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb5-80" title="80">    (tf-assign wuc (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> n-hidden)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> n-hidden n-hidden)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-81" title="81">    (tf-assign wux (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> chunk2)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> chunk2 n-hidden)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-82" title="82">    (tf-assign bu  (fill &lt;double&gt; (<span class="kw">list</span> n-hidden) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb5-83" title="83">    (tf-assign w   (tf-mul (<span class="kw">sqrt</span> (<span class="op">/</span> <span class="dv">2</span> n-hidden)) (tf-truncated-normal (to-array &lt;int&gt; (<span class="kw">list</span> n-hidden <span class="dv">5</span>)) #:dtype &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-84" title="84">    (tf-assign b   (fill &lt;double&gt; (<span class="kw">list</span> <span class="dv">5</span>) <span class="fl">0.0</span>))))</a>
+<a class="sourceLine" id="cb5-85" title="85"></a>
+<a class="sourceLine" id="cb5-86" title="86">(<span class="ex">define</span><span class="fu"> </span>(gru x c)</a>
+<a class="sourceLine" id="cb5-87" title="87">  (<span class="kw">let*</span> [(gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))</a>
+<a class="sourceLine" id="cb5-88" title="88">         (cs (tf-tanh (tf-add (tf-add (tf-mat-mul (tf-mul gu c) wcc) (tf-mat-mul x wcx)) bc)))]</a>
+<a class="sourceLine" id="cb5-89" title="89">    (tf-add (tf-mul gu c) (tf-mul (tf-sub <span class="fl">1.0</span> gu) cs))))</a>
+<a class="sourceLine" id="cb5-90" title="90">(<span class="ex">define</span><span class="fu"> </span>(output c)</a>
+<a class="sourceLine" id="cb5-91" title="91">  (tf-softmax (tf-add (tf-mat-mul c w) b)))</a>
+<a class="sourceLine" id="cb5-92" title="92"></a>
+<a class="sourceLine" id="cb5-93" title="93">(<span class="ex">define</span><span class="fu"> c</span>_ c)</a>
+<a class="sourceLine" id="cb5-94" title="94">(<span class="ex">define</span><span class="fu"> outputs </span>&#39;())</a>
+<a class="sourceLine" id="cb5-95" title="95">(<span class="kw">for-each</span></a>
+<a class="sourceLine" id="cb5-96" title="96">  (<span class="kw">lambda</span> (i)</a>
+<a class="sourceLine" id="cb5-97" title="97">    (set! c_ (gru (spectrum (nth x i)) c_))</a>
+<a class="sourceLine" id="cb5-98" title="98">    (set! outputs (attach outputs (output c_))))</a>
+<a class="sourceLine" id="cb5-99" title="99">  (iota window))</a>
+<a class="sourceLine" id="cb5-100" title="100"></a>
+<a class="sourceLine" id="cb5-101" title="101">(<span class="ex">define</span><span class="fu"> cs </span>(tf-identity (gru (spectrum x) c) #:name <span class="st">&quot;cs&quot;</span>))</a>
+<a class="sourceLine" id="cb5-102" title="102">(<span class="ex">define</span><span class="fu"> pred </span>(tf-gather (tf-arg-max (output c) <span class="dv">1</span>) <span class="dv">0</span> #:name <span class="st">&quot;prediction&quot;</span>))</a>
+<a class="sourceLine" id="cb5-103" title="103"></a>
+<a class="sourceLine" id="cb5-104" title="104">(<span class="ex">define</span><span class="fu"> </span>(safe-log x) (tf-log (tf-maximum x <span class="fl">1e-10</span>)))</a>
+<a class="sourceLine" id="cb5-105" title="105">(<span class="ex">define</span><span class="fu"> loss </span>(tf-div (tf-neg (tf-add-n (map (<span class="kw">lambda</span> (output i) (tf-sum (tf-mul (safe-log output) (nth y-hot i))</a>
+<a class="sourceLine" id="cb5-106" title="106">                                                                       (arr &lt;int&gt; <span class="dv">0</span> <span class="dv">1</span>)))</a>
+<a class="sourceLine" id="cb5-107" title="107">                                            outputs</a>
+<a class="sourceLine" id="cb5-108" title="108">                                            (iota window))))</a>
+<a class="sourceLine" id="cb5-109" title="109">                     (tf-cast window #:DstT &lt;double&gt;)))</a>
+<a class="sourceLine" id="cb5-110" title="110"></a>
+<a class="sourceLine" id="cb5-111" title="111">(<span class="ex">define</span><span class="fu"> alpha </span><span class="fl">0.05</span>)</a>
+<a class="sourceLine" id="cb5-112" title="112">(<span class="ex">define</span><span class="fu"> gradients </span>(tf-add-gradient loss vars))</a>
+<a class="sourceLine" id="cb5-113" title="113">(<span class="ex">define</span><span class="fu"> step </span>(map (<span class="kw">lambda</span> (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))</a>
+<a class="sourceLine" id="cb5-114" title="114"></a>
+<a class="sourceLine" id="cb5-115" title="115">(<span class="ex">define</span><span class="fu"> session </span>(make-session))</a>
+<a class="sourceLine" id="cb5-116" title="116"></a>
+<a class="sourceLine" id="cb5-117" title="117">(run session &#39;() initializers)</a>
+<a class="sourceLine" id="cb5-118" title="118"></a>
+<a class="sourceLine" id="cb5-119" title="119">(<span class="ex">define</span><span class="fu"> j </span><span class="fl">1.0</span>)</a>
+<a class="sourceLine" id="cb5-120" title="120"></a>
+<a class="sourceLine" id="cb5-121" title="121">(<span class="kw">for-each</span></a>
+<a class="sourceLine" id="cb5-122" title="122">  (<span class="kw">lambda</span> (epoch)</a>
+<a class="sourceLine" id="cb5-123" title="123">    (<span class="kw">let</span> [(sample (create-sample <span class="dv">0</span>))</a>
+<a class="sourceLine" id="cb5-124" title="124">          (c0 (fill &lt;double&gt; (<span class="kw">list</span> <span class="dv">1</span> n-hidden) <span class="fl">0.0</span>))]</a>
+<a class="sourceLine" id="cb5-125" title="125">      (<span class="kw">for-each</span></a>
+<a class="sourceLine" id="cb5-126" title="126">        (<span class="kw">lambda</span> (i)</a>
+<a class="sourceLine" id="cb5-127" title="127">          (<span class="kw">let*</span> [(range (<span class="kw">cons</span> (* i window) (* (<span class="dv">1</span>+ i) window)))</a>
+<a class="sourceLine" id="cb5-128" title="128">                 (batch (<span class="kw">list</span> (<span class="kw">cons</span> x (get (<span class="kw">car</span> sample) (<span class="kw">cons</span> <span class="dv">0</span> chunk) range)) (<span class="kw">cons</span> y (get (<span class="kw">cdr</span> sample) range))))</a>
+<a class="sourceLine" id="cb5-129" title="129">                 (l     (run session (<span class="kw">cons</span> (<span class="kw">cons</span> c c0) batch) loss))]</a>
+<a class="sourceLine" id="cb5-130" title="130">            (set! j (<span class="op">+</span> (* <span class="fl">0.99</span> j) (* <span class="fl">0.01</span> l)))</a>
+<a class="sourceLine" id="cb5-131" title="131">            (run session (<span class="kw">cons</span> (<span class="kw">cons</span> c c0) batch) step)</a>
+<a class="sourceLine" id="cb5-132" title="132">            (format <span class="dv">#t</span> <span class="st">&quot;~a ~a~&amp;&quot;</span> epoch j)</a>
+<a class="sourceLine" id="cb5-133" title="133">            (set! c0 (run session (<span class="kw">cons</span> (<span class="kw">cons</span> c c0) batch) c_))))</a>
+<a class="sourceLine" id="cb5-134" title="134">        (iota (<span class="kw">floor</span> (<span class="op">/</span> count window))))))</a>
+<a class="sourceLine" id="cb5-135" title="135">  (iota <span class="dv">200</span>))</a>
+<a class="sourceLine" id="cb5-136" title="136"></a>
+<a class="sourceLine" id="cb5-137" title="137">(tf-assign wcc (tf-const #:value (run session &#39;() wcc) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-wcc&quot;</span>)</a>
+<a class="sourceLine" id="cb5-138" title="138">(tf-assign wcx (tf-const #:value (run session &#39;() wcx) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-wcx&quot;</span>)</a>
+<a class="sourceLine" id="cb5-139" title="139">(tf-assign bc  (tf-const #:value (run session &#39;() bc ) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-bc&quot;</span> )</a>
+<a class="sourceLine" id="cb5-140" title="140">(tf-assign wuc (tf-const #:value (run session &#39;() wuc) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-wuc&quot;</span>)</a>
+<a class="sourceLine" id="cb5-141" title="141">(tf-assign wux (tf-const #:value (run session &#39;() wux) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-wux&quot;</span>)</a>
+<a class="sourceLine" id="cb5-142" title="142">(tf-assign bu  (tf-const #:value (run session &#39;() bu ) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-bu&quot;</span> )</a>
+<a class="sourceLine" id="cb5-143" title="143">(tf-assign w   (tf-const #:value (run session &#39;() w  ) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-w&quot;</span>  )</a>
+<a class="sourceLine" id="cb5-144" title="144">(tf-assign b   (tf-const #:value (run session &#39;() b  ) #:dtype &lt;double&gt;) #:name <span class="st">&quot;init-b&quot;</span>  )</a>
+<a class="sourceLine" id="cb5-145" title="145"></a>
+<a class="sourceLine" id="cb5-146" title="146">(tf-graph-export <span class="st">&quot;speech-model.meta&quot;</span>)</a></code></pre></div>
+<p>The “frozen” model then can be loaded and applied to real-time audio data as follows.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode scheme"><code class="sourceCode scheme"><a class="sourceLine" id="cb6-1" title="1">(use-modules (oop goops)</a>
+<a class="sourceLine" id="cb6-2" title="2">             (ice<span class="dv">-9</span> format)</a>
+<a class="sourceLine" id="cb6-3" title="3">             (rnrs bytevectors)</a>
+<a class="sourceLine" id="cb6-4" title="4">             (aiscm tensorflow)</a>
+<a class="sourceLine" id="cb6-5" title="5">             (aiscm core)</a>
+<a class="sourceLine" id="cb6-6" title="6">             (aiscm pulse))</a>
+<a class="sourceLine" id="cb6-7" title="7"></a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="co">;(define robot (socket PF_INET SOCK_DGRAM 0))</span></a>
+<a class="sourceLine" id="cb6-9" title="9"><span class="co">;(connect robot AF_INET (car (hostent:addr-list (gethostbyname &quot;raspberrypi.local&quot;))) 2200)</span></a>
+<a class="sourceLine" id="cb6-10" title="10"><span class="co">;(define commands (list &quot;0,0,0&quot; &quot;-100,-100,0&quot; &quot;100,-100,0&quot; &quot;-100,100,0&quot;))</span></a>
+<a class="sourceLine" id="cb6-11" title="11">(<span class="ex">define</span><span class="fu"> words </span>(<span class="kw">list</span> <span class="st">&quot;stop&quot;</span> <span class="st">&quot;go&quot;</span> <span class="st">&quot;left&quot;</span> <span class="st">&quot;right&quot;</span>))</a>
+<a class="sourceLine" id="cb6-12" title="12">(<span class="ex">define</span><span class="fu"> rate </span><span class="dv">11025</span>)</a>
+<a class="sourceLine" id="cb6-13" title="13">(<span class="ex">define</span><span class="fu"> chunk </span><span class="dv">512</span>)</a>
+<a class="sourceLine" id="cb6-14" title="14">(<span class="ex">define</span><span class="fu"> n-hidden </span><span class="dv">128</span>)</a>
+<a class="sourceLine" id="cb6-15" title="15">(tf-graph-import <span class="st">&quot;speech-model.meta&quot;</span>)</a>
+<a class="sourceLine" id="cb6-16" title="16"></a>
+<a class="sourceLine" id="cb6-17" title="17">(<span class="ex">define</span><span class="fu"> x </span>(tf-graph-operation-by-name <span class="st">&quot;x&quot;</span>))</a>
+<a class="sourceLine" id="cb6-18" title="18">(<span class="ex">define</span><span class="fu"> c </span>(tf-graph-operation-by-name <span class="st">&quot;c&quot;</span>))</a>
+<a class="sourceLine" id="cb6-19" title="19">(<span class="ex">define</span><span class="fu"> cs </span>(tf-graph-operation-by-name <span class="st">&quot;cs&quot;</span>))</a>
+<a class="sourceLine" id="cb6-20" title="20">(<span class="ex">define</span><span class="fu"> pred </span>(tf-graph-operation-by-name <span class="st">&quot;prediction&quot;</span>))</a>
+<a class="sourceLine" id="cb6-21" title="21"></a>
+<a class="sourceLine" id="cb6-22" title="22">(<span class="ex">define</span><span class="fu"> session </span>(make-session))</a>
+<a class="sourceLine" id="cb6-23" title="23">(run session &#39;()</a>
+<a class="sourceLine" id="cb6-24" title="24">  (<span class="kw">list</span> (tf-graph-operation-by-name <span class="st">&quot;init-wcc&quot;</span>)</a>
+<a class="sourceLine" id="cb6-25" title="25">        (tf-graph-operation-by-name <span class="st">&quot;init-wcx&quot;</span>)</a>
+<a class="sourceLine" id="cb6-26" title="26">        (tf-graph-operation-by-name <span class="st">&quot;init-bc&quot;</span> )</a>
+<a class="sourceLine" id="cb6-27" title="27">        (tf-graph-operation-by-name <span class="st">&quot;init-wuc&quot;</span>)</a>
+<a class="sourceLine" id="cb6-28" title="28">        (tf-graph-operation-by-name <span class="st">&quot;init-wux&quot;</span>)</a>
+<a class="sourceLine" id="cb6-29" title="29">        (tf-graph-operation-by-name <span class="st">&quot;init-bu&quot;</span> )</a>
+<a class="sourceLine" id="cb6-30" title="30">        (tf-graph-operation-by-name <span class="st">&quot;init-w&quot;</span>  )</a>
+<a class="sourceLine" id="cb6-31" title="31">        (tf-graph-operation-by-name <span class="st">&quot;init-b&quot;</span>  )))</a>
+<a class="sourceLine" id="cb6-32" title="32"></a>
+<a class="sourceLine" id="cb6-33" title="33">(<span class="ex">define</span><span class="fu"> c0 </span>(fill &lt;double&gt; (<span class="kw">list</span> <span class="dv">1</span> n-hidden) <span class="fl">0.0</span>))</a>
+<a class="sourceLine" id="cb6-34" title="34">(<span class="ex">define</span><span class="fu"> record </span>(make &lt;pulse-record&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:rate rate))</a>
+<a class="sourceLine" id="cb6-35" title="35"></a>
+<a class="sourceLine" id="cb6-36" title="36">(<span class="kw">while</span> <span class="dv">#t</span></a>
+<a class="sourceLine" id="cb6-37" title="37">  (<span class="kw">let</span> [(samples (reshape (read-audio record chunk) (<span class="kw">list</span> <span class="dv">1</span> chunk)))]</a>
+<a class="sourceLine" id="cb6-38" title="38">    (set! c0 (run session (<span class="kw">list</span> (<span class="kw">cons</span> x samples) (<span class="kw">cons</span> c c0)) cs))</a>
+<a class="sourceLine" id="cb6-39" title="39">    (<span class="kw">let</span> [(out (run session (<span class="kw">list</span> (<span class="kw">cons</span> c c0)) pred))]</a>
+<a class="sourceLine" id="cb6-40" title="40">      (<span class="kw">if</span> (<span class="kw">not</span> (<span class="kw">zero?</span> out))</a>
+<a class="sourceLine" id="cb6-41" title="41">         (<span class="kw">begin</span></a>
+<a class="sourceLine" id="cb6-42" title="42">           <span class="co">;(display (list-ref commands (1- out)) robot)</span></a>
+<a class="sourceLine" id="cb6-43" title="43">           (format <span class="dv">#t</span> <span class="st">&quot;~a~&amp;&quot;</span>(<span class="kw">list-ref</span> words (<span class="dv">1</span>- out))))))))</a></code></pre></div>
+<hr/><em><a href="http://wedesoft.github.io/aiscm/">AIscm documentation</a> generated by Pandoc 2020-09-07</em>
+</body>
+</html>
