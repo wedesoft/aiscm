@@ -30,7 +30,7 @@
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<ffmpeg>
-            open-ffmpeg-input open-ffmpeg-output frame-rate video-pts audio-pts pts=
+            open-ffmpeg-input open-ffmpeg-output is-input? frame-rate video-pts audio-pts pts=
             video-bit-rate aspect-ratio video-buffer-push video-buffer-pop select-rate target-video-frame
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
@@ -44,6 +44,7 @@
 (define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
                (ffmpeg #:init-keyword #:ffmpeg)
                (video-buffer #:init-value '())
+               (is-input #:init-keyword #:is-input #:getter is-input?)
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 
@@ -58,7 +59,7 @@
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
   (let [(debug (equal? "YES" (getenv "DEBUG")))]
-    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug))))
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug) #:is-input #t)))
 
 (define (select-rate rate)
   "Check that the sample rate is supported or raise an exception"
@@ -117,7 +118,8 @@
             #:ffmpeg (make-ffmpeg-output file-name format-name
                                          (list shape frame-rate video-bit-rate aspect-ratio) have-video
                                          (list select-rate channels audio-bit-rate select-format) have-audio
-                                         debug)))))
+                                         debug)
+            #:is-input #f))))
 
 (define-method (destroy (self <ffmpeg>))
   "Destructor"
