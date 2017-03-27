@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jan Wedekind">
+  <meta name="dcterms.date" content="2023-02-14">
+  <title>AIscm – Guile extension for numerical arrays and tensors</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="buttondown.css">
+</head>
+<body>
+<h1 id="inputoutput">Input/output</h1>
+<p>The I/O modules provide sources (and sinks) for video and audio
+data.</p>
+<h2 id="loadingsaving-images-using-imagemagick">Loading/saving images
+using ImageMagick</h2>
+<p>An image can be read from disk using <em>read-image</em> which uses
+the ImageMagick library to load the image.</p>
+<figure>
+<img src="fubk.png" title="Test input image" alt="fubk.png" />
+<figcaption aria-hidden="true">fubk.png</figcaption>
+</figure>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm core) (aiscm magick) (aiscm xorg))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>(show (read-image <span class="st">&quot;fubk.png&quot;</span>))</span></code></pre></div>
+<p>Using colourspace conversions one can convert images to gray
+scale.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>@..tests/integration/show_gray.scm</span></code></pre></div>
+<p><em>write-image</em> writes an image to disk.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm core) (aiscm magick))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>(write-image (arr (<span class="dv">32</span> <span class="dv">255</span> <span class="dv">96</span> <span class="dv">255</span>) (<span class="dv">255</span> <span class="dv">160</span> <span class="dv">255</span> <span class="dv">224</span>)) <span class="st">&quot;pattern.png&quot;</span>)</span></code></pre></div>
+<figure>
+<img src="scaled-pattern.png" title="Output image"
+alt="scaled-pattern.png" />
+<figcaption aria-hidden="true">scaled-pattern.png</figcaption>
+</figure>
+<h2 id="window-display">Window display</h2>
+<h3 id="images">Images</h3>
+<p>As shown above, you can display images under XOrg using the method
+<em>show</em>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm core) (aiscm magick) (aiscm xorg))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>(show (read-image <span class="st">&quot;fubk.png&quot;</span>))</span></code></pre></div>
+<p>The size of the window is the size of the image by default. To
+override it, one can use the <em>shape</em> keyword argument.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm magick) (aiscm xorg) (aiscm core))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>(show (read-image <span class="st">&quot;fubk.png&quot;</span>) #:shape &#39;(<span class="dv">576</span> <span class="dv">768</span>))</span></code></pre></div>
+<p>One can also display a list of images:</p>
+<figure>
+<img src="fubk-colours.png" title="List of images"
+alt="fubk-colours.png" />
+<figcaption aria-hidden="true">fubk-colours.png</figcaption>
+</figure>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm magick) (aiscm xorg) (aiscm core))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> img </span>(read-image <span class="st">&quot;fubk.png&quot;</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>(show (<span class="kw">list</span> (<span class="op">*</span> (rgb <span class="dv">1</span> <span class="dv">0</span> <span class="dv">0</span>) img) (<span class="op">*</span> (rgb <span class="dv">0</span> <span class="dv">1</span> <span class="dv">0</span>) img) (<span class="op">*</span> (rgb <span class="dv">0</span> <span class="dv">0</span> <span class="dv">1</span>) img)))</span></code></pre></div>
+<p>The <em>fullscreen</em> keyword can be used to open a borderless
+maximized window.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(use-modules (aiscm magick) (aiscm xorg) (aiscm core))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>(show (read-image <span class="st">&quot;fubk.png&quot;</span>) #:fullscreen <span class="dv">#t</span>)</span></code></pre></div>
+<h3 id="videos">Videos</h3>
+<p>It is also possible to display a video using the <em>show</em>
+method:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>(show (<span class="kw">lambda</span> <span class="op">_</span> (read-image v)))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<p>One can use the <em>shape</em> keyword argument to customise the
+window size.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>(show (<span class="kw">lambda</span> <span class="op">_</span> (read-image v)) #:shape &#39;(<span class="dv">576</span> <span class="dv">768</span>))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<p>A function returning lists of images can be used to display multiple
+videos synchronously.</p>
+<p>The <em>fullscreen</em> keyword can be used to display a video in a
+borderless maximized window.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>(show (<span class="kw">lambda</span> <span class="op">_</span> (read-image v)) #:fullscreen <span class="dv">#t</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm core) (aiscm image) (aiscm xorg))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>(show (<span class="kw">lambda</span> <span class="op">_</span> (<span class="kw">let</span> <span class="op">[</span>(img (from-image (read-image v)))<span class="op">]</span> (<span class="kw">list</span> (red img) (green img) (blue img)))))</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<p>If necessary, one can also handle the display and window objects
+directly. Possible types of output are <em>IO-XIMAGE</em>,
+<em>IO-OPENGL</em>, and <em>IO-XVIDEO</em>. The following example shows
+showing, hiding, moving, resizing of windows. <em>process-events</em>
+needs to be invoked to process pending events.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> d </span>(make &lt;xdisplay&gt; #:name <span class="st">&quot;:0.0&quot;</span>))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> w </span>(make &lt;xwindow&gt; #:display d #:shape &#39;(<span class="dv">480</span> <span class="dv">640</span>) #:io IO-XVIDEO))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>(title= w <span class="st">&quot;Test&quot;</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> </span>(wait)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">while</span> (<span class="kw">not</span> (quit? d)) (write-image (read-image v) w) (process-events d))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  (quit= d <span class="dv">#f</span>))</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>(show w)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>(move w <span class="dv">20</span> <span class="dv">40</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>(resize w <span class="dv">240</span> <span class="dv">320</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>(move-resize w <span class="dv">30</span> <span class="dv">60</span> <span class="dv">360</span> <span class="dv">480</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>(show-fullscreen w)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>(show w)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>(wait)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>(hide w)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>(destroy d)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<h2 id="video-for-linux-version-2-v4l2">Video for Linux version 2
+(V4L2)</h2>
+<figure>
+<img src="v4l2.jpg" title="V4L2 input image" alt="v4l2.jpg" />
+<figcaption aria-hidden="true">v4l2.jpg</figcaption>
+</figure>
+<p>As shown above already, you can open a camera and grab a frame as
+follows.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm v4l2) (aiscm core))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt;))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>(read-image v)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">; #&lt;&lt;image&gt; YUY2 (640 480)&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<p>It is also possible to specify the device, a channel, and a closure
+for selecting the video mode.</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2) (aiscm core))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> </span>(select formats)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">for-each</span> (<span class="kw">lambda</span> (i mode) (format <span class="dv">#t</span> <span class="st">&quot;~a: ~a~%&quot;</span> i mode))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>            (iota (<span class="kw">length</span> formats))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            formats)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  (format <span class="dv">#t</span> <span class="st">&quot;&gt; &quot;</span>) (<span class="kw">list-ref</span> formats (<span class="kw">string-&gt;number</span> (read-line (<span class="kw">current-input-port</span>)))))</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> v </span>(make &lt;v4l2&gt; #:device <span class="st">&quot;/dev/video0&quot;</span> #:channel <span class="dv">0</span> #:select select))</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>(read-image v)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>(destroy v)</span></code></pre></div>
+<h2 id="pulse-audio">Pulse audio</h2>
+<p>The following example program creates a sine wave and outputs it to
+the audio device.</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm pulse) (aiscm core))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> sine </span>(map (<span class="kw">lambda</span> (t) (<span class="kw">inexact-&gt;exact</span> (<span class="kw">round</span> (<span class="op">*</span> (<span class="kw">sin</span> (<span class="op">/</span> (<span class="op">*</span> t <span class="dv">1000</span> <span class="dv">2</span> <span class="fl">3.1415926</span>) <span class="dv">44100</span>)) <span class="dv">20000</span>)))) (iota <span class="dv">441</span>)))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> samples </span>(to-array &lt;sint&gt; sine))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> output </span>(make &lt;pulse-play&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">1</span> #:rate <span class="dv">44100</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>(channels output)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">;1</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>(rate output)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">;44100</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>(<span class="kw">for-each</span> (<span class="kw">lambda</span> <span class="op">_</span> (write-audio samples output)) (iota <span class="dv">300</span>))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>(drain output)</span></code></pre></div>
+<p>The <em>drain</em> method waits for the content of the audio buffer
+to finish playing. The method <em>flush</em> (not shown here) can be
+used to empty the audio buffer.</p>
+<p>Audio data can be recorded in a similar fashion. The following
+example records 3 seconds of audio data and then plays it back.</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm core) (aiscm pulse))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> record </span>(make &lt;pulse-record&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">2</span> #:rate <span class="dv">44100</span>))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> play </span>(make &lt;pulse-play&gt; #:typecode &lt;sint&gt; #:channels <span class="dv">2</span> #:rate <span class="dv">44100</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>(<span class="kw">for-each</span> (<span class="kw">lambda</span> <span class="op">_</span> (write-audio (read-audio record <span class="dv">4410</span>) play)) (iota <span class="dv">30</span>))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>(drain play)</span></code></pre></div>
+<p>One can display a block-wise audio spectrum using the
+<em>Tensorflow</em> Fourier transform.</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode scheme"><code class="sourceCode scheme"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>(use-modules (oop goops) (aiscm core) (aiscm pulse) (aiscm tensorflow) (aiscm xorg))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> s </span>(make-session))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> w </span><span class="dv">400</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> h </span><span class="dv">512</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> sample </span>(tf-placeholder #:dtype &lt;float&gt; #:shape (<span class="kw">list</span> <span class="dv">1</span> h)))</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> vec </span>(tf-reshape sample (to-array &lt;int&gt; (<span class="kw">list</span> h))))</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> fourier </span>(tf-rfft vec (to-array &lt;int&gt; (<span class="kw">list</span> h))))</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> spectrum </span>(tf-mul (tf-log (tf-add (tf-real (tf-mul fourier (tf-conj fourier))) (tf-cast <span class="fl">1.0</span> #:DstT &lt;float&gt;))) (tf-cast <span class="fl">32.0</span> #:DstT &lt;float&gt;)))</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> record </span>(make &lt;pulse-record&gt; #:typecode &lt;float&gt; #:channels <span class="dv">1</span> #:rate <span class="dv">11025</span>))</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> ramp </span>(<span class="op">*</span> (indices h) (<span class="op">/</span> <span class="fl">2.0</span> h)))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> window </span>(to-type &lt;float&gt; (minor ramp (<span class="op">-</span> <span class="fl">2.0</span> ramp))))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> x </span><span class="dv">0</span>)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>(<span class="ex">define</span><span class="fu"> img </span>(fill &lt;ubyte&gt; (<span class="kw">list</span> (<span class="dv">1</span>+ (<span class="op">/</span> h <span class="dv">2</span>)) w) <span class="dv">0</span>))</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>(show</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">lambda</span> <span class="op">_</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> <span class="op">[</span>(spec (run s (<span class="kw">list</span> (<span class="kw">cons</span> sample (<span class="op">*</span> window (read-audio record h)))) spectrum))<span class="op">]</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      (set img x (<span class="kw">list</span> <span class="dv">0</span> (<span class="dv">1</span>+ (<span class="op">/</span> h <span class="dv">2</span>))) (major (minor <span class="dv">255</span> spec) <span class="dv">0</span>))</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">set!</span> x (<span class="kw">modulo</span> (<span class="dv">1</span>+ x) w))</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>      img)))</span></code></pre></div>
+<hr/><em><a href="http://wedesoft.github.io/aiscm/">AIscm documentation</a> generated by Pandoc 2023-02-14</em>
+</body>
+</html>

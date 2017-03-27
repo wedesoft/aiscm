@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jan Wedekind">
+  <meta name="dcterms.date" content="2023-02-14">
+  <title>AIscm – Guile extension for numerical arrays and tensors</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="buttondown.css">
+</head>
+<body>
+<h1 id="aiscm-reference-manual">AIscm Reference Manual</h1>
+<p><a href="https://www.gnu.org/copyleft/gpl.html"><img src="gplv3.png"
+alt="GPLv3" /></a> <a href="https://travis-ci.com/wedesoft/aiscm"><img
+src="travis.png" alt="Travis CI" /></a></p>
+<p>This manual is for <strong>AIscm</strong> (version 0.25.2).</p>
+<p><a href="http://wedesoft.github.io/aiscm/"
+title="AIscm"><strong>AIscm</strong></a> is a <strong><a
+href="http://www.gnu.org/software/guile/"
+title="Guile programming language">Guile</a> extension for numerical
+arrays and tensors</strong>. Performance is achieved by using the LLVM
+JIT compiler.</p>
+<div class="figure">
+<p>
+<a href="installation.html" title="Installation"><strong>Installation</strong>
+<img src="aiscm.gif" alt=""/> <strong>Installation</strong></a>
+</p>
+</div>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li><a href="installation.html"
+title="Installation">Installation</a></li>
+<li><a href="assembler.html" title="Built-in assembler">Built-in
+assembler</a></li>
+<li><a href="io.html" title="Input/output">Input/output</a></li>
+<li><a href="array.html" title="Arrays">Arrays</a></li>
+<li><a href="operation.html" title="Array operations">Array
+operations</a></li>
+<li><a href="convolution.html"
+title="Convolutions">Convolutions</a></li>
+<li><a href="tensorflow.html" title="Tensorflow bindings">Tensorflow
+bindings</a></li>
+</ul>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="https://github.com/wedesoft/aiscm">Github page</a></li>
+<li><a href="https://gitlab.com/wedesoft/aiscm">Gitlab page</a></li>
+<li><a href="https://bitbucket.org/wedesoft/aiscm">Bitbucket
+page</a></li>
+<li><a
+href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=837167">Initial
+package review email thread</a></li>
+<li><a href="https://tracker.debian.org/pkg/aiscm">Debian package
+tracker</a></li>
+<li><a
+href="https://buildd.debian.org/status/package.php?p=aiscm&amp;suite=sid">Debian
+build logs</a></li>
+<li><a href="https://launchpad.net/ubuntu/+source/aiscm/">Ubuntu
+Launchpad entry</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<ul>
+<li>Jan Wedekind: software development</li>
+<li>Andrey Rahmatullin: Debian package sponsor</li>
+<li>Gianfranco Costamagna: Ubuntu package</li>
+</ul>
+<h2 id="external-links">External links</h2>
+<ul>
+<li><a
+href="https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/">LLVM
+ORC JIT C API</a></li>
+<li><a href="http://chainer.org/">Chainer: A Powerful, Flexible, and
+Intuitive Framework of Neural Networks</a></li>
+<li><a href="https://github.com/clab/dynet">DyNet: dynamic neural
+networks library</a></li>
+<li><a href="http://torch.ch/">Torch: Scientific computing for
+LuaJIT</a></li>
+<li><a href="http://deeplearning.net/software/theano/">Theano: Python
+library for JIT compiled array operations</a></li>
+<li><a href="http://pytorch.org/">PyTorch: Tensors and dynamic neural
+networks in Python with strong GPU acceleration</a></li>
+<li><a href="https://www.tensorflow.org/">Tensorflow: numerical
+computing with dataflow graphs</a></li>
+<li><a
+href="https://github.com/somaticio/tensorflow.rb">tensorflow.rb</a></li>
+<li><a href="http://www.numpy.org/">Numpy: Python library implementing
+n-dimensional arrays</a></li>
+<li><a
+href="http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf">Bergstra
+et al.: Theano: A CPU and GPU math compiler in Python</a></li>
+<li><a href="http://lush.sourceforge.net/">Lush: large-scale numerical
+computing</a></li>
+<li><a href="https://github.com/BSeppke/vigracket">Vigracket: Vigra
+bindings for Racket</a></li>
+<li><a href="http://www.ceemple.com/">Ceemple C++ OpenCV IDE</a></li>
+<li><a href="http://arrayfire.com/">Arrayfire: accelerated computing
+library</a></li>
+<li><a href="http://halide-lang.org/">Halide: a language for image
+processing and computational photography</a></li>
+<li><a href="https://github.com/Maratyszcza/PeachPy">PeachPy: Portable
+assembly for Python</a></li>
+<li><a href="http://www.gnu.org/software/guile/manual/">Guile
+manual</a></li>
+<li><a href="https://www.gnu.org/software/guile-cv/">Guile-CV: computer
+vision library functional programming library for Guile</a></li>
+<li><a href="https://www.gnu.org/software/goops/">GOOPS: object-oriented
+extension to Guile</a></li>
+<li><a href="http://wiki.call-cc.org/eggref/4/coops">COOPS: Chicken
+Scheme object system</a></li>
+<li><a href="http://www.x86-64.org/documentation/abi.pdf">System V
+Application Binary Interface</a></li>
+<li><a
+href="http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html">Intel®
+64 and IA-32 Architectures Software Developer Manuals</a></li>
+<li><a href="https://github.com/drmeister/clasp">CLASP: Lisp with LLVM
+Jit and C++ foreign interface</a></li>
+<li><a href="https://github.com/AccelerateHS/accelerate">Embedded
+Language for Accelerated Array Computations</a></li>
+<li><a href="http://www.sympy.org/">SymPy: computer algebra in
+Python</a></li>
+<li><a href="http://maxima.sourceforge.net/">Maxima computer algebra
+system</a></li>
+<li><a href="https://julialang.org/">Julia language</a></li>
+<li><a href="https://github.com/kevinlawler/kona">Kona language</a></li>
+<li><a href="https://dthompson.us/projects/guile-sdl2.html">Guile
+SDL2</a></li>
+<li><a href="https://github.com/guildhall/guile-opengl">Guile
+OpenGL</a></li>
+<li><a
+href="http://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf">Jakobsen:
+Advanced Character Physics</a></li>
+<li><a
+href="http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf">COMP768:
+Rigid Body Dynamics (I)</a> <a
+href="http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd2.pdf">(I)</a></li>
+</ul>
+<p>Copyright © 2013, 2014, 2015, 2016, 2017, 2018, 2019 Jan
+Wedekind.</p>
+<hr/><em><a href="http://wedesoft.github.io/aiscm/">AIscm documentation</a> generated by Pandoc 2023-02-14</em>
+</body>
+</html>
