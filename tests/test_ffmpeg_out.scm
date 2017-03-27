@@ -46,8 +46,8 @@
                                            #:video-bit-rate 100000
                                            #:aspect-ratio (/ 16 11)))
 
-  (test-assert "Video output is an output object"
-    (not (is-input? input-video)))
+  (test-assert "Video output is not an input object"
+    (not (is-input? output-video)))
   (test-assert "'open-ffmpeg-output' creates an FFmpeg object"
     (is-a? output-video <ffmpeg>))
   (test-equal "Check frame size of output video"
@@ -217,6 +217,12 @@
   (test-eqv "Cropping audio frames to final frame size should resize the target frame"
     17 (cadr (shape (target-audio-frame output-audio))))
   (test-eqv "Cropping audio frames to final frame size should resize the packed frame"
+    17 (cadr (shape (packed-audio-frame output-audio))))
+
+  (crop-audio-frame-size output-audio 0)
+  (test-eqv "Do not crop target audio frame to zero"
+    17 (cadr (shape (target-audio-frame output-audio))))
+  (test-eqv "Do not crop packed audio frame to zero"
     17 (cadr (shape (packed-audio-frame output-audio))))
 
   (destroy output-audio)

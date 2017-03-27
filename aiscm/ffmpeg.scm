@@ -123,6 +123,10 @@
 
 (define-method (destroy (self <ffmpeg>))
   "Destructor"
+  (if (and (not (is-input? self)) (have-audio? self))
+    (begin
+      (crop-audio-frame-size self (/ (audio-buffer-fill self) (sample-size self)))
+      (encode-audio self)))
   (ffmpeg-destroy (slot-ref self 'ffmpeg)))
 
 (define-method (shape (self <ffmpeg>))
@@ -191,14 +195,18 @@
          ((audio) (buffer-timestamped-audio (cadr info) self))
          ((video) (buffer-timestamped-video (cadr info) self))))))
 
+(define (sample-size self)
+  "Get size of audio sample in bytes"
+  (* (size-of (typecode self)) (channels self)))
+
 (define-method (read-audio (self <ffmpeg>) (count <integer>))
   "Retrieve audio samples from input audio stream"
   (and
     (have-audio? self)
-    (let [(sample-size (* (size-of (typecode self)) (channels self)))]
-      (while (< (audio-buffer-fill self) (* count sample-size)) (or (buffer-audio/video self) (break)))
+    (begin
+      (while (< (audio-buffer-fill self) (* count (sample-size self))) (or (buffer-audio/video self) (break)))
       (and (not (zero? (audio-buffer-fill self)))
-        (let* [(actual (min count (/ (audio-buffer-fill self) sample-size)))
+        (let* [(actual (min count (/ (audio-buffer-fill self) (sample-size self))))
                (result (make <samples> #:typecode (typecode self)
                                        #:shape (list (channels self) actual)
                                        #:rate (rate self)
@@ -315,4 +323,4 @@
 
 (define (crop-audio-frame-size self size)
   "Crop encoder audio frames to size of final audio frame (specified size)"
-  (ffmpeg-crop-audio-frame-size (slot-ref self 'ffmpeg) size))
+  (if (not (zero? size)) (ffmpeg-crop-audio-frame-size (slot-ref self 'ffmpeg) size)))
