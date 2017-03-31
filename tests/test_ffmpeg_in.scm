@@ -55,8 +55,6 @@
       (second-offset-correct))
     (test-assert "Set offset values for null pointers to zero"
       (zero-offset-for-null-pointer))
-    (test-assert "Offsets have 64 bit"
-      (offsets-have-64-bit))
   (test-end "convert pointers to offsets")
 
   (test-assert "Pack byte audio sample"
