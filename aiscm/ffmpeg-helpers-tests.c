@@ -89,15 +89,6 @@ SCM zero_offset_for_null_pointer(void)
   return scm_from_bool(offsets[1] == 0);
 }
 
-SCM offsets_have_64_bit(void)
-{
-  uint8_t buffer[1024];
-  uint8_t *data[2] = {buffer, buffer + (1L << 62)};
-  int64_t offsets[2];
-  offsets_from_pointers(data, offsets, 2);
-  return scm_from_bool(offsets[1] != 0);
-}
-
 SCM pack_byte_audio_sample(void)
 {
   uint8_t a[1] = {1};
