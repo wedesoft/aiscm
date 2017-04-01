@@ -2,9 +2,9 @@ dnl Run `make -f Makefile.dist` to generate a configure script.
 dnl Then run ./configure to generate a Makefile.
 dnl Finally run make to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.11.1], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.11.2], [jan@wedesoft.de])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.14])
+AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_EXTRA_RECURSIVE_TARGETS([bench recheck integration reintegration])

@@ -1,3 +1,7 @@
+# aiscm (0.11.2)
+
+* aiscm/ffmpeg-helpers-test.c: fixed Debian sbuild warning "array subscrit is above array bounds"
+
 # aiscm (0.11.1)
 
 * aiscm/ffmpeg.scm: write video and audio files using FFmpeg

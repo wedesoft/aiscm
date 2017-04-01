@@ -1,6 +1,8 @@
 ## Ready
 
+* multiple iterators for one index
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
+* Docker integration tests
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
 * pulse audio: reexport pointer stuff
