@@ -42,6 +42,13 @@
 
 (define-method (iterators (self <param>)) (list (iterator self)))
 (define-method (iterators (self <function>)) (append-map iterators (arguments self)))
+(define-method (steps (self <param>)) (list (step self)))
+(define-method (steps (self <function>)) (append-map steps (arguments self)))
+(define-method (strides (self <param>)) (list (stride self)))
+(define-method (strides (self <function>)) (append-map strides (arguments self)))
 
-(d (iterators s))
 (d (iterators f))
+(d (steps f))
+(d (strides f))
+
+(d (setup s))
