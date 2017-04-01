@@ -6,6 +6,7 @@ OPTS=
 # OPTS+=--no-cache
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
+XSOCK=/tmp/.X11-unix
 
 all: package
 	cd apt && reprepro includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..
@@ -15,10 +16,17 @@ container: docker docker/Dockerfile docker/aiscm.tar.gz docker/debian docker/con
 	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
 
 run: container
-	docker run -t -i -v $(shell pwd):/mnt $(IMAGE) /bin/bash
+	xhost +local:root
+	docker run -it --privileged --env="DISPLAY" --env "QT_X11_NO_MITSHM=1" -v $(XSOCK):$(XSOCK):rw \
+		-v $(shell pwd):/mnt $(IMAGE) /bin/bash
+	xhost -local:root
 
 sign: package
-	cd pkg && debsign -k $(GPGKEY) $(PACKAGE)_amd64.changes
+	cd pkg && debsign -k $(GPGKEY) $(PACKAGE)_amd64.changes && cd ..
+
+# "mentors" needs to be defined in ~/.dput.cf (see https://mentors.debian.net/intro-maintainers)
+dput: sign
+	cd pkg && dput mentors $(PACKAGE)_amd64.changes && cd ..
 
 package: pkg/$(PACKAGE).dsc
 
