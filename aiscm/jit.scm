@@ -607,8 +607,12 @@
 (define-method (type (self <param>)) (typecode (delegate self)))
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
+
 (define-method (typecode (self <indexer>)) (typecode (type self)))
+
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
+(define-method (shape (self <function>)) (argmax length (map shape (arguments self))))
+
 (define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
 (define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
@@ -662,13 +666,14 @@
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
 (define-method (setup (self <function>)) (append-map setup (arguments self)))
+
 (define-method (increment self) '())
 (define-method (increment (self <indexer>)) (list (ADD (iterator self) (step self))))
 (define-method (increment (self <function>)) (append-map increment (arguments self)))
+
 (define-method (body self) self)
 (define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
 (define-method (body (self <function>)) ((project self)))
-(define-method (shape (self <function>)) (argmax length (map shape (arguments self))))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
