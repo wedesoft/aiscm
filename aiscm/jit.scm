@@ -589,10 +589,10 @@
   (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
-  (index    #:init-keyword #:index    #:getter index)
-  (stride   #:init-keyword #:stride   #:getter stride)
+  (index    #:init-keyword #:index    #:getter index   )
+  (stride   #:init-keyword #:stride   #:getter stride  )
   (iterator #:init-keyword #:iterator #:getter iterator)
-  (step     #:init-keyword #:step     #:getter step))
+  (step     #:init-keyword #:step     #:getter step    ))
 (define-method (lookup index delegate stride iterator step)
   (make <lookup> #:index index #:delegate delegate #:stride stride #:iterator iterator #:step step))
 (define-method (lookup idx (obj <indexer>) stride iterator step)

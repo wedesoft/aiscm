@@ -33,10 +33,12 @@
 (define-method (lookups (self <indexer>) (idx <var>)) (lookups (delegate self) idx))
 (define-method (lookups (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (list self) (lookups (delegate self) idx)))
 (define-method (lookups (self <function>)) (append-map lookups (arguments self)))
+(define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
 
 (let [(s (parameter (sequence <ubyte>)))
-      (t (parameter (sequence <ubyte>)))
-      (m (parameter (multiarray <ubyte> 2)))]
+      (u (parameter (sequence <ubyte>)))
+      (m (parameter (multiarray <ubyte> 2)))
+      (i (var <long>))]
   (test-equal "get lookup object of sequence"
     (list (delegate s)) (lookups s))
   (test-equal "get first lookup object of 2D array"
@@ -44,7 +46,16 @@
   (test-equal "get second lookup object of 2D array"
     (list (delegate (delegate (delegate m)))) (lookups (delegate m)))
   (test-equal "get lookup objects of binary plus"
-    (list (delegate s) (delegate t)) (lookups (+ s t))))
+    (list (delegate s) (delegate u)) (lookups (+ s u)))
+  (test-equal "get lookup based on same object when using tensor"
+    (list (delegate (delegate s))) (map delegate (lookups (tensor (dimension s) k (get s k)))))
+  (test-equal "get lookup using replaced variable"
+    (list i) (map index (lookups (indexer (dimension s) i (get s i)))))
+  (test-equal "get lookup based on same objects when using binary tensor"
+    (list (delegate (delegate s)) (delegate (delegate u)))
+    (map delegate (lookups (indexer (dimension s) i (+ (get s i) (get u i))))))
+  (test-equal "get lookup using replaced variable"
+    (list i i) (map index (lookups (indexer (dimension s) i (+ (get s i) (get u i)))))))
 
 
 ;(lookups g)
