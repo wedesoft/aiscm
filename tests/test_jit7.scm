@@ -85,6 +85,7 @@
     (test-equal "swap iterator variables when transposing"
       (list (iterator mx) (iterator (project mx))) (list (iterator (project tr)) (iterator tr)))))
 (let [(s (seq <int> 2 3 5))
+      (t (seq <int> 3 5 7))
       (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
       (r (arr <int> (2 3 5) (7 11 13)))]
   (let [(op (lambda (s) (indexer (dimension s) i (get s i))))]
@@ -111,7 +112,7 @@
               r)))
   (test-skip 1)
   (test-equal "tensor expression for element-wise sum"
-     '(4 6 10) ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (+ (get s k) (get s k))))) s)))
+     '(5 8 12) ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (tensor (dimension s) k (+ (get s k) (get t k))))) s t)))
 (test-equal "generate code to package an object in a list"
   '(a) ((jit ctx (list <obj>) package-return-content) 'a))
 (test-equal "generate code to return the content of an RGB value"
