@@ -23,13 +23,11 @@
 (define ctx (make <context>))
 
 
-;(define s (parameter (sequence <ubyte>)))
-;(define t (parameter (sequence <ubyte>)))
-;(define m (parameter (multiarray <ubyte> 2)))
-;(define f (+ s t))
-;(define g (tensor (dimension s) k (+ (get s k) (get t k))))
-
-;(define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
+(define s (parameter (sequence <ubyte>)))
+(define t (parameter (sequence <ubyte>)))
+(define m (parameter (multiarray <ubyte> 2)))
+(define f (+ s t))
+(define g (tensor (dimension s) k (+ (get s k) (get t k))))
 
 (define-method (typecode (self <lookup>)) (typecode (type self)))
 
@@ -38,6 +36,13 @@
 (define-method (lookups (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (list self) (lookups (delegate self) idx)))
 (define-method (lookups (self <function>)) (append-map lookups (arguments self)))
 (define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
+
+(define-method (rebase value (self <indexer>))
+  (indexer (dimension self) (index self) (rebase value (delegate self))))
+(define-method (rebase value (self <lookup>))
+  (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
+(define-method (rebase value (self <lookup>))
+  (rebase value (delegate self)))
 
 (define-method (setup (self <lookup>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
@@ -49,6 +54,7 @@
 (let* [(s (parameter (sequence <ubyte>)))
        (u (parameter (sequence <ubyte>)))
        (m (parameter (multiarray <ubyte> 2)))
+       (v (var <long>))
        (i (var <long>))]
   (test-equal "get lookup object of sequence"
     (list (delegate s)) (lookups s))
@@ -70,16 +76,20 @@
   (test-eq "typecode of lookup object"
     <ubyte> (typecode (delegate s)))
   (test-equal "set up an iterator"
-    (list (IMUL (step s) (get (delegate (stride s))) (size-of (typecode s)))
-          (MOV (iterator s) (value s)))
+    (list (IMUL (step s) (get (delegate (stride s))) (size-of (typecode s))) (MOV (iterator s) (value s)))
     (setup (delegate s)))
   (test-equal "advance an iterator"
-    (list (ADD (iterator s) (step s)))
-    (increment (delegate s))))
+    (list (ADD (iterator s) (step s))) (increment (delegate s)))
+  (test-eq "rebase a pointer"
+    v (value (rebase v (make (pointer <byte>) #:value (var <long>)))))
+  (test-eq "rebase parameter wrapping a pointer"
+    v (value (rebase v (parameter (make (pointer <byte>) #:value (var <long>))))))
+  (test-eq "rebase a sequence object"
+    v (value (rebase v s)))
+  (test-equal "rebase maintains sequence shape"
+    (shape s) (shape (rebase v s))))
 
-
-
-; TODO: body/project for tensor expressions
+; TODO: body/project, rebase, for tensor expressions
 
 ; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
 

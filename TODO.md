@@ -1,7 +1,6 @@
 ## Ready
 
-* generate iterator on the fly,
-  index x lookup -> iterator
+* index x lookup -> iterator
   multiple iterators for one index (+ s t) (+ s s) (+ s (roll s))
 * tidy up structure of jit and tests
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
