@@ -46,6 +46,8 @@
   (if (eq? (index self) idx)
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
+(define-method (project (self <function>) (idx <var>))
+  (make <function> #:arguments (map (cut project <> idx) (arguments self)) #:type #f #:project #f #:delegate #f #:term #f))
 
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
@@ -105,7 +107,11 @@
   (test-equal "should drop the last dimension of a two-dimensional array"
     (take (shape m) 1) (shape (project m (index m))))
   (test-equal "should drop the last dimension of a two-dimensional array"
-    (cdr (shape m)) (shape (project m (index (delegate m))))))
+    (cdr (shape m)) (shape (project m (index (delegate m)))))
+  (test-assert "project a one-dimensional tensor expression has a scalar result"
+    (null? (shape (project (indexer (dimension s) i (+ (get s i) (get s i))) i))))
+  (test-equal "projecting a one-dimensional tensor should remove the lookup objects"
+    (list <param> <param>) (map class-of (arguments (project (indexer (dimension s) i (+ (get s i) (get s i))) i)))))
 
 ; unify indices when adding two sequences?
 ; TODO: body/project, rebase, for tensor expressions
