@@ -37,6 +37,16 @@
 (define-method (lookups (self <function>)) (append-map lookups (arguments self)))
 (define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
 
+(define-method (project (self <param>) (idx <var>)) self)
+(define-method (project (self <indexer>) (idx <var>))
+  (if (eq? (index self) idx)
+      (project (delegate self) idx)
+      (indexer (dimension self) (index self) (project (delegate self) idx))))
+(define-method (project (self <lookup>) (idx <var>))
+  (if (eq? (index self) idx)
+      (delegate self)
+      (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
+
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
 (define-method (rebase value (self <lookup>))
@@ -87,8 +97,17 @@
   (test-eq "rebase a sequence object"
     v (value (rebase v s)))
   (test-equal "rebase maintains sequence shape"
-    (shape s) (shape (rebase v s))))
+    (shape s) (shape (rebase v s)))
+  (test-assert "projecting a sequence should drop a dimension"; specified by the index
+    (null? (shape (project (indexer (dimension s) i (get s i)) i))))
+  (test-equal "do not drop a dimension if the specified index is a different one"
+    (shape s) (shape (project s i)))
+  (test-equal "should drop the last dimension of a two-dimensional array"
+    (take (shape m) 1) (shape (project m (index m))))
+  (test-equal "should drop the last dimension of a two-dimensional array"
+    (cdr (shape m)) (shape (project m (index (delegate m))))))
 
+; unify indices when adding two sequences?
 ; TODO: body/project, rebase, for tensor expressions
 
 ; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
