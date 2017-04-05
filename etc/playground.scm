@@ -50,8 +50,8 @@
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (project (self <function>) (idx <var>))
-  (apply + (map (cut project <> idx) (delegate self))))
-; TODO: use "name" instead of "+"
+  (apply (name self) (map (cut project <> idx) (delegate self))))
+; TODO: determine type of function result instead of storing it
 (define-method (project (self <function>))
   (apply + (map project (delegate self))))
 

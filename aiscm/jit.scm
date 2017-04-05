@@ -48,7 +48,7 @@
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
-            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
+            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate name
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step setup increment body operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
@@ -600,7 +600,7 @@
 
 (define-class <function> (<param>)
   (type      #:init-keyword #:type      #:getter type)
-  (project   #:init-keyword #:project   #:getter project)
+  (name      #:init-keyword #:name      #:getter name)
   (term      #:init-keyword #:term      #:getter term))
 
 (define-method (type (self <param>)) (typecode (delegate self)))
@@ -672,7 +672,7 @@
 
 (define-method (body self) self)
 (define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
-(define-method (body (self <function>)) ((project self)))
+(define-method (body (self <function>)) (project self))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
@@ -820,8 +820,10 @@
 (define (make-function name coercion fun args)
   (make <function> #:delegate   args
                    #:type      (apply coercion (map type args))
-                   #:project   (lambda ()  (apply name (map body args)))
+                   #:name      name
                    #:term      (lambda (out) (fun out args))))
+
+(define-method (project (self <function>)) (apply (name self) (map body (delegate self))))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
