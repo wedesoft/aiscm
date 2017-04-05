@@ -672,7 +672,7 @@
 
 (define-method (body self) self)
 (define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
-(define-method (body (self <function>)) (project self))
+(define-method (body (self <function>))  (apply (name self) (map body (delegate self))))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
@@ -822,8 +822,6 @@
                    #:type      (apply coercion (map type args))
                    #:name      name
                    #:term      (lambda (out) (fun out args))))
-
-(define-method (project (self <function>)) (apply (name self) (map body (delegate self))))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
