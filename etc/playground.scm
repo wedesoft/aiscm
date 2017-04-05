@@ -18,7 +18,7 @@
 
 (define-syntax-rule (d expr) (format #t "~a = ~a~&" (quote expr) expr))
 
-(test-begin "tensors")
+(test-begin "playground")
 
 (define ctx (make <context>))
 
@@ -37,17 +37,23 @@
 (define-method (lookups (self <function>)) (append-map lookups (arguments self)))
 (define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
 
+; TODO: project and rebase with indexed lookup in one go
 (define-method (project (self <param>) (idx <var>)) self)
 (define-method (project (self <indexer>) (idx <var>))
   (if (eq? (index self) idx)
       (project (delegate self) idx)
       (indexer (dimension self) (index self) (project (delegate self) idx))))
+(define-method (project (self <indexer>))
+  (project self (index self)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (project (self <function>) (idx <var>))
-  (make <function> #:arguments (map (cut project <> idx) (arguments self)) #:type #f #:project #f #:delegate #f #:term #f))
+  (apply + (map (cut project <> idx) (arguments self))))
+; TODO: use "name" instead of "+"
+(define-method (project (self <function>))
+  (apply + (map project (arguments self))))
 
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
@@ -63,11 +69,13 @@
 (define-method (increment (self <lookup>))
   (list (ADD (iterator self) (step self))))
 
-(let* [(s (parameter (sequence <ubyte>)))
-       (u (parameter (sequence <ubyte>)))
-       (m (parameter (multiarray <ubyte> 2)))
-       (v (var <long>))
-       (i (var <long>))]
+(let* [(s    (parameter (sequence <ubyte>)))
+       (u    (parameter (sequence <ubyte>)))
+       (m    (parameter (multiarray <ubyte> 2)))
+       (v    (var <long>))
+       (i    (var <long>))
+       (t1   (indexer (dimension s) i (get s i)))
+       (tsum (indexer (dimension s) i (+ (get s i) (get u i))))]
   (test-equal "get lookup object of sequence"
     (list (delegate s)) (lookups s))
   (test-equal "get first lookup object of 2D array"
@@ -79,12 +87,12 @@
   (test-equal "get lookup based on same object when using tensor"
     (list (delegate (delegate s))) (map delegate (lookups (tensor (dimension s) k (get s k)))))
   (test-equal "get lookup using replaced variable"
-    (list i) (map index (lookups (indexer (dimension s) i (get s i)))))
+    (list i) (map index (lookups t1)))
   (test-equal "get lookup based on same objects when using binary tensor"
     (list (delegate (delegate s)) (delegate (delegate u)))
-    (map delegate (lookups (indexer (dimension s) i (+ (get s i) (get u i))))))
+    (map delegate (lookups tsum)))
   (test-equal "get lookup using replaced variable"
-    (list i i) (map index (lookups (indexer (dimension s) i (+ (get s i) (get u i))))))
+    (list i i) (map index (lookups tsum)))
   (test-eq "typecode of lookup object"
     <ubyte> (typecode (delegate s)))
   (test-equal "set up an iterator"
@@ -100,8 +108,8 @@
     v (value (rebase v s)))
   (test-equal "rebase maintains sequence shape"
     (shape s) (shape (rebase v s)))
-  (test-assert "projecting a sequence should drop a dimension"; specified by the index
-    (null? (shape (project (indexer (dimension s) i (get s i)) i))))
+  (test-assert "projecting a sequence should drop a dimension"
+    (null? (shape (project t1 i))))
   (test-equal "do not drop a dimension if the specified index is a different one"
     (shape s) (shape (project s i)))
   (test-equal "should drop the last dimension of a two-dimensional array"
@@ -109,13 +117,20 @@
   (test-equal "should drop the last dimension of a two-dimensional array"
     (cdr (shape m)) (shape (project m (index (delegate m)))))
   (test-assert "project a one-dimensional tensor expression has a scalar result"
-    (null? (shape (project (indexer (dimension s) i (+ (get s i) (get s i))) i))))
+    (null? (shape (project tsum i))))
   (test-equal "projecting a one-dimensional tensor should remove the lookup objects"
-    (list <param> <param>) (map class-of (arguments (project (indexer (dimension s) i (+ (get s i) (get s i))) i)))))
+    (list <param> <param>) (map class-of (arguments (project tsum i))))
+  (test-assert "drop the last dimension if unspecified"
+    (null? (shape (project s))))
+  (test-assert "drop the last dimension of an element-wise sum"
+    (null? (shape (project (+ s u)))))
+  (test-assert "projected element-wise sum is a function"
+    (is-a? (project (+ s u)) <function>)))
 
-; unify indices when adding two sequences?
+; TODO: project and rebase with indexed lookup in one go
 ; TODO: body/project, rebase, for tensor expressions
+; TODO: merge lookups when getting diagonal elements of an array
 
 ; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
 
-(test-end "tensors")
+(test-end "playground")
