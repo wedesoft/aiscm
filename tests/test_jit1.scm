@@ -819,9 +819,9 @@
   (test-equal "loop should increment input array iterator"
     (list (ADD (iterator a) (step a))) (increment f))
   (test-equal "body of loop should be function with element of first argument as argument"
-    (iterator a) (value (car (arguments (body f)))))
+    (iterator a) (value (car (delegate (body f)))))
   (test-equal "body of loop should maintain second argument"
-    b (cadr (arguments (body f))))
+    b (cadr (delegate (body f))))
   (test-equal "instantiate loop body for array-scalar-function"
     (list (SUB RSP 8) (MOV ESI (ptr <int> RAX)) (ADD ESI EDX) (MOV (ptr <int> RDI) ESI) (ADD RSP 8) (RET))
     (linear-scan-allocate (flatten-code (attach (code (body out) (body f)) (RET))))))
@@ -839,9 +839,9 @@
   (test-equal "setup of loop over scalar-array-function should setup looping over second argument"
     (list (IMUL (step b) (get (delegate (stride b))) (size-of (typecode b))) (MOV (iterator b) (value b))) (setup f))
   (test-equal "body of loop should maintain first argument"
-    a (car (arguments (body f))))
+    a (car (delegate (body f))))
   (test-equal "body of loop should be function with element of second argument as argument"
-    (iterator b) (value (cadr (arguments (body f)))))
+    (iterator b) (value (cadr (delegate (body f)))))
   (test-equal "instantiate loop body for scalar-array-function"
     (list (SUB RSP 8) (MOV ESI EAX) (ADD ESI (ptr <int> RDX)) (MOV (ptr <int> RDI) ESI) (ADD RSP 8) (RET))
     (linear-scan-allocate (flatten-code (attach (code (body out) (body f)) (RET))))))

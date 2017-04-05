@@ -50,7 +50,7 @@
             blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
-            jit iterator step setup increment body arguments operand insert-intermediate
+            jit iterator step setup increment body operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -599,7 +599,6 @@
   (indexer (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
 
 (define-class <function> (<param>)
-  (arguments #:init-keyword #:arguments #:getter arguments)
   (type      #:init-keyword #:type      #:getter type)
   (project   #:init-keyword #:project   #:getter project)
   (term      #:init-keyword #:term      #:getter term))
@@ -611,7 +610,7 @@
 (define-method (typecode (self <indexer>)) (typecode (type self)))
 
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
-(define-method (shape (self <function>)) (argmax length (map shape (arguments self))))
+(define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
 
 (define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
@@ -665,11 +664,11 @@
 (define-method (setup (self <indexer>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
-(define-method (setup (self <function>)) (append-map setup (arguments self)))
+(define-method (setup (self <function>)) (append-map setup (delegate self)))
 
 (define-method (increment self) '())
 (define-method (increment (self <indexer>)) (list (ADD (iterator self) (step self))))
-(define-method (increment (self <function>)) (append-map increment (arguments self)))
+(define-method (increment (self <function>)) (append-map increment (delegate self)))
 
 (define-method (body self) self)
 (define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
@@ -710,7 +709,7 @@
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
-(define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
+(define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
   (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
 
@@ -819,10 +818,9 @@
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name out args)))
 
 (define (make-function name coercion fun args)
-  (make <function> #:arguments args
+  (make <function> #:delegate   args
                    #:type      (apply coercion (map type args))
                    #:project   (lambda ()  (apply name (map body args)))
-                   #:delegate  #f
                    #:term      (lambda (out) (fun out args))))
 
 (define-macro (n-ary-base name arity coercion fun)

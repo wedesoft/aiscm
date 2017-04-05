@@ -34,8 +34,8 @@
 (define-method (lookups (self <indexer>)) (lookups self (index self)))
 (define-method (lookups (self <indexer>) (idx <var>)) (lookups (delegate self) idx))
 (define-method (lookups (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (list self) (lookups (delegate self) idx)))
-(define-method (lookups (self <function>)) (append-map lookups (arguments self)))
-(define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (arguments self)))
+(define-method (lookups (self <function>)) (append-map lookups (delegate self)))
+(define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (delegate self)))
 
 ; TODO: project and rebase with indexed lookup in one go
 (define-method (project (self <param>) (idx <var>)) self)
@@ -50,10 +50,10 @@
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (project (self <function>) (idx <var>))
-  (apply + (map (cut project <> idx) (arguments self))))
+  (apply + (map (cut project <> idx) (delegate self))))
 ; TODO: use "name" instead of "+"
 (define-method (project (self <function>))
-  (apply + (map project (arguments self))))
+  (apply + (map project (delegate self))))
 
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
@@ -119,7 +119,7 @@
   (test-assert "project a one-dimensional tensor expression has a scalar result"
     (null? (shape (project tsum i))))
   (test-equal "projecting a one-dimensional tensor should remove the lookup objects"
-    (list <param> <param>) (map class-of (arguments (project tsum i))))
+    (list <param> <param>) (map class-of (delegate (project tsum i))))
   (test-assert "drop the last dimension if unspecified"
     (null? (shape (project s))))
   (test-assert "drop the last dimension of an element-wise sum"
