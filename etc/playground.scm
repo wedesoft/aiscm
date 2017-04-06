@@ -29,8 +29,13 @@
 (define f (+ s t))
 (define g (tensor (dimension s) k (+ (get s k) (get t k))))
 
-(define-method (typecode (self <lookup>)) (typecode (type self)))
+(define-method (type (self <param>)) (typecode (delegate self)))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
+(define-method (type (self <lookup>)) (type (delegate self)))
+; TODO: type of function (requires coercion to be stored)
 
+(define-method (typecode (self <param>)) (typecode (type self)))
+ 
 (define-method (lookups (self <indexer>)) (lookups self (index self)))
 (define-method (lookups (self <indexer>) (idx <var>)) (lookups (delegate self) idx))
 (define-method (lookups (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (list self) (lookups (delegate self) idx)))
@@ -60,11 +65,6 @@
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
 (define-method (rebase value (self <lookup>))
   (rebase value (delegate self)))
-
-(define-method (type (self <param>)) (typecode (delegate self)))
-(define-method (type (self <indexer>)) (sequence (type (delegate self))))
-(define-method (type (self <lookup>)) (type (delegate self)))
-; TODO: type of function (requires coercion to be stored)
 
 (define-method (setup (self <lookup>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
@@ -98,8 +98,8 @@
     (map delegate (lookups tsum)))
   (test-equal "get lookup using replaced variable"
     (list i i) (map index (lookups tsum)))
-  (test-eq "typecode of lookup object"
-    <ubyte> (typecode (delegate s)))
+  (test-eq "typecode of sequence parameter"
+    <ubyte> (typecode s))
   (test-equal "set up an iterator"
     (list (IMUL (step s) (get (delegate (stride s))) (size-of (typecode s))) (MOV (iterator s) (value s)))
     (setup (delegate s)))

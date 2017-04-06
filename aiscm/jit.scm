@@ -607,7 +607,7 @@
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
 
-(define-method (typecode (self <indexer>)) (typecode (type self)))
+(define-method (typecode (self <param>)) (typecode (type self)))
 
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
