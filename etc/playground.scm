@@ -32,10 +32,11 @@
 (define-method (type (self <param>)) (typecode (delegate self)))
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
-; TODO: type of function (requires coercion to be stored)
+(define-method (type (self <function>))
+  (apply (coercion self) (map type (delegate self))))
 
 (define-method (typecode (self <param>)) (typecode (type self)))
- 
+
 (define-method (lookups (self <indexer>)) (lookups self (index self)))
 (define-method (lookups (self <indexer>) (idx <var>)) (lookups (delegate self) idx))
 (define-method (lookups (self <lookup>) (idx <var>)) (if (eq? (index self) idx) (list self) (lookups (delegate self) idx)))
@@ -136,7 +137,11 @@
   (test-eq "determine type of parameter"
     <sint> (type p))
   (test-eq "determine type of sequence"
-    (sequence <ubyte>) (type s)))
+    (sequence <ubyte>) (type s))
+  (test-eq "coerce two sequence types"
+    (sequence <ubyte>) (type (+ s u)))
+  (test-eq "coerce sequence and scalar"
+    (sequence <sint>) (type (+ s p))))
 
 ; TODO: project and rebase with indexed lookup in one go
 ; TODO: body/project, rebase, for tensor expressions
