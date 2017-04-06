@@ -61,6 +61,11 @@
 (define-method (rebase value (self <lookup>))
   (rebase value (delegate self)))
 
+(define-method (type (self <param>)) (typecode (delegate self)))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
+(define-method (type (self <lookup>)) (type (delegate self)))
+; TODO: type of function (requires coercion to be stored)
+
 (define-method (setup (self <lookup>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
@@ -70,6 +75,7 @@
 
 (let* [(s    (parameter (sequence <ubyte>)))
        (u    (parameter (sequence <ubyte>)))
+       (p    (parameter <sint>))
        (m    (parameter (multiarray <ubyte> 2)))
        (v    (var <long>))
        (i    (var <long>))
@@ -126,7 +132,11 @@
   (test-assert "projected element-wise sum is a function"
     (is-a? (project (+ s u)) <function>))
   (test-eq "projecting a sequence replaces the pointer with the iterator"
-    (iterator s) (value (project s))))
+    (iterator s) (value (project s)))
+  (test-eq "determine type of parameter"
+    <sint> (type p))
+  (test-eq "determine type of sequence"
+    (sequence <ubyte>) (type s)))
 
 ; TODO: project and rebase with indexed lookup in one go
 ; TODO: body/project, rebase, for tensor expressions
