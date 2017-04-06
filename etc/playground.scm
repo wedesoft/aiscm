@@ -37,7 +37,6 @@
 (define-method (lookups (self <function>)) (append-map lookups (delegate self)))
 (define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (delegate self)))
 
-; TODO: project and rebase with indexed lookup in one go
 (define-method (project (self <param>) (idx <var>)) self)
 (define-method (project (self <indexer>) (idx <var>))
   (if (eq? (index self) idx)
@@ -47,7 +46,7 @@
   (project self (index self)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
-      (delegate self)
+      (rebase (iterator self) (delegate self))
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (project (self <function>) (idx <var>))
   (apply (name self) (map (cut project <> idx) (delegate self))))
@@ -125,7 +124,9 @@
   (test-assert "drop the last dimension of an element-wise sum"
     (null? (shape (project (+ s u)))))
   (test-assert "projected element-wise sum is a function"
-    (is-a? (project (+ s u)) <function>)))
+    (is-a? (project (+ s u)) <function>))
+  (test-eq "projecting a sequence replaces the pointer with the iterator"
+    (iterator s) (value (project s))))
 
 ; TODO: project and rebase with indexed lookup in one go
 ; TODO: body/project, rebase, for tensor expressions
