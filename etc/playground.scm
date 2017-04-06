@@ -56,16 +56,15 @@
       (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
 (define-method (project (self <function>) (idx <var>))
   (apply (name self) (map (cut project <> idx) (delegate self))))
-; TODO: determine type of function result instead of storing it
+
 (define-method (project (self <function>))
-  (apply + (map project (delegate self))))
+  (apply (name self) (map project (delegate self))))
 
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
-(define-method (rebase value (self <lookup>))
-  (rebase value (delegate self)))
+(define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 
 (define-method (setup (self <lookup>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
@@ -122,6 +121,8 @@
     (take (shape m) 1) (shape (project m (index m))))
   (test-equal "should drop the last dimension of a two-dimensional array"
     (cdr (shape m)) (shape (project m (index (delegate m)))))
+  (test-assert "2D array can be projected twice"
+    (is-a? (project (project m)) <param>))
   (test-assert "project a one-dimensional tensor expression has a scalar result"
     (null? (shape (project tsum i))))
   (test-equal "projecting a one-dimensional tensor should remove the lookup objects"
@@ -143,8 +144,7 @@
   (test-eq "coerce sequence and scalar"
     (sequence <sint>) (type (+ s p))))
 
-; TODO: project and rebase with indexed lookup in one go
-; TODO: body/project, rebase, for tensor expressions
+; TODO: setup, body (project?), iterate
 ; TODO: merge lookups when getting diagonal elements of an array
 
 ; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
