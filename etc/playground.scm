@@ -43,22 +43,21 @@
 (define-method (lookups (self <function>)) (append-map lookups (delegate self)))
 (define-method (lookups (self <function>) (idx <var>)) (append-map (cut lookups <> idx) (delegate self)))
 
-(define-method (project (self <param>) (idx <var>)) self)
-(define-method (project (self <indexer>) (idx <var>))
+(define-method (loop-body (self <param>) (idx <var>)) self)
+(define-method (loop-body (self <indexer>) (idx <var>))
   (if (eq? (index self) idx)
-      (project (delegate self) idx)
-      (indexer (dimension self) (index self) (project (delegate self) idx))))
-(define-method (project (self <indexer>))
-  (project self (index self)))
-(define-method (project (self <lookup>) (idx <var>))
+      (loop-body (delegate self) idx)
+      (indexer (dimension self) (index self) (loop-body (delegate self) idx))))
+(define-method (loop-body (self <indexer>))
+  (loop-body (delegate self) (index self)))
+(define-method (loop-body (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (rebase (iterator self) (delegate self))
-      (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
-(define-method (project (self <function>) (idx <var>))
-  (apply (name self) (map (cut project <> idx) (delegate self))))
-
-(define-method (project (self <function>))
-  (apply (name self) (map project (delegate self))))
+      (lookup (index self) (loop-body (delegate self) idx) (stride self) (iterator self) (step self))))
+(define-method (loop-body (self <function>) (idx <var>))
+  (apply (name self) (map (cut loop-body <> idx) (delegate self))))
+(define-method (loop-body (self <function>))
+  (apply (name self) (map loop-body (delegate self))))
 
 (define-method (rebase value (self <indexer>))
   (indexer (dimension self) (index self) (rebase value (delegate self))))
@@ -72,6 +71,13 @@
 
 (define (loop-increment lookup)
   (list (ADD (iterator lookup) (step lookup))))
+
+(define-method (code (a <indexer>) (b <param>))
+  (let [(candidates (append (lookups a) (lookups b)))]
+    (list (map loop-setup candidates)
+          (repeat (get (delegate (dimension a)))
+                  (append (code (loop-body a) (loop-body b))
+                          (map loop-increment candidates))))))
 
 ; TODO: setup, body (project?), iterate
 ; TODO: merge lookups when getting diagonal elements of an array
@@ -116,27 +122,27 @@
   (test-equal "rebase maintains sequence shape"
     (shape s) (shape (rebase v s)))
   (test-assert "projecting a sequence should drop a dimension"
-    (null? (shape (project t1 i))))
+    (null? (shape (loop-body t1 i))))
   (test-equal "do not drop a dimension if the specified index is a different one"
-    (shape s) (shape (project s i)))
+    (shape s) (shape (loop-body s i)))
   (test-equal "should drop the last dimension of a two-dimensional array"
-    (take (shape m) 1) (shape (project m (index m))))
+    (take (shape m) 1) (shape (loop-body m (index m))))
   (test-equal "should drop the last dimension of a two-dimensional array"
-    (cdr (shape m)) (shape (project m (index (delegate m)))))
+    (cdr (shape m)) (shape (loop-body m (index (delegate m)))))
   (test-assert "2D array can be projected twice"
-    (is-a? (project (project m)) <param>))
+    (is-a? (loop-body (loop-body m)) <param>))
   (test-assert "project a one-dimensional tensor expression has a scalar result"
-    (null? (shape (project tsum i))))
+    (null? (shape (loop-body tsum i))))
   (test-equal "projecting a one-dimensional tensor should remove the lookup objects"
-    (list <param> <param>) (map class-of (delegate (project tsum i))))
+    (list <param> <param>) (map class-of (delegate (loop-body tsum i))))
   (test-assert "drop the last dimension if unspecified"
-    (null? (shape (project s))))
+    (null? (shape (loop-body s))))
   (test-assert "drop the last dimension of an element-wise sum"
-    (null? (shape (project (+ s u)))))
+    (null? (shape (loop-body (+ s u)))))
   (test-assert "projected element-wise sum is a function"
-    (is-a? (project (+ s u)) <function>))
+    (is-a? (loop-body (+ s u)) <function>))
   (test-eq "projecting a sequence replaces the pointer with the iterator"
-    (iterator s) (value (project s)))
+    (iterator ls) (value (loop-body s)))
   (test-eq "determine type of parameter"
     <sint> (type p))
   (test-eq "determine type of sequence"
@@ -152,8 +158,16 @@
     (list (IMUL (step lu) (value (stride lu)) 2) (MOV (iterator lu) (value lu)))
     (loop-setup lu))
   (test-equal "iterating over array should increase the pointer used for iteration"
-    (list (ADD (iterator ls) (step ls))) (loop-increment ls)))
+    (list (ADD (iterator ls) (step ls))) (loop-increment ls))
+  (test-equal "compile and run trivial identity tensor"
+    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) identity) (seq 2 3 5))))
+  (test-equal "compile tensor operation with two arrays"
+    '(5 8 12)
+    (to-list ((jit ctx (list (sequence <ubyte>) (sequence <ubyte>))
+                       (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
+              (seq 2 3 5)
+              (seq 3 5 7)))))
 
-; TODO: remove setup, increment, step for non-lookup, stride for non-lookup, iterator for non-lookup
+; TODO: remove setup, increment, remove body, step for non-lookup, stride for non-lookup, iterator for non-lookup
 
 (test-end "playground")
