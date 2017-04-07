@@ -66,6 +66,10 @@
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 
+(define (setup-loop lookup)
+  (list (IMUL (step lookup) (value (stride lookup)) (size-of (typecode lookup)))
+        (MOV (iterator lookup) (value lookup))))
+
 (define-method (setup (self <lookup>))
   (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
         (MOV (iterator self) (value self))))
@@ -73,16 +77,23 @@
 (define-method (increment (self <lookup>))
   (list (ADD (iterator self) (step self))))
 
+; TODO: setup, body (project?), iterate
+; TODO: merge lookups when getting diagonal elements of an array
+
+; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
+
 (let* [(s    (parameter (sequence <ubyte>)))
-       (u    (parameter (sequence <ubyte>)))
+       (u    (parameter (sequence <usint>)))
        (p    (parameter <sint>))
        (m    (parameter (multiarray <ubyte> 2)))
+       (ls   (delegate s))
+       (lu   (delegate u))
        (v    (var <long>))
        (i    (var <long>))
        (t1   (indexer (dimension s) i (get s i)))
        (tsum (indexer (dimension s) i (+ (get s i) (get u i))))]
   (test-equal "get lookup object of sequence"
-    (list (delegate s)) (lookups s))
+    (list ls) (lookups s))
   (test-equal "get first lookup object of 2D array"
     (list (delegate (delegate m))) (lookups m))
   (test-equal "get second lookup object of 2D array"
@@ -100,9 +111,6 @@
     (list i i) (map index (lookups tsum)))
   (test-eq "typecode of sequence parameter"
     <ubyte> (typecode s))
-  (test-equal "set up an iterator"
-    (list (IMUL (step s) (get (delegate (stride s))) (size-of (typecode s))) (MOV (iterator s) (value s)))
-    (setup (delegate s)))
   (test-equal "advance an iterator"
     (list (ADD (iterator s) (step s))) (increment (delegate s)))
   (test-eq "rebase a pointer"
@@ -139,14 +147,17 @@
     <sint> (type p))
   (test-eq "determine type of sequence"
     (sequence <ubyte>) (type s))
-  (test-eq "coerce two sequence types"
-    (sequence <ubyte>) (type (+ s u)))
   (test-eq "coerce sequence and scalar"
-    (sequence <sint>) (type (+ s p))))
+    (sequence <sint>) (type (+ s p)))
+  (test-eq "coerce two sequence types"
+    (sequence <usint>) (type (+ s u)))
+  (test-equal "setup of array loop should define increment and initialise pointer"
+    (list (IMUL (step ls) (value (stride ls)) 1) (MOV (iterator ls) (value ls)))
+    (setup-loop ls))
+  (test-equal "setup of array loop should define increment and initialise pointer"
+    (list (IMUL (step lu) (value (stride lu)) 2) (MOV (iterator lu) (value lu)))
+    (setup-loop lu)))
 
-; TODO: setup, body (project?), iterate
-; TODO: merge lookups when getting diagonal elements of an array
-
-; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
+; TODO: remove setup, step for non-lookup, stride for non-lookup, iterator for non-lookup
 
 (test-end "playground")
