@@ -66,16 +66,12 @@
   (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 
-(define (setup-loop lookup)
+(define (loop-setup lookup)
   (list (IMUL (step lookup) (value (stride lookup)) (size-of (typecode lookup)))
         (MOV (iterator lookup) (value lookup))))
 
-(define-method (setup (self <lookup>))
-  (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
-        (MOV (iterator self) (value self))))
-
-(define-method (increment (self <lookup>))
-  (list (ADD (iterator self) (step self))))
+(define (loop-increment lookup)
+  (list (ADD (iterator lookup) (step lookup))))
 
 ; TODO: setup, body (project?), iterate
 ; TODO: merge lookups when getting diagonal elements of an array
@@ -111,8 +107,6 @@
     (list i i) (map index (lookups tsum)))
   (test-eq "typecode of sequence parameter"
     <ubyte> (typecode s))
-  (test-equal "advance an iterator"
-    (list (ADD (iterator s) (step s))) (increment (delegate s)))
   (test-eq "rebase a pointer"
     v (value (rebase v (make (pointer <byte>) #:value (var <long>)))))
   (test-eq "rebase parameter wrapping a pointer"
@@ -153,11 +147,13 @@
     (sequence <usint>) (type (+ s u)))
   (test-equal "setup of array loop should define increment and initialise pointer"
     (list (IMUL (step ls) (value (stride ls)) 1) (MOV (iterator ls) (value ls)))
-    (setup-loop ls))
-  (test-equal "setup of array loop should define increment and initialise pointer"
+    (loop-setup ls))
+  (test-equal "setup array loop for short integer array requires larger step size"
     (list (IMUL (step lu) (value (stride lu)) 2) (MOV (iterator lu) (value lu)))
-    (setup-loop lu)))
+    (loop-setup lu))
+  (test-equal "iterating over array should increase the pointer used for iteration"
+    (list (ADD (iterator ls) (step ls))) (loop-increment ls)))
 
-; TODO: remove setup, step for non-lookup, stride for non-lookup, iterator for non-lookup
+; TODO: remove setup, increment, step for non-lookup, stride for non-lookup, iterator for non-lookup
 
 (test-end "playground")
