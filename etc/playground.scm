@@ -73,13 +73,14 @@
   (list (ADD (iterator lookup) (step lookup))))
 
 (define-method (code (a <indexer>) (b <param>))
-  (let [(candidates (append (lookups a) (lookups b)))]
+  (let [(candidates (delete-duplicates (append (lookups a) (lookups b))))]
     (list (map loop-setup candidates)
           (repeat (get (delegate (dimension a)))
                   (append (code (loop-body a) (loop-body b))
                           (map loop-increment candidates))))))
 
-; TODO: setup, body (project?), iterate
+; TODO: return new iterators & steps, project, and rebase in one go
+; TODO: create iterator and step for each combination of index and array pointer
 ; TODO: merge lookups when getting diagonal elements of an array
 
 ; (jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
@@ -111,6 +112,11 @@
     (map delegate (lookups tsum)))
   (test-equal "get lookup using replaced variable"
     (list i i) (map index (lookups tsum)))
+  (test-skip 2)
+  (test-assert "create new iterator when using index to select dimension"
+    (not (eq? (iterator ls) (iterator (get s i)))))
+  (test-assert "create new step value when using index to select dimension"
+    (not (eq? (step ls) (step (get s i)))))
   (test-eq "typecode of sequence parameter"
     <ubyte> (typecode s))
   (test-eq "rebase a pointer"
@@ -166,8 +172,18 @@
     (to-list ((jit ctx (list (sequence <ubyte>) (sequence <ubyte>))
                        (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
               (seq 2 3 5)
-              (seq 3 5 7)))))
-
+              (seq 3 5 7))))
+  (test-equal "access array twice using same index in tensor operation"
+    '(4 6 10)
+    (to-list ((jit ctx (list (sequence <ubyte>))
+                       (lambda (s) (tensor (dimension s) k (+ (get s k) (get s k)))))
+              (seq 2 3 5))))
+  (test-equal "use array twice in tensor operation"
+    '(4 6 10)
+    (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (+ s s)))
+              (seq 2 3 5)))))
+; TODO: (+ m (roll m))
+; TODO: (+ m (project m))
 ; TODO: remove setup, increment, remove body, step for non-lookup, stride for non-lookup, iterator for non-lookup
 
 (test-end "playground")
