@@ -51,14 +51,16 @@
 
 (define (loop-increment iterator step)
   (list (ADD iterator step)))
-;
-;(define-method (code (a <indexer>) (b <param>))
-;  (let [(candidates (delete-duplicates (append (lookups a) (lookups b))))]
-;    (list (map loop-setup candidates)
-;          (repeat (get (delegate (dimension a)))
-;                  (append (code (loop-body a) (loop-body b))
-;                          (map loop-increment candidates))))))
-;
+
+(define-method (code (a <indexer>) (b <param>))
+  (let [(dest   (tensor-loop a))
+        (source (tensor-loop b))]
+    (append (append-map loop-setup (typecodes dest) (iterators dest) (steps dest) (strides dest) (bases dest))
+            (append-map loop-setup (typecodes source) (iterators source) (steps source) (strides source) (bases source))
+            (repeat (value (dimension a))
+                    (code (body dest) (body source))
+                    (append-map loop-increment (iterators dest) (steps dest))
+                    (append-map loop-increment (iterators source) (steps source))))))
 
 (test-begin "trivial tensor")
   (let* [(s (parameter (sequence <ubyte>)))
@@ -99,8 +101,12 @@
   (test-equal "a loop increment should increment the loop iterator"
     (list (ADD iterator step))
     (loop-increment iterator step)))
-
 (test-end "loop code")
+
+(test-begin "tensor expressions")
+  (test-equal "compile and run trivial identity tensor"
+    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) identity) (seq 2 3 5))))
+(test-end "tensor expressions")
 
 ; TODO: return new iterators & steps, project, and rebase in one go
 ; TODO: create iterator and step for each combination of index and array pointer
