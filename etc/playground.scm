@@ -16,8 +16,6 @@
              (aiscm method)
              (aiscm util))
 
-(define-syntax-rule (d expr) (format #t "~a = ~a~&" (quote expr) expr))
-
 (test-begin "playground")
 
 (define ctx (make <context>))
@@ -28,84 +26,130 @@
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
 
+(define-class <loop-detail> ()
+  (typecode #:init-keyword #:typecode #:getter typecode)
+  (iterator #:init-keyword #:iterator #:getter iterator)
+  (step     #:init-keyword #:step     #:getter step    )
+  (stride   #:init-keyword #:stride   #:getter stride  )
+  (base     #:init-keyword #:base     #:getter base    ))
+
+(define-method (loop-setup (self <loop-detail>))
+  (list (IMUL (step self) (value (stride self)) (size-of (typecode self)))
+        (MOV (iterator self) (base self))))
+
+(define-method (loop-increment (self <loop-detail>))
+  (list (ADD (iterator self) (step self))))
+
 (define-class <tensor-loop> ()
-  (typecodes #:init-keyword #:typecodes #:getter typecodes)
-  (iterators #:init-keyword #:iterators #:getter iterators)
-  (steps     #:init-keyword #:steps     #:getter steps    )
-  (strides   #:init-keyword #:strides   #:getter strides  )
-  (bases     #:init-keyword #:bases     #:getter bases    )
-  (body      #:init-keyword #:body      #:getter body     ))
+  (loop-details #:init-keyword #:loop-details #:getter loop-details)
+  (body         #:init-keyword #:body         #:getter body        ))
 
-(define (tensor-loop expr)
-  (let [(iterator (var <long>))
-        (step     (var <long>))]
-    (make <tensor-loop> #:typecodes (list (typecode expr))
-                        #:iterators (list iterator)
-                        #:steps (list step)
-                        #:strides (list (stride (delegate expr)))
-                        #:bases (list (value expr))
-                        #:body (rebase iterator (delegate (delegate expr))))))
+(define-method (tensor-loop (self <lookup>) (idx <var>))
+  (if (eq? idx (index self))
+    (let* [(iterator    (var <long>))
+           (step        (var <long>))
+           (loop-detail (make <loop-detail> #:typecode (typecode self)
+                                            #:iterator iterator
+                                            #:step     step
+                                            #:stride   (stride self)
+                                            #:base     (value self)))]
+      (make <tensor-loop> #:loop-details (list loop-detail)
+                          #:body         (rebase iterator (delegate self))))
+    (tensor-loop (delegate self) idx)))
 
-(define (loop-setup typecode iterator step stride base)
-  (list (IMUL step (value stride) (size-of typecode)) (MOV iterator base)))
+(define-method (tensor-loop (self <indexer>) (idx <var>))
+  (let [(t (tensor-loop (delegate self) idx))]
+    (make <tensor-loop> #:loop-details (loop-details t)
+                        #:body         (indexer (dimension self) (index self) (body t)))))
 
-(define (loop-increment iterator step)
-  (list (ADD iterator step)))
+(define-method (tensor-loop (self <indexer>))
+  (tensor-loop (delegate self) (index self)))
 
 (define-method (code (a <indexer>) (b <param>))
   (let [(dest   (tensor-loop a))
         (source (tensor-loop b))]
-    (append (append-map loop-setup (typecodes dest) (iterators dest) (steps dest) (strides dest) (bases dest))
-            (append-map loop-setup (typecodes source) (iterators source) (steps source) (strides source) (bases source))
+    (append (append-map loop-setup (loop-details dest))
+            (append-map loop-setup (loop-details source))
             (repeat (value (dimension a))
                     (code (body dest) (body source))
-                    (append-map loop-increment (iterators dest) (steps dest))
-                    (append-map loop-increment (iterators source) (steps source))))))
+                    (append-map loop-increment (loop-details dest))
+                    (append-map loop-increment (loop-details source))))))
 
-(test-begin "trivial tensor")
+(test-begin "type inference")
+  (test-eq "determine type of parameter"
+    <sint> (type (parameter <sint>)))
+  (test-eq "determine type of sequence"
+    (sequence <ubyte>) (type (parameter (sequence <ubyte>))))
+  (test-eq "coerce sequence and scalar"
+    (sequence <sint>) (type (+ (parameter (sequence <ubyte>)) (parameter <sint>))))
+  (test-eq "coerce two sequence types"
+    (sequence <usint>) (type (+ (parameter (sequence <ubyte>)) (parameter (sequence <usint>)))))
+(test-end "type inference")
+
+(test-begin "1D tensor")
   (let* [(s (parameter (sequence <ubyte>)))
-         (t (tensor-loop s))]
+         (t (tensor-loop s))
+         (l (car (loop-details t)))]
     (test-assert "tensor layer of sequence has an iterator"
-      (is-a? (car (iterators t)) <var>))
+      (is-a? (iterator l) <var>))
     (test-eq "loop iterator is a 64 bit integer"
-      <long> (typecode (car (iterators t))))
+      <long> (typecode (iterator l)))
     (test-assert "tensor layer of sequence has an iterator"
-      (is-a? (car (steps t)) <var>))
+      (is-a? (step l) <var>))
     (test-eq "step size is a 64 bit integer"
-      <long> (typecode (car (steps t))))
+      <long> (typecode (step l)))
     (test-eq "body of trivial tensor is a (scalar) parameter"
       <param> (class-of (body t)))
     (test-eq "body of trivial tensor is rebased on iterator"
-      (car (iterators t)) (value (body t)))
+      (iterator l) (value (body t)))
     (test-eq "typecode of unsigned byte tensor is unsigned byte"
-      <ubyte> (car (typecodes t)))
+      <ubyte> (typecode l))
     (test-eq "typecode of short integer tensor is short integer"
-      <sint> (car (typecodes (tensor-loop (parameter (sequence <sint>))))))
-    (test-eq "stride of tensor is stride of input array"
-      (stride (delegate s)) (car (strides t)))
-    (test-eq "base of tensor is base pointer of input array"
-      (value s) (car (bases t))))
-(test-end "trivial tensor")
+      <sint> (typecode (car (loop-details (tensor-loop (parameter (sequence <sint>)))))))
+    (test-equal "stride of tensor is stride of input array"
+      (stride (delegate s)) (stride l))
+    (test-equal "base of tensor is base pointer of input array"
+      (value s) (base l)))
+(test-end "1D tensor")
+
+(test-begin "2D tensor")
+  (let* [(m (parameter (multiarray <ubyte> 2)))
+         (t (tensor-loop m))]
+    (test-assert "tensor loop preserves inner index"
+      (is-a? (body t) <indexer>))
+    (test-eq "inner index is second index of 2D array"
+      (index (delegate m)) (index (body t)))
+    (test-eq "inner dimension is second dimension of 2D array"
+      (dimension (delegate m)) (dimension (body t)))
+    (test-assert "preserve loop details when skipping indices"
+      (is-a? (car (loop-details t)) <loop-detail>))
+    (test-assert "body of 2D tensor drops inner lookup"
+      (is-a? (delegate (body t)) <lookup>)))
+(test-end "2D tensor")
 
 (test-begin "loop code")
-  (let [(iterator (var <long>))
-        (step     (var <long>))
-        (stride   (parameter <long>))
-        (base     (var <long>))]
+  (let* [(iterator   (var <long>))
+         (step       (var <long>))
+         (stride     (parameter <long>))
+         (base       (var <long>))
+         (loop-ubyte (make <loop-detail> #:typecode <ubyte> #:iterator iterator #:step step #:stride stride #:base base))
+         (loop-usint (make <loop-detail> #:typecode <usint> #:iterator iterator #:step step #:stride stride #:base base))]
   (test-equal "setup of array loop should define increment and initialise pointer"
     (list (IMUL step (value stride) 1) (MOV iterator base))
-    (loop-setup <ubyte> iterator step stride base))
+    (loop-setup loop-ubyte))
   (test-equal "setup of array loop adjust the step size according to the array type"
     (list (IMUL step (value stride) 2) (MOV iterator base))
-    (loop-setup <usint> iterator step stride base))
+    (loop-setup loop-usint))
   (test-equal "a loop increment should increment the loop iterator"
     (list (ADD iterator step))
-    (loop-increment iterator step)))
+    (loop-increment loop-ubyte)))
 (test-end "loop code")
 
 (test-begin "tensor expressions")
-  (test-equal "compile and run trivial identity tensor"
+  (test-equal "compile and run 1D identity tensor"
     '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) identity) (seq 2 3 5))))
+  (test-equal "compile and run 2D identity tensor"
+    '((2 3 5) (3 5 7)) (to-list ((jit ctx (list (multiarray <ubyte> 2)) identity) (arr (2 3 5) (3 5 7)))))
 (test-end "tensor expressions")
 
 ; TODO: return new iterators & steps, project, and rebase in one go
@@ -223,14 +267,6 @@
 ;    (is-a? (loop-body (+ s u)) <function>))
 ;  (test-eq "projecting a sequence replaces the pointer with the iterator"
 ;    (iterator ls) (value (loop-body s)))
-;  (test-eq "determine type of parameter"
-;    <sint> (type p))
-;  (test-eq "determine type of sequence"
-;    (sequence <ubyte>) (type s))
-;  (test-eq "coerce sequence and scalar"
-;    (sequence <sint>) (type (+ s p)))
-;  (test-eq "coerce two sequence types"
-;    (sequence <usint>) (type (+ s u)))
 ;  (test-equal "setup of array loop should define increment and initialise pointer"
 ;    (list (IMUL (step ls) (value (stride ls)) 1) (MOV (iterator ls) (value ls)))
 ;    (loop-setup ls))
