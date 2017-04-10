@@ -71,6 +71,12 @@
          (bodies    (map body arguments))]
     (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
 
+(define-method (tensor-loop (self <function>) (idx <var>))
+  (let* [(arguments (map (cut tensor-loop <> idx) (delegate self)))
+         (details   (append-map loop-details arguments))
+         (bodies    (map body arguments))]
+    (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
+
 (define-method (code (a <indexer>) (b <param>))
   (let [(dest   (tensor-loop a))
         (source (tensor-loop b))]
@@ -134,13 +140,16 @@
 (test-end "2D tensor")
 
 (test-begin "tensor expressions")
-  (let* [(s (parameter (sequence <sint>)))
-         (t (parameter (sequence <uint>)))
-         (f (+ s t))
-         (t (tensor-loop f))
-         (l (loop-details t))]
+  (let* [(s  (parameter (sequence <sint>)))
+         (t  (parameter (sequence <uint>)))
+         (f  (+ s t))
+         (l  (loop-details (tensor-loop f)))
+         (ft (tensor (dimension s) k (+ (get s k) (get t k))))
+         (lt (loop-details (tensor-loop ft)))]
     (test-equal "tensor sum uses loops with two typecodes"
-      (list <sint> <uint>) (map typecode l)))
+      (list <sint> <uint>) (map typecode l))
+    (test-equal "explicitly indexed tensor sum uses loops with two typecodes"
+      (list <sint> <uint>) (map typecode lt)))
 (test-end "tensor expressions")
 
 (test-begin "loop code")
@@ -174,14 +183,18 @@
     '(5 8 12)
     (to-list ((jit ctx (list (sequence <ubyte>) (sequence <ubyte>)) +)
               (seq 2 3 5) (seq 3 5 7))))
-  (test-skip 1)
   (test-equal "access one-dimensional array twice using same index in tensor operation"
+    '(5 8 12)
+    (to-list ((jit ctx (list (sequence <ubyte>) (sequence <ubyte>))
+                       (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
+              (seq 2 3 5) (seq 3 5 7))))
+  (test-equal "use array twice in tensor expression"
     '(4 6 10)
-    (to-list ((jit ctx (list (sequence <ubyte>))
-                       (lambda (s) (tensor (dimension s) k (+ (get s k) (get s k)))))
+    (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (+ s s)))
               (seq 2 3 5))))
 (test-end "tensor expressions")
 
+; TODO: array-scalar tensor
 ; TODO: remove iterator and step from lookup
 ; TODO: return new iterators & steps, project, and rebase in one go
 ; TODO: create iterator and step for each combination of index and array pointer
