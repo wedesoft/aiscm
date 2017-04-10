@@ -77,6 +77,9 @@
          (bodies    (map body arguments))]
     (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
 
+(define-method (tensor-loop (self <param>))
+  (make <tensor-loop> #:loop-details '() #:body self))
+
 (define-method (code (a <indexer>) (b <param>))
   (let [(dest   (tensor-loop a))
         (source (tensor-loop b))]
@@ -192,9 +195,12 @@
     '(4 6 10)
     (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (+ s s)))
               (seq 2 3 5))))
+  (test-equal "array scalar sum in tensor expression"
+    '(9 10 12)
+    (to-list ((jit ctx (list (sequence <ubyte>) <int>) (lambda (s x) (+ s x)))
+              (seq 2 3 5) 7)))
 (test-end "tensor expressions")
 
-; TODO: array-scalar tensor
 ; TODO: remove iterator and step from lookup
 ; TODO: return new iterators & steps, project, and rebase in one go
 ; TODO: create iterator and step for each combination of index and array pointer
