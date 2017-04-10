@@ -1,8 +1,9 @@
 ## Ready
 
-* index x lookup -> iterator
-  multiple iterators for one index (+ s t) (+ s s) (+ s (roll s))
-  multiple use of one indexer (get s i i) -> merge lookups
+* switch dimensions: (get m i j)
+* multiple use of one indexer (get s i i) -> merge lookups
+* (+ m (roll m))
+* (+ m (project m))
 * tidy up structure of jit and tests
 * tensor inject
 * equality of arrays

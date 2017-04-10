@@ -70,9 +70,6 @@
       (a   (skeleton <int>))]
   (test-equal "generate code for negating number"
     (list (list (mov-signed (get out) (get a))) (NEG (get out))) (code (parameter out) (- (parameter a)))))
-(let [(a (parameter (sequence <int>)))]
-  (test-equal "body of array negation should have same argument as negation of array body"
-  (delegate (car (delegate (body (- a))))) (delegate (car (delegate (- (body a)))))))
 (test-equal "Create function object mapping to NEG"
   -42 ((jit ctx (list <int>) (lambda (x) (make-function 'name identity (mutating-code NEG) (list x)))) 42))
 (test-equal "Negate integer"
