@@ -4,6 +4,8 @@
   multiple iterators for one index (+ s t) (+ s s) (+ s (roll s))
   multiple use of one indexer (get s i i) -> merge lookups
 * tidy up structure of jit and tests
+* tensor inject
+* equality of arrays
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
