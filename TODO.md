@@ -1,6 +1,7 @@
 ## Ready
 
-* switch dimensions: (get m i j)
+* tensor macro
+* implicit tensor dimension
 * multiple use of one indexer (get s i i) -> merge lookups
 * (+ m (roll m))
 * (+ m (project m))

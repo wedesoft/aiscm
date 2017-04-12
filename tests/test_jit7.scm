@@ -78,16 +78,6 @@
       (t (seq <int> 3 5 7))
       (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
       (r (arr <int> (2 3 5) (7 11 13)))]
-  (let [(op (lambda (s) (indexer (dimension s) i (get s i))))]
-    (test-equal "compile and run trivial 1D tensor function"
-      '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) op) s))))
-  (test-equal "reconstitute a 1D tensor in compiled code"
-    '(2 3 5) (to-list ((jit ctx (list (class-of s)) (lambda (s) (indexer (car (shape s)) i (get s i)))) s)))
-  (test-equal "reconstitute a square 2D tensor"
-    '((2 3 5) (7 11 13) (17 19 23))
-    (to-list ((jit ctx (list (class-of m))
-                   (lambda (m) (indexer (cadr (shape m)) j (indexer (car (shape m)) i (get (get m j) i)))))
-              m)))
   (test-skip 1)
   (test-equal "switch dimensions of a 2D tensor"
     '((2 7 17) (3 11 19) (5 13 23))
@@ -96,13 +86,12 @@
               m)))
   (test-equal "tensor macro provides local variable"
     (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
-  (test-skip 1)
+  (test-skip 2)
   (test-equal "switch dimensions of a non-square 2D tensor"
     '((2 7) (3 11) (5 13))
     (to-list ((jit ctx (list (class-of r))
                    (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i)))))
               r)))
-  (test-skip 1)
   (test-equal "tensor expression for element-wise sum"
      '(5 8 12) ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (tensor (dimension s) k (+ (get s k) (get t k))))) s t)))
 (test-equal "generate code to package an object in a list"

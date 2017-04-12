@@ -697,7 +697,9 @@
                                             #:base     (value self)))]
       (make <tensor-loop> #:loop-details (list loop-detail)
                           #:body         (rebase iterator (delegate self))))
-    (tensor-loop (delegate self) idx)))
+    (let [(t (tensor-loop (delegate self) idx))]
+      (make <tensor-loop> #:loop-details (loop-details t)
+                          #:body         (lookup (index self) (body t) (stride self))))))
 
 (define-method (tensor-loop (self <indexer>) (idx <var>))
   (let [(t (tensor-loop (delegate self) idx))]
