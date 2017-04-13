@@ -38,12 +38,8 @@
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"
   (if (tensor-operation? expr)
-      (string-append "("
-                     (symbol->string (car expr))
-                     " "
-                     (string-join (map expression->identifier (cdr expr)))
-                     ")")
-      "_"))
+      (cons (car expr) (map expression->identifier (cdr expr)))
+      '_))
 
 (define (tensor-variables expr)
   "Return variables of tensor expression"
@@ -51,7 +47,7 @@
 
 (define (identifier->expression identifier variables)
   "Convert identifier to tensor expression with variables"
-  (if (equal? "(" (string-take identifier 1))
+  (if (eqv? #\( (string-ref identifier 0))
       (cons (string->symbol (substring identifier 1 2)) variables)
       variables))
 
@@ -68,19 +64,19 @@
 
 (test-begin "convert tensor expression to identifier")
   (test-equal "filter variable names in expression"
-    "_" (expression->identifier 'x))
+    '_ (expression->identifier 'x))
   (test-equal "filter numeric arguments of expression"
-    "_" (expression->identifier 42))
+    '_ (expression->identifier 42))
   (test-equal "preserve unary plus operation"
-    "(+ _)" (expression->identifier '(+ x)))
+    '(+ _) (expression->identifier '(+ x)))
   (test-equal "preserve unary minus operation"
-    "(- _)" (expression->identifier '(- x)))
+    '(- _) (expression->identifier '(- x)))
   (test-equal "preserve binary plus operation"
-    "(+ _ _)" (expression->identifier '(+ x y)))
+    '(+ _ _) (expression->identifier '(+ x y)))
   (test-equal "works recursively"
-    "(+ (- _) _)" (expression->identifier '(+ (- x) y)))
+    '(+ (- _) _) (expression->identifier '(+ (- x) y)))
   (test-equal "filter non-tensor operations"
-    "_" (expression->identifier '(read-image "test.bmp")))
+    '_ (expression->identifier '(read-image "test.bmp")))
 (test-end "convert tensor expression to identifier")
 
 (test-begin "extract variables of tensor expression")
@@ -111,6 +107,9 @@
     '(- x) (identifier->expression "(- _)" '(x)))
   (test-equal "reconstruct binary plus operation"
     '(+ x y) (identifier->expression "(+ _ _)" '(x y)))
+  (test-skip 1)
+  (test-equal "reconstruct nested expressions"
+    '(+ (- x) y) (identifier->expression "(+ (- _) _)" '((x) y)))
 (test-end "convert tensor identifier to tensor expression")
 
 (test-end "playground")
