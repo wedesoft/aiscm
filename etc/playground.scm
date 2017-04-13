@@ -18,6 +18,27 @@
 
 (test-begin "playground")
 
+(define ctx (make <context>))
+
+; TODO: attach dimension hint
+
+(define dimension-hint (make-object-property))
+
+(define-method (get (self <indexer>) idx)
+  (set! (dimension-hint idx) (dimension self))
+  (subst (delegate self) (index self) idx))
+
+(define s (parameter (sequence <int>)))
+(define i (var <long>))
+
+(define (indexer2 index delegate dimension)
+  (make <indexer> #:dimension dimension #:index index #:delegate delegate))
+
+(define-syntax-rule (tensor index expr) (let [(index (var <long>))] (indexer2 index expr (dimension-hint index))))
+
+((jit ctx (list (sequence <int>)) (lambda (s) (tensor k (get s k)))) (seq <int> 2 3 5))
+((jit ctx (list (multiarray <ubyte> 2)) (lambda (m) (tensor j (tensor i (get (get m i) j))))) (arr (2 3 5) (3 5 7)))
+
 ;(define-method (tensor-op name . args)
 ;  (if (not (defined? name))
 ;    (let [(f (jit ctx (map class-of args) (car args)))]
@@ -51,6 +72,8 @@
       (cons (car identifier) (map identifier->expression (cdr identifier) variables))
       variables))
 
+(define (tensor-op expr)
+  expr)
 
 (test-begin "identify tensor operations")
   (test-assert "+ is a tensor operation"
@@ -113,5 +136,13 @@
   (test-equal "insert non-tensor operations"
     '(read-image "test.bmp") (identifier->expression '_ '(read-image "test.bmp")))
 (test-end "convert tensor identifier to tensor expression")
+
+(test-begin "tensor dimensions")
+(test-end "tensor dimensions")
+
+(test-begin "tensor operations")
+  (test-equal "1D tensor identity"
+    '(2 3 5) (to-list (tensor-op (seq 2 3 5))))
+(test-end "tensor operations")
 
 (test-end "playground")
