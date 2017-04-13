@@ -47,9 +47,10 @@
 
 (define (identifier->expression identifier variables)
   "Convert identifier to tensor expression with variables"
-  (if (eqv? #\( (string-ref identifier 0))
-      (cons (string->symbol (substring identifier 1 2)) variables)
+  (if (list? identifier)
+      (cons (car identifier) (map identifier->expression (cdr identifier) variables))
       variables))
+
 
 (test-begin "identify tensor operations")
   (test-assert "+ is a tensor operation"
@@ -98,18 +99,19 @@
 
 (test-begin "convert tensor identifier to tensor expression")
   (test-equal "single variable expression"
-    'x (identifier->expression "_" 'x))
+    'x (identifier->expression '_ 'x))
   (test-equal "use provided variable names"
-    'y (identifier->expression "_" 'y))
+    'y (identifier->expression '_ 'y))
   (test-equal "reconstruct unary plus operation"
-    '(+ x) (identifier->expression "(+ _)" '(x)))
+    '(+ x) (identifier->expression '(+ _) '(x)))
   (test-equal "reconstruct unary minus operation"
-    '(- x) (identifier->expression "(- _)" '(x)))
+    '(- x) (identifier->expression '(- _) '(x)))
   (test-equal "reconstruct binary plus operation"
-    '(+ x y) (identifier->expression "(+ _ _)" '(x y)))
-  (test-skip 1)
+    '(+ x y) (identifier->expression '(+ _ _) '(x y)))
   (test-equal "reconstruct nested expressions"
-    '(+ (- x) y) (identifier->expression "(+ (- _) _)" '((x) y)))
+    '(+ (- x) y) (identifier->expression '(+ (- _) _) '((x) y)))
+  (test-equal "insert non-tensor operations"
+    '(read-image "test.bmp") (identifier->expression '_ '(read-image "test.bmp")))
 (test-end "convert tensor identifier to tensor expression")
 
 (test-end "playground")
