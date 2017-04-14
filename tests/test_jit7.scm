@@ -69,31 +69,43 @@
     (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
   (test-eq "retrieving an element should replace with the index"
     i (index (delegate (get mx i))))
-  (let [(tr (indexer (car (shape mx)) i (indexer (cadr (shape mx)) j (get (get mx j) i))))]
+  (let [(tr (indexer i (indexer j (get (get mx j) i) (cadr (shape mx))) (car (shape mx))))]
     (test-equal "swap dimensions when transposing"
       (list (dimension mx) (dimension (project mx))) (list (dimension (project tr)) (dimension tr)))
     (test-equal "swap strides when transposing"
       (list (stride mx) (stride (project mx))) (list (stride (project tr)) (stride tr)))))
+
+(test-begin "tensor dimensions")
+  (test-assert "dimension hint is false initially"
+    (not (dimension-hint (var <long>))))
+  (let [(s (parameter (sequence <int>)))
+        (i (var <long>))]
+    (get s i)
+    (test-eq "dimension hint is defined when using an index"
+      (dimension s) (dimension-hint i)))
+  (test-equal "tensor operation determines dimensions"
+    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor k (get s k)))) (seq 2 3 5))))
+(test-end "tensor dimensions")
+
 (let [(s (seq <int> 2 3 5))
       (t (seq <int> 3 5 7))
       (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
       (r (arr <int> (2 3 5) (7 11 13)))]
-  (test-skip 1)
   (test-equal "switch dimensions of a 2D tensor"
     '((2 7 17) (3 11 19) (5 13 23))
     (to-list ((jit ctx (list (class-of m))
-                   (lambda (m) (indexer (car (shape m)) i (indexer (cadr (shape m)) j (get (get m j) i)))))
+                   (lambda (m) (indexer i (indexer j (get (get m j) i) (cadr (shape m))) (car (shape m)))))
               m)))
   (test-equal "tensor macro provides local variable"
-    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor (dimension s) k (get s k)))) s)))
-  (test-skip 2)
+    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor k (get s k)))) s)))
   (test-equal "switch dimensions of a non-square 2D tensor"
     '((2 7) (3 11) (5 13))
     (to-list ((jit ctx (list (class-of r))
-                   (lambda (r) (indexer (car (shape r)) i (indexer (cadr (shape r)) j (get (get r j) i)))))
+                   (lambda (r) (indexer i (indexer j (get (get r j) i) (cadr (shape r))) (car (shape r)))))
               r)))
   (test-equal "tensor expression for element-wise sum"
-     '(5 8 12) ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (tensor (dimension s) k (+ (get s k) (get t k))))) s t)))
+     '(5 8 12)
+     (to-list ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (tensor k (+ (get s k) (get t k))))) s t))))
 (test-equal "generate code to package an object in a list"
   '(a) ((jit ctx (list <obj>) package-return-content) 'a))
 (test-equal "generate code to return the content of an RGB value"

@@ -61,7 +61,7 @@
   (let* [(m (parameter (multiarray <ubyte> 2)))
          (i (var <long>))
          (j (var <long>))
-         (t (tensor (cadr (shape m)) j (tensor (car (shape m)) i (+ (get (get m i) j)))))]
+         (t (tensor j (tensor i (+ (get (get m i) j)))))]
     (test-assert "tensor loop preserves inner index"
       (is-a? (body (tensor-loop m)) <indexer>))
     (test-eq "inner index is second index of 2D array"
@@ -81,7 +81,7 @@
          (t  (parameter (sequence <uint>)))
          (f  (+ s t))
          (l  (loop-details (tensor-loop f)))
-         (ft (tensor (dimension s) k (+ (get s k) (get t k))))
+         (ft (tensor k (+ (get s k) (get t k))))
          (lt (loop-details (tensor-loop ft)))]
     (test-equal "tensor sum uses loops with two typecodes"
       (list <sint> <uint>) (map typecode l))
@@ -114,21 +114,17 @@
     '((2 3 5) (3 5 7)) (to-list ((jit ctx (list (multiarray <ubyte> 2)) identity) (arr (2 3 5) (3 5 7)))))
   (test-equal "reconstitute a 1D tensor"
     '(2 3 5)
-    (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor (dimension s) k (get s k))))
-              (seq 2 3 5))))
-  (test-equal "use integer to specify size of tensor"
-    '(2 3 5)
-    (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor 3 k (get s k))))
+    (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor k (get s k))))
               (seq 2 3 5))))
   (test-equal "reconstitute a 2D tensor"
     '((2 3 5) (3 5 7))
     (to-list ((jit ctx (list (multiarray <ubyte> 2))
-                       (lambda (m) (tensor (cadr (shape m)) j (tensor (car (shape m)) i (get (get m j) i)))))
+                       (lambda (m) (tensor j (tensor i (get (get m j) i)))))
               (arr (2 3 5) (3 5 7)))))
   (test-equal "transpose 2D tensor"
     '((2 3) (3 5) (5 7))
     (to-list ((jit ctx (list (multiarray <ubyte> 2))
-                   (lambda (m) (tensor (car (shape m)) j (tensor (cadr (shape m)) i (+ (get (get m i) j))))))
+                   (lambda (m) (tensor j (tensor i (+ (get (get m i) j))))))
               (arr (2 3 5) (3 5 7)))))
   (test-equal "element-wise addition of two arrays"
     '(5 8 12)
@@ -137,7 +133,7 @@
   (test-equal "access one-dimensional array twice using same index in tensor operation"
     '(5 8 12)
     (to-list ((jit ctx (list (sequence <ubyte>) (sequence <ubyte>))
-                       (lambda (s u) (tensor (dimension s) k (+ (get s k) (get u k)))))
+                       (lambda (s u) (tensor k (+ (get s k) (get u k)))))
               (seq 2 3 5) (seq 3 5 7))))
   (test-equal "use array twice in tensor expression"
     '(4 6 10)
@@ -150,7 +146,7 @@
   (test-equal "add 2D array and transposed version of itself"
     '((4 8) (8 14))
     (to-list ((jit ctx (list (multiarray <ubyte> 2))
-                   (lambda (m) (tensor (cadr (shape m)) j (tensor (car (shape m)) i (+ (get (get m j) i) (get (get m i) j))))))
+                   (lambda (m) (tensor j (tensor i (+ (get (get m j) i) (get (get m i) j))))))
               (arr (2 3) (5 7)))))
 (test-end "tensor expressions")
 (test-end "tensors")

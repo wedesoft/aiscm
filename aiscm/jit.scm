@@ -49,7 +49,7 @@
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
             filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate name coercion
-            tensor-loop loop-details loop-setup loop-increment body
+            tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
@@ -586,7 +586,7 @@
 (define-class <indexer> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
-(define (indexer dimension index delegate)
+(define (indexer index delegate dimension)
   (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
@@ -595,7 +595,7 @@
 (define-method (lookup index delegate stride)
   (make <lookup> #:index index #:delegate delegate #:stride stride))
 (define-method (lookup idx (obj <indexer>) stride)
-  (indexer (dimension obj) (index obj) (lookup idx (delegate obj) stride)))
+  (indexer (index obj) (lookup idx (delegate obj) stride) (dimension obj)))
 
 (define-class <function> (<param>)
   (coercion  #:init-keyword #:coercion  #:getter coercion)
@@ -621,16 +621,16 @@
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (indexer (parameter (make <long> #:value (dimension self)))
-             idx
+    (indexer idx
              (lookup idx
                      (parameter (project self))
-                     (parameter (make <long> #:value (stride self)))))))
+                     (parameter (make <long> #:value (stride self))))
+             (parameter (make <long> #:value (dimension self))))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
 
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <indexer>) candidate replacement)
-  (indexer (dimension self) (index self) (subst (delegate self) candidate replacement)))
+  (indexer (index self) (subst (delegate self) candidate replacement) (dimension self)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (delegate self) candidate replacement)
@@ -642,21 +642,25 @@
 
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 (define-method (rebase value (self <indexer>))
-  (indexer (dimension self) (index self) (rebase value (delegate self))))
+  (indexer (index self) (rebase value (delegate self)) (dimension self)))
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self)))
 
 (define-method (project (self <indexer>)) (project (delegate self) (index self)))
 (define-method (project (self <indexer>) (idx <var>))
-  (indexer (dimension self) (index self) (project (delegate self) idx)))
+  (indexer (index self) (project (delegate self) idx) (dimension self)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
       (lookup (index self) (project (delegate self) idx) (stride self))))
 
-(define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
+(define dimension-hint (make-object-property))
 
-(define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
+(define-method (get (self <indexer>) idx)
+  (set! (dimension-hint idx) (dimension self))
+  (subst (delegate self) (index self) idx))
+
+(define-syntax-rule (tensor index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
@@ -704,7 +708,7 @@
 (define-method (tensor-loop (self <indexer>) (idx <var>))
   (let [(t (tensor-loop (delegate self) idx))]
     (make <tensor-loop> #:loop-details (loop-details t)
-                        #:body         (indexer (dimension self) (index self) (body t)))))
+                        #:body         (indexer (index self) (body t) (dimension self)))))
 
 (define-method (tensor-loop (self <indexer>))
   (tensor-loop (delegate self) (index self)))
