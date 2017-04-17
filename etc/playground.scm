@@ -60,22 +60,10 @@
     (let [(f (jit ctx (map class-of vars) (lambda args (identifier->expression identifier args))))]
       (apply f vars))))
 
-(define s (seq 2 3 5))
-
-(define expr s)
-
-(define vars (tensor-variables expr))
-
-(define args (symbol-list (length vars)))
-
-(define identifier (expression->identifier expr))
-
-`(let [(f (jit ctx (list . ,(map class-of vars)) (lambda ,args ,(identifier->expression identifier args))))])
-
-;(tensor-op s)
-;
-;(expression->identifier s)
-;(tensor-variables s)
+(define-macro (xxx expr)
+  (let [(identifier (expression->identifier expr))])
+    `(quote ,identifier))
+(xxx (+ (seq 2 3 5) 7))
 
 (test-begin "identify tensor operations")
   (test-assert "+ is a tensor operation"
