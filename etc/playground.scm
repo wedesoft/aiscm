@@ -53,15 +53,25 @@
   "Convert identifier to tensor expression with variables"
   (car (build-expression identifier variables)))
 
-;(define-macro (tensor-op expr)
-;  (let* [(vars (flatten (list (tensor-variables expr))))
-;         (args (symbol-list (length vars)))
-;         (identifier (expression->identifier expr))]
-;    `(let [(f (jit ctx (list . ,(map class-of vars)) (lambda ,args ,(identifier->expression identifier (car args)))))]
-;      (apply f ,(car vars)))))
-;
-;(define s (seq 2 3 5))
-;
+(define (tensor-op expr)
+  (let* [(vars (tensor-variables expr))
+         (args (symbol-list (length vars)))
+         (identifier (expression->identifier expr))]
+    (let [(f (jit ctx (map class-of vars) (lambda args (identifier->expression identifier args))))]
+      (apply f vars))))
+
+(define s (seq 2 3 5))
+
+(define expr s)
+
+(define vars (tensor-variables expr))
+
+(define args (symbol-list (length vars)))
+
+(define identifier (expression->identifier expr))
+
+`(let [(f (jit ctx (list . ,(map class-of vars)) (lambda ,args ,(identifier->expression identifier args))))])
+
 ;(tensor-op s)
 ;
 ;(expression->identifier s)
