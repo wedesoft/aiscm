@@ -30,6 +30,10 @@
       (cons (car expr) (map expression->identifier (cdr expr)))
       '_))
 
+(define (identifier->symbol identifier)
+  "Convert identifier to a symbol which can be used as a method name"
+  (string->symbol (call-with-output-string (cut write identifier <>))))
+
 (define (tensor-variables expr)
   "Return variables of tensor expression"
   (if (tensor-operation? expr) (append-map tensor-variables (cdr expr)) (list expr)))
@@ -61,9 +65,24 @@
       (apply f vars))))
 
 (define-macro (xxx expr)
-  (let [(identifier (expression->identifier expr))])
-    `(quote ,identifier))
-(xxx (+ (seq 2 3 5) 7))
+  (let* [(vars       (tensor-variables expr))
+         (args       (symbol-list (length vars)))
+         (identifier (expression->identifier expr))
+         (name       (identifier->symbol identifier))]
+    `(begin
+       (if (not (defined? (quote ,name) (current-module)))
+         (define-method (,name . ,args)
+           (let [(f (jit ctx (map class-of (list . ,args)) +))]
+             (add-method! ,name
+                          (make <method>
+                                #:specializers (map class-of (list . ,args))
+                                #:procedure (lambda args (apply f args))))
+             (,name . ,vars))))
+       (,name . ,vars))))
+
+(define (f a b) (xxx (+ a b)))
+(f (seq 2 3 5) (seq 3 5 7))
+
 
 (test-begin "identify tensor operations")
   (test-assert "+ is a tensor operation"
@@ -92,6 +111,13 @@
   (test-equal "filter non-tensor operations"
     '_ (expression->identifier '(read-image "test.bmp")))
 (test-end "convert tensor expression to identifier")
+
+(test-begin "convert identifier to symbol")
+  (test-equal "simple symbol stays same"
+    '_ (identifier->symbol '_))
+  (test-equal "expression is converted to symbol"
+    '#{\x28;- _\x29;}# (identifier->symbol '(- _)))
+(test-end "convert identifier to symbol")
 
 (test-begin "extract variables of tensor expression")
   (test-equal "detect variable name"
