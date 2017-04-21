@@ -68,11 +68,12 @@
   (let* [(vars       (tensor-variables expr))
          (args       (symbol-list (length vars)))
          (identifier (expression->identifier expr))
-         (name       (identifier->symbol identifier))]
+         (name       (identifier->symbol identifier))
+         (prog       (identifier->expression identifier args))]
     `(begin
        (if (not (defined? (quote ,name) (current-module)))
          (define-method (,name . ,args)
-           (let [(f (jit ctx (map class-of (list . ,args)) +))]
+           (let [(f (jit ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
              (add-method! ,name
                           (make <method>
                                 #:specializers (map class-of (list . ,args))
@@ -80,7 +81,7 @@
              (,name . ,vars))))
        (,name . ,vars))))
 
-(define (f a b) (xxx (+ a b)))
+(define (f a b) (xxx (- a b)))
 (f (seq 2 3 5) (seq 3 5 7))
 
 
