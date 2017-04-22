@@ -20,15 +20,19 @@
 
 (define ctx (make <context>))
 
-(define (tensor-operation? expr)
+(define (tensor-operations expr)
   "Check whether expression is a tensor operation"
-  (and (list? expr) (memv (car expr) '(+ -))))
+  (and (list? expr)
+       (case (car expr)
+         ((+) (cons #t (map (const #f) (cdr expr))))
+         ((-) (cons #t (map (const #f) (cdr expr))))
+         ((get) (list #t #f #t))
+         (else #f))))
 
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"
-  (if (tensor-operation? expr)
-      (cons (car expr) (map expression->identifier (cdr expr)))
-      '_))
+  (let [(mask (tensor-operations expr))]
+    (if mask (map-select mask identity expression->identifier expr) '_)))
 
 (define (identifier->symbol identifier)
   "Convert identifier to a symbol which can be used as a method name"
@@ -36,7 +40,7 @@
 
 (define (tensor-variables expr)
   "Return variables of tensor expression"
-  (if (tensor-operation? expr) (append-map tensor-variables (cdr expr)) (list expr)))
+  (if (tensor-operations expr) (append-map tensor-variables (cdr expr)) (list expr)))
 
 (define (consume-variables identifier variables)
   "Build arguments of expresssion and return remaining variables"
@@ -81,19 +85,21 @@
              (,name . ,vars))))
        (,name . ,vars))))
 
-(define (f a b) (xxx (- a b)))
+(define (f a b) (xxx (- (* 2 a) b)))
 (f (seq 2 3 5) (seq 3 5 7))
 
 
 (test-begin "identify tensor operations")
-  (test-assert "+ is a tensor operation"
-    (tensor-operation? '(+ x y)))
-  (test-assert "- is a tensor operation"
-    (tensor-operation? '(- x)))
+  (test-equal "+ is a tensor operation"
+    '(#t #f #f) (tensor-operations '(+ x y)))
+  (test-equal "- is a tensor operation"
+    '(#t #f) (tensor-operations '(- x)))
   (test-assert "x is not a tensor operation"
-    (not (tensor-operation? 'x)))
+    (not (tensor-operations 'x)))
   (test-assert "read-image is not a tensor operation"
-    (not (tensor-operation? '(read-image "test.bmp"))))
+    (not (tensor-operations '(read-image "test.bmp"))))
+  (test-equal "get is a tensor operation"
+    '(#t #f #t) (tensor-operations '(get s k)))
 (test-end "identify tensor operations")
 
 (test-begin "convert tensor expression to identifier")
@@ -111,6 +117,8 @@
     '(+ (- _) _) (expression->identifier '(+ (- x) y)))
   (test-equal "filter non-tensor operations"
     '_ (expression->identifier '(read-image "test.bmp")))
+  (test-equal "preverse tensor index when accessing array"
+    '(get _ k) (expression->identifier '(get s k)))
 (test-end "convert tensor expression to identifier")
 
 (test-begin "convert identifier to symbol")
