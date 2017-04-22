@@ -24,7 +24,7 @@
   "Check whether expression is a tensor operation"
   (and (list? expr)
        (case (car expr)
-         ((+) (cons #t (map (const #f) (cdr expr))))
+         ((+) (cons #t (map (const #f) (cdr expr)))); TODO: simplify
          ((-) (cons #t (map (const #f) (cdr expr))))
          ((get) (list #t #f #t))
          (else #f))))
@@ -40,7 +40,8 @@
 
 (define (tensor-variables expr)
   "Return variables of tensor expression"
-  (if (tensor-operations expr) (append-map tensor-variables (cdr expr)) (list expr)))
+  (let [(mask (tensor-operations expr))]; TODO: extract masking operation
+    (if mask (concatenate (map-select mask (const '()) tensor-variables expr)) (list expr))))
 
 (define (consume-variables identifier variables)
   "Build arguments of expresssion and return remaining variables"
@@ -143,6 +144,8 @@
     '(x y) (tensor-variables '(+ (- x) y)))
   (test-equal "extract non-tensor operations"
     '((read-image "test.bmp")) (tensor-variables '(read-image "test.bmp")))
+  (test-equal "extract variables of tensor index access"
+    '(s) (tensor-variables '(get s k)))
 (test-end "extract variables of tensor expression")
 
 (test-begin "convert tensor identifier to tensor expression")
@@ -166,6 +169,9 @@
     '(+ (- x) y) (identifier->expression '(+ (- _) _) '(x y)))
   (test-equal "insert non-tensor operations"
     '(read-image "test.bmp") (identifier->expression '_ '((read-image "test.bmp"))))
+  (test-skip 1)
+  (test-equal "reconstruct tensor index access"
+    '(get s k) (identifier->expression '(get _ k) '(s)))
 (test-end "convert tensor identifier to tensor expression")
 
 (test-end "playground")
