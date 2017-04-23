@@ -22,11 +22,13 @@
 
 (define (tensor-operations expr)
   "Check whether expression is a tensor operation"
+  (define (argument-mask expr . indices)
+    (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
        (case (car expr)
-         ((+) (cons #t (map (const #f) (cdr expr)))); TODO: simplify
-         ((-) (cons #t (map (const #f) (cdr expr))))
-         ((get) (list #t #f #t))
+         ((+) (argument-mask expr 0))
+         ((-) (argument-mask expr 0))
+         ((get) (argument-mask expr 0 2))
          (else #f))))
 
 (define (expression->identifier expr)
@@ -40,7 +42,7 @@
 
 (define (tensor-variables expr)
   "Return variables of tensor expression"
-  (let [(mask (tensor-operations expr))]; TODO: extract masking operation
+  (let [(mask (tensor-operations expr))]
     (if mask (concatenate (map-select mask (const '()) tensor-variables expr)) (list expr))))
 
 (define (consume-variables identifier variables)
