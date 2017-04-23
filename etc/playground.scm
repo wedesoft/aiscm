@@ -43,33 +43,30 @@
 (define (tensor-variables expr)
   "Return variables of tensor expression"
   (let [(mask (tensor-operations expr))]
-    (if mask (concatenate (map-select mask (const '()) tensor-variables expr)) (list expr))))
+    (if mask
+        (concatenate (map-select mask (const '()) tensor-variables expr))
+        (list expr))))
 
-(define (consume-variables identifier variables)
-  "Build arguments of expresssion and return remaining variables"
+(define (consume-variables mask identifier variables)
+  "Build arguments of expression and return remaining variables"
   (if (null? identifier)
     (cons identifier variables)
-    (let* [(head (build-expression (car identifier) variables))
-           (tail (consume-variables (cdr identifier) (cdr head)))]
+    (let* [(head (if (car mask)
+                     (cons (car identifier) variables)
+                     (build-expression (car identifier) variables)))
+           (tail (consume-variables (cdr mask) (cdr identifier) (cdr head)))]
       (cons (cons (car head) (car tail)) (cdr tail)))))
 
 (define (build-expression identifier variables)
   "Build a tensor expression and return remaining variables"
-  (if (list? identifier)
-    (let [(arguments (consume-variables (cdr identifier) variables))]
-      (cons (cons (car identifier) (car arguments)) (cdr arguments)))
-    variables))
+  (let [(mask (tensor-operations identifier))]
+    (if mask
+        (consume-variables mask identifier variables)
+        variables)))
 
 (define (identifier->expression identifier variables)
   "Convert identifier to tensor expression with variables"
   (car (build-expression identifier variables)))
-
-(define (tensor-op expr)
-  (let* [(vars (tensor-variables expr))
-         (args (symbol-list (length vars)))
-         (identifier (expression->identifier expr))]
-    (let [(f (jit ctx (map class-of vars) (lambda args (identifier->expression identifier args))))]
-      (apply f vars))))
 
 (define-macro (xxx expr)
   (let* [(vars       (tensor-variables expr))
@@ -156,13 +153,15 @@
   (test-equal "reconstruct unary plus operation"
     (cons '(+ x) '(y)) (build-expression '(+ _) '(x y)))
   (test-equal "build arguments of unary expression"
-    (cons '(x) '(y z)) (consume-variables '(_) '(x y z)))
+    (cons '(x) '(y z)) (consume-variables '(#f) '(_) '(x y z)))
   (test-equal "build arguments of binary expression"
-    (cons '(x y) '(z)) (consume-variables '(_ _) '(x y z)))
+    (cons '(x y) '(z)) (consume-variables '(#f #f) '(_ _) '(x y z)))
+  (test-equal "apply argument mask when consuming variables"
+    (cons '(+ x y) '(z)) (consume-variables '(#t #f #f) '(+ _ _) '(x y z)))
   (test-equal "build binary expression"
     (cons '(+ x y) '(z)) (build-expression '(+ _ _) '(x y z)))
   (test-equal "consume variables recursively"
-    (cons '((- x)) '(y z)) (consume-variables '((- _)) '(x y z)))
+    (cons '((- x)) '(y z)) (consume-variables '(#f) '((- _)) '(x y z)))
   (test-equal "reconstruct single variable expression"
     'x (identifier->expression '_ '(x)))
   (test-equal "reconstruct expression"
@@ -171,7 +170,6 @@
     '(+ (- x) y) (identifier->expression '(+ (- _) _) '(x y)))
   (test-equal "insert non-tensor operations"
     '(read-image "test.bmp") (identifier->expression '_ '((read-image "test.bmp"))))
-  (test-skip 1)
   (test-equal "reconstruct tensor index access"
     '(get s k) (identifier->expression '(get _ k) '(s)))
 (test-end "convert tensor identifier to tensor expression")
