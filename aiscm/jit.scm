@@ -59,7 +59,7 @@
             make-function make-native-function native-call make-constant-function native-const
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
 
 (define ctx (make <context>))
 
@@ -660,7 +660,7 @@
   (set! (dimension-hint idx) (dimension self))
   (subst (delegate self) (index self) idx))
 
-(define-syntax-rule (tensor index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
+(define-syntax-rule (dim index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))

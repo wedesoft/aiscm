@@ -1,6 +1,5 @@
 ## Ready
 
-* tensor macro
 * reenable test for 64 bit offsets
 * multiple parameters for "get" and "tensor"
 * (eval-when (compile) (defun ...))

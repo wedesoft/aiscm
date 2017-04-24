@@ -84,7 +84,7 @@
     (test-eq "dimension hint is defined when using an index"
       (dimension s) (dimension-hint i)))
   (test-equal "tensor operation determines dimensions"
-    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor k (get s k)))) (seq 2 3 5))))
+    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (dim k (get s k)))) (seq 2 3 5))))
 (test-end "tensor dimensions")
 
 (let [(s (seq <int> 2 3 5))
@@ -97,7 +97,7 @@
                    (lambda (m) (indexer i (indexer j (get (get m j) i) (cadr (shape m))) (car (shape m)))))
               m)))
   (test-equal "tensor macro provides local variable"
-    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (tensor k (get s k)))) s)))
+    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (dim k (get s k)))) s)))
   (test-equal "switch dimensions of a non-square 2D tensor"
     '((2 7) (3 11) (5 13))
     (to-list ((jit ctx (list (class-of r))
@@ -105,7 +105,7 @@
               r)))
   (test-equal "tensor expression for element-wise sum"
      '(5 8 12)
-     (to-list ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (tensor k (+ (get s k) (get t k))))) s t))))
+     (to-list ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (dim k (+ (get s k) (get t k))))) s t))))
 (test-equal "generate code to package an object in a list"
   '(a) ((jit ctx (list <obj>) package-return-content) 'a))
 (test-equal "generate code to return the content of an RGB value"

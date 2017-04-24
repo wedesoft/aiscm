@@ -1,90 +1,10 @@
-(use-modules (oop goops)
-             (srfi srfi-1)
-             (srfi srfi-26)
-             (srfi srfi-64)
-             (system foreign)
-             (aiscm element)
-             (aiscm int)
-             (aiscm sequence)
-             (aiscm mem)
-             (aiscm pointer)
-             (aiscm rgb)
-             (aiscm complex)
-             (aiscm obj)
-             (aiscm asm)
+(use-modules (srfi srfi-64)
+             (oop goops)
              (aiscm jit)
-             (aiscm method)
-             (aiscm util))
+             (aiscm sequence)
+             (aiscm tensor))
 
-(test-begin "playground")
-
-(define ctx (make <context>))
-
-(define (tensor-operations expr)
-  "Check whether expression is a tensor operation"
-  (define (argument-mask expr . indices)
-    (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
-  (and (list? expr)
-       (case (car expr)
-         ((+)   (argument-mask expr 0))
-         ((-)   (argument-mask expr 0))
-         ((get) (argument-mask expr 0 2))
-         ((dim) (argument-mask expr 0 1))
-         (else #f))))
-
-(define (expression->identifier expr)
-  "Extract structure of tensor and convert to identifier"
-  (let [(mask (tensor-operations expr))]
-    (if mask (map-select mask identity expression->identifier expr) '_)))
-
-(define (identifier->symbol identifier)
-  "Convert identifier to a symbol which can be used as a method name"
-  (string->symbol (call-with-output-string (cut write identifier <>))))
-
-(define (tensor-variables expr)
-  "Return variables of tensor expression"
-  (let [(mask (tensor-operations expr))]
-    (if mask
-        (concatenate (map-select mask (const '()) tensor-variables expr))
-        (list expr))))
-
-(define (consume-variables mask identifier variables)
-  "Build arguments of expression and return remaining variables"
-  (if (null? identifier)
-    (cons identifier variables)
-    (let* [(head (if (car mask)
-                     (cons (car identifier) variables)
-                     (build-expression (car identifier) variables)))
-           (tail (consume-variables (cdr mask) (cdr identifier) (cdr head)))]
-      (cons (cons (car head) (car tail)) (cdr tail)))))
-
-(define (build-expression identifier variables)
-  "Build a tensor expression and return remaining variables"
-  (let [(mask (tensor-operations identifier))]
-    (if mask
-        (consume-variables mask identifier variables)
-        variables)))
-
-(define (identifier->expression identifier variables)
-  "Convert identifier to tensor expression with variables"
-  (car (build-expression identifier variables)))
-
-(define-macro (tensor expr)
-  "Instantiate a compiled tensor expression"
-  (let* [(vars       (tensor-variables expr))
-         (identifier (expression->identifier expr))
-         (args       (symbol-list (length vars)))
-         (name       (identifier->symbol identifier))
-         (prog       (identifier->expression identifier args))]
-    `(begin
-      (if (not (defined? (quote ,name) (current-module)))
-        (define-method (,name . ,args)
-          (let [(f (jit ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
-            (add-method! ,name (make <method>
-                                     #:specializers (map class-of (list . ,args))
-                                     #:procedure f)))
-          (,name . ,vars)))
-      (,name . ,vars))))
+(test-begin "aiscm tensor")
 
 (test-begin "identify tensor operations")
   (test-equal "+ is a tensor operation"
@@ -198,4 +118,4 @@
     '((2 3) (3 5) (5 7)) (to-list (tensor (dim j (dim i (get (get (arr (2 3 5) (3 5 7)) i) j))))))
 (test-end "tensor macro")
 
-(test-end "playground")
+(test-end "aiscm tensor")

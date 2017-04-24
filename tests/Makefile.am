@@ -9,7 +9,8 @@ SCM_LOG_DRIVER = $(GUILE) -L $(top_builddir) -L $(srcdir) $(top_srcdir)/build-au
 TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmpeg_out.scm test_float.scm test_image.scm \
 				test_int.scm test_jit1.scm test_jit2.scm test_jit3.scm test_jit4.scm test_jit5.scm test_jit6.scm \
 				test_jit7.scm test_jit8.scm test_magick.scm test_mem.scm test_method.scm test_obj.scm test_op.scm test_pointer.scm \
-				test_pulse.scm test_rgb.scm test_ringbuffer.scm test_sequence.scm test_util.scm test_samples.scm
+				test_pulse.scm test_rgb.scm test_ringbuffer.scm test_sequence.scm test_util.scm test_samples.scm \
+				test_tensor.scm
 
 EXTRA_DIST = $(TESTS)
 
