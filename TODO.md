@@ -40,7 +40,7 @@
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*

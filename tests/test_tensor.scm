@@ -1,6 +1,8 @@
 (use-modules (srfi srfi-64)
              (oop goops)
              (aiscm jit)
+             (aiscm element)
+             (aiscm int)
              (aiscm sequence)
              (aiscm tensor))
 
