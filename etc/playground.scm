@@ -26,9 +26,10 @@
     (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
        (case (car expr)
-         ((+) (argument-mask expr 0))
-         ((-) (argument-mask expr 0))
-         ((get) (argument-mask expr 0 2))
+         ((+)      (argument-mask expr 0))
+         ((-)      (argument-mask expr 0))
+         ((get)    (argument-mask expr 0 2))
+         ((tensor) (argument-mask expr 0 1))
          (else #f))))
 
 (define (expression->identifier expr)
@@ -88,6 +89,7 @@
 (define (f a b) (xxx (- (* 2 a) b)))
 (f (seq 2 3 5) (seq 3 5 7))
 
+;((jit ctx (list (sequence <ubyte>)) (lambda (s) (tensor k (get s k)))) (seq 2 3 5))
 
 (test-begin "identify tensor operations")
   (test-equal "+ is a tensor operation"
@@ -96,10 +98,12 @@
     '(#t #f) (tensor-operations '(- x)))
   (test-assert "x is not a tensor operation"
     (not (tensor-operations 'x)))
-  (test-assert "read-image is not a tensor operation"
+  (test-assert "\"read-image\" is not a tensor operation"
     (not (tensor-operations '(read-image "test.bmp"))))
-  (test-equal "get is a tensor operation"
+  (test-equal "\"get\" is a tensor operation"
     '(#t #f #t) (tensor-operations '(get s k)))
+  (test-equal "\"tensor\" is a tensor operation"
+    '(#t #t #f) (tensor-operations '(tensor k s)))
 (test-end "identify tensor operations")
 
 (test-begin "convert tensor expression to identifier")
