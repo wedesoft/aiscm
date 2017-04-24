@@ -1,8 +1,9 @@
 ## Ready
 
-* reenable test for 64 bit offsets
-* (eval-when (compile) (defun ...))
 * tensor macro
+* reenable test for 64 bit offsets
+* multiple parameters for "get" and "tensor"
+* (eval-when (compile) (defun ...))
 * multiple use of one indexer (get s i i) -> merge lookups
 * (+ m (roll m))
 * (+ m (project m))
