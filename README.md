@@ -82,7 +82,6 @@ make reintegration
 
 * [AIscm homepage][1]
 * [AIscm installation][6]
-* [Debian Package Tracker entry for AIscm][8]
 * [Debian sbuild][3] (installed from jessie-backports because of [bug 827315][7])
 * [Docker][4]
 * [managing Debian packages][5]
@@ -94,4 +93,3 @@ make reintegration
 [5]: https://www.debian.org/doc/manuals/developers-reference/ch05.en.html#newpackage
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
 [7]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=827315
-[8]: https://tracker.debian.org/pkg/aiscm
