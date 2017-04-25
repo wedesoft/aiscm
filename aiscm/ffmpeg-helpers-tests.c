@@ -91,8 +91,20 @@ SCM zero_offset_for_null_pointer(void)
 
 SCM offsets_have_64_bit(void)
 {
+  // This test might trigger a warning on Debian QA [1].
+  //
+  // ```
+  // warning: array subscript is above array bounds [-Warray-bounds]
+  // ```
+  //
+  // Note that the out-of-bounds pointer is merely used for testing offset computation.
+  //
+  // [1]: https://qa.debian.org/bls/packages/a/aiscm.html
   uint8_t buffer[1024];
-  uint8_t *data[2] = {buffer, buffer + (1L << 62)};
+  uint8_t *data[2];
+  int64_t offset = 1L << 62;
+  data[0] = buffer;
+  data[1] = buffer + offset;
   int64_t offsets[2];
   offsets_from_pointers(data, offsets, 2);
   return scm_from_bool(offsets[1] != 0);
