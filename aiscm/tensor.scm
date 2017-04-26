@@ -19,8 +19,8 @@
        (case (car expr)
          ((+)   (argument-mask expr 0))
          ((-)   (argument-mask expr 0))
-         ((get) (argument-mask expr 0 2))
-         ((dim) (argument-mask expr 0 1))
+         ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+         ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
          (else #f))))
 
 (define (expression->identifier expr)
@@ -76,4 +76,3 @@
                                      #:procedure f)))
           (,name . ,vars)))
       (,name . ,vars))))
-

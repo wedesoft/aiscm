@@ -1,9 +1,9 @@
 ## Ready
 
-* reenable test for 64 bit offsets
 * multiple parameters for "get" and "tensor"
+* (tensor (dim i (dim j (get s i j))))
 * (tensor i (get s i))
-* (tensor i (tensor j (get s i j)))
+* documentation for tensors
 * multiple use of one indexer (get s i i) -> merge lookups
 * (+ m (roll m))
 * (+ m (project m))
@@ -107,6 +107,7 @@
 * lexical sort
 * AdaBoost, decision trees, random forests
 * distance transform, Chamfer matching
+  http://www.gavrila.net/Research/Chamfer_System/chamfer_system.html
 * SLAM, inverse depth images
 * camera calibration
 * marker recognition

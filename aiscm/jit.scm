@@ -657,8 +657,13 @@
 (define dimension-hint (make-object-property))
 
 (define-method (get (self <indexer>) idx)
+  "Use index to access element"
   (set! (dimension-hint idx) (dimension self))
   (subst (delegate self) (index self) idx))
+
+(define-method (get (self <indexer>) idx . args)
+  "Use multiple indices to access elements"
+  (apply get (get self (last args)) (cons idx (all-but-last args))))
 
 (define-syntax-rule (dim index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
 

@@ -19,8 +19,12 @@
     (not (tensor-operations '(read-image "test.bmp"))))
   (test-equal "\"get\" is a tensor operation"
     '(#t #f #t) (tensor-operations '(get s k)))
-  (test-equal "\"tensor\" is a tensor operation"
+  (test-equal "\"get\" with two arguments is a tensor operation"
+    '(#t #f #t #t) (tensor-operations '(get s i j)))
+  (test-equal "\"dim\" is a tensor operation"
     '(#t #t #f) (tensor-operations '(dim k s)))
+  (test-equal "\"dim\" with two arguments is a tensor operation"
+    '(#t #t #t #f) (tensor-operations '(dim i j s)))
 (test-end "identify tensor operations")
 
 (test-begin "convert tensor expression to identifier")
@@ -118,6 +122,8 @@
     '(2 3 5) (to-list (tensor (dim k (get (seq 2 3 5) k)))))
   (test-equal "use tensor macro to transpose matrix"
     '((2 3) (3 5) (5 7)) (to-list (tensor (dim j (dim i (get (get (arr (2 3 5) (3 5 7)) i) j))))))
+  (test-equal "specify multiple indices in one \"get\" oeration"
+    '((2 3 5) (3 5 7)) (to-list (tensor (dim j (dim i (get (arr (2 3 5) (3 5 7)) i j))))))
 (test-end "tensor macro")
 
 (test-end "aiscm tensor")
