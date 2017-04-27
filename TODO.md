@@ -1,6 +1,15 @@
 ## Ready
 
-* multiple iterators for one index
+* multiple parameters for "get" and "tensor"
+* (tensor (dim i (dim j (get s i j))))
+* (tensor i (get s i))
+* documentation for tensors
+* multiple use of one indexer (get s i i) -> merge lookups
+* (+ m (roll m))
+* (+ m (project m))
+* tidy up structure of jit and tests
+* tensor inject
+* equality of arrays
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
@@ -32,7 +41,7 @@
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
@@ -98,6 +107,7 @@
 * lexical sort
 * AdaBoost, decision trees, random forests
 * distance transform, Chamfer matching
+  http://www.gavrila.net/Research/Chamfer_System/chamfer_system.html
 * SLAM, inverse depth images
 * camera calibration
 * marker recognition
