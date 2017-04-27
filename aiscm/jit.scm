@@ -656,14 +656,13 @@
 
 (define dimension-hint (make-object-property))
 
-(define-method (get (self <indexer>) idx)
-  "Use index to access element"
+(define (element idx self)
   (set! (dimension-hint idx) (dimension self))
   (subst (delegate self) (index self) idx))
 
-(define-method (get (self <indexer>) idx . args)
+(define-method (get (self <param>) . args)
   "Use multiple indices to access elements"
-  (apply get (get self (last args)) (cons idx (all-but-last args))))
+  (if (null? args) self (fold-right element self args)))
 
 (define-syntax dim
   (lambda (x)
