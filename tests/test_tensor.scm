@@ -122,8 +122,10 @@
     '(2 3 5) (to-list (tensor (dim k (get (seq 2 3 5) k)))))
   (test-equal "use tensor macro to transpose matrix"
     '((2 3) (3 5) (5 7)) (to-list (tensor (dim j (dim i (get (get (arr (2 3 5) (3 5 7)) i) j))))))
-  (test-equal "specify multiple indices in one \"get\" oeration"
+  (test-equal "specify multiple indices in one \"get\" operation"
     '((2 3 5) (3 5 7)) (to-list (tensor (dim j (dim i (get (arr (2 3 5) (3 5 7)) i j))))))
+  (test-equal "specify multiple dimensions in one \"dim\" oeration"
+    '((2 3 5) (3 5 7)) (to-list (tensor (dim i j (get (arr (2 3 5) (3 5 7)) i j)))))
 (test-end "tensor macro")
 
 (test-end "aiscm tensor")

@@ -665,7 +665,11 @@
   "Use multiple indices to access elements"
   (apply get (get self (last args)) (cons idx (all-but-last args))))
 
-(define-syntax-rule (dim index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
+(define-syntax dim
+  (lambda (x)
+    (syntax-case x ()
+      ((dim expr) #'expr)
+      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
