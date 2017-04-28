@@ -3,6 +3,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm asm)
+  #:use-module (aiscm element)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
@@ -63,7 +64,7 @@
 
 (define-macro (tensor . args)
   "Instantiate a compiled tensor expression"
-  (let [(expr (last args))
+  (let [(expr    (last args))
         (indices (all-but-last args))]
     (if (null? indices)
       (let* [(vars       (tensor-variables expr))
@@ -74,10 +75,10 @@
         `(begin
           (if (not (defined? (quote ,name) (current-module)))
             (define-method (,name . ,args)
-              (let [(f (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
+              (let [(fun (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
                 (add-method! ,name (make <method>
                                          #:specializers (map class-of (list . ,args))
-                                         #:procedure f)))
-              (,name . ,vars)))
-          (,name . ,vars)))
+                                         #:procedure (lambda args (apply fun (map get args))))))
+              (apply ,name (map wrap (list . ,args)))))
+          (apply ,name (map wrap (list . ,vars)))))
       `(tensor (dim ,(car indices) . ,(attach (cdr indices) expr))))))

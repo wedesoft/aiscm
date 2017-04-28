@@ -109,6 +109,8 @@
     '(2 3 5) (to-list (_ (seq 2 3 5))))
   (test-equal "cached operation uses provided values"
     '(3 5 7) (to-list (_ (seq 3 5 7))))
+  (test-equal "test trivial 2D tensor"
+    '((3 4 6)) (to-list (tensor (arr (3 4 6)))))
   (define num-generics (length (generic-function-methods _)))
   (tensor (seq <int> 2 3 5))
   (test-eqv "tensor operations are cached for each type"
@@ -130,6 +132,8 @@
     '(2 3 5) (to-list (tensor i (get (seq 2 3 5) i))))
   (test-equal "specify multiple dimensions using\"tensor\" statement"
     '((2 3 5) (3 5 7)) (to-list (tensor i j (get (arr (2 3 5) (3 5 7)) i j))))
+  (test-eqv "Trivial scalar tensor"
+    42 (tensor 42))
 (test-end "tensor macro")
 
 (test-end "aiscm tensor")
