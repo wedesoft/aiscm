@@ -60,19 +60,23 @@
   "Convert identifier to tensor expression with variables"
   (car (build-expression identifier variables)))
 
-(define-macro (tensor expr)
+(define-macro (tensor . args)
   "Instantiate a compiled tensor expression"
-  (let* [(vars       (tensor-variables expr))
-         (identifier (expression->identifier expr))
-         (args       (symbol-list (length vars)))
-         (name       (identifier->symbol identifier))
-         (prog       (identifier->expression identifier args))]
-    `(begin
-      (if (not (defined? (quote ,name) (current-module)))
-        (define-method (,name . ,args)
-          (let [(f (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
-            (add-method! ,name (make <method>
-                                     #:specializers (map class-of (list . ,args))
-                                     #:procedure f)))
+  (let [(expr (last args))
+        (indices (all-but-last args))]
+    (if (null? indices)
+      (let* [(vars       (tensor-variables expr))
+             (identifier (expression->identifier expr))
+             (args       (symbol-list (length vars)))
+             (name       (identifier->symbol identifier))
+             (prog       (identifier->expression identifier args))]
+        `(begin
+          (if (not (defined? (quote ,name) (current-module)))
+            (define-method (,name . ,args)
+              (let [(f (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
+                (add-method! ,name (make <method>
+                                         #:specializers (map class-of (list . ,args))
+                                         #:procedure f)))
+              (,name . ,vars)))
           (,name . ,vars)))
-      (,name . ,vars))))
+      `(tensor (dim ,(car indices) . ,(attach (cdr indices) expr))))))

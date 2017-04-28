@@ -126,6 +126,10 @@
     '((2 3 5) (3 5 7)) (to-list (tensor (dim j (dim i (get (arr (2 3 5) (3 5 7)) i j))))))
   (test-equal "specify multiple dimensions in one \"dim\" operation"
     '((2 3 5) (3 5 7)) (to-list (tensor (dim i j (get (arr (2 3 5) (3 5 7)) i j)))))
+  (test-equal "specify dimension using \"tensor\" statement"
+    '(2 3 5) (to-list (tensor i (get (seq 2 3 5) i))))
+  (test-equal "specify multiple dimensions using\"tensor\" statement"
+    '((2 3 5) (3 5 7)) (to-list (tensor i j (get (arr (2 3 5) (3 5 7)) i j))))
 (test-end "tensor macro")
 
 (test-end "aiscm tensor")
