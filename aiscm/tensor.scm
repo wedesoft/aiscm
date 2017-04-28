@@ -4,6 +4,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm asm)
   #:use-module (aiscm util)
+  #:use-module (aiscm jit)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
   #:export-syntax (tensor))
@@ -16,12 +17,12 @@
   (define (argument-mask expr . indices)
     (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
-       (case (car expr)
-         ((+)   (argument-mask expr 0))
-         ((-)   (argument-mask expr 0))
-         ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-         ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
-         (else #f))))
+       (if (memv (car expr) operations)
+         (argument-mask expr 0)
+         (case (car expr)
+           ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+           ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
+           (else #f)))))
 
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"

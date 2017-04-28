@@ -20,6 +20,15 @@
 
 (define ctx (make <context>))
 
+(test-begin "list operations")
+  (test-assert "+ is an operation"
+    (memv '+ operations))
+  (test-assert "- is an operation"
+    (memv '- operations))
+  (test-assert "* is an operation"
+    (memv '* operations))
+(test-end "list operations")
+
 (test-begin "type inference")
   (test-eq "determine type of parameter"
     <sint> (type (parameter <sint>)))

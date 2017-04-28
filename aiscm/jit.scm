@@ -57,7 +57,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
-            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
 
@@ -952,8 +952,11 @@
                 (apply ,name (map wrap (list . ,(cycle-times args i))))))
             (iota arity)))))
 
+(define operations '())
+
 (define-syntax-rule (define-jit-method coercion name arity)
-  (begin (n-ary-base name arity coercion (delegate-fun name))
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
