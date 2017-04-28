@@ -1,12 +1,10 @@
 ## Ready
 
-* multiple parameters for "get" and "tensor"
-* (tensor (dim i (dim j (get s i j))))
-* (tensor i (get s i))
+* other operations for tensors: \*, /, ...
 * documentation for tensors
 * multiple use of one indexer (get s i i) -> merge lookups
-* (+ m (roll m))
-* (+ m (project m))
+* (tensor i (roll (get m i)))
+* (tensor i (project (get m i)))
 * tidy up structure of jit and tests
 * tensor inject
 * equality of arrays
