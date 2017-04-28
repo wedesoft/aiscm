@@ -74,11 +74,11 @@
              (prog       (identifier->expression identifier args))]
         `(begin
           (if (not (defined? (quote ,name) (current-module)))
-            (define-method (,name . ,args)
-              (let [(fun (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
+            (define-method (,name ,@args)
+              (let [(fun (jit tensor-ctx (map class-of (list ,@args)) (lambda ,args ,prog)))]
                 (add-method! ,name (make <method>
-                                         #:specializers (map class-of (list . ,args))
+                                         #:specializers (map class-of (list ,@args))
                                          #:procedure (lambda args (apply fun (map get args))))))
-              (apply ,name (map wrap (list . ,args)))))
-          (apply ,name (map wrap (list . ,vars)))))
-      `(tensor (dim ,(car indices) . ,(attach (cdr indices) expr))))))
+              (apply ,name (map wrap (list ,@args)))))
+          (apply ,name (map wrap (list ,@vars)))))
+      `(tensor (dim ,(car indices) ,@(attach (cdr indices) expr))))))

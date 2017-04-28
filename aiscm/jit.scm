@@ -804,9 +804,8 @@
   (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args type))]
-    `(define-method (,name . ,header) ,fun)))
+  (let [(header (typed-header (symbol-list arity) type))]
+    `(define-method (,name ,@header) ,fun)))
 
 (define-operator-mapping -   1 <meta<int<>>> (mutating-code   NEG              ))
 (define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code NEG))
@@ -886,7 +885,7 @@
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
+    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
 
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
@@ -934,13 +933,13 @@
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<element>))]
-    `(define-method (,name . ,header)
-       (let [(f (jit ctx (map class-of (list . ,args)) ,delegate))]
+    `(define-method (,name ,@header)
+       (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
          (add-method! ,name
                       (make <method>
-                            #:specializers (map class-of (list . ,args))
+                            #:specializers (map class-of (list ,@args))
                             #:procedure (lambda args (apply f (map get args))))))
-       (,name . ,args))))
+       (,name ,@args))))
 
 (define-macro (define-nary-collect name arity)
   (let* [(args   (symbol-list arity))
@@ -948,8 +947,8 @@
     (cons 'begin
           (map
             (lambda (i)
-              `(define-method (,name . ,(cycle-times header i))
-                (apply ,name (map wrap (list . ,(cycle-times args i))))))
+              `(define-method (,name ,@(cycle-times header i))
+                (apply ,name (map wrap (list ,@(cycle-times args i))))))
             (iota arity)))))
 
 (define operations '())
