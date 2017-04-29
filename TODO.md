@@ -4,6 +4,14 @@
 * multiple use of one indexer (get s i i) -> merge lookups
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
+    (tensor [i] (get m i 1))
+    (tensor [i j] (* (s i) (s j)))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+    (tensor [i j] (* (s i) (s j)))
 * tidy up structure of jit and tests
 * tensor inject
 * equality of arrays
@@ -26,14 +34,6 @@
 * use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
 * fast live analysis
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff

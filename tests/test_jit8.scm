@@ -85,6 +85,17 @@
       (is-a? (delegate (body (tensor-loop t))) <lookup>)))
 (test-end "2D tensor")
 
+(test-begin "scalar tensor")
+  (let [(v (parameter <int>))
+        (i (var <long>))]
+    (test-assert "loop code for scalar tensor is empty"
+      (null? (loop-details (tensor-loop v))))
+    (test-eq "body of scalar tensor is itself"
+      v (body (tensor-loop v)))
+    (test-eq "scalar tensor ignores indices"
+      v (body (tensor-loop v i))))
+(test-end "scalar tensor")
+
 (test-begin "tensor expressions")
   (let* [(s  (parameter (sequence <sint>)))
          (t  (parameter (sequence <uint>)))
