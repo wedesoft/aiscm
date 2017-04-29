@@ -134,6 +134,8 @@
     '((2 3 5) (3 5 7)) (to-list (tensor i j (get (arr (2 3 5) (3 5 7)) i j))))
   (test-eqv "Trivial scalar tensor"
     42 (tensor 42))
+  (test-equal "Array plus scalar operation in tensor"
+    '(3 4 6) (to-list (tensor (+ (seq 2 3 5) 1))))
 (test-end "tensor macro")
 
 (test-end "aiscm tensor")

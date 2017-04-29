@@ -157,5 +157,10 @@
     (to-list ((jit ctx (list (multiarray <ubyte> 2))
                    (lambda (m) (dim j (dim i (+ (get (get m j) i) (get (get m i) j))))))
               (arr (2 3) (5 7)))))
+  (test-equal "tensor 1D plus with scalar"
+    '(3 4 6)
+    (to-list ((jit ctx (list (sequence <ubyte>) <ubyte>)
+                   (lambda (a b) (dim i (+ (get a i) b))))
+              (seq 2 3 5) 1)))
 (test-end "tensor expressions")
 (test-end "tensors")

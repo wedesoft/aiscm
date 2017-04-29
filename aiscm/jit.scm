@@ -733,7 +733,7 @@
          (bodies    (map body arguments))]
     (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
 
-(define-method (tensor-loop (self <param>))
+(define-method (tensor-loop (self <param>) . idx)
   (make <tensor-loop> #:loop-details '() #:body self))
 
 (define (insert-intermediate value intermediate fun)

@@ -1,6 +1,5 @@
 ## Ready
 
-* (tensor i (+ (get (seq 2 3 5) i) 1))
 * separate code for tensor dimension shortcut
 * (tensor i j (\* (get (seq 2 3) i) (get (seq 5 7) j)))
 * other operations for tensors: \*, /, ...

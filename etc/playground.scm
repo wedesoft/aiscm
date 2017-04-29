@@ -43,6 +43,13 @@
 ;(code intermediate expr)
 (tensor-loop expr)
 
+;(tensor-loop (delegate expr) (index expr))
+(define self (delegate expr))
+(define idx (index expr))
+
+;(define arguments (map (cut tensor-loop <> idx) (delegate self)))
+(tensor-loop (cadr (delegate self)) idx)
+
 ;(define instructions (asm context
 ;                         <ulong>
 ;                  (map typecode (content-vars vars))
