@@ -1,8 +1,6 @@
 ## Ready
 
 * separate code for tensor dimension shortcut
-* (tensor i j (\* (get (seq 2 3) i) (get (seq 5 7) j)))
-* other operations for tensors: \*, /, ...
 * documentation for tensors
 * multiple use of one indexer (get s i i) -> merge lookups
 * (tensor i (roll (get m i)))
