@@ -1,6 +1,5 @@
 ## Ready
 
-* separate code for tensor dimension shortcut
 * documentation for tensors
 * multiple use of one indexer (get s i i) -> merge lookups
 * (tensor i (roll (get m i)))

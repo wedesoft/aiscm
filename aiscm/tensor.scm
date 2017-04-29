@@ -8,7 +8,7 @@
   #:use-module (aiscm jit)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
-  #:export-syntax (tensor))
+  #:export-syntax (tensor tensor-body))
 
 
 (define tensor-ctx (make <context>))
@@ -62,23 +62,27 @@
   "Convert identifier to tensor expression with variables"
   (car (build-expression identifier variables)))
 
-(define-macro (tensor . args)
+(define-macro (tensor-body expr)
   "Instantiate a compiled tensor expression"
+  (let* [(vars       (tensor-variables expr))
+         (identifier (expression->identifier expr))
+         (args       (symbol-list (length vars)))
+         (name       (identifier->symbol identifier))
+         (prog       (identifier->expression identifier args))]
+    `(begin
+      (if (not (defined? (quote ,name) (current-module)))
+        (define-method (,name ,@args)
+          (let [(fun (jit tensor-ctx (map class-of (list ,@args)) (lambda ,args ,prog)))]
+            (add-method! ,name (make <method>
+                                     #:specializers (map class-of (list ,@args))
+                                     #:procedure (lambda args (apply fun (map get args))))))
+          (apply ,name (map wrap (list ,@args)))))
+      (apply ,name (map wrap (list ,@vars))))))
+
+(define-macro (tensor . args)
+  "Shortcut for tensor with indices"
   (let [(expr    (last args))
         (indices (all-but-last args))]
     (if (null? indices)
-      (let* [(vars       (tensor-variables expr))
-             (identifier (expression->identifier expr))
-             (args       (symbol-list (length vars)))
-             (name       (identifier->symbol identifier))
-             (prog       (identifier->expression identifier args))]
-        `(begin
-          (if (not (defined? (quote ,name) (current-module)))
-            (define-method (,name ,@args)
-              (let [(fun (jit tensor-ctx (map class-of (list ,@args)) (lambda ,args ,prog)))]
-                (add-method! ,name (make <method>
-                                         #:specializers (map class-of (list ,@args))
-                                         #:procedure (lambda args (apply fun (map get args))))))
-              (apply ,name (map wrap (list ,@args)))))
-          (apply ,name (map wrap (list ,@vars)))))
+      `(tensor-body ,expr)
       `(tensor (dim ,(car indices) ,@(attach (cdr indices) expr))))))
