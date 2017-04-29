@@ -917,16 +917,16 @@
                   (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
-  (let* [(vars         (map skeleton classes))
-         (expr         (apply proc (map parameter vars)))
+  (let* [(args         (map skeleton classes))
+         (expr         (apply proc (map parameter args)))
          (result-type  (type expr))
-         (result       (parameter result-type))
-         (types        (map class-of vars))
-         (intermediate (generate-return-code vars result expr))
+         (intermediate (parameter result-type))
+         (types        (map class-of args))
+         (result       (generate-return-code args intermediate expr))
          (instructions (asm context
                             <ulong>
-                            (map typecode (content-vars vars))
-                            (apply virtual-variables (apply assemble intermediate))))
+                            (map typecode (content-vars args))
+                            (apply virtual-variables (apply assemble result))))
          (fun          (lambda header (apply instructions (append-map unbuild types header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
