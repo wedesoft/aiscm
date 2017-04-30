@@ -1,6 +1,6 @@
 ## Ready
 
-* documentation for tensors
+* (tensor (sum k (get (seq 2 3 5) k)))
 * multiple use of one indexer (get s i i) -> merge lookups
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
@@ -9,9 +9,7 @@
     (tensor [i] ((roll m) i))
     (tensor [i] ((roll (+ m s) i))
     (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * tidy up structure of jit and tests
 * tensor inject
 * equality of arrays

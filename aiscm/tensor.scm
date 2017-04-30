@@ -8,6 +8,7 @@
   #:use-module (aiscm jit)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
+  #:re-export (jit get wrap dim)
   #:export-syntax (tensor tensor-body))
 
 
