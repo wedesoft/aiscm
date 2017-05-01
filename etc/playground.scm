@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (srfi srfi-1)
              (srfi srfi-26)
+             (srfi srfi-64)
              (system foreign)
              (aiscm element)
              (aiscm int)
@@ -13,42 +14,46 @@
              (aiscm asm)
              (aiscm jit)
              (aiscm method)
-             (aiscm util))
+             (aiscm util)
+             (aiscm tensor))
+
+(test-begin "playground")
+
+; (tensor (dim i (+ (get (seq 2 3 5) i) 1)))
 
 (define ctx (make <context>))
+
+; (jit ctx (list (sequence <ubyte>) <ubyte>) (lambda (a b) (dim i (+ (get a i) b))))
+
 (define context ctx)
-(define classes (list <ubytergb> (sequence <byte>)))
-(define proc min)
+(define classes (list (sequence <ubyte>) <ubyte>))
+(define proc (lambda (a b) (dim i (+ (get a i) b))))
 
 (define vars         (map skeleton classes))
 (define expr         (apply proc (map parameter vars)))
 (define result-type  (type expr))
 (define result       (parameter result-type))
 (define types        (map class-of vars))
-(define intermediate (generate-return-code vars result expr))
-(define lst (apply assemble intermediate))
-(define results (car lst))
-(define parameters (cadr lst))
-(define instructions (caddr lst))
-(define registers default-registers)
-(define prog (flatten-code (relabel (filter-blocks instructions))))
-(define blocked (blocked-intervals instructions))
 
-(define live                 (live-analysis prog results))
-(define temp-vars            (temporary-variables prog))
-(define intervals            (append (live-intervals live (variables prog))
-                                     (unit-intervals temp-vars)))
-(define predefined-registers (register-parameter-locations (register-parameters parameters)))
-(define parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
-(define remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
-(define stack-parameters     (stack-parameters parameters))
-(define colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
-(define callee-saved         (used-callee-saved colors))
-(define stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
-(define parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
-(define stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
-(define allocation           (add-stack-parameter-information colors stack-locations))
-(define temporaries          (temporary-registers allocation temp-vars))
-(define locations            (add-spill-information allocation 8 8))
+;(define intermediate (generate-return-code vars result expr))
+(define args vars)
+(define expr expr)
+(define intermediate result)
 
-;(append-map (cut replace-variables locations <...>) prog temporaries)
+;(code intermediate expr)
+(tensor-loop expr)
+
+;(tensor-loop (delegate expr) (index expr))
+(define self (delegate expr))
+(define idx (index expr))
+
+;(define arguments (map (cut tensor-loop <> idx) (delegate self)))
+(tensor-loop (cadr (delegate self)) idx)
+
+;(define instructions (asm context
+;                         <ulong>
+;                  (map typecode (content-vars vars))
+;                  (apply virtual-variables (apply assemble intermediate))))
+;(define fun          (lambda header (apply instructions (append-map unbuild types header))))
+
+(test-end "playground")

@@ -89,6 +89,26 @@ SCM zero_offset_for_null_pointer(void)
   return scm_from_bool(offsets[1] == 0);
 }
 
+SCM offsets_have_64_bit(SCM scm_offset)
+{
+  // This test might trigger a warning on Debian QA [1].
+  //
+  // ```
+  // warning: array subscript is above array bounds [-Warray-bounds]
+  // ```
+  //
+  // Note that the out-of-bounds pointer is merely used for testing offset computation.
+  //
+  // [1]: https://qa.debian.org/bls/packages/a/aiscm.html
+  uint8_t buffer[1024];
+  uint8_t *data[2];
+  data[0] = buffer;
+  data[1] = buffer + scm_to_long(scm_offset);
+  int64_t offsets[2];
+  offsets_from_pointers(data, offsets, 2);
+  return scm_from_bool(offsets[1] != 0);
+}
+
 SCM pack_byte_audio_sample(void)
 {
   uint8_t a[1] = {1};
@@ -131,6 +151,7 @@ void init_ffmpeg_helpers_tests(void)
   scm_c_define_gsubr("first-offset-is-zero"            , 0, 0, 0, first_offset_is_zero            );
   scm_c_define_gsubr("second-offset-correct"           , 0, 0, 0, second_offset_correct           );
   scm_c_define_gsubr("zero-offset-for-null-pointer"    , 0, 0, 0, zero_offset_for_null_pointer    );
+  scm_c_define_gsubr("offsets-have-64-bit"             , 1, 0, 0, offsets_have_64_bit             );
   scm_c_define_gsubr("pack-byte-audio-sample"          , 0, 0, 0, pack_byte_audio_sample          );
   scm_c_define_gsubr("pack-byte-audio-samples"         , 0, 0, 0, pack_byte_audio_samples         );
   scm_c_define_gsubr("pack-short-int-audio-samples"    , 0, 0, 0, pack_short_int_audio_samples    );

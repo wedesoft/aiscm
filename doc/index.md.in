@@ -18,7 +18,8 @@ Control all data and machine code down to every single bit and byte.
 * [Installation](installation.html "Installation")
 * [Built-in assembler](assembler.html "Built-in assembler")
 * [Input/output](io.html "Input/output")
-* [Array operations](array.html "Array operations")
+* [Arrays](array.html "Arrays")
+* [Array operations](operation.html "Array operations")
 
 ## See also
 
