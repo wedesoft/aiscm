@@ -3,10 +3,13 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm asm)
+  #:use-module (aiscm element)
   #:use-module (aiscm util)
+  #:use-module (aiscm jit)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
-  #:export-syntax (tensor))
+  #:re-export (jit get wrap dim)
+  #:export-syntax (tensor tensor-body))
 
 
 (define tensor-ctx (make <context>))
@@ -16,12 +19,12 @@
   (define (argument-mask expr . indices)
     (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
-       (case (car expr)
-         ((+)   (argument-mask expr 0))
-         ((-)   (argument-mask expr 0))
-         ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-         ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
-         (else #f))))
+       (if (memv (car expr) operations)
+         (argument-mask expr 0)
+         (case (car expr)
+           ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+           ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
+           (else #f)))))
 
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"
@@ -60,7 +63,7 @@
   "Convert identifier to tensor expression with variables"
   (car (build-expression identifier variables)))
 
-(define-macro (tensor expr)
+(define-macro (tensor-body expr)
   "Instantiate a compiled tensor expression"
   (let* [(vars       (tensor-variables expr))
          (identifier (expression->identifier expr))
@@ -69,10 +72,18 @@
          (prog       (identifier->expression identifier args))]
     `(begin
       (if (not (defined? (quote ,name) (current-module)))
-        (define-method (,name . ,args)
-          (let [(f (jit tensor-ctx (map class-of (list . ,args)) (lambda ,args ,prog)))]
+        (define-method (,name ,@args)
+          (let [(fun (jit tensor-ctx (map class-of (list ,@args)) (lambda ,args ,prog)))]
             (add-method! ,name (make <method>
-                                     #:specializers (map class-of (list . ,args))
-                                     #:procedure f)))
-          (,name . ,vars)))
-      (,name . ,vars))))
+                                     #:specializers (map class-of (list ,@args))
+                                     #:procedure (lambda args (apply fun (map get args))))))
+          (apply ,name (map wrap (list ,@args)))))
+      (apply ,name (map wrap (list ,@vars))))))
+
+(define-macro (tensor . args)
+  "Shortcut for tensor with indices"
+  (let [(expr    (last args))
+        (indices (all-but-last args))]
+    (if (null? indices)
+      `(tensor-body ,expr)
+      `(tensor (dim ,(car indices) ,@(attach (cdr indices) expr))))))

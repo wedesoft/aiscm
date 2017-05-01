@@ -20,6 +20,15 @@
 
 (define ctx (make <context>))
 
+(test-begin "list operations")
+  (test-assert "+ is an operation"
+    (memv '+ operations))
+  (test-assert "- is an operation"
+    (memv '- operations))
+  (test-assert "* is an operation"
+    (memv '* operations))
+(test-end "list operations")
+
 (test-begin "type inference")
   (test-eq "determine type of parameter"
     <sint> (type (parameter <sint>)))
@@ -75,6 +84,17 @@
     (test-assert "tensor loop should preserve 2nd index of transposed array"
       (is-a? (delegate (body (tensor-loop t))) <lookup>)))
 (test-end "2D tensor")
+
+(test-begin "scalar tensor")
+  (let [(v (parameter <int>))
+        (i (var <long>))]
+    (test-assert "loop code for scalar tensor is empty"
+      (null? (loop-details (tensor-loop v))))
+    (test-eq "body of scalar tensor is itself"
+      v (body (tensor-loop v)))
+    (test-eq "scalar tensor ignores indices"
+      v (body (tensor-loop v i))))
+(test-end "scalar tensor")
 
 (test-begin "tensor expressions")
   (let* [(s  (parameter (sequence <sint>)))
@@ -148,5 +168,10 @@
     (to-list ((jit ctx (list (multiarray <ubyte> 2))
                    (lambda (m) (dim j (dim i (+ (get (get m j) i) (get (get m i) j))))))
               (arr (2 3) (5 7)))))
+  (test-equal "tensor 1D plus with scalar"
+    '(3 4 6)
+    (to-list ((jit ctx (list (sequence <ubyte>) <ubyte>)
+                   (lambda (a b) (dim i (+ (get a i) b))))
+              (seq 2 3 5) 1)))
 (test-end "tensor expressions")
 (test-end "tensors")

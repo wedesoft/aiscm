@@ -1,14 +1,16 @@
 ## Ready
 
-* multiple parameters for "get" and "tensor"
-* (tensor (dim i (dim j (get s i j))))
-* (tensor i (get s i))
-* documentation for tensors
+* tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
 * multiple use of one indexer (get s i i) -> merge lookups
-* (+ m (roll m))
-* (+ m (project m))
+* (tensor i (roll (get m i)))
+* (tensor i (project (get m i)))
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
+    (tensor [i] (get m i 1))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * tidy up structure of jit and tests
-* tensor inject
 * equality of arrays
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
@@ -29,14 +31,6 @@
 * use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
 * fast live analysis
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff

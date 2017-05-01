@@ -57,7 +57,7 @@
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
-            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
 
@@ -733,7 +733,7 @@
          (bodies    (map body arguments))]
     (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
 
-(define-method (tensor-loop (self <param>))
+(define-method (tensor-loop (self <param>) . idx)
   (make <tensor-loop> #:loop-details '() #:body self))
 
 (define (insert-intermediate value intermediate fun)
@@ -804,9 +804,8 @@
   (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args type))]
-    `(define-method (,name . ,header) ,fun)))
+  (let [(header (typed-header (symbol-list arity) type))]
+    `(define-method (,name ,@header) ,fun)))
 
 (define-operator-mapping -   1 <meta<int<>>> (mutating-code   NEG              ))
 (define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code NEG))
@@ -886,7 +885,7 @@
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
+    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
 
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
@@ -918,29 +917,29 @@
                   (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
-  (let* [(vars         (map skeleton classes))
-         (expr         (apply proc (map parameter vars)))
+  (let* [(args         (map skeleton classes))
+         (expr         (apply proc (map parameter args)))
          (result-type  (type expr))
-         (result       (parameter result-type))
-         (types        (map class-of vars))
-         (intermediate (generate-return-code vars result expr))
+         (intermediate (parameter result-type))
+         (types        (map class-of args))
+         (result       (generate-return-code args intermediate expr))
          (instructions (asm context
                             <ulong>
-                            (map typecode (content-vars vars))
-                            (apply virtual-variables (apply assemble intermediate))))
+                            (map typecode (content-vars args))
+                            (apply virtual-variables (apply assemble result))))
          (fun          (lambda header (apply instructions (append-map unbuild types header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<element>))]
-    `(define-method (,name . ,header)
-       (let [(f (jit ctx (map class-of (list . ,args)) ,delegate))]
+    `(define-method (,name ,@header)
+       (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
          (add-method! ,name
                       (make <method>
-                            #:specializers (map class-of (list . ,args))
+                            #:specializers (map class-of (list ,@args))
                             #:procedure (lambda args (apply f (map get args))))))
-       (,name . ,args))))
+       (,name ,@args))))
 
 (define-macro (define-nary-collect name arity)
   (let* [(args   (symbol-list arity))
@@ -948,12 +947,15 @@
     (cons 'begin
           (map
             (lambda (i)
-              `(define-method (,name . ,(cycle-times header i))
-                (apply ,name (map wrap (list . ,(cycle-times args i))))))
+              `(define-method (,name ,@(cycle-times header i))
+                (apply ,name (map wrap (list ,@(cycle-times args i))))))
             (iota arity)))))
 
+(define operations '())
+
 (define-syntax-rule (define-jit-method coercion name arity)
-  (begin (n-ary-base name arity coercion (delegate-fun name))
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 

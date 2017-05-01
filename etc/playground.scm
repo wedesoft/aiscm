@@ -19,28 +19,41 @@
 
 (test-begin "playground")
 
-(define-syntax test
-  (lambda (x)
-    (syntax-case x ()
-      ((k expr)           #'(list expr))
-      ((k index rest ... expr) #'(cons (quote index) (test rest ... expr))))))
+; (tensor (dim i (+ (get (seq 2 3 5) i) 1)))
 
-(test i 0)
-(test i j 0)
-(test i j k 0)
+(define ctx (make <context>))
 
-(define-syntax-rule (dim index expr) (let [(index (var <long>))] (indexer index expr (dimension-hint index))))
+; (jit ctx (list (sequence <ubyte>) <ubyte>) (lambda (a b) (dim i (+ (get a i) b))))
 
-(define-syntax dim
-  (lambda (x)
-    (syntax-case x ()
-      ((dim expr) #'expr)
-      ((dim index indices ... expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
+(define context ctx)
+(define classes (list (sequence <ubyte>) <ubyte>))
+(define proc (lambda (a b) (dim i (+ (get a i) b))))
 
-(tensor (dim (arr (2 3 5))))
+(define vars         (map skeleton classes))
+(define expr         (apply proc (map parameter vars)))
+(define result-type  (type expr))
+(define result       (parameter result-type))
+(define types        (map class-of vars))
 
-(tensor (dim i (dim j (get (arr (2 3 5)) i j))))
+;(define intermediate (generate-return-code vars result expr))
+(define args vars)
+(define expr expr)
+(define intermediate result)
 
-(tensor (dim j i (get (arr (2 3 5)) i j)))
+;(code intermediate expr)
+(tensor-loop expr)
+
+;(tensor-loop (delegate expr) (index expr))
+(define self (delegate expr))
+(define idx (index expr))
+
+;(define arguments (map (cut tensor-loop <> idx) (delegate self)))
+(tensor-loop (cadr (delegate self)) idx)
+
+;(define instructions (asm context
+;                         <ulong>
+;                  (map typecode (content-vars vars))
+;                  (apply virtual-variables (apply assemble intermediate))))
+;(define fun          (lambda header (apply instructions (append-map unbuild types header))))
 
 (test-end "playground")
