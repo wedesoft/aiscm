@@ -1,6 +1,6 @@
 ## Ready
 
-* (tensor (sum k (get (seq 2 3 5) k)))
+* tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
 * multiple use of one indexer (get s i i) -> merge lookups
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
@@ -11,7 +11,6 @@
     (tensor [i] (get m i 1))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * tidy up structure of jit and tests
-* tensor inject
 * equality of arrays
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
