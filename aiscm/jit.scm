@@ -34,7 +34,7 @@
   #:use-module (aiscm method)
   #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
-  #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function>
+  #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
             substitute-variables variables get-args input output get-ptr-args labels next-indices
             initial-register-use find-available-register mark-used-till spill-candidate ignore-spilled-variables
             ignore-blocked-registers live-analysis
@@ -48,17 +48,18 @@
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
             blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
-            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate
+            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate name coercion
+            tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
-            jit iterator step setup increment body arguments operand insert-intermediate
+            jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters shl shr sign-extend-ax div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
-            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method define-operator-mapping pass-parameters tensor))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
 
 (define ctx (make <context>))
 
@@ -585,90 +586,92 @@
 (define-class <indexer> (<param>)
   (dimension #:init-keyword #:dimension #:getter dimension)
   (index     #:init-keyword #:index     #:getter index))
-(define (indexer dimension index delegate)
+(define (indexer index delegate dimension)
   (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
 (define-class <lookup> (<param>)
-  (index    #:init-keyword #:index    #:getter index)
-  (stride   #:init-keyword #:stride   #:getter stride)
-  (iterator #:init-keyword #:iterator #:getter iterator)
-  (step     #:init-keyword #:step     #:getter step))
-(define-method (lookup index delegate stride iterator step)
-  (make <lookup> #:index index #:delegate delegate #:stride stride #:iterator iterator #:step step))
-(define-method (lookup idx (obj <indexer>) stride iterator step)
-  (indexer (dimension obj) (index obj) (lookup idx (delegate obj) stride iterator step)))
+  (index    #:init-keyword #:index    #:getter index   )
+  (stride   #:init-keyword #:stride   #:getter stride  ))
+(define-method (lookup index delegate stride)
+  (make <lookup> #:index index #:delegate delegate #:stride stride))
+(define-method (lookup idx (obj <indexer>) stride)
+  (indexer (index obj) (lookup idx (delegate obj) stride) (dimension obj)))
 
 (define-class <function> (<param>)
-  (arguments #:init-keyword #:arguments #:getter arguments)
-  (type      #:init-keyword #:type      #:getter type)
-  (project   #:init-keyword #:project   #:getter project)
+  (coercion  #:init-keyword #:coercion  #:getter coercion)
+  (name      #:init-keyword #:name      #:getter name)
   (term      #:init-keyword #:term      #:getter term))
 
 (define-method (type (self <param>)) (typecode (delegate self)))
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
-(define-method (typecode (self <indexer>)) (typecode (type self)))
+(define-method (type (self <function>))
+  (apply (coercion self) (map type (delegate self))))
+
+(define-method (typecode (self <param>)) (typecode (type self)))
+
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
+(define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
+
 (define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
 (define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
 (define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))
 (define-method (stride (self <indexer>)) (stride (lookup self)))
-(define-method (iterator (self <indexer>)) (iterator (lookup self)))
-(define-method (step (self <indexer>)) (step (lookup self)))
 (define-method (parameter (self <element>)) (make <param> #:delegate self))
 (define-method (parameter (self <sequence<>>))
   (let [(idx (var <long>))]
-    (indexer (parameter (make <long> #:value (dimension self)))
-             idx
+    (indexer idx
              (lookup idx
                      (parameter (project self))
-                     (parameter (make <long> #:value (stride self)))
-                     (var <long>)
-                     (var <long>)))))
+                     (parameter (make <long> #:value (stride self))))
+             (parameter (make <long> #:value (dimension self))))))
 (define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
+
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <indexer>) candidate replacement)
-  (indexer (dimension self) (index self) (subst (delegate self) candidate replacement)))
+  (indexer (index self) (subst (delegate self) candidate replacement) (dimension self)))
 (define-method (subst (self <lookup>) candidate replacement)
   (lookup (if (eq? (index self) candidate) replacement (index self))
           (subst (delegate self) candidate replacement)
-          (stride self)
-          (iterator self)
-          (step self)))
+          (stride self)))
+
 (define-method (value (self <param>)) (value (delegate self)))
 (define-method (value (self <indexer>)) (value (delegate self)))
 (define-method (value (self <lookup>)) (value (delegate self)))
+
 (define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
 (define-method (rebase value (self <indexer>))
-  (indexer (dimension self) (index self) (rebase value (delegate self))))
+  (indexer (index self) (rebase value (delegate self)) (dimension self)))
 (define-method (rebase value (self <lookup>))
-  (lookup (index self) (rebase value (delegate self)) (stride self) (iterator self) (step self)))
+  (lookup (index self) (rebase value (delegate self)) (stride self)))
+
 (define-method (project (self <indexer>)) (project (delegate self) (index self)))
 (define-method (project (self <indexer>) (idx <var>))
-  (indexer (dimension self) (index self) (project (delegate self) idx)))
+  (indexer (index self) (project (delegate self) idx) (dimension self)))
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
-      (lookup (index self) (project (delegate self) idx) (stride self) (iterator self) (step self))))
-(define-method (get (self <indexer>) idx) (subst (delegate self) (index self) idx))
-(define-syntax-rule (tensor size index expr) (let [(index (var <long>))] (indexer size index expr)))
+      (lookup (index self) (project (delegate self) idx) (stride self))))
+
+(define dimension-hint (make-object-property))
+
+(define (element idx self)
+  (set! (dimension-hint idx) (dimension self))
+  (subst (delegate self) (index self) idx))
+
+(define-method (get (self <param>) . args)
+  "Use multiple indices to access elements"
+  (if (null? args) self (fold-right element self args)))
+
+(define-syntax dim
+  (lambda (x)
+    (syntax-case x ()
+      ((dim expr) #'expr)
+      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
-
-(define-method (setup self) '())
-(define-method (setup (self <indexer>))
-  (list (IMUL (step self) (get (delegate (stride self))) (size-of (typecode self)))
-        (MOV (iterator self) (value self))))
-(define-method (setup (self <function>)) (append-map setup (arguments self)))
-(define-method (increment self) '())
-(define-method (increment (self <indexer>)) (list (ADD (iterator self) (step self))))
-(define-method (increment (self <function>)) (append-map increment (arguments self)))
-(define-method (body self) self)
-(define-method (body (self <indexer>)) (project (rebase (iterator self) self)))
-(define-method (body (self <function>)) ((project self)))
-(define-method (shape (self <function>)) (argmax length (map shape (arguments self))))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
@@ -676,6 +679,62 @@
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
 (define-method (operand (a <param>)) (operand (delegate a)))
+
+(define-class <loop-detail> ()
+  (typecode #:init-keyword #:typecode #:getter typecode)
+  (iterator #:init-keyword #:iterator #:getter iterator)
+  (step     #:init-keyword #:step     #:getter step    )
+  (stride   #:init-keyword #:stride   #:getter stride  )
+  (base     #:init-keyword #:base     #:getter base    ))
+
+(define-method (loop-setup (self <loop-detail>))
+  (list (IMUL (step self) (value (stride self)) (size-of (typecode self)))
+        (MOV (iterator self) (base self))))
+
+(define-method (loop-increment (self <loop-detail>))
+  (list (ADD (iterator self) (step self))))
+
+(define-class <tensor-loop> ()
+  (loop-details #:init-keyword #:loop-details #:getter loop-details)
+  (body         #:init-keyword #:body         #:getter body        ))
+
+(define-method (tensor-loop (self <lookup>) (idx <var>))
+  (if (eq? idx (index self))
+    (let* [(iterator    (var <long>))
+           (step        (var <long>))
+           (loop-detail (make <loop-detail> #:typecode (typecode self)
+                                            #:iterator iterator
+                                            #:step     step
+                                            #:stride   (stride self)
+                                            #:base     (value self)))]
+      (make <tensor-loop> #:loop-details (list loop-detail)
+                          #:body         (rebase iterator (delegate self))))
+    (let [(t (tensor-loop (delegate self) idx))]
+      (make <tensor-loop> #:loop-details (loop-details t)
+                          #:body         (lookup (index self) (body t) (stride self))))))
+
+(define-method (tensor-loop (self <indexer>) (idx <var>))
+  (let [(t (tensor-loop (delegate self) idx))]
+    (make <tensor-loop> #:loop-details (loop-details t)
+                        #:body         (indexer (index self) (body t) (dimension self)))))
+
+(define-method (tensor-loop (self <indexer>))
+  (tensor-loop (delegate self) (index self)))
+
+(define-method (tensor-loop (self <function>))
+  (let* [(arguments (map tensor-loop (delegate self)))
+         (details   (append-map loop-details arguments))
+         (bodies    (map body arguments))]
+    (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
+
+(define-method (tensor-loop (self <function>) (idx <var>))
+  (let* [(arguments (map (cut tensor-loop <> idx) (delegate self)))
+         (details   (append-map loop-details arguments))
+         (bodies    (map body arguments))]
+    (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
+
+(define-method (tensor-loop (self <param>) . idx)
+  (make <tensor-loop> #:loop-details '() #:body self))
 
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
@@ -687,12 +746,14 @@
   (insert-intermediate b (skeleton (typecode a)) (cut code a <>)))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
 (define-method (code (a <indexer>) (b <param>))
-  (list (setup a)
-        (setup b)
-        (repeat (get (delegate (dimension a)))
-                (append (code (body a) (body b))
-                        (increment a)
-                        (increment b)))))
+  (let [(dest   (tensor-loop a))
+        (source (tensor-loop b))]
+    (append (append-map loop-setup (loop-details dest))
+            (append-map loop-setup (loop-details source))
+            (repeat (value (dimension a))
+                    (code (body dest) (body source))
+                    (append-map loop-increment (loop-details dest))
+                    (append-map loop-increment (loop-details source))))))
 (define-method (code (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
     (insert-intermediate fun (skeleton (type fun)) (cut code out <>))
@@ -705,7 +766,7 @@
 ; decompose parameters into elementary native types
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))
-(define-method (content (type <meta<composite>>) (self <function>)) (arguments self))
+(define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
   (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
 
@@ -743,9 +804,8 @@
   (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args type))]
-    `(define-method (,name . ,header) ,fun)))
+  (let [(header (typed-header (symbol-list arity) type))]
+    `(define-method (,name ,@header) ,fun)))
 
 (define-operator-mapping -   1 <meta<int<>>> (mutating-code   NEG              ))
 (define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code NEG))
@@ -814,16 +874,18 @@
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name out args)))
 
 (define (make-function name coercion fun args)
-  (make <function> #:arguments args
-                   #:type      (apply coercion (map type args))
-                   #:project   (lambda ()  (apply name (map body args)))
-                   #:delegate  #f
-                   #:term      (lambda (out) (fun out args))))
+  (make <function> #:delegate args
+                   #:coercion coercion
+                   #:name     name
+                   #:term     (lambda (out) (fun out args))))
+
+(define-method (type (self <function>))
+  (apply (coercion self) (map type (delegate self))))
 
 (define-macro (n-ary-base name arity coercion fun)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name . ,header) (make-function ,name ,coercion ,fun (list . ,args)))))
+    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
 
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
@@ -855,29 +917,29 @@
                   (code (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
-  (let* [(vars         (map skeleton classes))
-         (expr         (apply proc (map parameter vars)))
+  (let* [(args         (map skeleton classes))
+         (expr         (apply proc (map parameter args)))
          (result-type  (type expr))
-         (result       (parameter result-type))
-         (types        (map class-of vars))
-         (intermediate (generate-return-code vars result expr))
+         (intermediate (parameter result-type))
+         (types        (map class-of args))
+         (result       (generate-return-code args intermediate expr))
          (instructions (asm context
                             <ulong>
-                            (map typecode (content-vars vars))
-                            (apply virtual-variables (apply assemble intermediate))))
+                            (map typecode (content-vars args))
+                            (apply virtual-variables (apply assemble result))))
          (fun          (lambda header (apply instructions (append-map unbuild types header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<element>))]
-    `(define-method (,name . ,header)
-       (let [(f (jit ctx (map class-of (list . ,args)) ,delegate))]
+    `(define-method (,name ,@header)
+       (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
          (add-method! ,name
                       (make <method>
-                            #:specializers (map class-of (list . ,args))
+                            #:specializers (map class-of (list ,@args))
                             #:procedure (lambda args (apply f (map get args))))))
-       (,name . ,args))))
+       (,name ,@args))))
 
 (define-macro (define-nary-collect name arity)
   (let* [(args   (symbol-list arity))
@@ -885,12 +947,15 @@
     (cons 'begin
           (map
             (lambda (i)
-              `(define-method (,name . ,(cycle-times header i))
-                (apply ,name (map wrap (list . ,(cycle-times args i))))))
+              `(define-method (,name ,@(cycle-times header i))
+                (apply ,name (map wrap (list ,@(cycle-times args i))))))
             (iota arity)))))
 
+(define operations '())
+
 (define-syntax-rule (define-jit-method coercion name arity)
-  (begin (n-ary-base name arity coercion (delegate-fun name))
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 

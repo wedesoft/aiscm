@@ -36,27 +36,27 @@ Applied to the following image ...
 
 The binary operations are:
 
-* **+**: addition
-* **-**: subtraction
-* **\***: multiplication
-* **/**: division
-* **%**: remainder
-* **<<**: shift left
-* **>>**: shift right
-* **&**: bitwise and
-* **|**: bitwise or
-* **^**: bitwise exclusive-or
-* **&&**: boolean and
-* **||**: boolean or
-* **=**: equality
-* **!=**: unequal
-* **<**: lower than
-* **<=**: lower or equal
-* **>**: greater than
-* **>=**: greater or equal
-* **min**: minor value
-* **max**: major value
-* **complex**: compose complex number
+* **+:** addition
+* **-:** subtraction
+* **\*:** multiplication
+* **/:** division
+* **%:** remainder
+* **<<:** shift left
+* **>>:** shift right
+* **&:** bitwise and
+* **|:** bitwise or
+* **^:** bitwise exclusive-or
+* **&&:** boolean and
+* **||:** boolean or
+* **=:** equality
+* **!=:** unequal
+* **<:** lower than
+* **<=:** lower or equal
+* **>:** greater than
+* **>=:** greater or equal
+* **min:** minor value
+* **max:** major value
+* **complex:** compose complex number
 
 Furthermore there is **rgb** for composing RGB values which is a ternary method.
 
@@ -89,4 +89,14 @@ Also note that the arrays can have different number of dimensions as long as the
 
 ```Scheme
 @../tests/integration/binary.scm@
+```
+
+## Tensor operations
+
+Tensor notation is a compact way to describe operations involving multi-dimensional arrays.
+The *tensor* macro is used to declare a tensor expression. *dim* and *get* can be used to create indices and access array elements.
+See examples below for the behaviour of tensors.
+
+```Scheme
+@../tests/integration/tensors.scm@
 ```

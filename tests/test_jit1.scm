@@ -760,16 +760,6 @@
 (let [(out (skeleton <int>))]
   (test-equal "Generate code for setting variable to zero"
     (list (MOV (get out) 0)) (code out 0)))
-(let [(out  (parameter (sequence <int>)))]
-  (test-equal "setup of array loop should define increment and initialise pointer"
-    (list (IMUL (step out) (get (delegate (stride out))) (size-of (typecode out))) (MOV (iterator out) (value out)))
-    (setup out))
-  (test-equal "increment of array loop should increment the pointer"
-    (list (ADD (iterator out) (step out))) (increment out))
-  (test-equal "body of loop should be rebased to the pointer"
-    (iterator out) (value (body out)))
-  (test-assert "body of array loop should be a pointer object"
-    (is-a? (delegate (body out)) (pointer <int>))))
 (let [(in  (skeleton (pointer <byte>)))
       (out (skeleton (pointer <byte>)))]
   (test-equal "generate code for copying a byte from one memory location to another"
@@ -810,21 +800,6 @@
   (+ (parameter <int>) (parameter (sequence <int>))))
 (test-assert "create function from two tensors"
   (+ (parameter (sequence <int>)) (parameter (sequence <int>))))
-(let* [(a    (parameter (sequence <int>)))
-       (b    (parameter <int>))
-       (f    (+ a b))
-       (out  (parameter (sequence <int>)))]
-  (test-equal "setup of loop over array-scalar-function should setup looping over first argument"
-    (list (IMUL (step a) (get (delegate (stride a))) (size-of (typecode a))) (MOV (iterator a) (value a))) (setup f))
-  (test-equal "loop should increment input array iterator"
-    (list (ADD (iterator a) (step a))) (increment f))
-  (test-equal "body of loop should be function with element of first argument as argument"
-    (iterator a) (value (car (arguments (body f)))))
-  (test-equal "body of loop should maintain second argument"
-    b (cadr (arguments (body f))))
-  (test-equal "instantiate loop body for array-scalar-function"
-    (list (SUB RSP 8) (MOV ESI (ptr <int> RAX)) (ADD ESI EDX) (MOV (ptr <int> RDI) ESI) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (attach (code (body out) (body f)) (RET))))))
 (let [(out (skeleton (sequence <int>)))
       (a   (skeleton (sequence <int>)))
       (b   (skeleton <int>))]
@@ -832,18 +807,5 @@
     (list? (code (parameter out) (+ (parameter a) (parameter b))))))
 (test-equal "compile and run array-scalar operation"
   '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
-(let* [(a    (parameter <int>))
-       (b    (parameter (sequence <int>)))
-       (f    (+ a b))
-       (out  (parameter (sequence <int>)))]
-  (test-equal "setup of loop over scalar-array-function should setup looping over second argument"
-    (list (IMUL (step b) (get (delegate (stride b))) (size-of (typecode b))) (MOV (iterator b) (value b))) (setup f))
-  (test-equal "body of loop should maintain first argument"
-    a (car (arguments (body f))))
-  (test-equal "body of loop should be function with element of second argument as argument"
-    (iterator b) (value (cadr (arguments (body f)))))
-  (test-equal "instantiate loop body for scalar-array-function"
-    (list (SUB RSP 8) (MOV ESI EAX) (ADD ESI (ptr <int> RDX)) (MOV (ptr <int> RDI) ESI) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (attach (code (body out) (body f)) (RET))))))
 
 (test-end "aiscm jit1")

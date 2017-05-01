@@ -24,6 +24,8 @@
             typecode size shape strides dimensions coerce native-type wrap get-size
             build content unbuild component base to-type duplicate read-image read-audio
             write-image write-audio pointerless?))
+
+
 (define-class* <element> <object> <meta<element>> <class>
                (value #:init-keyword #:value #:getter value))
 (define-method (size-of (self <element>)) (size-of (class-of self)))

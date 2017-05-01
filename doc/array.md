@@ -1,4 +1,4 @@
-# Array manipulation
+# Arrays
 ## Array construction
 
 Arrays can be instantiated using a type specification. Note that the elements are not guaranteed to be initialised:
