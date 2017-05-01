@@ -1,6 +1,17 @@
 ## Ready
 
-* multiple iterators for one index
+* tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
+* multiple use of one indexer (get s i i) -> merge lookups
+* (tensor i (roll (get m i)))
+* (tensor i (project (get m i)))
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+    (accessors s) -> ((pointer stride count) ...) which pointer?
+    (tensor [i] ((roll m) i))
+    (tensor [i] ((roll (+ m s) i))
+    (tensor [i] (get m i 1))
+    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
+* tidy up structure of jit and tests
+* equality of arrays
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
@@ -20,19 +31,11 @@
 * use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
 * fast live analysis
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (* (s i) (s j)))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-    (tensor [i j] (* (s i) (s j)))
 * GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
-* floating point numbers (2.3.5: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
@@ -98,6 +101,7 @@
 * lexical sort
 * AdaBoost, decision trees, random forests
 * distance transform, Chamfer matching
+  http://www.gavrila.net/Research/Chamfer_System/chamfer_system.html
 * SLAM, inverse depth images
 * camera calibration
 * marker recognition
