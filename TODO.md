@@ -1,7 +1,7 @@
 ## Ready
 
 * tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
-* multiple use of one indexer (get s i i) -> merge lookups
+* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
 * parameter passing for sequences, map, tensor operations, replace fill and other?

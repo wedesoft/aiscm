@@ -25,6 +25,8 @@
     '(#t #t #f) (tensor-operations '(dim k s)))
   (test-equal "\"dim\" with two arguments is a tensor operation"
     '(#t #t #t #f) (tensor-operations '(dim i j s)))
+  (test-equal "\"inject\" is a tensor operation"
+    '(#t #t #t #f) (tensor-operations '(inject + i s)))
 (test-end "identify tensor operations")
 
 (test-begin "convert tensor expression to identifier")
@@ -139,5 +141,11 @@
   (test-equal "Create sum table using tensor"
     '((10 11 12) (20 21 22)) (to-list (tensor i j (+ (get (seq 0 1 2) i) (get (seq 10 20) j)))))
 (test-end "tensor macro")
+
+(test-begin "tensor reduce")
+  (test-skip 1)
+  (test-eqv "Sum elements using tensor expression"
+    10 (tensor (inject + k (get (seq 2 3 5) k))))
+(test-end "tensor reduce")
 
 (test-end "aiscm tensor")

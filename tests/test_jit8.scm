@@ -174,4 +174,7 @@
                    (lambda (a b) (dim i (+ (get a i) b))))
               (seq 2 3 5) 1)))
 (test-end "tensor expressions")
+
+(test-begin "tensor reductions")
+(test-end "tensor reductions")
 (test-end "tensors")

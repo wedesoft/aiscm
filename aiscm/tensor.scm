@@ -22,8 +22,9 @@
        (if (memv (car expr) operations)
          (argument-mask expr 0)
          (case (car expr)
-           ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-           ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
+           ((get)    (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+           ((dim)    (apply argument-mask expr (iota (- (length expr) 1)  )))
+           ((inject) (argument-mask expr 0 1 2))
            (else #f)))))
 
 (define (expression->identifier expr)

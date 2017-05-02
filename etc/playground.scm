@@ -1,59 +1,60 @@
 (use-modules (oop goops)
              (srfi srfi-1)
-             (srfi srfi-26)
              (srfi srfi-64)
-             (system foreign)
              (aiscm element)
              (aiscm int)
              (aiscm sequence)
-             (aiscm mem)
-             (aiscm pointer)
-             (aiscm rgb)
-             (aiscm complex)
-             (aiscm obj)
+             (aiscm util)
              (aiscm asm)
              (aiscm jit)
-             (aiscm method)
-             (aiscm util)
              (aiscm tensor))
 
 (test-begin "playground")
 
-; (tensor (dim i (+ (get (seq 2 3 5) i) 1)))
+(define-class <injecter> (<param>)
+  (name  #:init-keyword #:name  #:getter name)
+  (index #:init-keyword #:index #:getter index))
 
-(define ctx (make <context>))
+(define-method (type (self <injecter>))
+  (type (delegate self)))
 
-; (jit ctx (list (sequence <ubyte>) <ubyte>) (lambda (a b) (dim i (+ (get a i) b))))
+(define (injecter name index delegate)
+  (make <injecter> #:name name #:index index #:delegate delegate))
 
-(define context ctx)
-(define classes (list (sequence <ubyte>) <ubyte>))
-(define proc (lambda (a b) (dim i (+ (get a i) b))))
+(define-syntax-rule (inject name index delegate)
+  (let [(index (var <long>))]
+    (injecter name index delegate)))
 
-(define vars         (map skeleton classes))
-(define expr         (apply proc (map parameter vars)))
-(define result-type  (type expr))
-(define result       (parameter result-type))
-(define types        (map class-of vars))
+(define-method (code (out <param>) (in <injecter>))
+  (list (MOV (get (delegate out)) 10)))
 
-;(define intermediate (generate-return-code vars result expr))
-(define args vars)
-(define expr expr)
-(define intermediate result)
+(test-begin "tensor reduce")
+  (let [(s (parameter (sequence <ubyte>)))
+        (m (parameter (multiarray <ubyte> 2)))]
+    (test-equal "\"inject\" reduces 1D array to scalar"
+      <ubyte> (type (inject + i (get s i))))
+    (test-equal "\"inject\" reduces 2D array to 1D"
+      (sequence <ubyte>) (type (inject + i (get m i))))
+    (test-eqv "Sum elements using tensor expression"
+      10 (tensor (inject + k (get (seq 2 3 5) k)))))
+(test-end "tensor reduce")
 
-;(code intermediate expr)
-(tensor-loop expr)
-
-;(tensor-loop (delegate expr) (index expr))
-(define self (delegate expr))
-(define idx (index expr))
-
-;(define arguments (map (cut tensor-loop <> idx) (delegate self)))
-(tensor-loop (cadr (delegate self)) idx)
-
-;(define instructions (asm context
-;                         <ulong>
-;                  (map typecode (content-vars vars))
-;                  (apply virtual-variables (apply assemble intermediate))))
-;(define fun          (lambda header (apply instructions (append-map unbuild types header))))
+;(define i (var <long>))
+;(define s (parameter (sequence <ubyte>)))
+;
+;(define expr '(inject + i (get (seq 2 3 5) i)))
+;
+;(tensor-operations expr)
+;(tensor-variables expr)
+;
+;(expression->identifier expr)
+;
+;(define retval (parameter <ubyte>))
+;
+;(code retval expr)
+;
+;(define ctx (make <context>))
+;
+;((jit ctx (list (sequence <ubyte>)) (lambda (s) (inject + i (get s i)))) (seq 2 3 5))
 
 (test-end "playground")
