@@ -637,8 +637,11 @@
           (RET))
           (virtual-variables '() (list a b) (list (MOV c a) (ADD c b) (RET)) #:registers (list RSI RDI RAX)))
   (test-equal "'repeat' loop"
-    (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
-    (resolve-jumps (linear-scan-allocate (flatten-code (list (MOV a 0) (repeat b (INC a)) (RET)))))))
+      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+      (resolve-jumps (linear-scan-allocate (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
+  (test-equal "'repeat' loop with offset"
+    (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+    (resolve-jumps (linear-scan-allocate (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
 (test-equal "'blocked' represents the specified code segment"
   (list (MOV ECX 2) (RET)) (get-code (blocked AL (MOV ECX 2) (RET))))
 (test-equal "'blocked' stores the register to be blocked"

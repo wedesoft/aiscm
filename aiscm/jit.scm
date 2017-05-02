@@ -494,9 +494,9 @@
                         #:results results
                         #:blocked (blocked-intervals instructions)))
 
-(define (repeat n . body)
-  (let [(i (var (typecode n)))]
-    (list (MOV i 0) 'begin (CMP i n) (JE 'end) (INC i) body (JMP 'begin) 'end)))
+(define (repeat start end . body)
+  (let [(i (var (typecode end)))]
+    (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
 
 (define-class <block> ()
   (reg  #:init-keyword #:reg  #:getter get-reg)
@@ -750,7 +750,8 @@
         (source (tensor-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
-            (repeat (value (dimension a))
+            (repeat 0
+                    (value (dimension a))
                     (code (body dest) (body source))
                     (append-map loop-increment (loop-details dest))
                     (append-map loop-increment (loop-details source))))))
