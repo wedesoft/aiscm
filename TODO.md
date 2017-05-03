@@ -1,6 +1,7 @@
 ## Ready
 
 * tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
+* remove unnecessary copying from tensor loop
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))

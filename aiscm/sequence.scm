@@ -155,7 +155,7 @@
     (print-columns self #t " " (car (shape self)) (- 80 2) port)))
 (define-method (write (self <sequence<>>) port)
   (if (is-a? (value self) <mem>)
-    (begin (format port "#~a:~&" (class-name (class-of self)))
+    (begin (format port "#~a:~%" (class-name (class-of self)))
            (print-elements self port))
     (format port "#<~a ~a ~a ~a>" (class-name (class-of self))
                  (value self) (shape self) (strides self))))

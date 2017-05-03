@@ -1,6 +1,6 @@
 (use-modules (oop goops) (ice-9 rdelim) (aiscm v4l2))
 (define (select formats)
-  (for-each (lambda (i mode) (format #t "~a: ~a~&" i mode))
+  (for-each (lambda (i mode) (format #t "~a: ~a~%" i mode))
             (iota (length formats))
             formats)
   (format #t "> ") (list-ref formats (string->number (read-line (current-input-port)))))

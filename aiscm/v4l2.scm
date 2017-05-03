@@ -17,6 +17,7 @@
 (define-module (aiscm v4l2)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
