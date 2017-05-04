@@ -646,9 +646,11 @@
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self)))
 
-(define-method (project (self <indexer>)) (project (delegate self) (index self)))
+(define-method (project (self <indexer>))
+  (project (delegate self) (index self)))
 (define-method (project (self <indexer>) (idx <var>))
   (indexer (index self) (project (delegate self) idx) (dimension self)))
+
 (define-method (project (self <lookup>) (idx <var>))
   (if (eq? (index self) idx)
       (delegate self)
@@ -721,14 +723,8 @@
 (define-method (tensor-loop (self <indexer>))
   (tensor-loop (delegate self) (index self)))
 
-(define-method (tensor-loop (self <function>))
-  (let* [(arguments (map tensor-loop (delegate self)))
-         (details   (append-map loop-details arguments))
-         (bodies    (map body arguments))]
-    (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
-
-(define-method (tensor-loop (self <function>) (idx <var>))
-  (let* [(arguments (map (cut tensor-loop <> idx) (delegate self)))
+(define-method (tensor-loop (self <function>) . idx)
+  (let* [(arguments (map (cut apply tensor-loop <> idx) (delegate self)))
          (details   (append-map loop-details arguments))
          (bodies    (map body arguments))]
     (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
