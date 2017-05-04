@@ -1,7 +1,7 @@
 ## Ready
 
-* tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
-* remove unnecessary copying from tensor loop
+* remove unnecessary copying from injection tensor loop
+* cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))

@@ -6,13 +6,49 @@
   #:use-module (aiscm element)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
-  #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
-            build-expression consume-variables identifier->expression tensor-ctx)
+  #:export (<injecter>
+            tensor-operations expression->identifier identifier->symbol tensor-variables
+            build-expression consume-variables identifier->expression tensor-ctx
+            injecter)
   #:re-export (jit get wrap dim)
-  #:export-syntax (tensor tensor-body))
+  #:export-syntax (inject tensor tensor-body))
 
 
 (define tensor-ctx (make <context>))
+
+(define-class <injecter> (<param>)
+  (name  #:init-keyword #:name  #:getter name)
+  (index #:init-keyword #:index #:getter index))
+
+(define-method (type (self <injecter>))
+  (type (delegate self)))
+
+(define-method (shape (self <injecter>))
+  (shape (delegate self)))
+
+(define (injecter name index delegate)
+  (make <injecter> #:name name #:index index #:delegate delegate))
+
+(define-syntax-rule (inject name index delegate)
+  (let [(index (var <long>))]
+    (injecter name index delegate)))
+
+(define-method (tensor-loop (self <injecter>) . idx)
+  (let [(t (apply tensor-loop (delegate self) idx))]
+    (make <tensor-loop> #:loop-details (loop-details t)
+                        #:body (injecter (name self) (index self) (body t)))))
+
+(define-method (code (a <param>) (b <injecter>))
+  (let [(t (tensor-loop (delegate b) (index b)))]
+    (append
+      (append-map loop-setup (loop-details t))
+      (insert-intermediate (body t) (parameter (typecode a))
+        (lambda (intermediate)
+          (append (append-map loop-increment (loop-details t))
+                  (repeat 1 (value (dimension-hint (index b)))
+                          (code intermediate ((name b) intermediate (body t))); TODO: remove unnecessary copying
+                          (append-map loop-increment (loop-details t)))
+                  (code a intermediate)))))))
 
 (define (tensor-operations expr)
   "Check whether expression is a tensor operation"
