@@ -4,6 +4,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
   #:export (<injecter>
