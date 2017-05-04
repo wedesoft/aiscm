@@ -19,6 +19,9 @@
 (define-method (type (self <injecter>))
   (type (delegate self)))
 
+(define-method (shape (self <injecter>))
+  (shape (delegate self)))
+
 (define (injecter name index delegate)
   (make <injecter> #:name name #:index index #:delegate delegate))
 
@@ -26,17 +29,13 @@
   (let [(index (var <long>))]
     (injecter name index delegate)))
 
-(define-method (project (self <injecter>))
-  (injecter (name self) (index self) (project (delegate self))))
+(define-method (project (self <injecter>) . idx)
+  (injecter (name self) (index self) (apply project (delegate self) idx)))
 
-(define-method (project (self <injecter>) (idx <var>))
-  (injecter (name self) (index self) (project (delegate self) idx)))
-
-(define-method (tensor-loop (self <injecter>))
-  (let [(t (tensor-loop (delegate self)))]
+(define-method (tensor-loop (self <injecter>) . idx)
+  (let [(t (apply tensor-loop (delegate self) idx))]
     (make <tensor-loop> #:loop-details (loop-details t)
                         #:body (injecter (name self) (index self) (body t)))))
-; TODO: tensor-loop with index
 
 (define-method (code (a <param>) (b <injecter>))
   (let [(t (tensor-loop (delegate b) (index b)))]
@@ -49,17 +48,6 @@
                           (code intermediate (+ intermediate (body t))); TODO: remove unnecessary copying
                           (append-map loop-increment (loop-details t)))
                   (code a intermediate)))))))
-
-(define-method (code (a <indexer>) (b <injecter>))
-  (let [(dest   (tensor-loop a))
-        (source (tensor-loop b))]
-    (append (append-map loop-setup (loop-details dest))
-            (append-map loop-setup (loop-details source))
-            (repeat 0
-                    (value (dimension a))
-                    (code (body dest) (body source))
-                    (append-map loop-increment (loop-details dest))
-                    (append-map loop-increment (loop-details source))))))
 
 (test-begin "tensor reduce")
   (let [(s (parameter (sequence <ubyte>)))
@@ -76,12 +64,18 @@
       <ubyte> (type (project (inject + i (get m i)))))
     (test-eq "Project a tensor sum by index"
       <ubyte> (type (project (dim j (inject + i (get m i j))))))
-    (test-eq "typecode of array of integer sums is integer"
+    (test-eq "check loop details for array of integer sums"
       <ubyte> (typecode (car (loop-details (tensor-loop (inject + i (get m i)))))))
     (test-eq "preserve injection when looping over array of sums"
       <injecter> (class-of (body (tensor-loop (inject + i (get m i))))))
+    (test-equal "shape of array of tensor sums is one-dimensional"
+      (take (shape m) 1) (shape (inject + i (get m i))))
     (test-equal "Tensor sum along one axis"
-      '(4 6 8) (to-list (tensor (inject + k (get (arr (1 2 3) (3 4 5)) k))))))
+      '(4 6 8) (to-list (tensor (inject + i (get (arr (1 2 3) (3 4 5)) i)))))
+    (test-eq "check loop details when other axis explicitely indexed is integer"
+      <ubyte> (typecode (car (loop-details (tensor-loop (dim j (inject + i (get m i j))))))))
+    (test-equal "Tensor sum with other axis explicitely indexed"
+      '(4 6 8) (to-list (tensor i (inject + j (get (arr (1 2 3) (3 4 5)) i j))))))
 (test-end "tensor reduce")
 
 (define m (parameter (multiarray <ubyte> 2)))
