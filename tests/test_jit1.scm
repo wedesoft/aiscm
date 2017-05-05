@@ -42,20 +42,6 @@
 (let [(a (var <int>))
       (b (var <int>))
       (p (var <long>))]
-  (test-equal "Get variables of a program"
-    (list a b) (variables (list (MOV a 0) (MOV b a))))
-  (test-equal "Get variables of a program using a pointer"
-    (list a p) (variables (list (MOV a 0) (MOV (ptr <int> p) a))))
-
-  (test-assert "command without any pointer arguments"
-    (null? (get-ptr-args (MOV a 42))))
-  (test-equal "get pointer argument of a command"
-    (list p) (get-ptr-args (MOV (ptr <int> p) 42)))
-  (test-assert "compiled command without variables does not have pointer arguments"
-    (null? (get-ptr-args (MOV EAX 42))))
-  (test-equal "only return variable arguments of pointer"
-    (list p) (get-ptr-args (MOV (ptr <int> p 16) 42)))
-
   (test-equal "Substitute integer variable with register"
     (list (MOV ECX 42)) (substitute-variables (list (MOV a 42)) (list (cons a RCX))))
   (test-equal "Substitute variable with another"
@@ -112,20 +98,6 @@
     (test-equal "Use correct type when substituting variable with pointer"
       (MOVZX DI (ptr <ubyte> RSP 24))
       (substitute-variables (mov-unsigned x u) (list (cons x RDI) (cons u (ptr <long> RSP 24)))))))
-(test-equal "copy signed 16-bit value"
-  (MOV AX CX) (mov-signed AX CX))
-(test-equal "copy with sign extension"
-  (MOVSX EAX CX) (mov-signed EAX CX))
-(test-equal "copy part of signed value"
-  (MOV CL SIL) (mov-signed CL ESI))
-(test-equal "copy unsigned 16-bit value"
-  (MOV AX CX) (mov-unsigned AX CX))
-(test-equal "copy with zero extension"
-  (MOVZX EAX CX) (mov-unsigned EAX CX))
-(test-equal "copy part of unsigned value"
-  (MOV CL SIL) (mov-unsigned CL ESI))
-(test-equal "zero-extending 32-bit value is done by default"
-  (MOV EAX ECX) (mov-unsigned RAX ECX))
 
 (test-equal "the first parameters are register parameters"
   '(a b c) (register-parameters '(a b c)))
