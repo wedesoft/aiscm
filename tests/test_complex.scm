@@ -26,6 +26,8 @@
              (aiscm pointer)
              (aiscm sequence)
              (aiscm asm)
+             (aiscm variable)
+             (aiscm command)
              (aiscm jit))
 
 

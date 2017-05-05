@@ -19,6 +19,7 @@
              (oop goops)
              (aiscm sequence)
              (aiscm element)
+             (aiscm variable)
              (aiscm bool)
              (aiscm int)
              (aiscm obj)

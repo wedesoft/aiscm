@@ -21,6 +21,8 @@
              (rnrs bytevectors)
              (aiscm util)
              (aiscm asm)
+             (aiscm variable)
+             (aiscm command)
              (aiscm mem)
              (aiscm jit)
              (aiscm element)

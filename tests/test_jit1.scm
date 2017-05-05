@@ -21,6 +21,8 @@
              (oop goops)
              (aiscm util)
              (aiscm asm)
+             (aiscm variable)
+             (aiscm command)
              (aiscm mem)
              (aiscm jit)
              (aiscm element)
@@ -37,39 +39,9 @@
 (test-begin "aiscm jit1")
 
 (define ctx (make <context>))
-(test-assert "RGB does not have a native equivalent"
-  (not (native-equivalent (rgb 1 2 3))))
-(test-eq "integer is it's own native equivalent"
-  <int> (native-equivalent <int>))
-(test-eq "short integer is it's own native equivalent"
-  <sint> (native-equivalent <sint>))
-(test-eq "byte is native equivalent of boolean"
-  <ubyte> (native-equivalent <bool>))
-(test-eq "native equivalent of pointer is a 64 bit integer"
-  <ulong> (native-equivalent (pointer <ubyte>)))
-(test-eq "native equivalent of Scheme reference is a 64 bit integer"
-  <ulong> (native-equivalent <obj>))
-(test-eq "floating point number is it's own equivalent"
-  <float> (native-equivalent <float>))
-(test-eq "single-precision floating point number is it's own equivalent"
-  <double> (native-equivalent <double>))
 (let [(a (var <int>))
       (b (var <int>))
       (p (var <long>))]
-  (test-equal "Get input variables of MOV"
-    (list b) (input (MOV a b)))
-  (test-equal "Get input variables of ADD"
-    (list a b) (input (ADD a b)))
-  (test-equal "Prevent duplication of input variables"
-    (list a) (input (ADD a a)))
-  (test-equal "Get output variables of MOV"
-    (list a) (output (MOV a b)))
-  (test-equal "Get output variables of ADD"
-    (list a) (output (ADD a b)))
-  (test-equal "Get input variables of command writing to address"
-    (list b a) (input (MOV (ptr <int> a) b)))
-  (test-equal "Get arguments of command"
-    (list a 0) (get-args (MOV a 0)))
   (test-equal "Get variables of a program"
     (list a b) (variables (list (MOV a 0) (MOV b a))))
   (test-equal "Get variables of a program using a pointer"
@@ -154,57 +126,6 @@
   (MOV CL SIL) (mov-unsigned CL ESI))
 (test-equal "zero-extending 32-bit value is done by default"
   (MOV EAX ECX) (mov-unsigned RAX ECX))
-(test-equal "'labels' should extract indices of labels"
-  '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
-(test-equal "pass through live intervals if they are already sorted"
-  '((a . (0 . 3)) (b . (1 . 2))) (sort-live-intervals '((a . (0 . 3)) (b . (1 . 2))) '()))
-(test-equal "sort live intervals by start point"
-  '((b . (1 . 3)) (a . (2 . 2))) (sort-live-intervals '((a . (2 . 2)) (b . (1 . 3))) '()))
-(test-equal "prioritise predefined variables when sorting live intervals"
-  '((a . (1 . 3)) (b . (0 . 2))) (sort-live-intervals '((b . (0 . 2)) (a . (1 . 3))) '(a)))
-(test-equal "sort live intervals by length if start point is the same"
-  '((tmp . (0 . 0)) (a . (0 . 1))) (sort-live-intervals '((a . (0 . 1)) (tmp . (0 . 0))) '()))
-(test-equal "initial availability points of registers are zero by default"
-  (list (cons RAX 0)) (initial-register-use (list RAX)))
-
-(test-equal "first register available"
-  RAX (find-available-register (list (cons RAX 0)) 0))
-(test-assert "first register not available"
-  (not (find-available-register (list (cons RAX 1)) 0)))
-(test-equal "first register available at a later point in time"
-  RAX (find-available-register (list (cons RAX 1)) 1))
-(test-equal "first register already available"
-  RAX (find-available-register (list (cons RAX 0)) 1))
-(test-equal "second register is available"
-  RCX (find-available-register (list (cons RAX 3) (cons RCX 2)) 2))
-
-(test-equal "mark first register as used"
-  (list (cons RAX 4)) (mark-used-till (list (cons RAX 1)) RAX 3))
-(test-equal "keep track of unaffected registers"
-  (list (cons RAX 4) (cons RCX 5)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RAX 3))
-(test-equal "mark second register as used"
-  (list (cons RAX 1) (cons RCX 9)) (mark-used-till (list (cons RAX 1) (cons RCX 5)) RCX 8))
-
-(test-eq "spill the one variable if there is no other candidate"
-  'a (spill-candidate '((a . 0))))
-(test-eq "spill second variable if it is allocated for a longer interval"
-  'b (spill-candidate '((a . 0) (b . 1))))
-(test-eq "spill first variable if it is allocated for a longer interval"
-  'a (spill-candidate '((a . 1) (b . 0))))
-
-(test-equal "do not ignore variables with allocated register"
-  '((a . 2)) (ignore-spilled-variables '((a . 2)) (list (cons 'a RAX))))
-(test-assert "ignore spilled variables"
-  (null? (ignore-spilled-variables '((a . 2)) (list (cons 'a #f)))))
-(test-equal "do not ignore variable if it does not have a location assigned"
-  '((a . 2)) (ignore-spilled-variables '((a . 2)) '()))
-
-(test-equal "do not ignore register if it is not blocked"
-  (list (cons RAX 2)) (ignore-blocked-registers (list (cons RAX 2)) '(3 . 5) '()))
-(test-assert "ignore register for allocation if it is blocked"
-  (null? (ignore-blocked-registers (list (cons RAX 2)) '(3 . 5) (list (cons RAX '(5 . 6))))))
-(test-equal "do not ignore register if it is blocked outside the specified interval"
-  (list (cons RAX 2)) (ignore-blocked-registers (list (cons RAX 2)) '(3 . 5) (list (cons RAX '(6 . 8)))))
 
 (test-equal "the first parameters are register parameters"
   '(a b c) (register-parameters '(a b c)))
@@ -254,28 +175,10 @@
   (test-equal "do not use stack location if register already has a location allocated"
     (list (cons i RAX))
     (add-stack-parameter-information (list (cons i RAX)) (list (cons i (ptr <int> RSP 8))))))
-(test-equal "Get following indices for first statement in a program"
-  '(1) (next-indices '() (MOV CX 0) 0))
-(test-equal "Get following indices for second statement in a program"
-  '(2) (next-indices '() (MOV AX CX) 1))
-(test-assert "RET statement should not have any following indices"
-  (null? (next-indices '() (RET) 2)))
-(test-equal "Get following indices for a jump statement"
-  '(2) (next-indices '((a . 2)) (JMP 'a) 0))
-(test-equal "Get following indices for a conditional jump"
-  '(1 2) (next-indices '((a . 2)) (JNE 'a) 0))
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
       (x (var <sint>))]
-  (test-equal "Live-analysis for definition of unused variable"
-    (list '() (list a) '()) (live-analysis (list 'x (MOV a 0) (RET)) '()))
-  (test-equal "Live-analysis for definition and later use of a variable"
-    (list (list a) (list a) (list b a) '()) (live-analysis (list (MOV a 0) (NOP) (MOV b a) (RET)) '()))
-  (test-equal "Live-analysis with conditional jump statement"
-    (list (list a) (list a) (list a) (list a) '()) (live-analysis (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET)) '()))
-  (test-equal "results should be propagated backwards from the return statement"
-    (list (list a) (list a)) (live-analysis (list (MOV a 0) (RET)) (list a)))
   (test-assert "no variables means no unallocated variables"
     (null? (unallocated-variables '())))
   (test-equal "return the unallocated variable"

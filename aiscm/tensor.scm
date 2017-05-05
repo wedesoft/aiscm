@@ -3,6 +3,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm asm)
+  #:use-module (aiscm variable)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm util)

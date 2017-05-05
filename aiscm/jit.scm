@@ -24,20 +24,20 @@
   #:use-module (aiscm util)
   #:use-module (aiscm asm)
   #:use-module (aiscm element)
-  #:use-module (aiscm composite)
   #:use-module (aiscm scalar)
   #:use-module (aiscm pointer)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm float)
   #:use-module (aiscm obj)
-  #:use-module (aiscm method)
-  #:use-module (aiscm sequence)
   #:use-module (aiscm composite)
-  #:export (<block> <cmd> <var> <ptr> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            substitute-variables variables get-args input output get-ptr-args labels next-indices
-            initial-register-use find-available-register mark-used-till spill-candidate ignore-spilled-variables
-            ignore-blocked-registers live-analysis
+  #:use-module (aiscm sequence)
+  #:use-module (aiscm variable)
+  #:use-module (aiscm command)
+  #:use-module (aiscm register-allocate)
+  #:use-module (aiscm method)
+  #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
+            substitute-variables
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined
             first-argument replace-variables adjust-stack-pointer default-registers
@@ -46,9 +46,9 @@
             need-to-copy-first move-variable-content update-parameter-locations
             place-result-variable used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
-            sort-live-intervals linear-scan-coloring linear-scan-allocate callee-saved caller-saved
-            blocked repeat mov-signed mov-unsigned virtual-variables flatten-code relabel
-            filter-blocks blocked-intervals native-equivalent var skeleton parameter delegate name coercion
+            linear-scan-coloring linear-scan-allocate callee-saved caller-saved
+            blocked repeat virtual-variables flatten-code relabel
+            filter-blocks blocked-intervals skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
@@ -63,118 +63,6 @@
 
 (define ctx (make <context>))
 
-; class for defining input and output variables of machine instructions
-(define-method (get-args self) '())
-(define-method (input self) '())
-(define-method (output self) '())
-(define-class <cmd> ()
-  (op     #:init-keyword #:op     #:getter get-op)
-  (args   #:init-keyword #:args   #:getter get-args)
-  (input  #:init-keyword #:input  #:getter get-input)
-  (output #:init-keyword #:output #:getter get-output))
-(define-method (initialize (self <cmd>) initargs)
-  (let-keywords initargs #f (op (out '()) (io '()) (in '()))
-    (next-method self (list #:op     op
-                            #:args   (append out io in)
-                            #:input  (append io in)
-                            #:output (append io out)))))
-(define-method (write (self <cmd>) port)
-  (write (cons (generic-function-name (get-op self)) (get-args self)) port))
-(define-method (equal? (a <cmd>) (b <cmd>)) (equal? (object-slots a) (object-slots b)))
-
-(define (get-ptr-args cmd)
-  "get variables used as a pointer in a command"
-  (filter (cut is-a? <> <var>) (append-map get-args (filter (cut is-a? <> <ptr>) (get-args cmd)))))
-
-(define-syntax-rule (mutating-op op)
-  (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
-(define-syntax-rule (functional-op op)
-  (define-method (op . args) (make <cmd> #:op op #:out (list (car args)) #:in (cdr args))))
-(define-syntax-rule (state-setting-op op)
-  (define-method (op . args) (make <cmd> #:op op #:in args)))
-(define-syntax-rule (state-reading-op op)
-  (define-method (op . args) (make <cmd> #:op op #:out args)))
-
-(define (mov-part a b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
-(define (movzx32 a b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
-(define (mov-cmd movxx movxx32 a b)
-  (cond
-        ((eqv? (size-of a) (size-of b)) MOV)
-        ((<    (size-of a) (size-of b)) mov-part)
-        ((eqv? (size-of b) 4)           movxx32)
-        (else                           movxx)))
-(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX   a b) a b))
-(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX movzx32 a b) a b))
-(define (mov a b)
-  (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
-
-(functional-op    mov-signed  )
-(functional-op    mov-unsigned)
-(functional-op    MOV         )
-(functional-op    MOVSX       )
-(functional-op    MOVZX       )
-(functional-op    LEA         )
-(mutating-op      SHL         )
-(mutating-op      SHR         )
-(mutating-op      SAL         )
-(mutating-op      SAR         )
-(state-setting-op PUSH        )
-(state-reading-op POP         )
-(mutating-op      NEG         )
-(mutating-op      NOT         )
-(mutating-op      AND         )
-(mutating-op      OR          )
-(mutating-op      XOR         )
-(mutating-op      INC         )
-(mutating-op      ADD         )
-(mutating-op      SUB         )
-(mutating-op      IMUL        )
-(mutating-op      IDIV        )
-(mutating-op      DIV         )
-(state-setting-op CMP         )
-(state-setting-op TEST        )
-(state-reading-op SETB        )
-(state-reading-op SETNB       )
-(state-reading-op SETE        )
-(state-reading-op SETNE       )
-(state-reading-op SETBE       )
-(state-reading-op SETNBE      )
-(state-reading-op SETL        )
-(state-reading-op SETNL       )
-(state-reading-op SETLE       )
-(state-reading-op SETNLE      )
-(mutating-op      CMOVB       )
-(mutating-op      CMOVNB      )
-(mutating-op      CMOVE       )
-(mutating-op      CMOVNE      )
-(mutating-op      CMOVBE      )
-(mutating-op      CMOVNBE     )
-(mutating-op      CMOVL       )
-(mutating-op      CMOVNL      )
-(mutating-op      CMOVLE      )
-(mutating-op      CMOVNLE     )
-
-(define-class <var> ()
-  (type   #:init-keyword #:type   #:getter typecode)
-  (symbol #:init-keyword #:symbol #:init-form (gensym)))
-(define-method (write (self <var>) port)
-  (format port "~a:~a" (symbol->string (slot-ref self 'symbol)) (class-name (slot-ref self 'type))))
-(define-method (size-of (self <var>)) (size-of (typecode self)))
-(define-class <ptr> ()
-  (type #:init-keyword #:type #:getter typecode)
-  (args #:init-keyword #:args #:getter get-args))
-(define-method (write (self <ptr>) port)
-  (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
-(define-method (equal? (a <ptr>) (b <ptr>)) (equal? (object-slots a) (object-slots b)))
-(define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
-(define-method (variables self) '())
-(define-method (variables (self <var>)) (list self))
-(define-method (variables (self <cmd>)) (variables (get-args self)))
-(define-method (variables (self <ptr>)) (variables (get-args self)))
-(define-method (variables (self <list>)) (delete-duplicates (append-map variables self)))
-(define-method (input (self <cmd>))
-  (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
-(define-method (output (self <cmd>)) (variables (get-output self)))
 (define-method (substitute-variables self alist) self)
 
 (define-method (substitute-variables (self <var>) alist)
@@ -196,71 +84,6 @@
   (if (every real? args)
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
-
-(define-method (native-equivalent  self                   ) #f      )
-(define-method (native-equivalent (self <meta<bool>>     )) <ubyte> )
-(define-method (native-equivalent (self <meta<int<>>>    )) self    )
-(define-method (native-equivalent (self <meta<float<>>>  )) self    )
-(define-method (native-equivalent (self <meta<obj>>      )) <ulong> )
-(define-method (native-equivalent (self <meta<pointer<>>>)) <ulong> )
-
-(define-method (var self) (make <var> #:type (native-equivalent self)))
-
-(define (labels prog)
-  "Get positions of labels in program"
-  (filter (compose symbol? car) (map cons prog (iota (length prog)))))
-
-(define (initial-register-use registers)
-  "Initially all registers are available from index zero on"
-  (map (cut cons <> 0) registers))
-
-(define (sort-live-intervals live-intervals predefined-variables)
-  "Sort live intervals predefined variables first and then lexically by start point and length of interval"
-  (sort-by live-intervals
-           (lambda (live) (if (memv (car live) predefined-variables) -1 (- (cadr live) (/ 1 (+ 2 (cddr live))))))))
-
-(define (find-available-register availability first-index)
-  "Find register available from the specified first program index onwards"
-  (car (or (find (compose (cut <= <> first-index) cdr) availability) '(#f))))
-
-(define (mark-used-till availability element last-index)
-  "Mark element in use up to specified index"
-  (assq-set availability element (1+ last-index)))
-
-(define (spill-candidate variable-use)
-  "Select variable blocking for the longest time as a spill candidate"
-  (car (argmax cdr variable-use)))
-
-(define (ignore-spilled-variables variable-use allocation)
-  "Remove spilled variables from the variable use list"
-  (filter (compose (lambda (var) (cdr (or (assq var allocation) (cons var #t)))) car) variable-use))
-
-(define (ignore-blocked-registers availability interval blocked)
-  "Remove blocked registers from the availability list"
-  (apply assq-remove availability ((overlap-interval blocked) interval)))
-
-(define-method (next-indices labels cmd k)
-  "Determine next program indices for a statement"
-  (if (equal? cmd (RET)) '() (list (1+ k))))
-(define-method (next-indices labels (cmd <jcc>) k)
-  "Determine next program indices for a (conditional) jump"
-  (let [(target (assq-ref labels (get-target cmd)))]
-    (if (conditional? cmd) (list (1+ k) target) (list target))))
-
-(define (live-analysis prog results)
-  "Get list of live variables for program terminated by RET statement"
-  (letrec* [(inputs    (map-if (cut equal? (RET) <>) (const results) input prog))
-            (outputs   (map output prog))
-            (indices   (iota (length prog)))
-            (lut       (labels prog))
-            (flow      (map (cut next-indices lut <...>) prog indices))
-            (same?     (cut every (cut lset= equal? <...>) <...>))
-            (track     (lambda (value)
-                         (lambda (in ind out)
-                           (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
-            (initial   (map (const '()) prog))
-            (iteration (lambda (value) (map (track value) inputs flow outputs)))]
-    (map union (fixed-point initial iteration same?) outputs)))
 
 (define (unallocated-variables allocation)
    "Return a list of unallocated variables"

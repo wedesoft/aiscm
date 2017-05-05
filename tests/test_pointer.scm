@@ -20,6 +20,7 @@
              (ice-9 regex)
              (aiscm element)
              (aiscm pointer)
+             (aiscm variable)
              (aiscm mem)
              (aiscm bool)
              (aiscm int)

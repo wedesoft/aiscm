@@ -1,6 +1,7 @@
 ## Ready
 
 * remove unnecessary copying from injection tensor loop
+* documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))

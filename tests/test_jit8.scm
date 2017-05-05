@@ -12,6 +12,8 @@
              (aiscm complex)
              (aiscm obj)
              (aiscm asm)
+             (aiscm variable)
+             (aiscm command)
              (aiscm jit)
              (aiscm method)
              (aiscm util))

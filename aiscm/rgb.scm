@@ -27,6 +27,8 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm int)
   #:use-module (aiscm asm)
+  #:use-module (aiscm variable)
+  #:use-module (aiscm command)
   #:use-module (aiscm jit)
   #:use-module (aiscm sequence)
   #:export (<rgb>

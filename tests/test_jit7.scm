@@ -17,6 +17,8 @@
 (use-modules (oop goops)
              (srfi srfi-26)
              (aiscm asm)
+             (aiscm variable)
+             (aiscm command)
              (aiscm util)
              (aiscm jit)
              (aiscm element)
