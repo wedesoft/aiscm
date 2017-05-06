@@ -24,8 +24,6 @@
 
 (test-begin "aiscm register-allocate")
 
-(test-equal "'labels' should extract indices of labels"
-  '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
 (test-equal "initially availability points of registers are zero by default"
   (list (cons RAX 0) (cons RCX 0)) (initial-register-use (list RAX RCX)))
 

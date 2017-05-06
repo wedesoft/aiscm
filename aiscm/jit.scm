@@ -34,10 +34,10 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
+  #:use-module (aiscm program)
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            substitute-variables
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined
             first-argument replace-variables adjust-stack-pointer default-registers
@@ -63,22 +63,6 @@
 
 (define ctx (make <context>))
 
-(define-method (substitute-variables self alist) self)
-
-(define-method (substitute-variables (self <var>) alist)
-  "replace variable with associated value if there is one"
-  (let [(target (assq-ref alist self))]
-    (if (or (is-a? target <register>) (is-a? target <address>))
-      (to-type (typecode self) target)
-      (or target self))))
-(define-method (substitute-variables (self <ptr>) alist)
-  (let [(target (substitute-variables (car (get-args self)) alist))]
-    (if (is-a? target <pair>)
-      (ptr (typecode self) (car target) (+ (cadr (get-args self)) (cdr target)))
-      (apply ptr (typecode self) target (cdr (get-args self))))))
-(define-method (substitute-variables (self <cmd>) alist)
-  (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
-(define-method (substitute-variables (self <list>) alist) (map (cut substitute-variables <> alist) self))
 
 (define-method (native-type (i <real>) . args); TODO: remove this when floating point support is ready
   (if (every real? args)

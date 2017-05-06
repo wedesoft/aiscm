@@ -22,12 +22,9 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
-  #:export (labels initial-register-use sort-live-intervals find-available-register mark-used-till
+  #:use-module (aiscm program)
+  #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
             spill-candidate ignore-spilled-variables ignore-blocked-registers next-indices live-analysis))
-
-(define (labels prog)
-  "Get positions of labels in program"
-  (filter (compose symbol? car) (map cons prog (iota (length prog)))))
 
 (define (initial-register-use registers)
   "Initially all registers are available from index zero on"

@@ -1,5 +1,6 @@
 ## Ready
 
+* tidy up structure of jit and tests
 * remove unnecessary copying from injection tensor loop
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
@@ -12,8 +13,9 @@
     (tensor [i] ((roll (+ m s) i))
     (tensor [i] (get m i 1))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-* tidy up structure of jit and tests
 * equality of arrays
+* inject: equality, sum, mininum, maximum of frames
+* histogram with weights and customisable reduce operation (e.g. min instead of +)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
@@ -87,7 +89,6 @@
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* inject: equality, sum, mininum, maximum of frames
 * shape of xorg window
 * xorg window set size, fullscreen windows
 * use hash tables
