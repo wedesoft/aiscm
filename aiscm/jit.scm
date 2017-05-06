@@ -40,7 +40,7 @@
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined
-            first-argument replace-variables adjust-stack-pointer default-registers
+            replace-variables adjust-stack-pointer default-registers
             register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations
             need-to-copy-first move-variable-content update-parameter-locations
@@ -135,13 +135,6 @@
                    (initial-register-use registers)
                    '()
                    '()))
-
-(define-method (first-argument self)
-   "Return false for compiled instructions"
-   #f)
-(define-method (first-argument (self <cmd>))
-   "Get first argument of machine instruction"
-   (car (get-args self)))
 
 (define (replace-variables allocation cmd temporary)
   "Replace variables with registers and add spill code if necessary"

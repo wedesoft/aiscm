@@ -71,4 +71,13 @@
   (test-equal "zero-extending 32-bit value is done by default"
     (MOV EAX ECX) (mov-unsigned RAX ECX))
 (test-end "copy integer values")
+
+(test-begin "first argument of command")
+  (let [(a (var <int>))
+        (b (var <int>))]
+  (test-equal "get first argument of ADD statement"
+    a (first-argument (ADD a b)))
+  (test-assert "return false if statement is compiled already"
+    (not (first-argument (ADD CX DX)))))
+(test-end "first argument of command")
 (test-end "aiscm command")

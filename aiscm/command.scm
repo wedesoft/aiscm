@@ -26,7 +26,7 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
   #:export (<cmd>
-            get-op get-ptr-args input output mov-signed mov-unsigned mov)
+            get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov)
   #:re-export (variables get-args))
 
 (define-method (input self) '())
@@ -56,6 +56,13 @@
 (define (get-ptr-args cmd)
   "get variables used as a pointer in a command"
   (filter (cut is-a? <> <var>) (append-map get-args (filter (cut is-a? <> <ptr>) (get-args cmd)))))
+
+(define-method (first-argument self)
+   "Return false for compiled instructions"
+   #f)
+(define-method (first-argument (self <cmd>))
+   "Get first argument of machine instruction"
+   (car (get-args self)))
 
 (define (mov-part a b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
 (define (movzx32 a b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))

@@ -309,11 +309,6 @@
     (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
     (linear-scan-allocate (list (MOV r a) (RET)) #:parameters (list a) #:results (list r)))
 
-  (test-equal "get first argument of ADD statement"
-    a (first-argument (ADD a b)))
-  (test-assert "return false if statement is compiled already"
-    (not (first-argument (ADD CX DX))))
-
   (test-equal "only put instruction into a list if there are no variables to replace"
     (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) RAX))
   (test-equal "replace input variable with allocated register"
