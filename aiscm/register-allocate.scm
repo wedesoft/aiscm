@@ -19,12 +19,15 @@
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm util)
+  #:use-module (aiscm int)
   #:use-module (aiscm asm)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
   #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
-            spill-candidate ignore-spilled-variables ignore-blocked-registers next-indices live-analysis))
+            spill-candidate ignore-spilled-variables ignore-blocked-registers next-indices live-analysis
+            unallocated-variables register-allocations assign-spill-locations add-spill-information
+            blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring))
 
 (define (initial-register-use registers)
   "Initially all registers are available from index zero on"
@@ -77,3 +80,70 @@
             (initial   (map (const '()) prog))
             (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
+
+(define (unallocated-variables allocation)
+   "Return a list of unallocated variables"
+   (map car (filter (compose not cdr) allocation)))
+
+(define (register-allocations allocation)
+   "Return a list of variables with register allocated"
+   (filter cdr allocation))
+
+(define (assign-spill-locations variables offset increment)
+  "Assign spill locations to a list of variables"
+  (map (lambda (variable index) (cons variable (ptr <long> RSP index)))
+       variables
+       (iota (length variables) offset increment)))
+
+(define (add-spill-information allocation offset increment)
+  "Allocate spill locations for spilled variables"
+  (append (register-allocations allocation)
+          (assign-spill-locations (unallocated-variables allocation) offset increment)))
+
+(define (blocked-predefined predefined intervals blocked)
+  "Get blocked predefined registers"
+  (filter
+    (lambda (pair)
+      (let [(variable (car pair))
+            (register (cdr pair))]
+        (and (assq-ref intervals variable)
+             (memv register ((overlap-interval blocked) (assq-ref intervals variable))))))
+    predefined))
+
+(define (move-blocked-predefined blocked-predefined)
+  "Generate code for blocked predefined variables"
+  (map (compose MOV car+cdr) blocked-predefined))
+
+(define (non-blocked-predefined predefined blocked-predefined)
+  "Compute the set difference of the predefined variables and the variables with blocked registers"
+  (difference predefined blocked-predefined))
+
+(define (linear-scan-coloring live-intervals registers predefined blocked)
+  "Linear scan register allocation based on live intervals"
+  (define (linear-allocate live-intervals register-use variable-use allocation)
+    (if (null? live-intervals)
+        allocation
+        (let* [(candidate    (car live-intervals))
+               (variable     (car candidate))
+               (interval     (cdr candidate))
+               (first-index  (car interval))
+               (last-index   (cdr interval))
+               (variable-use (mark-used-till variable-use variable last-index))
+               (availability (ignore-blocked-registers register-use interval blocked))
+               (register     (or (assq-ref predefined variable)
+                                 (find-available-register availability first-index)))
+               (recursion    (lambda (allocation register)
+                               (linear-allocate (cdr live-intervals)
+                                                (mark-used-till register-use register last-index)
+                                                variable-use
+                                                (assq-set allocation variable register))))]
+          (if register
+            (recursion allocation register)
+            (let* [(spill-targets (ignore-spilled-variables variable-use allocation))
+                   (target        (spill-candidate spill-targets))
+                   (register      (assq-ref allocation target))]
+              (recursion (assq-set allocation target #f) register))))))
+  (linear-allocate (sort-live-intervals live-intervals (map car predefined))
+                   (initial-register-use registers)
+                   '()
+                   '()))
