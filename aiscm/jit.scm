@@ -45,7 +45,7 @@
             place-result-variable used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             linear-scan-allocate callee-saved caller-saved
-            blocked repeat virtual-variables flatten-code relabel
+            blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
@@ -202,21 +202,6 @@
 (define (stack-parameters parameters)
    "Return the parameters which are stored on the stack according to the x86 ABI"
    (drop-up-to parameters 6))
-
-(define (relabel prog)
-  (let* [(labels       (filter symbol? prog))
-         (replacements (map (compose gensym symbol->string) labels))
-         (translations (map cons labels replacements))]
-    (map (lambda (x)
-           (cond
-             ((symbol? x)     (assq-ref translations x))
-             ((is-a? x <jcc>) (retarget x (assq-ref translations (get-target x))))
-             ((list? x)       (relabel x))
-             (else            x)))
-         prog)))
-(define (flatten-code prog)
-  (let [(instruction? (lambda (x) (and (list? x) (not (every integer? x)))))]
-    (concatenate (map-if instruction? flatten-code list prog))))
 
 (define* (virtual-variables results parameters instructions #:key (registers default-registers))
   (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))

@@ -23,6 +23,7 @@
              (aiscm asm)
              (aiscm variable)
              (aiscm command)
+             (aiscm program)
              (aiscm mem)
              (aiscm jit)
              (aiscm element)
@@ -259,8 +260,6 @@
     (virtual-variables (list a) (list b) (list (MOV c b) (MOV a c) (RET)))))
 (test-eq "'retarget' should update target of jump statement"
   'new (get-target (retarget (JMP 'old) 'new)))
-(test-equal "'flatten-code' should flatten nested environments"
-  (list (JMP 1) 'a (NOP) (RET)) (flatten-code (list (list (JMP 1) 'a) (NOP) (RET))))
 (let [(a (var <int>))
       (b (var <int>))]
   (test-equal "'pass-parameter-variables' handles nested code blocks"
@@ -269,9 +268,6 @@
   (test-equal "'virtual-variables' maps the 7th integer parameter correctly"
     (list (SUB RSP 8) (MOV EAX (ptr <int> RSP 16)) (MOV EDX EAX) (MOV EAX EDX) (ADD RSP 8) (RET))
     (let [(args (map var (make-list 7 <int>)))] (virtual-variables (list a) args (list (MOV a (last args)) (RET))))))
-(test-equal "'relabel' should create separate namespaces for labels"
-  (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
-  (resolve-jumps (flatten-code (relabel (list (JMP 'a) (list (JMP 'a) 'a) (NOP) 'a)))))
 
 (let [(a (var <int>))]
   (test-eqv "'virtual-variables' creates separate namespaces for labels"

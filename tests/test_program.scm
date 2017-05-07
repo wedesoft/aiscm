@@ -87,4 +87,12 @@
         (MOVZX DI (ptr <ubyte> RSP 24))
         (substitute-variables (mov-unsigned x u) (list (cons x RDI) (cons u (ptr <long> RSP 24)))))))
 (test-end "variable substitution")
+
+(test-equal "'relabel' should create separate namespaces for labels"
+  (resolve-jumps (list (JMP 'b) (JMP 'a) 'a (NOP) 'b))
+  (resolve-jumps (flatten-code (relabel (list (JMP 'a) (list (JMP 'a) 'a) (NOP) 'a)))))
+
+(test-equal "'flatten-code' should flatten nested environments"
+  (list (JMP 1) 'a (NOP) (RET)) (flatten-code (list (list (JMP 1) 'a) (NOP) (RET))))
+
 (test-end "aiscm program")

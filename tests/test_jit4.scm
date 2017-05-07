@@ -23,6 +23,7 @@
              (aiscm asm)
              (aiscm variable)
              (aiscm command)
+             (aiscm program)
              (aiscm mem)
              (aiscm jit)
              (aiscm element)

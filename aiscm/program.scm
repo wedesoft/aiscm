@@ -16,12 +16,14 @@
 ;;
 (define-module (aiscm program)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm asm)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
-  #:export (labels substitute-variables))
+  #:export (labels substitute-variables relabel flatten-code))
 
 
 (define (labels prog)
@@ -44,3 +46,21 @@
   (apply (get-op self) (map (cut substitute-variables <> alist) (get-args self))))
 (define-method (substitute-variables (self <list>) alist)
   (map (cut substitute-variables <> alist) self))
+
+(define (relabel prog)
+  "Use distinct name for each label"
+  (let* [(labels       (filter symbol? prog))
+         (replacements (map (compose gensym symbol->string) labels))
+         (translations (map cons labels replacements))]
+    (map (lambda (x)
+           (cond
+             ((symbol? x)     (assq-ref translations x))
+             ((is-a? x <jcc>) (retarget x (assq-ref translations (get-target x))))
+             ((list? x)       (relabel x))
+             (else            x)))
+         prog)))
+
+(define (flatten-code prog)
+  "Remove nested lists used for separating namespaces"
+  (let [(instruction? (lambda (x) (and (list? x) (not (every integer? x)))))]
+    (concatenate (map-if instruction? flatten-code list prog))))
