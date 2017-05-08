@@ -226,32 +226,6 @@
     (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
     (linear-scan-allocate (list (MOV r a) (RET)) #:parameters (list a) #:results (list r)))
 
-  (test-equal "only put instruction into a list if there are no variables to replace"
-    (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) RAX))
-  (test-equal "replace input variable with allocated register"
-    (list (MOV ESI ECX)) (replace-variables (list (cons a RCX)) (MOV ESI a) RAX))
-  (test-equal "replace output variable with allocated register"
-    (list (MOV ECX 0)) (replace-variables (list (cons a RCX)) (MOV a 0) RAX))
-  (test-equal "read input variable from spill location"
-    (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV EDX a) RAX))
-  (test-equal "use temporary register for first argument and fetch value from spill location"
-    (list (MOV AX (ptr <sint> RSP 16)) (CMP AX 0)) (replace-variables (list (cons x (ptr <long> RSP 16))) (CMP x 0) RAX))
-  (test-equal "use correct type for temporary register"
-    (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0)) (replace-variables (list (cons a (ptr <long> RSP 16))) (CMP a 0) RAX))
-  (test-equal "read and write back argument from stack into temporary register"
-    (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
-    (replace-variables (list (cons a (ptr <long> RSP 16))) (ADD a 1) RAX))
-  (test-equal "write output value in temporary register to the stack"
-    (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX)) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) RAX))
-  (test-equal "use temporary variable to implement reading from pointer to pointer"
-    (list (MOV RAX (ptr <long> RSP 32)) (MOV EDX (ptr <int> RAX 8)))
-    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV a (ptr <int> p 8)) RAX))
-  (test-equal "do not use temporary variable when reading from register pointer"
-    (list (MOV EDX (ptr <int> RCX 8))) (replace-variables (list (cons a RDX) (cons p RCX)) (MOV a (ptr <int> p 8)) RAX))
-  (test-equal "use temporary variable to implement writing to pointer to pointer"
-    (list (MOV RAX (ptr <long> RSP 32)) (MOV (ptr <int> RAX 8) EDX))
-    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) RAX))
-
   (test-equal "'virtual-variables' uses the specified variables as parameters"
     (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
     (virtual-variables (list a) (list b c) (list (MOV a b) (ADD a c) (RET))))
