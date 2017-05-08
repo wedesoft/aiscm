@@ -26,7 +26,8 @@
   #:use-module (aiscm program)
   #:export (replace-variables adjust-stack-pointer
             default-registers callee-saved caller-saved parameter-registers register-parameters stack-parameters
-            register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information))
+            register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information
+            used-callee-saved))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -85,3 +86,7 @@
    (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
         (map car allocation)
         (map cdr allocation)))
+
+(define (used-callee-saved allocation)
+   "Return the list of callee saved registers in use"
+   (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))

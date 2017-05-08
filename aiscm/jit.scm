@@ -40,7 +40,7 @@
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
             need-to-copy-first move-variable-content update-parameter-locations
-            place-result-variable used-callee-saved backup-registers
+            place-result-variable backup-registers
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             linear-scan-allocate
             blocked repeat virtual-variables
@@ -110,10 +110,6 @@
           (attach (append (all-but-last code)
                           (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
                   (RET))))
-
-(define (used-callee-saved allocation)
-   "Return the list of callee saved registers in use"
-   (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
 
 (define (backup-registers registers code)
   "Store register content on stack and restore it after executing the code"

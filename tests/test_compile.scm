@@ -108,4 +108,17 @@
       (add-stack-parameter-information (list (cons i RAX)) (list (cons i (ptr <int> RSP 8))))))
 (test-end "parameter locations")
 
+(test-begin "used callee saved registers")
+  (test-assert "no registers in use"
+    (null? (used-callee-saved '())))
+  (test-equal "callee saved register in use"
+    (list RBX) (used-callee-saved (list (cons 'a RBX))))
+  (test-equal "remove duplicate registers"
+    (list RBX) (used-callee-saved (list (cons 'a RBX) (cons 'b RBX))))
+  (test-assert "ignore caller saved register"
+    (null? (used-callee-saved (list (cons 'a RAX)))))
+  (test-assert "ignore variables without allocated register"
+    (null?  (used-callee-saved (list (cons 'a #f)))))
+(test-end "used callee saved registers")
+
 (test-end "aiscm compile")

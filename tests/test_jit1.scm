@@ -205,17 +205,6 @@
   (test-equal "return unmodified code if result already is residing in RAX"
     (list (NOP) (RET)) (place-result-variable (list r) (list (cons r RAX)) (list (NOP) (RET)))))
 
-(test-assert "no registers in use"
-  (null? (used-callee-saved '())))
-(test-equal "callee saved register in use"
-  (list RBX) (used-callee-saved (list (cons 'a RBX))))
-(test-equal "remove duplicate registers"
-  (list RBX) (used-callee-saved (list (cons 'a RBX) (cons 'b RBX))))
-(test-assert "ignore caller saved register"
-  (null? (used-callee-saved (list (cons 'a RAX)))))
-(test-assert "ignore variables without allocated register"
-  (null?  (used-callee-saved (list (cons 'a #f)))))
-
 (test-equal "backup one register"
   (list (PUSH RBX) (NOP) (POP RBX) (RET)) (backup-registers (list RBX) (list (NOP) (RET))))
 (test-equal "backup two registers"
