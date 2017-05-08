@@ -10,7 +10,7 @@ TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmp
 				test_int.scm test_jit1.scm test_jit2.scm test_jit3.scm test_jit4.scm test_jit5.scm test_jit6.scm \
 				test_jit7.scm test_magick.scm test_mem.scm test_method.scm test_obj.scm test_op.scm test_pointer.scm \
 				test_pulse.scm test_rgb.scm test_ringbuffer.scm test_sequence.scm test_util.scm test_samples.scm \
-				test_tensor.scm test_variable.scm test_command.scm test_program.scm test_register_allocate.scm \
+				test_tensor.scm test_variable.scm test_command.scm test_program.scm test_live_analysis.scm test_register_allocate.scm \
 				test_compile.scm
 
 EXTRA_DIST = $(TESTS)

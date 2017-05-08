@@ -78,29 +78,6 @@
     (list (cons RAX 2)) (ignore-blocked-registers (list (cons RAX 2)) '(3 . 5) (list (cons RAX '(6 . 8)))))
 (test-end "register spilling")
 
-(test-begin "live analysis")
-  (test-equal "Get following indices for first statement in a program"
-    '(1) (next-indices '() (MOV CX 0) 0))
-  (test-equal "Get following indices for second statement in a program"
-    '(2) (next-indices '() (MOV AX CX) 1))
-  (test-assert "RET statement should not have any following indices"
-    (null? (next-indices '() (RET) 2)))
-  (test-equal "Get following indices for a jump statement"
-    '(2) (next-indices '((a . 2)) (JMP 'a) 0))
-  (test-equal "Get following indices for a conditional jump"
-    '(1 2) (next-indices '((a . 2)) (JNE 'a) 0))
-  (let [(a (var <int>))
-        (b (var <int>))]
-    (test-equal "Live-analysis for definition of unused variable"
-      (list '() (list a) '()) (live-analysis (list 'x (MOV a 0) (RET)) '()))
-    (test-equal "Live-analysis for definition and later use of a variable"
-      (list (list a) (list a) (list b a) '()) (live-analysis (list (MOV a 0) (NOP) (MOV b a) (RET)) '()))
-    (test-equal "Live-analysis with conditional jump statement"
-      (list (list a) (list a) (list a) (list a) '()) (live-analysis (list (MOV a 0) 'x (ADD a 1) (JE 'x) (RET)) '()))
-    (test-equal "results should be propagated backwards from the return statement"
-      (list (list a) (list a)) (live-analysis (list (MOV a 0) (RET)) (list a))))
-(test-end "live analysis")
-
 (test-begin "identify free variables")
   (let [(a (var <int>))
         (b (var <int>))

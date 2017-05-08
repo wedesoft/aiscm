@@ -25,7 +25,7 @@
   #:use-module (aiscm command)
   #:use-module (aiscm program)
   #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
-            spill-candidate ignore-spilled-variables ignore-blocked-registers next-indices live-analysis
+            spill-candidate ignore-spilled-variables ignore-blocked-registers
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring))
 
@@ -57,29 +57,6 @@
 (define (ignore-blocked-registers availability interval blocked)
   "Remove blocked registers from the availability list"
   (apply assq-remove availability ((overlap-interval blocked) interval)))
-
-(define-method (next-indices labels cmd k)
-  "Determine next program indices for a statement"
-  (if (equal? cmd (RET)) '() (list (1+ k))))
-(define-method (next-indices labels (cmd <jcc>) k)
-  "Determine next program indices for a (conditional) jump"
-  (let [(target (assq-ref labels (get-target cmd)))]
-    (if (conditional? cmd) (list (1+ k) target) (list target))))
-
-(define (live-analysis prog results)
-  "Get list of live variables for program terminated by RET statement"
-  (letrec* [(inputs    (map-if (cut equal? (RET) <>) (const results) input prog))
-            (outputs   (map output prog))
-            (indices   (iota (length prog)))
-            (lut       (labels prog))
-            (flow      (map (cut next-indices lut <...>) prog indices))
-            (same?     (cut every (cut lset= equal? <...>) <...>))
-            (track     (lambda (value)
-                         (lambda (in ind out)
-                           (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
-            (initial   (map (const '()) prog))
-            (iteration (lambda (value) (map (track value) inputs flow outputs)))]
-    (map union (fixed-point initial iteration same?) outputs)))
 
 (define (unallocated-variables allocation)
    "Return a list of unallocated variables"

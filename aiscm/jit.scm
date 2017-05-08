@@ -35,6 +35,7 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
+  #:use-module (aiscm live-analysis)
   #:use-module (aiscm compile)
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
