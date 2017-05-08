@@ -52,4 +52,8 @@
     (list (MOV RAX (ptr <long> RSP 32)) (MOV (ptr <int> RAX 8) EDX))
     (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) RAX)))
 (test-end "replace-variables")
+
+(test-equal "adjusting the stack pointer by decreasing and increasing RSP"
+  (list (SUB RSP 123) (NOP) (NOP) (NOP) (ADD RSP 123) (RET ))
+  (adjust-stack-pointer 123 (list (NOP) (NOP) (NOP) (RET))))
 (test-end "aiscm compile")

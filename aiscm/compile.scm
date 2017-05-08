@@ -23,7 +23,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:export (replace-variables))
+  #:export (replace-variables adjust-stack-pointer))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -41,3 +41,7 @@
         ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
         (attach (map (compose (cut MOV temporary <>) location) spilled-pointer)
                 (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointer)))))))
+
+(define (adjust-stack-pointer offset prog)
+  "Adjust stack pointer offset at beginning and end of program"
+  (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))

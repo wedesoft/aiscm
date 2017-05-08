@@ -39,7 +39,7 @@
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            adjust-stack-pointer default-registers
+            default-registers
             register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations
             need-to-copy-first move-variable-content update-parameter-locations
@@ -67,11 +67,6 @@
   (if (every real? args)
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
-
-
-(define (adjust-stack-pointer offset prog)
-  "Adjust stack pointer offset at beginning and end of program"
-  (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
 
 (define (number-spilled-variables allocation stack-parameters)
   "Count the number of spilled variables"
@@ -142,8 +137,7 @@
                           (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
                   (RET))))
 
-; RSP is not included because it is used as a stack pointer
-; RBP is not included because it may be used as a frame pointer
+;RSP is not included because it is used as a stack pointer
 (define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 R12 R13 R14 R15 RBX RBP))
 (define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
