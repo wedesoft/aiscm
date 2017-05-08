@@ -23,7 +23,8 @@
   #:use-module (aiscm util)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:export (replace-variables adjust-stack-pointer))
+  #:export (replace-variables adjust-stack-pointer
+            default-registers callee-saved caller-saved parameter-registers))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -45,3 +46,9 @@
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
   (append (list (SUB RSP offset)) (all-but-last prog) (list (ADD RSP offset) (RET))))
+
+;RSP is not included because it is used as a stack pointer
+(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 R12 R13 R14 R15 RBX RBP))
+(define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
+(define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
+(define parameter-registers (list RDI RSI RDX RCX R8 R9))

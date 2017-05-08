@@ -39,13 +39,12 @@
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            default-registers
             register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations
             need-to-copy-first move-variable-content update-parameter-locations
             place-result-variable used-callee-saved backup-registers add-stack-parameter-information
             number-spilled-variables temporary-variables unit-intervals temporary-registers
-            linear-scan-allocate callee-saved caller-saved
+            linear-scan-allocate
             blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
@@ -136,12 +135,6 @@
           (attach (append (all-but-last code)
                           (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
                   (RET))))
-
-;RSP is not included because it is used as a stack pointer
-(define default-registers (list RAX RCX RDX RSI RDI R10 R11 R9 R8 R12 R13 R14 R15 RBX RBP))
-(define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
-(define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
-(define parameter-registers (list RDI RSI RDX RCX R8 R9))
 
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
