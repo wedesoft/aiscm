@@ -41,56 +41,6 @@
 
 (define ctx (make <context>))
 
-(test-equal "the first parameters are register parameters"
-  '(a b c) (register-parameters '(a b c)))
-(test-equal "only the first six parameters are register parameters"
-  '(a b c d e f) (register-parameters '(a b c d e f g)))
-(test-assert "the first few parameters are not stored on the stack"
-  (null? (stack-parameters '(a b c))))
-(test-equal "appart from the first six parameters, all parameters are stored on the stack"
-  '(g h) (stack-parameters '(a b c d e f g h)))
-
-(let [(i (var <int>))
-      (l (var <long>))]
-  (test-assert "initial parameter locations for no parameters"
-    (null? (register-parameter-locations '())))
-  (test-equal "initial parameter location for one parameter"
-    (list (cons i RDI)) (register-parameter-locations (list i)))
-  (test-equal "initial parameter locations for first six parameters"
-    (list RDI RSI RDX RCX R8 R9) (map cdr (register-parameter-locations (make-list 6 l))))
-
-  (test-assert "initial stack parameter locations for no parameters"
-    (null? (stack-parameter-locations '() 0)))
-  (test-equal "initial parameter location of an integer stack parameter"
-    (list (cons i (ptr <long> RSP 8))) (stack-parameter-locations (list i) 0))
-  (test-equal "parameter locations of two stack parameters"
-    (list (ptr <long> RSP 8) (ptr <long> RSP 16)) (map cdr (stack-parameter-locations (list i i) 0)))
-  (test-equal "take stack offset into account when determining stack parameter locations"
-    (list (ptr <long> RSP 24) (ptr <long> RSP 32)) (map cdr (stack-parameter-locations (list i i) 16)))
-
-  (test-assert "parameter locations for empty set of parameters"
-    (null? (parameter-locations '() 0)))
-  (test-equal "parameter location for first parameter"
-    (list (cons 'a RDI) (cons 'b RSI)) (parameter-locations '(a b) 0))
-  (test-equal "parameter locations for register and stack parameters"
-    (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX)
-          (cons 'e R8) (cons 'f R9) (cons 'g (ptr <long> RSP 8)) (cons 'h (ptr <long> RSP 16)))
-    (parameter-locations '(a b c d e f g h) 0))
-  (test-equal "parameter locations for register and stack parameters"
-    (list (cons 'a RDI) (cons 'b RSI) (cons 'c RDX) (cons 'd RCX)
-          (cons 'e R8) (cons 'f R9) (cons 'g (ptr <long> RSP 24)) (cons 'h (ptr <long> RSP 32)))
-    (parameter-locations '(a b c d e f g h) 16))
-
-  (test-assert "no stack location required"
-    (null? (add-stack-parameter-information '() '())))
-  (test-equal "use stack location for register spilling"
-    (list (cons i (ptr <int> RSP 8)))
-    (add-stack-parameter-information (list (cons i #f)) (list (cons i (ptr <int> RSP 8)))))
-  (test-equal "do not use stack location if register already has a location allocated"
-    (list (cons i RAX))
-    (add-stack-parameter-information (list (cons i RAX)) (list (cons i (ptr <int> RSP 8))))))
-
-
 (test-assert "no need to copy RSI to RAX before RDX to RCX"
   (not (need-to-copy-first (list (cons 'a RSI) (cons 'b RDX)) (list (cons 'a RAX) (cons 'b RCX)) 'a 'b)))
 (test-assert "RSI needs to be copied to RAX before copying RDX to RSI"

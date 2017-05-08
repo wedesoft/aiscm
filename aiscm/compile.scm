@@ -19,12 +19,14 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
   #:use-module (aiscm asm)
   #:use-module (aiscm util)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
   #:export (replace-variables adjust-stack-pointer
-            default-registers callee-saved caller-saved parameter-registers))
+            default-registers callee-saved caller-saved parameter-registers register-parameters stack-parameters
+            register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -52,3 +54,34 @@
 (define callee-saved (list RBX RBP RSP R12 R13 R14 R15))
 (define caller-saved (list RAX RCX RDX RSI RDI R10 R11 R9 R8))
 (define parameter-registers (list RDI RSI RDX RCX R8 R9))
+
+(define (register-parameters parameters)
+   "Return the parameters which are stored in registers according to the x86 ABI"
+   (take-up-to parameters 6))
+
+(define (stack-parameters parameters)
+   "Return the parameters which are stored on the stack according to the x86 ABI"
+   (drop-up-to parameters 6))
+
+(define (register-parameter-locations parameters)
+  "Create an association list with the initial parameter locations"
+  (map cons parameters parameter-registers))
+
+(define (stack-parameter-locations parameters offset)
+  "Determine initial locations of stack parameters"
+  (map (lambda (parameter index) (cons parameter (ptr <long> RSP index)))
+       parameters
+       (iota (length parameters) (+ 8 offset) 8)))
+
+(define (parameter-locations parameters offset)
+  "return association list with default locations for the method parameters"
+  (let [(register-parameters (register-parameters parameters))
+        (stack-parameters    (stack-parameters parameters))]
+    (append (register-parameter-locations register-parameters)
+            (stack-parameter-locations stack-parameters offset))))
+
+(define (add-stack-parameter-information allocation stack-parameter-locations)
+   "Add the stack location for stack parameters which do not have a register allocated"
+   (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
+        (map car allocation)
+        (map cdr allocation)))

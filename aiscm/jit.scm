@@ -39,10 +39,8 @@
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            register-parameters stack-parameters
-            register-parameter-locations stack-parameter-locations parameter-locations
             need-to-copy-first move-variable-content update-parameter-locations
-            place-result-variable used-callee-saved backup-registers add-stack-parameter-information
+            place-result-variable used-callee-saved backup-registers
             number-spilled-variables temporary-variables unit-intervals temporary-registers
             linear-scan-allocate
             blocked repeat virtual-variables
@@ -85,29 +83,6 @@
 (define (temporary-registers allocation variables)
   "Look up register for each temporary variable given the result of a register allocation"
   (map (cut assq-ref allocation <>) variables))
-
-(define (register-parameter-locations parameters)
-  "Create an association list with the initial parameter locations"
-  (map cons parameters (list RDI RSI RDX RCX R8 R9)))
-
-(define (stack-parameter-locations parameters offset)
-  "Determine initial locations of stack parameters"
-  (map (lambda (parameter index) (cons parameter (ptr <long> RSP index)))
-       parameters
-       (iota (length parameters) (+ 8 offset) 8)))
-
-(define (parameter-locations parameters offset)
-  "return association list with default locations for the method parameters"
-  (let [(register-parameters (register-parameters parameters))
-        (stack-parameters    (stack-parameters parameters))]
-    (append (register-parameter-locations register-parameters)
-            (stack-parameter-locations stack-parameters offset))))
-
-(define (add-stack-parameter-information allocation stack-parameter-locations)
-   "Add the stack location for stack parameters which do not have a register allocated"
-   (map (lambda (variable location) (cons variable (or location (assq-ref stack-parameter-locations variable))))
-        (map car allocation)
-        (map cdr allocation)))
 
 (define (need-to-copy-first initial targets a b)
   "Check whether parameter A needs to be copied before B given INITIAL and TARGETS locations"
@@ -167,14 +142,6 @@
         (place-result-variable results locations
           (append (update-parameter-locations parameters locations parameter-offset)
                   (append-map (cut replace-variables locations <...>) prog temporaries)))))))
-
-(define (register-parameters parameters)
-   "Return the parameters which are stored in registers according to the x86 ABI"
-   (take-up-to parameters 6))
-
-(define (stack-parameters parameters)
-   "Return the parameters which are stored on the stack according to the x86 ABI"
-   (drop-up-to parameters 6))
 
 (define* (virtual-variables results parameters instructions #:key (registers default-registers))
   (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))

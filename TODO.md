@@ -3,9 +3,11 @@
 * linear-scan-allocate: rename
 * tidy up structure of jit and tests
 * correlation: \*, +=, dilation: first, max, ...
+* convolution in tensor (finite element analysis)
 * remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
+* faster live analysis
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
@@ -17,7 +19,7 @@
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * equality of arrays
 * inject: equality, sum, mininum, maximum of frames
-* histogram with weights and customisable reduce operation (e.g. min instead of +)
+* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
@@ -34,7 +36,6 @@
 * fix dts error for mp4 output (Ubuntu Trusty)
 * select video codec, select audio codec
 * video player with aspect ratio
-* use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
 * fast live analysis
 * GNOME video widget
