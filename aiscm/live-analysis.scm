@@ -46,6 +46,6 @@
          (track     (lambda (value)
                       (lambda (input indices output)
                         (union input (difference (apply union (map (cut list-ref value <>) indices)) output)))))
-         (initial   (map (const '()) prog))
+         (initial   inputs)
          (iteration (lambda (value) (map (track value) inputs flow outputs)))]
     (map union (fixed-point initial iteration same?) outputs)))
