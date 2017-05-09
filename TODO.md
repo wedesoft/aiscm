@@ -1,5 +1,6 @@
 ## Ready
 
+* faster live analysis
 * linear-scan-allocate: rename
 * tidy up structure of jit and tests
 * correlation: \*, +=, dilation: first, max, ...
@@ -7,7 +8,6 @@
 * remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
-* faster live analysis
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))

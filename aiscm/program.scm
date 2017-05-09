@@ -20,11 +20,19 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm util)
   #:use-module (aiscm asm)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
-  #:export (labels substitute-variables relabel flatten-code))
+  #:export (labels substitute-variables relabel flatten-code inputs outputs))
 
+
+(define (inputs self results)
+  "Get input variables of each statement"
+  (map-if (cut equal? (RET) <>) (const results) input self))
+(define (outputs self)
+  "Get output variables of each statement"
+  (map output self))
 
 (define (labels prog)
   "Get positions of labels in program"

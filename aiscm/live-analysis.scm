@@ -36,7 +36,7 @@
 (define (live-analysis prog results)
   "Get list of live variables for program terminated by RET statement"
   (letrec* [(inputs    (map-if (cut equal? (RET) <>) (const results) input prog))
-            (outputs   (map output prog))
+            (output    (outputs prog))
             (indices   (iota (length prog)))
             (lut       (labels prog))
             (flow      (map (cut next-indices lut <...>) prog indices))
@@ -45,5 +45,5 @@
                          (lambda (in ind out)
                            (union in (difference (apply union (map (cut list-ref value <>) ind)) out)))))
             (initial   (map (const '()) prog))
-            (iteration (lambda (value) (map (track value) inputs flow outputs)))]
-    (map union (fixed-point initial iteration same?) outputs)))
+            (iteration (lambda (value) (map (track value) inputs flow output)))]
+    (map union (fixed-point initial iteration same?) output)))

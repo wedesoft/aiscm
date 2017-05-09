@@ -23,6 +23,21 @@
 
 
 (test-begin "aiscm program")
+(test-begin "input and output of each statement")
+  (let [(a (var <int>))
+        (b (var <int>))
+        (r (var <int>))]
+    (test-equal "Get input variables of each statement"
+      (list (list b) (list a b))
+      (inputs (list (MOV a b) (ADD a b)) '()))
+    (test-equal "Set input of return statement"
+      (list (list r))
+      (inputs (list (RET)) (list r)))
+    (test-equal "Get output variable of each statement"
+      (list (list a) (list b) '())
+      (outputs (list (MOV a 42) (MOV b a) (RET)))))
+(test-end "input and output of each statement")
+
 (test-equal "'labels' should extract indices of labels"
   '((a . 1) (b . 3)) (labels (list (JMP 'a) 'a (MOV AX 0) 'b (RET))))
 
