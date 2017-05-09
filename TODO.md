@@ -3,8 +3,9 @@
 * faster live analysis
 * linear-scan-allocate: rename
 * tidy up structure of jit and tests
-* correlation: \*, +=, dilation: first, max, ...
-* convolution in tensor (finite element analysis)
+* correlation: \*, +=, dilation: first/conditional, max, ...
+* "let" for tensors
+* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
