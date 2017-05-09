@@ -33,6 +33,11 @@
     '(2) (next-indices '((a . 2)) (JMP 'a) 0))
   (test-equal "Get following indices for a conditional jump"
     '(1 2) (next-indices '((a . 2)) (JNE 'a) 0))
+
+  (test-equal "Get following indices for a list of statements"
+    '((1) (2) (3) (4 1) ())
+    (flow (list (NOP) 'a (NOP) (JNE 'a) (RET))))
+
   (let [(a (var <int>))
         (b (var <int>))]
     (test-equal "Live-analysis for definition of unused variable"

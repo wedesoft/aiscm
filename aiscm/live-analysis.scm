@@ -22,7 +22,7 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:export (next-indices live-analysis))
+  #:export (next-indices live-analysis flow))
 
 
 (define-method (next-indices labels cmd k)
@@ -33,12 +33,15 @@
   (let [(target (assq-ref labels (get-target cmd)))]
     (if (conditional? cmd) (list (1+ k) target) (list target))))
 
+(define (flow prog)
+  (let [(labels (labels prog))]
+    (map (cut next-indices labels <...>) prog (iota (length prog)))))
+
 (define (live-analysis prog results)
   "Get list of live variables for program terminated by RET statement"
   (let* [(inputs    (inputs prog results))
          (outputs   (outputs prog))
-         (labels    (labels prog))
-         (flow      (map (cut next-indices labels <...>) prog (iota (length prog))))
+         (flow      (flow prog))
          (same?     (cut every (cut lset= equal? <...>) <...>))
          (track     (lambda (value)
                       (lambda (input indices output)
