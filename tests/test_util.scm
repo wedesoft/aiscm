@@ -213,9 +213,14 @@
   42 (synchronise 42 0 identity))
 (test-equal "Retrieve slot values from object"
   '(2 3) (object-slots (make <values> #:a 2 #:b 3)))
-(test-eq "convert Scheme object to address"
-  (pointer-address (scm->pointer 123)) (scm->address 123))
-(test-eq "convert address to Scheme object"
-  123 (address->scm (scm->address 123)))
 
+(test-begin "address conversions")
+  (test-eq "convert Scheme object to address"
+    (pointer-address (scm->pointer 123)) (scm->address 123))
+  (test-eq "convert address to Scheme object"
+    123 (address->scm (scm->address 123)))
+(test-end "address conversions")
+
+(test-equal "compute list with a value replaced"
+  '(2 3 5 42 11) (list-with '(2 3 5 7 11) 3 42))
 (test-end "aiscm util")
