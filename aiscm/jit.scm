@@ -616,9 +616,9 @@
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
 ; define unary and binary operations
-(define-method (+ (a <param>)) a)
+(define-method (+ (a <param>  )) a)
 (define-method (+ (a <element>)) a)
-(define-method (* (a <param>)) a)
+(define-method (* (a <param>  )) a)
 (define-method (* (a <element>)) a)
 (define-jit-dispatch duplicate 1 identity)
 (define-jit-method identity -   1)

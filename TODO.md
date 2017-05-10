@@ -1,6 +1,5 @@
 ## Ready
 
-* faster live analysis
 * linear-scan-allocate: rename
 * tidy up structure of jit and tests
 * correlation: \*, +=, dilation: first/conditional, max, ...
@@ -38,7 +37,6 @@
 * select video codec, select audio codec
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
-* fast live analysis
 * GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff

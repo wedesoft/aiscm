@@ -13,7 +13,7 @@
             build-expression consume-variables identifier->expression tensor-ctx
             injecter)
   #:re-export (jit get wrap dim)
-  #:export-syntax (inject tensor tensor-body))
+  #:export-syntax (inject tensor tensor-body sum prod))
 
 
 (define tensor-ctx (make <context>))
@@ -35,6 +35,12 @@
   (let [(index (var <long>))]
     (injecter name index delegate)))
 
+(define-syntax-rule (sum index delegate)
+  (inject + index delegate))
+
+(define-syntax-rule (prod index delegate)
+  (inject * index delegate))
+
 (define-method (tensor-loop (self <injecter>) . idx)
   (let [(t (apply tensor-loop (delegate self) idx))]
     (make <tensor-loop> #:loop-details (loop-details t)
@@ -48,7 +54,8 @@
         (lambda (intermediate)
           (append (append-map loop-increment (loop-details t))
                   (repeat 1 (value (dimension-hint (index b)))
-                          (code intermediate ((name b) intermediate (body t))); TODO: remove unnecessary copying
+                          ((if (eq? (name b) *) IMUL ADD) (value intermediate) (ptr (typecode intermediate) (value (body t))))
+                          ;(code intermediate ((name b) intermediate (body t))); TODO: remove unnecessary copying
                           (append-map loop-increment (loop-details t)))
                   (code a intermediate)))))))
 
@@ -58,12 +65,14 @@
     (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
        (if (memv (car expr) operations)
-         (argument-mask expr 0)
-         (case (car expr)
-           ((get)    (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-           ((dim)    (apply argument-mask expr (iota (- (length expr) 1)  )))
-           ((inject) (argument-mask expr 0 1 2))
-           (else #f)))))
+           (argument-mask expr 0)
+           (case (car expr)
+             ((get)    (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+             ((dim)    (apply argument-mask expr (iota (- (length expr) 1))))
+             ((inject) (argument-mask expr 0 1 2))
+             ((sum)    (argument-mask expr 0 1))
+             ((prod)   (argument-mask expr 0 1))
+             (else #f)))))
 
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"

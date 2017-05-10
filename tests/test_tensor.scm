@@ -165,9 +165,13 @@
     (test-eq "check loop details when other axis explicitely indexed is integer"
       <ubyte> (typecode (car (loop-details (tensor-loop (dim j (inject + i (get m i j))))))))
     (test-equal "Tensor sum with other axis explicitely indexed"
-      '(4 6 8) (to-list (tensor i (inject + j (get (arr (1 2 3) (3 4 5)) i j))))))
+      '(4 6 8) (to-list (tensor i (inject + j (get (arr (1 2 3) (3 4 5)) i j)))))
     (test-eqv "Multiply elements using tensor expression"
       30 (tensor (inject * k (get (seq 2 3 5) k))))
+    (test-eqv "Shortcut for summing elements"
+      10 (tensor (sum k (get (seq 2 3 5) k))))
+    (test-eqv "Shortcut for Multiplying elements"
+      30 (tensor (prod k (get (seq 2 3 5) k)))))
 (test-end "tensor reduce")
 
 (test-end "aiscm tensor")
