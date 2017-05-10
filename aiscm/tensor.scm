@@ -11,7 +11,7 @@
   #:export (<injecter>
             tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
-            injecter)
+            injecter += *=)
   #:re-export (jit get wrap dim)
   #:export-syntax (inject tensor tensor-body sum prod))
 
@@ -35,11 +35,17 @@
   (let [(index (var <long>))]
     (injecter name index delegate)))
 
+(define-method (+= (a <param>) (b <param>))
+  (ADD (value a) (ptr (typecode b) (value b))))
+
+(define-method (*= (a <param>) (b <param>))
+  (IMUL (value a) (ptr (typecode b) (value b))))
+
 (define-syntax-rule (sum index delegate)
-  (inject + index delegate))
+  (inject += index delegate))
 
 (define-syntax-rule (prod index delegate)
-  (inject * index delegate))
+  (inject *= index delegate))
 
 (define-method (tensor-loop (self <injecter>) . idx)
   (let [(t (apply tensor-loop (delegate self) idx))]
@@ -54,7 +60,7 @@
         (lambda (intermediate)
           (append (append-map loop-increment (loop-details t))
                   (repeat 1 (value (dimension-hint (index b)))
-                          ((if (eq? (name b) *) IMUL ADD) (value intermediate) (ptr (typecode intermediate) (value (body t))))
+                          ((name b) intermediate (body t)); TODO: non-pointers, intermediate results, composite values
                           ;(code intermediate ((name b) intermediate (body t))); TODO: remove unnecessary copying
                           (append-map loop-increment (loop-details t)))
                   (code a intermediate)))))))

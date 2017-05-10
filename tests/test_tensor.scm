@@ -27,7 +27,7 @@
   (test-equal "\"dim\" with two arguments is a tensor operation"
     '(#t #t #t #f) (tensor-operations '(dim i j s)))
   (test-equal "\"inject\" is a tensor operation"
-    '(#t #t #t #f) (tensor-operations '(inject + i s)))
+    '(#t #t #t #f) (tensor-operations '(inject += i s)))
 (test-end "identify tensor operations")
 
 (test-begin "convert tensor expression to identifier")
@@ -147,27 +147,27 @@
   (let [(s (parameter (sequence <ubyte>)))
         (m (parameter (multiarray <ubyte> 2)))]
     (test-equal "\"inject\" reduces 1D array to scalar"
-      <ubyte> (type (inject + i (get s i))))
+      <ubyte> (type (inject += i (get s i))))
     (test-equal "\"inject\" reduces 2D array to 1D"
-      (sequence <ubyte>) (type (inject + i (get m i))))
+      (sequence <ubyte>) (type (inject += i (get m i))))
     (test-eqv "Sum elements using tensor expression"
-      10 (tensor (inject + k (get (seq 2 3 5) k))))
+      10 (tensor (inject += k (get (seq 2 3 5) k))))
     (test-eqv "Sum different elements using tensor expression"
-      12 (tensor (inject + k (get (seq 2 3 7) k))))
+      12 (tensor (inject += k (get (seq 2 3 7) k))))
     (test-eq "check loop details for array of integer sums"
-      <ubyte> (typecode (car (loop-details (tensor-loop (inject + i (get m i)))))))
+      <ubyte> (typecode (car (loop-details (tensor-loop (inject += i (get m i)))))))
     (test-eq "preserve injection when looping over array of sums"
-      <injecter> (class-of (body (tensor-loop (inject + i (get m i))))))
+      <injecter> (class-of (body (tensor-loop (inject += i (get m i))))))
     (test-equal "shape of array of tensor sums is one-dimensional"
-      (take (shape m) 1) (shape (inject + i (get m i))))
+      (take (shape m) 1) (shape (inject += i (get m i))))
     (test-equal "Tensor sum along one axis"
-      '(4 6 8) (to-list (tensor (inject + i (get (arr (1 2 3) (3 4 5)) i)))))
+      '(4 6 8) (to-list (tensor (inject += i (get (arr (1 2 3) (3 4 5)) i)))))
     (test-eq "check loop details when other axis explicitely indexed is integer"
-      <ubyte> (typecode (car (loop-details (tensor-loop (dim j (inject + i (get m i j))))))))
+      <ubyte> (typecode (car (loop-details (tensor-loop (dim j (inject += i (get m i j))))))))
     (test-equal "Tensor sum with other axis explicitely indexed"
-      '(4 6 8) (to-list (tensor i (inject + j (get (arr (1 2 3) (3 4 5)) i j)))))
+      '(4 6 8) (to-list (tensor i (inject += j (get (arr (1 2 3) (3 4 5)) i j)))))
     (test-eqv "Multiply elements using tensor expression"
-      30 (tensor (inject * k (get (seq 2 3 5) k))))
+      30 (tensor (inject *= k (get (seq 2 3 5) k))))
     (test-eqv "Shortcut for summing elements"
       10 (tensor (sum k (get (seq 2 3 5) k))))
     (test-eqv "Shortcut for Multiplying elements"
