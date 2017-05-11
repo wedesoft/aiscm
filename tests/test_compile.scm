@@ -145,5 +145,83 @@
       (list <long>) (map typecode (temporary-variables (list (MOV (ptr <int> p) a))))))
 (test-end "temporary variables")
 
+(test-begin "unit intervals for temporary variables")
+  (test-assert "create empty list of unit intervals"
+    (null? (unit-intervals '())))
+  (test-equal "generate unit interval for one temporary variable"
+    '((a . (0 . 0))) (unit-intervals '(a)))
+  (test-equal "generate unit interval for two temporary variables"
+    '((a . (0 . 0)) (b . (1 . 1))) (unit-intervals '(a b)))
+  (test-equal "filter out locations without temporary variable"
+    '((b . (1 . 1))) (unit-intervals '(#f b)))
+(test-end "unit intervals for temporary variables")
 
+(test-begin "registers of temporary variables")
+  (let [(a (var <int>))]
+    (test-assert "create empty list of temporary registers"
+      (null? (temporary-registers '() '())))
+    (test-equal "return a temporary register"
+      (list RCX) (temporary-registers (list (cons a RCX)) (list a)))
+    (test-equal "return false if no temporary variable was required for a statement"
+      (list #f) (temporary-registers '() (list #f))))
+(test-end "registers of temporary variables")
+
+(test-begin "generating code to move parameters to allocated location")
+  (test-assert "no need to copy RSI to RAX before RDX to RCX"
+    (not (need-to-copy-first (list (cons 'a RSI) (cons 'b RDX)) (list (cons 'a RAX) (cons 'b RCX)) 'a 'b)))
+  (test-assert "RSI needs to be copied to RAX before copying RDX to RSI"
+    (need-to-copy-first (list (cons 'a RSI) (cons 'b RDX)) (list (cons 'a RAX) (cons 'b RSI)) 'a 'b))
+  (let [(a (var <int>))]
+    (test-assert "no need to move variable content if source and destination location are the same"
+      (null? (move-variable-content a RCX RCX)))
+    (test-equal "move variable content from RDX to RCX"
+      (MOV ECX EDX) (move-variable-content a RDX RCX))
+    (test-assert "no need to move variable if stack locations are the same"
+      (null? (move-variable-content a (ptr <long> RSP 24) (ptr <long> RSP 24))))
+    (test-assert "no need to move variable if destination is undefined"
+      (null? (move-variable-content a RSI #f))))
+  (let [(a (var <int>))
+        (b (var <int>))
+        (c (var <int>))
+        (d (var <int>))
+        (e (var <int>))
+        (f (var <int>))
+        (g (var <int>))
+        (r (var <int>))]
+    (test-assert "no parameters to move arround"
+      (null? (update-parameter-locations '() '() 0)))
+    (test-equal "spill a register parameter"
+      (list (MOV (ptr <int> RSP -8) EDI)) (update-parameter-locations (list a) (list (cons a (ptr <long> RSP -8))) 0))
+    (test-assert "ignore parameters which are not used"
+      (null? (update-parameter-locations (list a) '() 0)))
+    (test-equal "load a stack parameter"
+      (list (MOV EAX (ptr <int> RSP 8)))
+      (update-parameter-locations (list a b c d e f g) (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 RAX)) 0))
+    (test-equal "load a stack parameter taking into account the stack pointer offset"
+      (list (MOV EAX (ptr <int> RSP 24)))
+      (update-parameter-locations (list a b c d e f g) (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 RAX)) 16))
+    (test-assert "leave parameter on stack"
+      (null? (update-parameter-locations (list a b c d e f g)
+                                         (map cons (list a b c d e f g) (list RDI RSI RDX RCX R8 R9 (ptr <long> RSP 24)))
+                                         16)))
+    (test-equal "adjust order of copy operations to avoid overwriting parameters"
+      (list (MOV EAX ESI) (MOV ESI EDI)) (update-parameter-locations (list a b) (map cons (list a b) (list RSI RAX)) 0)))
+(test-end "generating code to move parameters to allocated location")
+
+(test-begin "generate code to place result in correct register")
+  (let [(r (var <int>))]
+    (test-equal "return unmodified code if there is no result variable"
+      (list (NOP) (RET)) (place-result-variable '() '() (list (NOP) (RET))))
+    (test-equal "copy result variable into RAX if it is in another location"
+      (list (NOP) (MOV EAX EDI) (RET)) (place-result-variable (list r) (list (cons r RDI)) (list (NOP) (RET))))
+    (test-equal "return unmodified code if result already is residing in RAX"
+      (list (NOP) (RET)) (place-result-variable (list r) (list (cons r RAX)) (list (NOP) (RET)))))
+(test-end "generate code to place result in correct register")
+
+(test-begin "put callee saved registers on stack")
+  (test-equal "backup one register"
+    (list (PUSH RBX) (NOP) (POP RBX) (RET)) (backup-registers (list RBX) (list (NOP) (RET))))
+  (test-equal "backup two registers"
+    (list (PUSH RBX) (PUSH RBP) (NOP) (POP RBP) (POP RBX) (RET)) (backup-registers (list RBX RBP) (list (NOP) (RET))))
+(test-end "put callee saved registers on stack")
 (test-end "aiscm compile")

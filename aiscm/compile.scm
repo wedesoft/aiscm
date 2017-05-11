@@ -28,7 +28,9 @@
   #:export (replace-variables adjust-stack-pointer
             default-registers callee-saved caller-saved parameter-registers register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information
-            used-callee-saved temporary-variables))
+            used-callee-saved temporary-variables unit-intervals temporary-registers
+            need-to-copy-first move-variable-content update-parameter-locations
+            place-result-variable backup-registers))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -98,3 +100,42 @@
          (or (and (not (null? (get-ptr-args cmd))) (var <long>))
              (and (is-a? arg <var>) (var (typecode arg))))))
        prog))
+
+(define (unit-intervals vars)
+  "Generate intervals of length one for each temporary variable"
+  (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
+
+(define (temporary-registers allocation variables)
+  "Look up register for each temporary variable given the result of a register allocation"
+  (map (cut assq-ref allocation <>) variables))
+
+(define (need-to-copy-first initial targets a b)
+  "Check whether parameter A needs to be copied before B given INITIAL and TARGETS locations"
+  (eq? (assq-ref initial a) (assq-ref targets b)))
+
+(define (move-variable-content variable source destination)
+  "move VARIABLE content from SOURCE to DESTINATION unless source and destination are the same"
+  (let [(adapt (cut to-type (typecode variable) <>))]
+    (if (or (not destination) (equal? source destination)) '() (MOV (adapt destination) (adapt source)))))
+
+(define (update-parameter-locations parameters locations offset)
+  "Generate the required code to update the parameter locations according to the register allocation"
+  (let* [(initial            (parameter-locations parameters offset))
+         (ordered-parameters (partial-sort parameters (cut need-to-copy-first initial locations <...>)))]
+    (filter (compose not null?)
+      (map (lambda (parameter)
+             (move-variable-content parameter
+                                    (assq-ref initial parameter)
+                                    (assq-ref locations parameter)))
+           ordered-parameters))))
+
+(define (place-result-variable results locations code)
+  "add code for placing result variable in register RAX if required"
+  (filter (compose not null?)
+          (attach (append (all-but-last code)
+                          (map (lambda (result) (move-variable-content result (assq-ref locations result) RAX)) results))
+                  (RET))))
+
+(define (backup-registers registers code)
+  "Store register content on stack and restore it after executing the code"
+  (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
