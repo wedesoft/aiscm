@@ -18,6 +18,7 @@
              (oop goops)
              (aiscm asm)
              (aiscm variable)
+             (aiscm program)
              (aiscm compile)
              (aiscm int))
 
@@ -224,4 +225,107 @@
   (test-equal "backup two registers"
     (list (PUSH RBX) (PUSH RBP) (NOP) (POP RBP) (POP RBX) (RET)) (backup-registers (list RBX RBP) (list (NOP) (RET))))
 (test-end "put callee saved registers on stack")
+
+(test-begin "compile")
+  (let [(a (var <int>))
+        (b (var <int>))
+        (c (var <int>))
+        (d (var <int>))
+        (e (var <int>))
+        (f (var <int>))
+        (g (var <int>))
+        (r (var <int>))
+        (x (var <sint>))
+        (p (var <long>))]
+    (test-equal "Allocate a single register"
+      (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET)) (jit-compile (list (MOV a 42) (RET))))
+    (test-equal "Allocate a single register using custom list of registers"
+      (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+    (test-equal "Allocate multiple registers"
+      (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+    (test-equal "Allocate a single register"
+      (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 42) (RET))))
+    (test-equal "Allocate a single register using custom list of registers"
+      (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+    (test-equal "Allocate multiple registers"
+      (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+    (test-equal "Register allocation with predefined parameter register"
+      (list (SUB RSP 8) (MOV EDX 1) (ADD EDX EDI) (MOV EDI EDX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV b 1) (ADD b a) (MOV c b) (RET)) #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
+    (test-equal "Spill register parameter"
+      (list (SUB RSP 16) (MOV (ptr <int> RSP 8) EDI) (MOV EDI 1) (ADD EDI (ptr <int> RSP 8)) (ADD RSP 16) (RET))
+      (jit-compile (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI RSI)))
+    (test-equal "Fetch register parameter"
+      (list (SUB RSP 8) (MOV EDI (ptr <int> RSP 16)) (MOV EAX EDI) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
+    (test-equal "Reuse stack location for spilled stack parameters"
+      (list (SUB RSP 16)
+            (MOV EAX 0)
+            (MOV (ptr <int> RSP 8) EAX)
+            (MOV EAX (ptr <int> RSP 8))
+            (ADD EAX (ptr <int> RSP 24))
+            (MOV (ptr <int> RSP 8) EAX)
+            (ADD RSP 16)
+            (RET))
+      (jit-compile (list (MOV r 0) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
+    (test-equal "Copy result to RAX register before restoring stack pointer and returning"
+      (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV r a) (RET)) #:parameters (list a) #:results (list r))))
+  (let [(a (var <int>))
+        (b (var <int>))]
+    (test-equal "'compile' should use the specified set of registers"
+      (list (SUB RSP 8) (MOV EDI 1) (MOV EAX 2) (ADD EAX 3) (ADD EDI 4) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)) #:registers (list RSI RDI RAX)))
+    (test-equal "'compile' should spill variables"
+      (list (SUB RSP 16)
+            (MOV EAX 1)
+            (MOV (ptr <int> RSP 8) EAX)
+            (MOV ESI 2)
+            (ADD ESI 3)
+            (MOV EAX (ptr <int> RSP 8))
+            (ADD EAX 4)
+            (MOV (ptr <int> RSP 8) EAX)
+            (ADD RSP 16)
+            (RET))
+            (jit-compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
+                         #:registers (list RAX RSI)))
+    (let  [(c (var <int>))]
+      (test-equal "'compile' should assign separate stack locations"
+        (list (SUB RSP 24)
+              (MOV ESI 1)
+              (MOV (ptr <int> RSP 8) ESI)
+              (MOV ESI 2)
+              (MOV (ptr <int> RSP 16) ESI)
+              (MOV EAX 3)
+              (ADD EAX 4)
+              (MOV ESI (ptr <int> RSP 16))
+              (ADD ESI 5)
+              (MOV (ptr <int> RSP 16) ESI)
+              (MOV ESI (ptr <int> RSP 8))
+              (ADD ESI 6)
+              (MOV (ptr <int> RSP 8) ESI)
+              (ADD RSP 24)
+              (RET))
+              (jit-compile (list (MOV a 1) (MOV b 2) (MOV c 3) (ADD c 4) (ADD b 5) (ADD a 6) (RET))
+                           #:registers (list RSI RAX))))
+    (test-equal "'compile' should save callee-saved registers"
+      (list (PUSH RBX)
+            (SUB RSP 16)
+            (MOV EBX 1)
+            (MOV (ptr <int> RSP 8) EBX)
+            (MOV EAX 2)
+            (ADD EAX 3)
+            (MOV EBX (ptr <int> RSP 8))
+            (ADD EBX 4)
+            (MOV (ptr <int> RSP 8) EBX)
+            (ADD RSP 16)
+            (POP RBX)
+            (RET))
+            (jit-compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)) #:registers (list RBX RAX))))
+(test-end "compile")
 (test-end "aiscm compile")

@@ -35,12 +35,9 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:use-module (aiscm live-analysis)
   #:use-module (aiscm compile)
-  #:use-module (aiscm register-allocate)
   #:use-module (aiscm method)
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            compile
             blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
@@ -63,36 +60,12 @@
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
 
-(define* (compile prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
-  "Linear scan register allocation for a given program"
-  (let* [(live                 (live-analysis prog results))
-         (temp-vars            (temporary-variables prog))
-         (intervals            (append (live-intervals live (variables prog))
-                                       (unit-intervals temp-vars)))
-         (predefined-registers (register-parameter-locations (register-parameters parameters)))
-         (parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
-         (remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
-         (stack-parameters     (stack-parameters parameters))
-         (colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
-         (callee-saved         (used-callee-saved colors))
-         (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
-         (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
-         (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
-         (allocation           (add-stack-parameter-information colors stack-locations))
-         (temporaries          (temporary-registers allocation temp-vars))
-         (locations            (add-spill-information allocation 8 8))]
-    (backup-registers callee-saved
-      (adjust-stack-pointer stack-offset
-        (place-result-variable results locations
-          (append (update-parameter-locations parameters locations parameter-offset)
-                  (append-map (cut replace-variables locations <...>) prog temporaries)))))))
-
 (define* (virtual-variables results parameters instructions #:key (registers default-registers))
-  (compile (flatten-code (relabel (filter-blocks instructions)))
-           #:registers registers
-           #:parameters parameters
-           #:results results
-           #:blocked (blocked-intervals instructions)))
+  (jit-compile (flatten-code (relabel (filter-blocks instructions)))
+               #:registers registers
+               #:parameters parameters
+               #:results results
+               #:blocked (blocked-intervals instructions)))
 
 (define (repeat start end . body)
   (let [(i (var (typecode end)))]

@@ -25,12 +25,14 @@
   #:use-module (aiscm command)
   #:use-module (aiscm variable)
   #:use-module (aiscm program)
+  #:use-module (aiscm live-analysis)
+  #:use-module (aiscm register-allocate)
   #:export (replace-variables adjust-stack-pointer
             default-registers callee-saved caller-saved parameter-registers register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information
             used-callee-saved temporary-variables unit-intervals temporary-registers
             need-to-copy-first move-variable-content update-parameter-locations
-            place-result-variable backup-registers))
+            place-result-variable backup-registers jit-compile))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -139,3 +141,27 @@
 (define (backup-registers registers code)
   "Store register content on stack and restore it after executing the code"
   (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
+
+(define* (jit-compile prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
+  "Linear scan register allocation for a given program"
+  (let* [(live                 (live-analysis prog results))
+         (temp-vars            (temporary-variables prog))
+         (intervals            (append (live-intervals live (variables prog))
+                                       (unit-intervals temp-vars)))
+         (predefined-registers (register-parameter-locations (register-parameters parameters)))
+         (parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
+         (remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
+         (stack-parameters     (stack-parameters parameters))
+         (colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
+         (callee-saved         (used-callee-saved colors))
+         (stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
+         (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
+         (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
+         (allocation           (add-stack-parameter-information colors stack-locations))
+         (temporaries          (temporary-registers allocation temp-vars))
+         (locations            (add-spill-information allocation 8 8))]
+    (backup-registers callee-saved
+      (adjust-stack-pointer stack-offset
+        (place-result-variable results locations
+          (append (update-parameter-locations parameters locations parameter-offset)
+                  (append-map (cut replace-variables locations <...>) prog temporaries)))))))

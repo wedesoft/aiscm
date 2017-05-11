@@ -1,5 +1,6 @@
 ## Ready
 
+* move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
 * module for + and +=, ...
 * tidy up structure of jit and tests
