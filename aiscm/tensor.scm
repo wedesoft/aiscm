@@ -35,17 +35,15 @@
   (let [(index (var <long>))]
     (injecter name index delegate)))
 
-(define-method (+= (a <param>) (b <param>))
-  (ADD (value a) (ptr (typecode b) (value b))))
+(define-syntax-rule (define-tensor-operation name op fun)
+  (begin
+    (define-method (op (a <param>) (b <param>))
+      (fun (value a) (ptr (typecode b) (value b))))
+    (define-syntax-rule (name index delegate)
+      (inject op index delegate))))
 
-(define-method (*= (a <param>) (b <param>))
-  (IMUL (value a) (ptr (typecode b) (value b))))
-
-(define-syntax-rule (sum index delegate)
-  (inject += index delegate))
-
-(define-syntax-rule (prod index delegate)
-  (inject *= index delegate))
+(define-tensor-operation sum  += ADD )
+(define-tensor-operation prod *= IMUL)
 
 (define-method (tensor-loop (self <injecter>) . idx)
   (let [(t (apply tensor-loop (delegate self) idx))]

@@ -1,6 +1,8 @@
 ## Ready
 
 * linear-scan-allocate: rename
+* sum with multiple indices or no indices
+* how to run test suite
 * tidy up structure of jit and tests
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * "let" for tensors
