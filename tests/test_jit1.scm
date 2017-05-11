@@ -137,31 +137,31 @@
     (list #f) (temporary-registers '() (list #f)))
 
   (test-equal "Allocate a single register"
-    (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET)) (linear-scan-allocate (list (MOV a 42) (RET))))
+    (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET)) (compile (list (MOV a 42) (RET))))
   (test-equal "Allocate a single register using custom list of registers"
     (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+    (compile (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
   (test-equal "Allocate multiple registers"
     (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+    (compile (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
   (test-equal "Allocate a single register"
     (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 42) (RET))))
+    (compile (list (MOV a 42) (RET))))
   (test-equal "Allocate a single register using custom list of registers"
     (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
+    (compile (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
   (test-equal "Allocate multiple registers"
     (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
+    (compile (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
   (test-equal "Register allocation with predefined parameter register"
     (list (SUB RSP 8) (MOV EDX 1) (ADD EDX EDI) (MOV EDI EDX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV b 1) (ADD b a) (MOV c b) (RET)) #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
+    (compile (list (MOV b 1) (ADD b a) (MOV c b) (RET)) #:parameters (list a) #:registers (list RDI RSI RDX RCX)))
   (test-equal "Spill register parameter"
     (list (SUB RSP 16) (MOV (ptr <int> RSP 8) EDI) (MOV EDI 1) (ADD EDI (ptr <int> RSP 8)) (ADD RSP 16) (RET))
-    (linear-scan-allocate (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI RSI)))
+    (compile (list (MOV b 1) (ADD b a) (RET)) #:parameters (list a) #:registers (list RDI RSI)))
   (test-equal "Fetch register parameter"
     (list (SUB RSP 8) (MOV EDI (ptr <int> RSP 16)) (MOV EAX EDI) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
+    (compile (list (MOV r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX RDI RSI RAX)))
   (test-equal "Reuse stack location for spilled stack parameters"
     (list (SUB RSP 16)
           (MOV EAX 0)
@@ -171,10 +171,10 @@
           (MOV (ptr <int> RSP 8) EAX)
           (ADD RSP 16)
           (RET))
-    (linear-scan-allocate (list (MOV r 0) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
+    (compile (list (MOV r 0) (ADD r g) (RET)) #:parameters (list a b c d e f g) #:registers (list RAX)))
   (test-equal "Copy result to RAX register before restoring stack pointer and returning"
     (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV r a) (RET)) #:parameters (list a) #:results (list r)))
+    (compile (list (MOV r a) (RET)) #:parameters (list a) #:results (list r)))
 
   (test-equal "'virtual-variables' uses the specified variables as parameters"
     (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
@@ -211,10 +211,10 @@
   (list (PUSH RBX) (PUSH RBP) (NOP) (POP RBP) (POP RBX) (RET)) (backup-registers (list RBX RBP) (list (NOP) (RET))))
 (let [(a (var <int>))
       (b (var <int>))]
-  (test-equal "'linear-scan-allocate' should use the specified set of registers"
+  (test-equal "'compile' should use the specified set of registers"
     (list (SUB RSP 8) (MOV EDI 1) (MOV EAX 2) (ADD EAX 3) (ADD EDI 4) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)) #:registers (list RSI RDI RAX)))
-  (test-equal "'linear-scan-allocate' should spill variables"
+    (compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)) #:registers (list RSI RDI RAX)))
+  (test-equal "'compile' should spill variables"
     (list (SUB RSP 16)
           (MOV EAX 1)
           (MOV (ptr <int> RSP 8) EAX)
@@ -225,10 +225,10 @@
           (MOV (ptr <int> RSP 8) EAX)
           (ADD RSP 16)
           (RET))
-          (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
-                                #:registers (list RAX RSI)))
+          (compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
+                   #:registers (list RAX RSI)))
   (let  [(c (var <int>))]
-    (test-equal "'linear-scan-allocate' should assign separate stack locations"
+    (test-equal "'compile' should assign separate stack locations"
       (list (SUB RSP 24)
             (MOV ESI 1)
             (MOV (ptr <int> RSP 8) ESI)
@@ -244,9 +244,9 @@
             (MOV (ptr <int> RSP 8) ESI)
             (ADD RSP 24)
             (RET))
-            (linear-scan-allocate (list (MOV a 1) (MOV b 2) (MOV c 3) (ADD c 4) (ADD b 5) (ADD a 6) (RET))
-                                  #:registers (list RSI RAX))))
-  (test-equal "'linear-scan-allocate' should save callee-saved registers"
+            (compile (list (MOV a 1) (MOV b 2) (MOV c 3) (ADD c 4) (ADD b 5) (ADD a 6) (RET))
+                     #:registers (list RSI RAX))))
+  (test-equal "'compile' should save callee-saved registers"
     (list (PUSH RBX)
           (SUB RSP 16)
           (MOV EBX 1)
@@ -259,8 +259,8 @@
           (ADD RSP 16)
           (POP RBX)
           (RET))
-          (linear-scan-allocate (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
-                                #:registers (list RBX RAX))))
+          (compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET))
+                   #:registers (list RBX RAX))))
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))]
@@ -274,10 +274,10 @@
           (virtual-variables '() (list a b) (list (MOV c a) (ADD c b) (RET)) #:registers (list RSI RDI RAX)))
   (test-equal "'repeat' loop"
       (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
-      (resolve-jumps (linear-scan-allocate (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
+      (resolve-jumps (compile (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
   (test-equal "'repeat' loop with offset"
     (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
-    (resolve-jumps (linear-scan-allocate (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
+    (resolve-jumps (compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
 (test-equal "'blocked' represents the specified code segment"
   (list (MOV ECX 2) (RET)) (get-code (blocked AL (MOV ECX 2) (RET))))
 (test-equal "'blocked' stores the register to be blocked"
@@ -302,9 +302,9 @@
 (let [(r (var <byte>))
       (a (var <byte>))
       (b (var <byte>))]
-  (test-equal "'linear-scan-allocate' should block registers if specified"
+  (test-equal "'compile' should block registers if specified"
     (list (SUB RSP 8) (MOV AL CL) (CBW) (IDIV DL) (MOV CL AL) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV AL a) (CBW) (IDIV b) (MOV r AL) (RET)) #:registers (list RAX RCX RDX) #:blocked (list (cons RAX '(0 . 3))))))
+    (compile (list (MOV AL a) (CBW) (IDIV b) (MOV r AL) (RET)) #:registers (list RAX RCX RDX) #:blocked (list (cons RAX '(0 . 3))))))
 (let [(a (var <int>))
       (b (var <int>))
       (c (var <int>))
@@ -315,22 +315,22 @@
       (r (var <int>))]
   (test-equal "save callee-saved registers"
     (list (PUSH RBX) (SUB RSP 8) (MOV EBX 1) (ADD RSP 8) (POP RBX) (RET))
-    (linear-scan-allocate (list (MOV a 1) (RET)) #:registers (list RBX RAX)))
+    (compile (list (MOV a 1) (RET)) #:registers (list RBX RAX)))
   (test-equal "add offset for callee-saved parameters when fetching stack parameters"
     (list (PUSH RBX) (SUB RSP 8) (MOV EBX (ptr <int> RSP 24)) (MOV EBX 42) (ADD RSP 8) (POP RBX) (RET))
-    (linear-scan-allocate (list (MOV g 42) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
+    (compile (list (MOV g 42) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
   (test-equal "add offset for callee-saved parameters when using stack parameters"
     (list (PUSH RBX) (SUB RSP 8) (MOV EBX EAX) (MOV (ptr <int> RSP 24) EBX) (ADD RSP 8) (POP RBX) (RET))
-    (linear-scan-allocate (list (MOV g r) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
+    (compile (list (MOV g r) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
   (test-equal "move parameter variable into another location if the register is blocked"
     (list (SUB RSP 8) (MOV EAX EDI) (MOV EDI EAX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV EDI a) (RET))
-                          #:parameters (list a)
-                          #:registers (list RDI RAX RCX)
-                          #:blocked (list (cons RDI '(0 . 0)))))
+    (compile (list (MOV EDI a) (RET))
+             #:parameters (list a)
+             #:registers (list RDI RAX RCX)
+             #:blocked (list (cons RDI '(0 . 0)))))
   (test-equal "when allocating registers preserve result variables up to RET statement"
     (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (list (MOV r 42) (MOV b 0) (RET)) #:results (list r))))
+    (compile (list (MOV r 42) (MOV b 0) (RET)) #:results (list r))))
 
 (let  [(w (var <usint>))]
   (test-equal "'virtual-variables' filters out the reserved-registers information"
@@ -383,7 +383,7 @@
     (assemble (list out) (list in) (code out in))))
 (test-equal "Use default zero-extension for 32-bit numbers"
   (list (SUB RSP 8) (MOV EAX ECX) (ADD RSP 8) (RET))
-  (linear-scan-allocate (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
+  (compile (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
 (test-eqv "compile and run integer identity function"
   42 ((jit ctx (list <int>) identity) 42))
 (test-eqv "compile and run boolean identity function"
@@ -403,7 +403,7 @@
       (out (skeleton (pointer <byte>)))]
   (test-equal "generate code for copying a byte from one memory location to another"
     (list (SUB RSP 8) (MOV DL (ptr <byte> RAX)) (MOV (ptr <byte> RSI) DL) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (attach (code out in) (RET))))))
+    (compile (flatten-code (attach (code out in) (RET))))))
 (test-equal "compile and run identity function for array"
   '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
 (let [(out (skeleton (multiarray <int> 2)))
@@ -424,7 +424,7 @@
       (in  (skeleton <int>))]
   (test-equal "generate code for copying part of integer"
     (list (SUB RSP 8) (MOV AL CL) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (list (code out in) (RET))))))
+    (compile (flatten-code (list (code out in) (RET))))))
 (test-eq "plus operation coerces return type correctly"
   <int> (type (+ (parameter <usint>) (parameter <byte>))))
 (let [(out (skeleton <int>))
@@ -432,7 +432,7 @@
       (b   (skeleton <usint>))]
   (test-equal "sign-extend second number when adding"
     (list (SUB RSP 8) (MOVZX ESI AX) (MOVSX ECX DL) (ADD ESI ECX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (list (code (parameter out) (+ (parameter b) (parameter a))) (RET))))))
+    (compile (flatten-code (list (code (parameter out) (+ (parameter b) (parameter a))) (RET))))))
 (test-assert "create function from tensor and element"
   (+ (parameter (sequence <int>)) (parameter <int>)))
 (test-assert "create function from element and tensor"

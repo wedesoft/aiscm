@@ -43,7 +43,7 @@
             need-to-copy-first move-variable-content update-parameter-locations
             place-result-variable backup-registers
             number-spilled-variables temporary-variables unit-intervals temporary-registers
-            linear-scan-allocate
+            compile
             blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
@@ -116,7 +116,7 @@
   "Store register content on stack and restore it after executing the code"
   (append (map (cut PUSH <>) registers) (all-but-last code) (map (cut POP <>) (reverse registers)) (list (RET))))
 
-(define* (linear-scan-allocate prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
+(define* (compile prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog results))
          (temp-vars            (temporary-variables prog))
@@ -141,11 +141,11 @@
                   (append-map (cut replace-variables locations <...>) prog temporaries)))))))
 
 (define* (virtual-variables results parameters instructions #:key (registers default-registers))
-  (linear-scan-allocate (flatten-code (relabel (filter-blocks instructions)))
-                        #:registers registers
-                        #:parameters parameters
-                        #:results results
-                        #:blocked (blocked-intervals instructions)))
+  (compile (flatten-code (relabel (filter-blocks instructions)))
+           #:registers registers
+           #:parameters parameters
+           #:results results
+           #:blocked (blocked-intervals instructions)))
 
 (define (repeat start end . body)
   (let [(i (var (typecode end)))]

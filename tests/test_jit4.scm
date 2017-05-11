@@ -216,7 +216,7 @@
   (test-skip 1)
   (test-equal "Coerce to output value when using multiple mutating operations"
     (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
-    (linear-scan-allocate (flatten-code (attach ((term (+ a b c)) r) (RET))))))
+    (compile (flatten-code (attach ((term (+ a b c)) r) (RET))))))
 (test-equal "Compiling and run plus operation with three numbers"
   9 ((jit ctx (list <int> <int> <int>) +) 2 3 4))
 (test-equal "Compile and run binary mutating operating with nested second parameter"
@@ -269,7 +269,7 @@
       (b (parameter <ubyte>))]
   (test-equal "handle lack of support for 8-bit conditional move"
     (list (SUB RSP 8) (MOV DL AL) (CMP DL SIL) (JNBE #x3) (MOV DL SIL) (ADD RSP 8) (RET))
-    (resolve-jumps (linear-scan-allocate (attach (flatten-code ((term (max a b)) r)) (RET))))))
+    (resolve-jumps (compile (attach (flatten-code ((term (max a b)) r)) (RET))))))
 (test-equal "get minor number of signed bytes"
   -1 ((jit ctx (list <byte> <byte>) min) -1 1))
 
