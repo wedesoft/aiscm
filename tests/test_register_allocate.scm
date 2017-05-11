@@ -89,6 +89,18 @@
       (list a) (unallocated-variables (list (cons a #f))))
     (test-assert "ignore the variable with register allocated"
       (null? (unallocated-variables (list (cons a RAX)))))
+
+    (test-eqv "count zero spilled variables"
+      0 (number-spilled-variables '() '()))
+    (test-eqv "count one spilled variable"
+      1 (number-spilled-variables '((a . #f)) '()))
+    (test-eqv "ignore allocated variables when counting spilled variables"
+      0 (number-spilled-variables (list (cons a RAX)) '()))
+    (test-eqv "do not count stack parameters when allocating stack space"
+      0 (number-spilled-variables '((a . #f)) '(a)))
+    (test-eqv "allocate stack space if spilled variable is not a stack parameter"
+      1 (number-spilled-variables '((a . #f)) '(b)))
+
     (test-assert "no variables means no variables with register allocated"
       (null? (register-allocations '())))
     (test-equal "return the variable with register allocation information"

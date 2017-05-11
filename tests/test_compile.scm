@@ -120,5 +120,4 @@
   (test-assert "ignore variables without allocated register"
     (null?  (used-callee-saved (list (cons 'a #f)))))
 (test-end "used callee saved registers")
-
 (test-end "aiscm compile")

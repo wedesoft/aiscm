@@ -1,8 +1,10 @@
 ## Ready
 
+* put compiler stuff into separate module
+* module for + and +=, ...
+* tidy up structure of jit and tests
 * sum with multiple indices or no indices
 * how to run test suite
-* tidy up structure of jit and tests
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution

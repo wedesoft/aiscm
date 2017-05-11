@@ -93,17 +93,6 @@
       (r (var <int>))
       (x (var <sint>))
       (p (var <long>))]
-  (test-eqv "count zero spilled variables"
-    0 (number-spilled-variables '() '()))
-  (test-eqv "count one spilled variable"
-    1 (number-spilled-variables '((a . #f)) '()))
-  (test-eqv "ignore allocated variables when counting spilled variables"
-    0 (number-spilled-variables (list (cons a RAX)) '()))
-  (test-eqv "do not count stack parameters when allocating stack space"
-    0 (number-spilled-variables '((a . #f)) '(a)))
-  (test-eqv "allocate stack space if spilled variable is not a stack parameter"
-    1 (number-spilled-variables '((a . #f)) '(b)))
-
   (test-assert "an empty program needs no temporary variables"
     (null? (temporary-variables '())))
   (test-equal "create temporary variable for first argument of instruction"

@@ -27,7 +27,8 @@
   #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
             spill-candidate ignore-spilled-variables ignore-blocked-registers
             unallocated-variables register-allocations assign-spill-locations add-spill-information
-            blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring))
+            blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring
+            number-spilled-variables))
 
 (define (initial-register-use registers)
   "Initially all registers are available from index zero on"
@@ -61,6 +62,10 @@
 (define (unallocated-variables allocation)
    "Return a list of unallocated variables"
    (map car (filter (compose not cdr) allocation)))
+
+(define (number-spilled-variables allocation stack-parameters)
+  "Count the number of spilled variables"
+  (length (difference (unallocated-variables allocation) stack-parameters)))
 
 (define (register-allocations allocation)
    "Return a list of variables with register allocated"

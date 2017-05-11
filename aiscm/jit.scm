@@ -42,7 +42,7 @@
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
             need-to-copy-first move-variable-content update-parameter-locations
             place-result-variable backup-registers
-            number-spilled-variables temporary-variables unit-intervals temporary-registers
+            temporary-variables unit-intervals temporary-registers
             compile
             blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
@@ -65,10 +65,6 @@
   (if (every real? args)
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
-
-(define (number-spilled-variables allocation stack-parameters)
-  "Count the number of spilled variables"
-  (length (difference (unallocated-variables allocation) stack-parameters)))
 
 (define (temporary-variables prog)
   "Allocate temporary variable for each instruction which has a variable as first argument"
