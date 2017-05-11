@@ -93,22 +93,6 @@
       (r (var <int>))
       (x (var <sint>))
       (p (var <long>))]
-  (test-assert "an empty program needs no temporary variables"
-    (null? (temporary-variables '())))
-  (test-equal "create temporary variable for first argument of instruction"
-    (list <var>) (map class-of (temporary-variables (list (MOV a 0)))))
-  (test-assert "temporary variable should be distinct from first argument of instruction"
-    (not (equal? (list a) (temporary-variables (list (MOV a 0))))))
-  (test-equal "temporary variable should have correct type"
-    (list <sint>) (map typecode (temporary-variables (list (MOV x 0)))))
-  (test-equal "it should not create a temporary variable if the statement does not contain variables"
-    (list #f) (temporary-variables (list (MOV EAX 0))))
-  (test-equal "it should not create a temporary variable if the first argument is not a variable"
-    (list #f) (temporary-variables (list (MOV EAX a))))
-  (test-equal "create temporary variable for pointer argument to instruction"
-    (list <var>) (map class-of (temporary-variables (list (MOV (ptr <int> p) a)))))
-  (test-equal "temporary variable for pointer argument needs to be long integer"
-    (list <long>) (map typecode (temporary-variables (list (MOV (ptr <int> p) a)))))
 
   (test-assert "create empty list of unit intervals"
     (null? (unit-intervals '())))

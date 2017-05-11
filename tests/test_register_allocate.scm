@@ -80,33 +80,41 @@
 
 (test-begin "identify free variables")
   (let [(a (var <int>))
-        (b (var <int>))
-        (c (var <int>))
-        (x (var <sint>))]
+        (b (var <int>))]
     (test-assert "no variables means no unallocated variables"
       (null? (unallocated-variables '())))
     (test-equal "return the unallocated variable"
       (list a) (unallocated-variables (list (cons a #f))))
     (test-assert "ignore the variable with register allocated"
-      (null? (unallocated-variables (list (cons a RAX)))))
+      (null? (unallocated-variables (list (cons a RAX))))))
+(test-end "identify free variables")
 
-    (test-eqv "count zero spilled variables"
-      0 (number-spilled-variables '() '()))
-    (test-eqv "count one spilled variable"
-      1 (number-spilled-variables '((a . #f)) '()))
-    (test-eqv "ignore allocated variables when counting spilled variables"
-      0 (number-spilled-variables (list (cons a RAX)) '()))
-    (test-eqv "do not count stack parameters when allocating stack space"
-      0 (number-spilled-variables '((a . #f)) '(a)))
-    (test-eqv "allocate stack space if spilled variable is not a stack parameter"
-      1 (number-spilled-variables '((a . #f)) '(b)))
-
+(test-begin "check for variables with register allocated")
+  (let [(a (var <int>))]
     (test-assert "no variables means no variables with register allocated"
       (null? (register-allocations '())))
     (test-equal "return the variable with register allocation information"
       (list (cons a RAX)) (register-allocations (list (cons a RAX))))
     (test-assert "filter out the variable which does not have a register allocated"
-      (null? (register-allocations (list (cons a #f)))))
+      (null? (register-allocations (list (cons a #f))))))
+(test-end "check for variables with register allocated")
+
+(test-begin "count spilled variables")
+  (test-eqv "count zero spilled variables"
+    0 (number-spilled-variables '() '()))
+  (test-eqv "count one spilled variable"
+    1 (number-spilled-variables '((a . #f)) '()))
+  (test-eqv "ignore allocated variables when counting spilled variables"
+    0 (number-spilled-variables (list (cons (var <int>) RAX)) '()))
+  (test-eqv "do not count stack parameters when allocating stack space"
+    0 (number-spilled-variables '((a . #f)) '(a)))
+  (test-eqv "allocate stack space if spilled variable is not a stack parameter"
+    1 (number-spilled-variables '((a . #f)) '(b)))
+(test-end "count spilled variables")
+
+(test-begin "handling spill locations")
+  (let [(a (var <int>))
+        (b (var <int>))]
     (test-assert "assigning spill locations to an empty list of variables returns an empty list"
       (null?  (assign-spill-locations '() 16 8)))
     (test-equal "assign spill location to a variable"
@@ -121,7 +129,7 @@
       (list (cons a RAX)) (add-spill-information (list (cons a RAX)) 16 8))
     (test-equal "allocate spill location for a variable"
       (list (cons a (ptr <long> RSP 16))) (add-spill-information (list (cons a #f)) 16 8)))
-(test-end "identify free variables")
+(test-end "handling spill locations")
 
 (test-begin "blocked variables")
   (test-assert "no predefined variables"

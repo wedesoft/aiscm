@@ -42,7 +42,7 @@
   #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
             need-to-copy-first move-variable-content update-parameter-locations
             place-result-variable backup-registers
-            temporary-variables unit-intervals temporary-registers
+            unit-intervals temporary-registers
             compile
             blocked repeat virtual-variables
             filter-blocks blocked-intervals skeleton parameter delegate name coercion
@@ -65,13 +65,6 @@
   (if (every real? args)
       <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))
-
-(define (temporary-variables prog)
-  "Allocate temporary variable for each instruction which has a variable as first argument"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))]
-         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
-             (and (is-a? arg <var>) (var (typecode arg))))))
-       prog))
 
 (define (unit-intervals vars)
   "Generate intervals of length one for each temporary variable"

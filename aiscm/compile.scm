@@ -23,11 +23,12 @@
   #:use-module (aiscm asm)
   #:use-module (aiscm util)
   #:use-module (aiscm command)
+  #:use-module (aiscm variable)
   #:use-module (aiscm program)
   #:export (replace-variables adjust-stack-pointer
             default-registers callee-saved caller-saved parameter-registers register-parameters stack-parameters
             register-parameter-locations stack-parameter-locations parameter-locations add-stack-parameter-information
-            used-callee-saved))
+            used-callee-saved temporary-variables))
 
 
 (define (replace-variables allocation cmd temporary)
@@ -90,3 +91,10 @@
 (define (used-callee-saved allocation)
    "Return the list of callee saved registers in use"
    (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
+
+(define (temporary-variables prog)
+  "Allocate temporary variable for each instruction which has a variable as first argument"
+  (map (lambda (cmd) (let [(arg (first-argument cmd))]
+         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
+             (and (is-a? arg <var>) (var (typecode arg))))))
+       prog))
