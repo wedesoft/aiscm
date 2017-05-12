@@ -29,7 +29,7 @@
              (aiscm sequence))
 
 
-(test-begin "aiscm jit7")
+(test-begin "aiscm jit6")
 
 (define ctx (make <context>))
 (define i (var <long>))
@@ -159,4 +159,4 @@
 (test-assert "allocate memory in compiled method"
   ((jit ctx (list <ulong>) scm-gc-malloc) 128))
 
-(test-end "aiscm jit7")
+(test-end "aiscm jit6")

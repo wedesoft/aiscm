@@ -30,7 +30,7 @@
              (aiscm jit))
 
 
-(test-begin "aiscm jit6")
+(test-begin "aiscm jit5")
 
 (load-extension "libguile-aiscm-tests" "init_tests")
 
@@ -138,4 +138,4 @@
 (test-eqv "plus for integer and object"
   7 ((jit ctx (list <int> <obj>) +) 3 4))
 
-(test-end "aiscm jit6")
+(test-end "aiscm jit5")

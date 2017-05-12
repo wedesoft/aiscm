@@ -38,7 +38,7 @@
              (aiscm complex))
 
 
-(test-begin "aiscm jit5")
+(test-begin "aiscm jit4")
 
 (define ctx (make <context>))
 (test-equal "multiply sequence with a number"
@@ -253,4 +253,4 @@
 (test-equal "get minor number of signed bytes"
   -1 ((jit ctx (list <byte> <byte>) min) -1 1))
 
-(test-end "aiscm jit5")
+(test-end "aiscm jit4")

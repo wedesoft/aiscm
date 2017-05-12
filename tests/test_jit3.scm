@@ -54,4 +54,4 @@
 (test-equal "add unsigned integer and integer array"
   '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
 
-(test-begin "aiscm jit3")
+(test-end "aiscm jit3")
