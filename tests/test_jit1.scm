@@ -24,6 +24,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm program)
+             (aiscm register-allocate)
              (aiscm compile)
              (aiscm mem)
              (aiscm jit)
@@ -76,27 +77,6 @@
     (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
     (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
 
-(test-equal "'blocked' represents the specified code segment"
-  (list (MOV ECX 2) (RET)) (get-code (blocked AL (MOV ECX 2) (RET))))
-(test-equal "'blocked' stores the register to be blocked"
-  RAX (get-reg (blocked RAX (MOV ECX 2) (RET))))
-(test-equal "'blocked' with empty block list has no effect"
-  (list (MOV ECX 2) (RET)) (blocked '() (MOV ECX 2) (RET)))
-(test-equal "'filter-blocks' should remove blocked-register information"
-  (list (MOV ECX 2) (RET)) (filter-blocks (blocked RAX (MOV ECX 2) (RET))))
-(test-equal "'filter-blocks' should work recursively"
-  (list (MOV EDX 2) 'x (list (RET))) (filter-blocks (blocked RDX (MOV EDX 2) 'x (blocked RAX (RET)))))
-(test-equal "'blocked-intervals' should extract the blocked intervals for each register"
-  (list (cons RAX '(0 . 1))) (blocked-intervals (blocked RAX (MOV EAX 0) (RET))))
-(test-equal "Blocked intervals within a program should be offset correctly"
-  (list (cons RAX '(1 . 1))) (blocked-intervals (list (MOV EAX 0) (blocked RAX (RET)))))
-(test-equal "The offsets of 'blocked-intervals' should refer to the flattened code"
-  (list (cons RAX '(2 . 2))) (blocked-intervals (list (list (MOV EAX 0) (NOP)) (blocked RAX (RET)))))
-(test-equal "'blocked-intervals' should work recursively"
-  (list (cons RAX '(1 . 4)) (cons RDX '(2 . 3)))
-  (blocked-intervals (list 'x (blocked RAX (MOV AX 0) (blocked RDX (MOV DX 0) (IDIV CX)) (RET)))))
-(test-equal "'blocked' with list of registers blocks all of them"
-  (list (cons RCX '(0 . 1)) (cons RDX '(0 . 1))) (blocked-intervals (blocked (list RCX RDX) (MOV ECX 2) (RET))))
 (let [(r (var <byte>))
       (a (var <byte>))
       (b (var <byte>))]

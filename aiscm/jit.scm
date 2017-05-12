@@ -35,11 +35,12 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
+  #:use-module (aiscm register-allocate)
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
-  #:export (<block> <param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            blocked repeat virtual-variables
-            filter-blocks blocked-intervals skeleton parameter delegate name coercion
+  #:export (<param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
+            repeat virtual-variables
+            skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
@@ -70,29 +71,6 @@
 (define (repeat start end . body)
   (let [(i (var (typecode end)))]
     (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
-
-(define-class <block> ()
-  (reg  #:init-keyword #:reg  #:getter get-reg)
-  (code #:init-keyword #:code #:getter get-code))
-(define-method (blocked (reg <register>) . body) (make <block> #:reg reg #:code body))
-(define-method (blocked (lst <null>) . body) body)
-(define-method (blocked (lst <pair>) . body) (blocked (car lst) (apply blocked (cdr lst) body)))
-(define (filter-blocks prog)
-  (cond
-    ((is-a? prog <block>) (filter-blocks (get-code prog)))
-    ((list? prog)         (map filter-blocks prog))
-    (else                 prog)))
-(define ((bump-interval offset) interval)
-  (cons (car interval) (cons (+ (cadr interval) offset) (+ (cddr interval) offset))))
-(define code-length (compose length flatten-code filter-blocks))
-(define (blocked-intervals prog)
-  (cond
-    ((is-a? prog <block>) (cons (cons (get-reg prog) (cons 0 (1- (code-length (get-code prog)))))
-                            (blocked-intervals (get-code prog))))
-    ((pair? prog) (append (blocked-intervals (car prog))
-                    (map (bump-interval (code-length (list (car prog))))
-                         (blocked-intervals (cdr prog)))))
-    (else '())))
 
 (define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
 (define (div/mod-prepare-signed r a)

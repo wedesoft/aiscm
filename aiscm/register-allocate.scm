@@ -17,6 +17,7 @@
 (define-module (aiscm register-allocate)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (oop goops)
   #:use-module (aiscm util)
   #:use-module (aiscm int)
@@ -24,11 +25,12 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
+  #:export (<block>
+            initial-register-use sort-live-intervals find-available-register mark-used-till
             spill-candidate ignore-spilled-variables ignore-blocked-registers
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring
-            number-spilled-variables))
+            number-spilled-variables blocked filter-blocks blocked-intervals))
 
 (define (initial-register-use registers)
   "Initially all registers are available from index zero on"
@@ -55,10 +57,6 @@
   "Remove spilled variables from the variable use list"
   (filter (compose (lambda (var) (cdr (or (assq var allocation) (cons var #t)))) car) variable-use))
 
-(define (ignore-blocked-registers availability interval blocked)
-  "Remove blocked registers from the availability list"
-  (apply assq-remove availability ((overlap-interval blocked) interval)))
-
 (define (unallocated-variables allocation)
    "Return a list of unallocated variables"
    (map car (filter (compose not cdr) allocation)))
@@ -81,6 +79,36 @@
   "Allocate spill locations for spilled variables"
   (append (register-allocations allocation)
           (assign-spill-locations (unallocated-variables allocation) offset increment)))
+
+(define-class <block> ()
+  (reg  #:init-keyword #:reg  #:getter get-reg)
+  (code #:init-keyword #:code #:getter get-code))
+
+(define-method (blocked (reg <register>) . body) (make <block> #:reg reg #:code body))
+(define-method (blocked (lst <null>) . body) body)
+(define-method (blocked (lst <pair>) . body) (blocked (car lst) (apply blocked (cdr lst) body)))
+
+(define (filter-blocks prog)
+  (cond
+    ((is-a? prog <block>) (filter-blocks (get-code prog)))
+    ((list? prog)         (map filter-blocks prog))
+    (else                 prog)))
+
+(define (blocked-intervals prog)
+  (define code-length (compose length flatten-code filter-blocks))
+  (define ((bump-interval offset) interval)
+    (cons (car interval) (cons (+ (cadr interval) offset) (+ (cddr interval) offset))))
+  (cond
+    ((is-a? prog <block>) (cons (cons (get-reg prog) (cons 0 (1- (code-length (get-code prog)))))
+                            (blocked-intervals (get-code prog))))
+    ((pair? prog) (append (blocked-intervals (car prog))
+                    (map (bump-interval (code-length (list (car prog))))
+                         (blocked-intervals (cdr prog)))))
+    (else '())))
+
+(define (ignore-blocked-registers availability interval blocked)
+  "Remove blocked registers from the availability list"
+  (apply assq-remove availability ((overlap-interval blocked) interval)))
 
 (define (blocked-predefined predefined intervals blocked)
   "Get blocked predefined registers"
