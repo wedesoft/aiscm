@@ -43,19 +43,6 @@
 (define ctx (make <context>))
 (test-equal "multiply sequence with a number"
   '(6 9 15) (to-list (* (seq 2 3 5) 3)))
-(let [(s (var <int>))
-      (u (var <uint>))
-      (n (var <byte>))]
-  (test-equal "shl blocks RCX register"
-    RCX (get-reg (shl s n)))
-  (test-equal "shl uses SHL for unsigned input"
-    (list (mov-unsigned CL n) (SHL u CL)) (filter-blocks (shl u n)))
-  (test-equal "shl uses SAL for signed input"
-    (list (mov-unsigned CL n) (SAL s CL)) (filter-blocks (shl s n)))
-  (test-equal "shl uses SHR for unsigned input"
-    (list (mov-unsigned CL n) (SHR u CL)) (filter-blocks (shr u n)))
-  (test-equal "shl uses SAR for signed input"
-    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n))))
 (test-equal "left-shift sequence"
   '(2 4 6) (to-list (<< (seq 1 2 3) 1)))
 (test-equal "right-shift sequence"

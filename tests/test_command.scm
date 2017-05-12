@@ -116,4 +116,20 @@
       (test-equal "generate code for 16-bit unsigned modulo"
     (list (MOV AX a) (MOV DX 0) (DIV b) (MOV r DX)) (flatten-code (filter-blocks (mod r a b)))))
 (test-end "division and modulo")
+
+(test-begin "shl and shr")
+(let [(s (var <int>))
+      (u (var <uint>))
+      (n (var <byte>))]
+  (test-equal "shl blocks RCX register"
+    RCX (get-reg (shl s n)))
+  (test-equal "shl uses SHL for unsigned input"
+    (list (mov-unsigned CL n) (SHL u CL)) (filter-blocks (shl u n)))
+  (test-equal "shl uses SAL for signed input"
+    (list (mov-unsigned CL n) (SAL s CL)) (filter-blocks (shl s n)))
+  (test-equal "shl uses SHR for unsigned input"
+    (list (mov-unsigned CL n) (SHR u CL)) (filter-blocks (shr u n)))
+  (test-equal "shl uses SAR for signed input"
+    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n))))
+(test-end "shl and shr")
 (test-end "aiscm command")

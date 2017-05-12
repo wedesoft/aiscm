@@ -45,7 +45,7 @@
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
-            force-parameters shl shr
+            force-parameters
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
@@ -67,10 +67,6 @@
   (let [(i (var (typecode end)))]
     (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
 
-(define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
-(define (shl r x) (shx r x SAL SHL))
-(define (shr r x) (shx r x SAR SHR))
 (define-method (test (a <var>)) (list (TEST a a)))
 (define-method (test (a <ptr>))
   (let [(intermediate (var (typecode a)))]

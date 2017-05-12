@@ -27,7 +27,7 @@
   #:use-module (aiscm util)
   #:export (<cmd> <block>
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
-            blocked sign-extend-ax div mod)
+            blocked sign-extend-ax div mod shl shr)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -112,6 +112,11 @@
 (define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
 (define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
+
+(define (shx r x shift-signed shift-unsigned)
+  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
+(define (shl r x) (shx r x SAL SHL))
+(define (shr r x) (shx r x SAR SHR))
 
 (functional-op    mov-signed  )
 (functional-op    mov-unsigned)
