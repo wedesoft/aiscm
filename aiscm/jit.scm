@@ -39,7 +39,7 @@
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
   #:export (<param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
-            repeat virtual-variables
+            virtual-variables
             skeleton parameter delegate name coercion
             tensor-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
@@ -62,31 +62,6 @@
                #:parameters parameters
                #:results results
                #:blocked (blocked-intervals instructions)))
-
-(define (repeat start end . body)
-  (let [(i (var (typecode end)))]
-    (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
-
-(define-method (cmp a b) (list (CMP a b)))
-(define-method (cmp (a <ptr>) (b <ptr>))
-  (let [(intermediate (var (typecode a)))]
-    (cons (MOV intermediate a) (cmp intermediate b))))
-(define ((cmp-setxx set-signed set-unsigned) out a b)
-  (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
-    (attach (cmp a b) (set out))))
-(define cmp-equal         (cmp-setxx SETE   SETE  ))
-(define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
-(define cmp-lower-than    (cmp-setxx SETL   SETB  ))
-(define cmp-lower-equal   (cmp-setxx SETLE  SETBE ))
-(define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
-(define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
-
-(define ((cmp-cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) r a b)
-  (if (eqv? 1 (size-of r))
-    (append (mov r a) (cmp r b) (list ((if (signed? r) jmp-signed jmp-unsigned) 'skip)) (mov r b) (list 'skip))
-    (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b)))))
-(define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
-(define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
 (define-method (skeleton (self <meta<sequence<>>>))

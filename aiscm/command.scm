@@ -28,7 +28,9 @@
   #:use-module (aiscm util)
   #:export (<cmd> <block>
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
-            blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or)
+            blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
+            cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
+            minor major repeat)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -88,49 +90,6 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(define-class <block> ()
-  (reg  #:init-keyword #:reg  #:getter get-reg)
-  (code #:init-keyword #:code #:getter get-code))
-
-(define-method (blocked (reg <register>) . body)
-  "reserve a register so that the register allocator will not use it"
-  (make <block> #:reg reg #:code body))
-(define-method (blocked (lst <null>) . body)
-  "reserve empty list of registers (no effect)"
-  body)
-(define-method (blocked (lst <pair>) . body)
-  "reserve multiple registers so that the register allocator will not use them"
-  (blocked (car lst) (apply blocked (cdr lst) body)))
-
-(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
-(define (div/mod-prepare-signed r a)
-  (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
-(define (div/mod-prepare-unsigned r a)
-  (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (to-type (typecode r) RAX) a) (MOV (to-type (typecode r) RDX) 0))))
-(define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
-(define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
-(define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
-(define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
-(define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
-(define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
-
-(define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
-(define (shl r x) (shx r x SAL SHL))
-(define (shr r x) (shx r x SAR SHR))
-
-(define-method (test (a <var>)) (list (TEST a a)))
-(define-method (test (a <ptr>))
-  (let [(intermediate (var (typecode a)))]
-    (list (MOV intermediate a) (test intermediate))))
-(define (test-zero r a) (attach (test a) (SETE r)))
-(define (test-non-zero r a) (attach (test a) (SETNE r)))
-(define ((binary-bool op) a b)
-  (let [(intermediate (var <byte>))]
-    (attach (append (test-non-zero a a) (test-non-zero intermediate b)) (op a intermediate))))
-(define bool-and (binary-bool AND))
-(define bool-or  (binary-bool OR))
-
 (functional-op    mov-signed  )
 (functional-op    mov-unsigned)
 (functional-op    MOV         )
@@ -176,3 +135,71 @@
 (mutating-op      CMOVNL      )
 (mutating-op      CMOVLE      )
 (mutating-op      CMOVNLE     )
+
+(define-class <block> ()
+  (reg  #:init-keyword #:reg  #:getter get-reg)
+  (code #:init-keyword #:code #:getter get-code))
+
+(define-method (blocked (reg <register>) . body)
+  "reserve a register so that the register allocator will not use it"
+  (make <block> #:reg reg #:code body))
+(define-method (blocked (lst <null>) . body)
+  "reserve empty list of registers (no effect)"
+  body)
+(define-method (blocked (lst <pair>) . body)
+  "reserve multiple registers so that the register allocator will not use them"
+  (blocked (car lst) (apply blocked (cdr lst) body)))
+
+(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
+(define (div/mod-prepare-signed r a)
+  (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
+(define (div/mod-prepare-unsigned r a)
+  (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (to-type (typecode r) RAX) a) (MOV (to-type (typecode r) RDX) 0))))
+(define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
+(define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
+(define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
+(define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
+(define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
+(define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
+
+(define (shx r x shift-signed shift-unsigned)
+  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
+(define (shl r x) (shx r x SAL SHL))
+(define (shr r x) (shx r x SAR SHR))
+
+(define-method (test (a <var>)) (list (TEST a a)))
+(define-method (test (a <ptr>))
+  (let [(intermediate (var (typecode a)))]
+    (list (MOV intermediate a) (test intermediate))))
+(define (test-zero r a) (attach (test a) (SETE r)))
+(define (test-non-zero r a) (attach (test a) (SETNE r)))
+(define ((binary-bool op) a b)
+  (let [(intermediate (var <byte>))]
+    (attach (append (test-non-zero a a) (test-non-zero intermediate b)) (op a intermediate))))
+(define bool-and (binary-bool AND))
+(define bool-or  (binary-bool OR))
+
+(define-method (cmp a b) (list (CMP a b)))
+(define-method (cmp (a <ptr>) (b <ptr>))
+  (let [(intermediate (var (typecode a)))]
+    (cons (MOV intermediate a) (cmp intermediate b))))
+(define ((cmp-setxx set-signed set-unsigned) out a b)
+  (let [(set (if (or (signed? a) (signed? b)) set-signed set-unsigned))]
+    (attach (cmp a b) (set out))))
+(define cmp-equal         (cmp-setxx SETE   SETE  ))
+(define cmp-not-equal     (cmp-setxx SETNE  SETNE ))
+(define cmp-lower-than    (cmp-setxx SETL   SETB  ))
+(define cmp-lower-equal   (cmp-setxx SETLE  SETBE ))
+(define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
+(define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
+
+(define ((cmp-cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) r a b)
+  (if (eqv? 1 (size-of r))
+    (append (mov r a) (cmp r b) (list ((if (signed? r) jmp-signed jmp-unsigned) 'skip)) (mov r b) (list 'skip))
+    (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b)))))
+(define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
+(define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
+
+(define (repeat start end . body)
+  (let [(i (var (typecode end)))]
+    (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))

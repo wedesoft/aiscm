@@ -67,16 +67,6 @@
   (test-eqv "'virtual-variables' creates separate namespaces for labels"
     3 ((asm ctx <int> '() (virtual-variables (list a) '() (list (MOV a 0) (JMP 'a) (list 'a (MOV a 2)) 'a (ADD a 3) (RET)))) )))
 
-(let [(a (var <int>))
-      (b (var <int>))
-      (c (var <int>))]
-  (test-equal "'repeat' loop"
-      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
-      (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
-  (test-equal "'repeat' loop with offset"
-    (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
-    (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
-
 (let [(r (var <byte>))
       (a (var <byte>))
       (b (var <byte>))]

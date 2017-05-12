@@ -15,11 +15,13 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (aiscm asm)
              (aiscm variable)
              (aiscm command)
              (aiscm program)
              (aiscm register-allocate)
-             (aiscm asm)
+             (aiscm compile)
+             (aiscm jit)
              (aiscm bool)
              (aiscm int))
 
@@ -142,4 +144,16 @@
     (test-equal "generate code for non-equal zero"
       (list (TEST a a) (SETNE r)) (test-non-zero r a)))
 (test-end "boolean operations")
+
+(test-begin "repeat loop")
+  (let [(a (var <int>))
+        (b (var <int>))
+        (c (var <int>))]
+    (test-equal "'repeat' loop"
+        (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+        (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
+    (test-equal "'repeat' loop with offset"
+      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+      (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
+(test-end "repeat loop")
 (test-end "aiscm command")
