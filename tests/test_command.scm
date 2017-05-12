@@ -20,6 +20,7 @@
              (aiscm program)
              (aiscm register-allocate)
              (aiscm asm)
+             (aiscm bool)
              (aiscm int))
 
 
@@ -132,4 +133,13 @@
   (test-equal "shl uses SAR for signed input"
     (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n))))
 (test-end "shl and shr")
+
+(test-begin "boolean operations")
+  (let [(a (var <int>))
+        (r (var <bool>))]
+    (test-equal "generate code for equal zero"
+      (list (TEST a a) (SETE r)) (test-zero r a))
+    (test-equal "generate code for non-equal zero"
+      (list (TEST a a) (SETNE r)) (test-non-zero r a)))
+(test-end "boolean operations")
 (test-end "aiscm command")

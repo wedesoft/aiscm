@@ -59,10 +59,6 @@
   '(3 7 7) (to-list (| 3 (seq 3 4 5))))
 (test-equal "element-wise bit-wise xor"
   '(1 7 1) (to-list (^ (seq 2 3 4) (seq 3 4 5))))
-(let [(a (var <int>))
-      (r (var <bool>))]
-  (test-equal "generate code for comparing with zero"
-    (list (TEST a a) (SETE r)) (test-zero r a)))
 (test-eq "typecast for scalar type"
   <int> (convert-type <int> <byte>))
 (test-eq "typecast element-type of array type"

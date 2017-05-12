@@ -46,7 +46,7 @@
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
-            test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
+            ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
@@ -66,18 +66,6 @@
 (define (repeat start end . body)
   (let [(i (var (typecode end)))]
     (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
-
-(define-method (test (a <var>)) (list (TEST a a)))
-(define-method (test (a <ptr>))
-  (let [(intermediate (var (typecode a)))]
-    (list (MOV intermediate a) (test intermediate))))
-(define (test-zero r a) (attach (test a) (SETE r)))
-(define (test-non-zero r a) (attach (test a) (SETNE r)))
-(define ((binary-bool op) a b)
-  (let [(intermediate (var <byte>))]
-    (attach (append (test-non-zero a a) (test-non-zero intermediate b)) (op a intermediate))))
-(define bool-and (binary-bool AND))
-(define bool-or  (binary-bool OR))
 
 (define-method (cmp a b) (list (CMP a b)))
 (define-method (cmp (a <ptr>) (b <ptr>))

@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm command)
   #:use-module (oop goops)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -27,7 +28,7 @@
   #:use-module (aiscm util)
   #:export (<cmd> <block>
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
-            blocked sign-extend-ax div mod shl shr)
+            blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -117,6 +118,18 @@
   (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
 (define (shr r x) (shx r x SAR SHR))
+
+(define-method (test (a <var>)) (list (TEST a a)))
+(define-method (test (a <ptr>))
+  (let [(intermediate (var (typecode a)))]
+    (list (MOV intermediate a) (test intermediate))))
+(define (test-zero r a) (attach (test a) (SETE r)))
+(define (test-non-zero r a) (attach (test a) (SETNE r)))
+(define ((binary-bool op) a b)
+  (let [(intermediate (var <byte>))]
+    (attach (append (test-non-zero a a) (test-non-zero intermediate b)) (op a intermediate))))
+(define bool-and (binary-bool AND))
+(define bool-or  (binary-bool OR))
 
 (functional-op    mov-signed  )
 (functional-op    mov-unsigned)
