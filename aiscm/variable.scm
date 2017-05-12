@@ -26,7 +26,7 @@
   #:use-module (aiscm util)
   #:export (<var> <ptr>
             var native-equivalent variables get-args)
-  #:re-export (typecode))
+  #:re-export (typecode signed?))
 
 
 (define-method (get-args self) '())
@@ -57,3 +57,6 @@
 (define-method (variables self) '())
 (define-method (variables (self <var>)) (list self))
 (define-method (variables (self <ptr>)) (variables (get-args self)))
+
+(define-method (signed? (x <var>)) (signed? (typecode x)))
+(define-method (signed? (x <ptr>)) (signed? (typecode x)))

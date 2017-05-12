@@ -124,26 +124,6 @@
   '(#f #t #t) (to-list (>= (seq -1 0 1) 0)))
 (test-equal "element-wise lower-than with unsigned and signed byte"
   '(#f #f #f) (to-list (< (seq 1 2 128) -1)))
-(let [(r (var <byte>)) (a (var <byte>)) (b (var <byte>))]
-  (test-equal "generate code for 8-bit signed division"
-    (list (MOV AL a) (CBW) (IDIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b))))
-  (test-equal "generate code for 8-bit signed remainder"
-    (list (MOV AL a) (CBW) (IDIV b) (MOV AL AH) (MOV r AL)) (flatten-code (filter-blocks (mod r a b))))
-  (test-eq "block RAX register when dividing"
-    RAX (get-reg (div r a b))))
-(let [(r (var <ubyte>)) (a (var <ubyte>)) (b (var <ubyte>))]
-  (test-equal "generate code for 8-bit unsigned division"
-    (list (MOVZX AX a) (DIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b)))))
-(let [(r (var <sint>)) (a (var <sint>)) (b (var <sint>))]
-  (test-equal "generate code for 16-bit signed division"
-    (list (MOV AX a) (CWD) (IDIV b) (MOV r AX)) (flatten-code (filter-blocks (div r a b))))
-  (test-eq "16-bit signed division blocks RDX register"
-    RDX (get-reg (car (get-code (div r a b))))))
-(let [(r (var <usint>)) (a (var <usint>)) (b (var <usint>))]
-    (test-equal "generate code for 16-bit unsigned division"
-  (list (MOV AX a) (MOV DX 0) (DIV b) (MOV r AX)) (flatten-code (filter-blocks (div r a b))))
-    (test-equal "generate code for 16-bit unsigned modulo"
-  (list (MOV AX a) (MOV DX 0) (DIV b) (MOV r DX)) (flatten-code (filter-blocks (mod r a b)))))
 (test-equal "element-wise signed byte division"
   '(1 2 -3) (to-list (/ (seq 3 6 -9) 3)))
 (test-equal "element-wise modulo"

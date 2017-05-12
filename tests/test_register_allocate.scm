@@ -189,12 +189,6 @@
 (test-end "linear scan allocation")
 
 (test-begin "register blocking")
-  (test-equal "'blocked' represents the specified code segment"
-    (list (MOV ECX 2) (RET)) (get-code (blocked AL (MOV ECX 2) (RET))))
-  (test-equal "'blocked' stores the register to be blocked"
-    RAX (get-reg (blocked RAX (MOV ECX 2) (RET))))
-  (test-equal "'blocked' with empty block list has no effect"
-    (list (MOV ECX 2) (RET)) (blocked '() (MOV ECX 2) (RET)))
   (test-equal "'filter-blocks' should remove blocked-register information"
     (list (MOV ECX 2) (RET)) (filter-blocks (blocked RAX (MOV ECX 2) (RET))))
   (test-equal "'filter-blocks' should work recursively"

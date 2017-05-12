@@ -25,12 +25,11 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm program)
-  #:export (<block>
-            initial-register-use sort-live-intervals find-available-register mark-used-till
+  #:export (initial-register-use sort-live-intervals find-available-register mark-used-till
             spill-candidate ignore-spilled-variables ignore-blocked-registers
             unallocated-variables register-allocations assign-spill-locations add-spill-information
             blocked-predefined move-blocked-predefined non-blocked-predefined linear-scan-coloring
-            number-spilled-variables blocked filter-blocks blocked-intervals))
+            number-spilled-variables filter-blocks blocked-intervals))
 
 (define (initial-register-use registers)
   "Initially all registers are available from index zero on"
@@ -79,14 +78,6 @@
   "Allocate spill locations for spilled variables"
   (append (register-allocations allocation)
           (assign-spill-locations (unallocated-variables allocation) offset increment)))
-
-(define-class <block> ()
-  (reg  #:init-keyword #:reg  #:getter get-reg)
-  (code #:init-keyword #:code #:getter get-code))
-
-(define-method (blocked (reg <register>) . body) (make <block> #:reg reg #:code body))
-(define-method (blocked (lst <null>) . body) body)
-(define-method (blocked (lst <pair>) . body) (blocked (car lst) (apply blocked (cdr lst) body)))
 
 (define (filter-blocks prog)
   (cond

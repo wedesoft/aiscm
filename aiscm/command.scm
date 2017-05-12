@@ -25,10 +25,10 @@
   #:use-module (aiscm int)
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
-  #:export (<cmd>
+  #:export (<cmd> <block>
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
-            sign-extend-ax)
-  #:re-export (variables get-args))
+            blocked sign-extend-ax div mod)
+  #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
 (define-method (output self) '())
@@ -87,7 +87,31 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
+(define-class <block> ()
+  (reg  #:init-keyword #:reg  #:getter get-reg)
+  (code #:init-keyword #:code #:getter get-code))
+
+(define-method (blocked (reg <register>) . body)
+  "reserve a register so that the register allocator will not use it"
+  (make <block> #:reg reg #:code body))
+(define-method (blocked (lst <null>) . body)
+  "reserve empty list of registers (no effect)"
+  body)
+(define-method (blocked (lst <pair>) . body)
+  "reserve multiple registers so that the register allocator will not use them"
+  (blocked (car lst) (apply blocked (cdr lst) body)))
+
 (define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
+(define (div/mod-prepare-signed r a)
+  (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
+(define (div/mod-prepare-unsigned r a)
+  (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (to-type (typecode r) RAX) a) (MOV (to-type (typecode r) RDX) 0))))
+(define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
+(define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
+(define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
+(define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
+(define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
+(define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
 (functional-op    mov-signed  )
 (functional-op    mov-unsigned)

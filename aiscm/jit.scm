@@ -45,7 +45,7 @@
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
-            force-parameters shl shr div mod
+            force-parameters shl shr
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
@@ -67,19 +67,6 @@
   (let [(i (var (typecode end)))]
     (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
 
-(define (div/mod-prepare-signed r a)
-  (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
-(define (div/mod-prepare-unsigned r a)
-  (if (eqv? 1 (size-of r)) (list (MOVZX AX a)) (list (MOV (to-type (typecode r) RAX) a) (MOV (to-type (typecode r) RDX) 0))))
-(define (div/mod-signed r a b) (attach (div/mod-prepare-signed r a) (IDIV b)))
-(define (div/mod-unsigned r a b) (attach (div/mod-prepare-unsigned r a) (DIV b)))
-(define (div/mod-block-registers r . code) (blocked RAX (if (eqv? 1 (size-of r)) code (blocked RDX code))))
-(define (div/mod r a b . finalise) (div/mod-block-registers r ((if (signed? r) div/mod-signed div/mod-unsigned) r a b) finalise))
-(define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
-(define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
-
-(define-method (signed? (x <var>)) (signed? (typecode x)))
-(define-method (signed? (x <ptr>)) (signed? (typecode x)))
 (define (shx r x shift-signed shift-unsigned)
   (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
 (define (shl r x) (shx r x SAL SHL))
