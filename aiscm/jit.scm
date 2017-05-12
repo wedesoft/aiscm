@@ -45,7 +45,7 @@
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
-            force-parameters shl shr sign-extend-ax div mod
+            force-parameters shl shr div mod
             test-zero ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
             make-function make-native-function native-call make-constant-function native-const
@@ -55,11 +55,6 @@
 
 (define ctx (make <context>))
 
-
-(define-method (native-type (i <real>) . args); TODO: remove this when floating point support is ready
-  (if (every real? args)
-      <obj>
-      (apply native-type (sort-by-pred (cons i args) real?))))
 
 (define* (virtual-variables results parameters instructions #:key (registers default-registers))
   (jit-compile (flatten-code (relabel (filter-blocks instructions)))
@@ -72,7 +67,6 @@
   (let [(i (var (typecode end)))]
     (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
 
-(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
 (define (div/mod-prepare-signed r a)
   (list (MOV (to-type (typecode r) RAX) a) (sign-extend-ax (size-of r))))
 (define (div/mod-prepare-unsigned r a)

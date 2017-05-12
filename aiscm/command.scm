@@ -26,7 +26,8 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
   #:export (<cmd>
-            get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov)
+            get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
+            sign-extend-ax)
   #:re-export (variables get-args))
 
 (define-method (input self) '())
@@ -85,6 +86,8 @@
   (define-method (op . args) (make <cmd> #:op op #:in args)))
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
+
+(define (sign-extend-ax size) (case size ((1) (CBW)) ((2) (CWD)) ((4) (CDQ)) ((8) (CQO))))
 
 (functional-op    mov-signed  )
 (functional-op    mov-unsigned)

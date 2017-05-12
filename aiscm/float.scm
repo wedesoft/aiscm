@@ -64,3 +64,8 @@
   (if (every real? args)
       <double>
       (apply native-type (sort-by-pred (cons i args) real?))))
+
+(define-method (native-type (i <real>) . args); TODO: remove this when floating point support is ready
+  (if (every real? args)
+      <obj>
+      (apply native-type (sort-by-pred (cons i args) real?))))

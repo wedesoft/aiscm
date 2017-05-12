@@ -80,4 +80,7 @@
   (test-assert "return false if statement is compiled already"
     (not (first-argument (ADD CX DX)))))
 (test-end "first argument of command")
+
+(test-equal "sign-extend AL, AX, EAX, and RAX"
+  (list (CBW) (CWD) (CDQ) (CQO)) (map sign-extend-ax '(1 2 4 8)))
 (test-end "aiscm command")

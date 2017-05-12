@@ -25,6 +25,7 @@
              (aiscm command)
              (aiscm program)
              (aiscm mem)
+             (aiscm register-allocate)
              (aiscm compile)
              (aiscm jit)
              (aiscm element)
@@ -123,8 +124,6 @@
   '(#f #t #t) (to-list (>= (seq -1 0 1) 0)))
 (test-equal "element-wise lower-than with unsigned and signed byte"
   '(#f #f #f) (to-list (< (seq 1 2 128) -1)))
-(test-equal "sign-extend AL, AX, EAX, and RAX"
-  (list (CBW) (CWD) (CDQ) (CQO)) (map sign-extend-ax '(1 2 4 8)))
 (let [(r (var <byte>)) (a (var <byte>)) (b (var <byte>))]
   (test-equal "generate code for 8-bit signed division"
     (list (MOV AL a) (CBW) (IDIV b) (MOV r AL)) (flatten-code (filter-blocks (div r a b))))
