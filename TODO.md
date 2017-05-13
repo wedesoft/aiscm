@@ -2,6 +2,8 @@
 
 * move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
+* (tensor i (sum k (\* (get (arr (2 3 5) (3 5 7)) k i) (get (seq -1 0 1) k))))
+* (tensor (inject max i (get (arr (2 3 5) (8 6 4)) i)))
 * module for + and +=, ...
 * tidy up structure of jit and tests
 * sum with multiple indices or no indices

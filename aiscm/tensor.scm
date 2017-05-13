@@ -7,6 +7,7 @@
   #:use-module (aiscm command)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
   #:export (<injecter>
@@ -38,8 +39,14 @@
 
 (define-syntax-rule (define-tensor-operation name op fun)
   (begin
+    (define-method (op (a <element>) (b <element>))
+      (list (fun (value a) (value b))))
+    (define-method (op (a <element>) (b <pointer<>>))
+      (list (fun (value a) (ptr (typecode b) (value b)))))
     (define-method (op (a <param>) (b <param>))
-      (fun (value a) (ptr (typecode b) (value b))))
+      (op (delegate a) (delegate b)))
+    (define-method (op (a <param>) (b <function>))
+      (insert-intermediate b (skeleton (type b)) (lambda (intermediate) (op (delegate a) intermediate))))
     (define-syntax-rule (name index delegate)
       (inject op index delegate))))
 

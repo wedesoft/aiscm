@@ -171,7 +171,9 @@
     (test-eqv "Shortcut for summing elements"
       10 (tensor (sum k (get (seq 2 3 5) k))))
     (test-eqv "Shortcut for Multiplying elements"
-      30 (tensor (prod k (get (seq 2 3 5) k)))))
+      30 (tensor (prod k (get (seq 2 3 5) k))))
+    (test-eqv "Sum of non-trivial tensor expression"
+      13 (tensor (sum i (+ (get (seq 2 3 5) i) 1)))))
 (test-end "tensor reduce")
 
 (test-end "aiscm tensor")
