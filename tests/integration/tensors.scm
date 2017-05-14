@@ -27,3 +27,6 @@
 (tensor i (sum j (get (arr (1 2 3) (3 4 5)) i j)))
 ;#<sequence<int<8,unsigned>>>:
 ;(4 6 8)
+(tensor i (sum k (* (get (arr (2 3 5) (3 5 7)) k i) (get (seq -1 0 1) k))))
+;#<sequence<int<16,unsigned>>>:
+;(3 4)

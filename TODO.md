@@ -2,13 +2,13 @@
 
 * move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
-* (tensor i (sum k (\* (get (arr (2 3 5) (3 5 7)) k i) (get (seq -1 0 1) k))))
 * (tensor (inject max i (get (arr (2 3 5) (8 6 4)) i)))
 * module for + and +=, ...
-* tidy up structure of jit and tests
+* rbg and complex tensors
 * sum with multiple indices or no indices
 * how to run test suite
 * correlation: \*, +=, dilation: first/conditional, max, ...
+* array compatibility check
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
