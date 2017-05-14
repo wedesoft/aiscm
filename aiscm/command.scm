@@ -29,7 +29,7 @@
   #:export (<cmd> <block>
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
             blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
-            cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
+            cmp cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
             minor major repeat)
   #:re-export (variables get-args get-reg get-code))
 

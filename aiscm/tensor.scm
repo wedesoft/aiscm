@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (aiscm asm)
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
@@ -13,9 +14,9 @@
   #:export (<injecter>
             tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
-            injecter += *=)
+            injecter += *= max= min=)
   #:re-export (jit get wrap dim)
-  #:export-syntax (inject tensor tensor-body sum prod))
+  #:export-syntax (inject tensor tensor-body sum prod largest smallest))
 
 
 (define tensor-ctx (make <context>))
@@ -50,8 +51,18 @@
     (define-syntax-rule (name index delegate)
       (inject op index delegate))))
 
-(define-tensor-operation sum  += ADD )
-(define-tensor-operation prod *= IMUL)
+(define ((cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) a b)
+  (if (eqv? 1 (size-of a))
+    (append (cmp a b) (list ((if (signed? a) jmp-signed jmp-unsigned) 'skip)) (mov a b) (list 'skip))
+    (append (cmp a b) (list ((if (signed? a) set-signed set-unsigned) a b)))))
+
+(define minor= (cmovxx CMOVNLE CMOVNBE JL   JB  ))
+(define major= (cmovxx CMOVL   CMOVB   JNLE JNBE))
+
+(define-tensor-operation sum      +=   ADD )
+(define-tensor-operation prod     *=   IMUL)
+(define-tensor-operation largest  max= major=)
+(define-tensor-operation smallest min= minor=)
 
 (define-method (tensor-loop (self <injecter>) . idx)
   (let [(t (apply tensor-loop (delegate self) idx))]
@@ -66,8 +77,7 @@
         (lambda (intermediate)
           (append (append-map loop-increment (loop-details t))
                   (repeat 1 (value (dimension-hint (index b)))
-                          ((name b) intermediate (body t)); TODO: non-pointers, intermediate results, composite values
-                          ;(code intermediate ((name b) intermediate (body t))); TODO: remove unnecessary copying
+                          ((name b) intermediate (body t)); TODO: composite values
                           (append-map loop-increment (loop-details t)))
                   (code a intermediate)))))))
 
@@ -79,11 +89,13 @@
        (if (memv (car expr) operations)
            (argument-mask expr 0)
            (case (car expr)
-             ((get)    (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-             ((dim)    (apply argument-mask expr (iota (- (length expr) 1))))
-             ((inject) (argument-mask expr 0 1 2))
-             ((sum)    (argument-mask expr 0 1))
-             ((prod)   (argument-mask expr 0 1))
+             ((get)       (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+             ((dim)       (apply argument-mask expr (iota (- (length expr) 1))))
+             ((inject)    (argument-mask expr 0 1 2))
+             ((sum)       (argument-mask expr 0 1))
+             ((prod)      (argument-mask expr 0 1))
+             ((largest)   (argument-mask expr 0 1))
+             ((smallest)  (argument-mask expr 0 1))
              (else #f)))))
 
 (define (expression->identifier expr)

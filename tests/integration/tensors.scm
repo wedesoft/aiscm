@@ -30,3 +30,6 @@
 (tensor i (sum k (* (get (arr (2 3 5) (3 5 7)) k i) (get (seq -1 0 1) k))))
 ;#<sequence<int<16,unsigned>>>:
 ;(3 4)
+(tensor (largest i (get (arr (2 3 5) (8 6 4)) i)))
+;#<sequence<int<8,unsigned>>>:
+;(8 6 5)

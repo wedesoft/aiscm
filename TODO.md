@@ -1,8 +1,8 @@
 ## Ready
 
+* put += and \*= into (aiscm command), refactor
 * move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
-* (tensor (inject max i (get (arr (2 3 5) (8 6 4)) i)))
 * module for + and +=, ...
 * rbg and complex tensors
 * sum with multiple indices or no indices
