@@ -173,7 +173,11 @@
     (test-eqv "Shortcut for Multiplying elements"
       30 (tensor (prod k (get (seq 2 3 5) k))))
     (test-eqv "Sum of non-trivial tensor expression"
-      13 (tensor (sum i (+ (get (seq 2 3 5) i) 1)))))
+      13 (tensor (sum i (+ (get (seq 2 3 5) i) 1))))
+    (test-eqv "Smallest element of three"
+      2 (tensor (smallest i (get (seq 5 2 3) i))))
+    (test-eqv "Largest element of three"
+      5 (tensor (largest i (get (seq 2 5 3) i)))))
 (test-end "tensor reduce")
 
 (test-end "aiscm tensor")
