@@ -28,7 +28,8 @@
              (aiscm asm)
              (aiscm variable)
              (aiscm command)
-             (aiscm jit))
+             (aiscm jit)
+             (aiscm expression))
 
 
 (test-begin "aiscm complex")

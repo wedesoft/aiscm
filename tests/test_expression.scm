@@ -18,12 +18,13 @@
              (oop goops)
              (aiscm element)
              (aiscm int)
+             (aiscm sequence)
              (aiscm variable)
              (aiscm expression))
 
 
 (test-begin "aiscm expression")
-(test-begin "skeleton of expression")
+(test-begin "skeleton of scalar expression")
 (let  [(i (skeleton <int>))]
   (test-assert "skeleton of integer is of type integer"
     (is-a? i <int>))
@@ -31,5 +32,22 @@
     (is-a? (value i) <var>))
   (test-eq "value of integer skeleton is of type integer"
     <int> (typecode (value i))))
-(test-end "skeleton of expression")
+(test-end "skeleton of scalar expression")
+
+(test-begin "skeleton of array expression")
+  (let [(s (skeleton (sequence <byte>)))]
+    (test-assert "skeleton of a sequence is a sequence"
+      (is-a? s (sequence <byte>)))
+    (test-equal "skeleton of sequence consists of two long integer variables and an unsigned long integer"
+      (list <long> <long> <ulong>) (map class-of (content (class-of s) s)))
+    (test-equal "sequence skeleton is based on three variables"
+      (list <var> <var> <var>) (map class-of (map get (content (class-of s) s)))))
+  (let [(m (skeleton (multiarray <int> 2)))]
+    (test-assert "skeleton of a 2D array is a 2D array"
+      (is-a? m (multiarray <int> 2)))
+    (test-equal "skeleton of 2D array consists of long integer variables and an unsigned long integer"
+      (list <long> <long> <long> <long> <ulong>) (map class-of (content (class-of m) m)))
+    (test-equal "2D array skeleton is based on five variables"
+      (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
+(test-end "skeleton of array expression")
 (test-end "aiscm expression")

@@ -15,6 +15,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm jit)
+             (aiscm expression)
              (aiscm method)
              (aiscm util))
 

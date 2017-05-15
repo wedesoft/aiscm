@@ -25,6 +25,7 @@
              (aiscm bool)
              (aiscm int)
              (aiscm obj)
+             (aiscm expression)
              (aiscm jit))
 
 

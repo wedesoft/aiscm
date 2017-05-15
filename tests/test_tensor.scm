@@ -2,6 +2,7 @@
              (srfi srfi-1)
              (oop goops)
              (aiscm jit)
+             (aiscm expression)
              (aiscm element)
              (aiscm int)
              (aiscm sequence)

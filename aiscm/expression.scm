@@ -20,7 +20,8 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
-  #:export (skeleton))
+  #:export (<param> <lookup> <indexer>
+            skeleton delegate parameter lookup indexer index))
 
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
@@ -31,3 +32,30 @@
           #:value   (value slice)
           #:shape   (cons (var <long>) (shape   slice))
           #:strides (cons (var <long>) (strides slice)))))
+
+(define-class <param> ()
+  (delegate #:init-keyword #:delegate #:getter delegate))
+
+(define-method (parameter (self <element>)) (make <param> #:delegate self))
+(define-method (parameter (self <sequence<>>))
+  (let [(idx (var <long>))]
+    (indexer idx
+             (lookup idx
+                     (parameter (project self))
+                     (parameter (make <long> #:value (stride self))))
+             (parameter (make <long> #:value (dimension self))))))
+(define-method (parameter (self <meta<element>>)) (parameter (skeleton self)))
+
+(define-class <indexer> (<param>)
+  (dimension #:init-keyword #:dimension #:getter dimension)
+  (index     #:init-keyword #:index     #:getter index))
+(define (indexer index delegate dimension)
+  (make <indexer> #:dimension dimension #:index index #:delegate delegate))
+
+(define-class <lookup> (<param>)
+  (index    #:init-keyword #:index    #:getter index   )
+  (stride   #:init-keyword #:stride   #:getter stride  ))
+(define-method (lookup index delegate stride)
+  (make <lookup> #:index index #:delegate delegate #:stride stride))
+(define-method (lookup idx (obj <indexer>) stride)
+  (indexer (index obj) (lookup idx (delegate obj) stride) (dimension obj)))

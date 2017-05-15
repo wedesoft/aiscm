@@ -75,20 +75,6 @@
   (test-equal "'virtual-variables' avoids blocked registers when allocating variables"
     (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 
-(let [(s (skeleton (sequence <byte>)))]
-  (test-assert "skeleton of a sequence is a sequence"
-    (is-a? s (sequence <byte>)))
-  (test-equal "skeleton of sequence consists of two long integer variables and an unsigned long integer"
-    (list <long> <long> <ulong>) (map class-of (content (class-of s) s)))
-  (test-equal "sequence skeleton is based on three variables"
-    (list <var> <var> <var>) (map class-of (map get (content (class-of s) s)))))
-(let [(m (skeleton (multiarray <int> 2)))]
-  (test-assert "skeleton of a 2D array is a 2D array"
-    (is-a? m (multiarray <int> 2)))
-  (test-equal "skeleton of 2D array consists of long integer variables and an unsigned long integer"
-    (list <long> <long> <long> <long> <ulong>) (map class-of (content (class-of m) m)))
-  (test-equal "2D array skeleton is based on five variables"
-    (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
 (let [(a (skeleton <byte>))
       (b (skeleton (pointer <byte>)))
       (c (set-pointer-offset (skeleton (pointer <int>)) 3))]
