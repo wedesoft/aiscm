@@ -27,6 +27,7 @@
              (aiscm rgb)
              (aiscm asm)
              (aiscm variable)
+             (aiscm expression)
              (aiscm jit))
 
 

@@ -27,6 +27,7 @@
              (aiscm mem)
              (aiscm register-allocate)
              (aiscm compile)
+             (aiscm expression)
              (aiscm jit)
              (aiscm element)
              (aiscm int)

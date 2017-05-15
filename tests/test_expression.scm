@@ -14,5 +14,22 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (aiscm array)
-)
+(use-modules (srfi srfi-64)
+             (oop goops)
+             (aiscm element)
+             (aiscm int)
+             (aiscm variable)
+             (aiscm expression))
+
+
+(test-begin "aiscm expression")
+(test-begin "skeleton of expression")
+(let  [(i (skeleton <int>))]
+  (test-assert "skeleton of integer is of type integer"
+    (is-a? i <int>))
+  (test-assert "value of integer skeleton is a variable"
+    (is-a? (value i) <var>))
+  (test-eq "value of integer skeleton is of type integer"
+    <int> (typecode (value i))))
+(test-end "skeleton of expression")
+(test-end "aiscm expression")

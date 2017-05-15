@@ -21,6 +21,7 @@
              (aiscm element)
              (aiscm bool)
              (aiscm composite)
+             (aiscm expression)
              (aiscm rgb)
              (aiscm int)
              (aiscm obj)

@@ -24,6 +24,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm program)
+             (aiscm expression)
              (aiscm register-allocate)
              (aiscm compile)
              (aiscm mem)
@@ -74,13 +75,6 @@
   (test-equal "'virtual-variables' avoids blocked registers when allocating variables"
     (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 
-(let  [(i (skeleton <int>))]
-  (test-assert "skeleton of integer is of type integer"
-    (is-a? i <int>))
-  (test-assert "value of integer skeleton is a variable"
-    (is-a? (value i) <var>))
-  (test-eq "value of integer skeleton is of type integer"
-    <int> (typecode (value i))))
 (let [(s (skeleton (sequence <byte>)))]
   (test-assert "skeleton of a sequence is a sequence"
     (is-a? s (sequence <byte>)))

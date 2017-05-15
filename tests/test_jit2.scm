@@ -24,6 +24,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm mem)
+             (aiscm expression)
              (aiscm jit)
              (aiscm element)
              (aiscm int)

@@ -36,11 +36,12 @@
   #:use-module (aiscm command)
   #:use-module (aiscm program)
   #:use-module (aiscm register-allocate)
+  #:use-module (aiscm expression)
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
   #:export (<param> <indexer> <lookup> <function> <loop-detail> <multi-loop>
             virtual-variables
-            skeleton parameter delegate name coercion
+            parameter delegate name coercion
             multi-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
@@ -62,14 +63,6 @@
                #:parameters parameters
                #:results results
                #:blocked (blocked-intervals instructions)))
-
-(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
-(define-method (skeleton (self <meta<sequence<>>>))
-  (let [(slice (skeleton (project self)))]
-    (make self
-          #:value   (value slice)
-          #:shape   (cons (var <long>) (shape   slice))
-          #:strides (cons (var <long>) (strides slice)))))
 
 (define-class <param> ()
   (delegate #:init-keyword #:delegate #:getter delegate))

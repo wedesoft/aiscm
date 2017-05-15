@@ -20,6 +20,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm util)
+             (aiscm expression)
              (aiscm jit)
              (aiscm element)
              (aiscm int)

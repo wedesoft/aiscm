@@ -14,9 +14,20 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (srfi srfi-64)
-             (aiscm array))
+(define-module (aiscm expression)
+  #:use-module (oop goops)
+  #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm sequence)
+  #:use-module (aiscm variable)
+  #:export (skeleton))
 
 
-(test-begin "aiscm array")
-(test-end "aiscm array")
+(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
+(define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
+(define-method (skeleton (self <meta<sequence<>>>))
+  (let [(slice (skeleton (project self)))]
+    (make self
+          #:value   (value slice)
+          #:shape   (cons (var <long>) (shape   slice))
+          #:strides (cons (var <long>) (strides slice)))))
