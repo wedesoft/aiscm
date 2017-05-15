@@ -20,8 +20,10 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
-  #:export (<param> <lookup> <indexer>
-            skeleton delegate parameter lookup indexer index))
+  #:export (<param> <lookup> <indexer> <function>
+            skeleton delegate parameter lookup indexer index name coercion term type
+            make-function)
+  #:re-export (typecode))
 
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
@@ -59,3 +61,22 @@
   (make <lookup> #:index index #:delegate delegate #:stride stride))
 (define-method (lookup idx (obj <indexer>) stride)
   (indexer (index obj) (lookup idx (delegate obj) stride) (dimension obj)))
+
+(define-class <function> (<param>)
+  (coercion  #:init-keyword #:coercion  #:getter coercion)
+  (name      #:init-keyword #:name      #:getter name)
+  (term      #:init-keyword #:term      #:getter term))
+
+(define-method (type (self <param>)) (typecode (delegate self)))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
+(define-method (type (self <lookup>)) (type (delegate self)))
+(define-method (type (self <function>))
+  (apply (coercion self) (map type (delegate self))))
+
+(define-method (typecode (self <param>)) (typecode (type self)))
+
+(define (make-function name coercion fun args)
+  (make <function> #:delegate args
+                   #:coercion coercion
+                   #:name     name
+                   #:term     (lambda (out) (fun out args))))

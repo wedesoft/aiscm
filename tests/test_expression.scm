@@ -50,4 +50,17 @@
     (test-equal "2D array skeleton is based on five variables"
       (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
 (test-end "skeleton of array expression")
+
+(test-begin "type inference")
+  (test-eq "determine type of parameter"
+    <sint> (type (parameter <sint>)))
+  (test-eq "determine type of sequence"
+    (sequence <ubyte>) (type (parameter (sequence <ubyte>))))
+  (test-eq "plus operation coerces return type correctly"
+    <int> (type (make-function + coerce list (list (parameter <usint>) (parameter <byte>)))))
+  (test-eq "coerce sequence and scalar"
+    (sequence <sint>) (type (make-function + coerce list (list (parameter (sequence <ubyte>)) (parameter <sint>)))))
+  (test-eq "coerce two sequence types"
+    (sequence <usint>) (type (make-function + coerce list (list (parameter (sequence <ubyte>)) (parameter (sequence <usint>))))))
+(test-end "type inference")
 (test-end "aiscm expression")

@@ -135,8 +135,6 @@
   (test-equal "generate code for copying part of integer"
     (list (SUB RSP 8) (MOV AL CL) (ADD RSP 8) (RET))
     (jit-compile (flatten-code (list (code out in) (RET))))))
-(test-eq "plus operation coerces return type correctly"
-  <int> (type (+ (parameter <usint>) (parameter <byte>))))
 (let [(out (skeleton <int>))
       (a   (skeleton <byte>))
       (b   (skeleton <usint>))]

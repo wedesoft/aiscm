@@ -39,17 +39,16 @@
   #:use-module (aiscm expression)
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
-  #:export (<function> <loop-detail> <multi-loop>
+  #:export (<loop-detail> <multi-loop>
             virtual-variables
-            name coercion
             multi-loop loop-details loop-setup loop-increment body dimension-hint
-            term type subst code convert-type assemble build-list package-return-content
+            subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
             ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
-            make-function make-native-function native-call make-constant-function native-const
+            make-native-function native-call make-constant-function native-const
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
@@ -63,19 +62,6 @@
                #:parameters parameters
                #:results results
                #:blocked (blocked-intervals instructions)))
-
-(define-class <function> (<param>)
-  (coercion  #:init-keyword #:coercion  #:getter coercion)
-  (name      #:init-keyword #:name      #:getter name)
-  (term      #:init-keyword #:term      #:getter term))
-
-(define-method (type (self <param>)) (typecode (delegate self)))
-(define-method (type (self <indexer>)) (sequence (type (delegate self))))
-(define-method (type (self <lookup>)) (type (delegate self)))
-(define-method (type (self <function>))
-  (apply (coercion self) (map type (delegate self))))
-
-(define-method (typecode (self <param>)) (typecode (type self)))
 
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
@@ -327,12 +313,6 @@
     (append-map code (content (type out) out) (content (type result) result))))
 (define (delegate-fun name)
   (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name out args)))
-
-(define (make-function name coercion fun args)
-  (make <function> #:delegate args
-                   #:coercion coercion
-                   #:name     name
-                   #:term     (lambda (out) (fun out args))))
 
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))

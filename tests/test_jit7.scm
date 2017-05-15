@@ -32,17 +32,6 @@
     (memv '* operations))
 (test-end "list operations")
 
-(test-begin "type inference")
-  (test-eq "determine type of parameter"
-    <sint> (type (parameter <sint>)))
-  (test-eq "determine type of sequence"
-    (sequence <ubyte>) (type (parameter (sequence <ubyte>))))
-  (test-eq "coerce sequence and scalar"
-    (sequence <sint>) (type (+ (parameter (sequence <ubyte>)) (parameter <sint>))))
-  (test-eq "coerce two sequence types"
-    (sequence <usint>) (type (+ (parameter (sequence <ubyte>)) (parameter (sequence <usint>)))))
-(test-end "type inference")
-
 (test-begin "1D tensor")
   (let* [(s (parameter (sequence <ubyte>)))
          (t (multi-loop s))
