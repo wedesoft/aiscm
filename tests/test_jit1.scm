@@ -74,12 +74,6 @@
   (test-equal "'virtual-variables' avoids blocked registers when allocating variables"
     (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 
-(test-eq "Shortcut for creating variables creates variables"
-  <var> (class-of (var <int>)))
-(test-eq "Shortcut for  creating variables uses specified type"
-  <byte> (typecode (var <byte>)))
-(test-eq "Boolean values are represented using unsigned byte"
-  <ubyte> (typecode (var <bool>)))
 (let  [(i (skeleton <int>))]
   (test-assert "skeleton of integer is of type integer"
     (is-a? i <int>))

@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (oop goops)
              (aiscm bool)
              (aiscm int)
              (aiscm float)
@@ -43,4 +44,13 @@
   (test-eq "single-precision floating point number is it's own equivalent"
     <double> (native-equivalent <double>))
 (test-end "native equivalent")
+
+(test-begin "\"var\"' shortcut")
+  (test-eq "Shortcut for creating variables creates variables"
+    <var> (class-of (var <int>)))
+  (test-eq "Shortcut for  creating variables uses specified type"
+    <byte> (typecode (var <byte>)))
+  (test-eq "Boolean values are represented using unsigned byte"
+    <ubyte> (typecode (var <bool>)))
+(test-end "\"var\"' shortcut")
 (test-end "aiscm variable")
