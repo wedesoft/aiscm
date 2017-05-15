@@ -155,15 +155,15 @@
     (test-eqv "Sum different elements using tensor expression"
       12 (tensor (inject += k (get (seq 2 3 7) k))))
     (test-eq "check loop details for array of integer sums"
-      <ubyte> (typecode (car (loop-details (tensor-loop (inject += i (get m i)))))))
+      <ubyte> (typecode (car (loop-details (multi-loop (inject += i (get m i)))))))
     (test-eq "preserve injection when looping over array of sums"
-      <injecter> (class-of (body (tensor-loop (inject += i (get m i))))))
+      <injecter> (class-of (body (multi-loop (inject += i (get m i))))))
     (test-equal "shape of array of tensor sums is one-dimensional"
       (take (shape m) 1) (shape (inject += i (get m i))))
     (test-equal "Tensor sum along one axis"
       '(4 6 8) (to-list (tensor (inject += i (get (arr (1 2 3) (3 4 5)) i)))))
     (test-eq "check loop details when other axis explicitely indexed is integer"
-      <ubyte> (typecode (car (loop-details (tensor-loop (dim j (inject += i (get m i j))))))))
+      <ubyte> (typecode (car (loop-details (multi-loop (dim j (inject += i (get m i j))))))))
     (test-equal "Tensor sum with other axis explicitely indexed"
       '(4 6 8) (to-list (tensor i (inject += j (get (arr (1 2 3) (3 4 5)) i j)))))
     (test-eqv "Multiply elements using tensor expression"

@@ -38,10 +38,10 @@
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
-  #:export (<param> <indexer> <lookup> <function> <loop-detail> <tensor-loop>
+  #:export (<param> <indexer> <lookup> <function> <loop-detail> <multi-loop>
             virtual-variables
             skeleton parameter delegate name coercion
-            tensor-loop loop-details loop-setup loop-increment body dimension-hint
+            multi-loop loop-details loop-setup loop-increment body dimension-hint
             term indexer lookup index type subst code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
@@ -187,11 +187,11 @@
 (define-method (loop-increment (self <loop-detail>))
   (list (ADD (iterator self) (step self))))
 
-(define-class <tensor-loop> ()
+(define-class <multi-loop> ()
   (loop-details #:init-keyword #:loop-details #:getter loop-details)
   (body         #:init-keyword #:body         #:getter body        ))
 
-(define-method (tensor-loop (self <lookup>) (idx <var>))
+(define-method (multi-loop (self <lookup>) (idx <var>))
   (if (eq? idx (index self))
     (let* [(iterator    (var <long>))
            (step        (var <long>))
@@ -200,28 +200,28 @@
                                             #:step     step
                                             #:stride   (stride self)
                                             #:base     (value self)))]
-      (make <tensor-loop> #:loop-details (list loop-detail)
-                          #:body         (rebase iterator (delegate self))))
-    (let [(t (tensor-loop (delegate self) idx))]
-      (make <tensor-loop> #:loop-details (loop-details t)
-                          #:body         (lookup (index self) (body t) (stride self))))))
+      (make <multi-loop> #:loop-details (list loop-detail)
+                         #:body         (rebase iterator (delegate self))))
+    (let [(t (multi-loop (delegate self) idx))]
+      (make <multi-loop> #:loop-details (loop-details t)
+                         #:body         (lookup (index self) (body t) (stride self))))))
 
-(define-method (tensor-loop (self <indexer>) (idx <var>))
-  (let [(t (tensor-loop (delegate self) idx))]
-    (make <tensor-loop> #:loop-details (loop-details t)
-                        #:body         (indexer (index self) (body t) (dimension self)))))
+(define-method (multi-loop (self <indexer>) (idx <var>))
+  (let [(t (multi-loop (delegate self) idx))]
+    (make <multi-loop> #:loop-details (loop-details t)
+                       #:body         (indexer (index self) (body t) (dimension self)))))
 
-(define-method (tensor-loop (self <indexer>))
-  (tensor-loop (delegate self) (index self)))
+(define-method (multi-loop (self <indexer>))
+  (multi-loop (delegate self) (index self)))
 
-(define-method (tensor-loop (self <function>) . idx)
-  (let* [(arguments (map (cut apply tensor-loop <> idx) (delegate self)))
+(define-method (multi-loop (self <function>) . idx)
+  (let* [(arguments (map (cut apply multi-loop <> idx) (delegate self)))
          (details   (append-map loop-details arguments))
          (bodies    (map body arguments))]
-    (make <tensor-loop> #:loop-details details #:body (apply (name self) bodies))))
+    (make <multi-loop> #:loop-details details #:body (apply (name self) bodies))))
 
-(define-method (tensor-loop (self <param>) . idx)
-  (make <tensor-loop> #:loop-details '() #:body self))
+(define-method (multi-loop (self <param>) . idx)
+  (make <multi-loop> #:loop-details '() #:body self))
 
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))
@@ -233,8 +233,8 @@
   (insert-intermediate b (skeleton (typecode a)) (cut code a <>)))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
 (define-method (code (a <indexer>) (b <param>))
-  (let [(dest   (tensor-loop a))
-        (source (tensor-loop b))]
+  (let [(dest   (multi-loop a))
+        (source (multi-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
             (repeat 0

@@ -64,13 +64,13 @@
 (define-tensor-operation largest  max= major=)
 (define-tensor-operation smallest min= minor=)
 
-(define-method (tensor-loop (self <injecter>) . idx)
-  (let [(t (apply tensor-loop (delegate self) idx))]
-    (make <tensor-loop> #:loop-details (loop-details t)
-                        #:body (injecter (name self) (index self) (body t)))))
+(define-method (multi-loop (self <injecter>) . idx)
+  (let [(t (apply multi-loop (delegate self) idx))]
+    (make <multi-loop> #:loop-details (loop-details t)
+                       #:body (injecter (name self) (index self) (body t)))))
 
 (define-method (code (a <param>) (b <injecter>))
-  (let [(t (tensor-loop (delegate b) (index b)))]
+  (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
       (insert-intermediate (body t) (parameter (typecode a))

@@ -44,7 +44,7 @@
 
 (test-begin "1D tensor")
   (let* [(s (parameter (sequence <ubyte>)))
-         (t (tensor-loop s))
+         (t (multi-loop s))
          (l (car (loop-details t)))]
     (test-assert "tensor layer of sequence has an iterator"
       (is-a? (iterator l) <var>))
@@ -61,7 +61,7 @@
     (test-eq "typecode of unsigned byte tensor is unsigned byte"
       <ubyte> (typecode l))
     (test-eq "typecode of short integer tensor is short integer"
-      <sint> (typecode (car (loop-details (tensor-loop (parameter (sequence <sint>)))))))
+      <sint> (typecode (car (loop-details (multi-loop (parameter (sequence <sint>)))))))
     (test-equal "stride of tensor is stride of input array"
       (stride (delegate s)) (stride l))
     (test-equal "base of tensor is base pointer of input array"
@@ -74,37 +74,37 @@
          (j (var <long>))
          (t (dim j (dim i (+ (get (get m i) j)))))]
     (test-assert "tensor loop preserves inner index"
-      (is-a? (body (tensor-loop m)) <indexer>))
+      (is-a? (body (multi-loop m)) <indexer>))
     (test-eq "inner index is second index of 2D array"
-      (index (delegate m)) (index (body (tensor-loop m))))
+      (index (delegate m)) (index (body (multi-loop m))))
     (test-eq "inner dimension is second dimension of 2D array"
-      (dimension (delegate m)) (dimension (body (tensor-loop m))))
+      (dimension (delegate m)) (dimension (body (multi-loop m))))
     (test-assert "preserve loop details when skipping indices"
-      (is-a? (car (loop-details (tensor-loop m))) <loop-detail>))
+      (is-a? (car (loop-details (multi-loop m))) <loop-detail>))
     (test-assert "body of 2D tensor drops inner lookup"
-      (is-a? (delegate (body (tensor-loop m))) <lookup>))
+      (is-a? (delegate (body (multi-loop m))) <lookup>))
     (test-assert "tensor loop should preserve 2nd index of transposed array"
-      (is-a? (delegate (body (tensor-loop t))) <lookup>)))
+      (is-a? (delegate (body (multi-loop t))) <lookup>)))
 (test-end "2D tensor")
 
 (test-begin "scalar tensor")
   (let [(v (parameter <int>))
         (i (var <long>))]
     (test-assert "loop code for scalar tensor is empty"
-      (null? (loop-details (tensor-loop v))))
+      (null? (loop-details (multi-loop v))))
     (test-eq "body of scalar tensor is itself"
-      v (body (tensor-loop v)))
+      v (body (multi-loop v)))
     (test-eq "scalar tensor ignores indices"
-      v (body (tensor-loop v i))))
+      v (body (multi-loop v i))))
 (test-end "scalar tensor")
 
 (test-begin "tensor expressions")
   (let* [(s  (parameter (sequence <sint>)))
          (t  (parameter (sequence <uint>)))
          (f  (+ s t))
-         (l  (loop-details (tensor-loop f)))
+         (l  (loop-details (multi-loop f)))
          (ft (dim k (+ (get s k) (get t k))))
-         (lt (loop-details (tensor-loop ft)))]
+         (lt (loop-details (multi-loop ft)))]
     (test-equal "tensor sum uses loops with two typecodes"
       (list <sint> <uint>) (map typecode l))
     (test-equal "explicitly indexed tensor sum uses loops with two typecodes"
