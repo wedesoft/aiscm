@@ -226,7 +226,7 @@
     (list (PUSH RBX) (PUSH RBP) (NOP) (POP RBP) (POP RBX) (RET)) (backup-registers (list RBX RBP) (list (NOP) (RET))))
 (test-end "put callee saved registers on stack")
 
-(test-begin "compile")
+(test-begin "jit-compile")
   (let [(a (var <int>))
         (b (var <int>))
         (c (var <int>))
@@ -327,5 +327,41 @@
             (POP RBX)
             (RET))
             (jit-compile (list (MOV a 1) (MOV b 2) (ADD b 3) (ADD a 4) (RET)) #:registers (list RBX RAX))))
-(test-end "compile")
+
+  (let [(r (var <byte>))
+        (a (var <byte>))
+        (b (var <byte>))]
+    (test-equal "'compile' should block registers if specified"
+      (list (SUB RSP 8) (MOV AL CL) (CBW) (IDIV DL) (MOV CL AL) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV AL a) (CBW) (IDIV b) (MOV r AL) (RET))
+                   #:registers (list RAX RCX RDX)
+                   #:blocked (list (cons RAX '(0 . 3))))))
+
+  (let [(a (var <int>))
+        (b (var <int>))
+        (c (var <int>))
+        (d (var <int>))
+        (e (var <int>))
+        (f (var <int>))
+        (g (var <int>))
+        (r (var <int>))]
+    (test-equal "save callee-saved registers"
+      (list (PUSH RBX) (SUB RSP 8) (MOV EBX 1) (ADD RSP 8) (POP RBX) (RET))
+      (jit-compile (list (MOV a 1) (RET)) #:registers (list RBX RAX)))
+    (test-equal "add offset for callee-saved parameters when fetching stack parameters"
+      (list (PUSH RBX) (SUB RSP 8) (MOV EBX (ptr <int> RSP 24)) (MOV EBX 42) (ADD RSP 8) (POP RBX) (RET))
+      (jit-compile (list (MOV g 42) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
+    (test-equal "add offset for callee-saved parameters when using stack parameters"
+      (list (PUSH RBX) (SUB RSP 8) (MOV EBX EAX) (MOV (ptr <int> RSP 24) EBX) (ADD RSP 8) (POP RBX) (RET))
+      (jit-compile (list (MOV g r) (RET)) #:parameters (list a b c d e f g) #:registers (list RBX RAX)))
+    (test-equal "move parameter variable into another location if the register is blocked"
+      (list (SUB RSP 8) (MOV EAX EDI) (MOV EDI EAX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV EDI a) (RET))
+                   #:parameters (list a)
+                   #:registers (list RDI RAX RCX)
+                   #:blocked (list (cons RDI '(0 . 0)))))
+    (test-equal "when allocating registers preserve result variables up to RET statement"
+      (list (SUB RSP 8) (MOV ECX 42) (MOV EAX 0) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (jit-compile (list (MOV r 42) (MOV b 0) (RET)) #:results (list r))))
+(test-end "jit-compile")
 (test-end "aiscm compile")
