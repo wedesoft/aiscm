@@ -37,25 +37,6 @@
 (define i (var <long>))
 (define j (var <long>))
 
-(let [(s (seq <int> 2 3 5))
-      (t (seq <int> 3 5 7))
-      (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
-      (r (arr <int> (2 3 5) (7 11 13)))]
-  (test-equal "switch dimensions of a 2D tensor"
-    '((2 7 17) (3 11 19) (5 13 23))
-    (to-list ((jit ctx (list (class-of m))
-                   (lambda (m) (indexer i (indexer j (get (get m j) i) (cadr (shape m))) (car (shape m)))))
-              m)))
-  (test-equal "tensor macro provides local variable"
-    (to-list s) (to-list ((jit ctx (list (class-of s)) (lambda (s) (dim k (get s k)))) s)))
-  (test-equal "switch dimensions of a non-square 2D tensor"
-    '((2 7) (3 11) (5 13))
-    (to-list ((jit ctx (list (class-of r))
-                   (lambda (r) (indexer i (indexer j (get (get r j) i) (cadr (shape r))) (car (shape r)))))
-              r)))
-  (test-equal "tensor expression for element-wise sum"
-     '(5 8 12)
-     (to-list ((jit ctx (list (class-of s) (class-of t)) (lambda (s t) (dim k (+ (get s k) (get t k))))) s t))))
 (test-equal "generate code to package an object in a list"
   '(a) ((jit ctx (list <obj>) package-return-content) 'a))
 (test-equal "generate code to return the content of an RGB value"
