@@ -21,6 +21,7 @@
              (aiscm command)
              (aiscm util)
              (aiscm expression)
+             (aiscm tensor)
              (aiscm jit)
              (aiscm element)
              (aiscm int)
