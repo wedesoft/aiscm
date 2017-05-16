@@ -36,60 +36,6 @@
 (define i (var <long>))
 (define j (var <long>))
 
-(let* [(s  (skeleton (sequence <int>)))
-       (sx (parameter s))]
-  (test-eq "sequence parameter maintains pointer"
-    (value s) (value (delegate (delegate sx))))
-  (test-eq "index of parameter and index of parameters content should match"
-    (index sx) (index (delegate sx)))
-  (test-eq "sequence parameter should maintain dimension"
-    (dimension s) (get (delegate (dimension sx))))
-  (test-eq "sequence parameter should maintain stride"
-    (stride s) (get (delegate (stride (delegate sx)))))
-  (test-eq "sequence parameter maintains type"
-    (sequence <int>) (type sx))
-  (test-eq "substitution should replace the lookup index"
-    i (index (subst (delegate sx) (index sx) i)))
-  (test-eq "retrieving an element by index should replace with the index"
-    i (index (get sx i)))
-  (test-assert "projected 1D array tensor should contain pointer"
-    (is-a? (delegate (project sx)) (pointer <int>))))
-(let* [(m  (skeleton (multiarray <int> 2)))
-       (mx (parameter m))]
-  (test-equal "2D array parameter should maintain the shape"
-    (shape m) (map (compose get delegate) (shape mx)))
-  (test-equal "2D array parameter should maintain the strides"
-    (strides m) (map (compose get delegate) (strides mx)))
-  (test-equal "first index of parameter should have a match"
-    (index mx) (index (delegate (delegate mx))))
-  (test-equal "second index of parameter should have a match"
-    (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
-  (test-eq "subst should allow replacing first index"
-    i (index (subst (delegate (delegate mx)) (index mx) i)))
-  (test-eq "subst should allow replacing second index"
-    i (index (delegate (subst (delegate (delegate mx)) (index (delegate mx)) i))))
-  (test-eq "replacing the second index should maintain the first one"
-    (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
-  (test-eq "retrieving an element should replace with the index"
-    i (index (delegate (get mx i))))
-  (let [(tr (indexer i (indexer j (get (get mx j) i) (cadr (shape mx))) (car (shape mx))))]
-    (test-equal "swap dimensions when transposing"
-      (list (dimension mx) (dimension (project mx))) (list (dimension (project tr)) (dimension tr)))
-    (test-equal "swap strides when transposing"
-      (list (stride mx) (stride (project mx))) (list (stride (project tr)) (stride tr)))))
-
-(test-begin "tensor dimensions")
-  (test-assert "dimension hint is false initially"
-    (not (dimension-hint (var <long>))))
-  (let [(s (parameter (sequence <int>)))
-        (i (var <long>))]
-    (get s i)
-    (test-eq "dimension hint is defined when using an index"
-      (dimension s) (dimension-hint i)))
-  (test-equal "tensor operation determines dimensions"
-    '(2 3 5) (to-list ((jit ctx (list (sequence <ubyte>)) (lambda (s) (dim k (get s k)))) (seq 2 3 5))))
-(test-end "tensor dimensions")
-
 (let [(s (seq <int> 2 3 5))
       (t (seq <int> 3 5 7))
       (m (arr <int> (2 3 5) (7 11 13) (17 19 23)))
@@ -134,14 +80,6 @@
   2 ((jit ctx (list <sint>) size-of) 42))
 (test-eqv "determine size of sequence (compiled)"
   6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
-(let [(m (parameter (multiarray <int> 2)))
-      (c (parameter <byte>))]
-  (test-equal "shape of unary function expression is shape of argument"
-    (shape m) (shape (~ m)))
-  (test-equal "shape of scalar plus array expression"
-    (shape m) (shape (+ c m)))
-  (test-equal "shape of array plus scalar expression"
-    (shape m) (shape (+ m c))))
 (let [(i (parameter <int>))]
   (test-eqv "assign native integer constant to parameter"
     42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))

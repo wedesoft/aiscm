@@ -18,6 +18,7 @@
              (oop goops)
              (aiscm element)
              (aiscm int)
+             (aiscm pointer)
              (aiscm sequence)
              (aiscm variable)
              (aiscm expression))
@@ -50,6 +51,27 @@
     (test-equal "2D array skeleton is based on five variables"
       (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
 (test-end "skeleton of array expression")
+(test-begin "array parameters")
+  (let* [(s  (skeleton (sequence <int>)))
+         (sx (parameter s))
+         (i  (var <long>))]
+    (test-eq "sequence parameter maintains pointer"
+      (value s) (value (delegate (delegate sx))))
+    (test-eq "index of parameter and index of parameters content should match"
+      (index sx) (index (delegate sx)))
+    (test-eq "sequence parameter should maintain dimension"
+      (dimension s) (get (delegate (dimension sx))))
+    (test-eq "sequence parameter should maintain stride"
+      (stride s) (get (delegate (stride (delegate sx)))))
+    (test-eq "sequence parameter maintains type"
+      (sequence <int>) (type sx))
+    (test-eq "substitution should replace the lookup index"
+      i (index (subst (delegate sx) (index sx) i)))
+    (test-eq "retrieving an element by index should replace with the index"
+      i (index (get sx i)))
+    (test-assert "projected 1D array tensor should contain pointer"
+      (is-a? (delegate (project sx)) (pointer <int>))))
+(test-end "array parameters")
 
 (test-begin "type inference")
   (test-eq "determine type of parameter"
@@ -63,4 +85,53 @@
   (test-eq "coerce two sequence types"
     (sequence <usint>) (type (make-function + coerce list (list (parameter (sequence <ubyte>)) (parameter (sequence <usint>))))))
 (test-end "type inference")
+
+(test-begin "array parameter manipulation")
+  (let* [(m  (skeleton (multiarray <int> 2)))
+         (mx (parameter m))
+         (i  (var <long>))
+         (j  (var <long>))]
+    (test-equal "2D array parameter should maintain the shape"
+      (shape m) (map (compose get delegate) (shape mx)))
+    (test-equal "2D array parameter should maintain the strides"
+      (strides m) (map (compose get delegate) (strides mx)))
+    (test-equal "first index of parameter should have a match"
+      (index mx) (index (delegate (delegate mx))))
+    (test-equal "second index of parameter should have a match"
+      (index (delegate mx)) (index (delegate (delegate (delegate mx)))))
+    (test-eq "subst should allow replacing first index"
+      i (index (subst (delegate (delegate mx)) (index mx) i)))
+    (test-eq "subst should allow replacing second index"
+      i (index (delegate (subst (delegate (delegate mx)) (index (delegate mx)) i))))
+    (test-eq "replacing the second index should maintain the first one"
+      (index mx) (index (subst (delegate (delegate mx)) (index (delegate mx)) i)))
+    (test-eq "retrieving an element should replace with the index"
+      i (index (delegate (get mx i))))
+    (let [(tr (indexer i (indexer j (get (get mx j) i) (cadr (shape mx))) (car (shape mx))))]
+      (test-equal "swap dimensions when transposing"
+        (list (dimension mx) (dimension (project mx))) (list (dimension (project tr)) (dimension tr)))
+      (test-equal "swap strides when transposing"
+        (list (stride mx) (stride (project mx))) (list (stride (project tr)) (stride tr)))))
+(test-end "array parameter manipulation")
+
+(test-begin "tensor dimensions")
+  (test-assert "dimension hint is false initially"
+    (not (dimension-hint (var <long>))))
+  (let [(s (parameter (sequence <int>)))
+        (i (var <long>))]
+    (get s i)
+    (test-eq "dimension hint is defined when using an index"
+      (dimension s) (dimension-hint i)))
+(test-end "tensor dimensions")
+
+(test-begin "shape of expression")
+  (let [(m (parameter (multiarray <int> 2)))
+        (c (parameter <byte>))]
+    (test-equal "shape of unary function expression is shape of argument"
+      (shape m) (shape (make-function ~ coerce list (list m))))
+    (test-equal "shape of scalar plus array expression"
+      (shape m) (shape (make-function + coerce list (list c m))))
+    (test-equal "shape of array plus scalar expression"
+      (shape m) (shape (make-function + coerce list (list m c)))))
+(test-end "shape of expression")
 (test-end "aiscm expression")

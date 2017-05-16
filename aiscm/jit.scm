@@ -41,8 +41,8 @@
   #:use-module (aiscm method)
   #:export (<loop-detail> <multi-loop>
             virtual-variables
-            multi-loop loop-details loop-setup loop-increment body dimension-hint
-            subst code convert-type assemble build-list package-return-content
+            multi-loop loop-details loop-setup loop-increment body
+            code convert-type assemble build-list package-return-content
             jit iterator step operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
@@ -51,7 +51,7 @@
             make-native-function native-call make-constant-function native-const
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
-  #:export-syntax (define-jit-method define-operator-mapping pass-parameters dim))
+  #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
 
 (define ctx (make <context>))
 
@@ -62,59 +62,6 @@
                #:parameters parameters
                #:results results
                #:blocked (blocked-intervals instructions)))
-
-(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
-(define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
-
-(define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
-(define-method (lookup (self <indexer>)) (lookup self (index self)))
-(define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
-(define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))
-(define-method (stride (self <indexer>)) (stride (lookup self)))
-
-(define-method (subst self candidate replacement) self)
-(define-method (subst (self <indexer>) candidate replacement)
-  (indexer (index self) (subst (delegate self) candidate replacement) (dimension self)))
-(define-method (subst (self <lookup>) candidate replacement)
-  (lookup (if (eq? (index self) candidate) replacement (index self))
-          (subst (delegate self) candidate replacement)
-          (stride self)))
-
-(define-method (value (self <param>)) (value (delegate self)))
-(define-method (value (self <indexer>)) (value (delegate self)))
-(define-method (value (self <lookup>)) (value (delegate self)))
-
-(define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
-(define-method (rebase value (self <indexer>))
-  (indexer (index self) (rebase value (delegate self)) (dimension self)))
-(define-method (rebase value (self <lookup>))
-  (lookup (index self) (rebase value (delegate self)) (stride self)))
-
-(define-method (project (self <indexer>))
-  (project (delegate self) (index self)))
-(define-method (project (self <indexer>) (idx <var>))
-  (indexer (index self) (project (delegate self) idx) (dimension self)))
-
-(define-method (project (self <lookup>) (idx <var>))
-  (if (eq? (index self) idx)
-      (delegate self)
-      (lookup (index self) (project (delegate self) idx) (stride self))))
-
-(define dimension-hint (make-object-property))
-
-(define (element idx self)
-  (set! (dimension-hint idx) (dimension self))
-  (subst (delegate self) (index self) idx))
-
-(define-method (get (self <param>) . args)
-  "Use multiple indices to access elements"
-  (if (null? args) self (fold-right element self args)))
-
-(define-syntax dim
-  (lambda (x)
-    (syntax-case x ()
-      ((dim expr) #'expr)
-      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))

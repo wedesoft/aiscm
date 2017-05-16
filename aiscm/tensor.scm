@@ -16,11 +16,17 @@
             tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
             injecter += *= max= min=)
-  #:re-export (jit get wrap dim)
-  #:export-syntax (inject tensor tensor-body sum prod largest smallest))
+  #:re-export (jit get wrap)
+  #:export-syntax (dim inject tensor tensor-body sum prod largest smallest))
 
 
 (define tensor-ctx (make <context>))
+
+(define-syntax dim
+  (lambda (x)
+    (syntax-case x ()
+      ((dim expr) #'expr)
+      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
 
 (define-class <injecter> (<param>)
   (name  #:init-keyword #:name  #:getter name)

@@ -16,14 +16,17 @@
 ;;
 (define-module (aiscm expression)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
+  #:use-module (aiscm util)
   #:export (<param> <lookup> <indexer> <function>
             skeleton delegate parameter lookup indexer index name coercion term type
-            make-function)
-  #:re-export (typecode))
+            make-function subst dimension-hint)
+  #:re-export (typecode value get project shape strides rebase))
 
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
@@ -80,3 +83,49 @@
                    #:coercion coercion
                    #:name     name
                    #:term     (lambda (out) (fun out args))))
+
+(define-method (value (self <param>)) (value (delegate self)))
+(define-method (value (self <indexer>)) (value (delegate self)))
+(define-method (value (self <lookup>)) (value (delegate self)))
+
+(define dimension-hint (make-object-property))
+
+(define (element idx self)
+  (set! (dimension-hint idx) (dimension self))
+  (subst (delegate self) (index self) idx))
+
+(define-method (get (self <param>) . args)
+  "Use multiple indices to access elements"
+  (if (null? args) self (fold-right element self args)))
+
+(define-method (subst self candidate replacement) self)
+(define-method (subst (self <indexer>) candidate replacement)
+  (indexer (index self) (subst (delegate self) candidate replacement) (dimension self)))
+(define-method (subst (self <lookup>) candidate replacement)
+  (lookup (if (eq? (index self) candidate) replacement (index self))
+          (subst (delegate self) candidate replacement)
+          (stride self)))
+
+(define-method (project (self <indexer>))
+  (project (delegate self) (index self)))
+(define-method (project (self <indexer>) (idx <var>))
+  (indexer (index self) (project (delegate self) idx) (dimension self)))
+(define-method (project (self <lookup>) (idx <var>))
+  (if (eq? (index self) idx)
+      (delegate self)
+      (lookup (index self) (project (delegate self) idx) (stride self))))
+
+(define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
+(define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
+
+(define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
+(define-method (lookup (self <indexer>)) (lookup self (index self)))
+(define-method (lookup (self <indexer>) (idx <var>)) (lookup (delegate self) idx))
+(define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))
+(define-method (stride (self <indexer>)) (stride (lookup self)))
+
+(define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
+(define-method (rebase value (self <indexer>))
+  (indexer (index self) (rebase value (delegate self)) (dimension self)))
+(define-method (rebase value (self <lookup>))
+  (lookup (index self) (rebase value (delegate self)) (stride self)))
