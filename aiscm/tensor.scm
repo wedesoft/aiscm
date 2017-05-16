@@ -48,9 +48,7 @@
 (define-syntax-rule (define-tensor-operation name op fun)
   (begin
     (define-method (op (a <element>) (b <element>))
-      (list (fun (value a) (value b))))
-    (define-method (op (a <element>) (b <pointer<>>))
-      (list (fun (value a) (ptr (typecode b) (value b)))))
+      (list (fun (operand a) (operand b))))
     (define-method (op (a <param>) (b <param>))
       (op (delegate a) (delegate b)))
     (define-method (op (a <param>) (b <function>))
