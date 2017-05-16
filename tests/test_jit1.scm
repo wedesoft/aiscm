@@ -44,36 +44,33 @@
 
 (define ctx (make <context>))
 
-(let [(a (var <int>))
-      (b (var <int>))
-      (c (var <int>))]
-  (test-equal "'virtual-variables' uses the specified variables as parameters"
-    (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (virtual-variables (list a) (list b c) (list (MOV a b) (ADD a c) (RET))))
-  (test-equal "'virtual-variables' allocates local variables"
-    (list (SUB RSP 8) (MOV ECX EDI) (MOV EDX ECX) (MOV EAX EDX) (ADD RSP 8) (RET))
-    (virtual-variables (list a) (list b) (list (MOV c b) (MOV a c) (RET)))))
-(test-eq "'retarget' should update target of jump statement"
-  'new (get-target (retarget (JMP 'old) 'new)))
-(let [(a (var <int>))
-      (b (var <int>))]
-  (test-equal "'pass-parameter-variables' handles nested code blocks"
-    (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
-    (virtual-variables (list a) (list b) (list (list (MOV a b)) (RET))))
-  (test-equal "'virtual-variables' maps the 7th integer parameter correctly"
-    (list (SUB RSP 8) (MOV EAX (ptr <int> RSP 16)) (MOV EDX EAX) (MOV EAX EDX) (ADD RSP 8) (RET))
-    (let [(args (map var (make-list 7 <int>)))] (virtual-variables (list a) args (list (MOV a (last args)) (RET))))))
-
-(let [(a (var <int>))]
-  (test-eqv "'virtual-variables' creates separate namespaces for labels"
-    3 ((asm ctx <int> '() (virtual-variables (list a) '() (list (MOV a 0) (JMP 'a) (list 'a (MOV a 2)) 'a (ADD a 3) (RET)))) )))
-
-
-(let  [(w (var <usint>))]
-  (test-equal "'virtual-variables' filters out the reserved-registers information"
-    (list (SUB RSP 8) (MOV AX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RCX (MOV w 0)) (RET))))
-  (test-equal "'virtual-variables' avoids blocked registers when allocating variables"
-    (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
+(test-begin "virtual variables")
+  (let [(a (var <int>))
+        (b (var <int>))
+        (c (var <int>))]
+    (test-equal "'virtual-variables' uses the specified variables as parameters"
+      (list (SUB RSP 8) (MOV ECX EDI) (ADD ECX ESI) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (virtual-variables (list a) (list b c) (list (MOV a b) (ADD a c) (RET))))
+    (test-equal "'virtual-variables' allocates local variables"
+      (list (SUB RSP 8) (MOV ECX EDI) (MOV EDX ECX) (MOV EAX EDX) (ADD RSP 8) (RET))
+      (virtual-variables (list a) (list b) (list (MOV c b) (MOV a c) (RET)))))
+  (let [(a (var <int>))
+        (b (var <int>))]
+    (test-equal "'virtual-variables' handles nested code blocks"
+      (list (SUB RSP 8) (MOV ECX EDI) (MOV EAX ECX) (ADD RSP 8) (RET))
+      (virtual-variables (list a) (list b) (list (list (MOV a b)) (RET))))
+    (test-equal "'virtual-variables' maps the 7th integer parameter correctly"
+      (list (SUB RSP 8) (MOV EAX (ptr <int> RSP 16)) (MOV EDX EAX) (MOV EAX EDX) (ADD RSP 8) (RET))
+      (let [(args (map var (make-list 7 <int>)))] (virtual-variables (list a) args (list (MOV a (last args)) (RET))))))
+  (let [(a (var <int>))]
+    (test-eqv "'virtual-variables' creates separate namespaces for labels"
+      3 ((asm ctx <int> '() (virtual-variables (list a) '() (list (MOV a 0) (JMP 'a) (list 'a (MOV a 2)) 'a (ADD a 3) (RET)))) )))
+  (let  [(w (var <usint>))]
+    (test-equal "'virtual-variables' filters out the reserved-registers information"
+      (list (SUB RSP 8) (MOV AX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RCX (MOV w 0)) (RET))))
+    (test-equal "'virtual-variables' avoids blocked registers when allocating variables"
+      (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
+(test-end "virtual variables")
 
 (let [(a (skeleton <byte>))
       (b (skeleton (pointer <byte>)))
