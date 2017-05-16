@@ -7,6 +7,7 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm command)
   #:use-module (aiscm expression)
+  #:use-module (aiscm loop)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
@@ -16,7 +17,7 @@
             tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
             injecter += *= max= min=)
-  #:re-export (jit get wrap)
+  #:re-export (jit get wrap multi-loop)
   #:export-syntax (dim inject tensor tensor-body sum prod largest smallest))
 
 

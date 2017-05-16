@@ -37,13 +37,12 @@
   #:use-module (aiscm program)
   #:use-module (aiscm register-allocate)
   #:use-module (aiscm expression)
+  #:use-module (aiscm loop)
   #:use-module (aiscm compile)
   #:use-module (aiscm method)
-  #:export (<loop-detail> <multi-loop>
-            virtual-variables
-            multi-loop loop-details loop-setup loop-increment body
+  #:export (virtual-variables
             code convert-type assemble build-list package-return-content
-            jit iterator step operand insert-intermediate
+            jit operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
             ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -72,56 +71,6 @@
       (ptr (typecode a) (get a) (pointer-offset a))
       (ptr (typecode a) (get a))))
 (define-method (operand (a <param>)) (operand (delegate a)))
-
-(define-class <loop-detail> ()
-  (typecode #:init-keyword #:typecode #:getter typecode)
-  (iterator #:init-keyword #:iterator #:getter iterator)
-  (step     #:init-keyword #:step     #:getter step    )
-  (stride   #:init-keyword #:stride   #:getter stride  )
-  (base     #:init-keyword #:base     #:getter base    ))
-
-(define-method (loop-setup (self <loop-detail>))
-  (list (IMUL (step self) (value (stride self)) (size-of (typecode self)))
-        (MOV (iterator self) (base self))))
-
-(define-method (loop-increment (self <loop-detail>))
-  (list (ADD (iterator self) (step self))))
-
-(define-class <multi-loop> ()
-  (loop-details #:init-keyword #:loop-details #:getter loop-details)
-  (body         #:init-keyword #:body         #:getter body        ))
-
-(define-method (multi-loop (self <lookup>) (idx <var>))
-  (if (eq? idx (index self))
-    (let* [(iterator    (var <long>))
-           (step        (var <long>))
-           (loop-detail (make <loop-detail> #:typecode (typecode self)
-                                            #:iterator iterator
-                                            #:step     step
-                                            #:stride   (stride self)
-                                            #:base     (value self)))]
-      (make <multi-loop> #:loop-details (list loop-detail)
-                         #:body         (rebase iterator (delegate self))))
-    (let [(t (multi-loop (delegate self) idx))]
-      (make <multi-loop> #:loop-details (loop-details t)
-                         #:body         (lookup (index self) (body t) (stride self))))))
-
-(define-method (multi-loop (self <indexer>) (idx <var>))
-  (let [(t (multi-loop (delegate self) idx))]
-    (make <multi-loop> #:loop-details (loop-details t)
-                       #:body         (indexer (index self) (body t) (dimension self)))))
-
-(define-method (multi-loop (self <indexer>))
-  (multi-loop (delegate self) (index self)))
-
-(define-method (multi-loop (self <function>) . idx)
-  (let* [(arguments (map (cut apply multi-loop <> idx) (delegate self)))
-         (details   (append-map loop-details arguments))
-         (bodies    (map body arguments))]
-    (make <multi-loop> #:loop-details details #:body (apply (name self) bodies))))
-
-(define-method (multi-loop (self <param>) . idx)
-  (make <multi-loop> #:loop-details '() #:body self))
 
 (define (insert-intermediate value intermediate fun)
   (append (code intermediate value) (fun intermediate)))

@@ -1,5 +1,6 @@
 ## Ready
 
+* put more tests into test\_loop.scm
 * put +, -, += and \*= into (aiscm operator), refactor
 * (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * move more tests for jit-compile into jit compiler test suite
