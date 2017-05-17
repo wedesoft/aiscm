@@ -23,10 +23,11 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
-  #:export (<param> <lookup> <indexer> <function>
+  #:export (<param> <lookup> <indexer> <function> <injecter>
             skeleton delegate parameter lookup indexer index name coercion term type
-            make-function subst dimension-hint)
-  #:re-export (typecode value get project shape strides rebase))
+            make-function subst dimension-hint injecter)
+  #:re-export (typecode value get project shape strides rebase)
+  #:export-syntax (inject dim))
 
 
 (define-method (skeleton (self <meta<element>>)) (make self #:value (var self)))
@@ -57,6 +58,12 @@
 (define (indexer index delegate dimension)
   (make <indexer> #:dimension dimension #:index index #:delegate delegate))
 
+(define-syntax dim
+  (lambda (x)
+    (syntax-case x ()
+      ((dim expr) #'expr)
+      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
+
 (define-class <lookup> (<param>)
   (index    #:init-keyword #:index    #:getter index   )
   (stride   #:init-keyword #:stride   #:getter stride  ))
@@ -69,20 +76,32 @@
   (coercion  #:init-keyword #:coercion  #:getter coercion)
   (name      #:init-keyword #:name      #:getter name)
   (term      #:init-keyword #:term      #:getter term))
-
-(define-method (type (self <param>)) (typecode (delegate self)))
-(define-method (type (self <indexer>)) (sequence (type (delegate self))))
-(define-method (type (self <lookup>)) (type (delegate self)))
-(define-method (type (self <function>))
-  (apply (coercion self) (map type (delegate self))))
-
-(define-method (typecode (self <param>)) (typecode (type self)))
-
 (define (make-function name coercion fun args)
   (make <function> #:delegate args
                    #:coercion coercion
                    #:name     name
                    #:term     (lambda (out) (fun out args))))
+
+(define-class <injecter> (<param>)
+  (name  #:init-keyword #:name  #:getter name)
+  (index #:init-keyword #:index #:getter index))
+(define (injecter name index delegate)
+  (make <injecter> #:name name #:index index #:delegate delegate))
+
+(define-syntax-rule (inject name index delegate)
+  (let [(index (var <long>))]
+    (injecter name index delegate)))
+
+(define-method (type (self <param>)) (typecode (delegate self)))
+(define-method (type (self <indexer>)) (sequence (type (delegate self))))
+(define-method (type (self <lookup>)) (type (delegate self)))
+(define-method (type (self <function>)) (apply (coercion self) (map type (delegate self))))
+(define-method (type (self <injecter>)) (type (delegate self)))
+
+(define-method (shape (self <injecter>))
+  (shape (delegate self)))
+
+(define-method (typecode (self <param>)) (typecode (type self)))
 
 (define-method (value (self <param>)) (value (delegate self)))
 (define-method (value (self <indexer>)) (value (delegate self)))

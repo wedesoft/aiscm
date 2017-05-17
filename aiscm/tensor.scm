@@ -13,38 +13,14 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
-  #:export (<injecter>
-            tensor-operations expression->identifier identifier->symbol tensor-variables
+  #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
-            injecter += *= max= min=)
+            += *= max= min=)
   #:re-export (jit get wrap multi-loop)
-  #:export-syntax (dim inject tensor tensor-body sum prod largest smallest))
+  #:export-syntax (tensor tensor-body sum prod largest smallest))
 
 
 (define tensor-ctx (make <context>))
-
-(define-syntax dim
-  (lambda (x)
-    (syntax-case x ()
-      ((dim expr) #'expr)
-      ((dim indices ... index expr) #'(let [(index (var <long>))] (indexer index (dim indices ... expr) (dimension-hint index)))))))
-
-(define-class <injecter> (<param>)
-  (name  #:init-keyword #:name  #:getter name)
-  (index #:init-keyword #:index #:getter index))
-
-(define-method (type (self <injecter>))
-  (type (delegate self)))
-
-(define-method (shape (self <injecter>))
-  (shape (delegate self)))
-
-(define (injecter name index delegate)
-  (make <injecter> #:name name #:index index #:delegate delegate))
-
-(define-syntax-rule (inject name index delegate)
-  (let [(index (var <long>))]
-    (injecter name index delegate)))
 
 (define-syntax-rule (define-tensor-operation name op fun)
   (begin
