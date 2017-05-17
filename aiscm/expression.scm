@@ -18,6 +18,8 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
+  #:use-module (aiscm composite)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
@@ -26,7 +28,7 @@
   #:export (<param> <lookup> <indexer> <function> <injecter>
             skeleton delegate parameter lookup indexer index name coercion term type
             make-function subst dimension-hint injecter)
-  #:re-export (typecode value get project shape strides rebase)
+  #:re-export (typecode value get project shape strides rebase content)
   #:export-syntax (inject dim))
 
 
@@ -97,10 +99,6 @@
 (define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (type (self <function>)) (apply (coercion self) (map type (delegate self))))
 (define-method (type (self <injecter>)) (type (delegate self)))
-
-(define-method (shape (self <injecter>))
-  (shape (delegate self)))
-
 (define-method (typecode (self <param>)) (typecode (type self)))
 
 (define-method (value (self <param>)) (value (delegate self)))
@@ -136,6 +134,7 @@
 
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
+(define-method (shape (self <injecter>)) (shape (delegate self)))
 
 (define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
@@ -148,3 +147,10 @@
   (indexer (index self) (rebase value (delegate self)) (dimension self)))
 (define-method (rebase value (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self)))
+
+(define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
+(define-method (content (type <meta<scalar>>) (self <function>)) (list self))
+(define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
+(define-method (content (type <meta<sequence<>>>) (self <param>))
+  (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
+

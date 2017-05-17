@@ -35,7 +35,7 @@
     <int> (typecode (value i))))
 (test-end "skeleton of scalar expression")
 
-(test-begin "skeleton of array expression")
+(test-begin "decompose parameters into elementary native types")
   (let [(s (skeleton (sequence <byte>)))]
     (test-assert "skeleton of a sequence is a sequence"
       (is-a? s (sequence <byte>)))
@@ -50,7 +50,7 @@
       (list <long> <long> <long> <long> <ulong>) (map class-of (content (class-of m) m)))
     (test-equal "2D array skeleton is based on five variables"
       (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
-(test-end "skeleton of array expression")
+(test-end "decompose parameters into elementary native types")
 (test-begin "array parameters")
   (let* [(s  (skeleton (sequence <int>)))
          (sx (parameter s))

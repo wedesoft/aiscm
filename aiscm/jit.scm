@@ -100,13 +100,6 @@
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 (define-method (code (out <param>) (value <integer>)) (code out (native-const (type out) value)))
 
-; decompose parameters into elementary native types
-(define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
-(define-method (content (type <meta<scalar>>) (self <function>)) (list self))
-(define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
-(define-method (content (type <meta<sequence<>>>) (self <param>))
-  (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
-
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define-method (need-conversion? target type) (not (eq? target type)))
 (define-method (need-conversion? (target <meta<int<>>>) (type <meta<int<>>>))
