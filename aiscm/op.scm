@@ -16,25 +16,25 @@
 ;;
 (define-module (aiscm op)
   #:use-module (oop goops)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module (aiscm util)
-  #:use-module (aiscm asm)
-  #:use-module (aiscm jit)
-  #:use-module (aiscm mem)
   #:use-module (aiscm element)
+  #:use-module (aiscm asm)
+  #:use-module (aiscm expression)
+  #:use-module (aiscm jit)
   #:use-module (aiscm pointer)
-  #:use-module (aiscm bool)
-  #:use-module (aiscm int)
-  #:use-module (aiscm rgb)
-  #:use-module (aiscm complex)
   #:use-module (aiscm sequence)
-  #:export (fill)
-  #:re-export (+ - * / % = < <= > >= min max))
-(define ctx (make <context>)); TODO: remove this
+  #:use-module (aiscm util)
+  #:export (fill))
+
+
+(define ctx (make <context>))
 
 (define (fill type shape value)
-  (let [(retval (make (multiarray type (length shape)) #:shape shape))]
-    (store retval value)
-    retval))
+  (let* [(result-type  (multiarray type (length shape)))
+         (args         (list (skeleton result-type) (skeleton type)))
+         (parameters   (map parameter args))
+         (prog         (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) prog))
+         (result       (make result-type #:shape shape))]
+    (apply instructions (append-map unbuild (list result-type type) (list result value)))
+    result))

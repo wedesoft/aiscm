@@ -42,7 +42,7 @@
   #:use-module (aiscm method)
   #:export (virtual-variables
             code convert-type assemble build-list package-return-content
-            jit operand insert-intermediate
+            content-vars jit operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
             ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -242,16 +242,16 @@
 
 (define (jit context classes proc)
   (let* [(args         (map skeleton classes))
-         (expr         (apply proc (map parameter args)))
+         (parameters   (map parameter args))
+         (expr         (apply proc parameters))
          (result-type  (type expr))
          (intermediate (parameter result-type))
-         (types        (map class-of args))
          (result       (generate-return-code args intermediate expr))
          (instructions (asm context
                             <ulong>
                             (map typecode (content-vars args))
                             (apply virtual-variables (apply assemble result))))
-         (fun          (lambda header (apply instructions (append-map unbuild types header))))]
+         (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
 (define-macro (define-jit-dispatch name arity delegate)

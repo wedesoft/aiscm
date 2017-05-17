@@ -153,4 +153,3 @@
 (define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
   (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
-
