@@ -57,7 +57,7 @@
   (let* [(m (parameter (multiarray <ubyte> 2)))
          (i (var <long>))
          (j (var <long>))
-         (t (dim j (dim i (make-function + coerce list (list (get (get m i) j))))))]
+         (t (dim j (dim i (get (get m i) j))))]
     (test-assert "tensor loop preserves inner index"
       (is-a? (body (multi-loop m)) <indexer>))
     (test-eq "inner index is second index of 2D array"
@@ -68,7 +68,6 @@
       (is-a? (car (loop-details (multi-loop m))) <loop-detail>))
     (test-assert "body of 2D tensor drops inner lookup"
       (is-a? (delegate (body (multi-loop m))) <lookup>))
-    (test-skip 1); + operator not available here
     (test-assert "tensor loop should preserve 2nd index of transposed array"
       (is-a? (delegate (body (multi-loop t))) <lookup>)))
 (test-end "2D loop with multiple iterators")
