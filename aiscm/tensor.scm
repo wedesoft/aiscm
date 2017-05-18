@@ -30,7 +30,7 @@
     (define-method (op (a <param>) (b <param>))
       (op (delegate a) (delegate b)))
     (define-method (op (a <param>) (b <function>))
-      (insert-intermediate b (skeleton (type b)) (lambda (intermediate) (op (delegate a) intermediate))))
+      (let-skeleton [(tmp (type b) b)] (op (delegate a) tmp)))
     (define-syntax-rule (name index delegate)
       (inject op index delegate))))
 

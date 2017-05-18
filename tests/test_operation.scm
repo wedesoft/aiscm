@@ -101,12 +101,15 @@
 (test-end "copying values")
 
 (test-begin "insert intermediate value")
-  (let [(a   (skeleton <sint>))
-        (tmp (skeleton <sint>))]
+  (let* [(a    (skeleton <sint>))
+         (expr (let-skeleton [(tmp <sint> a)] tmp))
+         (tmp  (last expr))]
     (test-equal "Use intermediate value"
-      (attach (code tmp a) tmp) (insert-intermediate a tmp list))
-    (test-equal "Use empty code"
-      (code tmp a) (insert-intermediate a tmp (const '()))))
+      (list (code tmp a) tmp) expr)
+    (test-equal "Add more code"
+      (NOP) (last (let-skeleton [(tmp <sint> a)] (NOP) (NOP))))
+    (test-assert "Use intermediate parameter"
+      (is-a? (last (let-parameter [(tmp <sint> (parameter a))] tmp)) <param>)))
 (test-end "insert intermediate value")
 
 (test-begin "check whether intermediate value is required")

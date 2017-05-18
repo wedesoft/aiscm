@@ -30,10 +30,10 @@
   #:use-module (aiscm loop)
   #:use-module (aiscm method)
   #:use-module (aiscm util)
-  #:export (make-constant-function native-const need-conversion? code insert-intermediate
+  #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters mutating-code functional-code unary-extract)
   #:re-export (size-of -)
-  #:export-syntax (define-operator-mapping))
+  #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
 (define* ((native-data native) out args)
   (list (MOV (get (delegate out)) (get native))))
@@ -65,10 +65,17 @@
 (define-method (force-parameters target args predicate fun)
   (force-parameters (make-list (length args) target) args predicate fun))
 
+(define-syntax-rule (let-prototype [(name prototype value)] body ...)
+  (let [(name prototype)] (list (code name value) body ...)))
+(define-syntax-rule (let-skeleton [(name type value)] body ...)
+  (let-prototype [(name (skeleton type) value)] body ...))
+(define-syntax-rule (let-parameter [(name type value)] body ...)
+  (let-prototype [(name (parameter type) value)] body ...))
+
 (define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (list (parameter b))))
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
-  (insert-intermediate b (skeleton (typecode a)) (cut code a <>)))
+  (let-skeleton [(tmp (typecode a) b)] (code a tmp)))
 (define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
 (define-method (code (a <indexer>) (b <param>))
   (let [(dest   (multi-loop a))
@@ -82,30 +89,25 @@
                     (append-map loop-increment (loop-details source))))))
 (define-method (code (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (insert-intermediate fun (skeleton (type fun)) (cut code out <>))
+    (let-skeleton [(tmp (type fun) fun)] (code out tmp))
     ((term fun) (parameter out))))
 (define-method (code (out <pointer<>>) (fun <function>))
-  (insert-intermediate fun (skeleton (typecode out)) (cut code out <>)))
+  (let-skeleton [(tmp (typecode out) fun)] (code out tmp)))
 (define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
 (define-method (code (out <param>) (value <integer>)) (code out (native-const (type out) value)))
 (define-method (code (a <param>) (b <injecter>))
   (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
-      (insert-intermediate (body t) (parameter (typecode a))
-        (lambda (intermediate)
-          (append (append-map loop-increment (loop-details t))
-                  (repeat 1 (value (dimension-hint (index b)))
-                          ((name b) intermediate (body t)); TODO: composite values
-                          (append-map loop-increment (loop-details t)))
-                  (code a intermediate)))))))
+      (let-parameter [(tmp (typecode a) (body t))]
+         (append-map loop-increment (loop-details t))
+         (repeat 1 (value (dimension-hint (index b)))
+                 ((name b) tmp (body t)); TODO: composite values
+                 (append-map loop-increment (loop-details t)))
+         (code a tmp)))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
-
-(define (insert-intermediate value intermediate fun)
-  "Insert instructions for copying intermediate value"
-  (append (code intermediate value) (fun intermediate)))
 
 (define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
 
@@ -116,7 +118,8 @@
       (apply op (operand out) (map operand intermediates)))))
 (define ((mutating-code op) out args)
   "Adapter for machine code overwriting its first argument"
-  (insert-intermediate (car args) out (cut operation-code (type out) op <> (cdr args))))
+  (append (code out (car args))
+          (operation-code (type out) op out (cdr args))))
 (define ((functional-code op) out args)
   "Adapter for machine code without side effects on its arguments"
   (operation-code (reduce coerce #f (map type args)) op out args))
