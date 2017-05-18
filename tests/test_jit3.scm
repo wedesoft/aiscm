@@ -129,34 +129,12 @@
   '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) (cut to-type <byte> <>)) (seq <int> 2 3 5))))
 (test-equal "typecasting to smaller integer type"
   '(255 0 1) (to-list (to-type <ubyte> (seq 255 256 257))))
-(let [(a   (skeleton <sint>))
-      (tmp (skeleton <sint>))]
-  (test-equal "Use intermediate value"
-    (attach (code tmp a) tmp) (insert-intermediate a tmp list))
-  (test-equal "Use empty code"
-    (code tmp a) (insert-intermediate a tmp (const '()))))
 (let* [(a (parameter <sint>))
        (f (~ a))]
   (test-assert "parameter is not a pointer"
     (not (is-pointer? (parameter <int>))))
   (test-assert "pointer parameter is a pointer"
     (is-pointer? (parameter (pointer <int>))))
-  (test-assert "no conversion required if types are the same"
-    (not (need-conversion? <sint> <sint>)))
-  (test-assert "conversion required if types are different"
-    (need-conversion? <int> <sint>))
-  (test-assert "no conversion required if integers have the same size"
-    (not (need-conversion? <byte> <ubyte>)))
-  (test-assert "no conversion required when changing bytes to booleans"
-    (not (need-conversion? <byte> <bool>)))
-  (test-assert "no conversion required when changing boolean to bytes"
-    (not (need-conversion? <bool> <ubyte>)))
-  (test-assert "Compilation of function always requires intermediate value"
-    (code-needs-intermediate? <sint> f))
-  (test-assert "Value does not require intermediate value"
-    (not (code-needs-intermediate? <sint> a)))
-  (test-assert "Value of different size requires intermediate value"
-    (code-needs-intermediate? <int> a))
   (test-assert "Compilation of function always requires intermediate value"
     (call-needs-intermediate? <sint> f))
   (test-assert "Value does not require intermediate value"
@@ -165,17 +143,7 @@
     (call-needs-intermediate? <int> a))
   (test-assert "Pointer requires intermediate value"
     (call-needs-intermediate? <obj> (parameter (pointer <int>)))))
-(let [(a   (parameter <sint>))]
-  (test-equal "Pass through parameters to specified function by default"
-    (list a) (force-parameters (list <sint>) (list a) code-needs-intermediate? identity))
-  (let* [(forced       (force-parameters (list <int>) (list a) code-needs-intermediate? identity))
-         (intermediate (last forced))]
-    (test-equal "Create parameter of target type if type is different"
-      <int> (type intermediate))
-    (test-equal "Create preamble for initialising intermediate values"
-      (attach (code intermediate a) intermediate) forced)
-    (test-equal "Alternatively force all parameters to the same type"
-      <int> (type (last (force-parameters <int> (list a) code-needs-intermediate? identity))))))
+
 (let [(a (parameter <int>))
       (b (parameter <sint>))
       (c (parameter <ubyte>))
@@ -363,9 +331,6 @@
   5 ((jit ctx (list <int>) *) 5))
 (test-equal "sequence multiplied with nothing returns same sequence"
   '(2 3 5) (to-list (* (seq 2 3 5))))
-(let [(i (parameter <int>))]
-  (test-eqv "assign native integer constant to parameter"
-    42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))
 (test-assert "compile function returning empty list"
   (null? ((jit ctx '() (lambda () scm-eol)))))
 (test-equal "call \"cons\" from compiled code"

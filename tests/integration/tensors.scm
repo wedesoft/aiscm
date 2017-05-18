@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm sequence) (aiscm tensor))
+(use-modules (oop goops) (aiscm sequence) (aiscm tensor) (aiscm expression))
 (tensor 42)
 ;42
 (tensor (seq 2 3 5))

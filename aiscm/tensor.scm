@@ -13,6 +13,7 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
+  #:use-module (aiscm operation)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
             += *= max= min=)
@@ -50,18 +51,6 @@
   (let [(t (apply multi-loop (delegate self) idx))]
     (make <multi-loop> #:loop-details (loop-details t)
                        #:body (injecter (name self) (index self) (body t)))))
-
-(define-method (code (a <param>) (b <injecter>))
-  (let [(t (multi-loop (delegate b) (index b)))]
-    (append
-      (append-map loop-setup (loop-details t))
-      (insert-intermediate (body t) (parameter (typecode a))
-        (lambda (intermediate)
-          (append (append-map loop-increment (loop-details t))
-                  (repeat 1 (value (dimension-hint (index b)))
-                          ((name b) intermediate (body t)); TODO: composite values
-                          (append-map loop-increment (loop-details t)))
-                  (code a intermediate)))))))
 
 (define (tensor-operations expr)
   "Check whether expression is a tensor operation"

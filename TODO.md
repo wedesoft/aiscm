@@ -1,6 +1,8 @@
 ## Ready
 
 * put +, -, += and \*= into (aiscm operator), refactor
+* insert-intermediate -> let-var macro
+* code -> mov
 * cache fill method
 * check against NumPy for completeness
 * (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))

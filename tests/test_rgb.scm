@@ -31,7 +31,8 @@
              (aiscm variable)
              (aiscm command)
              (aiscm pointer)
-             (aiscm jit))
+             (aiscm jit)
+             (aiscm operation))
 
 
 (test-begin "aiscm rgb")

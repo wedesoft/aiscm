@@ -29,6 +29,7 @@
              (aiscm compile)
              (aiscm mem)
              (aiscm jit)
+             (aiscm operation)
              (aiscm element)
              (aiscm int)
              (aiscm float)
@@ -89,51 +90,12 @@
       (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 (test-end "virtual variables")
 
-(let [(a (skeleton <byte>))
-      (b (skeleton (pointer <byte>)))
-      (c (set-pointer-offset (skeleton (pointer <int>)) 3))]
-  (test-equal "element operand is value of element"
-    (get a) (operand a))
-  (test-equal "pointer operand is pointer to element"
-    (ptr <byte> (get b)) (operand b))
-  (test-equal "pointer operand can have offset"
-    (ptr <int> (get c) 3) (operand c)))
-(let [(out (skeleton <int>))
-      (in  (skeleton <int>))]
-  (test-equal "generate code for copying an integer"
-    (list (list (mov-signed (get out) (get in)))) (code out in))
-  (test-equal "generate code for identity function"
-    (list (list (get out)) (list (get in)) (list (list (mov-signed (get out) (get in))) (RET)))
-    (assemble (list out) (list in) (code out in))))
-(test-equal "Use default zero-extension for 32-bit numbers"
-  (list (SUB RSP 8) (MOV EAX ECX) (ADD RSP 8) (RET))
-  (jit-compile (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
 (test-eqv "compile and run integer identity function"
   42 ((jit ctx (list <int>) identity) 42))
 (test-eqv "compile and run boolean identity function"
   #t ((jit ctx (list <bool>) identity) #t))
-(let [(out (skeleton <int>))
-      (in  (skeleton (pointer <int>)))]
-  (test-equal "generate code for reading integer from memory"
-    (list (list (mov-signed (get out) (ptr <int> (get in))))) (code out in)))
-(let [(out (skeleton (pointer <int>)))
-      (in  (skeleton <int>))]
-  (test-equal "generate code for writing integer to memory"
-    (list (list (mov-signed (ptr <int> (get out)) (get in)))) (code out in)))
-(let [(out (skeleton <int>))]
-  (test-equal "Generate code for setting variable to zero"
-    (list (MOV (get out) 0)) (code out 0)))
-(let [(in  (skeleton (pointer <byte>)))
-      (out (skeleton (pointer <byte>)))]
-  (test-equal "generate code for copying a byte from one memory location to another"
-    (list (SUB RSP 8) (MOV DL (ptr <byte> RAX)) (MOV (ptr <byte> RSI) DL) (ADD RSP 8) (RET))
-    (jit-compile (flatten-code (attach (code out in) (RET))))))
 (test-equal "compile and run identity function for array"
   '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
-(let [(out (skeleton (multiarray <int> 2)))
-      (in  (skeleton (multiarray <int> 2)))]
-  (test-assert "generating code for copying a 2D array should run without error"
-    (list? (code (parameter out) (parameter in)))))
 (test-equal "compile and run identity function for 2D array"
   '((2 3 5) (7 9 11)) (to-list ((jit ctx (list (multiarray <int> 2)) identity) (arr <int> (2 3 5) (7 9 11)))))
 (let [(out (skeleton <int>))
@@ -144,11 +106,6 @@
     (code (parameter out) (+ (parameter a) (parameter b)))))
 (test-equal "compile and run function adding two numbers"
   42 ((jit ctx (list <int> <int>) +) 19 23))
-(let [(out (skeleton <byte>))
-      (in  (skeleton <int>))]
-  (test-equal "generate code for copying part of integer"
-    (list (SUB RSP 8) (MOV AL CL) (ADD RSP 8) (RET))
-    (jit-compile (flatten-code (list (code out in) (RET))))))
 (let [(out (skeleton <int>))
       (a   (skeleton <byte>))
       (b   (skeleton <usint>))]
@@ -193,12 +150,6 @@
 (test-equal "compile and run operation involving 1D and 2D array"
   '((0 1 3) (0 2 4))
   (to-list ((jit ctx (list (sequence <byte>) (multiarray <ubyte> 2)) +) (seq -2 -3) (arr (2 3 5) (3 5 7)))))
-(let [(out (skeleton <int>))
-      (a   (skeleton <int>))]
-  (test-equal "generate code for negating number"
-    (list (list (mov-signed (get out) (get a))) (NEG (get out))) (code (parameter out) (- (parameter a)))))
-(test-equal "Create function object mapping to NEG"
-  -42 ((jit ctx (list <int>) (lambda (x) (make-function 'name identity (mutating-code NEG) (list x)))) 42))
 (test-equal "Negate integer"
   -42 ((jit ctx (list <int>) -) 42))
 (test-equal "compile and run function for negating array"
