@@ -28,7 +28,8 @@
              (aiscm asm)
              (aiscm variable)
              (aiscm expression)
-             (aiscm jit))
+             (aiscm jit)
+             (aiscm util))
 
 
 (test-begin "aiscm jit5")
@@ -139,4 +140,55 @@
 (test-eqv "plus for integer and object"
   7 ((jit ctx (list <int> <obj>) +) 3 4))
 
+(test-equal "generate code to package an object in a list"
+  '(a) ((jit ctx (list <obj>) package-return-content) 'a))
+(test-equal "generate code to return the content of an RGB value"
+  '(2 3 5) ((jit ctx (list <intrgb>) package-return-content) (rgb 2 3 5)))
+(test-equal "build a list of values in compiled code"
+  '(2 3 5) ((jit ctx (list <int> <int> <int>) build-list) 2 3 5))
+(let [(i (skeleton <int>))]
+  (test-equal "generate code create, define, and package return value"
+    '(123)
+    (address->scm ((asm ctx <long> (list <int>)
+                        (apply virtual-variables (apply assemble (generate-return-code (list i)
+                                                        (parameter <int>) (parameter i)))))
+                   123))))
+(test-eqv "get dimension of sequence"
+  3 ((jit ctx (list (sequence <ubyte>)) dimension) (seq 2 3 5)))
+(test-eqv "get stride of sequence"
+  1 ((jit ctx (list (sequence <ubyte>)) stride) (seq 2 3 5)))
+(test-eqv "number multiplied with nothing returns same number"
+  5 ((jit ctx (list <int>) *) 5))
+(test-equal "sequence multiplied with nothing returns same sequence"
+  '(2 3 5) (to-list (* (seq 2 3 5))))
+(test-eqv "determine size of integer in compiled code"
+  2 ((jit ctx (list <sint>) size-of) 42))
+(test-eqv "determine size of sequence (compiled)"
+  6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
+(let [(i (parameter <int>))]
+  (test-eqv "assign native integer constant to parameter"
+    42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))
+(test-assert "compile function returning empty list"
+  (null? ((jit ctx '() (lambda () scm-eol)))))
+(test-equal "call \"cons\" from compiled code"
+  (cons 'a 'b) ((jit ctx (list <obj> <obj>) scm-cons) 'a 'b))
+(test-equal "compile function putting object into a one-element list"
+  '(a) ((jit ctx (list <obj>) (cut scm-cons <> scm-eol)) 'a))
+(test-equal "compile function putting integer into a one-element list"
+  '(42) ((jit ctx (list <int>) (cut scm-cons <> scm-eol)) 42))
+(test-equal "compile function putting result of expression into a one-element list"
+  '(170) ((jit ctx (list <int> <int>) (lambda (i j) (scm-cons (+ i j) scm-eol))) 100 70))
+(test-assert "allocate memory in compiled method"
+  ((jit ctx (list <ulong>) scm-gc-malloc-pointerless) 128))
+(test-assert "allocate memory in compiled method"
+  ((jit ctx (list <ulong>) scm-gc-malloc) 128))
+
+(test-begin "list operations")
+  (test-assert "+ is an operation"
+    (memv '+ operations))
+  (test-assert "- is an operation"
+    (memv '- operations))
+  (test-assert "* is an operation"
+    (memv '* operations))
+(test-end "list operations")
 (test-end "aiscm jit5")
