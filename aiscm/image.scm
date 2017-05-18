@@ -28,7 +28,6 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm asm)
   #:use-module (aiscm jit)
-  #:use-module (aiscm op)
   #:export (<image> <meta<image>>
             get-format convert-image to-image symbol->format format->symbol convert-image-from!)
   #:re-export (to-array))
