@@ -363,10 +363,6 @@
   5 ((jit ctx (list <int>) *) 5))
 (test-equal "sequence multiplied with nothing returns same sequence"
   '(2 3 5) (to-list (* (seq 2 3 5))))
-(test-eqv "determine size of integer in compiled code"
-  2 ((jit ctx (list <sint>) size-of) 42))
-(test-eqv "determine size of sequence (compiled)"
-  6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
 (let [(i (parameter <int>))]
   (test-eqv "assign native integer constant to parameter"
     42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))

@@ -39,6 +39,7 @@
   #:use-module (aiscm expression)
   #:use-module (aiscm loop)
   #:use-module (aiscm compile)
+  #:use-module (aiscm operation)
   #:use-module (aiscm method)
   #:export (virtual-variables
             code convert-type assemble build-list package-return-content
@@ -47,7 +48,7 @@
             force-parameters
             ensure-default-strides unary-extract mutating-code functional-code decompose-value
             decompose-arg delegate-fun generate-return-code
-            make-native-function native-call make-constant-function native-const
+            make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
   #:export-syntax (define-jit-method define-operator-mapping pass-parameters))
@@ -61,9 +62,6 @@
                #:parameters parameters
                #:results results
                #:blocked (blocked-intervals instructions)))
-
-(define-method (size-of (self <param>))
-  (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
 
 (define-method (operand (a <element>)) (get a))
 (define-method (operand (a <pointer<>>))
@@ -247,10 +245,8 @@
          (result-type  (type expr))
          (intermediate (parameter result-type))
          (result       (generate-return-code args intermediate expr))
-         (instructions (asm context
-                            <ulong>
-                            (map typecode (content-vars args))
-                            (apply virtual-variables (apply assemble result))))
+         (commands     (apply virtual-variables (apply assemble result)))
+         (instructions (asm context <ulong> (map typecode (content-vars args)) commands))
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
@@ -258,8 +254,8 @@
   (let* [(result-type  (multiarray type (length shape)))
          (args         (list (skeleton result-type) (skeleton type)))
          (parameters   (map parameter args))
-         (prog         (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
-         (instructions (asm ctx <null> (map typecode (content-vars args)) prog))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
          (result       (make result-type #:shape shape))]
     (apply instructions (append-map unbuild (list result-type type) (list result value)))
     result))
@@ -401,12 +397,6 @@
 
 (define (native-call return-type argument-types function-pointer)
   (cut make-native-function (make-native-method return-type argument-types function-pointer) <...>))
-
-(define* ((native-data native) out args) (list (MOV (get (delegate out)) (get native))))
-
-(define (make-constant-function native . args) (make-function make-constant-function (const (return-type native)) (native-data native) args))
-
-(define (native-const type value) (make-constant-function (native-value type value)))
 
 ; Scheme list manipulation
 (define main (dynamic-link))
