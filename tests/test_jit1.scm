@@ -152,4 +152,14 @@
 (test-equal "compile and run array-scalar operation"
   '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
 
+(test-begin "filling arrays")
+  (test-equal "fill byte sequence"
+    '(3 3 3) (to-list (fill <byte> '(3) 3)))
+  (test-equal "fill integer sequence"
+    '(4 4 4) (to-list (fill <int> '(3) 4)))
+  (test-equal "fill 2D array"
+    '((5 5 5) (5 5 5)) (to-list (fill <int> '(3 2) 5)))
+  (test-equal "fill RGB sequence"
+    (list (rgb 2 3 5) (rgb 2 3 5)) (to-list (fill <intrgb> '(2) (rgb 2 3 5))))
+(test-end "filling arrays")
 (test-end "aiscm jit1")

@@ -42,7 +42,7 @@
   #:use-module (aiscm method)
   #:export (virtual-variables
             code convert-type assemble build-list package-return-content
-            content-vars jit operand insert-intermediate
+            content-vars jit fill operand insert-intermediate
             is-pointer? need-conversion? code-needs-intermediate? call-needs-intermediate?
             force-parameters
             ensure-default-strides unary-extract mutating-code functional-code decompose-value
@@ -253,6 +253,16 @@
                             (apply virtual-variables (apply assemble result))))
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
+
+(define (fill type shape value)
+  (let* [(result-type  (multiarray type (length shape)))
+         (args         (list (skeleton result-type) (skeleton type)))
+         (parameters   (map parameter args))
+         (prog         (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) prog))
+         (result       (make result-type #:shape shape))]
+    (apply instructions (append-map unbuild (list result-type type) (list result value)))
+    result))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
