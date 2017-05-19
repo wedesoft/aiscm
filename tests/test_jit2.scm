@@ -165,48 +165,12 @@
 (let [(i (parameter <int>))]
   (test-equal "Integer decomposes to itself"
     i (decompose-value <int> i)))
-(test-equal "get minor number of two integers (first case)"
-  2 ((jit ctx (list <usint> <usint>) min) 2 3))
-(test-equal "get minor number of two integers (second case)"
-  2 ((jit ctx (list <usint> <usint>) min) 3 2))
-(test-equal "get minor number of two unsigned integers (first case)"
-  32767 ((jit ctx (list <usint> <usint>) min) 32767 32768))
-(test-equal "get minor number of two unsigned integers (second case)"
-  32767 ((jit ctx (list <usint> <usint>) min) 32768 32767))
-(test-equal "get minor number of two signed integers"
-  -1 ((jit ctx (list <sint> <sint>) min) -1 1))
-(test-equal "get major number of two unsigned integers (first case)"
-  32768 ((jit ctx (list <usint> <usint>) max) 32767 32768))
-(test-equal "get major number of two unsigned integers (second case)"
-  32768 ((jit ctx (list <usint> <usint>) max) 32768 32767))
-(test-equal "get major number of two signed integers"
-  1 ((jit ctx (list <sint> <sint>) max) -1 1))
-(test-equal "get major number of signed and unsigned short integers"
-  32768 ((jit ctx (list <sint> <usint>) max) -1 32768))
-(test-equal "get minor number of two unsigned bytes (first case)"
-  2 ((jit ctx (list <ubyte> <ubyte>) min) 2 3))
-(test-equal "get minor number of two unsigned bytes (second case)"
-  2 ((jit ctx (list <ubyte> <ubyte>) min) 3 2))
-(test-equal "get major number of two unsigned bytes (first case)"
-  3 ((jit ctx (list <ubyte> <ubyte>) max) 2 3))
-(test-equal "get major number of two unsigned bytes (second case)"
-  3 ((jit ctx (list <ubyte> <ubyte>) max) 3 2))
-(test-equal "get minor number of two bytes (first case)"
-  -1 ((jit ctx (list <byte> <byte>) min) -1 1))
-(test-equal "get minor number of two bytes (second case)"
-  -1 ((jit ctx (list <byte> <byte>) min) 1 -1))
-(test-equal "get major number of two bytes (first case)"
-  1 ((jit ctx (list <byte> <byte>) max) -1 1))
-(test-equal "get major number of two bytes (second case)"
-  1 ((jit ctx (list <byte> <byte>) max) 1 -1))
 (let [(r (parameter <ubyte>))
       (a (parameter <ubyte>))
       (b (parameter <ubyte>))]
   (test-equal "handle lack of support for 8-bit conditional move"
     (list (SUB RSP 8) (MOV DL AL) (CMP DL SIL) (JNBE #x3) (MOV DL SIL) (ADD RSP 8) (RET))
     (resolve-jumps (jit-compile (attach (flatten-code ((term (max a b)) r)) (RET))))))
-(test-equal "get minor number of signed bytes"
-  -1 ((jit ctx (list <byte> <byte>) min) -1 1))
 
 (let [(a (parameter <int>))]
   (test-equal "Passing register parameters creates copy instructions"
