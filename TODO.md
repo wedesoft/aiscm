@@ -1,6 +1,7 @@
 ## Ready
 
 * put +, -, += and \*= into (aiscm operator), refactor
+* sort test suites by time descending
 * code -> mov
 * cache fill method
 * check against NumPy for completeness

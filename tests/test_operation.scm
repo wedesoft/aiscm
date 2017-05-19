@@ -276,5 +276,11 @@
     1 ((jit ctx (list <byte> <byte>) max) -1 1))
   (test-equal "get major number of two bytes (second case)"
     1 ((jit ctx (list <byte> <byte>) max) 1 -1))
+  (let [(r (parameter <ubyte>))
+        (a (parameter <ubyte>))
+        (b (parameter <ubyte>))]
+    (test-equal "handle lack of support for 8-bit conditional move"
+      (list (SUB RSP 8) (MOV DL AL) (CMP DL SIL) (JNBE #x3) (MOV DL SIL) (ADD RSP 8) (RET))
+      (resolve-jumps (jit-compile (attach (flatten-code ((term (max a b)) r)) (RET))))))
 (test-end "binary max")
 (test-end "aiscm operation")
