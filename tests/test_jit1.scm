@@ -104,50 +104,63 @@
 (test-equal "Compile and run code for fetching data from a pointer"
   i1 ((jit ctx (list (pointer <int>)) identity) (idata)))
 
-(test-equal "negate integer sequence"
-  '(-2 -3 -5) (to-list (- (seq <int> 2 3 5))))
-(test-equal "negate 2D array"
-  '((-1 2) (3 -4)) (to-list (- (arr (1 -2) (-3 4)))))
-(test-equal "add 1 to downsampled array"
-  '(2 4) (to-list (+ (downsample 2 (seq 1 2 3 4)) 1)))
-(test-equal "add downsampled array to 1"
-  '(2 4) (to-list (+ 1 (downsample 2 (seq 1 2 3 4)))))
-(test-equal "add two downsampled arrays"
-  '(2 6) (let [(s (downsample 2 (seq 1 2 3 4)))] (to-list (+ s s))))
-(test-equal "unary plus for sequence"
-  '(2 3 5) (to-list (+ (seq <int> 2 3 5))))
-(test-equal "bitwise negation of array"
-  '(253 252 250) (to-list (~ (seq 2 3 5))))
-(test-equal "add integer to integer sequence"
-  '(3 4 6) (to-list (+ (seq 2 3 5) 1)))
-(test-equal "add integer sequence to integer"
-  '(3 4 6) (to-list (+ 1 (seq 2 3 5))))
-(test-equal "add two sequences"
-  '(3 5 9) (to-list (+ (seq 2 3 5) (seq 1 2 4))))
-(test-equal "element-wise subtract integer from a sequence"
-  '(-3 -2 -1) (to-list (- (seq -1 0 1) 2)))
-(test-equal "subtract 1 from a 2D array"
-  '((0 1 2) (3 4 5)) (to-list (- (arr (1 2 3) (4 5 6)) 1)))
-(test-equal "subtract 2D array from integer"
-  '((6 5 4) (3 2 1)) (to-list (- 7 (arr (1 2 3) (4 5 6)))))
+(test-begin "unary +")
+  (test-equal "unary plus for sequence"
+    '(2 3 5) (to-list (+ (seq <int> 2 3 5))))
+(test-end "unary +")
 
-(test-equal "subtract 2D array from each other"
-  '((1 1 2) (3 4 5)) (to-list (- (arr (2 3 5) (7 9 11)) (arr (1 2 3) (4 5 6)))))
-(test-equal "negate 3D array"
-  '(((-1 2 -3) (4 -5 6))) (to-list (- (arr ((1 -2 3) (-4 5 -6))))))
-(test-equal "add 1D and 2D array"
-  '((3 4 5) (7 8 9)) (to-list (+ (seq 0 1) (arr (3 4 5) (6 7 8)))))
-(test-equal "add 2D and 1D array"
-  '((3 4 5) (7 8 9)) (to-list (+ (arr (3 4 5) (6 7 8)) (seq 0 1))))
-(test-equal "add scalar to 3D array"
-  '(((2 3 4) (5 6 7))) (to-list (+ (arr ((1 2 3) (4 5 6))) 1)))
-(test-equal "add 3D array to scalar"
-  '(((2 3 4) (5 6 7))) (to-list (+ 1 (arr ((1 2 3) (4 5 6))))))
-(test-equal "add two 3D arrays"
-  '(((2 4 6) (8 10 12))) (let [(m (arr ((1 2 3) (4 5 6))))] (to-list (+ m m))))
-(test-equal "add 1 to 4D array"
-  '((((3 3) (3 3)) ((3 3) (3 3))) (((3 3) (3 3)) ((3 3) (3 3))))
-  (to-list (+ (arr (((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2)))) 1)))
-(test-equal "add unsigned integer and integer array"
-  '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
+(test-begin "unary -")
+  (test-equal "negate integer sequence"
+    '(-2 -3 -5) (to-list (- (seq <int> 2 3 5))))
+  (test-equal "negate 2D array"
+    '((-1 2) (3 -4)) (to-list (- (arr (1 -2) (-3 4)))))
+  (test-equal "negate 3D array"
+    '(((-1 2 -3) (4 -5 6))) (to-list (- (arr ((1 -2 3) (-4 5 -6))))))
+(test-end "unary -")
+
+(test-begin "unary ~")
+  (test-equal "bitwise negation of array"
+    '(253 252 250) (to-list (~ (seq 2 3 5))))
+(test-end "unary ~")
+
+(test-begin "binary +")
+  (test-equal "add 1 to downsampled array"
+    '(2 4) (to-list (+ (downsample 2 (seq 1 2 3 4)) 1)))
+  (test-equal "add downsampled array to 1"
+    '(2 4) (to-list (+ 1 (downsample 2 (seq 1 2 3 4)))))
+  (test-equal "add two downsampled arrays"
+    '(2 6) (let [(s (downsample 2 (seq 1 2 3 4)))] (to-list (+ s s))))
+  (test-equal "add integer to integer sequence"
+    '(3 4 6) (to-list (+ (seq 2 3 5) 1)))
+  (test-equal "add integer sequence to integer"
+    '(3 4 6) (to-list (+ 1 (seq 2 3 5))))
+  (test-equal "add two sequences"
+    '(3 5 9) (to-list (+ (seq 2 3 5) (seq 1 2 4))))
+  (test-equal "add 1D and 2D array"
+    '((3 4 5) (7 8 9)) (to-list (+ (seq 0 1) (arr (3 4 5) (6 7 8)))))
+  (test-equal "add 2D and 1D array"
+    '((3 4 5) (7 8 9)) (to-list (+ (arr (3 4 5) (6 7 8)) (seq 0 1))))
+  (test-equal "add scalar to 3D array"
+    '(((2 3 4) (5 6 7))) (to-list (+ (arr ((1 2 3) (4 5 6))) 1)))
+  (test-equal "add 3D array to scalar"
+    '(((2 3 4) (5 6 7))) (to-list (+ 1 (arr ((1 2 3) (4 5 6))))))
+  (test-equal "add two 3D arrays"
+    '(((2 4 6) (8 10 12))) (let [(m (arr ((1 2 3) (4 5 6))))] (to-list (+ m m))))
+  (test-equal "add 1 to 4D array"
+    '((((3 3) (3 3)) ((3 3) (3 3))) (((3 3) (3 3)) ((3 3) (3 3))))
+    (to-list (+ (arr (((2 2) (2 2)) ((2 2) (2 2))) (((2 2) (2 2)) ((2 2) (2 2)))) 1)))
+  (test-equal "add unsigned integer and integer array"
+    '(1 2 3) (to-list (+ (seq <uint> 1 2 3) (seq <int> 0 0 0))))
+(test-end "binary +")
+
+(test-begin "binary -")
+  (test-equal "element-wise subtract integer from a sequence"
+    '(-3 -2 -1) (to-list (- (seq -1 0 1) 2)))
+  (test-equal "subtract 1 from a 2D array"
+    '((0 1 2) (3 4 5)) (to-list (- (arr (1 2 3) (4 5 6)) 1)))
+  (test-equal "subtract 2D array from integer"
+    '((6 5 4) (3 2 1)) (to-list (- 7 (arr (1 2 3) (4 5 6)))))
+  (test-equal "subtract 2D array from each other"
+    '((1 1 2) (3 4 5)) (to-list (- (arr (2 3 5) (7 9 11)) (arr (1 2 3) (4 5 6)))))
+(test-end "binary -")
 (test-end "aiscm jit1")
