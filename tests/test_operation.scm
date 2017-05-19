@@ -180,7 +180,12 @@
     -42 ((jit ctx (list <int>) -) 42))
   (test-equal "compile and run function for negating array"
     '(-2 3 -5) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5))))
+  (test-equal "negate integer twice"
+    42 ((jit ctx (list <int>) (compose - -)) 42))
 (test-end "unary -")
+
+(test-equal "unary ~"
+  '(253 252 250) (to-list ((jit ctx (list (sequence <ubyte>)) ~) (seq 2 3 5))))
 
 (test-begin "binary +")
   (let [(out (skeleton <int>))
@@ -224,4 +229,12 @@
     '((0 1 3) (0 2 4))
     (to-list ((jit ctx (list (sequence <byte>) (multiarray <ubyte> 2)) +) (seq -2 -3) (arr (2 3 5) (3 5 7)))))
 (test-end "binary +")
+
+(test-begin "binary -")
+  (test-equal "subtract byte fro integer sequence"
+    '(0 1 2) (to-list ((jit ctx (list (sequence <int>) <byte>) -) (seq <int> 1 2 3) 1)))
+(test-end "binary -")
+
+(test-equal "binary *"
+  '(2 4 6) (to-list ((jit ctx (list (sequence <int>) <int>) *) (seq <int> 1 2 3) 2)))
 (test-end "aiscm operation")
