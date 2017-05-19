@@ -153,10 +153,75 @@
   (list (SUB RSP 8) (MOV EAX ECX) (ADD RSP 8) (RET))
   (jit-compile (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
 
-(test-begin "negate number")
+(test-begin "identity function")
+  (test-eqv "compile and run integer identity function"
+    42 ((jit ctx (list <int>) identity) 42))
+  (test-eqv "compile and run boolean identity function"
+    #t ((jit ctx (list <bool>) identity) #t))
+  (test-equal "compile and run identity function for array"
+    '(2 3 5) (to-list ((jit ctx (list (sequence <int>)) identity) (seq <int> 2 3 5))))
+  (test-equal "compile and run identity function for 2D array"
+    '((2 3 5) (7 9 11)) (to-list ((jit ctx (list (multiarray <int> 2)) identity) (arr <int> (2 3 5) (7 9 11)))))
+(test-end "identity function")
+
+(test-begin "unary +")
+  (test-equal "plus passes through values"
+    42 ((jit ctx (list <int>) +) 42))
+  (test-equal "Compiling a plus operation with different types creates an equivalent machine program"
+    3 ((jit ctx (list <int> <sint> <ubyte>) +) 2 -3 4))
+(test-end "unary +")
+
+(test-begin "unary -")
   (let [(out (skeleton <int>))
         (a   (skeleton <int>))]
     (test-equal "generate code for negating number"
       (list (list (mov-signed (get out) (get a))) (NEG (get out))) (code (parameter out) (- (parameter a)))))
-(test-end "negate number")
+  (test-equal "Negate integer"
+    -42 ((jit ctx (list <int>) -) 42))
+  (test-equal "compile and run function for negating array"
+    '(-2 3 -5) (to-list ((jit ctx (list (sequence <int>)) -) (seq <int> 2 -3 5))))
+(test-end "unary -")
+
+(test-begin "binary +")
+  (let [(out (skeleton <int>))
+        (a   (skeleton <int>))
+        (b   (skeleton <int>))]
+    (test-equal "generate code for adding two numbers"
+      (list (list (mov-signed (get out) (get a))) (ADD (get out) (get b)))
+      (code (parameter out) (+ (parameter a) (parameter b)))))
+  (test-equal "compile and run function adding two numbers"
+    42 ((jit ctx (list <int> <int>) +) 19 23))
+  (let [(out (skeleton <int>))
+        (a   (skeleton <byte>))
+        (b   (skeleton <usint>))]
+    (test-equal "sign-extend second number when adding"
+      (list (SUB RSP 8) (MOVZX ESI AX) (MOVSX ECX DL) (ADD ESI ECX) (ADD RSP 8) (RET))
+      (jit-compile (flatten-code (list (code (parameter out) (+ (parameter b) (parameter a))) (RET))))))
+  (test-assert "create function from tensor and element"
+    (+ (parameter (sequence <int>)) (parameter <int>)))
+  (test-assert "create function from element and tensor"
+    (+ (parameter <int>) (parameter (sequence <int>))))
+  (test-assert "create function from two tensors"
+    (+ (parameter (sequence <int>)) (parameter (sequence <int>))))
+  (let [(out (skeleton (sequence <int>)))
+        (a   (skeleton (sequence <int>)))
+        (b   (skeleton <int>))]
+    (test-assert "generating code for array-scalar operation should run without error"
+      (list? (code (parameter out) (+ (parameter a) (parameter b))))))
+  (test-equal "compile and run array-scalar operation"
+    '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
+  (test-equal "compile and run scalar-array operation"
+    '(9 10 12) (to-list ((jit ctx (list <int> (sequence <int>)) +) 7 (seq <int> 2 3 5))))
+  (test-equal "sign-extend second number when adding value from pointer"
+    '(9 10 12) (to-list ((jit ctx (list <int> (sequence <byte>)) +) 7 (seq <byte> 2 3 5))))
+  (test-equal "compile and run array-array operation"
+    '(9 14 18) (to-list ((jit ctx (list (sequence <int>) (sequence <int>)) +) (seq <int> 2 3 5) (seq <int> 7 11 13))))
+  (test-equal "compile and run 2D array-scalar operation"
+    '((7) (8)) (to-list ((jit ctx (list (multiarray <int> 2) <int>) +) (arr <int> (2) (3)) 5)))
+  (test-equal "compile and run 2D scale-array operation"
+    '((7) (8)) (to-list ((jit ctx (list <int> (multiarray <int> 2)) +) 5 (arr <int> (2) (3)))))
+  (test-equal "compile and run operation involving 1D and 2D array"
+    '((0 1 3) (0 2 4))
+    (to-list ((jit ctx (list (sequence <byte>) (multiarray <ubyte> 2)) +) (seq -2 -3) (arr (2 3 5) (3 5 7)))))
+(test-end "binary +")
 (test-end "aiscm operation")

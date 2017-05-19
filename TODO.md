@@ -1,7 +1,6 @@
 ## Ready
 
 * put +, -, += and \*= into (aiscm operator), refactor
-* insert-intermediate -> let-var macro
 * code -> mov
 * cache fill method
 * check against NumPy for completeness
