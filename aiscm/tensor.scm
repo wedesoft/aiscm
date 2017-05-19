@@ -16,7 +16,8 @@
   #:use-module (aiscm operation)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx
-            += *= max= min=)
+            ; += *= max= min=
+            )
   #:re-export (jit get wrap multi-loop)
   #:export-syntax (tensor tensor-body sum prod largest smallest))
 
@@ -25,12 +26,12 @@
 
 (define-syntax-rule (define-tensor-operation name op fun)
   (begin
-    (define-method (op (a <element>) (b <element>))
-      (list (fun (operand a) (operand b))))
-    (define-method (op (a <param>) (b <param>))
-      (op (delegate a) (delegate b)))
-    (define-method (op (a <param>) (b <function>))
-      (let-skeleton [(tmp (type b) b)] (op (delegate a) tmp)))
+    ;(define-method (op (a <element>) (b <element>))
+    ;  (list (fun (operand a) (operand b))))
+    ;(define-method (op (a <param>) (b <param>))
+    ;  (op (delegate a) (delegate b)))
+    ;(define-method (op (a <param>) (b <function>))
+    ;  (let-skeleton [(tmp (type b) b)] (op (delegate a) tmp)))
     (define-syntax-rule (name index delegate)
       (inject op index delegate))))
 
@@ -42,10 +43,10 @@
 (define minor= (cmovxx CMOVNLE CMOVNBE JL   JB  ))
 (define major= (cmovxx CMOVL   CMOVB   JNLE JNBE))
 
-(define-tensor-operation sum      +=   ADD )
-(define-tensor-operation prod     *=   IMUL)
-(define-tensor-operation largest  max= major=)
-(define-tensor-operation smallest min= minor=)
+(define-tensor-operation sum      +=      ADD   )
+;(define-tensor-operation prod     *=      IMUL  )
+;(define-tensor-operation largest  max=    major=)
+;(define-tensor-operation smallest min=    minor=)
 
 (define-method (multi-loop (self <injecter>) . idx)
   (let [(t (apply multi-loop (delegate self) idx))]

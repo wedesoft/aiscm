@@ -34,6 +34,8 @@
 (define ctx (make <context>))
 
 (test-begin "aiscm operation")
+
+;(test-skip 43)
 (test-eqv "put native constant into compiled code"
   42 ((jit ctx '() (lambda () (native-const <int> 42)))))
 
@@ -228,8 +230,16 @@
   (test-equal "compile and run operation involving 1D and 2D array"
     '((0 1 3) (0 2 4))
     (to-list ((jit ctx (list (sequence <byte>) (multiarray <ubyte> 2)) +) (seq -2 -3) (arr (2 3 5) (3 5 7)))))
+  (let [(a (parameter <int>))
+        (b (parameter <int>))
+        (p (parameter (pointer <int>)))]
+    (test-equal "generate code to increment add a number"
+      (ADD (value a) (value b)) (+= a b))
+    (test-equal "generate code to increment add a number stored in memory"
+      (ADD (value a) (ptr <int> (value p))) (+= a p)))
 (test-end "binary +")
 
+;(test-skip 20)
 (test-begin "binary -")
   (test-equal "subtract byte fro integer sequence"
     '(0 1 2) (to-list ((jit ctx (list (sequence <int>) <byte>) -) (seq <int> 1 2 3) 1)))

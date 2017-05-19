@@ -31,9 +31,11 @@
   #:use-module (aiscm method)
   #:use-module (aiscm util)
   #:export (make-constant-function native-const need-conversion? code
-            code-needs-intermediate? operand code force-parameters mutating-code functional-code unary-extract)
+            code-needs-intermediate? operand code force-parameters
+            +=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
-  #:export-syntax (define-operator-mapping let-skeleton let-parameter))
+  #:export-syntax (define-operator-mapping let-skeleton let-parameter
+                   mutating-code functional-code unary-extract))
 
 (define* ((native-data native) out args)
   (list (MOV (get (delegate out)) (get native))))
@@ -111,22 +113,32 @@
 
 (define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
 
+(define-method (+= (a <param>) (b <param>))
+  (ADD (operand a) (operand b)))
+
+; Adapter for nested expressions
 (define (operation-code target op out args)
-  "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
-(define ((mutating-code op) out args)
-  "Adapter for machine code overwriting its first argument"
-  (append (code out (car args))
-          (operation-code (type out) op out (cdr args))))
-(define ((functional-code op) out args)
-  "Adapter for machine code without side effects on its arguments"
-  (operation-code (reduce coerce #f (map type args)) op out args))
-(define ((unary-extract op) out args)
-  "Adapter for machine code to extract part of a composite value"
-  (code (delegate out) (apply op (map delegate args))))
-
+; Adapter for machine code overwriting its first argument
+(define-syntax-rule (mutating-code op)
+  (lambda (out args)
+    (append (code out (car args))
+            (operation-code (type out) op out (cdr args)))))
+; Adapter for machine code overwriting its first argument
+(define-syntax-rule (mutating-code2 name op)
+  (begin
+    (define (name a b) (operation-code (type a) op a (list b)))
+    (lambda (out args) (append (code out (car args)) (apply name out (cdr args))))))
+; Adapter for machine code without side effects on its arguments
+(define-syntax-rule (functional-code op)
+  (lambda (out args)
+    (operation-code (reduce coerce #f (map type args)) op out args)))
+; Adapter for machine code to extract part of a composite value
+(define-syntax-rule (unary-extract op)
+  (lambda (out args)
+    (code (delegate out) (apply op (map delegate args)))))
 
 (define-macro (define-operator-mapping name arity type fun)
   (let [(header (typed-header (symbol-list arity) type))]
@@ -143,7 +155,7 @@
 (define-operator-mapping =0  1 <meta<int<>>> (functional-code test-zero        ))
 (define-operator-mapping !=0 1 <meta<int<>>> (functional-code test-non-zero    ))
 (define-operator-mapping !   1 <meta<bool>>  (functional-code test-zero        ))
-(define-operator-mapping +   2 <meta<int<>>> (mutating-code   ADD              ))
+(define-operator-mapping +   2 <meta<int<>>> (mutating-code2 += ADD            ))
 (define-operator-mapping -   2 <meta<int<>>> (mutating-code   SUB              ))
 (define-operator-mapping *   2 <meta<int<>>> (mutating-code   IMUL             ))
 (define-operator-mapping /   2 <meta<int<>>> (functional-code div              ))
