@@ -35,7 +35,6 @@
 
 (test-begin "aiscm operation")
 
-;(test-skip 43)
 (test-eqv "put native constant into compiled code"
   42 ((jit ctx '() (lambda () (native-const <int> 42)))))
 
@@ -45,9 +44,6 @@
   (test-eqv "determine size of sequence (compiled)"
     6 ((jit ctx (list (sequence <sint>)) size-of) (seq <sint> 2 3 5)))
 (test-end "size-of in compiled code")
-
-(test-equal "Create function object using mutating machine instruction"
-  -42 ((jit ctx (list <int>) (lambda (x) (make-function 'name identity (mutating-code NEG) (list x)))) 42))
 
 (test-begin "value needs conversion")
   (let* [(a (parameter <sint>))
@@ -234,19 +230,28 @@
         (b (parameter <int>))
         (p (parameter (pointer <int>)))]
     (test-equal "generate code to increment add a number"
-      (ADD (value a) (value b)) (+= a b))
+      (list (ADD (value a) (value b))) (+= a b))
     (test-equal "generate code to increment add a number stored in memory"
-      (ADD (value a) (ptr <int> (value p))) (+= a p)))
+      (list (ADD (value a) (ptr <int> (value p)))) (+= a p)))
 (test-end "binary +")
 
-;(test-skip 20)
 (test-begin "binary -")
   (test-equal "subtract byte fro integer sequence"
     '(0 1 2) (to-list ((jit ctx (list (sequence <int>) <byte>) -) (seq <int> 1 2 3) 1)))
+  (let [(a (parameter <int>))
+        (b (parameter <int>))]
+    (test-equal "generate code to subtract a number"
+      (list (SUB (value a) (value b))) (-= a b)))
 (test-end "binary -")
 
-(test-equal "binary *"
-  '(2 4 6) (to-list ((jit ctx (list (sequence <int>) <int>) *) (seq <int> 1 2 3) 2)))
+(test-begin "binary *")
+  (test-equal "element-wise multiply an array of integers with two"
+    '(2 4 6) (to-list ((jit ctx (list (sequence <int>) <int>) *) (seq <int> 1 2 3) 2)))
+  (let [(a (parameter <int>))
+        (b (parameter <int>))]
+    (test-equal "generate code to multiply a number"
+      (list (IMUL (value a) (value b))) (*= a b)))
+(test-end "binary *")
 
 (test-begin "binary min")
   (test-equal "get minor number of two integers (first case)"

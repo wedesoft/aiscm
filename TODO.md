@@ -1,5 +1,7 @@
 ## Ready
 
+* minor and major as mutating ops
+* tensor operations for min, max, and, or, xor
 * put +, -, += and \*= into (aiscm operator), refactor
 * sort test suites by time descending
 * code -> mov

@@ -44,7 +44,7 @@
 (define major= (cmovxx CMOVL   CMOVB   JNLE JNBE))
 
 (define-tensor-operation sum      +=      ADD   )
-;(define-tensor-operation prod     *=      IMUL  )
+(define-tensor-operation prod     *=      IMUL  )
 ;(define-tensor-operation largest  max=    major=)
 ;(define-tensor-operation smallest min=    minor=)
 
