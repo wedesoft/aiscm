@@ -3,14 +3,13 @@
 * minor and major as mutating ops
 * tensor operations for min, max, and, or, xor
 * put +, -, += and \*= into (aiscm operator), refactor
-* sort test suites by time descending
 * code -> mov
 * cache fill method
+* GNOME video widget and player
 * check against NumPy for completeness
 * (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
-* module for + and +=, ...
 * rbg and complex tensors
 * sum with multiple indices or no indices
 * how to run test suite
@@ -50,7 +49,6 @@
 * select video codec, select audio codec
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
-* GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
