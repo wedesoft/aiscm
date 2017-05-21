@@ -1,8 +1,6 @@
 ## Ready
 
-* minor and major as mutating ops
-* tensor operations for min, max, and, or, xor
-* put +, -, += and \*= into (aiscm operator), refactor
+* tensor incremental with RGB and complex
 * code -> mov
 * cache fill method
 * GNOME video widget and player

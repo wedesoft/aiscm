@@ -264,7 +264,6 @@
       30 (tensor (prod k (get (seq 2 3 5) k))))
     (test-eqv "Sum of non-trivial tensor expression"
       13 (tensor (sum i (+ (get (seq 2 3 5) i) 1))))
-    (test-skip 2)
     (test-eqv "Smallest element of three"
       2 (tensor (smallest i (get (seq 5 2 3) i))))
     (test-eqv "Largest element of three"

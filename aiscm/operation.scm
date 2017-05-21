@@ -33,7 +33,7 @@
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
             mutating-code functional-code unary-extract
-            -= += ~= *= <<= >>= &= |= &&= ||=)
+            -= += ~= *= <<= >>= &= |= &&= ||= min= max=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
@@ -113,18 +113,20 @@
 
 (define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
 
-(define-method (-=  (a <param>)) (operation-code (type a) NEG a '()))
-(define-method (~=  (a <param>)) (operation-code (type a) NOT a '()))
-(define-method (+=  (a <param>) (b <param>)) (operation-code (type a) ADD      a (list b)))
-(define-method (-=  (a <param>) (b <param>)) (operation-code (type a) SUB      a (list b)))
-(define-method (*=  (a <param>) (b <param>)) (operation-code (type a) IMUL     a (list b)))
-(define-method (<<= (a <param>) (b <param>)) (operation-code (type a) shl      a (list b)))
-(define-method (>>= (a <param>) (b <param>)) (operation-code (type a) shr      a (list b)))
-(define-method (&=  (a <param>) (b <param>)) (operation-code (type a) AND      a (list b)))
-(define-method (|=  (a <param>) (b <param>)) (operation-code (type a) OR       a (list b)))
-(define-method (^=  (a <param>) (b <param>)) (operation-code (type a) XOR      a (list b)))
-(define-method (&&= (a <param>) (b <param>)) (operation-code (type a) bool-and a (list b)))
-(define-method (||= (a <param>) (b <param>)) (operation-code (type a) bool-or  a (list b)))
+(define-method (-=   (a <param>)) (operation-code (type a) NEG a '()))
+(define-method (~=   (a <param>)) (operation-code (type a) NOT a '()))
+(define-method (+=   (a <param>) (b <param>)) (operation-code (type a) ADD      a (list b)))
+(define-method (-=   (a <param>) (b <param>)) (operation-code (type a) SUB      a (list b)))
+(define-method (*=   (a <param>) (b <param>)) (operation-code (type a) IMUL     a (list b)))
+(define-method (<<=  (a <param>) (b <param>)) (operation-code (type a) shl      a (list b)))
+(define-method (>>=  (a <param>) (b <param>)) (operation-code (type a) shr      a (list b)))
+(define-method (&=   (a <param>) (b <param>)) (operation-code (type a) AND      a (list b)))
+(define-method (|=   (a <param>) (b <param>)) (operation-code (type a) OR       a (list b)))
+(define-method (^=   (a <param>) (b <param>)) (operation-code (type a) XOR      a (list b)))
+(define-method (&&=  (a <param>) (b <param>)) (operation-code (type a) bool-and a (list b)))
+(define-method (||=  (a <param>) (b <param>)) (operation-code (type a) bool-or  a (list b)))
+(define-method (min= (a <param>) (b <param>)) (operation-code (type a) minor    a (list b)))
+(define-method (max= (a <param>) (b <param>)) (operation-code (type a) major    a (list b)))
 
 ; Adapter for nested expressions
 (define (operation-code target op out args)
@@ -174,5 +176,5 @@
 (define-operator-mapping <=  2 <meta<int<>>> (functional-code cmp-lower-equal  ))
 (define-operator-mapping >   2 <meta<int<>>> (functional-code cmp-greater-than ))
 (define-operator-mapping >=  2 <meta<int<>>> (functional-code cmp-greater-equal))
-(define-operator-mapping min 2 <meta<int<>>> (functional-code minor            ))
-(define-operator-mapping max 2 <meta<int<>>> (functional-code major            ))
+(define-operator-mapping min 2 <meta<int<>>> (mutating-code min=               ))
+(define-operator-mapping max 2 <meta<int<>>> (mutating-code max=               ))

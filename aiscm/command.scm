@@ -193,10 +193,10 @@
 (define cmp-greater-than  (cmp-setxx SETNLE SETNBE))
 (define cmp-greater-equal (cmp-setxx SETNL  SETNB ))
 
-(define ((cmp-cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) r a b)
-  (if (eqv? 1 (size-of r))
-    (append (mov r a) (cmp r b) (list ((if (signed? r) jmp-signed jmp-unsigned) 'skip)) (mov r b) (list 'skip))
-    (append (mov r a) (cmp r b) (list ((if (signed? r) set-signed set-unsigned) r b)))))
+(define ((cmp-cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) a b)
+  (if (eqv? 1 (size-of a))
+    (append (cmp a b) (list ((if (signed? a) jmp-signed jmp-unsigned) 'skip)) (mov a b) (list 'skip))
+    (append (cmp a b) (list ((if (signed? a) set-signed set-unsigned) a b)))))
 (define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
 (define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
 
