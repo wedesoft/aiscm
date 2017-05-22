@@ -2,17 +2,46 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (aiscm asm)
+  #:use-module (aiscm variable)
+  #:use-module (aiscm command)
+  #:use-module (aiscm expression)
+  #:use-module (aiscm loop)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm pointer)
   #:use-module (aiscm util)
   #:use-module (aiscm jit)
+  #:use-module (aiscm operation)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
-  #:re-export (jit get wrap dim)
-  #:export-syntax (tensor tensor-body))
+  #:re-export (jit get wrap multi-loop)
+  #:export-syntax (tensor tensor-body sum prod largest smallest))
 
 
 (define tensor-ctx (make <context>))
+
+(define-syntax-rule (define-tensor-operation name op)
+  (define-syntax-rule (name index delegate) (inject op index delegate)))
+
+(define ((cmovxx set-signed set-unsigned jmp-signed jmp-unsigned) a b)
+  (if (eqv? 1 (size-of a))
+    (append (cmp a b) (list ((if (signed? a) jmp-signed jmp-unsigned) 'skip)) (mov a b) (list 'skip))
+    (append (cmp a b) (list ((if (signed? a) set-signed set-unsigned) a b)))))
+
+(define minor= (cmovxx CMOVNLE CMOVNBE JL   JB  ))
+(define major= (cmovxx CMOVL   CMOVB   JNLE JNBE))
+
+(define-tensor-operation sum      +=  )
+(define-tensor-operation prod     *=  )
+(define-tensor-operation largest  max=)
+(define-tensor-operation smallest min=)
+
+(define-method (multi-loop (self <injecter>) . idx)
+  (let [(t (apply multi-loop (delegate self) idx))]
+    (make <multi-loop> #:loop-details (loop-details t)
+                       #:body (injecter (name self) (index self) (body t)))))
 
 (define (tensor-operations expr)
   "Check whether expression is a tensor operation"
@@ -20,11 +49,16 @@
     (map (lambda (idx) (and (memv idx indices) #t)) (iota (length expr))))
   (and (list? expr)
        (if (memv (car expr) operations)
-         (argument-mask expr 0)
-         (case (car expr)
-           ((get) (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
-           ((dim) (apply argument-mask expr (iota (- (length expr) 1)  )))
-           (else #f)))))
+           (argument-mask expr 0)
+           (case (car expr)
+             ((get)       (apply argument-mask expr 0 (iota (- (length expr) 2) 2)))
+             ((dim)       (apply argument-mask expr (iota (- (length expr) 1))))
+             ((inject)    (argument-mask expr 0 1 2))
+             ((sum)       (argument-mask expr 0 1))
+             ((prod)      (argument-mask expr 0 1))
+             ((largest)   (argument-mask expr 0 1))
+             ((smallest)  (argument-mask expr 0 1))
+             (else #f)))))
 
 (define (expression->identifier expr)
   "Extract structure of tensor and convert to identifier"

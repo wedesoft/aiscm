@@ -17,6 +17,7 @@
 (define-module (aiscm mem)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 format)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm element)

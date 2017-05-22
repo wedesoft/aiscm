@@ -5,6 +5,6 @@
 (show
   (lambda (dsp)
     (while (< (audio-pts video) (+ (video-pts video) 0.2)) (write-audio (or (read-audio video (/ (rate video) 10)) (break)) pulse))
-    (format #t "video pts = ~8,2f, audio-pts = ~8,2f, latency = ~8,2f~&" (video-pts video) (audio-pts video) (latency pulse))
+    (format #t "video pts = ~8,2f, audio-pts = ~8,2f, latency = ~8,2f~%" (video-pts video) (audio-pts video) (latency pulse))
     (synchronise (read-image video) (- (video-pts video) (- (audio-pts video) (latency pulse))) (event-loop dsp))))
 (drain pulse)

@@ -685,6 +685,8 @@
               (JMP 'a)
               'c
               (RET)))))
+(test-eq "'retarget' should update target of jump statement"
+  'new (get-target (retarget (JMP 'old) 'new)))
 (test-equal "CMP EAX 42"
   '(#x3d #x2a #x00 #x00 #x00) (CMP EAX 42))
 (test-equal "CMP RAX 42"

@@ -24,7 +24,6 @@
   #:use-module (aiscm int)
   #:use-module (aiscm sequence)
   #:use-module (aiscm jit)
-  #:use-module (aiscm op)
   #:re-export (<pointer<element>> <meta<pointer<element>>>
                <pointer<rgb<>>> <meta<pointer<rgb>>>>
                read-image write-image))
