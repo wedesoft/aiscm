@@ -26,6 +26,8 @@
             <float<>> <meta<float<>>>
             <float>  <float<single>> <meta<float<single>>>
             <double> <float<double>> <meta<float<double>>>))
+
+
 (define single-precision 'single)
 (define double-precision 'double)
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
@@ -57,7 +59,13 @@
     (make self #:value value)))
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
   (floating-point (if (or (double? a) (double? b)) double-precision single-precision)))
+
 (define-method (native-type (i <real>) . args)
   (if (every real? args)
       <double>
+      (apply native-type (sort-by-pred (cons i args) real?))))
+
+(define-method (native-type (i <real>) . args); TODO: remove this when floating point support is ready
+  (if (every real? args)
+      <obj>
       (apply native-type (sort-by-pred (cons i args) real?))))

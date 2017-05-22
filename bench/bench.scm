@@ -21,7 +21,7 @@
              (user    (- (tms:utime t1) (tms:utime t0)))
              (system  (- (tms:stime t1) (tms:stime t0)))
              (clock   (- (tms:clock t1) (tms:clock t0)))]
-        (format #t "~32a ~10,6f ~10,6f ~10,6f (~10,6f)~&" description
+        (format #t "~32a ~10,6f ~10,6f ~10,6f (~10,6f)~%" description
           (/ (* 1.0e-9 user) n)
           (/ (* 1.0e-9 system) n)
           (/ (* 1.0e-9 (+ user system)) n)
@@ -37,7 +37,7 @@
 (define-method (neg (self <c>)) self)
 (define c (make <c>))
 
-(format #t "~32t ~10@a ~10@a ~10@a  ~10@a~&" "user" "system" "total" "real")
+(format #t "~32t ~10@a ~10@a ~10@a  ~10@a~%" "user" "system" "total" "real")
 
 (run "Guile GOOPS method dispatch" n (neg c))
 (run "Guile make empty sequence" n (make <sequence<int>> #:size 0))
