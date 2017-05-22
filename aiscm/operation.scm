@@ -113,32 +113,47 @@
 
 (define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
 
-(define-method (-=   (a <param>)) (operation-code (type a) NEG a '()))
-(define-method (~=   (a <param>)) (operation-code (type a) NOT a '()))
-(define-method (+=   (a <param>) (b <param>)) (operation-code (type a) ADD      a (list b)))
-(define-method (-=   (a <param>) (b <param>)) (operation-code (type a) SUB      a (list b)))
-(define-method (*=   (a <param>) (b <param>)) (operation-code (type a) IMUL     a (list b)))
-(define-method (<<=  (a <param>) (b <param>)) (operation-code (type a) shl      a (list b)))
-(define-method (>>=  (a <param>) (b <param>)) (operation-code (type a) shr      a (list b)))
-(define-method (&=   (a <param>) (b <param>)) (operation-code (type a) AND      a (list b)))
-(define-method (|=   (a <param>) (b <param>)) (operation-code (type a) OR       a (list b)))
-(define-method (^=   (a <param>) (b <param>)) (operation-code (type a) XOR      a (list b)))
-(define-method (&&=  (a <param>) (b <param>)) (operation-code (type a) bool-and a (list b)))
-(define-method (||=  (a <param>) (b <param>)) (operation-code (type a) bool-or  a (list b)))
-(define-method (min= (a <param>) (b <param>)) (operation-code (type a) minor    a (list b)))
-(define-method (max= (a <param>) (b <param>)) (operation-code (type a) major    a (list b)))
-
-; Adapter for nested expressions
 (define (operation-code target op out args)
+  "Adapter for nested expressions"
   (force-parameters target args code-needs-intermediate?
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
-; Adapter for machine code overwriting its first argument
-(define ((mutating-code name) out args) (append (code out (car args)) (apply name out (cdr args))))
-; Adapter for machine code without side effects on its arguments
-(define ((functional-code op) out args) (operation-code (reduce coerce #f (map type args)) op out args))
-; Adapter for machine code to extract part of a composite value
-(define ((unary-extract op) out args) (code (delegate out) (apply op (map delegate args))))
+
+(define ((cumulative-code op) out args)
+  "Adapter for cumulative operations"
+  (operation-code (type out) op out args))
+
+(define ((mutating-code name) out args)
+  "Adapter for machine code overwriting its first argument"
+  (append (code out (car args)) (apply name out (cdr args))))
+
+(define ((functional-code op) out args)
+  "Adapter for machine code without side effects on its arguments"
+  (operation-code (reduce coerce #f (map type args)) op out args))
+
+(define ((unary-extract op) out args)
+  "Adapter for machine code to extract part of a composite value"
+  (code (delegate out) (apply op (map delegate args))))
+
+(define-macro (define-cumulative-operation name arity op)
+  (let* [(args   (symbol-list arity))
+         (header (typed-header args '<param>))]
+    `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@(cdr args))))))
+
+(define-cumulative-operation -=   1 NEG     )
+(define-cumulative-operation ~=   1 NOT     )
+(define-cumulative-operation +=   2 ADD     )
+(define-cumulative-operation -=   2 SUB     )
+(define-cumulative-operation *=   2 IMUL    )
+(define-cumulative-operation <<=  2 shl     )
+(define-cumulative-operation >>=  2 shr     )
+(define-cumulative-operation &=   2 AND     )
+(define-cumulative-operation |=   2 OR      )
+(define-cumulative-operation ^=   2 XOR     )
+(define-cumulative-operation &&=  2 bool-and)
+(define-cumulative-operation ||=  2 bool-or )
+(define-cumulative-operation min= 2 minor   )
+(define-cumulative-operation max= 2 major   )
 
 (define-macro (define-operator-mapping name arity type fun)
   (let [(header (typed-header (symbol-list arity) type))]

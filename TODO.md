@@ -1,5 +1,6 @@
 ## Ready
 
+* operation-code list of args -> args
 * tensor incremental (+=, ...) with RGB and complex
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * n-dimensional tensor sums, standalone sum expression
