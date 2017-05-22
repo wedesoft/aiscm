@@ -15,11 +15,13 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (oop goops)
              (aiscm magick)
              (aiscm element)
              (aiscm pointer)
              (aiscm sequence)
              (aiscm jit)
+             (aiscm int)
              (aiscm rgb))
 
 
