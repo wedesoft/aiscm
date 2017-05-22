@@ -33,3 +33,6 @@
 (tensor (largest i (get (arr (2 3 5) (8 6 4)) i)))
 ;#<sequence<int<8,unsigned>>>:
 ;(8 6 5)
+(tensor (smallest i (get (arr (2 3 5) (8 6 4)) i)))
+;#<sequence<int<8,unsigned>>>:
+;(2 3 4)

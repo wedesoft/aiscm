@@ -134,14 +134,11 @@
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
 ; Adapter for machine code overwriting its first argument
-(define-syntax-rule (mutating-code name)
-  (lambda (out args) (append (code out (car args)) (apply name out (cdr args)))))
+(define ((mutating-code name) out args) (append (code out (car args)) (apply name out (cdr args))))
 ; Adapter for machine code without side effects on its arguments
-(define-syntax-rule (functional-code op)
-  (lambda (out args) (operation-code (reduce coerce #f (map type args)) op out args)))
+(define ((functional-code op) out args) (operation-code (reduce coerce #f (map type args)) op out args))
 ; Adapter for machine code to extract part of a composite value
-(define-syntax-rule (unary-extract op)
-  (lambda (out args) (code (delegate out) (apply op (map delegate args)))))
+(define ((unary-extract op) out args) (code (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name arity type fun)
   (let [(header (typed-header (symbol-list arity) type))]
