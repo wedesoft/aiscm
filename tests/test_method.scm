@@ -78,7 +78,5 @@
   <int> (return-type (native-value <int> 42)))
 (test-eqv "check value of native value"
   42 (get (native-value <int> 42)))
-(test-eqv "put native constant into compiled code"
-  42 ((jit ctx '() (lambda () (native-const <int> 42)))))
 
 (test-end "aiscm method")

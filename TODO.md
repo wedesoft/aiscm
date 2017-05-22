@@ -1,7 +1,27 @@
 ## Ready
 
-* tensor inject: (tensor (sum k (get (seq 2 3 5) k)))
-* multiple use of one indexer (get s i i) -> merge lookups
+* operation-code list of args -> args
+* tensor incremental (+=, ...) with RGB and complex
+* to-type in tensor expresssions, implicit typecasting in tensor sum?
+* n-dimensional tensor sums, standalone sum expression
+* code -> mov
+* cache fill method
+* GNOME video widget and player
+* check against NumPy for completeness
+* (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
+* move more tests for jit-compile into jit compiler test suite
+* put compiler stuff into separate module
+* rbg and complex tensors
+* sum with multiple indices or no indices
+* how to run test suite
+* correlation: \*, +=, dilation: first/conditional, max, ...
+* array compatibility check
+* "let" for tensors
+* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
+* remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
+* documentation for objects and arrays of objects
+* cast to higher integer type when doing a tensor injection
+* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * (tensor i (roll (get m i)))
 * (tensor i (project (get m i)))
 * parameter passing for sequences, map, tensor operations, replace fill and other?
@@ -10,8 +30,9 @@
     (tensor [i] ((roll (+ m s) i))
     (tensor [i] (get m i 1))
     (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
-* tidy up structure of jit and tests
 * equality of arrays
+* inject: equality, sum, mininum, maximum of frames
+* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
@@ -28,10 +49,7 @@
 * fix dts error for mp4 output (Ubuntu Trusty)
 * select video codec, select audio codec
 * video player with aspect ratio
-* use -module -shared -avoid-version
 * integration tests for XVideo, OpenGL, and XImage
-* fast live analysis
-* GNOME video widget
 * uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
@@ -85,7 +103,6 @@
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* inject: equality, sum, mininum, maximum of frames
 * shape of xorg window
 * xorg window set size, fullscreen windows
 * use hash tables

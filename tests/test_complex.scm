@@ -26,7 +26,10 @@
              (aiscm pointer)
              (aiscm sequence)
              (aiscm asm)
-             (aiscm jit))
+             (aiscm variable)
+             (aiscm command)
+             (aiscm jit)
+             (aiscm expression))
 
 
 (test-begin "aiscm complex")

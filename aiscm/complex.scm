@@ -24,6 +24,10 @@
   #:use-module (aiscm pointer)
   #:use-module (aiscm sequence)
   #:use-module (aiscm asm)
+  #:use-module (aiscm variable)
+  #:use-module (aiscm command)
+  #:use-module (aiscm expression)
+  #:use-module (aiscm operation)
   #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<internalcomplex>

@@ -5,7 +5,7 @@
 (define count 0)
 (show
   (lambda _
-    (format #t "actual frame rate = ~a frames/second~&" (/ count (elapsed timer)))
+    (format #t "actual frame rate = ~a frames/second~%" (/ count (elapsed timer)))
     (set! count (1+ count))
     (write-image (read-image input) output)))
 (destroy output)

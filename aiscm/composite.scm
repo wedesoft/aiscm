@@ -27,6 +27,11 @@
 (define-method (pointerless? (self <meta<composite>>)) (pointerless? (base self)))
 (define-generic components)
 (define-method (component (type <meta<composite>>) self offset)
+  "Get component of a composite value"
   (let* [(type (base (typecode self)))]
     (set-pointer-offset (pointer-cast type self) (* offset (size-of type)))))
-(define (deconstruct type self) (map (cut <> self) (components type)))
+
+(define-generic components)
+(define (deconstruct type self)
+  "Split up value into its components"
+  (map (cut <> self) (components type)))

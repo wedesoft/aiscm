@@ -30,7 +30,7 @@
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
             first-index last-index compact
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
-            clock elapsed object-slots scm->address address->scm)
+            clock elapsed object-slots scm->address address->scm list-with)
   #:export-syntax (define-class* template-class synchronise))
 
 
@@ -214,5 +214,9 @@
     (method (max 0 time-remaining))
     result))
 (define (object-slots obj) (map (compose (cut slot-ref obj <>) slot-definition-name) (class-slots (class-of obj))))
+
 (define (scm->address scm) (pointer-address (scm->pointer scm)))
 (define (address->scm address) (pointer->scm (make-pointer address)))
+
+(define (list-with lst idx val)
+  (if (null? lst) lst (cons (if (zero? idx) val (car lst)) (list-with (cdr lst) (1- idx) val))))
