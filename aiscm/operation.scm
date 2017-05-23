@@ -121,7 +121,7 @@
 
 (define ((cumulative-code op) out args)
   "Adapter for cumulative operations"
-  (operation-code (type out) op out args))
+  (operation-code (type out) op (car args) (cdr args)))
 
 (define ((mutating-code name) out args)
   "Adapter for machine code overwriting its first argument"
@@ -138,11 +138,13 @@
 (define-macro (define-cumulative-operation name arity op)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@(cdr args))))))
+    `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@args)))))
+
+(define-method (+= (a <meta<int<>>>) (b <meta<int<>>>)) (cumulative-code ADD))
 
 (define-cumulative-operation -=   1 NEG     )
 (define-cumulative-operation ~=   1 NOT     )
-(define-cumulative-operation +=   2 ADD     )
+;(define-cumulative-operation +=   2 ADD     )
 (define-cumulative-operation -=   2 SUB     )
 (define-cumulative-operation *=   2 IMUL    )
 (define-cumulative-operation <<=  2 shl     )

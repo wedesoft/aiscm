@@ -109,6 +109,9 @@
 (unary-rgb-op -)
 (unary-rgb-op ~)
 
+(define-method (+= (a <rgb>) (b <rgb>))
+  (append-map += (list (red a) (green a) (blue a)) (list (red b) (green b) (blue b))))
+
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <rgb>)  b       ) (apply rgb (map (cut op <> b) (content <rgb<>> a)                    )))

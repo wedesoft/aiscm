@@ -263,7 +263,6 @@
 (test-equal "extract red component of object RGB sequence"
   '(2) (to-list (red (seq (rgb <obj>) (rgb 2 3 5)))))
 
-(test-skip 1)
 (test-equal "Tensor sum of RGB values"
   (rgb 3 5 7) (tensor (sum i (get (seq (rgb 1 2 3) (rgb 2 3 4)) i))))
 (test-end "aiscm rgb")

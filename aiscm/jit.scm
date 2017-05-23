@@ -65,6 +65,8 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
+(define-method (+= (a <param>) (b <param>)) ((delegate-fun +=) a (list a b)))
+
 (define-operator-mapping -   1 <meta<element>> (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
 (define-operator-mapping ~   1 <meta<element>> (native-fun scm-lognot    ))
@@ -100,7 +102,9 @@
   ((apply name (map type args)) out args))
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-    (append-map code (content (type out) out) (content (type result) result))))
+    (if (is-a? result <list>); TODO: fix this hack
+      result
+      (append-map code (content (type out) out) (content (type result) result)))))
 (define ((delegate-fun name) out args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
