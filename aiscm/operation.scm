@@ -32,7 +32,7 @@
   #:use-module (aiscm util)
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
-            mutating-code functional-code unary-extract
+            operation-code mutating-code functional-code unary-extract
             -= += ~= *= <<= >>= &= |= &&= ||= min= max=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))

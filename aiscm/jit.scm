@@ -101,8 +101,8 @@
 (define-method (delegate-op target intermediate name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (append-map code (content (type out) out) (content (type result) result))))
-(define (delegate-fun name)
-  (lambda (out args) (delegate-op (type out) (reduce coerce #f (map type args)) name out args)))
+(define ((delegate-fun name) out args)
+  (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
