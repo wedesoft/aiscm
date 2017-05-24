@@ -33,7 +33,7 @@
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
-            -= += ~= *= <<= >>= &= |= &&= ||= min= max=)
+            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
@@ -140,27 +140,24 @@
          (header (typed-header args '<param>))]
     `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@args)))))
 
-(define-method (+= (a <meta<int<>>>) (b <meta<int<>>>)) (cumulative-code ADD))
-(define-method (*= (a <meta<int<>>>) (b <meta<int<>>>)) (cumulative-code IMUL))
-
-(define-cumulative-operation -=   1 NEG     )
-(define-cumulative-operation ~=   1 NOT     )
-;(define-cumulative-operation +=   2 ADD     )
-(define-cumulative-operation -=   2 SUB     )
-;(define-cumulative-operation *=   2 IMUL    )
-(define-cumulative-operation <<=  2 shl     )
-(define-cumulative-operation >>=  2 shr     )
-(define-cumulative-operation &=   2 AND     )
-(define-cumulative-operation |=   2 OR      )
-(define-cumulative-operation ^=   2 XOR     )
-(define-cumulative-operation &&=  2 bool-and)
-(define-cumulative-operation ||=  2 bool-or )
-(define-cumulative-operation min= 2 minor   )
-(define-cumulative-operation max= 2 major   )
-
 (define-macro (define-operator-mapping name arity type fun)
   (let [(header (typed-header (symbol-list arity) type))]
     `(define-method (,name ,@header) ,fun)))
+
+(define-operator-mapping -=   1 <meta<int<>>> (cumulative-code NEG     ))
+(define-operator-mapping ~=   1 <meta<int<>>> (cumulative-code NOT     ))
+(define-operator-mapping +=   2 <meta<int<>>> (cumulative-code ADD     ))
+(define-operator-mapping -=   2 <meta<int<>>> (cumulative-code SUB     ))
+(define-operator-mapping *=   2 <meta<int<>>> (cumulative-code IMUL    ))
+(define-operator-mapping <<=  2 <meta<int<>>> (cumulative-code shl     ))
+(define-operator-mapping >>=  2 <meta<int<>>> (cumulative-code shr     ))
+(define-operator-mapping &=   2 <meta<int<>>> (cumulative-code AND     ))
+(define-operator-mapping |=   2 <meta<int<>>> (cumulative-code OR      ))
+(define-operator-mapping ^=   2 <meta<int<>>> (cumulative-code XOR     ))
+(define-operator-mapping &&=  2 <meta<bool>>  (cumulative-code bool-and))
+(define-operator-mapping ||=  2 <meta<bool>>  (cumulative-code bool-or ))
+(define-operator-mapping min= 2 <meta<int<>>> (cumulative-code minor   ))
+(define-operator-mapping max= 2 <meta<int<>>> (cumulative-code major   ))
 
 ; define unary and binary operations
 (define-method (+ (a <param>  )) a)

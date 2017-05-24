@@ -267,4 +267,8 @@
   (rgb 3 5 7) (tensor (sum i (get (seq (rgb 1 2 3) (rgb 2 3 4)) i))))
 (test-equal "Tensor product of RGB values"
   (rgb 6 15 35) (tensor (prod i (get (seq (rgb 3 5 7) (rgb 2 3 5)) i))))
+(test-equal "Largest RGB value"
+  (rgb 7 5 5) (tensor (largest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
+(test-equal "Smallest RGB value"
+  (rgb 2 3 3) (tensor (smallest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
 (test-end "aiscm rgb")

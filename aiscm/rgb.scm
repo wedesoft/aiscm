@@ -45,7 +45,7 @@
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
             rgb red green blue)
-  #:re-export (+ -))
+  #:re-export (+ - += *= max= min=))
 
 (define ctx (make <context>))
 
@@ -109,10 +109,10 @@
 (unary-rgb-op -)
 (unary-rgb-op ~)
 
-(define-method (+= (a <rgb>) (b <rgb>))
-  (append-map += (list (red a) (green a) (blue a)) (list (red b) (green b) (blue b))))
-(define-method (*= (a <rgb>) (b <rgb>))
-  (append-map *= (list (red a) (green a) (blue a)) (list (red b) (green b) (blue b))))
+(define-method (+=   (a <rgb>) (b <rgb>)) (append-map +=   (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (*=   (a <rgb>) (b <rgb>)) (append-map *=   (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (max= (a <rgb>) (b <rgb>)) (append-map max= (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (min= (a <rgb>) (b <rgb>)) (append-map min= (content <rgb<>> a) (content <rgb<>> b)))
 
 (define-syntax-rule (binary-rgb-op op)
   (begin

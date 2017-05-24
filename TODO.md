@@ -1,7 +1,9 @@
 ## Ready
 
+* cumulative tensor operations for complex numbers
+* fix delegate-op hack for cumulative operations
+* simplify RGB and complex cumulative operation definition
 * operation-code list of args -> args
-* tensor incremental (+=, ...) with RGB and complex
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * n-dimensional tensor sums, standalone sum expression
 * code -> mov

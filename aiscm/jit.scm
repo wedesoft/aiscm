@@ -49,7 +49,8 @@
             decompose-arg delegate-fun generate-return-code
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
-  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj)
+  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj
+               -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
@@ -65,8 +66,26 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define-method (+= (a <param>) (b <param>)) ((delegate-fun +=) a (list a b)))
-(define-method (*= (a <param>) (b <param>)) ((delegate-fun *=) a (list a b)))
+
+(define-macro (define-cumulative name arity)
+  (let* [(args   (symbol-list arity))
+         (header (typed-header args '<param>))]
+    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) (list ,@args)))))
+
+(define-cumulative -=   1)
+(define-cumulative ~=   1)
+(define-cumulative +=   2)
+(define-cumulative -=   2)
+(define-cumulative *=   2)
+(define-cumulative <<=  2)
+(define-cumulative >>=  2)
+(define-cumulative &=   2)
+(define-cumulative |=   2)
+(define-cumulative ^=   2)
+(define-cumulative &&=  2)
+(define-cumulative ||=  2)
+(define-cumulative min= 2)
+(define-cumulative max= 2)
 
 (define-operator-mapping -   1 <meta<element>> (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
