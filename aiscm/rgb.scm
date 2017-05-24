@@ -111,6 +111,8 @@
 
 (define-method (+= (a <rgb>) (b <rgb>))
   (append-map += (list (red a) (green a) (blue a)) (list (red b) (green b) (blue b))))
+(define-method (*= (a <rgb>) (b <rgb>))
+  (append-map *= (list (red a) (green a) (blue a)) (list (red b) (green b) (blue b))))
 
 (define-syntax-rule (binary-rgb-op op)
   (begin

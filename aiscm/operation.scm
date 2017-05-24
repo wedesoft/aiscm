@@ -141,12 +141,13 @@
     `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@args)))))
 
 (define-method (+= (a <meta<int<>>>) (b <meta<int<>>>)) (cumulative-code ADD))
+(define-method (*= (a <meta<int<>>>) (b <meta<int<>>>)) (cumulative-code IMUL))
 
 (define-cumulative-operation -=   1 NEG     )
 (define-cumulative-operation ~=   1 NOT     )
 ;(define-cumulative-operation +=   2 ADD     )
 (define-cumulative-operation -=   2 SUB     )
-(define-cumulative-operation *=   2 IMUL    )
+;(define-cumulative-operation *=   2 IMUL    )
 (define-cumulative-operation <<=  2 shl     )
 (define-cumulative-operation >>=  2 shr     )
 (define-cumulative-operation &=   2 AND     )

@@ -265,4 +265,6 @@
 
 (test-equal "Tensor sum of RGB values"
   (rgb 3 5 7) (tensor (sum i (get (seq (rgb 1 2 3) (rgb 2 3 4)) i))))
+(test-equal "Tensor product of RGB values"
+  (rgb 6 15 35) (tensor (prod i (get (seq (rgb 3 5 7) (rgb 2 3 5)) i))))
 (test-end "aiscm rgb")

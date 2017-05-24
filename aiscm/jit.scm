@@ -66,6 +66,7 @@
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
 (define-method (+= (a <param>) (b <param>)) ((delegate-fun +=) a (list a b)))
+(define-method (*= (a <param>) (b <param>)) ((delegate-fun *=) a (list a b)))
 
 (define-operator-mapping -   1 <meta<element>> (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
