@@ -1,9 +1,9 @@
 ## Ready
 
-* complex max, min
 * fix delegate-op hack for cumulative operations
 * simplify RGB and complex cumulative operation definition
 * operation-code list of args -> args
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * n-dimensional tensor sums, standalone sum expression
 * code -> mov
@@ -66,7 +66,6 @@
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
 * index manipulation on function expressions
