@@ -121,7 +121,7 @@
   ((apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-    (if (is-a? result <list>); TODO: fix this hack
+    (if (eq? out (car args))
       result
       (append-map code (content (type out) out) (content (type result) result)))))
 (define ((delegate-fun name) out args)
