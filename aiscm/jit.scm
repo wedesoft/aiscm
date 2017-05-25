@@ -66,7 +66,6 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-
 (define-macro (define-cumulative name arity)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
@@ -120,7 +119,7 @@
   ((apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
   ((apply name (map type args)) out args))
-(define-method (delegate-op target intermediate name out args)
+(define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (if (is-a? result <list>); TODO: fix this hack
       result
