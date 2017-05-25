@@ -45,7 +45,8 @@
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
             rgb red green blue)
-  #:re-export (+ - += *= max= min=))
+  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min=))
+
 
 (define ctx (make <context>))
 

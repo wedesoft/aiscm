@@ -1,6 +1,6 @@
 ## Ready
 
-* cumulative tensor operations for complex numbers
+* complex max, min, max=, min=
 * fix delegate-op hack for cumulative operations
 * simplify RGB and complex cumulative operation definition
 * operation-code list of args -> args
