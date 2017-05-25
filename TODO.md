@@ -1,6 +1,6 @@
 ## Ready
 
-* complex max, min, max=, min=
+* complex max, min
 * fix delegate-op hack for cumulative operations
 * simplify RGB and complex cumulative operation definition
 * operation-code list of args -> args

@@ -154,5 +154,9 @@
     5+8i (tensor (sum i (get (seq 2+3i 3+5i) i))))
   (test-equal "Tensor product of complex values"
     -9+19i (tensor (prod i (get (seq (complex <int>) 2+3i 3+5i) i))))
+  (test-equal "Collect largest real and imaginary values"
+    7+5i (tensor (largest i (get (seq 2+5i 7+3i) i))))
+  (test-equal "Collect smallest real and imaginary values"
+    2+3i (tensor (smallest i (get (seq 2+5i 7+3i) i))))
 (test-end "cumulative tensor operations")
 (test-end "aiscm complex")
