@@ -27,6 +27,9 @@
 
 ((term fun) r)
 
+((+= <int> <int>) a (list a b))
+((+ <int> <int>) r (list a b))
+
 (code (delegate r) (+ a b))
 
 

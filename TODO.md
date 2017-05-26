@@ -1,16 +1,14 @@
 ## Ready
 
-* fix delegate-op hack for cumulative operations
-* simplify RGB and complex cumulative operation definition
-* operation-code list of args -> args
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
+* "get" and "dimension" for injecter
+* (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
+* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * n-dimensional tensor sums, standalone sum expression
 * code -> mov
 * cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
-* (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * move more tests for jit-compile into jit compiler test suite
 * put compiler stuff into separate module
 * rbg and complex tensors
@@ -18,20 +16,14 @@
 * how to run test suite
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * array compatibility check
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
-* (tensor i (roll (get m i)))
-* (tensor i (project (get m i)))
 * parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * equality of arrays
 * inject: equality, sum, mininum, maximum of frames
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
