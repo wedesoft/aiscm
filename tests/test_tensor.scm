@@ -282,9 +282,8 @@
       '() (shape (get f i))))
   (test-equal "indexing of array array sum"
     '(5 8 12) (to-list (tensor i (get (+ (seq 2 3 5) (seq 3 5 7)) i))))
-  (test-skip 1)
   (test-equal "indexing of array scalar sum"
-    '(3 4 6) (to-list (tensor i (get (+ (seq 2 3 5) 1)))))
+    '(3 4 6) (to-list (tensor i (get (+ (seq 2 3 5) 1) i))))
 (test-end "combination of tensor features")
 
 (test-end "aiscm tensor")

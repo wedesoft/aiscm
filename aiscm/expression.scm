@@ -108,9 +108,9 @@
 
 (define dimension-hint (make-object-property))
 
-;(define-method (element (self <param>) idx)
-;  "Broadcast dimensions when evaluating tensor expressions"
-;  self)
+(define-method (element (self <param>) idx)
+  "Broadcast dimensions when evaluating tensor expressions"
+  self)
 (define-method (element (self <indexer>) idx)
   "Index an array in a tensor expression"
   (set! (dimension-hint idx) (dimension self))

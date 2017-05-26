@@ -14,23 +14,14 @@
 
 (test-begin "playground")
 
-
-(define a (parameter <int>))
+(define a (parameter (sequence <int>)))
 (define b (parameter <int>))
-(define r (parameter <int>))
+(define r (parameter (sequence <int>)))
 
-(+= a b)
+(code r (+ a b))
 
-(define out (delegate r))
-(define fun (+ a b))
-(code out fun)
+(code r (dim i (+ (get a i) b)))
 
-((term fun) r)
-
-((+= <int> <int>) a (list a b))
-((+ <int> <int>) r (list a b))
-
-(code (delegate r) (+ a b))
-
+(code r (dim i (get (+ a b) i)))
 
 (test-end "playground")
