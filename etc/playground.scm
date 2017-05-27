@@ -2,6 +2,7 @@
              (srfi srfi-1)
              (ice-9 curried-definitions)
              (aiscm operation)
+             (aiscm variable)
              (aiscm expression)
              (aiscm asm)
              (aiscm element)
@@ -10,18 +11,21 @@
              (aiscm sequence)
              (aiscm rgb)
              (aiscm jit)
+             (aiscm tensor)
              (aiscm util))
 
 (test-begin "playground")
 
-(define a (parameter (sequence <int>)))
-(define b (parameter <int>))
-(define r (parameter (sequence <int>)))
+(tensor i (get (sum j (get (arr (1 1 1) (1 1 1)) j)) i))
 
-(code r (+ a b))
+(define m (parameter (multiarray <int> 2)))
 
-(code r (dim i (+ (get a i) b)))
+;(define e (dim i (get (sum j (get m j)) i)))
 
-(code r (dim i (get (+ a b) i)))
+(define s (sum j (get m j)))
+
+(define i (var <long>))
+
+(define e (get s i))
 
 (test-end "playground")

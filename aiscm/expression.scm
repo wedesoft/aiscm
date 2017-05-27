@@ -116,8 +116,11 @@
   (set! (dimension-hint idx) (dimension self))
   (subst (delegate self) (index self) idx))
 (define-method (element (self <function>) idx)
-  "Index a sub-expression in a tensor"
+  "Index a function in a tensor"
   (apply (name self) (map (cut element <> idx) (delegate self))))
+(define-method (element (self <injecter>) idx)
+  "Index a injection in a tensor"
+  (injecter (name self) (index self) (element (delegate self) idx)))
 
 (define-method (get (self <param>) . args)
   "Use multiple indices to access elements"
