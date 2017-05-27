@@ -1,6 +1,7 @@
 ## Ready
 
 * "get" and "dimension" for injecter
+* tensor sum of objects
 * (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))

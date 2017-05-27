@@ -284,6 +284,8 @@
     '(5 8 12) (to-list (tensor i (get (+ (seq 2 3 5) (seq 3 5 7)) i))))
   (test-equal "indexing of array scalar sum"
     '(3 4 6) (to-list (tensor i (get (+ (seq 2 3 5) 1) i))))
+  (test-equal "sum of sums"
+    13 (tensor (sum i (sum j (get (arr (1 1) (1 10)) j i)))))
 (test-end "combination of tensor features")
 
 (test-end "aiscm tensor")

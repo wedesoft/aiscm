@@ -111,7 +111,8 @@
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
 
-(define (code-needs-intermediate? t value) (or (is-a? value <function>) (need-conversion? t (type value))))
+(define (code-needs-intermediate? t value)
+  (or (is-a? value <function>) (is-a? value <injecter>) (need-conversion? t (type value))))
 
 (define (operation-code target op out args)
   "Adapter for nested expressions"

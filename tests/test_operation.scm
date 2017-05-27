@@ -25,6 +25,7 @@
              (aiscm command)
              (aiscm program)
              (aiscm expression)
+             (aiscm variable)
              (aiscm operation)
              (aiscm compile)
              (aiscm jit)
@@ -112,9 +113,14 @@
 
 (test-begin "check whether intermediate value is required")
   (let* [(a (parameter <sint>))
-         (f (~ a))]
+         (s (parameter (sequence <sint>)))
+         (f (~ a))
+         (i (var <long>))
+         (c (inject += i (get s i)))]
     (test-assert "Compilation of function always requires intermediate value"
       (code-needs-intermediate? <sint> f))
+    (test-assert "Compilation of injection always requires intermediate value"
+      (code-needs-intermediate? <sint> c))
     (test-assert "Value does not require intermediate value"
       (not (code-needs-intermediate? <sint> a)))
     (test-assert "Value of different size requires intermediate value"
