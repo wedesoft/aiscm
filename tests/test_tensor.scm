@@ -9,6 +9,7 @@
              (aiscm loop)
              (aiscm element)
              (aiscm int)
+             (aiscm obj)
              (aiscm sequence)
              (aiscm tensor))
 
@@ -289,5 +290,16 @@
   (test-equal "indexing of sums"
     '(2 2 2) (to-list (tensor i (get (sum j (get (arr (1 1 1) (1 1 1)) j)) i))))
 (test-end "combination of tensor features")
+
+(test-begin "cumulative tensor operations involving objects")
+  (test-eqv "sum objects"
+    10 (tensor (sum i (get (seq <obj> 2 3 5) i))))
+  (test-eqv "multiply objects"
+    30 (tensor (prod i (get (seq <obj> 2 3 5) i))))
+  (test-eqv "largest object"
+    5 (tensor (largest i (get (seq <obj> 2 5 3) i))))
+  (test-eqv "smallest object"
+    2 (tensor (smallest i (get (seq <obj> 2 5 3) i))))
+(test-end "cumulative tensor operations involving objects")
 
 (test-end "aiscm tensor")

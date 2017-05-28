@@ -1,8 +1,5 @@
 ## Ready
 
-* "get" and "dimension" for injecter
-* tensor sum of objects
-* (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * n-dimensional tensor sums, standalone sum expression
@@ -20,7 +17,6 @@
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
-* remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)

@@ -113,6 +113,15 @@
 (define-operator-mapping min 2 <meta<element>> (native-fun scm-min       ))
 (define-operator-mapping max 2 <meta<element>> (native-fun scm-max       ))
 
+(define-macro (define-object-cumulative name basis)
+  `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
+    (lambda (out args) (code out (apply ,basis args)))))
+
+(define-object-cumulative +=   +  )
+(define-object-cumulative *=   *  )
+(define-object-cumulative max= max)
+(define-object-cumulative min= min)
+
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
