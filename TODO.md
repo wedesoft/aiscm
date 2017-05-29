@@ -1,35 +1,23 @@
 ## Ready
 
-* operation-code list of args -> args
-* tensor incremental (+=, ...) with RGB and complex
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
+* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * n-dimensional tensor sums, standalone sum expression
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov
 * cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
-* (tensor (sum j (get (largest i (get (arr (2 3 5) (8 6 4)) i)) j)))
-* move more tests for jit-compile into jit compiler test suite
-* put compiler stuff into separate module
-* rbg and complex tensors
 * sum with multiple indices or no indices
 * how to run test suite
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * array compatibility check
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
-* remove unnecessary copying from injection tensor loop (use +=, \*=, max=, ...)
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
-* (tensor i (roll (get m i)))
-* (tensor i (project (get m i)))
 * parameter passing for sequences, map, tensor operations, replace fill and other?
-    (accessors s) -> ((pointer stride count) ...) which pointer?
-    (tensor [i] ((roll m) i))
-    (tensor [i] ((roll (+ m s) i))
-    (tensor [i] (get m i 1))
-    (tensor [i j] (sum (k) (* ((m i) k) ((m k) j))))
 * equality of arrays
 * inject: equality, sum, mininum, maximum of frames
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
@@ -50,7 +38,6 @@
 * select video codec, select audio codec
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
-* uscan --report-status; gpg --armor --output ... --detach-sig ...
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
@@ -64,7 +51,6 @@
 * robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * car, cadr, ... -> first, second, ...
 * conditional selection using boolean array
 * index manipulation on function expressions

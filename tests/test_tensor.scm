@@ -9,6 +9,7 @@
              (aiscm loop)
              (aiscm element)
              (aiscm int)
+             (aiscm obj)
              (aiscm sequence)
              (aiscm tensor))
 
@@ -137,6 +138,8 @@
     '_ (expression->identifier '(read-image "test.bmp")))
   (test-equal "preverse tensor index when accessing array"
     '(get _ k) (expression->identifier '(get s k)))
+  (test-equal "indexing of an expression"
+    '(get (+ _) k) (expression->identifier '(get (+ s) k)))
 (test-end "convert tensor expression to identifier")
 
 (test-begin "convert identifier to symbol")
@@ -269,5 +272,34 @@
     (test-eqv "Largest element of three"
       5 (tensor (largest i (get (seq 2 5 3) i)))))
 (test-end "tensor reduce")
+
+(test-begin "combination of tensor features")
+  (let* [(s (parameter (sequence <int>)))
+         (f (- s))
+         (i (var <long>))]
+    (test-eq "accessing an element of a function result returns a function"
+      <function> (class-of (get f i)))
+    (test-equal "accessing an element of a function results reduces the number of dimensions"
+      '() (shape (get f i))))
+  (test-equal "indexing of array array sum"
+    '(5 8 12) (to-list (tensor i (get (+ (seq 2 3 5) (seq 3 5 7)) i))))
+  (test-equal "indexing of array scalar sum"
+    '(3 4 6) (to-list (tensor i (get (+ (seq 2 3 5) 1) i))))
+  (test-equal "sum of sums"
+    13 (tensor (sum i (sum j (get (arr (1 1) (1 10)) j i)))))
+  (test-equal "indexing of sums"
+    '(2 2 2) (to-list (tensor i (get (sum j (get (arr (1 1 1) (1 1 1)) j)) i))))
+(test-end "combination of tensor features")
+
+(test-begin "cumulative tensor operations involving objects")
+  (test-eqv "sum objects"
+    10 (tensor (sum i (get (seq <obj> 2 3 5) i))))
+  (test-eqv "multiply objects"
+    30 (tensor (prod i (get (seq <obj> 2 3 5) i))))
+  (test-eqv "largest object"
+    5 (tensor (largest i (get (seq <obj> 2 5 3) i))))
+  (test-eqv "smallest object"
+    2 (tensor (smallest i (get (seq <obj> 2 5 3) i))))
+(test-end "cumulative tensor operations involving objects")
 
 (test-end "aiscm tensor")
