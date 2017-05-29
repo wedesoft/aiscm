@@ -51,6 +51,7 @@
     (test-equal "2D array skeleton is based on five variables"
       (make-list 5 <var>) (map class-of (map get (content (class-of m) m)))))
 (test-end "decompose parameters into elementary native types")
+
 (test-begin "array parameters")
   (let* [(s  (skeleton (sequence <int>)))
          (sx (parameter s))
@@ -134,4 +135,10 @@
     (test-equal "shape of array plus scalar expression"
       (shape m) (shape (make-function + coerce list (list m c)))))
 (test-end "shape of expression")
+
+(test-begin "dimension of expression")
+  (let [(m (parameter (multiarray <int> 2)))]
+    (test-equal "dimension of unary function expression is dimension of argument"
+      (dimension m) (dimension (make-function ~ coerce list (list m)))))
+(test-end "dimension of expression")
 (test-end "aiscm expression")

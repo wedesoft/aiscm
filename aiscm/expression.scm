@@ -17,6 +17,7 @@
 (define-module (aiscm expression)
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (aiscm element)
   #:use-module (aiscm scalar)
   #:use-module (aiscm composite)
@@ -107,13 +108,23 @@
 
 (define dimension-hint (make-object-property))
 
-(define (element idx self)
+(define-method (element (self <param>) idx)
+  "Broadcast dimensions when evaluating tensor expressions"
+  self)
+(define-method (element (self <indexer>) idx)
+  "Index an array in a tensor expression"
   (set! (dimension-hint idx) (dimension self))
   (subst (delegate self) (index self) idx))
+(define-method (element (self <function>) idx)
+  "Index a function in a tensor"
+  (apply (name self) (map (cut element <> idx) (delegate self))))
+(define-method (element (self <injecter>) idx)
+  "Index a injection in a tensor"
+  (injecter (name self) (index self) (element (delegate self) idx)))
 
 (define-method (get (self <param>) . args)
   "Use multiple indices to access elements"
-  (if (null? args) self (fold-right element self args)))
+  (if (null? args) self (apply get (element self (last args)) (all-but-last args))))
 
 (define-method (subst self candidate replacement) self)
 (define-method (subst (self <indexer>) candidate replacement)
@@ -135,6 +146,8 @@
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
 (define-method (shape (self <injecter>)) (shape (delegate self)))
+
+(define-method (dimension (self <param>)) (last (shape self)))
 
 (define-method (strides (self <indexer>)) (attach (strides (delegate self)) (stride (lookup self (index self)))))
 (define-method (lookup (self <indexer>)) (lookup self (index self)))
