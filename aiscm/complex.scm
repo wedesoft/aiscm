@@ -35,7 +35,7 @@
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             complex)
   #:re-export (<pointer<element>> <meta<pointer<element>>>
-               real-part imag-part to-type conj))
+               real-part imag-part to-type conj - + * / += *= max= min=))
 
 (define ctx (make <context>))
 
@@ -81,15 +81,30 @@
 (define-method (content (type <meta<complex<>>>) (self <internalcomplex>))
   (append-map (cut content (base type) <>) (deconstruct type self)))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimensions self)))
+
 (define-syntax-rule (unary-complex-op op)
   (define-method (op (a <internalcomplex>)) (apply complex (map op (content <complex<>> a)))))
+
 (unary-complex-op -)
+
+(define-method (+= (a <internalcomplex>) (b <internalcomplex>))
+  (append-map += (content <complex<>> a) (content <complex<>> b)))
+(define-method (*= (a <internalcomplex>) (b <internalcomplex>))
+  (let [(intermediate (parameter (complex (type (real-part a)))))]
+    (append (append-map code (content <complex<>> intermediate) (content <complex<>> (* a b)))
+            (append-map code (content <complex<>> a) (content <complex<>> intermediate)))))
+(define-method (max= (a <internalcomplex>) (b <internalcomplex>))
+  (append-map max= (content <complex<>> a) (content <complex<>> b)))
+(define-method (min= (a <internalcomplex>) (b <internalcomplex>))
+  (append-map min= (content <complex<>> a) (content <complex<>> b)))
+
 (define-syntax-rule (binary-complex-op op)
   (begin
     (define-method (op (a <internalcomplex>) b) (complex (op (real-part a) b) (imag-part a)))
     (define-method (op a (b <internalcomplex>)) (complex (op a (real-part b)) (imag-part b)))
     (define-method (op (a <internalcomplex>) (b <internalcomplex>))
       (apply complex (map op (content <complex<>> a) (content <complex<>> b))))))
+
 (define-method (conj (self <int<>>)) self)
 (define-method (conj (self <pointer<int<>>>)) self)
 (define-method (conj (a <internalcomplex>)) (complex (real-part a) (- (imag-part a))))
