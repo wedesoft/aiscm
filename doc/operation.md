@@ -95,7 +95,7 @@ Also note that the arrays can have different number of dimensions as long as the
 
 Tensor notation is a compact way to describe operations involving multi-dimensional arrays.
 The *tensor* macro is used to declare a tensor expression. *dim* and *get* can be used to create indices and access array elements.
-*inject* can be used to perform tensor summation or other cummulative operations.
+*sum*, *prod*, *largest*, and *smallest* can be used to perform a tensor sum, a cumulative product, or finding the largest/smallest element for a given tensor index.
 See examples below for the behaviour of tensors.
 
 ```Scheme
