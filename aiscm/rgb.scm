@@ -45,7 +45,8 @@
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
             rgb red green blue)
-  #:re-export (+ -))
+  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min=))
+
 
 (define ctx (make <context>))
 
@@ -102,9 +103,18 @@
 (define-method (content (type <meta<rgb<>>>) (self <rgb<>>))
   (append-map (cut content (base type) <>) (deconstruct type self)))
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content <rgb<>> self)))))
-(define-syntax-rule (unary-rgb-op op) (define-method (op (a <rgb>)) (apply rgb (map op (content <rgb<>> a)))))
+
+(define-syntax-rule (unary-rgb-op op)
+  (define-method (op (a <rgb>)) (apply rgb (map op (content <rgb<>> a)))))
+
 (unary-rgb-op -)
 (unary-rgb-op ~)
+
+(define-method (+=   (a <rgb>) (b <rgb>)) (append-map +=   (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (*=   (a <rgb>) (b <rgb>)) (append-map *=   (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (max= (a <rgb>) (b <rgb>)) (append-map max= (content <rgb<>> a) (content <rgb<>> b)))
+(define-method (min= (a <rgb>) (b <rgb>)) (append-map min= (content <rgb<>> a) (content <rgb<>> b)))
+
 (define-syntax-rule (binary-rgb-op op)
   (begin
     (define-method (op (a <rgb>)  b       ) (apply rgb (map (cut op <> b) (content <rgb<>> a)                    )))
@@ -112,6 +122,7 @@
     (define-method (op (a <rgb>) (b <rgb>)) (apply rgb (map op            (content <rgb<>> a) (content <rgb<>> b))))
     (define-method (op (a <rgb>)     (b <element>)) (op (wrap a) b))
     (define-method (op (a <element>) (b <rgb>)    ) (op a (wrap b)))))
+
 (binary-rgb-op +  )
 (binary-rgb-op -  )
 (binary-rgb-op *  )
@@ -124,11 +135,13 @@
 (binary-rgb-op %  )
 (binary-rgb-op max)
 (binary-rgb-op min)
+
 (define-syntax-rule (binary-rgb-cmp op f)
   (begin
     (define-method (op (a <rgb>)  b       ) (apply f (map (cut op <> b) (content <rgb<>> a)                    )))
     (define-method (op  a        (b <rgb>)) (apply f (map (cut op a <>)                     (content <rgb<>> b))))
     (define-method (op (a <rgb>) (b <rgb>)) (apply f (map op            (content <rgb<>> a) (content <rgb<>> b))))))
+
 (binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
