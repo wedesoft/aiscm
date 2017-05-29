@@ -1,3 +1,8 @@
+# aiscm (0.12.1)
+
+* tensor operations
+* improved modularity of JIT compiler
+
 # aiscm (0.11.2)
 
 * aiscm/ffmpeg-helpers-test.c: fixed Debian sbuild warning "array subscript is above array bounds"
