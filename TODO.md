@@ -3,18 +3,15 @@
 * to-type in tensor expresssions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * n-dimensional tensor sums, standalone sum expression
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov
 * cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
-* move more tests for jit-compile into jit compiler test suite
-* put compiler stuff into separate module
-* rbg and complex tensors
 * sum with multiple indices or no indices
 * how to run test suite
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * array compatibility check
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * "let" for tensors
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * documentation for objects and arrays of objects
