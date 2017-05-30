@@ -304,4 +304,20 @@
       (list (SUB RSP 8) (MOV DL AL) (CMP DL SIL) (JNBE #x3) (MOV DL SIL) (ADD RSP 8) (RET))
       (resolve-jumps (jit-compile (attach (flatten-code ((term (max a b)) r)) (RET))))))
 (test-end "binary max")
+
+(test-begin "convert-type")
+  (test-eq "typecast for scalar type"
+    <int> (convert-type <int> <byte>))
+  (test-eq "typecast element-type of array type"
+    (sequence <int>) (convert-type <int> (sequence <byte>)))
+(test-end "convert-type")
+
+(test-begin "ternary where")
+  (test-eq "coercion for 'where'"
+    <int> (coerce-where <bool> <usint> <byte>))
+  (test-eq "coercion for 'where' using boolean array"
+    (sequence <int>) (coerce-where (sequence <bool>) <usint> <byte>))
+  (test-eq "coercion for 'where' when selecting from arrays"
+    (sequence <int>) (coerce-where (sequence <bool>) (sequence <usint>) <byte>))
+(test-end "ternary where")
 (test-end "aiscm operation")

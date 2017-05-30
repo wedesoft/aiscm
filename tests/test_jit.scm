@@ -103,13 +103,6 @@
     (list (rgb 2 3 5) (rgb 2 3 5)) (to-list (fill <intrgb> '(2) (rgb 2 3 5))))
 (test-end "filling arrays")
 
-(test-begin "convert-type")
-  (test-eq "typecast for scalar type"
-    <int> (convert-type <int> <byte>))
-  (test-eq "typecast element-type of array type"
-    (sequence <int>) (convert-type <int> (sequence <byte>)))
-(test-end "convert-type")
-
 (test-begin "identity operation")
   (test-equal "Compile and run code for fetching data from a pointer"
     i1 ((jit ctx (list (pointer <int>)) identity) (idata)))

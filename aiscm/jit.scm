@@ -42,7 +42,7 @@
   #:use-module (aiscm operation)
   #:use-module (aiscm method)
   #:export (virtual-variables
-            convert-type assemble build-list package-return-content
+            assemble build-list package-return-content
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
@@ -224,9 +224,6 @@
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
-; various type class conversions
-(define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
-(define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 

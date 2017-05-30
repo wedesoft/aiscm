@@ -33,6 +33,7 @@
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
+            convert-type coerce-where
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
@@ -113,6 +114,14 @@
 
 (define (code-needs-intermediate? t value)
   (or (is-a? value <function>) (is-a? value <injecter>) (need-conversion? t (type value))))
+
+(define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
+(define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
+
+(define (coerce-where m a b)
+  "Coercion for boolean selection using 'where'"
+  (let [(choice-type (coerce a b))]
+    (convert-type (typecode choice-type) (coerce m choice-type))))
 
 (define (operation-code target op out args)
   "Adapter for nested expressions"
