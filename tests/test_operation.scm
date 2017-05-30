@@ -260,42 +260,42 @@
 (test-end "binary *")
 
 (test-begin "binary min")
-  (test-equal "get minor number of two integers (first case)"
+  (test-eqv "get minor number of two integers (first case)"
     2 ((jit ctx (list <usint> <usint>) min) 2 3))
-  (test-equal "get minor number of two integers (second case)"
+  (test-eqv "get minor number of two integers (second case)"
     2 ((jit ctx (list <usint> <usint>) min) 3 2))
-  (test-equal "get minor number of two unsigned integers (first case)"
+  (test-eqv "get minor number of two unsigned integers (first case)"
     32767 ((jit ctx (list <usint> <usint>) min) 32767 32768))
-  (test-equal "get minor number of two unsigned integers (second case)"
+  (test-eqv "get minor number of two unsigned integers (second case)"
     32767 ((jit ctx (list <usint> <usint>) min) 32768 32767))
-  (test-equal "get minor number of two signed integers"
+  (test-eqv "get minor number of two signed integers"
     -1 ((jit ctx (list <sint> <sint>) min) -1 1))
-  (test-equal "get minor number of two unsigned bytes (first case)"
+  (test-eqv "get minor number of two unsigned bytes (first case)"
     2 ((jit ctx (list <ubyte> <ubyte>) min) 2 3))
-  (test-equal "get minor number of two unsigned bytes (second case)"
+  (test-eqv "get minor number of two unsigned bytes (second case)"
     2 ((jit ctx (list <ubyte> <ubyte>) min) 3 2))
-  (test-equal "get minor number of two bytes (first case)"
+  (test-eqv "get minor number of two bytes (first case)"
     -1 ((jit ctx (list <byte> <byte>) min) -1 1))
-  (test-equal "get minor number of two bytes (second case)"
+  (test-eqv "get minor number of two bytes (second case)"
     -1 ((jit ctx (list <byte> <byte>) min) 1 -1))
 (test-end "binary min")
 
 (test-begin "binary max")
-  (test-equal "get major number of two unsigned integers (first case)"
+  (test-eqv "get major number of two unsigned integers (first case)"
     32768 ((jit ctx (list <usint> <usint>) max) 32767 32768))
-  (test-equal "get major number of two unsigned integers (second case)"
+  (test-eqv "get major number of two unsigned integers (second case)"
     32768 ((jit ctx (list <usint> <usint>) max) 32768 32767))
-  (test-equal "get major number of two signed integers"
+  (test-eqv "get major number of two signed integers"
     1 ((jit ctx (list <sint> <sint>) max) -1 1))
-  (test-equal "get major number of signed and unsigned short integers"
+  (test-eqv "get major number of signed and unsigned short integers"
     32768 ((jit ctx (list <sint> <usint>) max) -1 32768))
-  (test-equal "get major number of two unsigned bytes (first case)"
+  (test-eqv "get major number of two unsigned bytes (first case)"
     3 ((jit ctx (list <ubyte> <ubyte>) max) 2 3))
-  (test-equal "get major number of two unsigned bytes (second case)"
+  (test-eqv "get major number of two unsigned bytes (second case)"
     3 ((jit ctx (list <ubyte> <ubyte>) max) 3 2))
-  (test-equal "get major number of two bytes (first case)"
+  (test-eqv "get major number of two bytes (first case)"
     1 ((jit ctx (list <byte> <byte>) max) -1 1))
-  (test-equal "get major number of two bytes (second case)"
+  (test-eqv "get major number of two bytes (second case)"
     1 ((jit ctx (list <byte> <byte>) max) 1 -1))
   (let [(r (parameter <ubyte>))
         (a (parameter <ubyte>))
