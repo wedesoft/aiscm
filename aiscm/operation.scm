@@ -33,8 +33,9 @@
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
-            convert-type coerce-where
-            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+            convert-type coerce-where-args
+            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=
+            where)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
@@ -118,14 +119,14 @@
 (define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
 (define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 
-(define (coerce-where m a b)
+(define (coerce-where-args m a b)
   "Coercion for boolean selection using 'where'"
   (let [(choice-type (coerce a b))]
-    (convert-type (typecode choice-type) (coerce m choice-type))))
+    (list m choice-type choice-type)))
 
-(define (operation-code target op out args)
+(define (operation-code targets op out args)
   "Adapter for nested expressions"
-  (force-parameters target args code-needs-intermediate?
+  (force-parameters targets args code-needs-intermediate?
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
 
@@ -200,3 +201,4 @@
 (define-operator-mapping <=  2 <meta<int<>>> (functional-code coerce   cmp-lower-equal  ))
 (define-operator-mapping >   2 <meta<int<>>> (functional-code coerce   cmp-greater-than ))
 (define-operator-mapping >=  2 <meta<int<>>> (functional-code coerce   cmp-greater-equal))
+(define-operator-mapping where 3 <meta<int<>>> (functional-code coerce-where-args cmp-select))

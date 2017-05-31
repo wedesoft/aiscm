@@ -313,11 +313,16 @@
 (test-end "convert-type")
 
 (test-begin "ternary where")
-  (test-eq "coercion for 'where'"
+  (test-equal "coerce arguments for 'where'"
+    (list <bool> <int> <int>) (coerce-where-args <bool> <usint> <byte>))
+  (test-eq "scalar coercion for 'where'"
     <int> (coerce-where <bool> <usint> <byte>))
-  (test-eq "coercion for 'where' using boolean array"
+  (test-eq "coercion for 'where' using mask array"
     (sequence <int>) (coerce-where (sequence <bool>) <usint> <byte>))
-  (test-eq "coercion for 'where' when selecting from arrays"
-    (sequence <int>) (coerce-where (sequence <bool>) (sequence <usint>) <byte>))
+  (test-eq "coercion for 'where' using array arguments"
+    (sequence <int>) (coerce-where <bool> (sequence <usint>) <byte>))
+  (test-skip 1)
+  (test-eqv "select first value of two"
+    2 ((jit ctx (list <bool> <int> <int>) where) #t 2 3))
 (test-end "ternary where")
 (test-end "aiscm operation")

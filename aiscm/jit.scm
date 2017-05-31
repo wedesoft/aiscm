@@ -48,7 +48,8 @@
             ensure-default-strides decompose-value
             decompose-arg delegate-fun generate-return-code
             make-native-function native-call
-            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
+            coerce-where)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj
                -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
@@ -227,6 +228,10 @@
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
+(define-method (coerce-where m a b)
+  "Coercion for selecting values using a boolean mask with 'where'"
+  (convert-type (typecode (coerce a b)) (reduce coerce #f (list m a b))))
+
 (define-jit-dispatch duplicate 1 identity)
 (define-jit-method identity -   1)
 (define-jit-method identity ~   1)
@@ -253,6 +258,7 @@
 (define-jit-method to-bool  >=  2)
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
+(define-jit-method coerce-where where 3)
 
 (define-method (to-type (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
 (define-method (to-type (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
