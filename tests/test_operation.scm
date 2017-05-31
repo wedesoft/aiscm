@@ -321,8 +321,9 @@
     (sequence <int>) (coerce-where (sequence <bool>) <usint> <byte>))
   (test-eq "coercion for 'where' using array arguments"
     (sequence <int>) (coerce-where <bool> (sequence <usint>) <byte>))
-  (test-skip 1)
   (test-eqv "select first value of two"
     2 ((jit ctx (list <bool> <int> <int>) where) #t 2 3))
+  (test-eqv "select second value of two"
+    3 ((jit ctx (list <bool> <int> <int>) where) #f 2 3))
 (test-end "ternary where")
 (test-end "aiscm operation")

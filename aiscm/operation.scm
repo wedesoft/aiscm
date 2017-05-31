@@ -20,6 +20,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 curried-definitions)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
@@ -201,4 +202,4 @@
 (define-operator-mapping <=  2 <meta<int<>>> (functional-code coerce   cmp-lower-equal  ))
 (define-operator-mapping >   2 <meta<int<>>> (functional-code coerce   cmp-greater-than ))
 (define-operator-mapping >=  2 <meta<int<>>> (functional-code coerce   cmp-greater-equal))
-(define-operator-mapping where 3 <meta<int<>>> (functional-code coerce-where-args cmp-select))
+(define-operator-mapping where 3 <meta<scalar>> (functional-code coerce-where-args cmp-where))

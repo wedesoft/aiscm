@@ -228,7 +228,7 @@
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
-(define-method (coerce-where m a b)
+(define (coerce-where m a b)
   "Coercion for selecting values using a boolean mask with 'where'"
   (convert-type (typecode (coerce a b)) (reduce coerce #f (list m a b))))
 
