@@ -45,7 +45,7 @@
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
             rgb red green blue)
-  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min=))
+  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min= where))
 
 
 (define ctx (make <context>))
@@ -125,6 +125,10 @@
 
 (define-method (where (m <param>) (a <rgb>) (b <rgb>))
   (apply rgb (map (cut where m <...>) (content <rgb<>> a) (content <rgb<>> b))))
+(define-method (where (m <param>) (a <rgb>)  b       )
+  (apply rgb (map (cut where m <> b) (content <rgb<>> a))))
+(define-method (where (m <param>)  a        (b <rgb>))
+  (apply rgb (map (cut where m a <>) (content <rgb<>> b))))
 
 (binary-rgb-op +  )
 (binary-rgb-op -  )

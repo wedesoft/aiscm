@@ -102,4 +102,11 @@
 (test-assert "boolean memory is pointerless"
   (pointerless? <bool>))
 
+(test-begin "'where' using scalars")
+  (test-eqv "select first scalars using where"
+    2 (where #t 2 3))
+  (test-eqv "select second scalar using where"
+    3 (where #f 2 3))
+(test-end "'where' using scalars")
+
 (test-end "aiscm bool")

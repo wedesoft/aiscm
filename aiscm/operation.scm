@@ -35,9 +35,8 @@
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
             convert-type coerce-where-args
-            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=
-            where)
-  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
+            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
 (define* ((native-data native) out args)

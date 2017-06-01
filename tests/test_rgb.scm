@@ -277,5 +277,9 @@
 (test-begin "select RGB values using 'where'")
   (test-equal "select from two values"
     (list (rgb 2 3 5) (rgb 3 5 7)) (to-list (where (seq #t #f) (rgb 2 3 5) (rgb 3 5 7))))
+  (test-equal "select from RGB and scalar value"
+    (list (rgb 2 3 5) (rgb 7 7 7)) (to-list (where (seq #t #f) (rgb 2 3 5) 7)))
+  (test-equal "select from scalar and RGB value"
+    (list (rgb 2 2 2) (rgb 3 5 7)) (to-list (where (seq #t #f) 2 (rgb 3 5 7))))
 (test-end "select RGB values using 'where'")
 (test-end "aiscm rgb")
