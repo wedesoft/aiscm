@@ -34,7 +34,7 @@
   #:export (make-constant-function native-const need-conversion? code
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
-            convert-type coerce-where-args
+            convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
@@ -197,8 +197,8 @@
 (define-operator-mapping %   2 <meta<int<>>> (functional-code coerce   mod              ))
 (define-operator-mapping =   2 <meta<int<>>> (functional-code coerce   cmp-equal        ))
 (define-operator-mapping !=  2 <meta<int<>>> (functional-code coerce   cmp-not-equal    ))
-(define-operator-mapping <   2 <meta<int<>>> (functional-code coerce   cmp-lower-than   ))
-(define-operator-mapping <=  2 <meta<int<>>> (functional-code coerce   cmp-lower-equal  ))
-(define-operator-mapping >   2 <meta<int<>>> (functional-code coerce   cmp-greater-than ))
-(define-operator-mapping >=  2 <meta<int<>>> (functional-code coerce   cmp-greater-equal))
+(define-operator-mapping lt  2 <meta<int<>>> (functional-code coerce   cmp-lower-than   ))
+(define-operator-mapping le  2 <meta<int<>>> (functional-code coerce   cmp-lower-equal  ))
+(define-operator-mapping gt  2 <meta<int<>>> (functional-code coerce   cmp-greater-than ))
+(define-operator-mapping ge  2 <meta<int<>>> (functional-code coerce   cmp-greater-equal))
 (define-operator-mapping where 3 <meta<scalar>> (functional-code coerce-where-args cmp-where))

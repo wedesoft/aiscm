@@ -1,6 +1,9 @@
 ## Ready
 
-* conditional selection of complex, and objects using boolean array (np.where), intermediate value in RGB/complex variant
+* comparison array integer not working in REPL (> 5 4 3 2)
+* conditional selection of objects (np.where), intermediate value in RGB/complex variant
+* abs
+* pixel selection example
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
