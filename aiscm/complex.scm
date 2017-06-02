@@ -35,7 +35,7 @@
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             complex)
   #:re-export (<pointer<element>> <meta<pointer<element>>>
-               real-part imag-part to-type conj - + * / += *= max= min=))
+               real-part imag-part to-type conj - + * / += *= max= min= where))
 
 (define ctx (make <context>))
 
@@ -124,6 +124,13 @@
   (let [(denom (arg2 b))]
     (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
              (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
+
+(define-method (where (m <param>) (a <internalcomplex>) (b <internalcomplex>))
+  (apply complex (map (cut where m <...>) (content <complex<>> a) (content <complex<>> b))))
+(define-method (where (m <param>) (a <internalcomplex>)  b       )
+  (apply complex (map (cut where m <...>) (content <complex<>> a) (list b (native-const (type b) 0)))))
+(define-method (where (m <param>)  a        (b <internalcomplex>))
+  (apply complex (map (cut where m <...>) (list a (native-const (type a) 0)) (content <complex<>> b))))
 
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 (pointer <complex<>>)

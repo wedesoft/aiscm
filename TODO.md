@@ -1,6 +1,6 @@
 ## Ready
 
-* conditional selection of complex, and objects using boolean array (np.where)
+* conditional selection of complex, and objects using boolean array (np.where), intermediate value in RGB/complex variant
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code

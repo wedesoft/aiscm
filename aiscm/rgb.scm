@@ -123,13 +123,6 @@
     (define-method (op (a <rgb>)     (b <element>)) (op (wrap a) b))
     (define-method (op (a <element>) (b <rgb>)    ) (op a (wrap b)))))
 
-(define-method (where (m <param>) (a <rgb>) (b <rgb>))
-  (apply rgb (map (cut where m <...>) (content <rgb<>> a) (content <rgb<>> b))))
-(define-method (where (m <param>) (a <rgb>)  b       )
-  (apply rgb (map (cut where m <> b) (content <rgb<>> a))))
-(define-method (where (m <param>)  a        (b <rgb>))
-  (apply rgb (map (cut where m a <>) (content <rgb<>> b))))
-
 (binary-rgb-op +  )
 (binary-rgb-op -  )
 (binary-rgb-op *  )
@@ -152,6 +145,13 @@
 (binary-rgb-cmp equal? equal?)
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
+
+(define-method (where (m <param>) (a <rgb>) (b <rgb>))
+  (apply rgb (map (cut where m <...>) (content <rgb<>> a) (content <rgb<>> b))))
+(define-method (where (m <param>) (a <rgb>)  b       )
+  (apply rgb (map (cut where m <> b) (content <rgb<>> a))))
+(define-method (where (m <param>)  a        (b <rgb>))
+  (apply rgb (map (cut where m a <>) (content <rgb<>> b))))
 
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
 (pointer <rgb<>>)
