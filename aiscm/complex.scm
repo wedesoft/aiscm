@@ -139,9 +139,9 @@
 (define-method (real-part (self <pointer<complex<>>>)) (component (typecode self) self 0))
 (define-method (imag-part (self <pointer<complex<>>>)) (component (typecode self) self 1))
 
-(define-operator-mapping real-part 1 <meta<element>> (unary-extract real-part))
-(define-operator-mapping imag-part 1 <meta<element>> (unary-extract imag-part))
-(define-operator-mapping conj      1 <meta<element>> (unary-extract conj     ))
+(define-operator-mapping real-part (<meta<element>>) (unary-extract real-part))
+(define-operator-mapping imag-part (<meta<element>>) (unary-extract imag-part))
+(define-operator-mapping conj      (<meta<element>>) (unary-extract conj     ))
 
 (define-jit-method base real-part 1)
 (define-jit-method base imag-part 1)

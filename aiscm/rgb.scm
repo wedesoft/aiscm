@@ -162,9 +162,9 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-operator-mapping red   1 <meta<element>> (unary-extract red  ))
-(define-operator-mapping green 1 <meta<element>> (unary-extract green))
-(define-operator-mapping blue  1 <meta<element>> (unary-extract blue ))
+(define-operator-mapping red   (<meta<element>>) (unary-extract red  ))
+(define-operator-mapping green (<meta<element>>) (unary-extract green))
+(define-operator-mapping blue  (<meta<element>>) (unary-extract blue ))
 
 (define-jit-method base red   1)
 (define-jit-method base green 1)
