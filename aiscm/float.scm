@@ -22,6 +22,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
+  #:use-module (aiscm obj)
   #:use-module (aiscm scalar)
   #:export (floating-point single-precision double-precision precision double?
             <float<>> <meta<float<>>>

@@ -81,6 +81,11 @@ char obj_geq_p(SCM x, SCM y)
   return scm_is_true(scm_geq_p(x, y));
 }
 
+SCM obj_where(SCM m, SCM a, SCM b)
+{
+  return scm_is_true(m) ? a : b;
+}
+
 SCM obj_from_bool(unsigned char x)
 {
   return scm_from_bool(x);

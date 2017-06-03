@@ -19,6 +19,7 @@
              (oop goops)
              (aiscm bool)
              (aiscm int)
+             (aiscm obj)
              (aiscm pointer)
              (aiscm sequence)
              (aiscm asm)
@@ -321,9 +322,13 @@
     (sequence <int>) (coerce-where (sequence <bool>) <usint> <byte>))
   (test-eq "coercion for 'where' using array arguments"
     (sequence <int>) (coerce-where <bool> (sequence <usint>) <byte>))
-  (test-eqv "select first value of two"
+  (test-eqv "select first value of two integers"
     2 ((jit ctx (list <bool> <int> <int>) where) #t 2 3))
-  (test-eqv "select second value of two"
+  (test-eqv "select second value of two integers"
     3 ((jit ctx (list <bool> <int> <int>) where) #f 2 3))
+  (test-eqv "select first value of two objects"
+    'a ((jit ctx (list <bool> <obj> <obj>) where) #t 'a 'b))
+  (test-eqv "select second value of two objects"
+    'b ((jit ctx (list <bool> <obj> <obj>) where) #f 'a 'b))
 (test-end "ternary where")
 (test-end "aiscm operation")

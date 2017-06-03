@@ -1,6 +1,6 @@
 ## Ready
 
-* conditional selection of objects (np.where), intermediate value in RGB/complex variant
+* intermediate value in RGB/complex "where"
 * abs
 * pixel selection example
 * lookup, pseudo colour, warp
