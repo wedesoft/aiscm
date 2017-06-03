@@ -1,9 +1,9 @@
 ## Ready
 
-* comparison array integer not working in REPL (> 5 4 3 2)
 * conditional selection of objects (np.where), intermediate value in RGB/complex variant
 * abs
 * pixel selection example
+* lookup, pseudo colour, warp
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
@@ -33,7 +33,6 @@
 * Docker integration tests
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
-* pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
 * augmented reality sudoku solver https://github.com/jponttuset/sudoku

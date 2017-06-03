@@ -50,10 +50,10 @@ The binary operations are:
 * **||:** boolean or
 * **=:** equality
 * **!=:** unequal
-* **<:** lower than
-* **<=:** lower or equal
-* **>:** greater than
-* **>=:** greater or equal
+* **lt:** lower than
+* **le:** lower or equal
+* **gt:** greater than
+* **ge:** greater or equal
 * **min:** minor value
 * **max:** major value
 * **complex:** compose complex number
