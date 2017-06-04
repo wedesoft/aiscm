@@ -35,8 +35,8 @@
             code-needs-intermediate? operand code force-parameters
             operation-code mutating-code functional-code unary-extract
             convert-type ge gt le lt coerce-where-args
-            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where)
+            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
+  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
 (define* ((native-data native) out args)
@@ -152,6 +152,7 @@
 
 (define-operator-mapping -=   (<meta<int<>>>              ) (cumulative-code NEG     ))
 (define-operator-mapping ~=   (<meta<int<>>>              ) (cumulative-code NOT     ))
+(define-operator-mapping abs= (<meta<int<>>>              ) (cumulative-code cmp-abs ))
 (define-operator-mapping +=   (<meta<int<>>> <meta<int<>>>) (cumulative-code ADD     ))
 (define-operator-mapping -=   (<meta<int<>>> <meta<int<>>>) (cumulative-code SUB     ))
 (define-operator-mapping *=   (<meta<int<>>> <meta<int<>>>) (cumulative-code IMUL    ))
@@ -173,6 +174,7 @@
 (define-operator-mapping -   (<meta<int<>>>              ) (mutating-code -=  ))
 (define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code -=))
 (define-operator-mapping ~   (<meta<int<>>>              ) (mutating-code ~=  ))
+(define-operator-mapping abs (<meta<int<>>>              ) (mutating-code abs=))
 (define-operator-mapping =0  (<meta<int<>>>              ) (functional-code identity test-zero        ))
 (define-operator-mapping !=0 (<meta<int<>>>              ) (functional-code identity test-non-zero    ))
 (define-operator-mapping !   (<meta<bool>>               )  (functional-code identity test-zero        ))

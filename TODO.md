@@ -1,7 +1,5 @@
 ## Ready
 
-* intermediate value in RGB/complex "where"
-* abs
 * pixel selection example
 * lookup, pseudo colour, warp
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution

@@ -51,7 +51,7 @@
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
   #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
-               -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
@@ -74,6 +74,7 @@
 
 (define-cumulative -=   1)
 (define-cumulative ~=   1)
+(define-cumulative abs= 1)
 (define-cumulative +=   2)
 (define-cumulative -=   2)
 (define-cumulative *=   2)
@@ -236,6 +237,7 @@
 (define-jit-dispatch duplicate 1 identity)
 (define-jit-method identity -   1)
 (define-jit-method identity ~   1)
+(define-jit-method identity abs 1)
 (define-jit-method to-bool  =0  1)
 (define-jit-method to-bool  !=0 1)
 (define-jit-method to-bool  !   1)

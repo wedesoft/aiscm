@@ -331,4 +331,11 @@
   (test-eqv "select second value of two objects"
     'b ((jit ctx (list <bool> <obj> <obj>) where) #f 'a 'b))
 (test-end "ternary where")
+
+(test-begin "absolute value")
+  (test-equal "compute absolute value for integers"
+    '(2 1 0 1 2) (to-list (abs (seq -2 -1 0 1 2))))
+  (test-equal "compute absolute value for unsigned integers"
+    '(254 255 0 1 2) (to-list (abs (seq 254 255 0 1 2))))
+(test-end "absolute value")
 (test-end "aiscm operation")
