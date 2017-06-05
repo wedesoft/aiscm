@@ -1,18 +1,19 @@
 ## Ready
 
-* pixel selection example
-* lookup, pseudo colour, warp
+* (op out (list a b)) -> (op out a b); align definition of "duplicate" <-> "code"
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
+* sum with multiple indices or no indices, standalone sum expression
+* inject: equality, sum, mininum, maximum of frames
+* pixel selection example (take reference from center pixels)
+* lookup, pseudo colour, warp
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
-* diagonal injection
 * argmax
-* sum with multiple indices or no indices, standalone sum expression
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov/copy
 * cache fill method
@@ -25,7 +26,6 @@
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * parameter passing for sequences, map, tensor operations, replace fill and other?
 * equality of arrays
-* inject: equality, sum, mininum, maximum of frames
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests

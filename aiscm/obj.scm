@@ -30,9 +30,8 @@
             <pointer<obj>> <meta<pointer<obj>>>
             obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
             scm-difference scm-product scm-divide scm-remainder
-            scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr obj-where
-            obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p
-            obj-from-bool scm-to-bool
+            scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr obj-where scm-abs
+            obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p obj-from-bool scm-to-bool
             scm-to-uint8 scm-from-uint8 scm-to-int8 scm-from-int8
             scm-to-uint16 scm-from-uint16 scm-to-int16 scm-from-int16
             scm-to-uint32 scm-from-uint32 scm-to-int32 scm-from-int32
@@ -60,6 +59,7 @@
 ; various operations for Scheme objects (SCM values)
 (define obj-negate      (make-native-method <obj>  (list <obj>      ) (dynamic-func "obj_negate"      guile-aiscm-obj)))
 (define scm-lognot      (make-native-method <obj>  (list <obj>      ) (dynamic-func "scm_lognot"      main           )))
+(define scm-abs         (make-native-method <obj>  (list <obj>      ) (dynamic-func "scm_abs"         main           )))
 (define obj-zero-p      (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_zero_p"      guile-aiscm-obj)))
 (define obj-nonzero-p   (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_nonzero_p"   guile-aiscm-obj)))
 (define obj-not         (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_not"         guile-aiscm-obj)))

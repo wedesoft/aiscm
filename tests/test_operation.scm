@@ -337,5 +337,7 @@
     '(2 1 0 1 2) (to-list (abs (seq -2 -1 0 1 2))))
   (test-equal "compute absolute value for unsigned integers"
     '(254 255 0 1 2) (to-list (abs (seq 254 255 0 1 2))))
+  (test-equal "absolute value for sequence of Scheme objects"
+    '(2 1 0 1 2) (to-list (abs (seq <obj> -2 -1 0 1 2))))
 (test-end "absolute value")
 (test-end "aiscm operation")

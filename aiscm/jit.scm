@@ -91,6 +91,7 @@
 (define-operator-mapping -     (<meta<element>>) (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
 (define-operator-mapping ~     (<meta<element>>                ) (native-fun scm-lognot    ))
+(define-operator-mapping abs   (<meta<element>>                ) (native-fun scm-abs       ))
 (define-operator-mapping =0    (<meta<element>>                ) (native-fun obj-zero-p    ))
 (define-operator-mapping !=0   (<meta<element>>                ) (native-fun obj-nonzero-p ))
 (define-operator-mapping !     (<meta<element>>                ) (native-fun obj-not       ))
