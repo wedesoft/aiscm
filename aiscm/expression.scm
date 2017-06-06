@@ -83,7 +83,7 @@
   (make <function> #:delegate args
                    #:coercion coercion
                    #:name     name
-                   #:term     (lambda (out) (fun out args))))
+                   #:term     (lambda (out) (apply fun out args))))
 
 (define-class <injecter> (<param>)
   (name  #:init-keyword #:name  #:getter name)

@@ -92,6 +92,15 @@
       (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 (test-end "virtual variables")
 
+(test-begin "identity operation")
+  (test-equal "Compile and run identity operation"
+    42 ((jit ctx (list <int>) identity) 42))
+  (test-equal "Compile and run code for fetching data from a pointer"
+    i1 ((jit ctx (list (pointer <int>)) identity) (idata)))
+  (test-equal "'duplicate' creates copy of slice"
+    '(1 4) (to-list (duplicate (project (roll (arr (1 2 3) (4 5 6)))))))
+(test-end "identity operation")
+
 (test-begin "filling arrays")
   (test-equal "fill byte sequence"
     '(3 3 3) (to-list (fill <byte> '(3) 3)))
@@ -102,13 +111,6 @@
   (test-equal "fill RGB sequence"
     (list (rgb 2 3 5) (rgb 2 3 5)) (to-list (fill <intrgb> '(2) (rgb 2 3 5))))
 (test-end "filling arrays")
-
-(test-begin "identity operation")
-  (test-equal "Compile and run code for fetching data from a pointer"
-    i1 ((jit ctx (list (pointer <int>)) identity) (idata)))
-  (test-equal "'duplicate' creates copy of slice"
-    '(1 4) (to-list (duplicate (project (roll (arr (1 2 3) (4 5 6)))))))
-(test-end "identity operation")
 
 (test-begin "ensure compact storage")
   (test-assert "'ensure-default-strides' should do nothing by default"

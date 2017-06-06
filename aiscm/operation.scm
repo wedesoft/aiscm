@@ -39,10 +39,11 @@
   #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
-(define* ((native-data native) out args)
+
+(define* ((native-data native) out)
   (list (MOV (get (delegate out)) (get native))))
-(define (make-constant-function native . args)
-  (make-function make-constant-function (const (return-type native)) (native-data native) args))
+(define (make-constant-function native)
+  (make-function make-constant-function (const (return-type native)) (native-data native) '()))
 (define (native-const type value)
   (make-constant-function (native-value type value)))
 
@@ -76,7 +77,7 @@
 (define-syntax-rule (let-parameter [(name type value)] body ...)
   (let-prototype [(name (parameter type) value)] body ...))
 
-(define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (list (parameter b))))
+(define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
 (define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 (define-method (code (a <pointer<>>) (b <pointer<>>))
   (let-skeleton [(tmp (typecode a) b)] (code a tmp)))
@@ -130,19 +131,19 @@
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
 
-(define ((cumulative-code op) out args)
+(define ((cumulative-code op) out . args)
   "Adapter for cumulative operations"
-  (operation-code (type out) op (car args) (cdr args)))
+  (operation-code (type out) op out (cdr args)))
 
-(define ((mutating-code name) out args)
+(define ((mutating-code name) out . args)
   "Adapter for machine code overwriting its first argument"
   (append (code out (car args)) (apply name out (cdr args))))
 
-(define ((functional-code coercion op) out args)
+(define ((functional-code coercion op) out . args)
   "Adapter for machine code without side effects on its arguments"
   (operation-code (apply coercion (map type args)) op out args))
 
-(define ((unary-extract op) out args)
+(define ((unary-extract op) out . args)
   "Adapter for machine code to extract part of a composite value"
   (code (delegate out) (apply op (map delegate args))))
 
@@ -177,7 +178,7 @@
 (define-operator-mapping abs (<meta<int<>>>              ) (mutating-code abs=))
 (define-operator-mapping =0  (<meta<int<>>>              ) (functional-code identity test-zero        ))
 (define-operator-mapping !=0 (<meta<int<>>>              ) (functional-code identity test-non-zero    ))
-(define-operator-mapping !   (<meta<bool>>               )  (functional-code identity test-zero        ))
+(define-operator-mapping !   (<meta<bool>>               ) (functional-code identity test-zero        ))
 (define-operator-mapping +   (<meta<int<>>> <meta<int<>>>) (mutating-code +=  ))
 (define-operator-mapping -   (<meta<int<>>> <meta<int<>>>) (mutating-code -=  ))
 (define-operator-mapping *   (<meta<int<>>> <meta<int<>>>) (mutating-code *=  ))

@@ -70,7 +70,7 @@
 (define-macro (define-cumulative name arity)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) (list ,@args)))))
+    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) ,@args))))
 
 (define-cumulative -=   1)
 (define-cumulative ~=   1)
@@ -88,7 +88,7 @@
 (define-cumulative min= 2)
 (define-cumulative max= 2)
 
-(define-operator-mapping -     (<meta<element>>) (native-fun obj-negate    ))
+(define-operator-mapping -     (<meta<element>>                ) (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
 (define-operator-mapping ~     (<meta<element>>                ) (native-fun scm-lognot    ))
 (define-operator-mapping abs   (<meta<element>>                ) (native-fun scm-abs       ))
@@ -119,7 +119,7 @@
 
 (define-macro (define-object-cumulative name basis)
   `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out args) (code out (apply ,basis args)))))
+    (lambda (out . args) (code out (apply ,basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -129,15 +129,15 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
-  ((apply name (map type args)) out args))
+  (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
-  ((apply name (map type args)) out args))
+  (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (if (eq? out (car args))
       result
       (append-map code (content (type out) out) (content (type result) result)))))
-(define ((delegate-fun name) out args)
+(define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
 (define-method (type (self <function>))
@@ -288,9 +288,9 @@
 (define-method (to-type (target <meta<obj>>  ) (source <meta<long>> )) (native-fun scm-from-int64 ))
 (define-method (to-type (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun obj-from-bool  ))
 (define-method (to-type (target <meta<composite>>) (source <meta<composite>>))
-  (lambda (out args)
+  (lambda (out arg)
     (append-map
-      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
+      (lambda (channel) (code (channel (delegate out)) (channel (delegate arg))))
       (components source))))
 
 (define-method (to-type (target <meta<element>>) (a <param>))
@@ -320,7 +320,7 @@
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
-(define* ((native-fun native) out args)
+(define* ((native-fun native) out . args)
   (force-parameters (argument-types native) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved
