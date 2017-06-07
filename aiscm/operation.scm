@@ -31,12 +31,12 @@
   #:use-module (aiscm loop)
   #:use-module (aiscm method)
   #:use-module (aiscm util)
-  #:export (make-constant-function native-const need-conversion? code
-            code-needs-intermediate? operand code force-parameters
+  #:export (make-constant-function native-const need-conversion?
+            code-needs-intermediate? operand force-parameters
             operation-code mutating-code functional-code unary-extract
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
-  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
+  #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
 
@@ -65,42 +65,42 @@
 (define-method (force-parameters (targets <list>) args predicate fun)
   (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
-         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
+         (preamble      (concatenate (map-select mask duplicate (const '()) intermediates args)))]
     (attach preamble (apply fun intermediates))))
 (define-method (force-parameters target args predicate fun)
   (force-parameters (make-list (length args) target) args predicate fun))
 
 (define-syntax-rule (let-prototype [(name prototype value)] body ...)
-  (let [(name prototype)] (list (code name value) body ...)))
+  (let [(name prototype)] (list (duplicate name value) body ...)))
 (define-syntax-rule (let-skeleton [(name type value)] body ...)
   (let-prototype [(name (skeleton type) value)] body ...))
 (define-syntax-rule (let-parameter [(name type value)] body ...)
   (let-prototype [(name (parameter type) value)] body ...))
 
-(define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
-(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
-(define-method (code (a <pointer<>>) (b <pointer<>>))
-  (let-skeleton [(tmp (typecode a) b)] (code a tmp)))
-(define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
-(define-method (code (a <indexer>) (b <param>))
+(define-method (duplicate (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
+(define-method (duplicate (a <element>) (b <integer>)) (list (MOV (operand a) b)))
+(define-method (duplicate (a <pointer<>>) (b <pointer<>>))
+  (let-skeleton [(tmp (typecode a) b)] (duplicate a tmp)))
+(define-method (duplicate (a <param>) (b <param>)) (duplicate (delegate a) (delegate b)))
+(define-method (duplicate (a <indexer>) (b <param>))
   (let [(dest   (multi-loop a))
         (source (multi-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
             (repeat 0
                     (value (dimension a))
-                    (code (body dest) (body source))
+                    (duplicate (body dest) (body source))
                     (append-map loop-increment (loop-details dest))
                     (append-map loop-increment (loop-details source))))))
-(define-method (code (out <element>) (fun <function>))
+(define-method (duplicate (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (let-skeleton [(tmp (type fun) fun)] (code out tmp))
+    (let-skeleton [(tmp (type fun) fun)] (duplicate out tmp))
     ((term fun) (parameter out))))
-(define-method (code (out <pointer<>>) (fun <function>))
-  (let-skeleton [(tmp (typecode out) fun)] (code out tmp)))
-(define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
-(define-method (code (out <param>) (value <integer>)) (code out (native-const (type out) value)))
-(define-method (code (a <param>) (b <injecter>))
+(define-method (duplicate (out <pointer<>>) (fun <function>))
+  (let-skeleton [(tmp (typecode out) fun)] (duplicate out tmp)))
+(define-method (duplicate (out <param>) (fun <function>)) (duplicate (delegate out) fun))
+(define-method (duplicate (out <param>) (value <integer>)) (duplicate out (native-const (type out) value)))
+(define-method (duplicate (a <param>) (b <injecter>))
   (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
@@ -109,7 +109,7 @@
          (repeat 1 (value (dimension-hint (index b)))
                  ((name b) tmp (body t)); TODO: composite values
                  (append-map loop-increment (loop-details t)))
-         (code a tmp)))))
+         (duplicate a tmp)))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
@@ -137,7 +137,7 @@
 
 (define ((mutating-code name) out . args)
   "Adapter for machine code overwriting its first argument"
-  (append (code out (car args)) (apply name out (cdr args))))
+  (append (duplicate out (car args)) (apply name out (cdr args))))
 
 (define ((functional-code coercion op) out . args)
   "Adapter for machine code without side effects on its arguments"
@@ -145,7 +145,7 @@
 
 (define ((unary-extract op) out . args)
   "Adapter for machine code to extract part of a composite value"
-  (code (delegate out) (apply op (map delegate args))))
+  (duplicate (delegate out) (apply op (map delegate args))))
 
 (define-macro (define-operator-mapping name types fun)
   (let [(header (typed-header2 (symbol-list (length types)) types))]

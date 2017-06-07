@@ -66,38 +66,38 @@
   (let [(out (skeleton <int>))
         (in  (skeleton <int>))]
     (test-equal "generate code for copying an integer"
-      (list (list (mov-signed (get out) (get in)))) (code out in))
+      (list (list (mov-signed (get out) (get in)))) (duplicate out in))
     (test-equal "generate code for identity function"
       (list (list (get out)) (list (get in)) (list (list (mov-signed (get out) (get in))) (RET)))
-      (assemble (list out) (list in) (code out in))))
+      (assemble (list out) (list in) (duplicate out in))))
   (let [(out (skeleton <int>))
         (in  (skeleton (pointer <int>)))]
     (test-equal "generate code for reading integer from memory"
-      (list (list (mov-signed (get out) (ptr <int> (get in))))) (code out in)))
+      (list (list (mov-signed (get out) (ptr <int> (get in))))) (duplicate out in)))
   (let [(out (skeleton (pointer <int>)))
         (in  (skeleton <int>))]
     (test-equal "generate code for writing integer to memory"
-      (list (list (mov-signed (ptr <int> (get out)) (get in)))) (code out in)))
+      (list (list (mov-signed (ptr <int> (get out)) (get in)))) (duplicate out in)))
   (let [(out (skeleton <int>))]
     (test-equal "Generate code for setting variable to zero"
-      (list (MOV (get out) 0)) (code out 0)))
+      (list (MOV (get out) 0)) (duplicate out 0)))
   (let [(in  (skeleton (pointer <byte>)))
         (out (skeleton (pointer <byte>)))]
     (test-equal "generate code for copying a byte from one memory location to another"
       (list (SUB RSP 8) (MOV DL (ptr <byte> RAX)) (MOV (ptr <byte> RSI) DL) (ADD RSP 8) (RET))
-      (jit-compile (flatten-code (attach (code out in) (RET))))))
+      (jit-compile (flatten-code (attach (duplicate out in) (RET))))))
   (let [(out (skeleton (multiarray <int> 2)))
         (in  (skeleton (multiarray <int> 2)))]
     (test-assert "generating code for copying a 2D array should run without error"
-      (list? (code (parameter out) (parameter in)))))
+      (list? (duplicate (parameter out) (parameter in)))))
   (let [(out (skeleton <byte>))
         (in  (skeleton <int>))]
     (test-equal "generate code for copying part of integer"
       (list (SUB RSP 8) (MOV AL CL) (ADD RSP 8) (RET))
-      (jit-compile (flatten-code (list (code out in) (RET))))))
+      (jit-compile (flatten-code (list (duplicate out in) (RET))))))
   (let [(i (parameter <int>))]
     (test-eqv "assign native integer constant to parameter"
-      42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (code i 42)))))))
+      42 ((asm ctx <int> '() (apply virtual-variables (assemble (list (delegate i)) '() (duplicate i 42)))))))
 (test-end "copying values")
 
 (test-begin "insert intermediate value")
@@ -105,7 +105,7 @@
          (expr (let-skeleton [(tmp <sint> a)] tmp))
          (tmp  (last expr))]
     (test-equal "Use intermediate value"
-      (list (code tmp a) tmp) expr)
+      (list (duplicate tmp a) tmp) expr)
     (test-equal "Add more code"
       (NOP) (last (let-skeleton [(tmp <sint> a)] (NOP) (NOP))))
     (test-assert "Use intermediate parameter"
@@ -149,14 +149,14 @@
       (test-equal "Create parameter of target type if type is different"
         <int> (type intermediate))
       (test-equal "Create preamble for initialising intermediate values"
-        (attach (code intermediate a) intermediate) forced)
+        (attach (duplicate intermediate a) intermediate) forced)
       (test-equal "Alternatively force all parameters to the same type"
         <int> (type (last (force-parameters <int> (list a) code-needs-intermediate? identity))))))
 (test-end "force intermediate values where required")
 
 (test-equal "Use default zero-extension for 32-bit numbers"
   (list (SUB RSP 8) (MOV EAX ECX) (ADD RSP 8) (RET))
-  (jit-compile (flatten-code (attach (code (skeleton <ulong>) (skeleton <uint>)) (RET)))))
+  (jit-compile (flatten-code (attach (duplicate (skeleton <ulong>) (skeleton <uint>)) (RET)))))
 
 (test-begin "identity function")
   (test-eqv "compile and run integer identity function"
@@ -180,7 +180,7 @@
   (let [(out (skeleton <int>))
         (a   (skeleton <int>))]
     (test-equal "generate code for negating number"
-      (list (list (mov-signed (get out) (get a))) (NEG (get out))) (code (parameter out) (- (parameter a)))))
+      (list (list (mov-signed (get out) (get a))) (NEG (get out))) (duplicate (parameter out) (- (parameter a)))))
   (test-equal "Negate integer"
     -42 ((jit ctx (list <int>) -) 42))
   (test-equal "compile and run function for negating array"
@@ -198,7 +198,7 @@
         (b   (skeleton <int>))]
     (test-equal "generate code for adding two numbers"
       (list (list (mov-signed (get out) (get a))) (ADD (get out) (get b)))
-      (code (parameter out) (+ (parameter a) (parameter b)))))
+      (duplicate (parameter out) (+ (parameter a) (parameter b)))))
   (test-equal "compile and run function adding two numbers"
     42 ((jit ctx (list <int> <int>) +) 19 23))
   (let [(out (skeleton <int>))
@@ -206,7 +206,7 @@
         (b   (skeleton <usint>))]
     (test-equal "sign-extend second number when adding"
       (list (SUB RSP 8) (MOVZX ESI AX) (MOVSX ECX DL) (ADD ESI ECX) (ADD RSP 8) (RET))
-      (jit-compile (flatten-code (list (code (parameter out) (+ (parameter b) (parameter a))) (RET))))))
+      (jit-compile (flatten-code (list (duplicate (parameter out) (+ (parameter b) (parameter a))) (RET))))))
   (test-assert "create function from tensor and element"
     (+ (parameter (sequence <int>)) (parameter <int>)))
   (test-assert "create function from element and tensor"
@@ -217,7 +217,7 @@
         (a   (skeleton (sequence <int>)))
         (b   (skeleton <int>))]
     (test-assert "generating code for array-scalar operation should run without error"
-      (list? (code (parameter out) (+ (parameter a) (parameter b))))))
+      (list? (duplicate (parameter out) (+ (parameter a) (parameter b))))))
   (test-equal "compile and run array-scalar operation"
     '(9 10 12) (to-list ((jit ctx (list (sequence <int>) <int>) +) (seq <int> 2 3 5) 7)))
   (test-equal "compile and run scalar-array operation"

@@ -119,7 +119,7 @@
 
 (define-macro (define-object-cumulative name basis)
   `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out . args) (code out (apply ,basis args)))))
+    (lambda (out . args) (duplicate out (apply ,basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -136,7 +136,7 @@
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (if (eq? out (car args))
       result
-      (append-map code (content (type out) out) (content (type result) result)))))
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
 (define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
@@ -165,17 +165,17 @@
 (define-method (construct-value result-type retval expr) '())
 (define-method (construct-value (result-type <meta<sequence<>>>) retval expr)
   (let [(malloc (if (pointerless? result-type) scm-gc-malloc-pointerless scm-gc-malloc))]
-    (append (append-map code (shape retval) (shape expr))
-            (code (last (content result-type retval)) (malloc (size-of retval)))
-            (append-map code (strides retval) (default-strides (shape retval))))))
+    (append (append-map duplicate (shape retval) (shape expr))
+            (duplicate (last (content result-type retval)) (malloc (size-of retval)))
+            (append-map duplicate (strides retval) (default-strides (shape retval))))))
 
 (define (generate-return-code args intermediate expr)
   (let [(retval (skeleton <obj>))]
     (list (list retval)
           args
           (append (construct-value (type intermediate) intermediate expr)
-                  (code intermediate expr)
-                  (code (parameter retval) (package-return-content intermediate))))))
+                  (duplicate intermediate expr)
+                  (duplicate (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
   (let* [(args         (map skeleton classes))
@@ -193,7 +193,7 @@
   (let* [(result-type  (multiarray type (length shape)))
          (args         (list (skeleton result-type) (skeleton type)))
          (parameters   (map parameter args))
-         (commands     (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
          (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
          (result       (make result-type #:shape shape))]
     (apply instructions (append-map unbuild (list result-type type) (list result value)))
@@ -290,7 +290,7 @@
 (define-method (to-type (target <meta<composite>>) (source <meta<composite>>))
   (lambda (out arg)
     (append-map
-      (lambda (channel) (code (channel (delegate out)) (channel (delegate arg))))
+      (lambda (channel) (duplicate (channel (delegate out)) (channel (delegate arg))))
       (components source))))
 
 (define-method (to-type (target <meta<element>>) (a <param>))

@@ -91,8 +91,8 @@
   (append-map += (content <complex<>> a) (content <complex<>> b)))
 (define-method (*= (a <internalcomplex>) (b <internalcomplex>))
   (let [(intermediate (parameter (complex (type (real-part a)))))]
-    (append (append-map code (content <complex<>> intermediate) (content <complex<>> (* a b)))
-            (append-map code (content <complex<>> a) (content <complex<>> intermediate)))))
+    (append (append-map duplicate (content <complex<>> intermediate) (content <complex<>> (* a b)))
+            (append-map duplicate (content <complex<>> a) (content <complex<>> intermediate)))))
 (define-method (max= (a <internalcomplex>) (b <internalcomplex>))
   (append-map max= (content <complex<>> a) (content <complex<>> b)))
 (define-method (min= (a <internalcomplex>) (b <internalcomplex>))

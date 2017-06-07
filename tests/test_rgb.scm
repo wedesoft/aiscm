@@ -159,23 +159,23 @@
       (a (skeleton <sintrgb>))
       (b (skeleton <sintrgb>))]
   (test-equal "Writing RGB to memory copies red channel"
-  (mov-signed (ptr <sint> (get p) 0) (get (red   a))) (caar   (code p a)))
+  (mov-signed (ptr <sint> (get p) 0) (get (red   a))) (caar   (duplicate p a)))
   (test-equal "Writing RGB to memory copies green channel"
-  (mov-signed (ptr <sint> (get p) 2) (get (green a))) (caadr  (code p a)))
+  (mov-signed (ptr <sint> (get p) 2) (get (green a))) (caadr  (duplicate p a)))
   (test-equal "Writing RGB to memory copies blue channel"
-  (mov-signed (ptr <sint> (get p) 4) (get (blue  a))) (caaddr (code p a)))
+  (mov-signed (ptr <sint> (get p) 4) (get (blue  a))) (caaddr (duplicate p a)))
   (test-equal "Reading RGB from memory copies red channel"
-  (mov-signed (get (red   a)) (ptr <sint> (get p) 0)) (caar   (code a p)))
+  (mov-signed (get (red   a)) (ptr <sint> (get p) 0)) (caar   (duplicate a p)))
   (test-equal "Reading RGB from memory copies green channel"
-  (mov-signed (get (green a)) (ptr <sint> (get p) 2)) (caadr  (code a p)))
+  (mov-signed (get (green a)) (ptr <sint> (get p) 2)) (caadr  (duplicate a p)))
   (test-equal "Reading RGB from memory copies blue channel"
-  (mov-signed (get (blue  a)) (ptr <sint> (get p) 4)) (caaddr (code a p)))
+  (mov-signed (get (blue  a)) (ptr <sint> (get p) 4)) (caaddr (duplicate a p)))
   (test-equal "copy red channel"
-  (mov-signed (get (red   a)) (get (red   b))) (caar   (code a b)))
+  (mov-signed (get (red   a)) (get (red   b))) (caar   (duplicate a b)))
   (test-equal "copy green channel"
-  (mov-signed (get (green a)) (get (green b))) (caadr  (code a b)))
+  (mov-signed (get (green a)) (get (green b))) (caadr  (duplicate a b)))
   (test-equal "copy blue channel"
-  (mov-signed (get (blue  a)) (get (blue  b))) (caaddr (code a b))))
+  (mov-signed (get (blue  a)) (get (blue  b))) (caaddr (duplicate a b))))
 (test-equal "compile and run identity function for RGB value"
   (rgb 3 2 5) ((jit ctx (list <intrgb>) identity) (rgb 3 2 5)))
 (test-equal "compile and run identity function for RGB array"

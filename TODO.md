@@ -1,6 +1,6 @@
 ## Ready
 
-* (op out (list a b)) -> (op out a b); align definition of "duplicate" <-> "code"
+* align definition of "duplicate" <-> "code"
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlation: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
