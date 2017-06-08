@@ -19,6 +19,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm program)
+             (aiscm expression)
              (aiscm register-allocate)
              (aiscm compile)
              (aiscm jit)
@@ -150,10 +151,19 @@
         (b (var <int>))
         (c (var <int>))]
     (test-equal "'repeat' loop"
-        (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+        (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JNL #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
         (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
     (test-equal "'repeat' loop with offset"
-      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JNL #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
       (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
 (test-end "repeat loop")
+
+(test-begin "each-element loop")
+  (let [(p1 (parameter <long>))
+        (s  (parameter <long>))
+        (p  (parameter <long>))]
+  (test-equal "'each-element' loop"
+    (list (SUB RSP 8) (CMP RAX RCX) (JNL 6) (NOP) (ADD RAX RDX) (JMP -11) (ADD RSP 8) (RET))
+    (resolve-jumps (jit-compile (flatten-code (list (each-element p p1 s (NOP)) (RET)))))))
+(test-end "each-element loop")
 (test-end "aiscm command")

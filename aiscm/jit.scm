@@ -50,7 +50,7 @@
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
-  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
+  #:re-export (min max to-type + - * = && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 

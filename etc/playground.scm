@@ -1,42 +1,75 @@
-(use-modules (oop goops) (aiscm jit) (aiscm pointer) (aiscm int) (aiscm asm) (aiscm expression) (aiscm obj) (aiscm sequence) (aiscm element) (srfi srfi-1) (aiscm operation) (aiscm rgb) (aiscm tensor) (aiscm variable))
+(use-modules (srfi srfi-64) (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm))
 
-(define s (parameter (sequence <int>)))
-(define i (var <long>))
-(define v (parameter <int>))
-(code v (injecter += i (get s i)))
+; * method to convert pointer parameter to integer
+; * "repeat" with parameters
+; * implement let-parameter*
+; * 2D convolution
+; * convolution with composite values
 
-(tensor (sum i (get (seq <obj> 2 3 5) i)))
-(tensor-body (sum i (get (seq <obj> 2 3 5) i)))
+(define (address x) (parameter (make <long> #:value (value x))))
 
-(tensor-variables '(sum i (get (seq <obj> 2 3 5) i)))
+(define-method (duplicate (a <indexer>) (b <convolution>))
+  (let [(data (car (delegate b)))
+        (kernel (cadr (delegate b)))]
+  (if (null? (shape kernel))
+    (duplicate a (* data kernel))
+    (let [(offset   (parameter <long>))
+          (a0       (parameter <long>))
+          (astep    (parameter <long>))
+          (d0       (parameter <long>))
+          (d1       (parameter <long>))
+          (dstep    (parameter <long>))
+          (k0       (parameter <long>))
+          (kstep    (parameter <long>))
+          (kend     (parameter <long>))
+          (dlast    (parameter <long>))
+          (klower   (parameter <long>))
+          (kupper   (parameter <long>))
+          (upper    (parameter <long>))]
+      (append (list (duplicate offset (dimension kernel))
+                    (SHR (value offset)); TODO: >>, << with one argument, 1+, 1-
+                    (duplicate a0 (address a))
+                    (duplicate astep (* (stride a) (native-const <long> (size-of (typecode a)))))
+                    (duplicate dstep (* (stride data) (native-const <long> (size-of (typecode data)))))
+                    (duplicate d0 (+ (address data) (* offset dstep)))
+                    (duplicate dlast (+ (address data) (- (* (dimension data) dstep) dstep)))
+                    (duplicate kstep (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
+                    (duplicate klower (+ (address kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
+                    (duplicate kend (+ (address kernel) (* (dimension kernel) kstep)))
+                    (duplicate kupper (+ (address kernel) (+ (* offset kstep) kstep))))
+              (repeat 0 (value (dimension a))
+                      (duplicate k0 (max (address kernel) klower))
+                      (duplicate d1 (min d0 dlast))
+                      (let [(tmp (parameter (typecode a)))]
+                        (append (duplicate tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
+                                (+= k0 kstep) (-= d1 dstep)
+                                (duplicate upper (min kend kupper))
+                                (each-element k0 upper kstep
+                                        (+= tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
+                                        (-= d1 dstep))
+                                (duplicate (project (rebase a0 a)) tmp)))
+                      (+= kupper kstep)
+                      (+= klower kstep)
+                      (+= a0 astep)
+                      (+= d0 dstep)))))))
 
-(define ctx (make <context>))
-(define context ctx)
-(define classes (list <intrgb>))
-(define proc identity)
-
-(define args         (map skeleton classes))
-(define parameters   (map parameter args))
-(define expr         (apply proc parameters))
-(define result-type  (type expr))
-(define intermediate (parameter result-type))
-
-(define retval (skeleton <intrgb>))
-
-(define out (parameter retval))
-
-(code out scm-eol)
-
-(code intermediate expr)
-
-(delegate intermediate)
-(delegate expr)
-
-(code out (package-return-content intermediate))
-
-(define result       (generate-return-code args intermediate expr))
-(define commands     (apply virtual-variables (apply assemble result)))
-(define instructions (asm context <ulong> (map typecode (content-vars args)) commands))
-(define fun          (lambda header (apply instructions (append-map unbuild classes header))))
-
-((jit ctx (list <intrgb>) identity) (rgb 2 3 5))
+(test-begin "playground")
+(test-begin "convolution")
+  (test-equal "trivial convolution"
+    '(2 3 5) (to-list (convolve (seq 2 3 5) 1)))
+  (test-equal "use convolution to scale values"
+    '(4 6 10) (to-list (convolve (seq 2 3 5) 2)))
+  (test-equal "convolution with one-element array"
+    '(4 6 10) (to-list (convolve (seq 2 3 5) (seq 2))))
+  (test-equal "do not read over array boundaries"
+    '(0 0 0) (to-list (convolve (crop 3 (dump 1 (seq 1 0 0 0 1))) (seq 1 2 4))))
+  (test-equal "convolution with 3-element impulse kernel"
+    '(1 2 3 4 5) (to-list (convolve (seq 1 2 3 4 5) (seq 0 1 0))))
+  (test-equal "convolution with 32-bit integers"
+    '(1 2 3 4 5) (to-list (convolve (seq <int> 1 2 3 4 5) (seq <int> 0 1 0))))
+  (test-equal "convolution with 3-element shift-left kernel"
+    '(2 3 0) (to-list (convolve (seq 1 2 3) (seq 1 0 0))))
+  (test-equal "convolution with 3-element shift-right kernel"
+    '(0 1 2) (to-list (convolve (seq 1 2 3) (seq 0 0 1))))
+(test-end "convolution")
+(test-end "playground")

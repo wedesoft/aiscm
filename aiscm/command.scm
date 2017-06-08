@@ -30,7 +30,7 @@
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
             blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
             cmp cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
-            minor major cmp-where cmp-abs repeat)
+            minor major cmp-where cmp-abs repeat each-element)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -209,5 +209,9 @@
   (if (signed? out) (list (cmp out 0) (JNLE 'skip) (NEG out) 'skip) '()))
 
 (define (repeat start end . body)
+  "Repeat loop"
   (let [(i (var (typecode end)))]
-    (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
+    (list (MOV i start) 'begin (CMP i end) (JNL 'end) (INC i) body (JMP 'begin) 'end)))
+
+(define (each-element iterator end step . body)
+  (list 'begin (CMP (value iterator) (value end)) (JNL 'end) body (ADD (value iterator) (value step)) (JMP 'begin) 'end))

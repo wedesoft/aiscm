@@ -1,12 +1,22 @@
 ## Ready
 
-* align definition of "duplicate" <-> "code"
+* method to convert pointer parameter to integer
+* "repeat" with parameters
+* implement let-parameter\*
+* 2D convolution
+* convolution with composite values
+* >>, << with one argument
+* address parameter of array
+* >>, << with one argument, 1+, 1-
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
-* correlation: \*, +=, dilation: first/conditional, max, ...
+* correlate with set of sobel filters
+* convolution: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
 * sum with multiple indices or no indices, standalone sum expression
+* index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
+* cache fill method
 * lookup, pseudo colour, warp
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
@@ -16,7 +26,6 @@
 * argmax
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov/copy
-* cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
 * how to run test suite

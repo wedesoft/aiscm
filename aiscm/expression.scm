@@ -26,9 +26,9 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
-  #:export (<param> <lookup> <indexer> <function> <injecter>
+  #:export (<param> <lookup> <indexer> <function> <injecter> <convolution>
             skeleton delegate parameter lookup indexer index name coercion term type
-            make-function subst dimension-hint injecter)
+            make-function subst dimension-hint injecter convolution)
   #:re-export (typecode value get project shape strides rebase content)
   #:export-syntax (inject dim))
 
@@ -95,11 +95,17 @@
   (let [(index (var <long>))]
     (injecter name index delegate)))
 
+(define-class <convolution> (<param>))
+
+(define (convolution data kernel)
+  (make <convolution> #:delegate (list data kernel)))
+
 (define-method (type (self <param>)) (typecode (delegate self)))
 (define-method (type (self <indexer>)) (sequence (type (delegate self))))
 (define-method (type (self <lookup>)) (type (delegate self)))
 (define-method (type (self <function>)) (apply (coercion self) (map type (delegate self))))
 (define-method (type (self <injecter>)) (type (delegate self)))
+(define-method (type (self <convolution>)) (apply coerce (map type (delegate self))))
 (define-method (typecode (self <param>)) (typecode (type self)))
 
 (define-method (value (self <param>)) (value (delegate self)))
@@ -146,6 +152,9 @@
 (define-method (shape (self <indexer>)) (attach (shape (delegate self)) (dimension self)))
 (define-method (shape (self <function>)) (argmax length (map shape (delegate self))))
 (define-method (shape (self <injecter>)) (shape (delegate self)))
+(define-method (shape (self <convolution>))
+  (let [(shapes (map shape (delegate self)))]
+    (append (car shapes) (list-tail (cadr shapes) (apply min (map length shapes))))))
 
 (define-method (dimension (self <param>)) (last (shape self)))
 
@@ -155,11 +164,13 @@
 (define-method (lookup (self <lookup>) (idx <var>)) (if (eq? (index self) idx) self (lookup (delegate self) idx)))
 (define-method (stride (self <indexer>)) (stride (lookup self)))
 
-(define-method (rebase value (self <param>)) (parameter (rebase value (delegate self))))
-(define-method (rebase value (self <indexer>))
+(define-method (rebase (value <var>) (self <param>)) (parameter (rebase value (delegate self))))
+(define-method (rebase (value <var>) (self <indexer>))
   (indexer (index self) (rebase value (delegate self)) (dimension self)))
-(define-method (rebase value (self <lookup>))
+(define-method (rebase (value <var>) (self <lookup>))
   (lookup (index self) (rebase value (delegate self)) (stride self)))
+(define-method (rebase (param <param>) (self <param>))
+  (rebase (value param) self))
 
 (define-method (content (type <meta<element>>) (self <param>)) (map parameter (content type (delegate self))))
 (define-method (content (type <meta<scalar>>) (self <function>)) (list self))

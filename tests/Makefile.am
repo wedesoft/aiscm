@@ -11,7 +11,7 @@ TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmp
 				test_method.scm test_obj.scm test_pointer.scm test_pulse.scm test_rgb.scm test_ringbuffer.scm \
 				test_sequence.scm test_util.scm test_samples.scm test_tensor.scm test_variable.scm test_command.scm test_program.scm \
 				test_live_analysis.scm test_register_allocate.scm test_compile.scm test_expression.scm test_loop.scm \
-				test_operation.scm
+				test_operation.scm test_convolution.scm
 
 EXTRA_DIST = $(TESTS)
 
