@@ -35,7 +35,7 @@
               (shape #:init-keyword #:shape #:getter shape)
               (strides #:init-keyword #:strides #:getter strides))
 (define (default-strides shape)
-  (map (compose (cut apply * <>) (cut take shape <>)) (iota (length shape))))
+  (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))
 (define (sequence type . args)
   (if (is-a? type <meta<element>>)
     (if (null? args)

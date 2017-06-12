@@ -147,7 +147,7 @@
 (define (gather sizes lst)
   (if (null? sizes) '()
     (let [(n (car sizes))]
-      (cons (take lst n) (gather (cdr sizes) (drop lst n))))))
+      (cons (list-head lst n) (gather (cdr sizes) (list-tail lst n))))))
 (define (fixed-point initial iteration compare?)
   (let [(successor (iteration initial))]
     (if (compare? initial successor)
