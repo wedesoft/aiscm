@@ -29,7 +29,7 @@
                     (duplicate klower (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
                     (duplicate kend (+ (array-pointer kernel) (* (dimension kernel) kstep)))
                     (duplicate kupper (+ (array-pointer kernel) (+ (* offset kstep) kstep))))
-              (repeat 0 (value (dimension a))
+              (repeat 0 (dimension a)
                       (duplicate k0 (max (array-pointer kernel) klower))
                       (duplicate d1 (min d0 dlast))
                       (let [(tmp (parameter (typecode a)))]

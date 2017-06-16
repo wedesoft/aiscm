@@ -148,7 +148,7 @@
 
 (test-begin "repeat loop")
   (let [(a (var <int>))
-        (b (var <int>))
+        (b (parameter <int>))
         (c (var <int>))]
     (test-equal "'repeat' loop"
         (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JNL #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))

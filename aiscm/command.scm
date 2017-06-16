@@ -211,7 +211,7 @@
 (define (repeat start end . body)
   "Repeat loop"
   (let [(i (var (typecode end)))]
-    (list (MOV i start) 'begin (CMP i end) (JNL 'end) (INC i) body (JMP 'begin) 'end)))
+    (list (MOV i start) 'begin (CMP i (value end)) (JNL 'end) (INC i) body (JMP 'begin) 'end)))
 
 (define (each-element iterator end step . body)
   (list 'begin (CMP (value iterator) (value end)) (JNL 'end) body (ADD (value iterator) (value step)) (JMP 'begin) 'end))

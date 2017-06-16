@@ -88,8 +88,7 @@
         (source (multi-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
-            (repeat 0
-                    (value (dimension a))
+            (repeat 0 (dimension a)
                     (duplicate (body dest) (body source))
                     (append-map loop-increment (loop-details dest))
                     (append-map loop-increment (loop-details source))))))
@@ -107,7 +106,7 @@
       (append-map loop-setup (loop-details t))
       (let-parameter [(tmp (typecode a) (body t))]
          (append-map loop-increment (loop-details t))
-         (repeat 1 (value (dimension-hint (index b)))
+         (repeat 1 (dimension-hint (index b))
                  ((name b) tmp (body t))
                  (append-map loop-increment (loop-details t)))
          (duplicate a tmp)))))
@@ -136,13 +135,13 @@
                     (IMUL dstep (value (stride data)) (size-of (typecode data)))
                     (ADD d0 offset)
                     (IMUL kstep (value (stride kernel)) (size-of (typecode kernel))))
-              (repeat 0 (value (dimension a))
+              (repeat 0 (dimension a)
                       (MOV k0 (value kernel))
                       (MOV d1 d0)
                       (let [(tmp (parameter (typecode a)))]
                         (append (duplicate tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
                                 (list (ADD k0 kstep) (SUB d1 dstep))
-                                (repeat 1 (value (dimension kernel))
+                                (repeat 1 (dimension kernel)
                                         (+= tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
                                         (ADD k0 kstep) (SUB d1 dstep))
                                 (duplicate (project (rebase a0 a)) tmp)))

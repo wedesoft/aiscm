@@ -1,6 +1,5 @@
 ## Ready
 
-* "repeat" with parameters
 * implement let-parameter\*
 * 2D convolution
 * convolution with composite values
