@@ -28,7 +28,7 @@
   #:use-module (aiscm util)
   #:export (<param> <lookup> <indexer> <function> <injecter> <convolution>
             skeleton delegate parameter lookup indexer index name coercion term type
-            make-function subst dimension-hint injecter convolution)
+            make-function subst dimension-hint injecter convolution array-pointer)
   #:re-export (typecode value get project shape strides rebase content)
   #:export-syntax (inject dim))
 
@@ -177,3 +177,7 @@
 (define-method (content (type <meta<composite>>) (self <function>)) (delegate self))
 (define-method (content (type <meta<sequence<>>>) (self <param>))
   (cons (dimension self) (cons (stride self) (content (project type) (project self)))))
+
+(define (array-pointer self)
+  "Extract array pointer and return as a parameter"
+  (parameter (make <long> #:value (value self))))

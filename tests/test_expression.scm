@@ -172,4 +172,12 @@
     (test-equal "rebase pointer parameter with parameter"
       (value x) (value (rebase x p))))
 (test-end "rebase")
+
+(test-begin "array-pointer")
+  (let [(s (parameter (sequence <long>)))]
+  (test-equal "array pointer has base pointer of array as value"
+    (value s) (value (array-pointer s)))
+  (test-equal "array pointer is a 64 bit integer"
+    <long> (type (array-pointer s))))
+(test-end "array-pointer")
 (test-end "aiscm expression")

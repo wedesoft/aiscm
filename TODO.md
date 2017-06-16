@@ -1,13 +1,12 @@
 ## Ready
 
-* method to convert pointer parameter to integer
 * "repeat" with parameters
 * implement let-parameter\*
 * 2D convolution
 * convolution with composite values
 * >>, << with one argument
 * address parameter of array
-* >>, << with one argument, 1+, 1-
+* 1+, 1-
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlate with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...

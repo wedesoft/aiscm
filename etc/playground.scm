@@ -1,13 +1,5 @@
 (use-modules (srfi srfi-64) (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm))
 
-; * method to convert pointer parameter to integer
-; * "repeat" with parameters
-; * implement let-parameter*
-; * 2D convolution
-; * convolution with composite values
-
-(define (address x) (parameter (make <long> #:value (value x))))
-
 (define-method (duplicate (a <indexer>) (b <convolution>))
   (let [(data (car (delegate b)))
         (kernel (cadr (delegate b)))]
@@ -27,18 +19,18 @@
           (kupper   (parameter <long>))
           (upper    (parameter <long>))]
       (append (list (duplicate offset (dimension kernel))
-                    (SHR (value offset)); TODO: >>, << with one argument, 1+, 1-
-                    (duplicate a0 (address a))
+                    (SHR (value offset))
+                    (duplicate a0 (array-pointer a))
                     (duplicate astep (* (stride a) (native-const <long> (size-of (typecode a)))))
                     (duplicate dstep (* (stride data) (native-const <long> (size-of (typecode data)))))
-                    (duplicate d0 (+ (address data) (* offset dstep)))
-                    (duplicate dlast (+ (address data) (- (* (dimension data) dstep) dstep)))
+                    (duplicate d0 (+ (array-pointer data) (* offset dstep)))
+                    (duplicate dlast (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
                     (duplicate kstep (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
-                    (duplicate klower (+ (address kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
-                    (duplicate kend (+ (address kernel) (* (dimension kernel) kstep)))
-                    (duplicate kupper (+ (address kernel) (+ (* offset kstep) kstep))))
+                    (duplicate klower (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
+                    (duplicate kend (+ (array-pointer kernel) (* (dimension kernel) kstep)))
+                    (duplicate kupper (+ (array-pointer kernel) (+ (* offset kstep) kstep))))
               (repeat 0 (value (dimension a))
-                      (duplicate k0 (max (address kernel) klower))
+                      (duplicate k0 (max (array-pointer kernel) klower))
                       (duplicate d1 (min d0 dlast))
                       (let [(tmp (parameter (typecode a)))]
                         (append (duplicate tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
