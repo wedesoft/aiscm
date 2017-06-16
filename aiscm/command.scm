@@ -162,10 +162,13 @@
 (define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-(define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
-(define (shl r x) (shx r x SAL SHL))
-(define (shr r x) (shx r x SAR SHR))
+(define* ((shx shift-signed shift-unsigned) r . x)
+  (let [(shift (if (signed? r) shift-signed shift-unsigned))]
+    (if (null? x)
+        (list (shift r))
+        (blocked RCX (apply mov-unsigned CL x) (shift r CL)))))
+(define (shl r . x) (apply (shx SAL SHL) r x))
+(define (shr r . x) (apply (shx SAR SHR) r x))
 
 (define-method (test (a <var>)) (list (TEST a a)))
 (define-method (test (a <ptr>))

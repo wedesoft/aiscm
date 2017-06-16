@@ -147,6 +147,13 @@
     '(#f #t #f) (to-list (! (seq #t #f #t))))
 (test-end "unary =0, !=0, and !")
 
+(test-begin "unary << and >>")
+  (test-equal "left-shift sequence"
+    '(2 4 6) (to-list (<< (seq 1 2 3))))
+  (test-equal "right-shift sequence"
+    '(2 4 6) (to-list (>> (seq 4 8 12))))
+(test-end "unary << and >>")
+
 (test-begin "binary +")
   (test-equal "add 1 to downsampled array"
     '(2 4) (to-list (+ (downsample 2 (seq 1 2 3 4)) 1)))

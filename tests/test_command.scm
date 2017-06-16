@@ -131,10 +131,18 @@
     (list (mov-unsigned CL n) (SHL u CL)) (filter-blocks (shl u n)))
   (test-equal "shl uses SAL for signed input"
     (list (mov-unsigned CL n) (SAL s CL)) (filter-blocks (shl s n)))
-  (test-equal "shl uses SHR for unsigned input"
+  (test-equal "shl with one unsigned argument"
+    (list (SHL u)) (shl u))
+  (test-equal "shl with one signed argument"
+    (list (SAL s)) (shl s))
+  (test-equal "shr uses SHR for unsigned input"
     (list (mov-unsigned CL n) (SHR u CL)) (filter-blocks (shr u n)))
-  (test-equal "shl uses SAR for signed input"
-    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n))))
+  (test-equal "shr uses SAR for signed input"
+    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n)))
+  (test-equal "shr with one unsigned argument"
+    (list (SHR u)) (shr u))
+  (test-equal "shr with one signed argument"
+    (list (SAR s)) (shr s)))
 (test-end "shl and shr")
 
 (test-begin "boolean operations")

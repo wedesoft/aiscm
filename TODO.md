@@ -1,9 +1,9 @@
 ## Ready
 
+* >>, << with one object argument, with RGB argument
 * implement let-parameter\*
 * 2D convolution
 * convolution with composite values
-* >>, << with one argument
 * address parameter of array
 * 1+, 1-
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution

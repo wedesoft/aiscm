@@ -18,8 +18,7 @@
           (klower   (parameter <long>))
           (kupper   (parameter <long>))
           (upper    (parameter <long>))]
-      (append (list (duplicate offset (dimension kernel))
-                    (SHR (value offset))
+      (append (list (duplicate offset (>> (dimension kernel)))
                     (duplicate a0 (array-pointer a))
                     (duplicate astep (* (stride a) (native-const <long> (size-of (typecode a)))))
                     (duplicate dstep (* (stride data) (native-const <long> (size-of (typecode data)))))
