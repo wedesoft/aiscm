@@ -1,5 +1,6 @@
 ## Ready
 
+* let-parameter\* <-> let-parameter
 * >>, << with one object argument, with RGB argument
 * implement let-parameter\*
 * 2D convolution

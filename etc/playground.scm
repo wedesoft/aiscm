@@ -5,6 +5,7 @@
         (kernel (cadr (delegate b)))]
   (if (null? (shape kernel))
     (duplicate a (* data kernel))
+    (let-parameter* [(offset <long> (>> (dimension kernel)))]
     (let [(offset   (parameter <long>))
           (a0       (parameter <long>))
           (astep    (parameter <long>))
@@ -42,7 +43,7 @@
                       (+= kupper kstep)
                       (+= klower kstep)
                       (+= a0 astep)
-                      (+= d0 dstep)))))))
+                      (+= d0 dstep))))))))
 
 (test-begin "playground")
 (test-begin "convolution")

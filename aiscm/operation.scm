@@ -38,7 +38,7 @@
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
   #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
-  #:export-syntax (define-operator-mapping let-skeleton let-parameter))
+  #:export-syntax (define-operator-mapping let-skeleton* let-parameter let-parameter*))
 
 
 (define* ((native-data native) out)
@@ -71,17 +71,24 @@
 (define-method (force-parameters target args predicate fun)
   (force-parameters (make-list (length args) target) args predicate fun))
 
-(define-syntax-rule (let-prototype [(name prototype value)] body ...)
-  (let [(name prototype)] (list (duplicate name value) body ...)))
-(define-syntax-rule (let-skeleton [(name type value)] body ...)
-  (let-prototype [(name (skeleton type) value)] body ...))
-(define-syntax-rule (let-parameter [(name type value)] body ...)
-  (let-prototype [(name (parameter type) value)] body ...))
+(define-syntax let-prototype
+  (lambda (x)
+    (syntax-case x ()
+      ((let-prototype prototype [] body ...)
+        #'(list body ...))
+      ((let-prototype prototype [(var type expr) definitions ...] body ...)
+        #'(let [(var (prototype type))] (append (duplicate var expr) (let-prototype prototype [definitions ...] body ...)))))))
+
+(define-syntax-rule (let-parameter* definitions body ...)
+  (let-prototype parameter definitions body ...))
+
+(define-syntax-rule (let-skeleton* definitions body ...)
+  (let-prototype skeleton definitions body ...))
 
 (define-method (duplicate (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
 (define-method (duplicate (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 (define-method (duplicate (a <pointer<>>) (b <pointer<>>))
-  (let-skeleton [(tmp (typecode a) b)] (duplicate a tmp)))
+  (let-skeleton* [(tmp (typecode a) b)] (duplicate a tmp)))
 (define-method (duplicate (a <param>) (b <param>)) (duplicate (delegate a) (delegate b)))
 (define-method (duplicate (a <indexer>) (b <param>))
   (let [(dest   (multi-loop a))
@@ -94,17 +101,17 @@
                     (append-map loop-increment (loop-details source))))))
 (define-method (duplicate (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (let-skeleton [(tmp (type fun) fun)] (duplicate out tmp))
+    (let-skeleton* [(tmp (type fun) fun)] (duplicate out tmp))
     ((term fun) (parameter out))))
 (define-method (duplicate (out <pointer<>>) (fun <function>))
-  (let-skeleton [(tmp (typecode out) fun)] (duplicate out tmp)))
+  (let-skeleton* [(tmp (typecode out) fun)] (duplicate out tmp)))
 (define-method (duplicate (out <param>) (fun <function>)) (duplicate (delegate out) fun))
 (define-method (duplicate (out <param>) (value <integer>)) (duplicate out (native-const (type out) value)))
 (define-method (duplicate (a <param>) (b <injecter>))
   (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
-      (let-parameter [(tmp (typecode a) (body t))]
+      (let-parameter* [(tmp (typecode a) (body t))]
          (append-map loop-increment (loop-details t))
          (repeat 1 (dimension-hint (index b))
                  ((name b) tmp (body t))
