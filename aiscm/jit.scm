@@ -42,15 +42,16 @@
   #:use-module (aiscm operation)
   #:use-module (aiscm method)
   #:export (virtual-variables
-            convert-type assemble build-list package-return-content
+            assemble build-list package-return-content
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
             decompose-arg delegate-fun generate-return-code
             make-native-function native-call
-            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations)
-  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 conj
-               -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+            scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
+            coerce-where)
+  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
+               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
@@ -69,10 +70,11 @@
 (define-macro (define-cumulative name arity)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) (list ,@args)))))
+    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) ,@args))))
 
 (define-cumulative -=   1)
 (define-cumulative ~=   1)
+(define-cumulative abs= 1)
 (define-cumulative +=   2)
 (define-cumulative -=   2)
 (define-cumulative *=   2)
@@ -86,36 +88,38 @@
 (define-cumulative min= 2)
 (define-cumulative max= 2)
 
-(define-operator-mapping -   1 <meta<element>> (native-fun obj-negate    ))
+(define-operator-mapping -     (<meta<element>>                ) (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
-(define-operator-mapping ~   1 <meta<element>> (native-fun scm-lognot    ))
-(define-operator-mapping =0  1 <meta<element>> (native-fun obj-zero-p    ))
-(define-operator-mapping !=0 1 <meta<element>> (native-fun obj-nonzero-p ))
-(define-operator-mapping !   1 <meta<element>> (native-fun obj-not       ))
-(define-operator-mapping +   2 <meta<element>> (native-fun scm-sum       ))
-(define-operator-mapping -   2 <meta<element>> (native-fun scm-difference))
-(define-operator-mapping *   2 <meta<element>> (native-fun scm-product   ))
-(define-operator-mapping /   2 <meta<element>> (native-fun scm-divide    ))
-(define-operator-mapping %   2 <meta<element>> (native-fun scm-remainder ))
-(define-operator-mapping <<  2 <meta<element>> (native-fun scm-ash       ))
-(define-operator-mapping >>  2 <meta<element>> (native-fun obj-shr       ))
-(define-operator-mapping &   2 <meta<element>> (native-fun scm-logand    ))
-(define-operator-mapping |   2 <meta<element>> (native-fun scm-logior    ))
-(define-operator-mapping ^   2 <meta<element>> (native-fun scm-logxor    ))
-(define-operator-mapping &&  2 <meta<element>> (native-fun obj-and       ))
-(define-operator-mapping ||  2 <meta<element>> (native-fun obj-or        ))
-(define-operator-mapping =   2 <meta<element>> (native-fun obj-equal-p   ))
-(define-operator-mapping !=  2 <meta<element>> (native-fun obj-nequal-p  ))
-(define-operator-mapping <   2 <meta<element>> (native-fun obj-less-p    ))
-(define-operator-mapping <=  2 <meta<element>> (native-fun obj-leq-p     ))
-(define-operator-mapping >   2 <meta<element>> (native-fun obj-gr-p      ))
-(define-operator-mapping >=  2 <meta<element>> (native-fun obj-geq-p     ))
-(define-operator-mapping min 2 <meta<element>> (native-fun scm-min       ))
-(define-operator-mapping max 2 <meta<element>> (native-fun scm-max       ))
+(define-operator-mapping ~     (<meta<element>>                ) (native-fun scm-lognot    ))
+(define-operator-mapping abs   (<meta<element>>                ) (native-fun scm-abs       ))
+(define-operator-mapping =0    (<meta<element>>                ) (native-fun obj-zero-p    ))
+(define-operator-mapping !=0   (<meta<element>>                ) (native-fun obj-nonzero-p ))
+(define-operator-mapping !     (<meta<element>>                ) (native-fun obj-not       ))
+(define-operator-mapping +     (<meta<element>> <meta<element>>) (native-fun scm-sum       ))
+(define-operator-mapping -     (<meta<element>> <meta<element>>) (native-fun scm-difference))
+(define-operator-mapping *     (<meta<element>> <meta<element>>) (native-fun scm-product   ))
+(define-operator-mapping /     (<meta<element>> <meta<element>>) (native-fun scm-divide    ))
+(define-operator-mapping %     (<meta<element>> <meta<element>>) (native-fun scm-remainder ))
+(define-operator-mapping <<    (<meta<element>> <meta<element>>) (native-fun scm-ash       ))
+(define-operator-mapping >>    (<meta<element>> <meta<element>>) (native-fun obj-shr       ))
+(define-operator-mapping &     (<meta<element>> <meta<element>>) (native-fun scm-logand    ))
+(define-operator-mapping |     (<meta<element>> <meta<element>>) (native-fun scm-logior    ))
+(define-operator-mapping ^     (<meta<element>> <meta<element>>) (native-fun scm-logxor    ))
+(define-operator-mapping &&    (<meta<element>> <meta<element>>) (native-fun obj-and       ))
+(define-operator-mapping ||    (<meta<element>> <meta<element>>) (native-fun obj-or        ))
+(define-operator-mapping =     (<meta<element>> <meta<element>>) (native-fun obj-equal-p   ))
+(define-operator-mapping !=    (<meta<element>> <meta<element>>) (native-fun obj-nequal-p  ))
+(define-operator-mapping lt    (<meta<element>> <meta<element>>) (native-fun obj-less-p    ))
+(define-operator-mapping le    (<meta<element>> <meta<element>>) (native-fun obj-leq-p     ))
+(define-operator-mapping gt    (<meta<element>> <meta<element>>) (native-fun obj-gr-p      ))
+(define-operator-mapping ge    (<meta<element>> <meta<element>>) (native-fun obj-geq-p     ))
+(define-operator-mapping min   (<meta<element>> <meta<element>>) (native-fun scm-min       ))
+(define-operator-mapping max   (<meta<element>> <meta<element>>) (native-fun scm-max       ))
+(define-operator-mapping where (<meta<element>> <meta<element>> <meta<element>>) (native-fun obj-where     ))
 
 (define-macro (define-object-cumulative name basis)
   `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out args) (code out (apply ,basis args)))))
+    (lambda (out . args) (duplicate out (apply ,basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -125,15 +129,15 @@
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
-  ((apply name (map type args)) out args))
+  (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
-  ((apply name (map type args)) out args))
+  (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
   (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
     (if (eq? out (car args))
       result
-      (append-map code (content (type out) out) (content (type result) result)))))
-(define ((delegate-fun name) out args)
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
+(define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
 (define-method (type (self <function>))
@@ -161,17 +165,17 @@
 (define-method (construct-value result-type retval expr) '())
 (define-method (construct-value (result-type <meta<sequence<>>>) retval expr)
   (let [(malloc (if (pointerless? result-type) scm-gc-malloc-pointerless scm-gc-malloc))]
-    (append (append-map code (shape retval) (shape expr))
-            (code (last (content result-type retval)) (malloc (size-of retval)))
-            (append-map code (strides retval) (default-strides (shape retval))))))
+    (append (append-map duplicate (shape retval) (shape expr))
+            (duplicate (last (content result-type retval)) (malloc (size-of retval)))
+            (append-map duplicate (strides retval) (default-strides (shape retval))))))
 
 (define (generate-return-code args intermediate expr)
   (let [(retval (skeleton <obj>))]
     (list (list retval)
           args
           (append (construct-value (type intermediate) intermediate expr)
-                  (code intermediate expr)
-                  (code (parameter retval) (package-return-content intermediate))))))
+                  (duplicate intermediate expr)
+                  (duplicate (parameter retval) (package-return-content intermediate))))))
 
 (define (jit context classes proc)
   (let* [(args         (map skeleton classes))
@@ -189,7 +193,7 @@
   (let* [(result-type  (multiarray type (length shape)))
          (args         (list (skeleton result-type) (skeleton type)))
          (parameters   (map parameter args))
-         (commands     (virtual-variables '() (content-vars args) (attach (apply code parameters) (RET))))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
          (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
          (result       (make result-type #:shape shape))]
     (apply instructions (append-map unbuild (list result-type type) (list result value)))
@@ -224,15 +228,17 @@
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
-; various type class conversions
-(define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
-(define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
+
+(define (coerce-where m a b)
+  "Coercion for selecting values using a boolean mask with 'where'"
+  (convert-type (typecode (coerce a b)) (reduce coerce #f (list m a b))))
 
 (define-jit-dispatch duplicate 1 identity)
 (define-jit-method identity -   1)
 (define-jit-method identity ~   1)
+(define-jit-method identity abs 1)
 (define-jit-method to-bool  =0  1)
 (define-jit-method to-bool  !=0 1)
 (define-jit-method to-bool  !   1)
@@ -250,12 +256,13 @@
 (define-jit-method coerce   ||  2)
 (define-jit-method to-bool  =   2)
 (define-jit-method to-bool  !=  2)
-(define-jit-method to-bool  <   2)
-(define-jit-method to-bool  <=  2)
-(define-jit-method to-bool  >   2)
-(define-jit-method to-bool  >=  2)
+(define-jit-method to-bool  lt  2)
+(define-jit-method to-bool  le  2)
+(define-jit-method to-bool  gt  2)
+(define-jit-method to-bool  ge  2)
 (define-jit-method coerce   min 2)
 (define-jit-method coerce   max 2)
+(define-jit-method coerce-where where 3)
 
 (define-method (to-type (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
 (define-method (to-type (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
@@ -265,12 +272,12 @@
 (define-method (to-type (target <meta<int>>  ) (source <meta<obj>>  )) (native-fun scm-to-int32   ))
 (define-method (to-type (target <meta<ulong>>) (source <meta<obj>>  )) (native-fun scm-to-uint64  ))
 (define-method (to-type (target <meta<long>> ) (source <meta<obj>>  )) (native-fun scm-to-int64   ))
-(define-method (to-type (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code mov       ))
-(define-method (to-type (target <meta<int<>>>) (source <meta<bool>> )) (functional-code mov       ))
-(define-method (to-type (target <meta<bool>> ) (source <meta<bool>> )) (functional-code mov       ))
-(define-method (to-type (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code mov       ))
+(define-method (to-type (target <meta<int<>>>) (source <meta<int<>>>)) (functional-code identity mov))
+(define-method (to-type (target <meta<int<>>>) (source <meta<bool>> )) (functional-code identity mov))
+(define-method (to-type (target <meta<bool>> ) (source <meta<bool>> )) (functional-code identity mov))
+(define-method (to-type (target <meta<bool>> ) (source <meta<int<>>>)) (functional-code identity mov))
 (define-method (to-type (target <meta<bool>> ) (source <meta<obj>>  )) (native-fun scm-to-bool    ))
-(define-method (to-type (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code mov       ))
+(define-method (to-type (target <meta<obj>>  ) (source <meta<obj>>  )) (functional-code identity mov))
 (define-method (to-type (target <meta<obj>>  ) (source <meta<ubyte>>)) (native-fun scm-from-uint8 ))
 (define-method (to-type (target <meta<obj>>  ) (source <meta<byte>> )) (native-fun scm-from-int8  ))
 (define-method (to-type (target <meta<obj>>  ) (source <meta<usint>>)) (native-fun scm-from-uint16))
@@ -281,9 +288,9 @@
 (define-method (to-type (target <meta<obj>>  ) (source <meta<long>> )) (native-fun scm-from-int64 ))
 (define-method (to-type (target <meta<obj>>  ) (source <meta<bool>> )) (native-fun obj-from-bool  ))
 (define-method (to-type (target <meta<composite>>) (source <meta<composite>>))
-  (lambda (out args)
+  (lambda (out arg)
     (append-map
-      (lambda (channel) (code (channel (delegate out)) (channel (delegate (car args)))))
+      (lambda (channel) (duplicate (channel (delegate out)) (channel (delegate arg))))
       (components source))))
 
 (define-method (to-type (target <meta<element>>) (a <param>))
@@ -313,7 +320,7 @@
             (list body ...)
             (list (ADD RSP (* 8 (length remaining-parameters)))))))
 
-(define* ((native-fun native) out args)
+(define* ((native-fun native) out . args)
   (force-parameters (argument-types native) args call-needs-intermediate?
     (lambda intermediates
       (blocked caller-saved

@@ -30,7 +30,7 @@
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
             blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
             cmp cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
-            minor major repeat)
+            minor major cmp-where cmp-abs repeat)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -199,6 +199,14 @@
     (append (cmp a b) (list ((if (signed? a) set-signed set-unsigned) a b)))))
 (define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
 (define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
+
+(define (cmp-where out m a b)
+  "Select value using boolean variable"
+  (list (test m) (JE 'zero) (mov out a) (JMP 'finish) 'zero (mov out b) 'finish))
+
+(define (cmp-abs out)
+  "Compute absolute value of signed or unsigned integers"
+  (if (signed? out) (list (cmp out 0) (JNLE 'skip) (NEG out) 'skip) '()))
 
 (define (repeat start end . body)
   (let [(i (var (typecode end)))]

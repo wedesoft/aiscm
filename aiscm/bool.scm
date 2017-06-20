@@ -22,7 +22,7 @@
   #:use-module (aiscm element)
   #:use-module (aiscm scalar)
   #:export (<bool> <meta<bool>>
-            && || ! !=)
+            && || ! != where)
   #:re-export (=))
 (define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
 (define-method (size-of (self <meta<bool>>)) 1)
@@ -44,3 +44,6 @@
 (define-generic !=)
 (define-generic =)
 (define-method (! (a <boolean>)) (not a))
+
+(define-method (where m a b)
+  (if m a b))

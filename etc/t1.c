@@ -1,8 +1,6 @@
 #include <stdlib.h>
 
-int g();
-
-int f()
+char f(char i)
 {
-  return g();
+  return abs(i);
 }

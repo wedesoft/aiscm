@@ -1,38 +1,42 @@
 ## Ready
 
-* to-type in tensor expresssions, implicit typecasting in tensor sum?
+* align definition of "duplicate" <-> "code"
+* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
+* correlation: \*, +=, dilation: first/conditional, max, ...
+* Conways way of life in one line of code
+* sum with multiple indices or no indices, standalone sum expression
+* inject: equality, sum, mininum, maximum of frames
+* pixel selection example (take reference from center pixels)
+* lookup, pseudo colour, warp
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating point exception (SIGFPE)
+* to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
-* n-dimensional tensor sums, standalone sum expression
+* dimension checks for array/tensor operations; array compatibility check
+* argmax
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
-* code -> mov
+* code -> mov/copy
 * cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
-* sum with multiple indices or no indices
 * how to run test suite
-* correlation: \*, +=, dilation: first/conditional, max, ...
-* array compatibility check
 * "let" for tensors
-* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
 * parameter passing for sequences, map, tensor operations, replace fill and other?
 * equality of arrays
-* inject: equality, sum, mininum, maximum of frames
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
 * Docker integration tests
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
-* pulse audio: reexport pointer stuff
 * module libraries without version numbers
 * virtual fighter
 * augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written
-* tensor sum
 * Debian sid FFmpeg API changes
 * fix dts error for mp4 output (Ubuntu Trusty)
 * select video codec, select audio codec
@@ -40,8 +44,6 @@
 * integration tests for XVideo, OpenGL, and XImage
 * NArray-like reshaping, other narray stuff
 * diagonal injection, convolution, median, dilation, ...
-* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* floating point exception (SIGFPE)
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * separate function for defining operation for array?
@@ -52,7 +54,6 @@
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * car, cadr, ... -> first, second, ...
-* conditional selection using boolean array
 * index manipulation on function expressions
 * direct mapping instead of decompose-arg for rgb and complex?
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
@@ -66,19 +67,21 @@
 * convert object to rgb, convert object to complex
 * 256 -> boolean conversion
 * 32 -> boolean conversion
-* fast fill method? fast set method
 * split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * ArUco markers robot control
-* fftw3, hypercomplex, kinect, linalg, opencv, qt4
+* hypercomplex numbers
+* linalg bindings
+* Kinect bindings
+* OpenCV bindings
+* FFTW3 bindings
 * predator tracker
 * <-> Guile 6.7.5 Arrays
 * create relocatable code and use linker to insert calls with relative addresses
 * use (ice-9 match) to simplify and translate assembler code?
   https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
-* Conways way of life in one line of code
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
 * keywords: data structures,digital signal processing,tensors,input/output (check standard theosaurus)
 * deduct sample time from delay in ffplay.scm

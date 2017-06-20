@@ -20,6 +20,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 curried-definitions)
   #:use-module (aiscm element)
+  #:use-module (aiscm scalar)
   #:use-module (aiscm bool)
   #:use-module (aiscm int)
   #:use-module (aiscm pointer)
@@ -30,17 +31,19 @@
   #:use-module (aiscm loop)
   #:use-module (aiscm method)
   #:use-module (aiscm util)
-  #:export (make-constant-function native-const need-conversion? code
-            code-needs-intermediate? operand code force-parameters
+  #:export (make-constant-function native-const need-conversion?
+            code-needs-intermediate? operand force-parameters
             operation-code mutating-code functional-code unary-extract
-            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:re-export (size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0)
+            convert-type ge gt le lt coerce-where-args
+            -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
+  #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton let-parameter))
 
-(define* ((native-data native) out args)
+
+(define* ((native-data native) out)
   (list (MOV (get (delegate out)) (get native))))
-(define (make-constant-function native . args)
-  (make-function make-constant-function (const (return-type native)) (native-data native) args))
+(define (make-constant-function native)
+  (make-function make-constant-function (const (return-type native)) (native-data native) '()))
 (define (native-const type value)
   (make-constant-function (native-value type value)))
 
@@ -62,42 +65,42 @@
 (define-method (force-parameters (targets <list>) args predicate fun)
   (let* [(mask          (map predicate targets args))
          (intermediates (map-select mask (compose parameter car list) (compose cadr list) targets args))
-         (preamble      (concatenate (map-select mask code (const '()) intermediates args)))]
+         (preamble      (concatenate (map-select mask duplicate (const '()) intermediates args)))]
     (attach preamble (apply fun intermediates))))
 (define-method (force-parameters target args predicate fun)
   (force-parameters (make-list (length args) target) args predicate fun))
 
 (define-syntax-rule (let-prototype [(name prototype value)] body ...)
-  (let [(name prototype)] (list (code name value) body ...)))
+  (let [(name prototype)] (list (duplicate name value) body ...)))
 (define-syntax-rule (let-skeleton [(name type value)] body ...)
   (let-prototype [(name (skeleton type) value)] body ...))
 (define-syntax-rule (let-parameter [(name type value)] body ...)
   (let-prototype [(name (parameter type) value)] body ...))
 
-(define-method (code (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (list (parameter b))))
-(define-method (code (a <element>) (b <integer>)) (list (MOV (operand a) b)))
-(define-method (code (a <pointer<>>) (b <pointer<>>))
-  (let-skeleton [(tmp (typecode a) b)] (code a tmp)))
-(define-method (code (a <param>) (b <param>)) (code (delegate a) (delegate b)))
-(define-method (code (a <indexer>) (b <param>))
+(define-method (duplicate (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
+(define-method (duplicate (a <element>) (b <integer>)) (list (MOV (operand a) b)))
+(define-method (duplicate (a <pointer<>>) (b <pointer<>>))
+  (let-skeleton [(tmp (typecode a) b)] (duplicate a tmp)))
+(define-method (duplicate (a <param>) (b <param>)) (duplicate (delegate a) (delegate b)))
+(define-method (duplicate (a <indexer>) (b <param>))
   (let [(dest   (multi-loop a))
         (source (multi-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
             (repeat 0
                     (value (dimension a))
-                    (code (body dest) (body source))
+                    (duplicate (body dest) (body source))
                     (append-map loop-increment (loop-details dest))
                     (append-map loop-increment (loop-details source))))))
-(define-method (code (out <element>) (fun <function>))
+(define-method (duplicate (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (let-skeleton [(tmp (type fun) fun)] (code out tmp))
+    (let-skeleton [(tmp (type fun) fun)] (duplicate out tmp))
     ((term fun) (parameter out))))
-(define-method (code (out <pointer<>>) (fun <function>))
-  (let-skeleton [(tmp (typecode out) fun)] (code out tmp)))
-(define-method (code (out <param>) (fun <function>)) (code (delegate out) fun))
-(define-method (code (out <param>) (value <integer>)) (code out (native-const (type out) value)))
-(define-method (code (a <param>) (b <injecter>))
+(define-method (duplicate (out <pointer<>>) (fun <function>))
+  (let-skeleton [(tmp (typecode out) fun)] (duplicate out tmp)))
+(define-method (duplicate (out <param>) (fun <function>)) (duplicate (delegate out) fun))
+(define-method (duplicate (out <param>) (value <integer>)) (duplicate out (native-const (type out) value)))
+(define-method (duplicate (a <param>) (b <injecter>))
   (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
@@ -106,7 +109,7 @@
          (repeat 1 (value (dimension-hint (index b)))
                  ((name b) tmp (body t)); TODO: composite values
                  (append-map loop-increment (loop-details t)))
-         (code a tmp)))))
+         (duplicate a tmp)))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
@@ -114,80 +117,86 @@
 (define (code-needs-intermediate? t value)
   (or (is-a? value <function>) (is-a? value <injecter>) (need-conversion? t (type value))))
 
-(define (operation-code target op out args)
+(define-method (convert-type (target <meta<element>>) (self <meta<element>>)) target)
+(define-method (convert-type (target <meta<element>>) (self <meta<sequence<>>>)) (multiarray target (dimensions self)))
+
+(define (coerce-where-args m a b)
+  "Coercion for boolean selection using 'where'"
+  (let [(choice-type (coerce a b))]
+    (list m choice-type choice-type)))
+
+(define (operation-code targets op out args)
   "Adapter for nested expressions"
-  (force-parameters target args code-needs-intermediate?
+  (force-parameters targets args code-needs-intermediate?
     (lambda intermediates
       (apply op (operand out) (map operand intermediates)))))
 
-(define ((cumulative-code op) out args)
+(define ((cumulative-code op) out . args)
   "Adapter for cumulative operations"
-  (operation-code (type out) op (car args) (cdr args)))
+  (operation-code (type out) op out (cdr args)))
 
-(define ((mutating-code name) out args)
+(define ((mutating-code name) out . args)
   "Adapter for machine code overwriting its first argument"
-  (append (code out (car args)) (apply name out (cdr args))))
+  (append (duplicate out (car args)) (apply name out (cdr args))))
 
-(define ((functional-code op) out args)
+(define ((functional-code coercion op) out . args)
   "Adapter for machine code without side effects on its arguments"
-  (operation-code (reduce coerce #f (map type args)) op out args))
+  (operation-code (apply coercion (map type args)) op out args))
 
-(define ((unary-extract op) out args)
+(define ((unary-extract op) out . args)
   "Adapter for machine code to extract part of a composite value"
-  (code (delegate out) (apply op (map delegate args))))
+  (duplicate (delegate out) (apply op (map delegate args))))
 
-(define-macro (define-cumulative-operation name arity op)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((cumulative-code ,op) ,(car args) (list ,@args)))))
-
-(define-macro (define-operator-mapping name arity type fun)
-  (let [(header (typed-header (symbol-list arity) type))]
+(define-macro (define-operator-mapping name types fun)
+  (let [(header (typed-header2 (symbol-list (length types)) types))]
     `(define-method (,name ,@header) ,fun)))
 
-(define-operator-mapping -=   1 <meta<int<>>> (cumulative-code NEG     ))
-(define-operator-mapping ~=   1 <meta<int<>>> (cumulative-code NOT     ))
-(define-operator-mapping +=   2 <meta<int<>>> (cumulative-code ADD     ))
-(define-operator-mapping -=   2 <meta<int<>>> (cumulative-code SUB     ))
-(define-operator-mapping *=   2 <meta<int<>>> (cumulative-code IMUL    ))
-(define-operator-mapping <<=  2 <meta<int<>>> (cumulative-code shl     ))
-(define-operator-mapping >>=  2 <meta<int<>>> (cumulative-code shr     ))
-(define-operator-mapping &=   2 <meta<int<>>> (cumulative-code AND     ))
-(define-operator-mapping |=   2 <meta<int<>>> (cumulative-code OR      ))
-(define-operator-mapping ^=   2 <meta<int<>>> (cumulative-code XOR     ))
-(define-operator-mapping &&=  2 <meta<bool>>  (cumulative-code bool-and))
-(define-operator-mapping ||=  2 <meta<bool>>  (cumulative-code bool-or ))
-(define-operator-mapping min= 2 <meta<int<>>> (cumulative-code minor   ))
-(define-operator-mapping max= 2 <meta<int<>>> (cumulative-code major   ))
+(define-operator-mapping -=   (<meta<int<>>>              ) (cumulative-code NEG     ))
+(define-operator-mapping ~=   (<meta<int<>>>              ) (cumulative-code NOT     ))
+(define-operator-mapping abs= (<meta<int<>>>              ) (cumulative-code cmp-abs ))
+(define-operator-mapping +=   (<meta<int<>>> <meta<int<>>>) (cumulative-code ADD     ))
+(define-operator-mapping -=   (<meta<int<>>> <meta<int<>>>) (cumulative-code SUB     ))
+(define-operator-mapping *=   (<meta<int<>>> <meta<int<>>>) (cumulative-code IMUL    ))
+(define-operator-mapping <<=  (<meta<int<>>> <meta<int<>>>) (cumulative-code shl     ))
+(define-operator-mapping >>=  (<meta<int<>>> <meta<int<>>>) (cumulative-code shr     ))
+(define-operator-mapping &=   (<meta<int<>>> <meta<int<>>>) (cumulative-code AND     ))
+(define-operator-mapping |=   (<meta<int<>>> <meta<int<>>>) (cumulative-code OR      ))
+(define-operator-mapping ^=   (<meta<int<>>> <meta<int<>>>) (cumulative-code XOR     ))
+(define-operator-mapping &&=  (<meta<bool>>  <meta<bool>> ) (cumulative-code bool-and))
+(define-operator-mapping ||=  (<meta<bool>>  <meta<bool>> ) (cumulative-code bool-or ))
+(define-operator-mapping min= (<meta<int<>>> <meta<int<>>>) (cumulative-code minor   ))
+(define-operator-mapping max= (<meta<int<>>> <meta<int<>>>) (cumulative-code major   ))
 
 ; define unary and binary operations
 (define-method (+ (a <param>  )) a)
 (define-method (+ (a <element>)) a)
 (define-method (* (a <param>  )) a)
 (define-method (* (a <element>)) a)
-(define-operator-mapping -   1 <meta<int<>>> (mutating-code   -=               ))
+(define-operator-mapping -   (<meta<int<>>>              ) (mutating-code -=  ))
 (define-method (- (z <integer>) (a <meta<int<>>>)) (mutating-code -=))
-(define-operator-mapping ~   1 <meta<int<>>> (mutating-code   ~=               ))
-(define-operator-mapping =0  1 <meta<int<>>> (functional-code test-zero        ))
-(define-operator-mapping !=0 1 <meta<int<>>> (functional-code test-non-zero    ))
-(define-operator-mapping !   1 <meta<bool>>  (functional-code test-zero        ))
-(define-operator-mapping +   2 <meta<int<>>> (mutating-code   +=               ))
-(define-operator-mapping -   2 <meta<int<>>> (mutating-code   -=               ))
-(define-operator-mapping *   2 <meta<int<>>> (mutating-code   *=               ))
-(define-operator-mapping /   2 <meta<int<>>> (functional-code div              ))
-(define-operator-mapping %   2 <meta<int<>>> (functional-code mod              ))
-(define-operator-mapping <<  2 <meta<int<>>> (mutating-code   <<=              ))
-(define-operator-mapping >>  2 <meta<int<>>> (mutating-code   >>=              ))
-(define-operator-mapping &   2 <meta<int<>>> (mutating-code   &=               ))
-(define-operator-mapping |   2 <meta<int<>>> (mutating-code   |=               ))
-(define-operator-mapping ^   2 <meta<int<>>> (mutating-code   ^=               ))
-(define-operator-mapping &&  2 <meta<bool>>  (mutating-code   &&=              ))
-(define-operator-mapping ||  2 <meta<bool>>  (mutating-code   ||=              ))
-(define-operator-mapping =   2 <meta<int<>>> (functional-code cmp-equal        ))
-(define-operator-mapping !=  2 <meta<int<>>> (functional-code cmp-not-equal    ))
-(define-operator-mapping <   2 <meta<int<>>> (functional-code cmp-lower-than   ))
-(define-operator-mapping <=  2 <meta<int<>>> (functional-code cmp-lower-equal  ))
-(define-operator-mapping >   2 <meta<int<>>> (functional-code cmp-greater-than ))
-(define-operator-mapping >=  2 <meta<int<>>> (functional-code cmp-greater-equal))
-(define-operator-mapping min 2 <meta<int<>>> (mutating-code min=               ))
-(define-operator-mapping max 2 <meta<int<>>> (mutating-code max=               ))
+(define-operator-mapping ~   (<meta<int<>>>              ) (mutating-code ~=  ))
+(define-operator-mapping abs (<meta<int<>>>              ) (mutating-code abs=))
+(define-operator-mapping =0  (<meta<int<>>>              ) (functional-code identity test-zero        ))
+(define-operator-mapping !=0 (<meta<int<>>>              ) (functional-code identity test-non-zero    ))
+(define-operator-mapping !   (<meta<bool>>               ) (functional-code identity test-zero        ))
+(define-operator-mapping +   (<meta<int<>>> <meta<int<>>>) (mutating-code +=  ))
+(define-operator-mapping -   (<meta<int<>>> <meta<int<>>>) (mutating-code -=  ))
+(define-operator-mapping *   (<meta<int<>>> <meta<int<>>>) (mutating-code *=  ))
+(define-operator-mapping <<  (<meta<int<>>> <meta<int<>>>) (mutating-code <<= ))
+(define-operator-mapping >>  (<meta<int<>>> <meta<int<>>>) (mutating-code >>= ))
+(define-operator-mapping &   (<meta<int<>>> <meta<int<>>>) (mutating-code &=  ))
+(define-operator-mapping |   (<meta<int<>>> <meta<int<>>>) (mutating-code |=  ))
+(define-operator-mapping ^   (<meta<int<>>> <meta<int<>>>) (mutating-code ^=  ))
+(define-operator-mapping &&  (<meta<bool>>  <meta<bool>> ) (mutating-code &&= ))
+(define-operator-mapping ||  (<meta<bool>>  <meta<bool>> ) (mutating-code ||= ))
+(define-operator-mapping min (<meta<int<>>> <meta<int<>>>) (mutating-code min=))
+(define-operator-mapping max (<meta<int<>>> <meta<int<>>>) (mutating-code max=))
+(define-operator-mapping /   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   div              ))
+(define-operator-mapping %   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   mod              ))
+(define-operator-mapping =   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-equal        ))
+(define-operator-mapping !=  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-not-equal    ))
+(define-operator-mapping lt  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-than   ))
+(define-operator-mapping le  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-equal  ))
+(define-operator-mapping gt  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-greater-than ))
+(define-operator-mapping ge  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-greater-equal))
+(define-operator-mapping where (<meta<bool>> <meta<int<>>> <meta<int<>>>) (functional-code coerce-where-args cmp-where))

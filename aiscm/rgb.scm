@@ -45,7 +45,7 @@
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
             rgb red green blue)
-  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min=))
+  #:re-export (- ~ + * & | ^ << >> / % max min += *= max= min= where))
 
 
 (define ctx (make <context>))
@@ -146,6 +146,13 @@
 (binary-rgb-cmp =  &&)
 (binary-rgb-cmp != ||)
 
+(define-method (where (m <param>) (a <rgb>) (b <rgb>))
+  (apply rgb (map (cut where m <...>) (content <rgb<>> a) (content <rgb<>> b))))
+(define-method (where (m <param>) (a <rgb>)  b       )
+  (apply rgb (map (cut where m <> b) (content <rgb<>> a))))
+(define-method (where (m <param>)  a        (b <rgb>))
+  (apply rgb (map (cut where m a <>) (content <rgb<>> b))))
+
 (define-method (var (self <meta<rgb<>>>)) (let [(type (base self))] (rgb (var type) (var type) (var type))))
 (pointer <rgb<>>)
 (define-method (red   (self <pointer<>>)) self)
@@ -155,9 +162,9 @@
 (define-method (green (self <pointer<rgb<>>>)) (component (typecode self) self 1))
 (define-method (blue  (self <pointer<rgb<>>>)) (component (typecode self) self 2))
 
-(define-operator-mapping red   1 <meta<element>> (unary-extract red  ))
-(define-operator-mapping green 1 <meta<element>> (unary-extract green))
-(define-operator-mapping blue  1 <meta<element>> (unary-extract blue ))
+(define-operator-mapping red   (<meta<element>>) (unary-extract red  ))
+(define-operator-mapping green (<meta<element>>) (unary-extract green))
+(define-operator-mapping blue  (<meta<element>>) (unary-extract blue ))
 
 (define-jit-method base red   1)
 (define-jit-method base green 1)
