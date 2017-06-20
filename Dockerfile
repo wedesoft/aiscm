@@ -2,11 +2,9 @@
 #
 # configure /etc/default/docker
 # DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 --ip-masq=true"
-FROM debian:sid
+FROM debian:stretch
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
-RUN echo "deb http://httpredir.debian.org/debian unstable main" > /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get -q -y dist-upgrade
 RUN apt-get install -q -y build-essential
 RUN apt-get install -q -y autoconf automake libtool
 RUN apt-get install -q -y devscripts equivs

@@ -1,3 +1,9 @@
+aiscm (0.12.1-1+deb9u1) unstable; urgency=low
+
+  * Minor adjustments for Debian Stretch
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue, 20 Jun 2017 21:08:33 +0100
+
 aiscm (0.12.1-1) unstable; urgency=low
 
   - New upstream release

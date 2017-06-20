@@ -1,5 +1,5 @@
 # make -f Makefile.docker clean all
-CODENAME=sid
+CODENAME=stretch
 BASEIMAGE=debian:$(CODENAME)
 IMAGE=wedesoft/aiscm-$(BASEIMAGE)
 OPTS=
