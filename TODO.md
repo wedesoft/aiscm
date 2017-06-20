@@ -1,6 +1,7 @@
 ## Ready
 
 * >>, << with RGB argument
+* Docker setup
 * update standards version to 4.0.0
 * implement let-parameter\*
 * 2D convolution
