@@ -108,8 +108,8 @@
       (append (duplicate tmp a) (list tmp)) expr)
     (test-equal "Add more code"
       (NOP) (last (let-skeleton* [(tmp <sint> a)] (NOP) (NOP))))
-    (test-assert "Use intermediate parameter"
-      (is-a? (last (let-parameter* [(tmp <sint> (parameter a))] tmp)) <param>)))
+    (test-eq "Use intermediate parameter"
+      <param> (class-of (last (let-parameter* [(tmp <sint> (parameter a))] tmp)))))
   (test-equal "defining no parameters"
     (list (NOP)) (let-parameter* () (NOP)))
   (let* [(a    (parameter <int>))
@@ -117,6 +117,8 @@
          (b    (last prog))]
     (test-equal "copy variable"
       (append (duplicate b a) (list b)) prog))
+  (test-eq "parameter without initialisation"
+    <param> (class-of (last (let-parameter* [(x <int>)] x))))
 (test-end "insert intermediate value")
 
 (test-begin "check whether intermediate value is required")

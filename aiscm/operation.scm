@@ -76,6 +76,8 @@
     (syntax-case x ()
       ((let-prototype prototype [] body ...)
         #'(list body ...))
+      ((let-prototype prototype [(var type) definitions ...] body ...)
+        #'(let [(var (prototype type))] (let-prototype prototype [definitions ...] body ...)))
       ((let-prototype prototype [(var type expr) definitions ...] body ...)
         #'(let [(var (prototype type))] (append (duplicate var expr) (let-prototype prototype [definitions ...] body ...)))))))
 

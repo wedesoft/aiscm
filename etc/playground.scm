@@ -14,22 +14,25 @@
                      (kstep  <long> (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
                      (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
                      (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
-                     (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep))                      )]
-      (append (repeat 0 (dimension a)
-                      (duplicate k0 (max (array-pointer kernel) klower))
-                      (duplicate d1 (min d0 dlast))
-                      (let [(tmp (parameter (typecode a)))]
-                        (append (duplicate tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
-                                (+= k0 kstep) (-= d1 dstep)
-                                (duplicate upper (min kend kupper))
-                                (each-element k0 upper kstep
-                                        (+= tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
-                                        (-= d1 dstep))
-                                (duplicate (project (rebase a0 a)) tmp)))
-                      (+= kupper kstep)
-                      (+= klower kstep)
-                      (+= a0 astep)
-                      (+= d0 dstep)))))))
+                     (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))
+                     (upper  <long>)
+                     (k0     <long>)
+                     (d1     <long>)]
+      (repeat 0 (dimension a)
+              (duplicate k0 (max (array-pointer kernel) klower))
+              (duplicate d1 (min d0 dlast))
+              (let [(tmp (parameter (typecode a)))]
+                (append (duplicate tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
+                        (+= k0 kstep) (-= d1 dstep)
+                        (duplicate upper (min kend kupper))
+                        (each-element k0 upper kstep
+                                (+= tmp (* (project (rebase d1 data)) (project (rebase k0 kernel))))
+                                (-= d1 dstep))
+                        (duplicate (project (rebase a0 a)) tmp)))
+              (+= kupper kstep)
+              (+= klower kstep)
+              (+= a0 astep)
+              (+= d0 dstep))))))
 
 (test-begin "playground")
 (test-begin "convolution")
