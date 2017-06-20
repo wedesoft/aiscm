@@ -383,14 +383,18 @@
   '(#f b) (map (jit ctx (list <obj> <obj>) &&) '(#f a) '(b b)))
 (test-equal "logical or for Scheme objects"
   '(b a) (map (jit ctx (list <obj> <obj>) ||) '(#f a) '(b b)))
-(test-eq "compiled minimum using Scheme objects"
+(test-eqv "compiled minimum using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) min) 123 456))
-(test-eq "compiled maximum using Scheme objects"
+(test-eqv "compiled maximum using Scheme objects"
   456 ((jit ctx (list <obj> <obj>) max) 123 456))
-(test-eq "compiled shift-left using Scheme objects"
+(test-eqv "compiled shift-left using Scheme objects"
   1968 ((jit ctx (list <obj> <obj>) <<) 123 4))
-(test-eq "compiled shift-right using Scheme objects"
+(test-eqv "compiled shift-right using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) >>) 1968 4))
+(test-eqv "compiled shift-left by one of Scheme objects"
+  84 ((jit ctx (list <obj>) <<) 42))
+(test-eqv "compiled shift-right by one of Scheme objects"
+  21 ((jit ctx (list <obj>) >>) 42))
 (test-equal "compiled equal comparison of Scheme objects"
   (list #f #t) (map (jit ctx (list <obj> <obj>) =) '(21 42) '(42 42)))
 (test-equal "compiled unequal comparison of Scheme objects"

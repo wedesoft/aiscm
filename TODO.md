@@ -1,7 +1,7 @@
 ## Ready
 
-* let-parameter\* <-> let-parameter
-* >>, << with one object argument, with RGB argument
+* >>, << with RGB argument
+* update standards version to 4.0.0
 * implement let-parameter\*
 * 2D convolution
 * convolution with composite values

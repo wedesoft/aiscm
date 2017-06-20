@@ -97,6 +97,8 @@
 (define-operator-mapping =0    (<meta<element>>                ) (native-fun obj-zero-p    ))
 (define-operator-mapping !=0   (<meta<element>>                ) (native-fun obj-nonzero-p ))
 (define-operator-mapping !     (<meta<element>>                ) (native-fun obj-not       ))
+(define-operator-mapping <<    (<meta<element>>                ) (native-fun obj-shl1      ))
+(define-operator-mapping >>    (<meta<element>>                ) (native-fun obj-shr1      ))
 (define-operator-mapping +     (<meta<element>> <meta<element>>) (native-fun scm-sum       ))
 (define-operator-mapping -     (<meta<element>> <meta<element>>) (native-fun scm-difference))
 (define-operator-mapping *     (<meta<element>> <meta<element>>) (native-fun scm-product   ))
