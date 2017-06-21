@@ -109,6 +109,8 @@
 
 (unary-rgb-op -)
 (unary-rgb-op ~)
+(unary-rgb-op <<)
+(unary-rgb-op >>)
 
 (define-method (+=   (a <rgb>) (b <rgb>)) (append-map +=   (content <rgb<>> a) (content <rgb<>> b)))
 (define-method (*=   (a <rgb>) (b <rgb>)) (append-map *=   (content <rgb<>> a) (content <rgb<>> b)))
