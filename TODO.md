@@ -1,6 +1,5 @@
 ## Ready
 
-* >>, << with RGB argument
 * 2D convolution
 * convolution with composite values
 * address parameter of array
