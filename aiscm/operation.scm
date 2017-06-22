@@ -144,7 +144,8 @@
                 (+= kptr kstep)
                 (-= dptr dstep)
                 (each-element kptr klast kstep
-                        (+= tmp (* (project (rebase dptr data)) (project (rebase kptr kernel))))
+                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                          (+= tmp intermediate))
                         (-= dptr dstep))
                 (duplicate (project (rebase aptr a)) tmp))
               (+= kupper kstep)

@@ -1,4 +1,5 @@
-(use-modules (srfi srfi-64) (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm))
+(use-modules (srfi srfi-64))
+(use-modules (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm) (aiscm rgb) (aiscm int) (aiscm jit) (aiscm scalar) (aiscm element) (ice-9 curried-definitions))
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
   (let [(data (car (delegate b)))
@@ -24,7 +25,8 @@
                 (+= kptr kstep)
                 (-= dptr dstep)
                 (each-element kptr klast kstep
-                        (+= tmp (* (project (rebase dptr data)) (project (rebase kptr kernel))))
+                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                          (+= tmp intermediate))
                         (-= dptr dstep))
                 (duplicate (project (rebase aptr a)) tmp))
               (+= kupper kstep)
@@ -33,7 +35,7 @@
               (+= dupper dstep))))))
 
 (test-begin "playground")
-(test-begin "convolution")
+(test-begin "1D convolution")
   (test-equal "trivial convolution"
     '(2 3 5) (to-list (convolve (seq 2 3 5) 1)))
   (test-equal "use convolution to scale values"
@@ -50,5 +52,10 @@
     '(2 3 0) (to-list (convolve (seq 1 2 3) (seq 1 0 0))))
   (test-equal "convolution with 3-element shift-right kernel"
     '(0 1 2) (to-list (convolve (seq 1 2 3) (seq 0 0 1))))
-(test-end "convolution")
+(test-end "1D convolution")
+
+(test-begin "convolution with composite values")
+  (test-equal "RGB-scalar convolution"
+    (list (rgb 4 6 10)) (to-list (convolve (seq (rgb 2 3 5)) (seq 2))))
+(test-end "convolution with composite values")
 (test-end "playground")

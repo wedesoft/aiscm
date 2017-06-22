@@ -1,7 +1,11 @@
 ## Ready
 
+* += for RGB should force intermediate value; remove manual intermediate from convolution
+* cache convolution programs
+* cache fill method
+* convolution with data smaller than filter
+* convolution with even-sized filters
 * 2D convolution
-* convolution with composite values
 * address parameter of array
 * 1+, 1-
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
@@ -12,7 +16,6 @@
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
-* cache fill method
 * lookup, pseudo colour, warp
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
