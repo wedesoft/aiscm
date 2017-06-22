@@ -27,6 +27,7 @@
   #:use-module (aiscm sequence)
   #:use-module (aiscm asm)
   #:use-module (aiscm command)
+  #:use-module (aiscm variable)
   #:use-module (aiscm expression)
   #:use-module (aiscm loop)
   #:use-module (aiscm method)
@@ -37,7 +38,7 @@
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
   #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
-  #:export-syntax (define-operator-mapping let-skeleton let-parameter))
+  #:export-syntax (define-operator-mapping let-skeleton* let-parameter let-parameter*))
 
 
 (define* ((native-data native) out)
@@ -70,46 +71,87 @@
 (define-method (force-parameters target args predicate fun)
   (force-parameters (make-list (length args) target) args predicate fun))
 
-(define-syntax-rule (let-prototype [(name prototype value)] body ...)
-  (let [(name prototype)] (list (duplicate name value) body ...)))
-(define-syntax-rule (let-skeleton [(name type value)] body ...)
-  (let-prototype [(name (skeleton type) value)] body ...))
-(define-syntax-rule (let-parameter [(name type value)] body ...)
-  (let-prototype [(name (parameter type) value)] body ...))
+(define-syntax let-prototype
+  (lambda (x)
+    (syntax-case x ()
+      ((let-prototype prototype [] body ...)
+        #'(list body ...))
+      ((let-prototype prototype [(var type) definitions ...] body ...)
+        #'(let [(var (prototype type))] (let-prototype prototype [definitions ...] body ...)))
+      ((let-prototype prototype [(var type expr) definitions ...] body ...)
+        #'(let [(var (prototype type))] (append (duplicate var expr) (let-prototype prototype [definitions ...] body ...)))))))
+
+(define-syntax-rule (let-parameter* definitions body ...)
+  (let-prototype parameter definitions body ...))
+
+(define-syntax-rule (let-skeleton* definitions body ...)
+  (let-prototype skeleton definitions body ...))
 
 (define-method (duplicate (a <element>) (b <element>)) ((to-type (typecode a) (typecode b)) (parameter a) (parameter b)))
 (define-method (duplicate (a <element>) (b <integer>)) (list (MOV (operand a) b)))
 (define-method (duplicate (a <pointer<>>) (b <pointer<>>))
-  (let-skeleton [(tmp (typecode a) b)] (duplicate a tmp)))
+  (let-skeleton* [(tmp (typecode a) b)] (duplicate a tmp)))
 (define-method (duplicate (a <param>) (b <param>)) (duplicate (delegate a) (delegate b)))
 (define-method (duplicate (a <indexer>) (b <param>))
   (let [(dest   (multi-loop a))
         (source (multi-loop b))]
     (append (append-map loop-setup (loop-details dest))
             (append-map loop-setup (loop-details source))
-            (repeat 0
-                    (value (dimension a))
+            (repeat 0 (dimension a)
                     (duplicate (body dest) (body source))
                     (append-map loop-increment (loop-details dest))
                     (append-map loop-increment (loop-details source))))))
 (define-method (duplicate (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
-    (let-skeleton [(tmp (type fun) fun)] (duplicate out tmp))
+    (let-skeleton* [(tmp (type fun) fun)] (duplicate out tmp))
     ((term fun) (parameter out))))
 (define-method (duplicate (out <pointer<>>) (fun <function>))
-  (let-skeleton [(tmp (typecode out) fun)] (duplicate out tmp)))
+  (let-skeleton* [(tmp (typecode out) fun)] (duplicate out tmp)))
 (define-method (duplicate (out <param>) (fun <function>)) (duplicate (delegate out) fun))
 (define-method (duplicate (out <param>) (value <integer>)) (duplicate out (native-const (type out) value)))
 (define-method (duplicate (a <param>) (b <injecter>))
   (let [(t (multi-loop (delegate b) (index b)))]
     (append
       (append-map loop-setup (loop-details t))
-      (let-parameter [(tmp (typecode a) (body t))]
+      (let-parameter* [(tmp (typecode a) (body t))]
          (append-map loop-increment (loop-details t))
-         (repeat 1 (value (dimension-hint (index b)))
-                 ((name b) tmp (body t)); TODO: composite values
+         (repeat 1 (dimension-hint (index b))
+                 ((name b) tmp (body t))
                  (append-map loop-increment (loop-details t)))
          (duplicate a tmp)))))
+
+(define-method (duplicate (a <indexer>) (b <convolution>))
+  (let [(data (car (delegate b)))
+        (kernel (cadr (delegate b)))]
+  (if (null? (shape kernel))
+    (duplicate a (* data kernel))
+    (let-parameter* [(offset <long> (>> (dimension kernel)))
+                     (astep  <long> (* (stride a) (native-const <long> (size-of (typecode a)))))
+                     (aptr   <long> (array-pointer a))
+                     (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
+                     (dupper <long> (+ (array-pointer data) (* offset dstep)))
+                     (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
+                     (kstep  <long> (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
+                     (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
+                     (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
+                     (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
+      (repeat 0 (dimension a)
+              (let-parameter* [(dptr  <long> (min dupper dlast))
+                               (kptr  <long> (max (array-pointer kernel) klower))
+                               (klast <long> (min kend kupper))
+                               (tmp   (typecode a) (* (project (rebase dptr data))
+                                                      (project (rebase kptr kernel))))]
+                (+= kptr kstep)
+                (-= dptr dstep)
+                (each-element kptr klast kstep
+                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                          (+= tmp intermediate))
+                        (-= dptr dstep))
+                (duplicate (project (rebase aptr a)) tmp))
+              (+= kupper kstep)
+              (+= klower kstep)
+              (+= aptr astep)
+              (+= dupper dstep))))))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
@@ -154,6 +196,8 @@
 (define-operator-mapping -=   (<meta<int<>>>              ) (cumulative-code NEG     ))
 (define-operator-mapping ~=   (<meta<int<>>>              ) (cumulative-code NOT     ))
 (define-operator-mapping abs= (<meta<int<>>>              ) (cumulative-code cmp-abs ))
+(define-operator-mapping <<=  (<meta<int<>>>              ) (cumulative-code shl     ))
+(define-operator-mapping >>=  (<meta<int<>>>              ) (cumulative-code shr     ))
 (define-operator-mapping +=   (<meta<int<>>> <meta<int<>>>) (cumulative-code ADD     ))
 (define-operator-mapping -=   (<meta<int<>>> <meta<int<>>>) (cumulative-code SUB     ))
 (define-operator-mapping *=   (<meta<int<>>> <meta<int<>>>) (cumulative-code IMUL    ))
@@ -179,6 +223,8 @@
 (define-operator-mapping =0  (<meta<int<>>>              ) (functional-code identity test-zero        ))
 (define-operator-mapping !=0 (<meta<int<>>>              ) (functional-code identity test-non-zero    ))
 (define-operator-mapping !   (<meta<bool>>               ) (functional-code identity test-zero        ))
+(define-operator-mapping <<  (<meta<int<>>>              ) (mutating-code <<= ))
+(define-operator-mapping >>  (<meta<int<>>>              ) (mutating-code >>= ))
 (define-operator-mapping +   (<meta<int<>>> <meta<int<>>>) (mutating-code +=  ))
 (define-operator-mapping -   (<meta<int<>>> <meta<int<>>>) (mutating-code -=  ))
 (define-operator-mapping *   (<meta<int<>>> <meta<int<>>>) (mutating-code *=  ))

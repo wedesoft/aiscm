@@ -37,11 +37,11 @@
   (stride   #:init-keyword #:stride   #:getter stride  )
   (base     #:init-keyword #:base     #:getter base    ))
 
-(define-method (loop-setup (self <loop-detail>))
+(define (loop-setup self)
   (list (IMUL (step self) (value (stride self)) (size-of (typecode self)))
         (MOV (iterator self) (base self))))
 
-(define-method (loop-increment (self <loop-detail>))
+(define (loop-increment self)
   (list (ADD (iterator self) (step self))))
 
 (define-class <multi-loop> ()

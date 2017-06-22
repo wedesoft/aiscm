@@ -1,10 +1,17 @@
 ## Ready
 
-* align definition of "duplicate" <-> "code"
-* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
-* correlation: \*, +=, dilation: first/conditional, max, ...
+* cache convolution programs
+* convolution with data smaller than filter
+* convolution with even-sized filters
+* 2D convolution, 2D-1D convolution
+* += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
+* 1+, 1-
+* separable convolution
+* convolve with set of sobel filters
+* convolution: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
 * sum with multiple indices or no indices, standalone sum expression
+* index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
@@ -16,7 +23,6 @@
 * argmax
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov/copy
-* cache fill method
 * GNOME video widget and player
 * check against NumPy for completeness
 * how to run test suite

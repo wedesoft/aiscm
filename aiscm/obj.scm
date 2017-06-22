@@ -28,7 +28,7 @@
   #:use-module (aiscm scalar)
   #:export (<obj> <meta<obj>>
             <pointer<obj>> <meta<pointer<obj>>>
-            obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not scm-sum
+            obj-negate scm-lognot obj-zero-p obj-nonzero-p obj-not obj-shl1 obj-shr1 scm-sum
             scm-difference scm-product scm-divide scm-remainder
             scm-logand scm-logior scm-logxor obj-and obj-or scm-min scm-max scm-ash obj-shr obj-where scm-abs
             obj-equal-p obj-nequal-p obj-less-p obj-leq-p obj-gr-p obj-geq-p obj-from-bool scm-to-bool
@@ -63,6 +63,8 @@
 (define obj-zero-p      (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_zero_p"      guile-aiscm-obj)))
 (define obj-nonzero-p   (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_nonzero_p"   guile-aiscm-obj)))
 (define obj-not         (make-native-method <bool> (list <obj>      ) (dynamic-func "obj_not"         guile-aiscm-obj)))
+(define obj-shl1        (make-native-method <obj>  (list <obj>      ) (dynamic-func "obj_shl1"        guile-aiscm-obj)))
+(define obj-shr1        (make-native-method <obj>  (list <obj>      ) (dynamic-func "obj_shr1"        guile-aiscm-obj)))
 (define scm-sum         (make-native-method <obj>  (list <obj> <obj>) (dynamic-func "scm_sum"         main           )))
 (define scm-difference  (make-native-method <obj>  (list <obj> <obj>) (dynamic-func "scm_difference"  main           )))
 (define scm-product     (make-native-method <obj>  (list <obj> <obj>) (dynamic-func "scm_product"     main           )))

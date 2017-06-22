@@ -6,7 +6,8 @@
 
 There are AMD64 binaries for
 [![Debian](debian.png "Debian")](https://www.debian.org/) Jessie (8),
-[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (9),
+[![Debian](debian.png "Debian")](https://www.debian.org/) Stretch (9),
+[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10),
 [![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04), and
 [![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04)
 

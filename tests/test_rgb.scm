@@ -138,7 +138,11 @@
 (test-equal "left shift for RGB values"
   (rgb 2 4 8) (<< 1 (rgb 1 2 3)))
 (test-equal "right shift for RGB values"
-  (rgb 1 2 4) (>> (rgb 2 4 8) 1))
+  (rgb 1 2 3) (>> (rgb 4 8 12) 2))
+(test-equal "left shift by one for RGB values"
+  (rgb 2 4 6) (<< (rgb 1 2 3)))
+(test-equal "right shift by one for RGB values"
+  (rgb 1 2 3) (>> (rgb 2 4 7)))
 (test-equal "division for RGB values"
   (rgb 1 2 3) (/ (rgb 3 6 9) 3))
 (test-assert "compare two RGB values (positive result)"

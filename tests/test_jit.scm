@@ -102,6 +102,8 @@
 (test-end "identity operation")
 
 (test-begin "filling arrays")
+  (test-eqv "fill scalar"
+    42 (fill <int> '() 42))
   (test-equal "fill byte sequence"
     '(3 3 3) (to-list (fill <byte> '(3) 3)))
   (test-equal "fill integer sequence"
@@ -146,6 +148,13 @@
   (test-equal "element-wise not for booleans"
     '(#f #t #f) (to-list (! (seq #t #f #t))))
 (test-end "unary =0, !=0, and !")
+
+(test-begin "unary << and >>")
+  (test-equal "left-shift sequence"
+    '(2 4 6) (to-list (<< (seq 1 2 3))))
+  (test-equal "right-shift sequence"
+    '(2 4 6) (to-list (>> (seq 4 8 12))))
+(test-end "unary << and >>")
 
 (test-begin "binary +")
   (test-equal "add 1 to downsampled array"
@@ -376,14 +385,18 @@
   '(#f b) (map (jit ctx (list <obj> <obj>) &&) '(#f a) '(b b)))
 (test-equal "logical or for Scheme objects"
   '(b a) (map (jit ctx (list <obj> <obj>) ||) '(#f a) '(b b)))
-(test-eq "compiled minimum using Scheme objects"
+(test-eqv "compiled minimum using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) min) 123 456))
-(test-eq "compiled maximum using Scheme objects"
+(test-eqv "compiled maximum using Scheme objects"
   456 ((jit ctx (list <obj> <obj>) max) 123 456))
-(test-eq "compiled shift-left using Scheme objects"
+(test-eqv "compiled shift-left using Scheme objects"
   1968 ((jit ctx (list <obj> <obj>) <<) 123 4))
-(test-eq "compiled shift-right using Scheme objects"
+(test-eqv "compiled shift-right using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) >>) 1968 4))
+(test-eqv "compiled shift-left by one of Scheme objects"
+  84 ((jit ctx (list <obj>) <<) 42))
+(test-eqv "compiled shift-right by one of Scheme objects"
+  21 ((jit ctx (list <obj>) >>) 42))
 (test-equal "compiled equal comparison of Scheme objects"
   (list #f #t) (map (jit ctx (list <obj> <obj>) =) '(21 42) '(42 42)))
 (test-equal "compiled unequal comparison of Scheme objects"

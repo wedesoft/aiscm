@@ -201,6 +201,10 @@
   12 (<< 3 2))
 (test-equal "shift right using '>>'"
   3 (>> 12 2))
+(test-equal "shift left by one"
+  6 (<< 3))
+(test-equal "shift right by one"
+  3 (>> 6))
 (test-equal "remainder of division using '%'"
   33 (% 123 45))
 (test-equal "'!=' for integers"
