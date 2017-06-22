@@ -102,6 +102,8 @@
 (test-end "identity operation")
 
 (test-begin "filling arrays")
+  (test-eqv "fill scalar"
+    42 (fill <int> '() 42))
   (test-equal "fill byte sequence"
     '(3 3 3) (to-list (fill <byte> '(3) 3)))
   (test-equal "fill integer sequence"

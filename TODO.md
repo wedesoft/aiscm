@@ -1,12 +1,10 @@
 ## Ready
 
-* += for RGB should force intermediate value; remove manual intermediate from convolution
 * cache convolution programs
-* cache fill method
 * convolution with data smaller than filter
 * convolution with even-sized filters
 * 2D convolution
-* address parameter of array
+* += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * 1+, 1-
 * convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
 * correlate with set of sobel filters

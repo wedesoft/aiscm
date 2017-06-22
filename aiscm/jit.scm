@@ -193,15 +193,21 @@
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
-(define (fill type shape value)
-  (let* [(result-type  (multiarray type (length shape)))
-         (args         (list (skeleton result-type) (skeleton type)))
-         (parameters   (map parameter args))
-         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-         (result       (make result-type #:shape shape))]
-    (apply instructions (append-map unbuild (list result-type type) (list result value)))
-    result))
+(define-method (fill type shape value)
+  (if (< (dimensions type) (length shape))
+    (fill (multiarray type (length shape)) shape value)
+    (let* [(result-type  (pointer type))
+           (args         (list (skeleton result-type) (skeleton (typecode type))))
+           (parameters   (map parameter args))
+           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+           (proc         (lambda args (apply instructions (append-map unbuild (list result-type (typecode type)) args))))]
+      (add-method! fill
+                   (make <method>
+                         #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
+                         #:procedure (lambda (type shape value)
+                               (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
+      (fill type shape value))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
