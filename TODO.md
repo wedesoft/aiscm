@@ -3,11 +3,11 @@
 * cache convolution programs
 * convolution with data smaller than filter
 * convolution with even-sized filters
-* 2D convolution
+* 2D convolution, 2D-1D convolution
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * 1+, 1-
-* convolution/correlation in tensor (finite element analysis), separable convolution, 2D-1D convolution
-* correlate with set of sobel filters
+* separable convolution
+* convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * Conways way of life in one line of code
 * sum with multiple indices or no indices, standalone sum expression
