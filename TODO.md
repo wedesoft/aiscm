@@ -1,7 +1,6 @@
 ## Ready
 
-* convolution with data smaller than filter
-* 2D convolution, 2D-1D convolution
+* 2D convolution, 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * convolution documentation
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * 1+, 1-

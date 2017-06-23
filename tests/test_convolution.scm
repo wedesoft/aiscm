@@ -43,6 +43,8 @@
     '(0 1 2) (to-list (convolve (seq 1 2 3) (seq 0 0 1))))
   (test-equal "even-sized convolution filter"
     '(1 2 3 4) (to-list (convolve (seq 1 2 3 4) (seq 0 0 1 0))))
+  (test-equal "data smaller than filter"
+    '(2) (to-list (convolve (crop 1 (dump 1 (seq 1 1 1))) (seq 1 2 3))))
 (test-end "1D convolution")
 
 (test-begin "convolution with composite values")
