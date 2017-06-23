@@ -31,7 +31,7 @@
     '(4 6 10) (to-list (convolve (seq 2 3 5) 2)))
   (test-equal "convolution with one-element array"
     '(4 6 10) (to-list (convolve (seq 2 3 5) (seq 2))))
-  (test-equal "do not read over array boundaries"
+  (test-equal "do not read over array boundaries when using odd-sized filter"
     '(0 0 0) (to-list (convolve (crop 3 (dump 1 (seq 1 0 0 0 1))) (seq 1 2 4))))
   (test-equal "convolution with 3-element impulse kernel"
     '(1 2 3 4 5) (to-list (convolve (seq 1 2 3 4 5) (seq 0 1 0))))
@@ -41,6 +41,8 @@
     '(2 3 0) (to-list (convolve (seq 1 2 3) (seq 1 0 0))))
   (test-equal "convolution with 3-element shift-right kernel"
     '(0 1 2) (to-list (convolve (seq 1 2 3) (seq 0 0 1))))
+  (test-equal "even-sized convolution filter"
+    '(1 2 3 4) (to-list (convolve (seq 1 2 3 4) (seq 0 0 1 0))))
 (test-end "1D convolution")
 
 (test-begin "convolution with composite values")
