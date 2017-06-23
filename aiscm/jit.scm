@@ -50,7 +50,7 @@
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
-  #:re-export (min max to-type + - && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
+  #:re-export (min max to-type + - * = && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
@@ -75,6 +75,8 @@
 (define-cumulative -=   1)
 (define-cumulative ~=   1)
 (define-cumulative abs= 1)
+(define-cumulative <<=  1)
+(define-cumulative >>=  1)
 (define-cumulative +=   2)
 (define-cumulative -=   2)
 (define-cumulative *=   2)
@@ -95,6 +97,8 @@
 (define-operator-mapping =0    (<meta<element>>                ) (native-fun obj-zero-p    ))
 (define-operator-mapping !=0   (<meta<element>>                ) (native-fun obj-nonzero-p ))
 (define-operator-mapping !     (<meta<element>>                ) (native-fun obj-not       ))
+(define-operator-mapping <<    (<meta<element>>                ) (native-fun obj-shl1      ))
+(define-operator-mapping >>    (<meta<element>>                ) (native-fun obj-shr1      ))
 (define-operator-mapping +     (<meta<element>> <meta<element>>) (native-fun scm-sum       ))
 (define-operator-mapping -     (<meta<element>> <meta<element>>) (native-fun scm-difference))
 (define-operator-mapping *     (<meta<element>> <meta<element>>) (native-fun scm-product   ))
@@ -189,15 +193,21 @@
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
-(define (fill type shape value)
-  (let* [(result-type  (multiarray type (length shape)))
-         (args         (list (skeleton result-type) (skeleton type)))
-         (parameters   (map parameter args))
-         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-         (result       (make result-type #:shape shape))]
-    (apply instructions (append-map unbuild (list result-type type) (list result value)))
-    result))
+(define-method (fill type shape value)
+  (if (< (dimensions type) (length shape))
+    (fill (multiarray type (length shape)) shape value)
+    (let* [(result-type  (pointer type))
+           (args         (list (skeleton result-type) (skeleton (typecode type))))
+           (parameters   (map parameter args))
+           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+           (proc         (lambda args (apply instructions (append-map unbuild (list result-type (typecode type)) args))))]
+      (add-method! fill
+                   (make <method>
+                         #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
+                         #:procedure (lambda (type shape value)
+                               (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
+      (fill type shape value))))
 
 (define-macro (define-jit-dispatch name arity delegate)
   (let* [(args   (symbol-list arity))
@@ -242,6 +252,8 @@
 (define-jit-method to-bool  =0  1)
 (define-jit-method to-bool  !=0 1)
 (define-jit-method to-bool  !   1)
+(define-jit-method identity <<  1)
+(define-jit-method identity >>  1)
 (define-jit-method coerce   +   2)
 (define-jit-method coerce   -   2)
 (define-jit-method coerce   *   2)
