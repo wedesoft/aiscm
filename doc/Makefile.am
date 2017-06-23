@@ -10,7 +10,7 @@ PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 RUN = $(GUILE) -L $(top_builddir)
 
-doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
+doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
 					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
