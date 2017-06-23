@@ -1,6 +1,5 @@
 ## Ready
 
-* convolution with complex values
 * convolution with data smaller than filter
 * 2D convolution, 2D-1D convolution
 * cache convolution programs
