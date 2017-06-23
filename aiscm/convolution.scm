@@ -25,7 +25,14 @@
 
 (define ctx (make <context>))
 
-(define (convolve data kernel)
-  (let* [(k (wrap kernel))
-         (f (jit ctx (list (class-of data) (class-of k)) convolution))]
-    (f data kernel)))
+(define-method (convolve data kernel)
+  (convolve data (wrap kernel))); TODO: wrap data?
+
+(define-method (convolve (data <element>) (kernel <element>))
+  (let* [(types (map class-of (list data kernel)))
+         (f     (jit ctx types convolution))]
+    (add-method! convolve
+                 (make <method>
+                       #:specializers types
+                       #:procedure (lambda (data kernel) (f data (get kernel)))))
+    (convolve data kernel)))

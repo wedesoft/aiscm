@@ -2,7 +2,7 @@
 
 * convolution with data smaller than filter
 * 2D convolution, 2D-1D convolution
-* cache convolution programs
+* convolution documentation
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * 1+, 1-
 * separable convolution
