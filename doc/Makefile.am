@@ -18,7 +18,7 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
-						 index.md.in installation.md assembler.md io.md array.md operation.md \
+						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md \
 						 aiscm.gif debian.png ubuntu.png source.png package.png \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 						 buttondown.css
