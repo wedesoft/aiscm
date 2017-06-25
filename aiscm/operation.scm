@@ -128,6 +128,7 @@
     (let-parameter* [(offset <long> (>> (dimension kernel)))
                      (astep  <long> (* (stride a) (native-const <long> (size-of (typecode a)))))
                      (aptr   <long> (array-pointer a))
+                     (alast  <long> (+ (array-pointer a) (* (dimension a) astep)))
                      (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
                      (dupper <long> (+ (array-pointer data) (* offset dstep)))
                      (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
@@ -135,7 +136,7 @@
                      (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
                      (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
                      (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
-      (repeat 0 (dimension a)
+      (each-element aptr alast astep
               (let-parameter* [(dptr  <long> (min dupper dlast))
                                (kptr  <long> (max (array-pointer kernel) klower))
                                (klast <long> (min kend kupper))
@@ -144,13 +145,12 @@
                 (+= kptr kstep)
                 (-= dptr dstep)
                 (each-element kptr klast kstep
-                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
-                          (+= tmp intermediate))
-                        (-= dptr dstep))
+                  (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                    (+= tmp intermediate))
+                  (-= dptr dstep))
                 (duplicate (project (rebase aptr a)) tmp))
               (+= kupper kstep)
               (+= klower kstep)
-              (+= aptr astep)
               (+= dupper dstep))))))
 
 (define-method (size-of (self <param>))

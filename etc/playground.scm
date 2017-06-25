@@ -9,6 +9,7 @@
     (let-parameter* [(offset <long> (>> (dimension kernel)))
                      (astep  <long> (* (stride a) (native-const <long> (size-of (typecode a)))))
                      (aptr   <long> (array-pointer a))
+                     (alast  <long> (+ (array-pointer a) (* (dimension a) astep)))
                      (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
                      (dupper <long> (+ (array-pointer data) (* offset dstep)))
                      (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
@@ -16,7 +17,7 @@
                      (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
                      (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
                      (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
-      (repeat 0 (dimension a)
+      (each-element aptr alast astep
               (let-parameter* [(dptr  <long> (min dupper dlast))
                                (kptr  <long> (max (array-pointer kernel) klower))
                                (klast <long> (min kend kupper))
@@ -25,13 +26,12 @@
                 (+= kptr kstep)
                 (-= dptr dstep)
                 (each-element kptr klast kstep
-                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
-                          (+= tmp intermediate))
-                        (-= dptr dstep))
+                  (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                    (+= tmp intermediate))
+                  (-= dptr dstep))
                 (duplicate (project (rebase aptr a)) tmp))
               (+= kupper kstep)
               (+= klower kstep)
-              (+= aptr astep)
               (+= dupper dstep))))))
 
 (test-begin "playground")
@@ -52,6 +52,10 @@
     '(2 3 0) (to-list (convolve (seq 1 2 3) (seq 1 0 0))))
   (test-equal "convolution with 3-element shift-right kernel"
     '(0 1 2) (to-list (convolve (seq 1 2 3) (seq 0 0 1))))
+  (test-equal "use stride of data"
+    '(1 2) (to-list (convolve (get (roll (arr (1 0) (2 0))) 0) (seq 1))))
+  (test-equal "use stride of kernel"
+    '(1 2) (to-list (convolve (seq 0 1) (get (roll (arr (1 0) (2 0))) 0))))
 (test-end "1D convolution")
 
 (test-begin "convolution with composite values")

@@ -2,7 +2,9 @@
 
 * 2D convolution, 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * convolution documentation
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
+* camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * separable convolution
 * convolve with set of sobel filters
@@ -19,7 +21,6 @@
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
 * argmax
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * code -> mov/copy
 * GNOME video widget and player
 * check against NumPy for completeness
@@ -54,7 +55,6 @@
 * separate module for register allocation
 * Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
   multi-threading, SIMD, memory access (cache)
-* robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * car, cadr, ... -> first, second, ...
