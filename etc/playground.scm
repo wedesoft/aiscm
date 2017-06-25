@@ -2,10 +2,16 @@
 (use-modules (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm) (aiscm rgb) (aiscm int) (aiscm jit) (aiscm scalar) (aiscm element) (ice-9 curried-definitions))
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (let [(data (car (delegate b)))
-        (kernel (cadr (delegate b)))]
-  (if (null? (shape kernel))
-    (duplicate a (* data kernel))
+  (let* [(kernel-loop (lambda (data kernel aptr kptr klast kstep dptr dstep)
+    (let-parameter* [(tmp (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+      (+= kptr kstep)
+      (-= dptr dstep)
+      (each-element kptr klast kstep
+                    (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
+                      (+= tmp intermediate))
+                    (-= dptr dstep))
+      (duplicate (project (rebase aptr a)) tmp))))
+  (data-loop (lambda (data kernel)
     (let-parameter* [(offset <long> (>> (dimension kernel)))
                      (astep  <long> (* (stride a) (native-const <long> (size-of (typecode a)))))
                      (aptr   <long> (array-pointer a))
@@ -20,26 +26,15 @@
       (each-element aptr alast astep
               (let-parameter* [(dptr  <long> (min dupper dlast))
                                (kptr  <long> (max (array-pointer kernel) klower))
-                               (klast <long> (min kend kupper))
-                               (tmp   (typecode a) (* (project (rebase dptr data))
-                                                      (project (rebase kptr kernel))))]
-                (+= kptr kstep)
-                (-= dptr dstep)
-                (each-element kptr klast kstep
-                  (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
-                    (+= tmp intermediate))
-                  (-= dptr dstep))
-                (duplicate (project (rebase aptr a)) tmp))
+                               (klast <long> (min kend kupper)) ]
+                (kernel-loop data kernel aptr kptr klast kstep dptr dstep))
               (+= kupper kstep)
               (+= klower kstep)
-              (+= dupper dstep))))))
+              (+= dupper dstep)))))]
+    (apply data-loop (delegate b))))
 
 (test-begin "playground")
 (test-begin "1D convolution")
-  (test-equal "trivial convolution"
-    '(2 3 5) (to-list (convolve (seq 2 3 5) 1)))
-  (test-equal "use convolution to scale values"
-    '(4 6 10) (to-list (convolve (seq 2 3 5) 2)))
   (test-equal "convolution with one-element array"
     '(4 6 10) (to-list (convolve (seq 2 3 5) (seq 2))))
   (test-equal "do not read over array boundaries"
@@ -62,4 +57,10 @@
   (test-equal "RGB-scalar convolution"
     (list (rgb 4 6 10)) (to-list (convolve (seq (rgb 2 3 5)) (seq 2))))
 (test-end "convolution with composite values")
+
+(test-begin "2D convolution")
+  (test-skip 1)
+  (test-equal "trivial 2D convolution"
+    '((2 3) (5 7)) (to-list (convolve (arr (2 3) (5 7)) (arr (1)))))
+(test-end "2D convolution")
 (test-end "playground")
