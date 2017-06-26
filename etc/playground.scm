@@ -2,7 +2,7 @@
 (use-modules (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm) (aiscm rgb) (aiscm int) (aiscm jit) (aiscm scalar) (aiscm element) (ice-9 curried-definitions))
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (let* [(kernel-loop (lambda (aptr data dptr dstep kernel klower kupper kstep kend)
+  (let* [(kernel-loop (lambda (out data dptr dstep kernel klower kupper kstep kend)
            (let-parameter* [(kptr  <long> (max (array-pointer kernel) klower))
                             (klast <long> (min kend kupper))
                             (tmp  (typecode out) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
@@ -13,7 +13,7 @@
                                                                             (project (rebase kptr kernel))))]
                              (+= tmp intermediate))
                            (-= dptr dstep))
-             (duplicate (project (rebase aptr out)) tmp))))
+             (duplicate out tmp))))
          (data-loop (lambda (out data kernel)
            (let-parameter* [(offset <long> (>> (dimension kernel)))
                             (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
@@ -29,7 +29,7 @@
              (each-element aptr alast astep
                      (if (<= (dimensions (type data)) 1)
                        (let-parameter* [(dptr  <long> (min dupper dlast))]
-                         (kernel-loop aptr data dptr dstep kernel klower kupper kstep kend))
+                         (kernel-loop (project (rebase aptr out)) data dptr dstep kernel klower kupper kstep kend))
                        (NOP))
                      (+= kupper kstep)
                      (+= klower kstep)
