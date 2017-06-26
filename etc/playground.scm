@@ -2,38 +2,37 @@
 (use-modules (oop goops) (aiscm convolution) (aiscm sequence) (aiscm operation) (aiscm expression) (aiscm loop) (srfi srfi-1) (aiscm command) (aiscm int) (aiscm variable) (aiscm asm) (aiscm rgb) (aiscm int) (aiscm jit) (aiscm scalar) (aiscm element) (ice-9 curried-definitions))
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (let* [(kernel-loop (lambda (out data dptr dstep kernel klower kupper kstep kend)
-           (let-parameter* [(kptr  <long> (max (array-pointer kernel) klower))
-                            (klast <long> (min kend kupper))
-                            (tmp  (typecode out) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
-             (+= kptr kstep)
-             (-= dptr dstep)
-             (each-element kptr klast kstep
-                           (let-parameter* [(intermediate (typecode out) (* (project (rebase dptr data))
-                                                                            (project (rebase kptr kernel))))]
-                             (+= tmp intermediate))
-                           (-= dptr dstep))
-             (duplicate out tmp))))
-         (data-loop (lambda (out data kernel)
-           (let-parameter* [(offset <long> (>> (dimension kernel)))
-                            (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
-                            (aptr   <long> (array-pointer out))
-                            (alast  <long> (+ (array-pointer out) (* (dimension out) astep)))
-                            (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
-                            (dupper <long> (+ (array-pointer data) (* offset dstep)))
-                            (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
-                            (kstep  <long> (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
-                            (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
-                            (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
-                            (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
-             (each-element aptr alast astep
-                     (if (<= (dimensions (type data)) 1)
-                       (let-parameter* [(dptr  <long> (min dupper dlast))]
-                         (kernel-loop (project (rebase aptr out)) data dptr dstep kernel klower kupper kstep kend))
-                       (NOP))
-                     (+= kupper kstep)
-                     (+= klower kstep)
-                     (+= dupper dstep)))))]
+  (letrec* [(kernel-loop (lambda (out data dupper dlast dstep kernel klower kupper kstep kend)
+              (let-parameter* [(dptr  <long> (min dupper dlast))
+                               (kptr  <long> (max (array-pointer kernel) klower))
+                               (klast <long> (min kend kupper))
+                               (tmp   (typecode out) (* (rebase dptr data) (rebase kptr kernel)))]
+                (+= kptr kstep)
+                (-= dptr dstep)
+                (each-element kptr klast kstep
+                              (let-parameter* [(intermediate (typecode out) (* (rebase dptr data) (rebase kptr kernel)))]
+                                (+= tmp intermediate))
+                              (-= dptr dstep))
+                (duplicate out tmp))))
+            (data-loop (lambda (out data kernel)
+              (let-parameter* [(offset <long> (>> (dimension kernel)))
+                               (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
+                               (aptr   <long> (array-pointer out))
+                               (alast  <long> (+ (array-pointer out) (* (dimension out) astep)))
+                               (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
+                               (dupper <long> (+ (array-pointer data) (* offset dstep)))
+                               (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
+                               (kstep  <long> (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
+                               (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
+                               (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
+                               (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
+                (each-element aptr alast astep
+                        (if (<= (dimensions (type data)) 1)
+                          (kernel-loop (project (rebase aptr out)) (project data) dupper dlast dstep (project kernel) klower kupper kstep kend)
+                          (data-loop (project (rebase aptr out)) (project data) (project kernel)))
+                        (+= kupper kstep)
+                        (+= klower kstep)
+                        (+= dupper dstep)))))]
     (apply data-loop a (delegate b))))
 
 (test-begin "playground")
@@ -63,6 +62,6 @@
 
 (test-begin "2D convolution")
   (test-equal "trivial 2D convolution"
-    '((2 3) (5 7)) (to-list (convolve (arr (2 3) (5 7)) (arr (1)))))
+    '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1)))))
 (test-end "2D convolution")
 (test-end "playground")
