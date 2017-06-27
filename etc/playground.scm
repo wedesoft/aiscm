@@ -64,5 +64,10 @@
 (test-begin "2D convolution")
   (test-equal "trivial 2D convolution"
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1)))))
+  (test-equal "test impulse in last dimension"
+    '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0)))))
+  (test-skip 1)
+  (test-equal "test impulse in first dimension"
+    '((2 3) (5 7) (11 13)) (to-list (convolve (arr (2 3) (5 7) (11 13)) (arr (0) (1) (0)))))
 (test-end "2D convolution")
 (test-end "playground")
