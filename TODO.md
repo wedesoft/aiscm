@@ -21,6 +21,8 @@
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
 * argmax
+* Ghost in the Shell style animations
+* audio frequency: bar analyser
 * code -> mov/copy
 * GNOME video widget and player
 * check against NumPy for completeness
@@ -37,6 +39,7 @@
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
 * module libraries without version numbers
+* Kinect difference picture/surveillance
 * virtual fighter
 * augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
