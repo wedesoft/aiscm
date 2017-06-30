@@ -1,7 +1,5 @@
 SUFFIXES = .scm .png .jpg .md .html .tmp .css .html5 .mp3
 
-DATE = $(shell date --iso-8601)
-
 PANDOC_OPTS = -s -c buttondown.css -f markdown -t html
 PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 							-Vpagetitle="Guile extension for numerical arrays and tensors" -Vtitle-prefix=AIscm \
