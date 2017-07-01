@@ -3,25 +3,36 @@
 
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (letrec* [(kernel-loop (lambda (out data dstep kernel ksteps klowers kuppers kends)
+  (letrec* [(kernel-loop (lambda (tmp data dstep kernel ksteps klowers kuppers kends)
               (let-parameter* [(dptr  <long> (array-pointer data))
                                (kptr  <long> (max (array-pointer kernel) (+ (array-pointer kernel) (last klowers))))
                                (klast <long> (+ (array-pointer kernel) (min (last kends) (last kuppers))))]
                 (if (<= (dimensions (type kernel)) 1)
-                  (let-parameter* [(tmp (typecode out) (* (rebase dptr data) (project (rebase kptr kernel))))]
+                  (append
+                    (duplicate tmp (* (rebase dptr data) (project (rebase kptr kernel))))
                     (+= kptr (last ksteps))
                     (-= dptr dstep)
                     (each-element kptr klast (last ksteps)
-                      (let-parameter* [(intermediate (typecode out) (* (rebase dptr data)
-                                                                       (project (rebase kptr kernel))))]
+                      (let-parameter* [(intermediate (type tmp) (* (rebase dptr data) (project (rebase kptr kernel))))]
                         (+= tmp intermediate)
-                        (-= dptr dstep)))
-                    (duplicate out tmp))
-                  (kernel-loop out (rebase dptr data) dstep (project (rebase kptr kernel))
-                               (all-but-last ksteps)
-                               (all-but-last klowers)
-                               (all-but-last kuppers)
-                               (all-but-last kends))))))
+                        (-= dptr dstep))))
+                  (append
+                    (kernel-loop tmp (rebase dptr data) dstep (project (rebase kptr kernel))
+                                 (all-but-last ksteps)
+                                 (all-but-last klowers)
+                                 (all-but-last kuppers)
+                                 (all-but-last kends))
+                    (+= kptr (last ksteps))
+                    (-= dptr dstep)
+                    (each-element kptr klast (last ksteps)
+                      (let-parameter* [(intermediate (type tmp))]
+                        (kernel-loop intermediate (rebase dptr data) dstep (project (rebase kptr kernel))
+                                     (all-but-last ksteps)
+                                     (all-but-last klowers)
+                                     (all-but-last kuppers)
+                                     (all-but-last kends))
+                        (+= tmp intermediate)
+                        (-= dptr dstep))))))))
             (data-loop (lambda (out data kernel kshape kstrides ksteps klowers kuppers kends)
               (let-parameter* [(offset <long> (>> (last kshape)))
                                (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
@@ -37,14 +48,16 @@
                 (each-element aptr alast astep
                         (let-parameter* [(dptr <long> (min dupper dlast))]
                           (if (<= (dimensions (type data)) 1)
-                            (kernel-loop (project (rebase aptr out))
-                                         (project (rebase dptr data))
-                                         dstep
-                                         kernel
-                                         (cons kstep ksteps)
-                                         (cons klower klowers)
-                                         (cons kupper kuppers)
-                                         (cons kend kends))
+                            (let-parameter* [(tmp (typecode out))]
+                              (kernel-loop tmp
+                                           (project (rebase dptr data))
+                                           dstep
+                                           kernel
+                                           (cons kstep ksteps)
+                                           (cons klower klowers)
+                                           (cons kupper kuppers)
+                                           (cons kend kends))
+                              (duplicate (project (rebase aptr out)) tmp))
                             (data-loop (project (rebase aptr out))
                                        (project (rebase dptr data))
                                        kernel
