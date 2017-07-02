@@ -3,7 +3,7 @@
 
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (letrec* [(kernel-loop (lambda (tmp data dstep kernel ksteps klowers kuppers kends)
+  (letrec* [(kernel-loop (lambda (tmp data kernel dsteps ksteps klowers kuppers kends)
               (let-parameter* [(dptr  <long> (array-pointer data))
                                (kptr  <long> (max (array-pointer kernel) (+ (array-pointer kernel) (last klowers))))
                                (klast <long> (+ (array-pointer kernel) (min (last kends) (last kuppers))))]
@@ -11,29 +11,31 @@
                   (append
                     (duplicate tmp (* (rebase dptr data) (project (rebase kptr kernel))))
                     (+= kptr (last ksteps))
-                    (-= dptr dstep)
+                    (-= dptr (last dsteps))
                     (each-element kptr klast (last ksteps)
                       (let-parameter* [(intermediate (type tmp) (* (rebase dptr data) (project (rebase kptr kernel))))]
                         (+= tmp intermediate)
-                        (-= dptr dstep))))
+                        (-= dptr (last dsteps)))))
                   (append
-                    (kernel-loop tmp (rebase dptr data) dstep (project (rebase kptr kernel))
+                    (kernel-loop tmp (rebase dptr data) (project (rebase kptr kernel))
+                                 (all-but-last dsteps)
                                  (all-but-last ksteps)
                                  (all-but-last klowers)
                                  (all-but-last kuppers)
                                  (all-but-last kends))
                     (+= kptr (last ksteps))
-                    (-= dptr dstep)
+                    (-= dptr (last dsteps))
                     (each-element kptr klast (last ksteps)
                       (let-parameter* [(intermediate (type tmp))]
-                        (kernel-loop intermediate (rebase dptr data) dstep (project (rebase kptr kernel))
+                        (kernel-loop intermediate (rebase dptr data) (project (rebase kptr kernel))
+                                     (all-but-last dsteps)
                                      (all-but-last ksteps)
                                      (all-but-last klowers)
                                      (all-but-last kuppers)
                                      (all-but-last kends))
                         (+= tmp intermediate)
-                        (-= dptr dstep))))))))
-            (data-loop (lambda (out data kernel kshape kstrides ksteps klowers kuppers kends)
+                        (-= dptr (last dsteps)))))))))
+            (data-loop (lambda (out data kernel kshape kstrides dsteps ksteps klowers kuppers kends)
               (let-parameter* [(offset <long> (>> (last kshape)))
                                (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
                                (aptr   <long> (array-pointer out))
@@ -51,8 +53,8 @@
                             (let-parameter* [(tmp (typecode out))]
                               (kernel-loop tmp
                                            (project (rebase dptr data))
-                                           dstep
                                            kernel
+                                           (cons dstep dsteps)
                                            (cons kstep ksteps)
                                            (cons klower klowers)
                                            (cons kupper kuppers)
@@ -63,6 +65,7 @@
                                        kernel
                                        (all-but-last kshape)
                                        (all-but-last kstrides)
+                                       (cons dstep dsteps)
                                        (cons kstep ksteps)
                                        (cons klower klowers)
                                        (cons kupper kuppers)
@@ -76,6 +79,7 @@
                (cadr (delegate b))
                (shape (cadr (delegate b)))
                (strides (cadr (delegate b)))
+               '()
                '()
                '()
                '()
@@ -111,7 +115,6 @@
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1)))))
   (test-equal "test impulse in last dimension"
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0)))))
-  (test-skip 1)
   (test-equal "test impulse in first dimension"
     '((2 3) (5 7) (11 13)) (to-list (convolve (arr (2 3) (5 7) (11 13)) (arr (0) (1) (0)))))
 (test-end "2D convolution")

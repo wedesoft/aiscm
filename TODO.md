@@ -1,5 +1,7 @@
 ## Ready
 
+* problem with 2D RGB blur
+  (convolve (to-array (list (list (rgb 1 2 3)))) (arr (1)))
 * 2D convolution, 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * convolution documentation
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
