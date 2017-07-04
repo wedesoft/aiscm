@@ -29,30 +29,30 @@
         (x (var <sint>))
         (p (var <long>))]
   (test-equal "put instruction into a list if there are no variables to replace"
-    (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) RAX))
+    (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) '()))
   (test-equal "replace input variable with allocated register"
-    (list (MOV ESI ECX)) (replace-variables (list (cons a RCX)) (MOV ESI a) RAX))
+    (list (MOV ESI ECX)) (replace-variables (list (cons a RCX)) (MOV ESI a) '()))
   (test-equal "replace output variable with allocated register"
-    (list (MOV ECX 0)) (replace-variables (list (cons a RCX)) (MOV a 0) RAX))
+    (list (MOV ECX 0)) (replace-variables (list (cons a RCX)) (MOV a 0) '()))
   (test-equal "read input variable from spill location"
-    (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV EDX a) RAX))
+    (list (MOV EDX (ptr <int> RSP 16))) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV EDX a) '()))
   (test-equal "use temporary register for first argument and fetch value from spill location"
-    (list (MOV AX (ptr <sint> RSP 16)) (CMP AX 0)) (replace-variables (list (cons x (ptr <long> RSP 16))) (CMP x 0) RAX))
+    (list (MOV AX (ptr <sint> RSP 16)) (CMP AX 0)) (replace-variables (list (cons x (ptr <long> RSP 16))) (CMP x 0) (list RAX)))
   (test-equal "use correct type for temporary register"
-    (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0)) (replace-variables (list (cons a (ptr <long> RSP 16))) (CMP a 0) RAX))
+    (list (MOV EAX (ptr <int> RSP 16)) (CMP EAX 0)) (replace-variables (list (cons a (ptr <long> RSP 16))) (CMP a 0) (list RAX)))
   (test-equal "read and write back argument from stack into temporary register"
     (list (MOV EAX (ptr <int> RSP 16)) (ADD EAX 1) (MOV (ptr <int> RSP 16) EAX))
-    (replace-variables (list (cons a (ptr <long> RSP 16))) (ADD a 1) RAX))
+    (replace-variables (list (cons a (ptr <long> RSP 16))) (ADD a 1) (list RAX)))
   (test-equal "write output value in temporary register to the stack"
-    (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX)) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) RAX))
+    (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX)) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) (list RAX)))
   (test-equal "use temporary variable to implement reading from pointer to pointer"
     (list (MOV RAX (ptr <long> RSP 32)) (MOV EDX (ptr <int> RAX 8)))
-    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV a (ptr <int> p 8)) RAX))
+    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV a (ptr <int> p 8)) (list RAX)))
   (test-equal "do not use temporary variable when reading from register pointer"
-    (list (MOV EDX (ptr <int> RCX 8))) (replace-variables (list (cons a RDX) (cons p RCX)) (MOV a (ptr <int> p 8)) RAX))
+    (list (MOV EDX (ptr <int> RCX 8))) (replace-variables (list (cons a RDX) (cons p RCX)) (MOV a (ptr <int> p 8)) (list RAX)))
   (test-equal "use temporary variable to implement writing to pointer to pointer"
     (list (MOV RAX (ptr <long> RSP 32)) (MOV (ptr <int> RAX 8) EDX))
-    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) RAX)))
+    (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) (list RAX))))
 (test-end "replace-variables")
 
 (test-equal "adjusting the stack pointer by decreasing and increasing RSP"
@@ -129,40 +129,38 @@
         (x (var <sint>))
         (p (var <long>))]
     (test-equal "create temporary variable for first argument of instruction"
-      <var> (class-of (temporary-variables (MOV a 0))))
+      (list <var>) (map class-of (temporary-variables (MOV a 0))))
     (test-assert "temporary variable should be distinct from first argument of instruction"
-      (not (equal? a (temporary-variables (MOV a 0)))))
+      (not (equal? a (car (temporary-variables (MOV a 0))))))
     (test-equal "temporary variable should have correct type"
-      <sint> (typecode (temporary-variables (MOV x 0))))
+      (list <sint>) (map typecode (temporary-variables (MOV x 0))))
     (test-assert "it should not create a temporary variable if the statement does not contain variables"
-      (not (temporary-variables (MOV EAX 0))))
+      (null? (temporary-variables (MOV EAX 0))))
     (test-assert "it should not create a temporary variable if the first argument is not a variable"
-      (not (temporary-variables (MOV EAX a))))
+      (null? (temporary-variables (MOV EAX a))))
     (test-equal "create temporary variable for pointer argument to instruction"
-      <var> (class-of (temporary-variables (MOV (ptr <int> p) a))))
+      (list <var>) (map class-of (temporary-variables (MOV (ptr <int> p) a))))
     (test-equal "temporary variable for pointer argument needs to be long integer"
-      <long> (typecode (temporary-variables (MOV (ptr <int> p) a)))))
+      (list <long>) (map typecode (temporary-variables (MOV (ptr <int> p) a)))))
 (test-end "temporary variables")
 
 (test-begin "unit intervals for temporary variables")
   (test-assert "create empty list of unit intervals"
     (null? (unit-intervals '())))
   (test-equal "generate unit interval for one temporary variable"
-    '((a . (0 . 0))) (unit-intervals '(a)))
-  (test-equal "generate unit interval for two temporary variables"
-    '((a . (0 . 0)) (b . (1 . 1))) (unit-intervals '(a b)))
-  (test-equal "filter out locations without temporary variable"
-    '((b . (1 . 1))) (unit-intervals '(#f b)))
+    '((a . (0 . 0))) (unit-intervals '((a))))
+  (test-equal "generate unit interval for each command"
+    '((a . (0 . 0)) (b . (1 . 1))) (unit-intervals '((a) (b))))
+  (test-equal "generate unit interval with two temporary variables"
+    '((a . (0 . 0)) (b . (0 . 0))) (unit-intervals '((a b))))
 (test-end "unit intervals for temporary variables")
 
 (test-begin "registers of temporary variables")
   (let [(a (var <int>))]
     (test-assert "create empty list of temporary registers"
-      (null? (temporary-registers '() '())))
+      (null? ((temporary-registers '()) '())))
     (test-equal "return a temporary register"
-      (list RCX) (temporary-registers (list (cons a RCX)) (list a)))
-    (test-equal "return false if no temporary variable was required for a statement"
-      (list #f) (temporary-registers '() (list #f))))
+      (list RCX) ((temporary-registers (list (cons a RCX))) (list a))))
 (test-end "registers of temporary variables")
 
 (test-begin "generating code to move parameters to allocated location")
@@ -240,9 +238,6 @@
     (test-equal "Allocate a single register using custom list of registers"
       (list (SUB RSP 8) (MOV ECX 42) (ADD RSP 8) (RET))
       (jit-compile (list (MOV a 42) (RET)) #:registers (list RCX RDX)))
-    (test-equal "Allocate multiple registers"
-      (list (SUB RSP 8) (MOV ECX 1) (MOV EDX 2) (ADD ECX EDX) (MOV EAX ECX) (ADD RSP 8) (RET))
-      (jit-compile (list (MOV a 1) (MOV b 2) (ADD a b) (MOV c a) (RET))))
     (test-equal "Allocate a single register"
       (list (SUB RSP 8) (MOV EAX 42) (ADD RSP 8) (RET))
       (jit-compile (list (MOV a 42) (RET))))
