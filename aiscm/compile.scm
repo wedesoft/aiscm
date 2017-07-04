@@ -45,7 +45,7 @@
     (if (is-a? primary-location <address>)
       (let [(register (to-type (typecode primary-argument) (car temporaries)))]
         (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
-                 (substitute-variables cmd (assq-set allocation primary-argument (car temporaries)))
+                 (substitute-variables cmd (assq-set allocation primary-argument register))
                  (and (memv primary-argument (output cmd)) (MOV primary-location register))))
       (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
         ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
@@ -101,9 +101,11 @@
 (define (temporary-variables cmd)
   "Allocate temporary variable for each instruction which has a variable as first argument"
    (let [(arg (first-argument cmd))]
-     (or (and (not (null? (get-ptr-args cmd))) (list (var <long>)))
-         (and (is-a? arg <var>) (list (var (typecode arg))))
-         '())))
+     (cond
+       ((is-a? arg <ptr>)                (list (var <long>) (var <long>)))
+       ((not (null? (get-ptr-args cmd))) (list (var <long>)))
+       ((is-a? arg <var>)                (list (var <long>)))
+       (else                             '()))))
 
 (define (unit-intervals temporaries)
   "Generate intervals of length one for each temporary variable"

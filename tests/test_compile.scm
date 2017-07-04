@@ -132,16 +132,18 @@
       (list <var>) (map class-of (temporary-variables (MOV a 0))))
     (test-assert "temporary variable should be distinct from first argument of instruction"
       (not (equal? a (car (temporary-variables (MOV a 0))))))
-    (test-equal "temporary variable should have correct type"
-      (list <sint>) (map typecode (temporary-variables (MOV x 0))))
+    (test-equal "temporary variable should be long integer"
+      (list <long>) (map typecode (temporary-variables (MOV x 0))))
     (test-assert "it should not create a temporary variable if the statement does not contain variables"
       (null? (temporary-variables (MOV EAX 0))))
     (test-assert "it should not create a temporary variable if the first argument is not a variable"
       (null? (temporary-variables (MOV EAX a))))
     (test-equal "create temporary variable for pointer argument to instruction"
-      (list <var>) (map class-of (temporary-variables (MOV (ptr <int> p) a))))
-    (test-equal "temporary variable for pointer argument needs to be long integer"
-      (list <long>) (map typecode (temporary-variables (MOV (ptr <int> p) a)))))
+      (list <var>) (map class-of (temporary-variables (MOV a (ptr <int> p)))))
+    (test-equal "temporary variable for pointer argument should be long integer"
+      (list <long>) (map typecode (temporary-variables (MOV a (ptr <int> p)))))
+    (test-equal "allocate two temporary variables for instruction which writes to pointer"
+      (list <var> <var>) (map class-of (temporary-variables (MOV (ptr <int> p) a)))))
 (test-end "temporary variables")
 
 (test-begin "unit intervals for temporary variables")
