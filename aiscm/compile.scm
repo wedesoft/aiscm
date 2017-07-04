@@ -96,12 +96,11 @@
    "Return the list of callee saved registers in use"
    (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
 
-(define (temporary-variables prog)
+(define (temporary-variables cmd)
   "Allocate temporary variable for each instruction which has a variable as first argument"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))]
-         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
-             (and (is-a? arg <var>) (var (typecode arg))))))
-       prog))
+   (let [(arg (first-argument cmd))]
+     (or (and (not (null? (get-ptr-args cmd))) (var <long>))
+         (and (is-a? arg <var>) (var (typecode arg))))))
 
 (define (unit-intervals vars)
   "Generate intervals of length one for each temporary variable"
@@ -145,7 +144,7 @@
 (define* (jit-compile prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog results))
-         (temp-vars            (temporary-variables prog))
+         (temp-vars            (map temporary-variables prog))
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temp-vars)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))

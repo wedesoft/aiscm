@@ -28,7 +28,7 @@
   (let [(a (var <int>))
         (x (var <sint>))
         (p (var <long>))]
-  (test-equal "only put instruction into a list if there are no variables to replace"
+  (test-equal "put instruction into a list if there are no variables to replace"
     (list (MOV EAX 0)) (replace-variables '() (MOV EAX 0) RAX))
   (test-equal "replace input variable with allocated register"
     (list (MOV ESI ECX)) (replace-variables (list (cons a RCX)) (MOV ESI a) RAX))
@@ -128,22 +128,20 @@
         (b (var <int>))
         (x (var <sint>))
         (p (var <long>))]
-    (test-assert "an empty program needs no temporary variables"
-      (null? (temporary-variables '())))
     (test-equal "create temporary variable for first argument of instruction"
-      (list <var>) (map class-of (temporary-variables (list (MOV a 0)))))
+      <var> (class-of (temporary-variables (MOV a 0))))
     (test-assert "temporary variable should be distinct from first argument of instruction"
-      (not (equal? (list a) (temporary-variables (list (MOV a 0))))))
+      (not (equal? a (temporary-variables (MOV a 0)))))
     (test-equal "temporary variable should have correct type"
-      (list <sint>) (map typecode (temporary-variables (list (MOV x 0)))))
-    (test-equal "it should not create a temporary variable if the statement does not contain variables"
-      (list #f) (temporary-variables (list (MOV EAX 0))))
-    (test-equal "it should not create a temporary variable if the first argument is not a variable"
-      (list #f) (temporary-variables (list (MOV EAX a))))
+      <sint> (typecode (temporary-variables (MOV x 0))))
+    (test-assert "it should not create a temporary variable if the statement does not contain variables"
+      (not (temporary-variables (MOV EAX 0))))
+    (test-assert "it should not create a temporary variable if the first argument is not a variable"
+      (not (temporary-variables (MOV EAX a))))
     (test-equal "create temporary variable for pointer argument to instruction"
-      (list <var>) (map class-of (temporary-variables (list (MOV (ptr <int> p) a)))))
+      <var> (class-of (temporary-variables (MOV (ptr <int> p) a))))
     (test-equal "temporary variable for pointer argument needs to be long integer"
-      (list <long>) (map typecode (temporary-variables (list (MOV (ptr <int> p) a))))))
+      <long> (typecode (temporary-variables (MOV (ptr <int> p) a)))))
 (test-end "temporary variables")
 
 (test-begin "unit intervals for temporary variables")
