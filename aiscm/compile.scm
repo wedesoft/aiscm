@@ -41,7 +41,6 @@
   (let* [(location         (cut assq-ref allocation <>))
          (primary-argument (first-argument cmd))
          (primary-location (location primary-argument))]
-    ; cases requiring more than one temporary variable are not handled at the moment
     (if (is-a? primary-location <address>)
       (let [(register (to-type (typecode primary-argument) (car temporaries)))]
         (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
@@ -50,8 +49,9 @@
       (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
         ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
         (attach (map (compose (cut MOV (car temporaries) <>) location) spilled-pointer)
-                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var (car temporaries)))
-                                      allocation spilled-pointer)))))))
+                (substitute-variables cmd
+                                      (fold (lambda (var alist) (assq-set alist var (car temporaries)))
+                                            allocation spilled-pointer)))))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"

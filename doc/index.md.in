@@ -64,6 +64,7 @@ Control all data and machine code down to every single bit and byte.
 * [SymPy: computer algebra in Python](http://www.sympy.org/)
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
 * [Julia language](https://julialang.org/)
+* [Kona language](https://github.com/kevinlawler/kona)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 
