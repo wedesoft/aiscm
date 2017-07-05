@@ -37,21 +37,24 @@
 
 
 (define (replace-variables allocation cmd temporaries)
-  "Replace variables with registers and add spill code if necessary"
-  (let* [(location         (cut assq-ref allocation <>))
-         (primary-argument (first-argument cmd))
-         (primary-location (location primary-argument))]
-    (if (is-a? primary-location <address>)
-      (let [(register (to-type (typecode primary-argument) (car temporaries)))]
-        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
-                 (substitute-variables cmd (assq-set allocation primary-argument register))
-                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
-        ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
-        (attach (map (compose (cut MOV (car temporaries) <>) location) spilled-pointer)
-                (substitute-variables cmd
-                                      (fold (lambda (var alist) (assq-set alist var (car temporaries)))
-                                            allocation spilled-pointer)))))))
+  "Substitute variables with registers and add spill code using temporary registers if necessary"
+  (let* [(primary-var (first-argument cmd))
+         (primary-loc (assq-ref allocation primary-var))]
+    (if (is-a? primary-loc <address>)
+      (let* [(register   (car temporaries))
+             (temporary  (to-type (typecode primary-var) register))
+             (is-input?  (memv primary-var (input cmd)))
+             (is-output? (memv primary-var (output cmd)))]
+        (filter identity
+          (cons (and is-input? (MOV temporary primary-loc))
+                (attach (replace-variables allocation
+                                           (substitute-variables cmd (list (cons primary-var register)))
+                                           (cdr temporaries))
+                        (and is-output? (MOV primary-loc temporary))))))
+      (let [(spilled-pointers (filter (lambda (arg) (is-a? (assq-ref allocation arg) <address>)) (get-ptr-args cmd)))]
+        (attach (map (lambda (var temporary) (MOV temporary (assq-ref allocation var))) spilled-pointers temporaries)
+                (substitute-variables cmd (fold (lambda (var tmp alist) (assq-set alist var tmp))
+                                                allocation spilled-pointers temporaries)))))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"

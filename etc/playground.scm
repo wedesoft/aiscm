@@ -1,5 +1,5 @@
 (use-modules (srfi srfi-64))
-(use-modules (oop goops) (aiscm element) (aiscm int) (aiscm asm) (aiscm command) (aiscm variable) (aiscm program) (aiscm compile) (aiscm util))
+(use-modules (oop goops) (aiscm element) (aiscm int) (aiscm asm) (aiscm command) (aiscm variable) (aiscm program) (aiscm compile) (aiscm util) (srfi srfi-1))
 
 (define (replace-variables allocation cmd temporaries)
   "Substitute variables with registers and add spill code using temporary registers if necessary"
@@ -16,7 +16,10 @@
                                            (substitute-variables cmd (list (cons primary-var register)))
                                            (cdr temporaries))
                         (and is-output? (MOV primary-loc temporary))))))
-      (list (substitute-variables cmd allocation)))))
+      (let [(spilled-pointers (filter (lambda (arg) (is-a? (assq-ref allocation arg) <address>)) (get-ptr-args cmd)))]
+        (attach (map (lambda (var temporary) (MOV temporary (assq-ref allocation var))) spilled-pointers temporaries)
+                (substitute-variables cmd (fold (lambda (var tmp alist) (assq-set alist var tmp))
+                                                allocation spilled-pointers temporaries)))))))
 
 (test-begin "playground")
 (test-begin "replace-variables")
@@ -40,7 +43,6 @@
     (replace-variables (list (cons a (ptr <long> RSP 16))) (ADD a 1) (list RAX)))
   (test-equal "write output value in temporary register to the stack"
     (list (MOV EAX 1) (MOV (ptr <int> RSP 16) EAX)) (replace-variables (list (cons a (ptr <long> RSP 16))) (MOV a 1) (list RAX)))
-  (test-skip 4)
   (test-equal "use temporary variable to implement reading from pointer to pointer"
     (list (MOV RAX (ptr <long> RSP 32)) (MOV EDX (ptr <int> RAX 8)))
     (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV a (ptr <int> p 8)) (list RAX)))
