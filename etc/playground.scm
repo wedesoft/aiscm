@@ -26,23 +26,16 @@
   (let [(substituted (substitute-variables cmd allocation))
         (spilled?    (lambda (var) (is-a? (assq-ref allocation var) <address>)))]
     (if (is-a? substituted <cmd>)
-      (let [(spilled-pointers (filter spilled? (get-ptr-args cmd)))]; TODO: special case needed?
-        (if (null? spilled-pointers)
-          (let* [(target    (car (filter spilled? (append (output cmd) (input cmd)))))
-                 (location  (assq-ref allocation target))
-                 (is-input  (memv target (input cmd)))
-                 (is-output (memv target (output cmd)))
-                 (temporary (car temporaries))
-                 (typed-tmp (to-type (typecode target) temporary))]
-            (filter identity
-              (append (list (and is-input  (MOV typed-tmp location)))
-                      (replace-variables allocation (substitute-variables cmd (list (cons target temporary))) (cdr temporaries))
-                      (list (and is-output (MOV location typed-tmp))))))
-          (let* [(target   (car spilled-pointers))
-                 (location (assq-ref allocation target))
-                 (temporary (car temporaries))]
-            (cons (MOV temporary location)
-                  (replace-variables allocation (substitute-variables cmd (list (cons target temporary))) (cdr temporaries))))))
+      (let* [(target    (car (filter spilled? (append (get-ptr-args cmd) (output cmd) (input cmd)))))
+             (location  (assq-ref allocation target))
+             (is-input  (memv target (input cmd)))
+             (is-output (memv target (output cmd)))
+             (temporary (car temporaries))
+             (typed-tmp (to-type (typecode target) temporary))]
+        (filter identity
+          (append (list (and is-input  (MOV typed-tmp location)))
+                  (replace-variables allocation (substitute-variables cmd (list (cons target temporary))) (cdr temporaries))
+                  (list (and is-output (MOV location typed-tmp))))))
       (list (substitute-variables cmd allocation)))))
 
 
