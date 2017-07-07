@@ -23,21 +23,22 @@
 
 (define (replace-variables allocation cmd temporaries)
   "Substitute variables with registers and add spill code using temporary registers if necessary"
-  (let [(substituted (substitute-variables cmd allocation))]
+  (let [(substituted (substitute-variables cmd allocation))
+        (spilled?    (lambda (var) (is-a? (assq-ref allocation var) <address>)))]
     (if (is-a? substituted <cmd>)
-      (let [(pointers (get-ptr-args cmd))]
-        (if (null? pointers)
-          (let* [(target    (car (append (output cmd) (input cmd)))); TODO: select spilled values
+      (let [(spilled-pointers (filter spilled? (get-ptr-args cmd)))]; TODO: special case needed?
+        (if (null? spilled-pointers)
+          (let* [(target    (car (filter spilled? (append (output cmd) (input cmd)))))
                  (location  (assq-ref allocation target))
                  (is-input  (memv target (input cmd)))
                  (is-output (memv target (output cmd)))
                  (temporary (car temporaries))
                  (typed-tmp (to-type (typecode target) temporary))]
             (filter identity
-              (list (and is-input  (MOV typed-tmp location)); TODO: select spilled values
-                    (substitute-variables cmd (list (cons target temporary))); TODO: replace other vars
-                    (and is-output (MOV location typed-tmp)))))
-          (let* [(target   (car pointers))
+              (append (list (and is-input  (MOV typed-tmp location)))
+                      (replace-variables allocation (substitute-variables cmd (list (cons target temporary))) (cdr temporaries))
+                      (list (and is-output (MOV location typed-tmp))))))
+          (let* [(target   (car spilled-pointers))
                  (location (assq-ref allocation target))
                  (temporary (car temporaries))]
             (cons (MOV temporary location)
@@ -82,6 +83,9 @@
   ;(test-equal "use temporary variable to implement writing to pointer to pointer"
   ;  (list (MOV RAX (ptr <long> RSP 32)) (MOV (ptr <int> RAX 8) EDX))
   ;  (replace-variables (list (cons a RDX) (cons p (ptr <long> RSP 32))) (MOV (ptr <int> p 8) a) (list RAX)))
+  (test-equal "only use temporaries for spilled variables"
+    (list (MOV EAX (ptr <int> RSP 8)) (MOV (ptr <int> RDI) EAX))
+    (replace-variables (list (cons p RDI) (cons a (ptr <long> RSP 8))) (MOV (ptr <int> p) a) (list RAX RCX)))
 
   (test-skip 1)
   (test-equal "use two temporary variables to write spilled value to spilled address value"
