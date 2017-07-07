@@ -56,5 +56,7 @@
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0)))))
   (test-equal "test impulse in first dimension"
     '((2 3) (5 7) (11 13)) (to-list (convolve (arr (2 3) (5 7) (11 13)) (arr (0) (1) (0)))))
+  (test-equal "2D convolution with RGB values"
+    (list (list (rgb 1 2 3))) (to-list (convolve (to-array (list (list (rgb 1 2 3)))) (arr (1)))))
 (test-end "2D convolution")
 (test-end "aiscm convolution")

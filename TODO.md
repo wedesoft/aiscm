@@ -1,10 +1,7 @@
 ## Ready
 
-* problem with 2D RGB blur
-  (convolve (to-array (list (list (rgb 1 2 3)))) (arr (1)))
-* have "replace-variables" create more optimal code
 * 2D convolution, 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* convolution documentation
+* convolution documentation including RGB convolution
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * camera calibration, robot inverse kinematics, robot speech processing
