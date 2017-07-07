@@ -11,6 +11,7 @@ RUN = $(GUILE) -L $(top_builddir)
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
 					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
+					 roberts-cross.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 					 buttondown.css
@@ -22,7 +23,7 @@ EXTRA_DIST = includes.scm dependencies.sh \
 						 buttondown.css
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
-						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg star-ferry.jpg \
+						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
 						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
@@ -61,6 +62,9 @@ divided.jpg: ../tests/integration/division.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 modulo.jpg: ../tests/integration/modulo.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+roberts-cross.jpg: ../tests/integration/roberts_cross.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:
