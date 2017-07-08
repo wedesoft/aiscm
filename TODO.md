@@ -1,16 +1,20 @@
 ## Ready
 
-* 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* convolution documentation including RGB convolution
+* = -> eq
+* Conways way of life in one line of code
+* showing gray scale image hangs
+* assigning sub-arrays
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
+* 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * to-type in tensor
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
-* Conways way of life in one line of code
+* diagonal injection, convolution, median, dilation, ...
+* convolution in tensor
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
@@ -18,13 +22,14 @@
 * lookup, pseudo colour, warp
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
+* floating point convolution: sharpening filter, corner filters
+* Lucas-Kanade tracker
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
 * argmax
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
-* code -> mov/copy
 * GNOME video widget and player, Python/Qt/PyQt integration
 * check against NumPy for completeness
 * how to run test suite
@@ -52,7 +57,6 @@
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
 * NArray-like reshaping, other narray stuff
-* diagonal injection, convolution, median, dilation, ...
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * separate function for defining operation for array?
@@ -75,7 +79,6 @@
 * convert object to rgb, convert object to complex
 * 256 -> boolean conversion
 * 32 -> boolean conversion
-* split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * ArUco markers robot control

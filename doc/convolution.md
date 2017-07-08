@@ -51,3 +51,11 @@ Another popular edge detector is the Sobel operator.
 ```
 
 ![sobel.jpg](sobel.jpg "Sobel edges")
+
+## Conway's Game of Life
+
+Finally here is an implementation of Conway's Game of Life.
+
+```Scheme
+@../tests/integration/conway.scm@
+```
