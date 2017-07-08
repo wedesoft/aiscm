@@ -1,5 +1,4 @@
-(use-modules (aiscm magick) (aiscm convolution) (aiscm tensor) (aiscm sequence)
-             (aiscm sequence) (aiscm image) (aiscm element) (aiscm int))
+(use-modules (aiscm magick) (aiscm convolution) (aiscm tensor) (aiscm sequence) (aiscm image) (aiscm element) (aiscm int))
 (define (to-gray img) (to-array (convert-image (to-image img) 'GRAY)))
 (define (norm x y) (tensor (/ (+ (abs x) (abs y)) 8)))
 (define (sobel img) (norm (convolve img (arr (1 0 -1) (2 0 -2) ( 1 0 -1))) (convolve img (arr (1 2 1) (0 0 0) (-1 -2 -1)))))

@@ -18,13 +18,25 @@ Convolution can also be performed on 2D data.
 
 ## Image processing
 
+Here is the test input image for comparison.
+
+![star-ferry.jpg](star-ferry.jpg "Test input image")
+
+### Box filter
+
+A simple filter for blurring an image is the box filter. Note that convolution is performed on a colour image.
+
+```Scheme
+@../tests/integration/box_filter.scm@
+```
+
+![box-filter.jpg](box-filter.jpg "Box blur filter")
+
 ### Edge detection
 
 Convolutions can be used for edge detection.
 
 Here is an implementation of the Roberts cross edge detector.
-
-![star-ferry.jpg](star-ferry.jpg "Test input image")
 
 ```Scheme
 @../tests/integration/roberts_cross.scm@

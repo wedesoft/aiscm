@@ -11,7 +11,7 @@ RUN = $(GUILE) -L $(top_builddir)
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
 					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
-					 roberts-cross.jpg sobel.jpg \
+					 roberts-cross.jpg sobel.jpg box-filter.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 					 buttondown.css
@@ -68,6 +68,9 @@ roberts-cross.jpg: ../tests/integration/roberts_cross.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 sobel.jpg: ../tests/integration/sobel.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+box-filter.jpg: ../tests/integration/box_filter.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:
