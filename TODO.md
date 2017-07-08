@@ -1,11 +1,12 @@
 ## Ready
 
-* 2D convolution, 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
+* 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * convolution documentation including RGB convolution
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
+* to-type in tensor
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
