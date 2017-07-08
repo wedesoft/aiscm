@@ -18,7 +18,11 @@ Convolution can also be performed on 2D data.
 
 ## Image processing
 
-Convolutions can be used for image processing. Here is an implementation of the Roberts cross edge detector.
+### Edge detection
+
+Convolutions can be used for edge detection.
+
+Here is an implementation of the Roberts cross edge detector.
 
 ![star-ferry.jpg](star-ferry.jpg "Test input image")
 
@@ -27,3 +31,11 @@ Convolutions can be used for image processing. Here is an implementation of the 
 ```
 
 ![roberts-cross.jpg](roberts-cross.jpg "Roberts cross edge detector")
+
+Another popular edge detector is the Sobel operator.
+
+```Scheme
+@../tests/integration/sobel.scm@
+```
+
+![sobel.jpg](sobel.jpg "Sobel edges")

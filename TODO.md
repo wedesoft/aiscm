@@ -24,7 +24,7 @@
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
 * code -> mov/copy
-* GNOME video widget and player
+* GNOME video widget and player, Python/Qt/PyQt integration
 * check against NumPy for completeness
 * how to run test suite
 * "let" for tensors
