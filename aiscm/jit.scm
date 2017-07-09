@@ -50,7 +50,7 @@
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
-  #:re-export (min max to-type + - * = && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
+  #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
@@ -111,7 +111,7 @@
 (define-operator-mapping ^     (<meta<element>> <meta<element>>) (native-fun scm-logxor    ))
 (define-operator-mapping &&    (<meta<element>> <meta<element>>) (native-fun obj-and       ))
 (define-operator-mapping ||    (<meta<element>> <meta<element>>) (native-fun obj-or        ))
-(define-operator-mapping =     (<meta<element>> <meta<element>>) (native-fun obj-equal-p   ))
+(define-operator-mapping ==    (<meta<element>> <meta<element>>) (native-fun obj-equal-p   ))
 (define-operator-mapping !=    (<meta<element>> <meta<element>>) (native-fun obj-nequal-p  ))
 (define-operator-mapping lt    (<meta<element>> <meta<element>>) (native-fun obj-less-p    ))
 (define-operator-mapping le    (<meta<element>> <meta<element>>) (native-fun obj-leq-p     ))
@@ -266,7 +266,7 @@
 (define-jit-method coerce   ^   2)
 (define-jit-method coerce   &&  2)
 (define-jit-method coerce   ||  2)
-(define-jit-method to-bool  =   2)
+(define-jit-method to-bool  ==  2)
 (define-jit-method to-bool  !=  2)
 (define-jit-method to-bool  lt  2)
 (define-jit-method to-bool  le  2)

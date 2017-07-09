@@ -207,6 +207,8 @@
   3 (>> 6))
 (test-equal "remainder of division using '%'"
   33 (% 123 45))
+(test-equal "'==' for integers"
+  '(#t #f) (map == '(3 4) '(3 5)))
 (test-equal "'!=' for integers"
   '(#f #t) (map != '(3 4) '(3 5)))
 (test-equal "'=0' for integers"

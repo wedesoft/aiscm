@@ -229,15 +229,15 @@
 
 (test-begin "binary = and !=")
   (test-equal "element-wise array-scalar comparison"
-    '(#f #t #f) (to-list (= (seq <int> 1 2 3) 2)))
+    '(#f #t #f) (to-list (== (seq <int> 1 2 3) 2)))
   (test-equal "Element-wise scalar-array comparison"
-    '(#f #t #f) (to-list (= 2 (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== 2 (seq <int> 1 2 3))))
   (test-equal "Element-wise array-array comparison"
-    '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <int> 3 2 1) (seq <int> 1 2 3))))
   (test-equal "Element-wise comparison with integers of different size (first case)"
-    '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <byte> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <int> 3 2 1) (seq <byte> 1 2 3))))
   (test-equal "Element-wise comparison with integers of different size (second case)"
-    '(#f #t #f) (to-list (= (seq <byte> 3 2 1) (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <byte> 3 2 1) (seq <int> 1 2 3))))
   (test-equal "element-wise array-scalar non-equal comparison"
     '(#t #f #t) (to-list (!= (seq <int> 1 2 3) 2)))
 (test-end "binary = and !=")
@@ -288,9 +288,9 @@
   (test-assert "compile and run unary functional operation with nested parameter"
     ((jit ctx (list <int> <int>) (lambda (x y) (=0 (+ x y)))) -3 3))
   (test-assert "compile and run binary functional operation with nested first parameter"
-    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (= a (+ b c)))) 5 2 3))
+    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (== a (+ b c)))) 5 2 3))
   (test-assert "compile and run binary functional operation with nested first parameter"
-    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (= (+ a b) c))) 2 3 5))
+    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (== (+ a b) c))) 2 3 5))
   (let [(i (parameter <int>))]
     (test-equal "Integer decomposes to itself"
       i (decompose-value <int> i)))
@@ -398,7 +398,7 @@
 (test-eqv "compiled shift-right by one of Scheme objects"
   21 ((jit ctx (list <obj>) >>) 42))
 (test-equal "compiled equal comparison of Scheme objects"
-  (list #f #t) (map (jit ctx (list <obj> <obj>) =) '(21 42) '(42 42)))
+  (list #f #t) (map (jit ctx (list <obj> <obj>) ==) '(21 42) '(42 42)))
 (test-equal "compiled unequal comparison of Scheme objects"
   (list #t #f) (map (jit ctx (list <obj> <obj>) !=) '(21 42) '(42 42)))
 (test-equal "compiled lower-than comparison for Scheme objects"

@@ -37,7 +37,7 @@
             operation-code mutating-code functional-code unary-extract
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
-  #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
+  #:re-export (duplicate size-of min max + - && || ! == != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton* let-parameter let-parameter*))
 
 
@@ -289,7 +289,7 @@
 (define-operator-mapping max (<meta<int<>>> <meta<int<>>>) (mutating-code max=))
 (define-operator-mapping /   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   div              ))
 (define-operator-mapping %   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   mod              ))
-(define-operator-mapping =   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-equal        ))
+(define-operator-mapping ==  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-equal        ))
 (define-operator-mapping !=  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-not-equal    ))
 (define-operator-mapping lt  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-than   ))
 (define-operator-mapping le  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-equal  ))

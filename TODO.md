@@ -1,6 +1,5 @@
 ## Ready
 
-* = -> eq
 * Conways way of life in one line of code
 * showing gray scale image hangs
 * assigning sub-arrays
