@@ -213,16 +213,20 @@
   (rgb 2 3 -5) ((jit ctx (list <bytergb>) -) (rgb -2 -3 5)))
 (test-equal "compile and run code to subtract RGB values"
   (rgb 5 6 6) ((jit ctx (list <bytergb> <bytergb>) -) (rgb 7 9 11) (rgb 2 3 5)))
-(test-equal "compile and run code to adding scalar to RGB value"
-  (rgb 6 7 9) ((jit ctx (list <intrgb> <int>) +) (rgb 2 3 5) 4))
-(test-equal "Add scalar value to RGB sequence"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq (rgb 1 2 4) (rgb 2 3 5)) 1)))
-(test-equal "Add scalar sequence and RGB value"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
-(test-equal "Add RGB value and scalar sequence"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (rgb 1 2 4) (seq 1 2))))
-(test-equal "Add scalar sequence and RGB value"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+
+(test-begin "binary +")
+  (test-equal "compile and run code to adding scalar to RGB value"
+    (rgb 6 7 9) ((jit ctx (list <intrgb> <int>) +) (rgb 2 3 5) 4))
+  (test-equal "Add scalar value to RGB sequence"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq (rgb 1 2 4) (rgb 2 3 5)) 1)))
+  (test-equal "Add scalar sequence and RGB value"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+  (test-equal "Add RGB value and scalar sequence"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (rgb 1 2 4) (seq 1 2))))
+  (test-equal "Add scalar sequence and RGB value"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+(test-end "binary +")
+
 (test-equal "compile and run function building an RGB value"
   (rgb 2 3 5) ((jit ctx (list <int> <int> <int>) rgb) 2 3 5))
 (test-equal "convert integer RGB to byte RGB"
@@ -276,6 +280,9 @@
     (rgb 7 5 5) (tensor (largest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
   (test-equal "Smallest RGB value"
     (rgb 2 3 3) (tensor (smallest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
+  (test-skip 1)
+  (test-equal "Tensor requiring intermediate result"
+    (list (rgb 6 9 12)) (tensor (+ (seq (rgb 1 2 3)) (seq  (rgb 2 3 4)) (seq (rgb 3 4 5)))))
 (test-end "cumulative tensor operations")
 
 (test-begin "select RGB values using 'where'")

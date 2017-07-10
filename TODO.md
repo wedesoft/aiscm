@@ -1,9 +1,9 @@
 ## Ready
 
-* showing gray scale image hangs
-* assigning sub-arrays
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
+* assigning sub-arrays -> Conway
+* scaled xorg display (keyword argument) -> Conway
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
