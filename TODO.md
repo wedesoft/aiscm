@@ -1,6 +1,5 @@
 ## Ready
 
-* += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * assigning sub-arrays -> Conway
 * scaled xorg display (keyword argument) -> Conway

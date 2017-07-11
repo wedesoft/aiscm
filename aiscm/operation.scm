@@ -131,9 +131,8 @@
                     (+= kptr (last ksteps))
                     (-= dptr (last dsteps))
                     (each-element kptr klast (last ksteps)
-                      (let-parameter* [(intermediate (type tmp) (* (rebase dptr data) (project (rebase kptr kernel))))]
-                        (+= tmp intermediate)
-                        (-= dptr (last dsteps)))))
+                      (+= tmp (* (rebase dptr data) (project (rebase kptr kernel))))
+                      (-= dptr (last dsteps))))
                   (append
                     (kernel-loop tmp (rebase dptr data) (project (rebase kptr kernel))
                                  (all-but-last dsteps)
