@@ -280,9 +280,8 @@
     (rgb 7 5 5) (tensor (largest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
   (test-equal "Smallest RGB value"
     (rgb 2 3 3) (tensor (smallest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
-  (test-skip 1)
   (test-equal "Tensor requiring intermediate result"
-    (list (rgb 6 9 12)) (tensor (+ (seq (rgb 1 2 3)) (seq  (rgb 2 3 4)) (seq (rgb 3 4 5)))))
+    (list (rgb 6 9 12)) (to-list (tensor (+ (seq (rgb 1 2 3)) (seq  (rgb 2 3 4)) (seq (rgb 3 4 5))))))
 (test-end "cumulative tensor operations")
 
 (test-begin "select RGB values using 'where'")

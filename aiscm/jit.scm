@@ -137,10 +137,15 @@
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
   (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
-  (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-    (if (eq? out (car args)); hack for cumulative operations
-      result
-      (append-map duplicate (content (type out) out) (content (type result) result)))))
+  (if (any (cut is-a? <> <function>) args)
+    (let [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
+      (append (append-map (lambda (intermediate arg)
+                            (if (eq? intermediate arg) '() (duplicate intermediate arg))) intermediates args)
+              (delegate-op target intermediate name out intermediates)))
+    (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (if (eq? out (car args)); hack for cumulative operations
+        result
+        (append-map duplicate (content (type out) out) (content (type result) result))))))
 (define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
