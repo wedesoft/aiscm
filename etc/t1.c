@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-char f(char i)
+char f(char **p, char *q)
 {
-  return abs(i);
+  **p = *q;
 }

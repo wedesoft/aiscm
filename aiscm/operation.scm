@@ -37,7 +37,7 @@
             operation-code mutating-code functional-code unary-extract
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
-  #:re-export (duplicate size-of min max + - && || ! != ~ & | ^ << >> % =0 !=0 where abs)
+  #:re-export (duplicate size-of min max + - && || ! == != ~ & | ^ << >> % =0 !=0 where abs)
   #:export-syntax (define-operator-mapping let-skeleton* let-parameter let-parameter*))
 
 
@@ -121,37 +121,86 @@
          (duplicate a tmp)))))
 
 (define-method (duplicate (a <indexer>) (b <convolution>))
-  (let [(data (car (delegate b)))
-        (kernel (cadr (delegate b)))]
-  (if (null? (shape kernel))
-    (duplicate a (* data kernel))
-    (let-parameter* [(offset <long> (>> (dimension kernel)))
-                     (astep  <long> (* (stride a) (native-const <long> (size-of (typecode a)))))
-                     (aptr   <long> (array-pointer a))
-                     (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
-                     (dupper <long> (+ (array-pointer data) (* offset dstep)))
-                     (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
-                     (kstep  <long> (* (stride kernel) (native-const <long> (size-of (typecode kernel)))))
-                     (klower <long> (+ (array-pointer kernel) (+ (* (- offset (dimension data)) kstep) kstep)))
-                     (kend   <long> (+ (array-pointer kernel) (* (dimension kernel) kstep)))
-                     (kupper <long> (+ (array-pointer kernel) (+ (* offset kstep) kstep)))]
-      (repeat 0 (dimension a)
-              (let-parameter* [(dptr  <long> (min dupper dlast))
-                               (kptr  <long> (max (array-pointer kernel) klower))
-                               (klast <long> (min kend kupper))
-                               (tmp   (typecode a) (* (project (rebase dptr data))
-                                                      (project (rebase kptr kernel))))]
-                (+= kptr kstep)
-                (-= dptr dstep)
-                (each-element kptr klast kstep
-                        (let-parameter* [(intermediate (typecode a) (* (project (rebase dptr data)) (project (rebase kptr kernel))))]
-                          (+= tmp intermediate))
-                        (-= dptr dstep))
-                (duplicate (project (rebase aptr a)) tmp))
-              (+= kupper kstep)
-              (+= klower kstep)
-              (+= aptr astep)
-              (+= dupper dstep))))))
+  (letrec* [(kernel-loop (lambda (tmp data kernel dsteps ksteps klowers kuppers kends)
+              (let-parameter* [(dptr  <long> (array-pointer data))
+                               (kptr  <long> (max (array-pointer kernel) (+ (array-pointer kernel) (last klowers))))
+                               (klast <long> (+ (array-pointer kernel) (min (last kends) (last kuppers))))]
+                (if (<= (dimensions (type kernel)) 1)
+                  (append
+                    (duplicate tmp (* (rebase dptr data) (project (rebase kptr kernel))))
+                    (+= kptr (last ksteps))
+                    (-= dptr (last dsteps))
+                    (each-element kptr klast (last ksteps)
+                      (+= tmp (* (rebase dptr data) (project (rebase kptr kernel))))
+                      (-= dptr (last dsteps))))
+                  (append
+                    (kernel-loop tmp (rebase dptr data) (project (rebase kptr kernel))
+                                 (all-but-last dsteps)
+                                 (all-but-last ksteps)
+                                 (all-but-last klowers)
+                                 (all-but-last kuppers)
+                                 (all-but-last kends))
+                    (+= kptr (last ksteps))
+                    (-= dptr (last dsteps))
+                    (each-element kptr klast (last ksteps)
+                      (let-parameter* [(intermediate (type tmp))]
+                        (kernel-loop intermediate (rebase dptr data) (project (rebase kptr kernel))
+                                     (all-but-last dsteps)
+                                     (all-but-last ksteps)
+                                     (all-but-last klowers)
+                                     (all-but-last kuppers)
+                                     (all-but-last kends))
+                        (+= tmp intermediate)
+                        (-= dptr (last dsteps)))))))))
+            (data-loop (lambda (out data kernel kshape kstrides dsteps ksteps klowers kuppers kends)
+              (let-parameter* [(offset <long> (>> (last kshape)))
+                               (astep  <long> (* (stride out) (native-const <long> (size-of (typecode out)))))
+                               (aptr   <long> (array-pointer out))
+                               (alast  <long> (+ (array-pointer out) (* (dimension out) astep)))
+                               (dstep  <long> (* (stride data) (native-const <long> (size-of (typecode data)))))
+                               (dupper <long> (+ (array-pointer data) (* offset dstep)))
+                               (dlast  <long> (+ (array-pointer data) (- (* (dimension data) dstep) dstep)))
+                               (kstep  <long> (* (last kstrides) (native-const <long> (size-of (typecode kernel)))))
+                               (klower <long> (+ (* (- offset (dimension data)) kstep) kstep))
+                               (kend   <long> (* (last kshape) kstep))
+                               (kupper <long> (+ (* offset kstep) kstep))]
+                (each-element aptr alast astep
+                        (let-parameter* [(dptr <long> (min dupper dlast))]
+                          (if (<= (dimensions (type data)) 1)
+                            (let-parameter* [(tmp (typecode out))]
+                              (kernel-loop tmp
+                                           (project (rebase dptr data))
+                                           kernel
+                                           (cons dstep dsteps)
+                                           (cons kstep ksteps)
+                                           (cons klower klowers)
+                                           (cons kupper kuppers)
+                                           (cons kend kends))
+                              (duplicate (project (rebase aptr out)) tmp))
+                            (data-loop (project (rebase aptr out))
+                                       (project (rebase dptr data))
+                                       kernel
+                                       (all-but-last kshape)
+                                       (all-but-last kstrides)
+                                       (cons dstep dsteps)
+                                       (cons kstep ksteps)
+                                       (cons klower klowers)
+                                       (cons kupper kuppers)
+                                       (cons kend kends)
+                                       )))
+                        (+= klower kstep)
+                        (+= kupper kstep)
+                        (+= dupper dstep)))))]
+    (data-loop a
+               (car (delegate b))
+               (cadr (delegate b))
+               (shape (cadr (delegate b)))
+               (strides (cadr (delegate b)))
+               '()
+               '()
+               '()
+               '()
+               '())))
 
 (define-method (size-of (self <param>))
   (apply * (native-const <long> (size-of (typecode (type self)))) (shape self)))
@@ -239,7 +288,7 @@
 (define-operator-mapping max (<meta<int<>>> <meta<int<>>>) (mutating-code max=))
 (define-operator-mapping /   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   div              ))
 (define-operator-mapping %   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   mod              ))
-(define-operator-mapping =   (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-equal        ))
+(define-operator-mapping ==  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-equal        ))
 (define-operator-mapping !=  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-not-equal    ))
 (define-operator-mapping lt  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-than   ))
 (define-operator-mapping le  (<meta<int<>>> <meta<int<>>>) (functional-code coerce   cmp-lower-equal  ))

@@ -2,6 +2,6 @@
 while true; do
   clear;
   rm -f *.log;
-  make $@ | grep FAIL;
+  make $@;
   inotifywait -e CLOSE_WRITE `git ls-files ..`;
 done

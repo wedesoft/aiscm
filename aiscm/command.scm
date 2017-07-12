@@ -52,7 +52,7 @@
 
 (define-method (input (self <cmd>))
   (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
-(define-method (output (self <cmd>)) (variables (get-output self)))
+(define-method (output (self <cmd>)) (filter (cut is-a? <> <var>) (get-output self)))
 
 (define-method (variables (self <cmd>)) (variables (get-args self)))
 (define-method (variables (self <list>)) (delete-duplicates (append-map variables self)))

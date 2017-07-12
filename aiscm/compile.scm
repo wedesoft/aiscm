@@ -18,6 +18,7 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
   #:use-module (aiscm asm)
@@ -35,21 +36,22 @@
             place-result-variable backup-registers jit-compile))
 
 
-(define (replace-variables allocation cmd temporary)
-  "Replace variables with registers and add spill code if necessary"
-  (let* [(location         (cut assq-ref allocation <>))
-         (primary-argument (first-argument cmd))
-         (primary-location (location primary-argument))]
-    ; cases requiring more than one temporary variable are not handled at the moment
-    (if (is-a? primary-location <address>)
-      (let [(register (to-type (typecode primary-argument) temporary))]
-        (compact (and (memv primary-argument (input cmd)) (MOV register primary-location))
-                 (substitute-variables cmd (assq-set allocation primary-argument temporary))
-                 (and (memv primary-argument (output cmd)) (MOV primary-location register))))
-      (let [(spilled-pointer (filter (compose (cut is-a? <> <address>) location) (get-ptr-args cmd)))]
-        ; assumption: (get-ptr-args cmd) only returns zero or one pointer argument requiring a temporary variable
-        (attach (map (compose (cut MOV temporary <>) location) spilled-pointer)
-                (substitute-variables cmd (fold (lambda (var alist) (assq-set alist var temporary)) allocation spilled-pointer)))))))
+(define (replace-variables allocation cmd temporaries)
+  "Substitute variables with registers and add spill code using temporary registers if necessary"
+  (let [(substituted (substitute-variables cmd allocation))
+        (spilled?    (lambda (var) (is-a? (assq-ref allocation var) <address>)))]
+    (if (is-a? substituted <cmd>)
+      (let* [(target    (car (filter spilled? (append (get-ptr-args cmd) (output cmd) (input cmd)))))
+             (location  (assq-ref allocation target))
+             (is-input  (memv target (input cmd)))
+             (is-output (memv target (output cmd)))
+             (temporary (car temporaries))
+             (typed-tmp (to-type (typecode target) temporary))]
+        (filter identity
+          (append (list (and is-input  (MOV typed-tmp location)))
+                  (replace-variables allocation (substitute-variables cmd (list (cons target temporary))) (cdr temporaries))
+                  (list (and is-output (MOV location typed-tmp))))))
+      (list (substitute-variables cmd allocation)))))
 
 (define (adjust-stack-pointer offset prog)
   "Adjust stack pointer offset at beginning and end of program"
@@ -96,18 +98,22 @@
    "Return the list of callee saved registers in use"
    (delete-duplicates (lset-intersection eq? (apply compact (map cdr allocation)) callee-saved)))
 
-(define (temporary-variables prog)
+(define (temporary-variables cmd)
   "Allocate temporary variable for each instruction which has a variable as first argument"
-  (map (lambda (cmd) (let [(arg (first-argument cmd))]
-         (or (and (not (null? (get-ptr-args cmd))) (var <long>))
-             (and (is-a? arg <var>) (var (typecode arg))))))
-       prog))
+   (let [(arg (first-argument cmd))]
+     (cond
+       ((is-a? arg <ptr>)                (list (var <long>) (var <long>)))
+       ((not (null? (get-ptr-args cmd))) (list (var <long>)))
+       ((is-a? arg <var>)                (list (var <long>)))
+       (else                             '()))))
 
-(define (unit-intervals vars)
+(define (unit-intervals temporaries)
   "Generate intervals of length one for each temporary variable"
-  (filter car (map (lambda (var index) (cons var (cons index index))) vars (iota (length vars)))))
+  (append-map (lambda (vars index) (map (cut cons <> (cons index index)) vars))
+              temporaries
+              (iota (length temporaries))))
 
-(define (temporary-registers allocation variables)
+(define ((temporary-registers allocation) variables)
   "Look up register for each temporary variable given the result of a register allocation"
   (map (cut assq-ref allocation <>) variables))
 
@@ -145,7 +151,7 @@
 (define* (jit-compile prog #:key (registers default-registers) (parameters '()) (blocked '()) (results '()))
   "Linear scan register allocation for a given program"
   (let* [(live                 (live-analysis prog results))
-         (temp-vars            (temporary-variables prog))
+         (temp-vars            (map temporary-variables prog))
          (intervals            (append (live-intervals live (variables prog))
                                        (unit-intervals temp-vars)))
          (predefined-registers (register-parameter-locations (register-parameters parameters)))
@@ -158,7 +164,7 @@
          (parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
          (stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
          (allocation           (add-stack-parameter-information colors stack-locations))
-         (temporaries          (temporary-registers allocation temp-vars))
+         (temporaries          (map (temporary-registers allocation) temp-vars))
          (locations            (add-spill-information allocation 8 8))]
     (backup-registers callee-saved
       (adjust-stack-pointer stack-offset

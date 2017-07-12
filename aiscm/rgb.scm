@@ -145,7 +145,7 @@
     (define-method (op (a <rgb>) (b <rgb>)) (apply f (map op            (content <rgb<>> a) (content <rgb<>> b))))))
 
 (binary-rgb-cmp equal? equal?)
-(binary-rgb-cmp =  &&)
+(binary-rgb-cmp == &&)
 (binary-rgb-cmp != ||)
 
 (define-method (where (m <param>) (a <rgb>) (b <rgb>))

@@ -20,6 +20,7 @@ Control all data and machine code down to every single bit and byte.
 * [Input/output](io.html "Input/output")
 * [Arrays](array.html "Arrays")
 * [Array operations](operation.html "Array operations")
+* [Array convolutions](convolution.html "Array convolutions")
 
 ## See also
 
@@ -62,6 +63,8 @@ Control all data and machine code down to every single bit and byte.
 * [Embedded Language for Accelerated Array Computations](https://github.com/AccelerateHS/accelerate)
 * [SymPy: computer algebra in Python](http://www.sympy.org/)
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
+* [Julia language](https://julialang.org/)
+* [Kona language](https://github.com/kevinlawler/kona)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 

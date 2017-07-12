@@ -1,15 +1,17 @@
 ## Ready
 
-* cache convolution programs
-* convolution with data smaller than filter
-* convolution with even-sized filters
-* 2D convolution, 2D-1D convolution
-* += for RGB should force intermediate value; remove manual intermediate from convolution; intermediates in tensor?
+* assigning sub-arrays -> Conway, <-> fill
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
+* scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
+* 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
+* camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
+* to-type in tensor
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
-* Conways way of life in one line of code
+* diagonal injection, convolution, median, dilation, ...
+* convolution in tensor
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
@@ -17,14 +19,16 @@
 * lookup, pseudo colour, warp
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
+* floating point convolution: sharpening filter, corner filters
+* Lucas-Kanade tracker
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
 * argmax
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
-* code -> mov/copy
-* GNOME video widget and player
-* check against NumPy for completeness
+* Ghost in the Shell style animations
+* audio frequency: bar analyser
+* GNOME video widget and player, Python/Qt/PyQt integration
+* check against NumPy, Theano for completeness
 * how to run test suite
 * "let" for tensors
 * documentation for objects and arrays of objects
@@ -38,6 +42,7 @@
 * audio, video output timestamps
 * pulse audio: use samples for reading and writing
 * module libraries without version numbers
+* Kinect difference picture/surveillance
 * virtual fighter
 * augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
@@ -49,14 +54,12 @@
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
 * NArray-like reshaping, other narray stuff
-* diagonal injection, convolution, median, dilation, ...
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*
 * separate function for defining operation for array?
 * separate module for register allocation
 * Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
   multi-threading, SIMD, memory access (cache)
-* robot speech processing
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * car, cadr, ... -> first, second, ...
@@ -73,7 +76,6 @@
 * convert object to rgb, convert object to complex
 * 256 -> boolean conversion
 * 32 -> boolean conversion
-* split up (aiscm jit)
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * ArUco markers robot control
