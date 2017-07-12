@@ -50,7 +50,6 @@
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written
 * Debian sid FFmpeg API changes
-* fix dts error for mp4 output (Ubuntu Trusty)
 * select video codec, select audio codec
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage
