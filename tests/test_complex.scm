@@ -74,7 +74,7 @@
   (list 2 3) (unbuild (complex <int>) 2+3i))
 (test-eq "type matching for 2+3i"
   (complex <ubyte>) (native-type 2+3i))
-(test-skip 2)
+(test-expect-fail 2)
 (test-eq "type matching for complex value and scalar"
   (complex <double>) (native-type 2+3i 1.2))
 (test-eq "type matching for scalar and complex value"

@@ -108,7 +108,7 @@
   (list 2 3 5) (map get (content <intrgb> (make <intrgb> #:value (rgb 2 3 5)))))
 (test-eq "type matching for (rgb 2 3 5)"
   <ubytergb> (native-type (rgb 2 3 5)))
-(test-skip 3)
+(test-expect-fail 3)
 (test-eq "type matching for (rgb 2 3.5 5)"
   (rgb <double>) (native-type (rgb 2 3.5 5)))
 (test-eq "type matching for RGB value and scalar"
