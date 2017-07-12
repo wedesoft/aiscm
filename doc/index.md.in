@@ -20,6 +20,7 @@ Control all data and machine code down to every single bit and byte.
 * [Input/output](io.html "Input/output")
 * [Arrays](array.html "Arrays")
 * [Array operations](operation.html "Array operations")
+* [Array convolutions](convolution.html "Array convolutions")
 
 ## See also
 
@@ -53,6 +54,7 @@ Control all data and machine code down to every single bit and byte.
 * [Halide: a language for image processing and computational photography](http://halide-lang.org/)
 * [PeachPy: Portable assembly for Python](https://github.com/Maratyszcza/PeachPy)
 * [Guile manual](http://www.gnu.org/software/guile/manual/)
+* [Guile-CV: computer vision library functional programming library for Guile](https://www.gnu.org/software/guile-cv/)
 * [GOOPS: object-oriented extension to Guile](https://www.gnu.org/software/goops/)
 * [COOPS: Chicken Scheme object system](http://wiki.call-cc.org/eggref/4/coops)
 * [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf)
@@ -61,6 +63,8 @@ Control all data and machine code down to every single bit and byte.
 * [Embedded Language for Accelerated Array Computations](https://github.com/AccelerateHS/accelerate)
 * [SymPy: computer algebra in Python](http://www.sympy.org/)
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
+* [Julia language](https://julialang.org/)
+* [Kona language](https://github.com/kevinlawler/kona)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 

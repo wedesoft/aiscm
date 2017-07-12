@@ -207,9 +207,9 @@
 (test-equal "Downsample 3D array"
   '(6 3 2) (shape (downsample '(2 3) (make (multiarray <int> 3) #:shape '(6 6 6)))))
 (test-equal "'unbuild' for an array should return size and stride"
-  '(3 1) (take (unbuild (class-of s1) s1) 2))
+  '(3 1) (list-head (unbuild (class-of s1) s1) 2))
 (test-equal "'unbuild' for a 2D array should return shape and strides"
-  '(4 6 6 1) (take (unbuild (multiarray <byte> 2) (make (multiarray <byte> 2) #:shape '(6 4))) 4))
+  '(4 6 6 1) (list-head (unbuild (multiarray <byte> 2) (make (multiarray <byte> 2) #:shape '(6 4))) 4))
 (let [(roundtrip (build (class-of s1) (unbuild (class-of s1) s1)))]
   (test-equal "reconstruct sequence from components"
   '(2 3 5) (to-list roundtrip))
@@ -222,7 +222,7 @@
   (test-eqv "size of array memory is set correctly when reconstructing"
   12 (get-size (slot-ref roundtrip 'value))))
 (test-equal "'content' should convert dimension and stride to integer elements"
-  (list <long> <long>) (map class-of (take (content (sequence <int>) (skeleton (sequence <int>))) 2)))
+  (list <long> <long>) (map class-of (list-head (content (sequence <int>) (skeleton (sequence <int>))) 2)))
 (test-equal "'content' should return pointer object as an integer in addition to dimension and stride"
   <ulong> (class-of (last (content (sequence <int>) (skeleton (sequence <int>))))))
 (let [(s (parameter (sequence <int>)))]

@@ -1,7 +1,5 @@
 SUFFIXES = .scm .png .jpg .md .html .tmp .css .html5 .mp3
 
-DATE = $(shell date --iso-8601)
-
 PANDOC_OPTS = -s -c buttondown.css -f markdown -t html
 PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 							-Vpagetitle="Guile extension for numerical arrays and tensors" -Vtitle-prefix=AIscm \
@@ -10,21 +8,22 @@ PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 RUN = $(GUILE) -L $(top_builddir)
 
-doc_DATA = index.html installation.html assembler.html io.html array.html operation.html \
+doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
 					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
+					 roberts-cross.jpg sobel.jpg box-filter.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
-						 index.md.in installation.md assembler.md io.md array.md operation.md \
+						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md \
 						 aiscm.gif debian.png ubuntu.png source.png package.png \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png amd64.png travis.png \
 						 buttondown.css
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
-						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg star-ferry.jpg \
+						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
 						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
@@ -63,6 +62,15 @@ divided.jpg: ../tests/integration/division.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 modulo.jpg: ../tests/integration/modulo.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+roberts-cross.jpg: ../tests/integration/roberts_cross.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+sobel.jpg: ../tests/integration/sobel.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+box-filter.jpg: ../tests/integration/box_filter.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:

@@ -74,7 +74,7 @@
   (list 2 3) (unbuild (complex <int>) 2+3i))
 (test-eq "type matching for 2+3i"
   (complex <ubyte>) (native-type 2+3i))
-(test-skip 2)
+(test-expect-fail 2)
 (test-eq "type matching for complex value and scalar"
   (complex <double>) (native-type 2+3i 1.2))
 (test-eq "type matching for scalar and complex value"
@@ -159,4 +159,13 @@
   (test-equal "Collect smallest real and imaginary values"
     2+3i (tensor (smallest i (get (seq 2+5i 7+3i) i))))
 (test-end "cumulative tensor operations")
+
+(test-begin "select complex values using 'where'")
+  (test-equal "select from two values"
+    (list 2+3i 5+7i) (to-list (where (seq #t #f) 2+3i 5+7i)))
+  (test-equal "select from complex and scalar value"
+    (list 2+3i 5) (to-list (where (seq #t #f) 2+3i 5)))
+  (test-equal "select from scalar and complex value"
+    (list 2 3+5i) (to-list (where (seq #t #f) 2 3+5i)))
+(test-end "select complex values using 'where'")
 (test-end "aiscm complex")

@@ -17,6 +17,7 @@
 (use-modules (srfi srfi-64)
              (oop goops)
              (aiscm element)
+             (aiscm asm)
              (aiscm int)
              (aiscm pointer)
              (aiscm sequence)
@@ -141,4 +142,43 @@
     (test-equal "dimension of unary function expression is dimension of argument"
       (dimension m) (dimension (make-function ~ coerce list (list m)))))
 (test-end "dimension of expression")
+
+(test-begin "convolution")
+  (let [(s (parameter (sequence <sint>)))
+        (c (parameter <int>))
+        (k (parameter (multiarray <int> 2)))]
+    (test-equal "shape of convolution uses shape of first argument"
+      (shape s) (shape (convolution s c)))
+    (test-equal "convolution coerces types"
+      (sequence <int>) (type (convolution s c)))
+    (test-equal "convolution uses trailing kernel dimensions"
+      (append (shape s) (cdr (shape k))) (shape (convolution s k))))
+(test-end "convolution")
+
+(test-begin "rebase")
+  (let [(v (var <long>))
+        (p (make <var> #:type <long> #:symbol 'p))]
+    (test-equal "rebase a pointer"
+    v (get (rebase v (make (pointer <byte>) #:value p)))))
+  (let [(p (parameter (pointer <long>)))
+        (s (parameter (sequence <long>)))
+        (i (var <long>))
+        (x (parameter <long>))]
+    (test-equal "rebase pointer parameter"
+      i (value (rebase i p)))
+    (test-equal "rebase sequence parameter"
+      i (value (rebase i s)))
+    (test-equal "preserve type of sequence parameter"
+      (sequence <long>) (type (rebase i s)))
+    (test-equal "rebase pointer parameter with parameter"
+      (value x) (value (rebase x p))))
+(test-end "rebase")
+
+(test-begin "array-pointer")
+  (let [(s (parameter (sequence <long>)))]
+  (test-equal "array pointer has base pointer of array as value"
+    (value s) (value (array-pointer s)))
+  (test-equal "array pointer is a 64 bit integer"
+    <long> (type (array-pointer s))))
+(test-end "array-pointer")
 (test-end "aiscm expression")

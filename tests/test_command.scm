@@ -19,6 +19,7 @@
              (aiscm variable)
              (aiscm command)
              (aiscm program)
+             (aiscm expression)
              (aiscm register-allocate)
              (aiscm compile)
              (aiscm jit)
@@ -44,6 +45,8 @@
       (list a) (output (ADD a b)))
     (test-equal "Get input variables of command writing to address"
       (list b a) (input (MOV (ptr <int> a) b)))
+    (test-equal "pointer is not output of command"
+      '() (output (MOV (ptr <int> a) b)))
     (test-equal "Get arguments of command"
       (list a 0) (get-args (MOV a 0)))
     (test-equal "Get variables of a program"
@@ -130,10 +133,18 @@
     (list (mov-unsigned CL n) (SHL u CL)) (filter-blocks (shl u n)))
   (test-equal "shl uses SAL for signed input"
     (list (mov-unsigned CL n) (SAL s CL)) (filter-blocks (shl s n)))
-  (test-equal "shl uses SHR for unsigned input"
+  (test-equal "shl with one unsigned argument"
+    (list (SHL u)) (shl u))
+  (test-equal "shl with one signed argument"
+    (list (SAL s)) (shl s))
+  (test-equal "shr uses SHR for unsigned input"
     (list (mov-unsigned CL n) (SHR u CL)) (filter-blocks (shr u n)))
-  (test-equal "shl uses SAR for signed input"
-    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n))))
+  (test-equal "shr uses SAR for signed input"
+    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n)))
+  (test-equal "shr with one unsigned argument"
+    (list (SHR u)) (shr u))
+  (test-equal "shr with one signed argument"
+    (list (SAR s)) (shr s)))
 (test-end "shl and shr")
 
 (test-begin "boolean operations")
@@ -147,13 +158,22 @@
 
 (test-begin "repeat loop")
   (let [(a (var <int>))
-        (b (var <int>))
+        (b (parameter <int>))
         (c (var <int>))]
     (test-equal "'repeat' loop"
-        (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+        (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 0) (CMP ESI EDX) (JNL #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
         (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 0 b (INC a)) (RET))))))
     (test-equal "'repeat' loop with offset"
-      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JE #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
+      (list (SUB RSP 8) (MOV ECX 0) (MOV ESI 1) (CMP ESI EDX) (JNL #x6) (INC ESI) (INC ECX) (JMP #x-a) (ADD RSP 8) (RET))
       (resolve-jumps (jit-compile (flatten-code (list (MOV a 0) (repeat 1 b (INC a)) (RET)))))))
 (test-end "repeat loop")
+
+(test-begin "each-element loop")
+  (let [(p1 (parameter <long>))
+        (s  (parameter <long>))
+        (p  (parameter <long>))]
+  (test-equal "'each-element' loop"
+    (list (SUB RSP 8) (CMP RAX RCX) (JNL 6) (NOP) (ADD RAX RDX) (JMP -11) (ADD RSP 8) (RET))
+    (resolve-jumps (jit-compile (flatten-code (list (each-element p p1 s (NOP)) (RET)))))))
+(test-end "each-element loop")
 (test-end "aiscm command")

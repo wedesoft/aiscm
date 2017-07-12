@@ -30,7 +30,7 @@
             get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
             blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
             cmp cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
-            minor major repeat)
+            minor major cmp-where cmp-abs repeat each-element)
   #:re-export (variables get-args get-reg get-code))
 
 (define-method (input self) '())
@@ -52,7 +52,7 @@
 
 (define-method (input (self <cmd>))
   (delete-duplicates (variables (append (get-input self) (filter (cut is-a? <> <ptr>) (get-args self))))))
-(define-method (output (self <cmd>)) (variables (get-output self)))
+(define-method (output (self <cmd>)) (filter (cut is-a? <> <var>) (get-output self)))
 
 (define-method (variables (self <cmd>)) (variables (get-args self)))
 (define-method (variables (self <list>)) (delete-duplicates (append-map variables self)))
@@ -162,10 +162,13 @@
 (define (div r a b) (div/mod r a b (MOV r (to-type (typecode r) RAX))))
 (define (mod r a b) (div/mod r a b (if (eqv? 1 (size-of r)) (list (MOV AL AH) (MOV r AL)) (MOV r DX))))
 
-(define (shx r x shift-signed shift-unsigned)
-  (blocked RCX (mov-unsigned CL x) ((if (signed? r) shift-signed shift-unsigned) r CL)))
-(define (shl r x) (shx r x SAL SHL))
-(define (shr r x) (shx r x SAR SHR))
+(define* ((shx shift-signed shift-unsigned) r . x)
+  (let [(shift (if (signed? r) shift-signed shift-unsigned))]
+    (if (null? x)
+        (list (shift r))
+        (blocked RCX (apply mov-unsigned CL x) (shift r CL)))))
+(define (shl r . x) (apply (shx SAL SHL) r x))
+(define (shr r . x) (apply (shx SAR SHR) r x))
 
 (define-method (test (a <var>)) (list (TEST a a)))
 (define-method (test (a <ptr>))
@@ -200,6 +203,18 @@
 (define minor (cmp-cmovxx CMOVNLE CMOVNBE JL   JB  ))
 (define major (cmp-cmovxx CMOVL   CMOVB   JNLE JNBE))
 
+(define (cmp-where out m a b)
+  "Select value using boolean variable"
+  (list (test m) (JE 'zero) (mov out a) (JMP 'finish) 'zero (mov out b) 'finish))
+
+(define (cmp-abs out)
+  "Compute absolute value of signed or unsigned integers"
+  (if (signed? out) (list (cmp out 0) (JNLE 'skip) (NEG out) 'skip) '()))
+
 (define (repeat start end . body)
+  "Repeat loop"
   (let [(i (var (typecode end)))]
-    (list (MOV i start) 'begin (CMP i end) (JE 'end) (INC i) body (JMP 'begin) 'end)))
+    (list (MOV i start) 'begin (CMP i (value end)) (JNL 'end) (INC i) body (JMP 'begin) 'end)))
+
+(define (each-element iterator end step . body)
+  (list 'begin (CMP (value iterator) (value end)) (JNL 'end) body (ADD (value iterator) (value step)) (JMP 'begin) 'end))

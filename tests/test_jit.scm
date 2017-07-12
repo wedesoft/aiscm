@@ -92,7 +92,18 @@
       (list (SUB RSP 8) (MOV CX 0) (ADD RSP 8) (RET)) (virtual-variables '() '() (list (blocked RAX (MOV w 0)) (RET)))))
 (test-end "virtual variables")
 
+(test-begin "identity operation")
+  (test-equal "Compile and run identity operation"
+    42 ((jit ctx (list <int>) identity) 42))
+  (test-equal "Compile and run code for fetching data from a pointer"
+    i1 ((jit ctx (list (pointer <int>)) identity) (idata)))
+  (test-equal "'duplicate' creates copy of slice"
+    '(1 4) (to-list (duplicate (project (roll (arr (1 2 3) (4 5 6)))))))
+(test-end "identity operation")
+
 (test-begin "filling arrays")
+  (test-eqv "fill scalar"
+    42 (fill <int> '() 42))
   (test-equal "fill byte sequence"
     '(3 3 3) (to-list (fill <byte> '(3) 3)))
   (test-equal "fill integer sequence"
@@ -102,20 +113,6 @@
   (test-equal "fill RGB sequence"
     (list (rgb 2 3 5) (rgb 2 3 5)) (to-list (fill <intrgb> '(2) (rgb 2 3 5))))
 (test-end "filling arrays")
-
-(test-begin "convert-type")
-  (test-eq "typecast for scalar type"
-    <int> (convert-type <int> <byte>))
-  (test-eq "typecast element-type of array type"
-    (sequence <int>) (convert-type <int> (sequence <byte>)))
-(test-end "convert-type")
-
-(test-begin "identity operation")
-  (test-equal "Compile and run code for fetching data from a pointer"
-    i1 ((jit ctx (list (pointer <int>)) identity) (idata)))
-  (test-equal "'duplicate' creates copy of slice"
-    '(1 4) (to-list (duplicate (project (roll (arr (1 2 3) (4 5 6)))))))
-(test-end "identity operation")
 
 (test-begin "ensure compact storage")
   (test-assert "'ensure-default-strides' should do nothing by default"
@@ -151,6 +148,13 @@
   (test-equal "element-wise not for booleans"
     '(#f #t #f) (to-list (! (seq #t #f #t))))
 (test-end "unary =0, !=0, and !")
+
+(test-begin "unary << and >>")
+  (test-equal "left-shift sequence"
+    '(2 4 6) (to-list (<< (seq 1 2 3))))
+  (test-equal "right-shift sequence"
+    '(2 4 6) (to-list (>> (seq 4 8 12))))
+(test-end "unary << and >>")
 
 (test-begin "binary +")
   (test-equal "add 1 to downsampled array"
@@ -225,40 +229,40 @@
 
 (test-begin "binary = and !=")
   (test-equal "element-wise array-scalar comparison"
-    '(#f #t #f) (to-list (= (seq <int> 1 2 3) 2)))
+    '(#f #t #f) (to-list (== (seq <int> 1 2 3) 2)))
   (test-equal "Element-wise scalar-array comparison"
-    '(#f #t #f) (to-list (= 2 (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== 2 (seq <int> 1 2 3))))
   (test-equal "Element-wise array-array comparison"
-    '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <int> 3 2 1) (seq <int> 1 2 3))))
   (test-equal "Element-wise comparison with integers of different size (first case)"
-    '(#f #t #f) (to-list (= (seq <int> 3 2 1) (seq <byte> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <int> 3 2 1) (seq <byte> 1 2 3))))
   (test-equal "Element-wise comparison with integers of different size (second case)"
-    '(#f #t #f) (to-list (= (seq <byte> 3 2 1) (seq <int> 1 2 3))))
+    '(#f #t #f) (to-list (== (seq <byte> 3 2 1) (seq <int> 1 2 3))))
   (test-equal "element-wise array-scalar non-equal comparison"
     '(#t #f #t) (to-list (!= (seq <int> 1 2 3) 2)))
 (test-end "binary = and !=")
 
 (test-begin "binary <, <=, >, and >=")
   (test-equal "element-wise lower-than"
-    '(#t #f #f) (to-list (< (seq 3 4 255) 4)))
+    '(#t #f #f) (to-list (lt (seq 3 4 255) 4)))
   (test-equal "element-wise lower-than with signed values"
-    '(#t #f #f) (to-list (< (seq -1 0 1) 0)))
+    '(#t #f #f) (to-list (lt (seq -1 0 1) 0)))
   (test-equal "element-wise lower-than with signed values"
-    '(#f #f #t) (to-list (< 0 (seq -1 0 1))))
+    '(#f #f #t) (to-list (lt 0 (seq -1 0 1))))
   (test-equal "element-wise lower-than with unsigned and signed byte"
-    '(#f #f #f) (to-list (< (seq 1 2 128) -1)))
+    '(#f #f #f) (to-list (lt (seq 1 2 128) -1)))
   (test-equal "element-wise lower-equal with unsigned values"
-    '(#t #t #f) (to-list (<= (seq 3 4 255) 4)))
+    '(#t #t #f) (to-list (le (seq 3 4 255) 4)))
   (test-equal "element-wise lower-equal with signed values"
-    '(#t #t #f) (to-list (<= (seq -1 0 1) 0)))
+    '(#t #t #f) (to-list (le (seq -1 0 1) 0)))
   (test-equal "element-wise greater-than with signed values"
-    '(#f #f #t) (to-list (> (seq 3 4 255) 4)))
+    '(#f #f #t) (to-list (gt (seq 3 4 255) 4)))
   (test-equal "element-wise lower-equal with signed values"
-    '(#f #f #t) (to-list (> (seq -1 0 1) 0)))
+    '(#f #f #t) (to-list (gt (seq -1 0 1) 0)))
   (test-equal "element-wise greater-equal with unsigned values"
-    '(#f #t #t) (to-list (>= (seq 3 4 255) 4)))
+    '(#f #t #t) (to-list (ge (seq 3 4 255) 4)))
   (test-equal "element-wise greater-equal with signed values"
-    '(#f #t #t) (to-list (>= (seq -1 0 1) 0)))
+    '(#f #t #t) (to-list (ge (seq -1 0 1) 0)))
 (test-end "binary <, <=, >, and >=")
 
 (test-begin "binary / and %")
@@ -269,14 +273,6 @@
 (test-end "binary / and %")
 
 (test-begin "handling of intermediate results")
-  (let [(a (parameter <int>))
-        (b (parameter <sint>))
-        (c (parameter <ubyte>))
-        (r (parameter <long>))]
-    (test-skip 1)
-    (test-equal "Coerce to output value when using multiple mutating operations"
-      (list (SUB RSP 8) (MOVSX RSI EDX) (MOVSX RDX CX) (ADD RSI RDX) (MOVZX RCX AL) (ADD RSI RCX) (ADD RSP 8) (RET))
-      (jit-compile (flatten-code (attach ((term (+ a b c)) r) (RET))))))
   (test-equal "Compiling and run plus operation with three numbers"
     9 ((jit ctx (list <int> <int> <int>) +) 2 3 4))
   (test-equal "Compile and run binary mutating operating with nested second parameter"
@@ -284,9 +280,9 @@
   (test-assert "compile and run unary functional operation with nested parameter"
     ((jit ctx (list <int> <int>) (lambda (x y) (=0 (+ x y)))) -3 3))
   (test-assert "compile and run binary functional operation with nested first parameter"
-    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (= a (+ b c)))) 5 2 3))
+    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (== a (+ b c)))) 5 2 3))
   (test-assert "compile and run binary functional operation with nested first parameter"
-    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (= (+ a b) c))) 2 3 5))
+    ((jit ctx (list <int> <int> <int>) (lambda (a b c) (== (+ a b) c))) 2 3 5))
   (let [(i (parameter <int>))]
     (test-equal "Integer decomposes to itself"
       i (decompose-value <int> i)))
@@ -381,26 +377,30 @@
   '(#f b) (map (jit ctx (list <obj> <obj>) &&) '(#f a) '(b b)))
 (test-equal "logical or for Scheme objects"
   '(b a) (map (jit ctx (list <obj> <obj>) ||) '(#f a) '(b b)))
-(test-eq "compiled minimum using Scheme objects"
+(test-eqv "compiled minimum using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) min) 123 456))
-(test-eq "compiled maximum using Scheme objects"
+(test-eqv "compiled maximum using Scheme objects"
   456 ((jit ctx (list <obj> <obj>) max) 123 456))
-(test-eq "compiled shift-left using Scheme objects"
+(test-eqv "compiled shift-left using Scheme objects"
   1968 ((jit ctx (list <obj> <obj>) <<) 123 4))
-(test-eq "compiled shift-right using Scheme objects"
+(test-eqv "compiled shift-right using Scheme objects"
   123 ((jit ctx (list <obj> <obj>) >>) 1968 4))
+(test-eqv "compiled shift-left by one of Scheme objects"
+  84 ((jit ctx (list <obj>) <<) 42))
+(test-eqv "compiled shift-right by one of Scheme objects"
+  21 ((jit ctx (list <obj>) >>) 42))
 (test-equal "compiled equal comparison of Scheme objects"
-  (list #f #t) (map (jit ctx (list <obj> <obj>) =) '(21 42) '(42 42)))
+  (list #f #t) (map (jit ctx (list <obj> <obj>) ==) '(21 42) '(42 42)))
 (test-equal "compiled unequal comparison of Scheme objects"
   (list #t #f) (map (jit ctx (list <obj> <obj>) !=) '(21 42) '(42 42)))
 (test-equal "compiled lower-than comparison for Scheme objects"
-  (list #t #f #f) (map (jit ctx (list <obj> <obj>) <) '(3 5 7) '(5 5 5)))
+  (list #t #f #f) (map (jit ctx (list <obj> <obj>) lt) '(3 5 7) '(5 5 5)))
 (test-equal "compiled lower-equal comparison for Scheme objects"
-  (list #t #t #f) (map (jit ctx (list <obj> <obj>) <=) '(3 5 7) '(5 5 5)))
+  (list #t #t #f) (map (jit ctx (list <obj> <obj>) le) '(3 5 7) '(5 5 5)))
 (test-equal "compiled greater-than comparison for Scheme objects"
-  (list #f #f #t) (map (jit ctx (list <obj> <obj>) >) '(3 5 7) '(5 5 5)))
+  (list #f #f #t) (map (jit ctx (list <obj> <obj>) gt) '(3 5 7) '(5 5 5)))
 (test-equal "compiled greater-equal comparison for Scheme objects"
-  (list #f #t #t) (map (jit ctx (list <obj> <obj>) >=) '(3 5 7) '(5 5 5)))
+  (list #f #t #t) (map (jit ctx (list <obj> <obj>) ge) '(3 5 7) '(5 5 5)))
 (test-eq "convert Scheme object to integer in compiled code"
   42 ((jit ctx (list <obj>) (cut to-type <int> <>)) 42))
 (test-equal "compile and run identity function for sequence of objects"

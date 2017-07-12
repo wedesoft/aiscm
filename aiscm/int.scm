@@ -22,7 +22,6 @@
   #:use-module (aiscm element)
   #:use-module (aiscm scalar)
   #:use-module (aiscm bool)
-  #:use-module (aiscm float)
   #:use-module (aiscm util)
   #:export (signed unsigned bits signed? integer
             <int<>> <meta<int<>>>
@@ -80,8 +79,6 @@
     (if (signed? a)
       (if (signed? b) (integer max-bits signed) (coerce a (to-signed b)))
       (if (signed? b) (coerce (to-signed a) b) (integer max-bits unsigned)))))
-(define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>)) a)
-(define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>)) b)
 (define-method (native-type (i <integer>) . args)
   (if (every integer? args)
     (let [(lower (apply min (cons i args)))
@@ -111,8 +108,14 @@
 (define-method (^ a) a)
 (define-method (^ (a <integer>) (b <integer>)) (logxor a b))
 (define-method (^ a b c . args) (apply ^ (cons (^ a b) (cons c args))))
+
 (define-method (<< (a <integer>) (b <integer>)) (ash a b))
+(define-method (<< (a <integer>)) (<< a 1))
+
 (define-method (>> (a <integer>) (b <integer>)) (ash a (- b)))
+(define-method (>> (a <integer>)) (>> a 1))
+
 (define-method (% (a <integer>) (b <integer>)) (modulo a b))
+(define-method (== (a <integer>) (b <integer>)) (= a b))
 (define-method (!= (a <integer>) (b <integer>)) (not (= a b)))
 (define-method (conj (a <integer>)) a)
