@@ -1,8 +1,8 @@
 ## Ready
 
+* assigning sub-arrays -> Conway, <-> fill
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
-* assigning sub-arrays -> Conway
-* scaled xorg display (keyword argument) -> Conway
+* scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
@@ -28,7 +28,7 @@
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
-* check against NumPy for completeness
+* check against NumPy, Theano for completeness
 * how to run test suite
 * "let" for tensors
 * documentation for objects and arrays of objects
