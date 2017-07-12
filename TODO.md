@@ -1,11 +1,12 @@
 ## Ready
 
-* assigning sub-arrays -> Conway, <-> fill
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
+* assigning sub-arrays -> Conway, <-> fill
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
+* ==, != for complex numbers
 * to-type in tensor
 * separable convolution
 * convolve with set of sobel filters
