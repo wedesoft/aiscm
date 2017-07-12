@@ -16,7 +16,7 @@
   #:use-module (aiscm operation)
   #:export (tensor-operations expression->identifier identifier->symbol tensor-variables
             build-expression consume-variables identifier->expression tensor-ctx)
-  #:re-export (jit get wrap multi-loop)
+  #:re-export (define-method class-of add-method! make <method> jit get wrap multi-loop)
   #:export-syntax (tensor tensor-body sum prod largest smallest))
 
 

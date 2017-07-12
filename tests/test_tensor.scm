@@ -252,7 +252,7 @@
     (test-eq "preserve injection when looping over array of sums"
       <injecter> (class-of (body (multi-loop (inject += i (get m i))))))
     (test-equal "shape of array of tensor sums is one-dimensional"
-      (take (shape m) 1) (shape (inject += i (get m i))))
+      (list-head (shape m) 1) (shape (inject += i (get m i))))
     (test-equal "Tensor sum along one axis"
       '(4 6 8) (to-list (tensor (inject += i (get (arr (1 2 3) (3 4 5)) i)))))
     (test-eq "check loop details when other axis explicitely indexed is integer"

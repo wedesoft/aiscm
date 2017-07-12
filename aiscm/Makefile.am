@@ -4,7 +4,8 @@ sitedir = $(GUILE_SITE)/aiscm
 site_DATA = jit.scm mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm complex.scm float.scm \
 						sequence.scm asm.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm \
 						obj.scm composite.scm method.scm samples.scm tensor.scm variable.scm command.scm program.scm \
-						live-analysis.scm register-allocate.scm compile.scm expression.scm loop.scm operation.scm
+						live-analysis.scm register-allocate.scm compile.scm expression.scm loop.scm operation.scm \
+						convolution.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
