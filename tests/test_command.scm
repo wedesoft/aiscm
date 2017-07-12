@@ -45,6 +45,8 @@
       (list a) (output (ADD a b)))
     (test-equal "Get input variables of command writing to address"
       (list b a) (input (MOV (ptr <int> a) b)))
+    (test-equal "pointer is not output of command"
+      '() (output (MOV (ptr <int> a) b)))
     (test-equal "Get arguments of command"
       (list a 0) (get-args (MOV a 0)))
     (test-equal "Get variables of a program"

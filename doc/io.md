@@ -12,6 +12,12 @@ An image can be read from disk using *read-image* which uses the ImageMagick lib
 @../tests/integration/read_image.scm@
 ```
 
+Using colourspace conversions one can convert images to gray scale.
+
+```Scheme
+@..tests/integration/show_gray.scm
+```
+
 *write-image* writes an image to disk.
 
 ```Scheme

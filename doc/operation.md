@@ -48,7 +48,7 @@ The binary operations are:
 * **^:** bitwise exclusive-or
 * **&&:** boolean and
 * **||:** boolean or
-* **=:** equality
+* **==:** equality
 * **!=:** unequal
 * **lt:** lower than
 * **le:** lower or equal

@@ -116,5 +116,6 @@
 (define-method (>> (a <integer>)) (>> a 1))
 
 (define-method (% (a <integer>) (b <integer>)) (modulo a b))
+(define-method (== (a <integer>) (b <integer>)) (= a b))
 (define-method (!= (a <integer>) (b <integer>)) (not (= a b)))
 (define-method (conj (a <integer>)) a)

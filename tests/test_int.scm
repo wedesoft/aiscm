@@ -142,7 +142,7 @@
   <ulong> (native-type 4294967296))
 (test-equal "type matching for 18446744073709551615"
   <ulong> (native-type 18446744073709551615))
-(test-skip 1)
+(test-expect-fail 1)
 (test-equal "type matching for 18446744073709551616"
   <double> (native-type 18446744073709551616))
 (test-equal "type matching for -128"
@@ -159,7 +159,7 @@
   <long> (native-type -2147483649))
 (test-equal "type matching for -9223372036854775808"
   <long> (native-type -9223372036854775808))
-(test-skip 1)
+(test-expect-fail 1)
 (test-equal "type matching for -9223372036854775809"
   <double> (native-type -9223372036854775809))
 (test-equal "match two integers"
@@ -170,7 +170,7 @@
   125 (get (wrap 125)))
 (test-eqv "don't wrap twice"
   125 (get (wrap (wrap 125))))
-(test-skip 1)
+(test-expect-fail 1)
 (test-equal "type matching for 1 and 1.5"
   <double> (native-type 1 1.5))
 (test-eqv "get value of integer"
@@ -207,6 +207,8 @@
   3 (>> 6))
 (test-equal "remainder of division using '%'"
   33 (% 123 45))
+(test-equal "'==' for integers"
+  '(#t #f) (map == '(3 4) '(3 5)))
 (test-equal "'!=' for integers"
   '(#f #t) (map != '(3 4) '(3 5)))
 (test-equal "'=0' for integers"

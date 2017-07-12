@@ -50,7 +50,7 @@
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
-  #:re-export (min max to-type + - * = && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
+  #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
   #:export-syntax (define-jit-method pass-parameters))
 
@@ -111,7 +111,7 @@
 (define-operator-mapping ^     (<meta<element>> <meta<element>>) (native-fun scm-logxor    ))
 (define-operator-mapping &&    (<meta<element>> <meta<element>>) (native-fun obj-and       ))
 (define-operator-mapping ||    (<meta<element>> <meta<element>>) (native-fun obj-or        ))
-(define-operator-mapping =     (<meta<element>> <meta<element>>) (native-fun obj-equal-p   ))
+(define-operator-mapping ==    (<meta<element>> <meta<element>>) (native-fun obj-equal-p   ))
 (define-operator-mapping !=    (<meta<element>> <meta<element>>) (native-fun obj-nequal-p  ))
 (define-operator-mapping lt    (<meta<element>> <meta<element>>) (native-fun obj-less-p    ))
 (define-operator-mapping le    (<meta<element>> <meta<element>>) (native-fun obj-leq-p     ))
@@ -137,10 +137,15 @@
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
   (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
-  (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-    (if (eq? out (car args))
-      result
-      (append-map duplicate (content (type out) out) (content (type result) result)))))
+  (if (any (cut is-a? <> <function>) args)
+    (let [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
+      (append (append-map (lambda (intermediate arg)
+                            (if (eq? intermediate arg) '() (duplicate intermediate arg))) intermediates args)
+              (delegate-op target intermediate name out intermediates)))
+    (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (if (eq? out (car args)); hack for cumulative operations
+        result
+        (append-map duplicate (content (type out) out) (content (type result) result))))))
 (define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
 
@@ -266,7 +271,7 @@
 (define-jit-method coerce   ^   2)
 (define-jit-method coerce   &&  2)
 (define-jit-method coerce   ||  2)
-(define-jit-method to-bool  =   2)
+(define-jit-method to-bool  ==  2)
 (define-jit-method to-bool  !=  2)
 (define-jit-method to-bool  lt  2)
 (define-jit-method to-bool  le  2)
