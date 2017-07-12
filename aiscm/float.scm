@@ -21,6 +21,8 @@
   #:use-module (rnrs bytevectors)
   #:use-module (aiscm util)
   #:use-module (aiscm element)
+  #:use-module (aiscm int)
+  #:use-module (aiscm obj)
   #:use-module (aiscm scalar)
   #:export (floating-point single-precision double-precision precision double?
             <float<>> <meta<float<>>>
@@ -57,6 +59,9 @@
   (let* [(ref   (if (double? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))
          (value (ref packed 0))]
     (make self #:value value)))
+
+(define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>)) a)
+(define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>)) b)
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
   (floating-point (if (or (double? a) (double? b)) double-precision single-precision)))
 

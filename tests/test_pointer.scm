@@ -83,9 +83,6 @@
 (let [(p (parameter (pointer <int>)))]
   (test-equal "content of pointer is based on same value"
   (get (delegate p)) (get (delegate (car (content (pointer <int>) p))))))
-(let [(v (var <long>))]
-  (test-equal "rebase a pointer"
-  v (get (rebase v (make (pointer <byte>) #:value p)))))
 (test-eq "casting pointer preserves address"
   m1 (get (pointer-cast <int> p1-sint)))
 (test-eq "casting pointer changes type"

@@ -35,7 +35,7 @@
             <pointer<complex<>>> <meta<pointer<complex<>>>>
             complex)
   #:re-export (<pointer<element>> <meta<pointer<element>>>
-               real-part imag-part to-type conj - + * / += *= max= min=))
+               real-part imag-part to-type conj - + * / += *= max= min= where))
 
 (define ctx (make <context>))
 
@@ -91,8 +91,8 @@
   (append-map += (content <complex<>> a) (content <complex<>> b)))
 (define-method (*= (a <internalcomplex>) (b <internalcomplex>))
   (let [(intermediate (parameter (complex (type (real-part a)))))]
-    (append (append-map code (content <complex<>> intermediate) (content <complex<>> (* a b)))
-            (append-map code (content <complex<>> a) (content <complex<>> intermediate)))))
+    (append (append-map duplicate (content <complex<>> intermediate) (content <complex<>> (* a b)))
+            (append-map duplicate (content <complex<>> a) (content <complex<>> intermediate)))))
 (define-method (max= (a <internalcomplex>) (b <internalcomplex>))
   (append-map max= (content <complex<>> a) (content <complex<>> b)))
 (define-method (min= (a <internalcomplex>) (b <internalcomplex>))
@@ -125,6 +125,13 @@
     (complex (/ (+ (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))) denom)
              (/ (- (* (imag-part a) (real-part b)) (* (real-part a) (imag-part b))) denom))))
 
+(define-method (where (m <param>) (a <internalcomplex>) (b <internalcomplex>))
+  (apply complex (map (cut where m <...>) (content <complex<>> a) (content <complex<>> b))))
+(define-method (where (m <param>) (a <internalcomplex>)  b       )
+  (apply complex (map (cut where m <...>) (content <complex<>> a) (list b (native-const (type b) 0)))))
+(define-method (where (m <param>)  a        (b <internalcomplex>))
+  (apply complex (map (cut where m <...>) (list a (native-const (type a) 0)) (content <complex<>> b))))
+
 (define-method (var (self <meta<complex<>>>)) (let [(type (base self))] (complex (var type) (var type)))); TODO: test
 (pointer <complex<>>)
 (define-method (real-part (self <pointer<>>)) self)
@@ -132,9 +139,9 @@
 (define-method (real-part (self <pointer<complex<>>>)) (component (typecode self) self 0))
 (define-method (imag-part (self <pointer<complex<>>>)) (component (typecode self) self 1))
 
-(define-operator-mapping real-part 1 <meta<element>> (unary-extract real-part))
-(define-operator-mapping imag-part 1 <meta<element>> (unary-extract imag-part))
-(define-operator-mapping conj      1 <meta<element>> (unary-extract conj     ))
+(define-operator-mapping real-part (<meta<element>>) (unary-extract real-part))
+(define-operator-mapping imag-part (<meta<element>>) (unary-extract imag-part))
+(define-operator-mapping conj      (<meta<element>>) (unary-extract conj     ))
 
 (define-jit-method base real-part 1)
 (define-jit-method base imag-part 1)

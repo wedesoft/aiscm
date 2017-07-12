@@ -108,7 +108,7 @@
   (list 2 3 5) (map get (content <intrgb> (make <intrgb> #:value (rgb 2 3 5)))))
 (test-eq "type matching for (rgb 2 3 5)"
   <ubytergb> (native-type (rgb 2 3 5)))
-(test-skip 3)
+(test-expect-fail 3)
 (test-eq "type matching for (rgb 2 3.5 5)"
   (rgb <double>) (native-type (rgb 2 3.5 5)))
 (test-eq "type matching for RGB value and scalar"
@@ -138,13 +138,17 @@
 (test-equal "left shift for RGB values"
   (rgb 2 4 8) (<< 1 (rgb 1 2 3)))
 (test-equal "right shift for RGB values"
-  (rgb 1 2 4) (>> (rgb 2 4 8) 1))
+  (rgb 1 2 3) (>> (rgb 4 8 12) 2))
+(test-equal "left shift by one for RGB values"
+  (rgb 2 4 6) (<< (rgb 1 2 3)))
+(test-equal "right shift by one for RGB values"
+  (rgb 1 2 3) (>> (rgb 2 4 7)))
 (test-equal "division for RGB values"
   (rgb 1 2 3) (/ (rgb 3 6 9) 3))
 (test-assert "compare two RGB values (positive result)"
-  (= (rgb 2 3 5) (rgb 2 3 5)))
+  (== (rgb 2 3 5) (rgb 2 3 5)))
 (test-assert "compare two RGB values (negative result)"
-  (not (= (rgb 2 3 5) (rgb 2 4 5))))
+  (not (== (rgb 2 3 5) (rgb 2 4 5))))
 (test-assert "check two RGB values for unequal (positive result)"
   (!= (rgb 2 3 5) (rgb 2 3 6)))
 (test-assert "check two RGB values for unequal (negative result)"
@@ -159,23 +163,23 @@
       (a (skeleton <sintrgb>))
       (b (skeleton <sintrgb>))]
   (test-equal "Writing RGB to memory copies red channel"
-  (mov-signed (ptr <sint> (get p) 0) (get (red   a))) (caar   (code p a)))
+  (mov-signed (ptr <sint> (get p) 0) (get (red   a))) (caar   (duplicate p a)))
   (test-equal "Writing RGB to memory copies green channel"
-  (mov-signed (ptr <sint> (get p) 2) (get (green a))) (caadr  (code p a)))
+  (mov-signed (ptr <sint> (get p) 2) (get (green a))) (caadr  (duplicate p a)))
   (test-equal "Writing RGB to memory copies blue channel"
-  (mov-signed (ptr <sint> (get p) 4) (get (blue  a))) (caaddr (code p a)))
+  (mov-signed (ptr <sint> (get p) 4) (get (blue  a))) (caaddr (duplicate p a)))
   (test-equal "Reading RGB from memory copies red channel"
-  (mov-signed (get (red   a)) (ptr <sint> (get p) 0)) (caar   (code a p)))
+  (mov-signed (get (red   a)) (ptr <sint> (get p) 0)) (caar   (duplicate a p)))
   (test-equal "Reading RGB from memory copies green channel"
-  (mov-signed (get (green a)) (ptr <sint> (get p) 2)) (caadr  (code a p)))
+  (mov-signed (get (green a)) (ptr <sint> (get p) 2)) (caadr  (duplicate a p)))
   (test-equal "Reading RGB from memory copies blue channel"
-  (mov-signed (get (blue  a)) (ptr <sint> (get p) 4)) (caaddr (code a p)))
+  (mov-signed (get (blue  a)) (ptr <sint> (get p) 4)) (caaddr (duplicate a p)))
   (test-equal "copy red channel"
-  (mov-signed (get (red   a)) (get (red   b))) (caar   (code a b)))
+  (mov-signed (get (red   a)) (get (red   b))) (caar   (duplicate a b)))
   (test-equal "copy green channel"
-  (mov-signed (get (green a)) (get (green b))) (caadr  (code a b)))
+  (mov-signed (get (green a)) (get (green b))) (caadr  (duplicate a b)))
   (test-equal "copy blue channel"
-  (mov-signed (get (blue  a)) (get (blue  b))) (caaddr (code a b))))
+  (mov-signed (get (blue  a)) (get (blue  b))) (caaddr (duplicate a b))))
 (test-equal "compile and run identity function for RGB value"
   (rgb 3 2 5) ((jit ctx (list <intrgb>) identity) (rgb 3 2 5)))
 (test-equal "compile and run identity function for RGB array"
@@ -209,16 +213,20 @@
   (rgb 2 3 -5) ((jit ctx (list <bytergb>) -) (rgb -2 -3 5)))
 (test-equal "compile and run code to subtract RGB values"
   (rgb 5 6 6) ((jit ctx (list <bytergb> <bytergb>) -) (rgb 7 9 11) (rgb 2 3 5)))
-(test-equal "compile and run code to adding scalar to RGB value"
-  (rgb 6 7 9) ((jit ctx (list <intrgb> <int>) +) (rgb 2 3 5) 4))
-(test-equal "Add scalar value to RGB sequence"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq (rgb 1 2 4) (rgb 2 3 5)) 1)))
-(test-equal "Add scalar sequence and RGB value"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
-(test-equal "Add RGB value and scalar sequence"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (rgb 1 2 4) (seq 1 2))))
-(test-equal "Add scalar sequence and RGB value"
-  (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+
+(test-begin "binary +")
+  (test-equal "compile and run code to adding scalar to RGB value"
+    (rgb 6 7 9) ((jit ctx (list <intrgb> <int>) +) (rgb 2 3 5) 4))
+  (test-equal "Add scalar value to RGB sequence"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq (rgb 1 2 4) (rgb 2 3 5)) 1)))
+  (test-equal "Add scalar sequence and RGB value"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+  (test-equal "Add RGB value and scalar sequence"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (rgb 1 2 4) (seq 1 2))))
+  (test-equal "Add scalar sequence and RGB value"
+    (list (rgb 2 3 5) (rgb 3 4 6)) (to-list (+ (seq 1 2) (rgb 1 2 4))))
+(test-end "binary +")
+
 (test-equal "compile and run function building an RGB value"
   (rgb 2 3 5) ((jit ctx (list <int> <int> <int>) rgb) 2 3 5))
 (test-equal "convert integer RGB to byte RGB"
@@ -229,17 +237,17 @@
   (test-assert "Decompose RGB parameter into RGB object"
   (is-a? (decompose-value <intrgb> c) <rgb>)))
 (test-assert "Compare two RGB values (positive result)"
-  ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 3 5)))
+  ((jit ctx (list <ubytergb> <ubytergb>) ==) (rgb 2 3 5) (rgb 2 3 5)))
 (test-assert "Compare two RGB values (negative result)"
-  (not ((jit ctx (list <ubytergb> <ubytergb>) =) (rgb 2 3 5) (rgb 2 4 5))))
+  (not ((jit ctx (list <ubytergb> <ubytergb>) ==) (rgb 2 3 5) (rgb 2 4 5))))
 (test-assert "Require two RGB values to be unequal (positive result)"
   ((jit ctx (list <ubytergb> <ubytergb>) !=) (rgb 2 3 5) (rgb 2 4 5)))
 (test-assert "Require two RGB values to be unequal (negative result)"
   (not ((jit ctx (list <ubytergb> <ubytergb>) !=) (rgb 2 3 5) (rgb 2 3 5))))
 (test-assert "Compare RGB value with scalar (negative result)"
-  (not ((jit ctx (list <bytergb> <byte>) =) (rgb 2 3 5) 2)))
+  (not ((jit ctx (list <bytergb> <byte>) ==) (rgb 2 3 5) 2)))
 (test-assert "Compare RGB value with scalar (positive result)"
-  ((jit ctx (list <byte> <bytergb>) =) 3 (rgb 3 3 3)))
+  ((jit ctx (list <byte> <bytergb>) ==) 3 (rgb 3 3 3)))
 (test-equal "major value of RGB and byte sequence"
   (list (rgb 2 2 3)) (to-list ((jit ctx (list <ubytergb> (sequence <byte>)) max) (rgb 1 2 3) (seq <byte> 2))))
 (test-equal "minor value of RGB and byte sequence"
@@ -272,5 +280,16 @@
     (rgb 7 5 5) (tensor (largest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
   (test-equal "Smallest RGB value"
     (rgb 2 3 3) (tensor (smallest i (get (seq (rgb 2 3 5) (rgb 7 5 3)) i))))
+  (test-equal "Tensor requiring intermediate result"
+    (list (rgb 6 9 12)) (to-list (tensor (+ (seq (rgb 1 2 3)) (seq  (rgb 2 3 4)) (seq (rgb 3 4 5))))))
 (test-end "cumulative tensor operations")
+
+(test-begin "select RGB values using 'where'")
+  (test-equal "select from two values"
+    (list (rgb 2 3 5) (rgb 3 5 7)) (to-list (where (seq #t #f) (rgb 2 3 5) (rgb 3 5 7))))
+  (test-equal "select from RGB and scalar value"
+    (list (rgb 2 3 5) (rgb 7 7 7)) (to-list (where (seq #t #f) (rgb 2 3 5) 7)))
+  (test-equal "select from scalar and RGB value"
+    (list (rgb 2 2 2) (rgb 3 5 7)) (to-list (where (seq #t #f) 2 (rgb 3 5 7))))
+(test-end "select RGB values using 'where'")
 (test-end "aiscm rgb")

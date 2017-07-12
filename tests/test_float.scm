@@ -60,7 +60,7 @@
   float (foreign-type <float>))
 (test-equal "foreign type of double-precision floating point number"
   double (foreign-type <double>))
-(test-skip 1)
+(test-expect-fail 1)
 (test-equal "type matching for 1.5"
   <double> (native-type 1.5))
 (test-eqv "get value of floating point number"

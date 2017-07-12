@@ -51,6 +51,16 @@ SCM obj_shr(SCM x, SCM y)
   return scm_ash(x, obj_negate(y));
 }
 
+SCM obj_shl1(SCM x)
+{
+  return scm_ash(x, scm_from_int(1));
+}
+
+SCM obj_shr1(SCM x)
+{
+  return scm_ash(x, scm_from_int(-1));
+}
+
 char obj_equal_p(SCM x, SCM y)
 {
   return scm_is_true(scm_equal_p(x, y));
@@ -79,6 +89,11 @@ char obj_gr_p(SCM x, SCM y)
 char obj_geq_p(SCM x, SCM y)
 {
   return scm_is_true(scm_geq_p(x, y));
+}
+
+SCM obj_where(SCM m, SCM a, SCM b)
+{
+  return scm_is_true(m) ? a : b;
 }
 
 SCM obj_from_bool(unsigned char x)

@@ -1,8 +1,6 @@
 #include <stdlib.h>
 
-int g();
-
-int f()
+char f(char **p, char *q)
 {
-  return g();
+  **p = *q;
 }
