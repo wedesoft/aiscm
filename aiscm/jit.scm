@@ -132,6 +132,7 @@
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
+; ---------------------------------
 (define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
   (apply (apply name (map type args)) out args))
 (define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
@@ -148,6 +149,7 @@
         (append-map duplicate (content (type out) out) (content (type result) result))))))
 (define ((delegate-fun name) out . args)
   (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
+; ---------------------------------
 
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
@@ -215,6 +217,7 @@
       (fill type shape value))))
 
 (define-macro (define-jit-dispatch name arity delegate)
+  "Compilation and caching of array operations"
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<element>))]
     `(define-method (,name ,@header)
@@ -226,6 +229,7 @@
        (,name ,@args))))
 
 (define-macro (define-nary-collect name arity)
+  "Dispatch for n-ary operation with Scheme numerical types"
   (let* [(args   (symbol-list arity))
          (header (cons (list (car args) '<element>) (cdr args)))]; TODO: extract and test
     (cons 'begin
@@ -243,6 +247,29 @@
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
+; ---------------------------------
+(set! operations (cons '+ operations))
+
+; here: build expression to resolve loops
+; aiscm operation: map + to += and then to ADD for integers, (+ <int> <int>)
+; TODO: use += <int> <int>, implement + <intrgb> <intrgb>, handle intermediates
+(define ((delegate-plus-fun name) out . args) (apply (apply name (map type args)) out args))
+(define-method (+ (a <param>) (b <param>)) (make-function + coerce (delegate-plus-fun +) (list a b)))
+(define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
+
+(define-method (+ (a <meta<composite>>) (b <meta<element>>))
+  (lambda (out . args)
+    (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
+(define-method (+ (a <meta<element>>) (b <meta<composite>>))
+  (lambda (out . args)
+    (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
+
+(define-nary-collect + 2)
+(define-jit-dispatch + 2 +)
+; ---------------------------------
+
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
@@ -259,7 +286,7 @@
 (define-jit-method to-bool  !   1)
 (define-jit-method identity <<  1)
 (define-jit-method identity >>  1)
-(define-jit-method coerce   +   2)
+;(define-jit-method coerce   +   2)
 (define-jit-method coerce   -   2)
 (define-jit-method coerce   *   2)
 (define-jit-method coerce   /   2)

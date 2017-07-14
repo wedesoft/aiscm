@@ -1,34 +1,41 @@
 (use-modules (srfi srfi-64))
-(use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (aiscm asm) (aiscm int) (aiscm rgb) (aiscm expression) (aiscm jit)
-             (aiscm operation) (aiscm element) (aiscm sequence) (aiscm scalar))
+(use-modules (oop goops) (srfi srfi-1) (srfi srfi-26) (aiscm asm) (aiscm int) (aiscm rgb) (aiscm expression) (aiscm jit) (aiscm operation) (aiscm element) (aiscm sequence) (aiscm scalar) (ice-9 curried-definitions) (aiscm composite) (aiscm tensor))
+
+; TODO: intermediates
+
+(define ((delegate-plus-fun name) out . args) (apply (apply name (map type args)) out args))
+(define-method (+ (a <param>) (b <param>)) (make-function + coerce (delegate-plus-fun +) (list a b)))
+(define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
+
+(define-method (+ (a <meta<composite>>) (b <meta<element>>))
+  (lambda (out . args)
+    (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
+(define-method (+ (a <meta<element>>) (b <meta<composite>>))
+  (lambda (out . args)
+    (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
+      (append-map duplicate (content (type out) out) (content (type result) result)))))
+(define-method (+= (ta <meta<rgb<>>>) (tb <meta<rgb<>>>))
+  (lambda (r a b) (append-map (+= (base ta) (base tb)) (content <rgb<>> r) (content <rgb<>> a) (content <rgb<>> b))))
+(define-method (+= (ta <meta<rgb<>>>) (tb <meta<element>>))
+  (lambda (r a b) (append-map (+= (base ta) tb) (content <rgb<>> r) (content <rgb<>> a) (list b b b))))
 
 
-(define a (parameter <intrgb>))
-(define b (parameter <intrgb>))
-(define r (parameter <intrgb>))
-(define f (+ a b))
-(+= r f)
+(define r (parameter <int>))
+(define a (parameter <int>))
+(define b (parameter <int>))
 
-(define target <intrgb>)
-(define intermediate <intrgb>)
-(define name +=)
-(define out r)
-(define args (list out f))
-(define intermediates (map (lambda (arg) (parameter (type arg))) args))
-(append-map duplicate intermediates args)
+((cumulative-code ADD) r r b)
+((mutating-code +=) r a b)
 
-(define args intermediates)
+((+= <int> <int>) r r b)
+((+ <int> <int>) r a b)
 
+(define r (parameter (sequence <int>)))
+(define s (parameter (sequence <int>)))
+(define c (parameter <int>))
 
-(decompose-value <intrgb> f)
-
-;(content <rgb<>> r)
-;(content <rgb<>> f)
-;(append-map += (content <rgb<>> r) (content <rgb<>> f))
-
-(define ctx (make <context>))
-((jit ctx (list <int> <int> <int>) +) 2 3 5)
-((jit ctx (list <intrgb> <intrgb> <intrgb>) +) (rgb 2 3 5) (rgb 3 5 7) (rgb 5 7 11))
+(duplicate r (+ s c))
 
 (test-begin "playground")
 (test-end "playground")
