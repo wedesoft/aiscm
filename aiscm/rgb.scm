@@ -104,10 +104,14 @@
   (append-map (cut content (base type) <>) (deconstruct type self)))
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content <rgb<>> self)))))
 
+; ---------------------------------
 (define-method (+= (ta <meta<rgb<>>>) (tb <meta<rgb<>>>))
-  (lambda (r a b) (append-map (+= (base ta) (base tb)) (content <rgb<>> r) (content <rgb<>> a) (content <rgb<>> b))))
+  (lambda (r a b)
+    (append-map (+= (base ta) (base tb)) (content <rgb<>> r) (content <rgb<>> a) (content <rgb<>> b))))
 (define-method (+= (ta <meta<rgb<>>>) (tb <meta<element>>))
-  (lambda (r a b) (append-map (+= (base ta) tb) (content <rgb<>> r) (content <rgb<>> a) (list b b b))))
+  (lambda (r a b)
+    (append-map (+= (base ta) tb) (content <rgb<>> r) (content <rgb<>> a) (list b b b))))
+; ---------------------------------
 
 (define-syntax-rule (unary-rgb-op op)
   (define-method (op (a <rgb>)) (apply rgb (map op (content <rgb<>> a)))))
