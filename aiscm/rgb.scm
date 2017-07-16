@@ -107,10 +107,14 @@
 ; ---------------------------------
 (define-method (+= (ta <meta<rgb<>>>) (tb <meta<rgb<>>>))
   (lambda (r a b)
-    (append-map (+= (base ta) (base tb)) (content <rgb<>> r) (content <rgb<>> a) (content <rgb<>> b))))
+    (let [(intermediate (if (is-a? b <function>) (parameter (type b)) b))]
+      (append (if (is-a? b <function>) (duplicate intermediate b) '())
+              (append-map (+= (base ta) (base tb)) (content <rgb<>> r) (content <rgb<>> a) (content <rgb<>> intermediate))))))
 (define-method (+= (ta <meta<rgb<>>>) (tb <meta<element>>))
   (lambda (r a b)
-    (append-map (+= (base ta) tb) (content <rgb<>> r) (content <rgb<>> a) (list b b b))))
+    (let [(intermediate (if (is-a? b <function>) (parameter (type b)) b))]
+      (append (if (is-a? b <function>) (duplicate intermediate b) '())
+              (append-map (+= (base ta) tb) (content <rgb<>> r) (content <rgb<>> a) (make-list 3 intermediate))))))
 ; ---------------------------------
 
 (define-syntax-rule (unary-rgb-op op)

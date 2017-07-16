@@ -3,23 +3,10 @@
 
 ; TODO: intermediates for +=
 
-(define r (parameter <int>))
-(define a (parameter <int>))
-(define b (parameter <int>))
-(define c (parameter <int>))
-
-(duplicate r (+ a (+ b c)))
-
 (define r (parameter <intrgb>))
 (define a (parameter <intrgb>))
 (define b (parameter <intrgb>))
-(define c (parameter <intrgb>))
 
-(duplicate r (+ a (+ b c)))
+(+= r a)
 
-(test-begin "playground")
-(test-end "playground")
-
-((+ <intrgb> <intrgb>) r a b)
-
-(+ b c)
+(+= r (+ a b))

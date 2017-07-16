@@ -1,5 +1,6 @@
 ## Ready
 
+* implement composite operations directly (without decompose-value)
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * assigning sub-arrays -> Conway, <-> fill
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
