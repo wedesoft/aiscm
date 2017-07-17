@@ -8,6 +8,7 @@
 *.bz2
 *.xz
 *.asc
+*.log
 *~
 *.info
 aclocal.m4
