@@ -255,19 +255,17 @@
 (define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
 
 (define-method (+ (a <meta<composite>>) (b <meta<element>>))
-  (lambda (out . args); TODO: extract and test intermediate code generation
-    (let* [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))
-           (result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
-      (append (append-map (lambda (intermediate arg) (if (eq? intermediate arg) '() (duplicate intermediate arg)))
-                          intermediates args)
-              (append-map duplicate (content (type out) out) (content (type result) result))))))
+  (lambda (out . args)
+    (force-parameters (list a b) args code-needs-intermediate?
+      (lambda intermediates
+        (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
+          (append-map duplicate (content (type out) out) (content (type result) result)))))))
 (define-method (+ (a <meta<element>>) (b <meta<composite>>))
-  (lambda (out . args); TODO: remove redundant method
-    (let* [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))
-           (result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
-      (append (append-map (lambda (intermediate arg) (if (eq? intermediate arg) '() (duplicate intermediate arg)))
-                          intermediates args)
-              (append-map duplicate (content (type out) out) (content (type result) result))))))
+  (lambda (out . args)
+    (force-parameters (list a b) args code-needs-intermediate?
+      (lambda intermediates
+        (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
+          (append-map duplicate (content (type out) out) (content (type result) result)))))))
 
 (define-nary-collect + 2)
 (define-jit-dispatch + 2 +)

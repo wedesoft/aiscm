@@ -107,10 +107,9 @@
 ; ---------------------------------
 (define-method (+= (ta <meta<rgb<>>>) (tb <meta<rgb<>>>))
   (lambda (out . args)
-    (let [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
-      (append (append-map (lambda (intermediate arg) (if (eq? intermediate arg) '() (duplicate intermediate arg)))
-                          intermediates args)
-              (append-map (+= (base ta) (base tb)) (content <rgb<>> out) (content <rgb<>> (car intermediates)) (content <rgb<>> (decompose-value <rgb<>> (cadr intermediates))))))))
+    (force-parameters (list ta tb) args code-needs-intermediate?
+      (lambda intermediates
+        (append-map (+= (base ta) (base tb)) (content <rgb<>> out) (content <rgb<>> (car intermediates)) (content <rgb<>> (decompose-value <rgb<>> (cadr intermediates))))))))
 ; ---------------------------------
 
 (define-syntax-rule (unary-rgb-op op)

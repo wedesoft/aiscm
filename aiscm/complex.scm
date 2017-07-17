@@ -90,10 +90,9 @@
 ; ---------------------------------
 (define-method (+= (ta <meta<complex<>>>) (tb <meta<complex<>>>))
   (lambda (out . args)
-    (let* [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
-      (append (append-map (lambda (intermediate arg) (if (eq? intermediate arg) '() (duplicate intermediate arg)))
-                          intermediates args)
-              (append-map (+= (base ta) (base tb)) (content <complex<>> out) (content <complex<>> (car intermediates)) (content <complex<>> (decompose-value <complex<>> (cadr intermediates))))))))
+    (force-parameters (list ta tb) args code-needs-intermediate?
+      (lambda intermediates
+        (append-map (+= (base ta) (base tb)) (content <complex<>> out) (content <complex<>> (car intermediates)) (content <complex<>> (decompose-value <complex<>> (cadr intermediates))))))))
 ; ---------------------------------
 
 (define-method (*= (a <internalcomplex>) (b <internalcomplex>))
