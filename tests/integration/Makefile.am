@@ -43,6 +43,7 @@ integration-local:
 
 reintegration-local: $(INTEGRATION_TEST_TARGETS)
 
-CLEANFILES = fubk.png av-sync.mp4 test.mp3 pattern.png swap-channels.jpg *.tmp
+CLEANFILES = *.tmp av-sync.mp4 fubk.png pattern.png swap-channels.jpg rolled.jpg cropped.jpg crop2d.jpg inverted.jpg \
+						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg
 
 MAINTAINERCLEANFILES = Makefile.in

@@ -1,6 +1,5 @@
 ## Ready
 
-* implement composite operations directly (without decompose-value)
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * assigning sub-arrays -> Conway, <-> fill
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
@@ -9,6 +8,10 @@
 * 1+, 1-
 * ==, != for complex numbers
 * to-type in tensor
+* deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* floating point exception (SIGFPE)
+* floating point convolution: sharpening filter, corner filters
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
@@ -19,9 +22,6 @@
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
-* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* floating point exception (SIGFPE)
-* floating point convolution: sharpening filter, corner filters
 * Lucas-Kanade tracker
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
