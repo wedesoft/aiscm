@@ -1,8 +1,7 @@
 ## Ready
 
-* += for <rgb>
-* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * += and other cumulative operations have superfluous output argument
+* define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * assigning sub-arrays -> Conway, <-> fill
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution

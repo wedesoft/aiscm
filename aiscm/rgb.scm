@@ -109,7 +109,7 @@
   (lambda (out . args)
     (composite-code (list a b) args
       (lambda intermediates
-        (apply append-map (+= (base a) (base b)) (content (type out) out) (map (lambda (arg) (content (type arg) (decompose-value (type arg) arg))) intermediates))))))
+        (apply += (map (lambda (arg) (decompose-value (type arg) arg)) intermediates))))))
 ; ---------------------------------
 
 (define-syntax-rule (unary-rgb-op op)
@@ -120,6 +120,7 @@
 (unary-rgb-op <<)
 (unary-rgb-op >>)
 
+(define-method (+=   (a <rgb>) (b <rgb>)) (append-map +=   (content <rgb<>> a) (content <rgb<>> b)))
 (define-method (*=   (a <rgb>) (b <rgb>)) (append-map *=   (content <rgb<>> a) (content <rgb<>> b)))
 (define-method (max= (a <rgb>) (b <rgb>)) (append-map max= (content <rgb<>> a) (content <rgb<>> b)))
 (define-method (min= (a <rgb>) (b <rgb>)) (append-map min= (content <rgb<>> a) (content <rgb<>> b)))
