@@ -105,11 +105,11 @@
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content <rgb<>> self)))))
 
 ; ---------------------------------
-(define-method (+= (ta <meta<rgb<>>>) (tb <meta<rgb<>>>))
+(define-method (+= (a <meta<rgb<>>>) (b <meta<rgb<>>>))
   (lambda (out . args)
-    (force-parameters (list ta tb) args code-needs-intermediate?
+    (composite-code (list a b) args
       (lambda intermediates
-        (append-map (+= (base ta) (base tb)) (content <rgb<>> out) (content <rgb<>> (car intermediates)) (content <rgb<>> (decompose-value <rgb<>> (cadr intermediates))))))))
+        (apply append-map (+= (base a) (base b)) (content (type out) out) (map (lambda (arg) (content (type arg) (decompose-value (type arg) arg))) intermediates))))))
 ; ---------------------------------
 
 (define-syntax-rule (unary-rgb-op op)

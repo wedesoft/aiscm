@@ -46,7 +46,7 @@
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
-            decompose-arg delegate-fun generate-return-code
+            decompose-arg delegate-fun composite-code generate-return-code
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
@@ -254,15 +254,18 @@
 (define-method (+ (a <param>) (b <param>)) (make-function + coerce (delegate-plus-fun +) (list a b)))
 (define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
 
+(define (composite-code targets args fun)
+  (force-parameters targets args code-needs-intermediate? fun))
+
 (define-method (+ (a <meta<composite>>) (b <meta<element>>))
   (lambda (out . args)
-    (force-parameters (list a b) args code-needs-intermediate?
+    (composite-code (list a b) args
       (lambda intermediates
         (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
           (append-map duplicate (content (type out) out) (content (type result) result)))))))
 (define-method (+ (a <meta<element>>) (b <meta<composite>>))
   (lambda (out . args)
-    (force-parameters (list a b) args code-needs-intermediate?
+    (composite-code (list a b) args
       (lambda intermediates
         (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
           (append-map duplicate (content (type out) out) (content (type result) result)))))))
