@@ -248,6 +248,7 @@
          (define-jit-dispatch name arity name)))
 
 ; ---------------------------------
+; TODO: updated n-ary-base -> updated define-jit-method
 (set! operations (cons '+ operations))
 
 (define ((delegate-plus-fun name) out . args) (apply (apply name (map type args)) out args))
@@ -269,6 +270,12 @@
       (lambda intermediates
         (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
           (append-map duplicate (content (type out) out) (content (type result) result)))))))
+
+(define-method (+= (a <meta<composite>>) (b <meta<composite>>))
+  (lambda (out . args)
+    (composite-code (list a b) args
+      (lambda intermediates
+        (apply += (map (lambda (arg) (decompose-value (type arg) arg)) intermediates))))))
 
 (define-nary-collect + 2)
 (define-jit-dispatch + 2 +)

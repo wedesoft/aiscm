@@ -104,14 +104,6 @@
   (append-map (cut content (base type) <>) (deconstruct type self)))
 (define-method (typecode (self <rgb>)) (rgb (reduce coerce #f (map typecode (content <rgb<>> self)))))
 
-; ---------------------------------
-(define-method (+= (a <meta<rgb<>>>) (b <meta<rgb<>>>))
-  (lambda (out . args)
-    (composite-code (list a b) args
-      (lambda intermediates
-        (apply += (map (lambda (arg) (decompose-value (type arg) arg)) intermediates))))))
-; ---------------------------------
-
 (define-syntax-rule (unary-rgb-op op)
   (define-method (op (a <rgb>)) (apply rgb (map op (content <rgb<>> a)))))
 

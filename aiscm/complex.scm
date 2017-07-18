@@ -87,14 +87,8 @@
 
 (unary-complex-op -)
 
-; ---------------------------------
-(define-method (+= (ta <meta<complex<>>>) (tb <meta<complex<>>>))
-  (lambda (out . args)
-    (force-parameters (list ta tb) args code-needs-intermediate?
-      (lambda intermediates
-        (append-map (+= (base ta) (base tb)) (content <complex<>> out) (content <complex<>> (car intermediates)) (content <complex<>> (decompose-value <complex<>> (cadr intermediates))))))))
-; ---------------------------------
-
+(define-method (+= (a <internalcomplex>) (b <internalcomplex>))
+  (append-map += (content <complex<>> a) (content <complex<>> b)))
 (define-method (*= (a <internalcomplex>) (b <internalcomplex>))
   (let [(intermediate (parameter (complex (type (real-part a)))))]
     (append (append-map duplicate (content <complex<>> intermediate) (content <complex<>> (* a b)))
