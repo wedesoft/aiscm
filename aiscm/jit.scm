@@ -256,26 +256,24 @@
 (define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
 
 (define (composite-code targets args fun)
-  (force-parameters targets args code-needs-intermediate? fun))
+  (force-parameters targets args code-needs-intermediate?
+    (lambda intermediates (apply fun (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))))
 
 (define-method (+ (a <meta<composite>>) (b <meta<element>>))
   (lambda (out . args)
     (composite-code (list a b) args
       (lambda intermediates
-        (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
+        (let [(result (apply + intermediates))]
           (append-map duplicate (content (type out) out) (content (type result) result)))))))
 (define-method (+ (a <meta<element>>) (b <meta<composite>>))
   (lambda (out . args)
     (composite-code (list a b) args
       (lambda intermediates
-        (let [(result (apply + (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))]
+        (let [(result (apply + intermediates))]
           (append-map duplicate (content (type out) out) (content (type result) result)))))))
 
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
-  (lambda (out . args)
-    (composite-code (list a b) args
-      (lambda intermediates
-        (apply += (map (lambda (arg) (decompose-value (type arg) arg)) intermediates))))))
+  (lambda (out . args) (composite-code (list a b) args (cut += <...>))))
 
 (define-nary-collect + 2)
 (define-jit-dispatch + 2 +)
