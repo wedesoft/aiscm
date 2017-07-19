@@ -251,9 +251,21 @@
 ; TODO: updated n-ary-base -> updated define-jit-method
 (set! operations (cons '+ operations))
 
-(define ((delegate-plus-fun name) out . args) (apply (apply name (map type args)) out args))
-(define-method (+ (a <param>) (b <param>)) (make-function + coerce (delegate-plus-fun +) (list a b)))
-(define-method (+= (a <param>) (b <param>)) ((delegate-plus-fun +=) a a b))
+(define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
+
+(define-macro (n-ary-base2 name arity coercion fun)
+  (let* [(args   (symbol-list arity))
+         (header (typed-header args '<param>))]
+    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
+
+(define-syntax-rule (define-jit-method2 coercion name arity)
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base2 name arity coercion (delegate-fun2 name))
+         (define-nary-collect name arity)
+         (define-jit-dispatch name arity name)))
+
+(define-jit-method2 coerce + 2)
+(define-method (+= (a <param>) (b <param>)) ((delegate-fun2 +=) a a b)); TODO: <-> define-cumulative?
 
 (define (force-composite-parameters targets args fun)
   (force-parameters targets args code-needs-intermediate?
@@ -274,9 +286,6 @@
 
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
   (lambda (out . args) (force-composite-parameters (list a b) args (cut += <...>))))
-
-(define-nary-collect + 2)
-(define-jit-dispatch + 2 +)
 ; ---------------------------------
 
 (define-method (to-bool a) (convert-type <bool> a))
