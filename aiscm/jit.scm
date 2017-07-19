@@ -228,16 +228,17 @@
                             #:procedure (lambda args (apply f (map get args))))))
        (,name ,@args))))
 
-(define-macro (define-nary-collect name arity)
-  "Dispatch for n-ary operation with Scheme numerical types"
+(define-macro (define-cycle-method name arity target other fun)
   (let* [(args   (symbol-list arity))
-         (header (cons (list (car args) '<element>) (cdr args)))]; TODO: extract and test
+         (header (map list args (cons target (make-list (1- arity) other))))]
     (cons 'begin
           (map
-            (lambda (i)
-              `(define-method (,name ,@(cycle-times header i))
-                (apply ,name (map wrap (list ,@(cycle-times args i))))))
+            (lambda (i) `(define-method (,name ,@(cycle-times header i)) (,fun ,@(cycle-times args i))))
             (iota arity)))))
+
+(define-syntax-rule (define-nary-collect name arity)
+  "Dispatch for n-ary operation with Scheme numerical types"
+  (define-cycle-method name arity <element> <top> (lambda args (apply name (map wrap args)))))
 
 (define operations '())
 
@@ -271,18 +272,16 @@
   (force-parameters targets args code-needs-intermediate?
     (lambda intermediates (apply fun (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))))
 
-(define-method (+ (a <meta<composite>>) (b <meta<element>>))
-  (lambda (out . args)
-    (force-composite-parameters (list a b) args
-      (lambda intermediates
-        (let [(result (apply + intermediates))]
-          (append-map duplicate (content (type out) out) (content (type result) result)))))))
-(define-method (+ (a <meta<element>>) (b <meta<composite>>))
-  (lambda (out . args)
-    (force-composite-parameters (list a b) args
-      (lambda intermediates
-        (let [(result (apply + intermediates))]
-          (append-map duplicate (content (type out) out) (content (type result) result)))))))
+(define-syntax-rule (define-composite-collect name arity)
+  (define-cycle-method name arity <meta<composite>> <meta<element>>
+    (lambda targets
+      (lambda (out . args)
+        (force-composite-parameters targets args
+          (lambda intermediates
+            (let [(result (apply name intermediates))]
+              (append-map duplicate (content (type out) out) (content (type result) result)))))))))
+
+(define-composite-collect + 2)
 
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
   (lambda (out . args) (force-composite-parameters (list a b) args (cut += <...>))))
