@@ -278,7 +278,12 @@
 
 (define-jit-method2 coerce + 2)
 
-(define-method (+= (a <param>) (b <param>)) ((delegate-fun2 +=) a a b)); TODO: <-> define-cumulative?
+(define-macro (define-cumulative2 name arity)
+  (let* [(args   (symbol-list arity))
+         (header (typed-header args '<param>))]
+    `(define-method (,name ,@header) ((delegate-fun2 ,name) ,(car args) ,@args))))
+
+(define-cumulative2 += 2)
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
   (lambda (out . args) (force-composite-parameters (list a b) args (cut += <...>))))
 ; ---------------------------------
