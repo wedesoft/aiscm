@@ -249,24 +249,12 @@
          (define-jit-dispatch name arity name)))
 
 ; ---------------------------------
-; TODO: updated n-ary-base -> updated define-jit-method
-(set! operations (cons '+ operations))
-
 (define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
 
 (define-macro (n-ary-base2 name arity coercion fun)
   (let* [(args   (symbol-list arity))
          (header (typed-header args '<param>))]
     `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
-
-(define-syntax-rule (define-jit-method2 coercion name arity)
-  (begin (set! operations (cons (quote name) operations))
-         (n-ary-base2 name arity coercion (delegate-fun2 name))
-         (define-nary-collect name arity)
-         (define-jit-dispatch name arity name)))
-
-(define-jit-method2 coerce + 2)
-(define-method (+= (a <param>) (b <param>)) ((delegate-fun2 +=) a a b)); TODO: <-> define-cumulative?
 
 (define (force-composite-parameters targets args fun)
   (force-parameters targets args code-needs-intermediate?
@@ -281,8 +269,16 @@
             (let [(result (apply name intermediates))]
               (append-map duplicate (content (type out) out) (content (type result) result)))))))))
 
-(define-composite-collect + 2)
+(define-syntax-rule (define-jit-method2 coercion name arity)
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base2 name arity coercion (delegate-fun2 name))
+         (define-nary-collect name arity)
+         (define-composite-collect name arity)
+         (define-jit-dispatch name arity name)))
 
+(define-jit-method2 coerce + 2)
+
+(define-method (+= (a <param>) (b <param>)) ((delegate-fun2 +=) a a b)); TODO: <-> define-cumulative?
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
   (lambda (out . args) (force-composite-parameters (list a b) args (cut += <...>))))
 ; ---------------------------------
