@@ -52,7 +52,7 @@
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:export-syntax (define-jit-method pass-parameters))
+  #:export-syntax (define-jit-method pass-parameters define-typed-method))
 
 (define ctx (make <context>))
 
@@ -218,7 +218,7 @@
 
 (define-macro (define-jit-dispatch name arity delegate)
   "Compilation and caching of array operations"
-  (let* [(args   (symbol-list arity))
+  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
          (header (typed-header args '<element>))]
     `(define-method (,name ,@header)
        (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
@@ -228,13 +228,14 @@
                             #:procedure (lambda args (apply f (map get args))))))
        (,name ,@args))))
 
+(define-macro (define-typed-method name types fun)
+  (let* [(args   (symbol-list (length types)))
+         (header (map list args types))]
+    `(define-method (,name ,@header) (,fun ,@args))))
+
 (define-macro (define-cycle-method name arity target other fun)
-  (let* [(args   (symbol-list arity))
-         (header (map list args (cons target (make-list (1- arity) other))))]
-    (cons 'begin
-          (map
-            (lambda (i) `(define-method (,name ,@(cycle-times header i)) (,fun ,@(cycle-times args i))))
-            (iota arity)))))
+  (let* [(types (cons target (make-list (1- arity) other)))]
+    `(begin ,@(map (lambda (i) `(define-typed-method ,name ,(cycle-times types i) ,fun)) (iota arity)))))
 
 (define-syntax-rule (define-nary-collect name arity)
   "Dispatch for n-ary operation with Scheme numerical types"
@@ -252,7 +253,7 @@
 (define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
 
 (define-macro (n-ary-base2 name arity coercion fun)
-  (let* [(args   (symbol-list arity))
+  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
          (header (typed-header args '<param>))]
     `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
 
@@ -279,7 +280,7 @@
 (define-jit-method2 coerce + 2)
 
 (define-macro (define-cumulative2 name arity)
-  (let* [(args   (symbol-list arity))
+  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
          (header (typed-header args '<param>))]
     `(define-method (,name ,@header) ((delegate-fun2 ,name) ,(car args) ,@args))))
 
