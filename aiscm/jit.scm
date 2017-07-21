@@ -67,18 +67,55 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define-macro (define-cumulative name arity)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) ,@args))))
+; ---------------------------------
+(define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
 
-(define-cumulative -=   1)
+(define-syntax-rule (n-ary-base2 name arity coercion fun)
+  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
+
+(define (force-composite-parameters targets args fun)
+  (force-parameters targets args code-needs-intermediate?
+    (lambda intermediates (apply fun (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))))
+
+(define-syntax-rule (define-composite-collect name arity)
+  (define-cycle-method name arity <meta<composite>> <meta<element>>
+    (lambda targets
+      (lambda (out . args)
+        (force-composite-parameters targets args
+          (lambda intermediates
+            (let [(result (apply name intermediates))]
+              (append-map duplicate (content (type out) out) (content (type result) result)))))))))
+
+(define-syntax-rule (define-jit-method2 coercion name arity)
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base2 name arity coercion (delegate-fun2 name))
+         (define-nary-collect name arity)
+         (define-composite-collect name arity)
+         (define-jit-dispatch name arity name)))
+
+(define-syntax-rule (define-cumulative2 name arity)
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun2 name) (car args) args))))
+
+(define-syntax-rule (define-composite-cumulative name arity)
+  (define-nary-typed-method name arity <meta<composite>>
+    (lambda types (lambda (out . args) (force-composite-parameters types args (cut += <...>))))))
+
+(define-syntax-rule (define-cumulative-method name arity)
+  (begin
+    (define-cumulative2 name arity)
+    (define-composite-cumulative name arity)))
+; ---------------------------------
+
+(define-syntax-rule (define-cumulative name arity)
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
+
+(define-cumulative-method -=   1)
 (define-cumulative ~=   1)
 (define-cumulative abs= 1)
 (define-cumulative <<=  1)
 (define-cumulative >>=  1)
-(define-cumulative +=   2)
-(define-cumulative -=   2)
+(define-cumulative-method +=   2)
+(define-cumulative-method -=   2)
 (define-cumulative *=   2)
 (define-cumulative <<=  2)
 (define-cumulative >>=  2)
@@ -121,9 +158,9 @@
 (define-operator-mapping max   (<meta<element>> <meta<element>>) (native-fun scm-max       ))
 (define-operator-mapping where (<meta<element>> <meta<element>> <meta<element>>) (native-fun obj-where     ))
 
-(define-macro (define-object-cumulative name basis)
-  `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out . args) (duplicate out (apply ,basis args)))))
+(define-syntax-rule (define-object-cumulative name basis)
+  (define-method (name (a <meta<obj>>) (b <meta<obj>>))
+    (lambda (out . args) (duplicate out (apply basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -154,10 +191,8 @@
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
 
-(define-macro (n-ary-base name arity coercion fun)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
+(define-syntax-rule (n-ary-base name arity coercion fun)
+  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
 
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
@@ -225,7 +260,7 @@
                             #:procedure (lambda args (apply f (map get args))))))
       (apply name args))))
 
-(define-macro (define-cycle-method name arity target other fun)
+(define-macro (define-cycle-method name arity target other fun); TODO: put under test
   (let* [(types (cons target (make-list (1- arity) other)))]
     `(begin ,@(map (lambda (i) `(define-typed-method ,name ,(cycle-times types i) ,fun)) (iota arity)))))
 
@@ -241,42 +276,6 @@
          (define-nary-collect name arity)
          (define-jit-dispatch name arity name)))
 
-; ---------------------------------
-(define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
-
-(define-syntax-rule (n-ary-base2 name arity coercion fun)
-  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
-
-(define (force-composite-parameters targets args fun)
-  (force-parameters targets args code-needs-intermediate?
-    (lambda intermediates (apply fun (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))))
-
-(define-syntax-rule (define-composite-collect name arity)
-  (define-cycle-method name arity <meta<composite>> <meta<element>>
-    (lambda targets
-      (lambda (out . args)
-        (force-composite-parameters targets args
-          (lambda intermediates
-            (let [(result (apply name intermediates))]
-              (append-map duplicate (content (type out) out) (content (type result) result)))))))))
-
-(define-syntax-rule (define-jit-method2 coercion name arity)
-  (begin (set! operations (cons (quote name) operations))
-         (n-ary-base2 name arity coercion (delegate-fun2 name))
-         (define-nary-collect name arity)
-         (define-composite-collect name arity)
-         (define-jit-dispatch name arity name)))
-
-(define-jit-method2 coerce + 2)
-
-(define-syntax-rule (define-cumulative2 name arity)
-  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun2 name) (car args) args))))
-
-(define-cumulative2 += 2)
-(define-method (+= (a <meta<composite>>) (b <meta<composite>>))
-  (lambda (out . args) (force-composite-parameters (list a b) args (cut += <...>))))
-; ---------------------------------
-
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
 
@@ -285,7 +284,7 @@
   (convert-type (typecode (coerce a b)) (reduce coerce #f (list m a b))))
 
 (define-jit-dispatch duplicate 1 identity)
-(define-jit-method identity -   1)
+(define-jit-method2 identity -   1)
 (define-jit-method identity ~   1)
 (define-jit-method identity abs 1)
 (define-jit-method to-bool  =0  1)
@@ -293,8 +292,8 @@
 (define-jit-method to-bool  !   1)
 (define-jit-method identity <<  1)
 (define-jit-method identity >>  1)
-;(define-jit-method coerce   +   2)
-(define-jit-method coerce   -   2)
+(define-jit-method2 coerce   +   2)
+(define-jit-method2 coerce   -   2)
 (define-jit-method coerce   *   2)
 (define-jit-method coerce   /   2)
 (define-jit-method coerce   %   2)
