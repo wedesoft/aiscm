@@ -228,6 +228,17 @@
   (define-typed-method typed-method (<integer> <integer>) -)
   (test-eqv "define a typed method for two integers"
     5 (typed-method 8 3))
+  (test-error "do not define it for arbitrary types"
+    'goops-error (typed-method "test" "other"))
 (test-end "define typed methods")
+
+(test-begin "define n-ary typed method")
+  (define-nary-typed-method typed-unary-method 1 <integer> -)
+  (test-eqv "define a unary typed method"
+    -5 (typed-unary-method 5))
+  (define-nary-typed-method typed-binary-method 2 <integer> -)
+  (test-eqv "define a binary typed method"
+    5 (typed-binary-method 8 3))
+(test-end "define n-ary typed method")
 
 (test-end "aiscm util")

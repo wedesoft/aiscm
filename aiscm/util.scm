@@ -31,7 +31,7 @@
             first-index last-index compact
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header typed-header2
             clock elapsed object-slots scm->address address->scm list-with)
-  #:export-syntax (define-class* template-class synchronise define-typed-method))
+  #:export-syntax (define-class* template-class synchronise define-typed-method define-nary-typed-method))
 
 
 (load-extension "libguile-aiscm-util" "init_util")
@@ -227,3 +227,7 @@
   (let* [(args   (symbol-list (length types)))
          (header (map list args types))]
     `(define-method (,name ,@header) (,fun ,@args))))
+
+(define-macro (define-nary-typed-method name arity type fun)
+  "Define an n-ary method with arguments of a specified type"
+  `(define-typed-method ,name ,(make-list arity type) ,fun))
