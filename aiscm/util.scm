@@ -31,7 +31,7 @@
             first-index last-index compact
             bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header typed-header2
             clock elapsed object-slots scm->address address->scm list-with)
-  #:export-syntax (define-class* template-class synchronise))
+  #:export-syntax (define-class* template-class synchronise define-typed-method))
 
 
 (load-extension "libguile-aiscm-util" "init_util")
@@ -221,3 +221,9 @@
 
 (define (list-with lst idx val)
   (if (null? lst) lst (cons (if (zero? idx) val (car lst)) (list-with (cdr lst) (1- idx) val))))
+
+(define-macro (define-typed-method name types fun)
+  "Define a method for a combination of types"
+  (let* [(args   (symbol-list (length types)))
+         (header (map list args types))]
+    `(define-method (,name ,@header) (,fun ,@args))))

@@ -52,7 +52,7 @@
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:export-syntax (define-jit-method pass-parameters define-typed-method))
+  #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
 
@@ -227,11 +227,6 @@
                             #:specializers (map class-of (list ,@args))
                             #:procedure (lambda args (apply f (map get args))))))
        (,name ,@args))))
-
-(define-macro (define-typed-method name types fun)
-  (let* [(args   (symbol-list (length types)))
-         (header (map list args types))]
-    `(define-method (,name ,@header) (,fun ,@args))))
 
 (define-macro (define-cycle-method name arity target other fun)
   (let* [(types (cons target (make-list (1- arity) other)))]

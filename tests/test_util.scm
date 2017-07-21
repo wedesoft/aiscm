@@ -223,4 +223,11 @@
 
 (test-equal "compute list with a value replaced"
   '(2 3 5 42 11) (list-with '(2 3 5 7 11) 3 42))
+
+(test-begin "define typed methods")
+  (define-typed-method typed-method (<integer> <integer>) -)
+  (test-eqv "define a typed method for two integers"
+    5 (typed-method 8 3))
+(test-end "define typed methods")
+
 (test-end "aiscm util")
