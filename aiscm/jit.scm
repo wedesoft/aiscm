@@ -216,17 +216,14 @@
                                (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
       (fill type shape value))))
 
-(define-macro (define-jit-dispatch name arity delegate)
-  "Compilation and caching of array operations"
-  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
-         (header (typed-header args '<element>))]
-    `(define-method (,name ,@header)
-       (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
-         (add-method! ,name
-                      (make <method>
-                            #:specializers (map class-of (list ,@args))
+(define-syntax-rule (define-jit-dispatch name arity delegate)
+  (define-nary-typed-method name arity <element>
+    (lambda args
+      (let [(f (jit ctx (map class-of args) delegate))]
+        (add-method! name (make <method>
+                            #:specializers (map class-of args)
                             #:procedure (lambda args (apply f (map get args))))))
-       (,name ,@args))))
+      (apply name args))))
 
 (define-macro (define-cycle-method name arity target other fun)
   (let* [(types (cons target (make-list (1- arity) other)))]
@@ -247,10 +244,8 @@
 ; ---------------------------------
 (define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
 
-(define-macro (n-ary-base2 name arity coercion fun)
-  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
+(define-syntax-rule (n-ary-base2 name arity coercion fun)
+  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
 
 (define (force-composite-parameters targets args fun)
   (force-parameters targets args code-needs-intermediate?
@@ -274,10 +269,8 @@
 
 (define-jit-method2 coerce + 2)
 
-(define-macro (define-cumulative2 name arity)
-  (let* [(args   (symbol-list arity)); TODO: use define-typed-method
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((delegate-fun2 ,name) ,(car args) ,@args))))
+(define-syntax-rule (define-cumulative2 name arity)
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun2 name) (car args) args))))
 
 (define-cumulative2 += 2)
 (define-method (+= (a <meta<composite>>) (b <meta<composite>>))
