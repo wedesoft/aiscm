@@ -168,9 +168,9 @@
 (define-operator-mapping green (<meta<element>>) (unary-extract green))
 (define-operator-mapping blue  (<meta<element>>) (unary-extract blue ))
 
-(define-jit-method base red   1)
-(define-jit-method base green 1)
-(define-jit-method base blue  1)
+(define-jit-method2 base red   1)
+(define-jit-method2 base green 1)
+(define-jit-method2 base blue  1)
 
 (define-jit-method rgb rgb 3)
 

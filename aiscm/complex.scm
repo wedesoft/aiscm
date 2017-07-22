@@ -143,9 +143,9 @@
 (define-operator-mapping imag-part (<meta<element>>) (unary-extract imag-part))
 (define-operator-mapping conj      (<meta<element>>) (unary-extract conj     ))
 
-(define-jit-method base real-part 1)
-(define-jit-method base imag-part 1)
-(define-jit-method identity conj 1)
+(define-jit-method2 base real-part 1)
+(define-jit-method2 base imag-part 1)
+(define-jit-method2 identity conj 1)
 
 (define-jit-method complex complex 2)
 
