@@ -44,7 +44,7 @@
             <intrgb>   <rgb<int<32,signed>>>   <meta<rgb<int<32,signed>>>>
             <ulonggb>  <rgb<int<64,unsigned>>> <meta<rgb<int<64,unsigned>>>>
             <longrgb>  <rgb<int<64,signed>>>   <meta<rgb<int<64,signed>>>>
-            rgb red green blue)
+            rgb red green blue coerce-rgb)
   #:re-export (== != - ~ + * & | ^ << >> / % max min += *= max= min= where))
 
 
@@ -68,7 +68,7 @@
       (define-method (size-of (self metaclass)) (* 3 (size-of t))))))
 (define-method (components (self <meta<rgb<>>>)) (list red green blue))
 (define-method (rgb (t <meta<sequence<>>>)) (multiarray (rgb (typecode t)) (dimensions t)))
-(define-method (rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
+(define-method (coerce-rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
   (rgb (reduce coerce #f (list r g b))))
 (define-method (red   (self <rgb<>>)) (make (base (class-of self)) #:value (red   (get self))))
 (define-method (green (self <rgb<>>)) (make (base (class-of self)) #:value (green (get self))))
@@ -172,7 +172,7 @@
 (define-jit-method2 base green 1)
 (define-jit-method2 base blue  1)
 
-(define-jit-method rgb rgb 3)
+(define-jit-method coerce-rgb rgb 3)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))
