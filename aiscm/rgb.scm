@@ -70,9 +70,14 @@
 (define-method (rgb (t <meta<sequence<>>>)) (multiarray (rgb (typecode t)) (dimensions t)))
 (define-method (coerce-rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
   (rgb (reduce coerce #f (list r g b))))
+
+(define-method (rgb (r <meta<element>>) (g <meta<element>>) (b <meta<element>>))
+  (lambda (out r g b) (append-map duplicate (content <rgb<>> out) (list r g b))))
+
 (define-method (red   (self <rgb<>>)) (make (base (class-of self)) #:value (red   (get self))))
 (define-method (green (self <rgb<>>)) (make (base (class-of self)) #:value (green (get self))))
 (define-method (blue  (self <rgb<>>)) (make (base (class-of self)) #:value (blue  (get self))))
+
 (define-method (write (self <rgb<>>) port)
   (format port "#<~a ~a>" (class-name (class-of self)) (get self)))
 (define-method (base (self <meta<sequence<>>>)) (multiarray (base (typecode self)) (dimensions self)))
@@ -172,7 +177,7 @@
 (define-jit-method2 base green 1)
 (define-jit-method2 base blue  1)
 
-(define-jit-method coerce-rgb rgb 3)
+(define-jit-method2 coerce-rgb rgb 3)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))

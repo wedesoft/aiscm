@@ -57,6 +57,9 @@
 (define-method (complex (t <meta<sequence<>>>)) (multiarray (complex (typecode t)) (dimensions t)))
 (define-method (coerce-complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
 
+(define-method (complex (re <meta<element>>) (im <meta<element>>))
+  (lambda (out a b) (append-map duplicate (content <complex<>> out) (list a b))))
+
 (define-method (real-part (self <int<>>)) self); TODO: use a number type
 (define-method (imag-part (self <int<>>)) 0)
 
@@ -147,7 +150,7 @@
 (define-jit-method2 base imag-part 1)
 (define-jit-method2 identity conj 1)
 
-(define-jit-method coerce-complex complex 2)
+(define-jit-method2 coerce-complex complex 2)
 
 (define-method (decompose-value (target <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (delegate x)))
