@@ -6,5 +6,3 @@
 (to-type <int> <sint>)
 
 (convert-type <int> <sint>)
-
-; remove n-ary-base

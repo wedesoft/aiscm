@@ -46,7 +46,7 @@
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
-            decompose-arg delegate-fun delegate-fun2 force-composite-parameters generate-return-code
+            decompose-arg delegate-fun2 force-composite-parameters generate-return-code
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
@@ -67,7 +67,6 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-; ---------------------------------
 (define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
 
 (define-syntax-rule (n-ary-base2 name arity coercion fun)
@@ -104,7 +103,6 @@
   (begin
     (define-cumulative2 name arity)
     (define-composite-cumulative name arity)))
-; ---------------------------------
 
 (define-cumulative-method -=   1)
 (define-cumulative-method ~=   1)
@@ -165,25 +163,6 @@
 (define-object-cumulative min= min)
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
-
-; ---------------------------------
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
-  (apply (apply name (map type args)) out args))
-(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
-  (apply (apply name (map type args)) out args))
-(define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
-  (if (any (cut is-a? <> <function>) args)
-    (let [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
-      (append (append-map (lambda (intermediate arg)
-                            (if (eq? intermediate arg) '() (duplicate intermediate arg))) intermediates args)
-              (delegate-op target intermediate name out intermediates)))
-    (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-      (if (eq? out (car args)); hack for cumulative operations
-        result
-        (append-map duplicate (content (type out) out) (content (type result) result))))))
-(define ((delegate-fun name) out . args)
-  (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
-; ---------------------------------
 
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
@@ -334,7 +313,7 @@
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
         (coercion   (cut convert-type target <>))]
-    (make-function to-target coercion (delegate-fun to-target) (list a))))
+    (make-function to-target coercion (delegate-fun2 to-target) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type

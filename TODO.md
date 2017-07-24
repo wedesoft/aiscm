@@ -1,6 +1,5 @@
 ## Ready
 
-* to-type based on define-jit-method2
 * += and other cumulative operations have superfluous output argument
 * define operators directly: (+ <int> <int>) -> (lambda (out . args) ....)
 * assigning sub-arrays -> Conway, <-> fill
