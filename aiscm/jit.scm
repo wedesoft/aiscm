@@ -46,13 +46,13 @@
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
-            decompose-arg delegate-fun2 force-composite-parameters generate-return-code
+            decompose-arg delegate-fun force-composite-parameters generate-return-code
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:export-syntax (define-jit-method2 pass-parameters))
+  #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
 
@@ -67,7 +67,7 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define ((delegate-fun2 name) out . args) (apply (apply name (map type args)) out args))
+(define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
 
 (define-syntax-rule (n-ary-base2 name arity coercion fun)
   (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
@@ -85,15 +85,15 @@
             (let [(result (apply name intermediates))]
               (append-map duplicate (content (type out) out) (content (type result) result)))))))))
 
-(define-syntax-rule (define-jit-method2 coercion name arity)
+(define-syntax-rule (define-jit-method coercion name arity)
   (begin (set! operations (cons (quote name) operations))
-         (n-ary-base2 name arity coercion (delegate-fun2 name))
+         (n-ary-base2 name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-composite-collect name arity)
          (define-jit-dispatch name arity name)))
 
 (define-syntax-rule (define-cumulative2 name arity)
-  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun2 name) (car args) args))))
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
 
 (define-syntax-rule (define-composite-cumulative name arity)
   (define-nary-typed-method name arity <meta<composite>>
@@ -251,35 +251,35 @@
   (convert-type (typecode (coerce a b)) (reduce coerce #f (list m a b))))
 
 (define-jit-dispatch duplicate 1 identity)
-(define-jit-method2 identity -   1)
-(define-jit-method2 identity ~   1)
-(define-jit-method2 identity abs 1)
-(define-jit-method2 to-bool  =0  1)
-(define-jit-method2 to-bool  !=0 1)
-(define-jit-method2 to-bool  !   1)
-(define-jit-method2 identity <<  1)
-(define-jit-method2 identity >>  1)
-(define-jit-method2 coerce   +   2)
-(define-jit-method2 coerce   -   2)
-(define-jit-method2 coerce   *   2)
-(define-jit-method2 coerce   /   2)
-(define-jit-method2 coerce   %   2)
-(define-jit-method2 coerce   <<  2)
-(define-jit-method2 coerce   >>  2)
-(define-jit-method2 coerce   &   2)
-(define-jit-method2 coerce   |   2)
-(define-jit-method2 coerce   ^   2)
-(define-jit-method2 coerce   &&  2)
-(define-jit-method2 coerce   ||  2)
-(define-jit-method2 to-bool  ==  2)
-(define-jit-method2 to-bool  !=  2)
-(define-jit-method2 to-bool  lt  2)
-(define-jit-method2 to-bool  le  2)
-(define-jit-method2 to-bool  gt  2)
-(define-jit-method2 to-bool  ge  2)
-(define-jit-method2 coerce   min 2)
-(define-jit-method2 coerce   max 2)
-(define-jit-method2 coerce-where where 3)
+(define-jit-method identity -   1)
+(define-jit-method identity ~   1)
+(define-jit-method identity abs 1)
+(define-jit-method to-bool  =0  1)
+(define-jit-method to-bool  !=0 1)
+(define-jit-method to-bool  !   1)
+(define-jit-method identity <<  1)
+(define-jit-method identity >>  1)
+(define-jit-method coerce   +   2)
+(define-jit-method coerce   -   2)
+(define-jit-method coerce   *   2)
+(define-jit-method coerce   /   2)
+(define-jit-method coerce   %   2)
+(define-jit-method coerce   <<  2)
+(define-jit-method coerce   >>  2)
+(define-jit-method coerce   &   2)
+(define-jit-method coerce   |   2)
+(define-jit-method coerce   ^   2)
+(define-jit-method coerce   &&  2)
+(define-jit-method coerce   ||  2)
+(define-jit-method to-bool  ==  2)
+(define-jit-method to-bool  !=  2)
+(define-jit-method to-bool  lt  2)
+(define-jit-method to-bool  le  2)
+(define-jit-method to-bool  gt  2)
+(define-jit-method to-bool  ge  2)
+(define-jit-method coerce   min 2)
+(define-jit-method coerce   max 2)
+(define-jit-method coerce-where where 3)
 
 (define-method (to-type (target <meta<ubyte>>) (source <meta<obj>>  )) (native-fun scm-to-uint8   ))
 (define-method (to-type (target <meta<byte>> ) (source <meta<obj>>  )) (native-fun scm-to-int8    ))
@@ -313,7 +313,7 @@
 (define-method (to-type (target <meta<element>>) (a <param>))
   (let [(to-target  (cut to-type target <>))
         (coercion   (cut convert-type target <>))]
-    (make-function to-target coercion (delegate-fun2 to-target) (list a))))
+    (make-function to-target coercion (delegate-fun to-target) (list a))))
 (define-method (to-type (target <meta<element>>) (self <element>))
   (let [(f (jit ctx (list (class-of self)) (cut to-type target <>)))]
     (add-method! to-type

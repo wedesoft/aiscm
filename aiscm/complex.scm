@@ -146,11 +146,11 @@
 (define-operator-mapping imag-part (<meta<element>>) (unary-extract imag-part))
 (define-operator-mapping conj      (<meta<element>>) (unary-extract conj     ))
 
-(define-jit-method2 base real-part 1)
-(define-jit-method2 base imag-part 1)
-(define-jit-method2 identity conj 1)
+(define-jit-method base real-part 1)
+(define-jit-method base imag-part 1)
+(define-jit-method identity conj 1)
 
-(define-jit-method2 coerce-complex complex 2)
+(define-jit-method coerce-complex complex 2)
 
 (define-method (decompose-value (target <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (delegate x)))

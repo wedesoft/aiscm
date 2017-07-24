@@ -173,11 +173,11 @@
 (define-operator-mapping green (<meta<element>>) (unary-extract green))
 (define-operator-mapping blue  (<meta<element>>) (unary-extract blue ))
 
-(define-jit-method2 base red   1)
-(define-jit-method2 base green 1)
-(define-jit-method2 base blue  1)
+(define-jit-method base red   1)
+(define-jit-method base green 1)
+(define-jit-method base blue  1)
 
-(define-jit-method2 coerce-rgb rgb 3)
+(define-jit-method coerce-rgb rgb 3)
 
 (define-method (decompose-value (target <meta<rgb<>>>) x)
   (make <rgb> #:red   (parameter (red   (delegate x)))
