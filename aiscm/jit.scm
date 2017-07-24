@@ -52,7 +52,7 @@
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
                -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
-  #:export-syntax (define-jit-method define-jit-method2 pass-parameters))
+  #:export-syntax (define-jit-method2 pass-parameters))
 
 (define ctx (make <context>))
 
@@ -188,9 +188,6 @@
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
 
-(define-syntax-rule (n-ary-base name arity coercion fun)
-  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
-
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
 (define (assemble return-args args instructions)
@@ -266,12 +263,6 @@
   (define-cycle-method name arity <element> <top> (lambda args (apply name (map wrap args)))))
 
 (define operations '())
-
-(define-syntax-rule (define-jit-method coercion name arity)
-  (begin (set! operations (cons (quote name) operations))
-         (n-ary-base name arity coercion (delegate-fun name))
-         (define-nary-collect name arity)
-         (define-jit-dispatch name arity name)))
 
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))
