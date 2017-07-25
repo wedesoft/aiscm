@@ -32,6 +32,16 @@ A simple filter for blurring an image is the box filter. Note that convolution i
 
 ![box-filter.jpg](box-filter.jpg "Box blur filter")
 
+### Sharpen
+
+Image sharpening increases the difference between neighbouring pixels.
+
+```Scheme
+@../tests/integration/sharpen.scm@
+```
+
+![sharpen.jpg](sharpen.jpg "Sharpen")
+
 ### Edge detection
 
 Convolutions can be used for edge detection.

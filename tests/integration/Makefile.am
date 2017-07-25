@@ -14,7 +14,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm asm.scm byte_se
 										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm ffwritevideo.scm \
 										ffwriteaudio.scm ffwrite.scm callback.scm object_array.scm tensors.scm \
 										convolution_1d.scm convolution_2d.scm roberts_cross.scm sobel.scm box_filter.scm \
-										conway.scm show_gray.scm
+										conway.scm show_gray.scm sharpen.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
 
@@ -43,6 +43,7 @@ integration-local:
 
 reintegration-local: $(INTEGRATION_TEST_TARGETS)
 
-CLEANFILES = fubk.png av-sync.mp4 test.mp3 pattern.png swap-channels.jpg *.tmp
+CLEANFILES = *.tmp av-sync.mp4 fubk.png pattern.png swap-channels.jpg rolled.jpg cropped.jpg crop2d.jpg inverted.jpg \
+						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg
 
 MAINTAINERCLEANFILES = Makefile.in
