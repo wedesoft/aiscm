@@ -33,7 +33,7 @@
   (not (equal? bool-false bool-true)))
 (test-assert "equality of booleans"
   (not (equal? bool-true bool-false)))
-(test-equal "equality of booleans" 
+(test-equal "equality of booleans"
   bool-true bool-true)
 (test-assert "get boolean value from bool-false"
   (not (get bool-false)))

@@ -46,7 +46,7 @@
             content-vars jit fill
             is-pointer? call-needs-intermediate?
             ensure-default-strides decompose-value
-            decompose-arg delegate-fun generate-return-code
+            decompose-arg delegate-fun force-composite-parameters generate-return-code
             make-native-function native-call
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
@@ -67,28 +67,60 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define-macro (define-cumulative name arity)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) ((delegate-fun ,name) ,(car args) ,@args))))
+(define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
 
-(define-cumulative -=   1)
-(define-cumulative ~=   1)
-(define-cumulative abs= 1)
-(define-cumulative <<=  1)
-(define-cumulative >>=  1)
-(define-cumulative +=   2)
-(define-cumulative -=   2)
-(define-cumulative *=   2)
-(define-cumulative <<=  2)
-(define-cumulative >>=  2)
-(define-cumulative &=   2)
-(define-cumulative |=   2)
-(define-cumulative ^=   2)
-(define-cumulative &&=  2)
-(define-cumulative ||=  2)
-(define-cumulative min= 2)
-(define-cumulative max= 2)
+(define-syntax-rule (n-ary-base2 name arity coercion fun)
+  (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
+
+(define (force-composite-parameters targets args fun)
+  (force-parameters targets args code-needs-intermediate?
+    (lambda intermediates (apply fun (map (lambda (arg) (decompose-value (type arg) arg)) intermediates)))))
+
+(define-syntax-rule (define-composite-collect name arity)
+  (define-cycle-method name arity <meta<composite>> <meta<element>>
+    (lambda targets
+      (lambda (out . args)
+        (force-composite-parameters targets args
+          (lambda intermediates
+            (let [(result (apply name intermediates))]
+              (append-map duplicate (content (type out) out) (content (type result) result)))))))))
+
+(define-syntax-rule (define-jit-method coercion name arity)
+  (begin (set! operations (cons (quote name) operations))
+         (n-ary-base2 name arity coercion (delegate-fun name))
+         (define-nary-collect name arity)
+         (define-composite-collect name arity)
+         (define-jit-dispatch name arity name)))
+
+(define-syntax-rule (define-cumulative2 name arity)
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
+
+(define-syntax-rule (define-composite-cumulative name arity)
+  (define-nary-typed-method name arity <meta<composite>>
+    (lambda types (lambda (out . args) (force-composite-parameters types args (cut name <...>))))))
+
+(define-syntax-rule (define-cumulative-method name arity)
+  (begin
+    (define-cumulative2 name arity)
+    (define-composite-cumulative name arity)))
+
+(define-cumulative-method -=   1)
+(define-cumulative-method ~=   1)
+(define-cumulative-method abs= 1)
+(define-cumulative-method <<=  1)
+(define-cumulative-method >>=  1)
+(define-cumulative-method +=   2)
+(define-cumulative-method -=   2)
+(define-cumulative-method *=   2)
+(define-cumulative-method <<=  2)
+(define-cumulative-method >>=  2)
+(define-cumulative-method &=   2)
+(define-cumulative-method |=   2)
+(define-cumulative-method ^=   2)
+(define-cumulative-method &&=  2)
+(define-cumulative-method ||=  2)
+(define-cumulative-method min= 2)
+(define-cumulative-method max= 2)
 
 (define-operator-mapping -     (<meta<element>>                ) (native-fun obj-negate    ))
 (define-method (- (z <integer>) (a <meta<element>>)) (native-fun obj-negate))
@@ -121,9 +153,9 @@
 (define-operator-mapping max   (<meta<element>> <meta<element>>) (native-fun scm-max       ))
 (define-operator-mapping where (<meta<element>> <meta<element>> <meta<element>>) (native-fun obj-where     ))
 
-(define-macro (define-object-cumulative name basis)
-  `(define-method (,name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out . args) (duplicate out (apply ,basis args)))))
+(define-syntax-rule (define-object-cumulative name basis)
+  (define-method (name (a <meta<obj>>) (b <meta<obj>>))
+    (lambda (out . args) (duplicate out (apply basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -132,30 +164,8 @@
 
 (define-method (decompose-value (target <meta<scalar>>) self) self)
 
-(define-method (delegate-op (target <meta<scalar>>) (intermediate <meta<scalar>>) name out args)
-  (apply (apply name (map type args)) out args))
-(define-method (delegate-op (target <meta<sequence<>>>) (intermediate <meta<sequence<>>>) name out args)
-  (apply (apply name (map type args)) out args))
-(define-method (delegate-op (target <meta<element>>) (intermediate <meta<element>>) name out args)
-  (if (any (cut is-a? <> <function>) args)
-    (let [(intermediates (map (lambda (arg) (if (is-a? arg <function>) (parameter (type arg)) arg)) args))]
-      (append (append-map (lambda (intermediate arg)
-                            (if (eq? intermediate arg) '() (duplicate intermediate arg))) intermediates args)
-              (delegate-op target intermediate name out intermediates)))
-    (let [(result (apply name (map (lambda (arg) (decompose-value (type arg) arg)) args)))]
-      (if (eq? out (car args)); hack for cumulative operations
-        result
-        (append-map duplicate (content (type out) out) (content (type result) result))))))
-(define ((delegate-fun name) out . args)
-  (delegate-op (type out) (reduce coerce #f (map type args)) name out args))
-
 (define-method (type (self <function>))
   (apply (coercion self) (map type (delegate self))))
-
-(define-macro (n-ary-base name arity coercion fun)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<param>))]
-    `(define-method (,name ,@header) (make-function ,name ,coercion ,fun (list ,@args)))))
 
 (define (content-vars args) (map get (append-map content (map class-of args) args)))
 
@@ -202,11 +212,12 @@
   (if (< (dimensions type) (length shape))
     (fill (multiarray type (length shape)) shape value)
     (let* [(result-type  (pointer type))
-           (args         (list (skeleton result-type) (skeleton (typecode type))))
+           (classes      (list result-type (typecode type)))
+           (args         (map skeleton classes))
            (parameters   (map parameter args))
            (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
            (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-           (proc         (lambda args (apply instructions (append-map unbuild (list result-type (typecode type)) args))))]
+           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
       (add-method! fill
                    (make <method>
                          #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
@@ -214,34 +225,24 @@
                                (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
       (fill type shape value))))
 
-(define-macro (define-jit-dispatch name arity delegate)
-  (let* [(args   (symbol-list arity))
-         (header (typed-header args '<element>))]
-    `(define-method (,name ,@header)
-       (let [(f (jit ctx (map class-of (list ,@args)) ,delegate))]
-         (add-method! ,name
-                      (make <method>
-                            #:specializers (map class-of (list ,@args))
+(define-syntax-rule (define-jit-dispatch name arity delegate)
+  (define-nary-typed-method name arity <element>
+    (lambda args
+      (let [(f (jit ctx (map class-of args) delegate))]
+        (add-method! name (make <method>
+                            #:specializers (map class-of args)
                             #:procedure (lambda args (apply f (map get args))))))
-       (,name ,@args))))
+      (apply name args))))
 
-(define-macro (define-nary-collect name arity)
-  (let* [(args   (symbol-list arity))
-         (header (cons (list (car args) '<element>) (cdr args)))]; TODO: extract and test
-    (cons 'begin
-          (map
-            (lambda (i)
-              `(define-method (,name ,@(cycle-times header i))
-                (apply ,name (map wrap (list ,@(cycle-times args i))))))
-            (iota arity)))))
+(define-macro (define-cycle-method name arity target other fun); TODO: put under test
+  (let* [(types (cons target (make-list (1- arity) other)))]
+    `(begin ,@(map (lambda (i) `(define-typed-method ,name ,(cycle-times types i) ,fun)) (iota arity)))))
+
+(define-syntax-rule (define-nary-collect name arity)
+  "Dispatch for n-ary operation with Scheme numerical types"
+  (define-cycle-method name arity <element> <top> (lambda args (apply name (map wrap args)))))
 
 (define operations '())
-
-(define-syntax-rule (define-jit-method coercion name arity)
-  (begin (set! operations (cons (quote name) operations))
-         (n-ary-base name arity coercion (delegate-fun name))
-         (define-nary-collect name arity)
-         (define-jit-dispatch name arity name)))
 
 (define-method (to-bool a) (convert-type <bool> a))
 (define-method (to-bool a b) (coerce (to-bool a) (to-bool b)))

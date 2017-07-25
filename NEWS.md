@@ -1,3 +1,10 @@
+# aiscm (0.13.1)
+
+* n-dimensional convolutions
+* refactor code for delegating operations to machine code
+* selection of values using 'where'
+* rename >=, >, <=, < to ge, gt, le, lt
+
 # aiscm (0.12.1)
 
 * tensor operations
