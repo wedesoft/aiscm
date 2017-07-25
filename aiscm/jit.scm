@@ -212,11 +212,12 @@
   (if (< (dimensions type) (length shape))
     (fill (multiarray type (length shape)) shape value)
     (let* [(result-type  (pointer type))
-           (args         (list (skeleton result-type) (skeleton (typecode type))))
+           (classes      (list result-type (typecode type)))
+           (args         (map skeleton classes))
            (parameters   (map parameter args))
            (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
            (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-           (proc         (lambda args (apply instructions (append-map unbuild (list result-type (typecode type)) args))))]
+           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
       (add-method! fill
                    (make <method>
                          #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
