@@ -2,7 +2,7 @@ dnl Run `make -f Makefile.dist` to generate a configure script.
 dnl Then run ./configure to generate a Makefile.
 dnl Finally run make to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.12.1], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.13.1], [jan@wedesoft.de])
 DATE=2017-07-01
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])

@@ -61,9 +61,9 @@
 (test-eq "coerce different complex types"
   (complex <int>) (coerce (complex <byte>) (complex <usint>)))
 (test-eq "coerce complex array from array types"
-  (sequence (complex <sint>)) (complex <sint> (sequence <ubyte>)))
+  (sequence (complex <sint>)) (coerce-complex <sint> (sequence <ubyte>)))
 (test-eq "coerce 2D complex array from array types"
-  (multiarray (complex <int>) 2) (complex <sint> (multiarray <usint> 2)))
+  (multiarray (complex <int>) 2) (coerce-complex <sint> (multiarray <usint> 2)))
 (test-eq "coerce integer sequence and complex type"
   (sequence (complex <int>)) (coerce (sequence <int>) (complex <int>)))
 (test-eq "coerce complex type and integer sequence"
