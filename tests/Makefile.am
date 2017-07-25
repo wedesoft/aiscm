@@ -15,6 +15,6 @@ TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmp
 
 EXTRA_DIST = $(TESTS)
 
-CLEANFILES = *~ *.tmp *.log *.trs
+CLEANFILES = *~ *.log *.trs
 
 MAINTAINERCLEANFILES = Makefile.in

@@ -33,7 +33,7 @@
   #:export (<internalcomplex>
             <complex<>> <meta<complex<>>>
             <pointer<complex<>>> <meta<pointer<complex<>>>>
-            complex)
+            complex coerce-complex)
   #:re-export (<pointer<element>> <meta<pointer<element>>>
                real-part imag-part to-type conj - + * / += *= max= min= where))
 
@@ -55,7 +55,10 @@
       (define-method (size-of (self metaclass)) (* 2 (size-of t))))))
 (define-method (components (self <meta<complex<>>>)) (list real-part imag-part))
 (define-method (complex (t <meta<sequence<>>>)) (multiarray (complex (typecode t)) (dimensions t)))
-(define-method (complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
+(define-method (coerce-complex (re <meta<element>>) (im <meta<element>>)) (complex (coerce re im)))
+
+(define-method (complex (re <meta<element>>) (im <meta<element>>))
+  (lambda (out a b) (append-map duplicate (content <complex<>> out) (list a b))))
 
 (define-method (real-part (self <int<>>)) self); TODO: use a number type
 (define-method (imag-part (self <int<>>)) 0)
@@ -147,7 +150,7 @@
 (define-jit-method base imag-part 1)
 (define-jit-method identity conj 1)
 
-(define-jit-method complex complex 2)
+(define-jit-method coerce-complex complex 2)
 
 (define-method (decompose-value (target <meta<complex<>>>) x)
   (make <internalcomplex> #:real-part (parameter (real-part (delegate x)))

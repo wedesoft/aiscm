@@ -34,7 +34,7 @@
   #:use-module (aiscm util)
   #:export (make-constant-function native-const need-conversion?
             code-needs-intermediate? operand force-parameters
-            operation-code mutating-code functional-code unary-extract
+            cumulative-code operation-code mutating-code functional-code unary-extract
             convert-type ge gt le lt coerce-where-args
             -= ~= += *= <<= >>= &= |= ^= &&= ||= min= max= abs=)
   #:re-export (duplicate size-of min max + - && || ! == != ~ & | ^ << >> % =0 !=0 where abs)

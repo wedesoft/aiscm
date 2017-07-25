@@ -97,11 +97,11 @@
 (test-eq "coerce RGB type and 2D array"
   (multiarray <intrgb> 2) (coerce (rgb <int>) (multiarray <int> 2)))
 (test-eq "coerce RGB type components"
-  (rgb <int>) (rgb <sint> <ubyte> <usint>))
+  (rgb <int>) (coerce-rgb <sint> <ubyte> <usint>))
 (test-eq "coerce RGB array from array types"
-  (sequence (rgb <int>)) (rgb <sint> (sequence <ubyte>) <usint>))
+  (sequence (rgb <int>)) (coerce-rgb <sint> (sequence <ubyte>) <usint>))
 (test-eq "coerce 2D RGB array from array types"
-  (multiarray (rgb <int>) 2) (rgb <sint> (sequence <ubyte>) (multiarray <usint> 2)))
+  (multiarray (rgb <int>) 2) (coerce-rgb <sint> (sequence <ubyte>) (multiarray <usint> 2)))
 (test-equal "'content' extracts the channels of an RGB value"
   (list 2 3 5) (content <rgb<>> (rgb 2 3 5)))
 (test-equal "'content' extracts values of typed RGB value"
