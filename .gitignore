@@ -8,10 +8,9 @@
 *.bz2
 *.xz
 *.asc
+*.log
 *~
 *.info
-*.trs
-*.log
 aclocal.m4
 autom4te.cache
 build-aux/compile

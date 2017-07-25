@@ -20,7 +20,7 @@ Control all data and machine code down to every single bit and byte.
 * [Input/output](io.html "Input/output")
 * [Arrays](array.html "Arrays")
 * [Array operations](operation.html "Array operations")
-* [Array convolutions](convolution.html "Array convolutions")
+* [Convolutions](convolution.html "Convolutions")
 
 ## See also
 
