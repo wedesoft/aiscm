@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <libguile.h>
+#include "util-helpers.h"
+
 
 static int side_effect;
 
@@ -52,5 +54,5 @@ char jit_boolean_not(char x)
 
 void init_jit_tests(void)
 {
-  scm_c_define_gsubr("jit-reset-side-effect", 0, 0, 0, jit_reset_side_effect);
+  scm_c_define_gsubr("jit-reset-side-effect", 0, 0, 0, SCM_FUNC(jit_reset_side_effect));
 }

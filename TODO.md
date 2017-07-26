@@ -1,5 +1,6 @@
 ## Ready
 
+* plasma full text search
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate

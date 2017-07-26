@@ -19,6 +19,8 @@
 
 #include <libguile.h>
 
+#define SCM_FUNC(ptr) ((void *)(size_t)ptr)
+
 void scm_to_int_array(SCM source, int32_t dest[]);
 
 void scm_to_long_array(SCM source, int64_t dest[]);

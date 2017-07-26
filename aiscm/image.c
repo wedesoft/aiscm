@@ -79,13 +79,13 @@ SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM sc
 
 void init_image(void)
 {
-  scm_c_define("AV_PIX_FMT_RGB24",   scm_from_int(AV_PIX_FMT_RGB24));
-  scm_c_define("AV_PIX_FMT_BGR24",   scm_from_int(AV_PIX_FMT_BGR24));
-  scm_c_define("AV_PIX_FMT_BGRA",    scm_from_int(AV_PIX_FMT_BGRA));
-  scm_c_define("AV_PIX_FMT_GRAY8",   scm_from_int(AV_PIX_FMT_GRAY8));
+  scm_c_define("AV_PIX_FMT_RGB24"  , scm_from_int(AV_PIX_FMT_RGB24));
+  scm_c_define("AV_PIX_FMT_BGR24"  , scm_from_int(AV_PIX_FMT_BGR24));
+  scm_c_define("AV_PIX_FMT_BGRA"   , scm_from_int(AV_PIX_FMT_BGRA));
+  scm_c_define("AV_PIX_FMT_GRAY8"  , scm_from_int(AV_PIX_FMT_GRAY8));
   scm_c_define("AV_PIX_FMT_YUV420P", scm_from_int(AV_PIX_FMT_YUV420P));
   scm_c_define("AV_PIX_FMT_UYVY422", scm_from_int(AV_PIX_FMT_UYVY422));
   scm_c_define("AV_PIX_FMT_YUYV422", scm_from_int(AV_PIX_FMT_YUYV422));
-  scm_c_define_gsubr("image-convert", 4, 0, 0, image_convert);
-  scm_c_define_gsubr("mjpeg-to-yuv420p", 4, 0, 0, mjpeg_to_yuv420p);
+  scm_c_define_gsubr("image-convert"   , 4, 0, 0, SCM_FUNC(image_convert   ));
+  scm_c_define_gsubr("mjpeg-to-yuv420p", 4, 0, 0, SCM_FUNC(mjpeg_to_yuv420p));
 }

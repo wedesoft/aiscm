@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <stdio.h>
 #include <libguile.h>
 #include <magick/MagickCore.h>
+#include "util-helpers.h"
 
-#include <stdio.h>
 
 SCM magick_read_image(SCM scm_file_name)
 {
@@ -94,6 +95,6 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_mem, SCM scm_file_
 void init_magick(void)
 {
   MagickCoreGenesis("libguile-magick", MagickTrue);
-  scm_c_define_gsubr("magick-read-image", 1, 0, 0, magick_read_image);
-  scm_c_define_gsubr("magick-write-image", 4, 0, 0, magick_write_image);
+  scm_c_define_gsubr("magick-read-image" , 1, 0, 0, SCM_FUNC(magick_read_image ));
+  scm_c_define_gsubr("magick-write-image", 4, 0, 0, SCM_FUNC(magick_write_image));
 }
