@@ -23,7 +23,9 @@
 #include <X11/extensions/Xvlib.h>
 #include <X11/xpm.h>
 #include <libguile.h>
+#include "util-helpers.h"
 #include "aiscm.xpm"
+
 
 #ifndef timersub
 #define timersub(a, b, result)                       \
@@ -637,18 +639,18 @@ void init_xorg(void)
   scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
   scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
   scm_c_define("IO-XVIDEO" ,scm_from_int(IO_XVIDEO));
-  scm_c_define_gsubr("make-display", 1, 0, 0, make_display);
-  scm_c_define_gsubr("display-shape", 1, 0, 0, display_shape);
-  scm_c_define_gsubr("display-process-events", 1, 0, 0, display_process_events);
-  scm_c_define_gsubr("display-event-loop", 2, 0, 0, display_event_loop);
-  scm_c_define_gsubr("display-quit?", 1, 0, 0, display_quit);
-  scm_c_define_gsubr("display-quit=", 2, 0, 0, display_set_quit);
-  scm_c_define_gsubr("display-destroy", 1, 0, 0, display_destroy);
-  scm_c_define_gsubr("make-window", 4, 0, 0, make_window);
-  scm_c_define_gsubr("window-show", 1, 0, 0, window_show);
-  scm_c_define_gsubr("window-title=", 2, 0, 0, window_title);
-  scm_c_define_gsubr("window-resize", 3, 0, 0, window_resize);
-  scm_c_define_gsubr("window-write", 2, 0, 0, window_write);
-  scm_c_define_gsubr("window-hide", 1, 0, 0, window_hide);
-  scm_c_define_gsubr("window-destroy", 1, 0, 0, window_destroy);
+  scm_c_define_gsubr("make-display"          , 1, 0, 0, SCM_FUNC(make_display          ));
+  scm_c_define_gsubr("display-shape"         , 1, 0, 0, SCM_FUNC(display_shape         ));
+  scm_c_define_gsubr("display-process-events", 1, 0, 0, SCM_FUNC(display_process_events));
+  scm_c_define_gsubr("display-event-loop"    , 2, 0, 0, SCM_FUNC(display_event_loop    ));
+  scm_c_define_gsubr("display-quit?"         , 1, 0, 0, SCM_FUNC(display_quit          ));
+  scm_c_define_gsubr("display-quit="         , 2, 0, 0, SCM_FUNC(display_set_quit      ));
+  scm_c_define_gsubr("display-destroy"       , 1, 0, 0, SCM_FUNC(display_destroy       ));
+  scm_c_define_gsubr("make-window"           , 4, 0, 0, SCM_FUNC(make_window           ));
+  scm_c_define_gsubr("window-show"           , 1, 0, 0, SCM_FUNC(window_show           ));
+  scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));
+  scm_c_define_gsubr("window-resize"         , 3, 0, 0, SCM_FUNC(window_resize         ));
+  scm_c_define_gsubr("window-write"          , 2, 0, 0, SCM_FUNC(window_write          ));
+  scm_c_define_gsubr("window-hide"           , 1, 0, 0, SCM_FUNC(window_hide           ));
+  scm_c_define_gsubr("window-destroy"        , 1, 0, 0, SCM_FUNC(window_destroy        ));
 }

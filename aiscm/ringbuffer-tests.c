@@ -16,6 +16,7 @@
 //
 #include <libguile.h>
 #include "ringbuffer.h"
+#include "util-helpers.h"
 
 
 static void test_empty_callback(char *data, int count, int offset, void *userdata)
@@ -215,17 +216,17 @@ SCM ringbuffer_flushing(void)
 
 void init_ringbuffer_tests(void)
 {
-  scm_c_define_gsubr("ringbuffer-fetch-empty", 0, 0, 0, ringbuffer_fetch_empty);
-  scm_c_define_gsubr("ringbuffer-initial-size", 0, 0, 0, ringbuffer_initial_size);
-  scm_c_define_gsubr("ringbuffer-add-data", 0, 0, 0, ringbuffer_add_data);
-  scm_c_define_gsubr("ringbuffer-store-and-fetch", 0, 0, 0, ringbuffer_store_and_fetch);
-  scm_c_define_gsubr("ringbuffer-store-appends-data", 0, 0, 0, ringbuffer_store_appends_data);
-  scm_c_define_gsubr("ringbuffer-fetch-limit", 0, 0, 0, ringbuffer_fetch_limit);
-  scm_c_define_gsubr("ringbuffer-fetching-advances", 0, 0, 0, ringbuffer_fetching_advances);
-  scm_c_define_gsubr("ringbuffer-storing-respects-offset", 0, 0, 0, ringbuffer_storing_respects_offset);
-  scm_c_define_gsubr("ringbuffer-wrap-around", 0, 0, 0, ringbuffer_wrap_around);
-  scm_c_define_gsubr("ringbuffer-grow", 0, 0, 0, ringbuffer_grow);
-  scm_c_define_gsubr("ringbuffer-wrap-write", 0, 0, 0, ringbuffer_wrap_write);
-  scm_c_define_gsubr("ringbuffer-flushing", 0, 0, 0, ringbuffer_flushing);
+  scm_c_define_gsubr("ringbuffer-fetch-empty"            , 0, 0, 0, SCM_FUNC(ringbuffer_fetch_empty));
+  scm_c_define_gsubr("ringbuffer-initial-size"           , 0, 0, 0, SCM_FUNC(ringbuffer_initial_size));
+  scm_c_define_gsubr("ringbuffer-add-data"               , 0, 0, 0, SCM_FUNC(ringbuffer_add_data));
+  scm_c_define_gsubr("ringbuffer-store-and-fetch"        , 0, 0, 0, SCM_FUNC(ringbuffer_store_and_fetch));
+  scm_c_define_gsubr("ringbuffer-store-appends-data"     , 0, 0, 0, SCM_FUNC(ringbuffer_store_appends_data));
+  scm_c_define_gsubr("ringbuffer-fetch-limit"            , 0, 0, 0, SCM_FUNC(ringbuffer_fetch_limit));
+  scm_c_define_gsubr("ringbuffer-fetching-advances"      , 0, 0, 0, SCM_FUNC(ringbuffer_fetching_advances));
+  scm_c_define_gsubr("ringbuffer-storing-respects-offset", 0, 0, 0, SCM_FUNC(ringbuffer_storing_respects_offset));
+  scm_c_define_gsubr("ringbuffer-wrap-around"            , 0, 0, 0, SCM_FUNC(ringbuffer_wrap_around));
+  scm_c_define_gsubr("ringbuffer-grow"                   , 0, 0, 0, SCM_FUNC(ringbuffer_grow));
+  scm_c_define_gsubr("ringbuffer-wrap-write"             , 0, 0, 0, SCM_FUNC(ringbuffer_wrap_write));
+  scm_c_define_gsubr("ringbuffer-flushing"               , 0, 0, 0, SCM_FUNC(ringbuffer_flushing));
 }
 
