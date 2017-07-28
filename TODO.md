@@ -1,7 +1,9 @@
 ## Ready
 
+* pkt\_pts -> pts
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
+* Debian sid FFmpeg API changes
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
@@ -50,7 +52,6 @@
 * run integration tests in Docker container
 * open-video-output, open-audio-output, ...
 * check audio/video frame can be written
-* Debian sid FFmpeg API changes
 * select video codec, select audio codec
 * video player with aspect ratio
 * integration tests for XVideo, OpenGL, and XImage

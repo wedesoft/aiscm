@@ -106,11 +106,11 @@ SCM throw_exception_after_cleanup(SCM scm_fun)
 void init_util_helpers_tests(void)
 {
   test_type_tag = scm_make_smob_type("test-type", sizeof(struct test_type_t));
-  scm_c_define_gsubr("scm-to-int-array-one-element"    , 1, 0, 0, scm_to_int_array_one_element    );
-  scm_c_define_gsubr("scm-to-int-array-second-element" , 1, 0, 0, scm_to_int_array_second_element );
-  scm_c_define_gsubr("scm-to-long-array-one-element"   , 1, 0, 0, scm_to_long_array_one_element   );
-  scm_c_define_gsubr("scm-to-long-array-second-element", 1, 0, 0, scm_to_long_array_second_element);
-  scm_c_define_gsubr("call-scheme-function"            , 2, 0, 0, call_scheme_function            );
-  scm_c_define_gsubr("cleanup-when-exception"          , 1, 0, 0, cleanup_when_exception          );
-  scm_c_define_gsubr("throw-exception-after-cleanup"   , 1, 0, 0, throw_exception_after_cleanup   );
+  scm_c_define_gsubr("scm-to-int-array-one-element"    , 1, 0, 0, SCM_FUNC(scm_to_int_array_one_element    ));
+  scm_c_define_gsubr("scm-to-int-array-second-element" , 1, 0, 0, SCM_FUNC(scm_to_int_array_second_element ));
+  scm_c_define_gsubr("scm-to-long-array-one-element"   , 1, 0, 0, SCM_FUNC(scm_to_long_array_one_element   ));
+  scm_c_define_gsubr("scm-to-long-array-second-element", 1, 0, 0, SCM_FUNC(scm_to_long_array_second_element));
+  scm_c_define_gsubr("call-scheme-function"            , 2, 0, 0, SCM_FUNC(call_scheme_function            ));
+  scm_c_define_gsubr("cleanup-when-exception"          , 1, 0, 0, SCM_FUNC(cleanup_when_exception          ));
+  scm_c_define_gsubr("throw-exception-after-cleanup"   , 1, 0, 0, SCM_FUNC(throw_exception_after_cleanup   ));
 }

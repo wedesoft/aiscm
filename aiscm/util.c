@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <libguile.h>
+#include "util-helpers.h"
+
 
 SCM gc_malloc(SCM scm_size)
 {
@@ -36,6 +38,6 @@ SCM gc_malloc_pointerless(SCM scm_size)
 
 void init_util(void)
 {
-  scm_c_define_gsubr("gc-malloc"            , 1, 0, 0, gc_malloc);
-  scm_c_define_gsubr("gc-malloc-pointerless", 1, 0, 0, gc_malloc_pointerless);
+  scm_c_define_gsubr("gc-malloc"            , 1, 0, 0, SCM_FUNC(gc_malloc            ));
+  scm_c_define_gsubr("gc-malloc-pointerless", 1, 0, 0, SCM_FUNC(gc_malloc_pointerless));
 }
