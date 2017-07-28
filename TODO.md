@@ -1,6 +1,5 @@
 ## Ready
 
-* pkt\_pts -> pts
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
 * Debian sid FFmpeg API changes

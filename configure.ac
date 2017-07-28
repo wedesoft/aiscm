@@ -117,6 +117,12 @@ AC_TRY_LINK([#include <libavutil/frame.h>],
             [AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_AV_FRAME_MAKE_WRITABLE,1,[call to av_frame_make_writable required])],
             [AC_MSG_RESULT([no])])
+AC_MSG_CHECKING([AVFrame has pts])
+AC_TRY_LINK([#include <libavutil/frame.h>],
+            [AVFrame *frame; frame->pts],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_AV_FRAME_PTS,1,[AVFrame has pts])],
+            [AC_MSG_RESULT([no])])
 AC_MSG_CHECKING([for av_packet_rescale_ts])
 AC_TRY_LINK([#include <libavcodec/avcodec.h>],
             [AVRational rational; av_packet_rescale_ts(0, rational, rational)],
