@@ -930,7 +930,7 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 
 static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
 {
-  memcpy(userdata + offset, data, count);
+  memcpy((char *)userdata + offset, data, count);
 }
 
 SCM ffmpeg_fetch_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)

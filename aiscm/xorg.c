@@ -487,7 +487,7 @@ void gl_error(const char *context)
   while (1) {
     GLenum err = glGetError();
     if (err == GL_NO_ERROR) break;
-    msg = scm_cons(scm_from_locale_string(gluErrorString(err)), msg);
+    msg = scm_cons(scm_from_locale_string((const char *)gluErrorString(err)), msg);
   };
   SCM str = scm_list_1(scm_string_join(msg,
                                        scm_from_locale_string(", "),
