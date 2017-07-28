@@ -739,8 +739,13 @@ static void consume_packet_data(AVPacket *pkt, int decoded)
 static int64_t frame_timestamp(AVFrame *frame)
 {
   int64_t retval;
+#ifdef HAVE_AV_FRAME_PTS
   if (frame->pts != AV_NOPTS_VALUE)
     retval = frame->pts;
+#else
+  if (frame->pkt_pts != AV_NOPTS_VALUE)
+    retval = frame->pkt_pts;
+#endif
   else if (frame->pkt_dts != AV_NOPTS_VALUE)
     retval = frame->pkt_dts;
   else
