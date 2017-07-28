@@ -123,6 +123,12 @@ AC_TRY_LINK([#include <libavcodec/avcodec.h>],
             [AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_AV_PACKET_RESCALE_TS,1,[av_packet_rescale_ts available])],
             [AC_MSG_RESULT([no])])
+AC_MSG_CHECKING([for av_packet_unref])
+AC_TRY_LINK([#include <libavcodec/avcodec.h>],
+            [av_packet_unref(NULL)],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE(HAVE_AV_PACKET_UNREF,1,[av_packet_unref available])],
+            [AC_MSG_RESULT([no])])
 LIBS="$old_LIBS"
 
 LIBS="$LIBS -lXpm"

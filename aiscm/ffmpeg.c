@@ -36,6 +36,10 @@
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
 
+#ifndef HAVE_AV_PACKET_UNREF
+#define av_packet_unref av_free_packet
+#endif
+
 #define PIX_FMT AV_PIX_FMT_YUV420P
 
 static scm_t_bits ffmpeg_tag;
