@@ -211,7 +211,7 @@ SCM ffmpeg_destroy(SCM scm_self)
   };
 
   if (self->orig_pkt.data) {
-    av_free_packet(&self->orig_pkt);
+    av_packet_unref(&self->orig_pkt);
     self->orig_pkt.data = NULL;
   };
 
@@ -711,7 +711,7 @@ SCM ffmpeg_flush(SCM scm_self)
 static void read_packet(struct ffmpeg_t *self)
 {
   if (self->orig_pkt.data) {
-    av_free_packet(&self->orig_pkt);
+    av_packet_unref(&self->orig_pkt);
     self->orig_pkt.data = NULL;
     self->orig_pkt.size = 0;
   };
