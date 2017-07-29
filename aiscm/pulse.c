@@ -251,7 +251,7 @@ SCM pulsedev_latency(SCM scm_self)
 
 static void fetch_callback(char *data, int count, int offset, void *userdata)
 {
-  memcpy(userdata + offset, data, count);
+  memcpy((char *)userdata + offset, data, count);
 }
 
 SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open

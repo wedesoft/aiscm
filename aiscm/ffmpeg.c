@@ -36,6 +36,10 @@
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
 
+#ifndef HAVE_AV_PACKET_UNREF
+#define av_packet_unref av_free_packet
+#endif
+
 #define PIX_FMT AV_PIX_FMT_YUV420P
 
 static scm_t_bits ffmpeg_tag;
@@ -211,7 +215,7 @@ SCM ffmpeg_destroy(SCM scm_self)
   };
 
   if (self->orig_pkt.data) {
-    av_free_packet(&self->orig_pkt);
+    av_packet_unref(&self->orig_pkt);
     self->orig_pkt.data = NULL;
   };
 
@@ -711,7 +715,7 @@ SCM ffmpeg_flush(SCM scm_self)
 static void read_packet(struct ffmpeg_t *self)
 {
   if (self->orig_pkt.data) {
-    av_free_packet(&self->orig_pkt);
+    av_packet_unref(&self->orig_pkt);
     self->orig_pkt.data = NULL;
     self->orig_pkt.size = 0;
   };
@@ -735,8 +739,13 @@ static void consume_packet_data(AVPacket *pkt, int decoded)
 static int64_t frame_timestamp(AVFrame *frame)
 {
   int64_t retval;
+#ifdef HAVE_AV_FRAME_PTS
+  if (frame->pts != AV_NOPTS_VALUE)
+    retval = frame->pts;
+#else
   if (frame->pkt_pts != AV_NOPTS_VALUE)
     retval = frame->pkt_pts;
+#endif
   else if (frame->pkt_dts != AV_NOPTS_VALUE)
     retval = frame->pkt_dts;
   else
@@ -930,7 +939,7 @@ SCM ffmpeg_buffer_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 
 static void fetch_buffered_audio_data(char *data, int count, int offset, void *userdata)
 {
-  memcpy(userdata + offset, data, count);
+  memcpy((char *)userdata + offset, data, count);
 }
 
 SCM ffmpeg_fetch_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)

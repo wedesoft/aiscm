@@ -65,8 +65,8 @@ SCM image_convert(SCM scm_ptr, SCM scm_source_type, SCM scm_dest_ptr, SCM scm_de
 
 SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM scm_offsets)
 {
-  void *source_ptr = scm_to_pointer(scm_source_ptr);
-  void *dest_ptr = scm_to_pointer(scm_dest_ptr);
+  unsigned char *source_ptr = scm_to_pointer(scm_source_ptr);
+  unsigned char *dest_ptr = scm_to_pointer(scm_dest_ptr);
   int width = scm_to_int(scm_car(scm_shape));
   int height = scm_to_int(scm_cadr(scm_shape));
   int64_t offsets[3];
