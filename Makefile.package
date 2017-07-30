@@ -2,12 +2,10 @@ VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 
 # https://wiki.debian.org/IntroDebianPackaging
 # https://en.opensuse.org/openSUSE:Build_Service_Tutorial
-package: aiscm.tar.gz
+package: aiscm.tar.gz aiscm.tar.gz.asc
 	mkdir -p pkg
 	cp aiscm.tar.gz pkg/aiscm_$(VERSION).orig.tar.gz
+	cp aiscm.tar.gz.asc pkg/aiscm_$(VERSION).orig.tar.gz.asc
 	tar xzf aiscm.tar.gz -C pkg
 	cp -a debian pkg/aiscm-$(VERSION)
 	cd pkg/aiscm-$(VERSION) && debuild -us -uc -j4 && cd ../..
-
-aiscm.tar.gz:
-	cp aiscm-$(VERSION).tar.gz $@
