@@ -50,14 +50,15 @@
     (let [(io (or io IO-XIMAGE))]
       (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
-(define-method (show (self <image>)) (show (list self)) self)
-(define-method (show (self <sequence<>>)) (show (list self)) self)
-(define-method (show (self <list>))
-  (let* [(dsp     (make <xdisplay>))
-         (images  (map to-image self))
-         (shapes  (map shape images))
-         (window  (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
-         (windows (map window shapes))]
+(define-method (show (self <image>) . args) (apply show (list self) args) self)
+(define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
+(define-method (show (self <list>) . args)
+  (let* [(dsp      (make <xdisplay>))
+         (images   (map to-image self))
+         (override (let-keywords args #f (shape) shape))
+         (shapes   (map (lambda (img) (or override (shape img))) images))
+         (window   (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
+         (windows  (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
     (for-each show windows)

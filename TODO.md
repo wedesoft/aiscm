@@ -1,18 +1,22 @@
 ## Ready
 
+* shape of xorg window
+* xorg window set size, fullscreen windows (keyword arguments)
+* remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
 * Debian sid FFmpeg API changes
+  deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * ==, != for complex numbers
 * to-type in tensor
-* deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * floating point convolution: sharpening filter, corner filters
+* linear algebra bindings (blas, lapack, gsl, mkl)
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
@@ -101,8 +105,6 @@
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* shape of xorg window
-* xorg window set size, fullscreen windows
 * use hash tables
 * use assp http://www.scheme.com/csug7/objects.html
 * conditional/select
