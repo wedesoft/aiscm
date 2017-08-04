@@ -1,7 +1,6 @@
 ## Ready
 
-* shape of xorg window
-* xorg window set size, fullscreen windows (keyword arguments)
+* documentation, Conway, set width of window and infer height, fullscreen windows (keyword arguments)
 * remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument

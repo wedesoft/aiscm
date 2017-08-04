@@ -26,13 +26,20 @@ Using colourspace conversions one can convert images to gray scale.
 
 ![scaled-pattern.png](scaled-pattern.png "Output image")
 
-## Xorg display
+## Window display
 ### Images
 
-As shown above, you can display images using the method *show*:
+As shown above, you can display images under XOrg using the method *show*:
 
 ```Scheme
 @../tests/integration/read_image.scm@
+```
+
+The size of the window is the size of the image by default.
+To override it, one can use the *shape* keyword argument.
+
+```Scheme
+@../tests/integration/xorg_scale.scm@
 ```
 
 One can also display a list of images:
