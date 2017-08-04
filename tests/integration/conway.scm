@@ -12,4 +12,5 @@
   (lambda (dsp)
     (let [(neighbours (convolve (to-type <ubyte> img) (arr (1 1 1) (1 0 1) (1 1 1))))]
       (set! img (tensor (&& (ge neighbours (where img 2 3)) (le neighbours 3))) )
-      (where img 255 0))))
+      (where img 255 0)))
+  #:shape '(1000 600))

@@ -58,6 +58,12 @@ It is also possible to display a video using the *show* method:
 @../tests/integration/xorg_video.scm@
 ```
 
+One can use the *shape* keyword argument to customise the window size.
+
+```Scheme
+@../tests/integration/xorg_scale_video.scm@
+```
+
 A function returning lists of images can be used to display multiple videos synchronously.
 
 ```Scheme

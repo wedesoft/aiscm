@@ -14,7 +14,8 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm asm.scm byte_se
 										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm ffwritevideo.scm \
 										ffwriteaudio.scm ffwrite.scm callback.scm object_array.scm tensors.scm \
 										convolution_1d.scm convolution_2d.scm roberts_cross.scm sobel.scm box_filter.scm \
-										conway.scm show_gray.scm sharpen.scm xorg_scale.scm
+										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
+										xorg_scale_image.scm xorg_scale_list.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
 

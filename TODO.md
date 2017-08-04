@@ -1,6 +1,7 @@
 ## Ready
 
-* documentation, Conway, set width of window and infer height, fullscreen windows (keyword arguments)
+* set width of window and infer height, fullscreen windows (keyword arguments), fully test video scaling
+* keyword arguments to select video output, use XImage for Conway (different scaling)
 * remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
