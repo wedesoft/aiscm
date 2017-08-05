@@ -26,8 +26,8 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit=
-            show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO)
+            process-events event-loop quit? quit= show hide title= resize window-size
+            IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
@@ -49,14 +49,25 @@
   (let-keywords initargs #f (display shape io)
     (let [(io (or io IO-XIMAGE))]
       (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
+
+(define (window-size img . args)
+  "Determine window size for an image and some optional keyword arguments"
+  (let* [(shp (shape img))
+         (w   (car shp))
+         (h   (cadr shp))]
+    (or (let-keywords args #f (shape width height)
+      (or shape
+          (and width  (list width (round (* (/ width w) h))))
+          (and height (list (round (* (/ height h) w)) height))))
+    shp)))
+
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
 (define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
   (let* [(dsp      (make <xdisplay>))
          (images   (map to-image self))
-         (override (let-keywords args #f (shape) shape))
-         (shapes   (map (lambda (img) (or override (shape img))) images))
+         (shapes   (map (cut apply window-size <> args) images))
          (window   (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
          (windows  (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
@@ -73,8 +84,7 @@
          (results (if (list? result) result (list result)))
          (io      (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
          (images  (map to-image results))
-         (override (let-keywords args #f (shape) shape))
-         (shapes   (map (lambda (img) (or override (shape img))) images))
+         (shapes   (map (cut apply window-size <> args) images))
          (window  (cut make <xwindow> #:display dsp #:shape <> #:io io))
          (windows (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
@@ -92,6 +102,7 @@
     (for-each hide windows)
     (destroy dsp)
     result))
+
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
