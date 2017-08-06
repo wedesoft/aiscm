@@ -1,6 +1,7 @@
 ## Ready
 
-* set width of window and infer height, fullscreen windows (keyword arguments), fully test video scaling
+* borderless window (\_MOTIF\_WM\_HINTS), fullscreen windows (\_NET\_WM\_STATE\_FULLSCREEN),
+  show method with borderless/fullscreen
 * keyword arguments to select video output, use XImage for Conway (different scaling)
 * remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill

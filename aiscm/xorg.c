@@ -69,6 +69,14 @@ struct window_t {
   XvImage *xv_image;
 };
 
+typedef struct {
+  unsigned long flags;
+  unsigned long functions;
+  unsigned long decorations;
+  long inputMode;
+  unsigned long status;
+} Hints;
+
 static struct display_t *get_display_no_check(SCM scm_self)
 {
   return (struct display_t *)SCM_SMOB_DATA(scm_self);
@@ -303,7 +311,7 @@ Atom findAtom(Display *display, XvPortID port, const char *name)
   return retVal;
 }
 
-SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
+SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io, SCM scm_borderless)
 {
   SCM retval;
   struct window_t *self;
@@ -415,6 +423,14 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
   self->wm_protocols = XInternAtom(display->display, "WM_PROTOCOLS", False);
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
+
+  // Enable/disable window border
+  Atom wm_property = XInternAtom(display->display, "_MOTIF_WM_HINTS", True);
+  Hints hints;
+  hints.flags = 2;
+  hints.decorations = scm_is_true(scm_borderless) ? 0 : 1;
+  XChangeProperty(display->display, self->window, wm_property, wm_property, 32,
+                  PropModeReplace, (unsigned char *)&hints, 5);
 
   // Set window icon
   XWMHints wm_hints;
@@ -646,7 +662,7 @@ void init_xorg(void)
   scm_c_define_gsubr("display-quit?"         , 1, 0, 0, SCM_FUNC(display_quit          ));
   scm_c_define_gsubr("display-quit="         , 2, 0, 0, SCM_FUNC(display_set_quit      ));
   scm_c_define_gsubr("display-destroy"       , 1, 0, 0, SCM_FUNC(display_destroy       ));
-  scm_c_define_gsubr("make-window"           , 4, 0, 0, SCM_FUNC(make_window           ));
+  scm_c_define_gsubr("make-window"           , 5, 0, 0, SCM_FUNC(make_window           ));
   scm_c_define_gsubr("window-show"           , 1, 0, 0, SCM_FUNC(window_show           ));
   scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));
   scm_c_define_gsubr("window-resize"         , 3, 0, 0, SCM_FUNC(window_resize         ));

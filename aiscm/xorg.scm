@@ -46,9 +46,9 @@
 (define-class* <xwindow> <object> <meta<xwindow>> <class>
               (window #:init-keyword #:window #:getter get-window))
 (define-method (initialize (self <xwindow>) initargs)
-  (let-keywords initargs #f (display shape io)
-    (let [(io (or io IO-XIMAGE))]
-      (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
+  (let-keywords initargs #f (display shape io borderless)
+    (let [(io     (or io IO-XIMAGE))]
+      (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io borderless))))))
 
 (define (window-size img . args)
   "Determine window size for an image and some optional keyword arguments"
@@ -77,7 +77,6 @@
     (for-each hide windows)
     (destroy dsp)
     self))
-(define-method (show (self <sequence<>>)) (show (to-image self)) self)
 (define-method (show (self <procedure>) . args)
   (let* [(dsp     (make <xdisplay>))
          (result  (self dsp))
