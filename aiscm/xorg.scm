@@ -26,7 +26,7 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit= show hide title= resize window-size
+            process-events event-loop quit? quit= show hide title= resize window-size borderless-flag
             IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
@@ -55,21 +55,25 @@
   (let* [(shp (shape img))
          (w   (car shp))
          (h   (cadr shp))]
-    (or (let-keywords args #f (shape width height)
+    (or (let-keywords args #t (shape width height)
       (or shape
           (and width  (list width (round (* (/ width w) h))))
           (and height (list (round (* (/ height h) w)) height))))
     shp)))
 
+(define (borderless-flag . args)
+  (let-keywords args #t (borderless) borderless))
+
 (define-method (show (self <xwindow>)) (window-show (get-window self)))
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
 (define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
-  (let* [(dsp      (make <xdisplay>))
-         (images   (map to-image self))
-         (shapes   (map (cut apply window-size <> args) images))
-         (window   (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
-         (windows  (map window shapes))]
+  (let* [(dsp        (make <xdisplay>))
+         (images     (map to-image self))
+         (shapes     (map (cut apply window-size <> args) images))
+         (borderless (apply borderless-flag args))
+         (window     (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE #:borderless borderless))
+         (windows    (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
     (for-each show windows)
@@ -78,14 +82,15 @@
     (destroy dsp)
     self))
 (define-method (show (self <procedure>) . args)
-  (let* [(dsp     (make <xdisplay>))
-         (result  (self dsp))
-         (results (if (list? result) result (list result)))
-         (io      (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
-         (images  (map to-image results))
-         (shapes   (map (cut apply window-size <> args) images))
-         (window  (cut make <xwindow> #:display dsp #:shape <> #:io io))
-         (windows (map window shapes))]
+  (let* [(dsp        (make <xdisplay>))
+         (result     (self dsp))
+         (results    (if (list? result) result (list result)))
+         (io         (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
+         (images     (map to-image results))
+         (shapes     (map (cut apply window-size <> args) images))
+         (borderless (apply borderless-flag args))
+         (window     (cut make <xwindow> #:display dsp #:shape <> #:io io #:borderless borderless))
+         (windows    (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
     (for-each show windows)
