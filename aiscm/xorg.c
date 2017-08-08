@@ -452,9 +452,16 @@ SCM window_show(SCM scm_self)
 {
   XEvent event;
   struct window_t *self = get_window(scm_self);
-  XMapWindow(self->display->display, self->window);
-  XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
+  Display *display = self->display->display;
+  XMapWindow(display, self->window);
+  XIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
+}
+
+SCM window_show_fullscreen(SCM scm_self)
+{
+  struct window_t *self = get_window(scm_self);
+  Display *display = self->display->display;
 }
 
 SCM window_title(SCM scm_self, SCM scm_title)
@@ -484,6 +491,15 @@ SCM window_write(SCM scm_self, SCM scm_image)
   self->scm_converted = SCM_UNDEFINED;
   window_paint(self, 0);
   return scm_image;
+}
+
+SCM window_move(SCM scm_self, SCM scm_x, SCM scm_y)
+{
+  XEvent event;
+  struct window_t *self = get_window(scm_self);
+  XMoveWindow(self->display->display, self->window, scm_to_int(scm_x), scm_to_int(scm_y));
+  XFlush(self->display->display);
+  return scm_self;
 }
 
 SCM window_hide(SCM scm_self)
@@ -664,9 +680,11 @@ void init_xorg(void)
   scm_c_define_gsubr("display-destroy"       , 1, 0, 0, SCM_FUNC(display_destroy       ));
   scm_c_define_gsubr("make-window"           , 5, 0, 0, SCM_FUNC(make_window           ));
   scm_c_define_gsubr("window-show"           , 1, 0, 0, SCM_FUNC(window_show           ));
+  scm_c_define_gsubr("window-show-fullscreen", 1, 0, 0, SCM_FUNC(window_show_fullscreen));
   scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));
   scm_c_define_gsubr("window-resize"         , 3, 0, 0, SCM_FUNC(window_resize         ));
   scm_c_define_gsubr("window-write"          , 2, 0, 0, SCM_FUNC(window_write          ));
+  scm_c_define_gsubr("window-move"           , 3, 0, 0, SCM_FUNC(window_move           ));
   scm_c_define_gsubr("window-hide"           , 1, 0, 0, SCM_FUNC(window_hide           ));
   scm_c_define_gsubr("window-destroy"        , 1, 0, 0, SCM_FUNC(window_destroy        ));
 }

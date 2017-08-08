@@ -26,8 +26,8 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit= show hide title= resize window-size borderless-flag
-            IO-XIMAGE IO-OPENGL IO-XVIDEO)
+            process-events event-loop quit? quit= show move hide title= resize window-size
+            borderless-flag fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
@@ -61,10 +61,19 @@
           (and height (list (round (* (/ height h) w)) height))))
     shp)))
 
-(define (borderless-flag . args)
-  (let-keywords args #t (borderless) borderless))
+(define-syntax-rule (flag? name args)
+  (let-keywords args #t (name) name))
 
-(define-method (show (self <xwindow>)) (window-show (get-window self)))
+(define (borderless-flag . args)
+  "Check whether borderless keyword is set to true"
+  (flag? borderless args))
+
+(define (fullscreen-flag . args)
+  "Check whether fullscreen keyword is set to true"
+  (flag? fullscreen args))
+
+(define-method (show (self <xwindow>))
+  (window-show (get-window self)))
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
 (define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
@@ -72,6 +81,7 @@
          (images     (map to-image self))
          (shapes     (map (cut apply window-size <> args) images))
          (borderless (apply borderless-flag args))
+         (fullscreen (apply fullscreen-flag args))
          (window     (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE #:borderless borderless))
          (windows    (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
@@ -89,6 +99,7 @@
          (images     (map to-image results))
          (shapes     (map (cut apply window-size <> args) images))
          (borderless (apply borderless-flag args))
+         (fullscreen (apply fullscreen-flag args))
          (window     (cut make <xwindow> #:display dsp #:shape <> #:io io #:borderless borderless))
          (windows    (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
@@ -107,6 +118,7 @@
     (destroy dsp)
     result))
 
+(define-method (move (self <xwindow>) (x <integer>) (y <integer>)) (window-move (get-window self) x y))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))

@@ -55,4 +55,13 @@
   (test-assert "Ignore other arguments"
     (borderless-flag #:borderless #t #:width 320))
 (test-end "borderless-flag")
+
+(test-begin "fullscreen-flag")
+  (test-assert "Fullscreen is disabled by default"
+    (not (fullscreen-flag)))
+  (test-assert "Enable fullscreen"
+    (fullscreen-flag #:fullscreen #t))
+  (test-assert "Explicitely disable fullscreen"
+    (not (fullscreen-flag #:fullscreen #f)))
+(test-end "fullscreen-flag")
 (test-end "aiscm xorg")

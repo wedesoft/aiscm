@@ -4,6 +4,7 @@
 (define w (make <xwindow> #:display d #:shape '(640 480) #:io IO-XVIDEO #:borderless #t))
 (title= w "Test")
 (show w)
+(move w 40 20)
 (while (not (quit? d)) (write-image (read-image v) w) (process-events d))
 (quit= d #f)
 (hide w)
