@@ -424,14 +424,6 @@ SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io, SCM 
   self->wm_delete_window = XInternAtom(display->display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(display->display, self->window, &self->wm_delete_window, 1);
 
-  // Enable/disable window border
-  Atom wm_property = XInternAtom(display->display, "_MOTIF_WM_HINTS", True);
-  Hints hints;
-  hints.flags = 2;
-  hints.decorations = scm_is_true(scm_borderless) ? 0 : 1;
-  XChangeProperty(display->display, self->window, wm_property, wm_property, 32,
-                  PropModeReplace, (unsigned char *)&hints, 5);
-
   // Set window icon
   XWMHints wm_hints;
   XpmCreatePixmapFromData(display->display, self->window, aiscm_xpm, &wm_hints.icon_pixmap, &wm_hints.icon_mask, 0);
@@ -448,11 +440,26 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
+static void enable_window_border(Display *display, Window window, char on)
+{
+  Atom wm_property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
+  Hints hints;
+  hints.flags = 2;
+  hints.decorations = on;
+  XChangeProperty(display, window, wm_property, wm_property, 32,
+                  PropModeReplace, (unsigned char *)&hints, 5);
+}
+
 SCM window_show(SCM scm_self)
 {
   XEvent event;
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
+
+  // Enable window border
+  enable_window_border(display, self->window, 1);
+
+  // Show window.
   XMapWindow(display, self->window);
   XIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
@@ -464,8 +471,19 @@ SCM window_show_fullscreen(SCM scm_self)
   Display *display = self->display->display;
   int width = DisplayWidth(display, DefaultScreen(display));
   int height = DisplayHeight(display, DefaultScreen(display));
+
+  // Disable window border
+  enable_window_border(display, self->window, 0);
+
+  // Show window.
+  XEvent event;
+  XMapWindow(display, self->window);
+  XIfEvent(display, &event, wait_for_notify, (char *)self->window);
+
+  // Enlarge window
   XMoveResizeWindow(display, self->window, 0, 0, width, height);
-  XFlush(self->display->display);
+  XFlush(display);
+  return scm_self;
 }
 
 SCM window_title(SCM scm_self, SCM scm_title)

@@ -26,7 +26,7 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit= show hide title= move resize move-resize window-size
+            process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
             borderless-flag fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
@@ -117,6 +117,8 @@
     (for-each hide windows)
     (destroy dsp)
     result))
+
+(define-method (show-fullscreen (self <xwindow>)) (window-show-fullscreen (get-window self)))
 
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
