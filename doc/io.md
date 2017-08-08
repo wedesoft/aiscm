@@ -37,7 +37,6 @@ As shown above, you can display images under XOrg using the method *show*:
 
 The size of the window is the size of the image by default.
 To override it, one can use the *shape* keyword argument.
-The window border can be disabled using the *borderless* keyword.
 
 ```Scheme
 @../tests/integration/xorg_scale.scm@

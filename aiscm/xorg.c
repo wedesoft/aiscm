@@ -462,6 +462,10 @@ SCM window_show_fullscreen(SCM scm_self)
 {
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
+  int width = DisplayWidth(display, DefaultScreen(display));
+  int height = DisplayHeight(display, DefaultScreen(display));
+  XMoveResizeWindow(display, self->window, 0, 0, width, height);
+  XFlush(self->display->display);
 }
 
 SCM window_title(SCM scm_self, SCM scm_title)
@@ -498,6 +502,16 @@ SCM window_move(SCM scm_self, SCM scm_x, SCM scm_y)
   XEvent event;
   struct window_t *self = get_window(scm_self);
   XMoveWindow(self->display->display, self->window, scm_to_int(scm_x), scm_to_int(scm_y));
+  XFlush(self->display->display);
+  return scm_self;
+}
+
+SCM window_move_resize(SCM scm_self, SCM scm_x, SCM scm_y, SCM scm_width, SCM scm_height)
+{
+  XEvent event;
+  struct window_t *self = get_window(scm_self);
+  XMoveResizeWindow(self->display->display, self->window,
+                    scm_to_int(scm_x), scm_to_int(scm_y), scm_to_int(scm_width), scm_to_int(scm_height));
   XFlush(self->display->display);
   return scm_self;
 }
@@ -683,6 +697,7 @@ void init_xorg(void)
   scm_c_define_gsubr("window-show-fullscreen", 1, 0, 0, SCM_FUNC(window_show_fullscreen));
   scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));
   scm_c_define_gsubr("window-resize"         , 3, 0, 0, SCM_FUNC(window_resize         ));
+  scm_c_define_gsubr("window-move-resize"    , 5, 0, 0, SCM_FUNC(window_move_resize    ));
   scm_c_define_gsubr("window-write"          , 2, 0, 0, SCM_FUNC(window_write          ));
   scm_c_define_gsubr("window-move"           , 3, 0, 0, SCM_FUNC(window_move           ));
   scm_c_define_gsubr("window-hide"           , 1, 0, 0, SCM_FUNC(window_hide           ));

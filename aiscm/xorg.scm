@@ -26,7 +26,7 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit= show move hide title= resize window-size
+            process-events event-loop quit? quit= show hide title= move resize move-resize window-size
             borderless-flag fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
@@ -118,11 +118,16 @@
     (destroy dsp)
     result))
 
-(define-method (move (self <xwindow>) (x <integer>) (y <integer>)) (window-move (get-window self) x y))
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
-(define-method (resize (self <xwindow>) (shape <list>))
-  (window-resize (get-window self) (car shape) (cadr shape)))
+
+(define-method (move (self <xwindow>) (x <integer>) (y <integer>))
+  (window-move (get-window self) x y))
+(define-method (resize (self <xwindow>) (w <integer>) (h <integer>))
+  (window-resize (get-window self) w h))
+(define-method (move-resize (self <xwindow>) (x <integer>) (y <integer>) (w <integer>) (h <integer>))
+  (window-move-resize (get-window self) x y w h))
+
 (define-method (write-image (image <image>) (self <xwindow>)) (window-write (get-window self) image))
 (define-method (write-image (arr <sequence<>>) (self <xwindow>)) (show self (to-image arr)) arr)
