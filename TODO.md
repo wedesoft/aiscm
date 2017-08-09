@@ -1,6 +1,7 @@
 ## Ready
 
-* show-fullscreen (do not expose borderless feature)
+* show blocks if window is not hidden
+* show after show-fullscreen does not allow to restore window size
 * keyword arguments to select video output, use XImage for Conway (different scaling)
 * remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill

@@ -50,6 +50,12 @@ One can also display a list of images:
 @../tests/integration/xorg_image_list.scm@
 ```
 
+The *fullscreen* keyword can be used to open a borderless maximized window.
+
+```Scheme
+@../tests/integration/xorg_fullscreen.scm@
+```
+
 ### Videos
 
 It is also possible to display a video using the *show* method:
@@ -65,6 +71,12 @@ One can use the *shape* keyword argument to customise the window size.
 ```
 
 A function returning lists of images can be used to display multiple videos synchronously.
+
+The *fullscreen* keyword can be used to display a video in a borderless maximized window.
+
+```Scheme
+@../tests/integration/xorg_fullscreen_video.scm@
+```
 
 ```Scheme
 @../tests/integration/xorg_video_list.scm@
