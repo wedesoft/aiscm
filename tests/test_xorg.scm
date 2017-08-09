@@ -42,19 +42,8 @@
   (test-equal "Round height to nearest integer"
     '(29 22) (window-size img #:height 22))
   (test-equal "Ignore other arguments"
-    '(320 240) (window-size img #:borderless #t))
+    '(320 240) (window-size img #:fullscreen #t))
 (test-end "window-size")
-
-(test-begin "borderless-flag")
-  (test-assert "Border is enabled by default"
-    (not (borderless-flag)))
-  (test-assert "Disable border"
-    (borderless-flag #:borderless #t))
-  (test-assert "Explicitely enable border"
-    (not (borderless-flag #:borderless #f)))
-  (test-assert "Ignore other arguments"
-    (borderless-flag #:borderless #t #:width 320))
-(test-end "borderless-flag")
 
 (test-begin "fullscreen-flag")
   (test-assert "Fullscreen is disabled by default"

@@ -311,7 +311,7 @@ Atom findAtom(Display *display, XvPortID port, const char *name)
   return retVal;
 }
 
-SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io, SCM scm_borderless)
+SCM make_window(SCM scm_display, SCM scm_width, SCM scm_height, SCM scm_io)
 {
   SCM retval;
   struct window_t *self;
@@ -713,7 +713,7 @@ void init_xorg(void)
   scm_c_define_gsubr("display-quit?"         , 1, 0, 0, SCM_FUNC(display_quit          ));
   scm_c_define_gsubr("display-quit="         , 2, 0, 0, SCM_FUNC(display_set_quit      ));
   scm_c_define_gsubr("display-destroy"       , 1, 0, 0, SCM_FUNC(display_destroy       ));
-  scm_c_define_gsubr("make-window"           , 5, 0, 0, SCM_FUNC(make_window           ));
+  scm_c_define_gsubr("make-window"           , 4, 0, 0, SCM_FUNC(make_window           ));
   scm_c_define_gsubr("window-show"           , 1, 0, 0, SCM_FUNC(window_show           ));
   scm_c_define_gsubr("window-show-fullscreen", 1, 0, 0, SCM_FUNC(window_show_fullscreen));
   scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));

@@ -27,7 +27,7 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
-            borderless-flag fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
+            fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
@@ -46,9 +46,9 @@
 (define-class* <xwindow> <object> <meta<xwindow>> <class>
               (window #:init-keyword #:window #:getter get-window))
 (define-method (initialize (self <xwindow>) initargs)
-  (let-keywords initargs #f (display shape io borderless)
+  (let-keywords initargs #f (display shape io)
     (let [(io     (or io IO-XIMAGE))]
-      (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io borderless))))))
+      (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
 
 (define (window-size img . args)
   "Determine window size for an image and some optional keyword arguments"
@@ -64,10 +64,6 @@
 (define-syntax-rule (flag? name args)
   (let-keywords args #t (name) name))
 
-(define (borderless-flag . args)
-  "Check whether borderless keyword is set to true"
-  (flag? borderless args))
-
 (define (fullscreen-flag . args)
   "Check whether fullscreen keyword is set to true"
   (flag? fullscreen args))
@@ -77,34 +73,34 @@
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
 (define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
-  (let* [(dsp        (make <xdisplay>))
-         (images     (map to-image self))
-         (shapes     (map (cut apply window-size <> args) images))
-         (borderless (apply borderless-flag args))
-         (fullscreen (apply fullscreen-flag args))
-         (window     (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE #:borderless borderless))
-         (windows    (map window shapes))]
+  (let* [(dsp         (make <xdisplay>))
+         (images      (map to-image self))
+         (shapes      (map (cut apply window-size <> args) images))
+         (fullscreen  (apply fullscreen-flag args))
+         (show-method(if fullscreen show-fullscreen show))
+         (window      (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
+         (windows     (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
-    (for-each show windows)
+    (for-each show-method windows)
     (event-loop dsp #f)
     (for-each hide windows)
     (destroy dsp)
     self))
 (define-method (show (self <procedure>) . args)
-  (let* [(dsp        (make <xdisplay>))
-         (result     (self dsp))
-         (results    (if (list? result) result (list result)))
-         (io         (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
-         (images     (map to-image results))
-         (shapes     (map (cut apply window-size <> args) images))
-         (borderless (apply borderless-flag args))
-         (fullscreen (apply fullscreen-flag args))
-         (window     (cut make <xwindow> #:display dsp #:shape <> #:io io #:borderless borderless))
-         (windows    (map window shapes))]
+  (let* [(dsp         (make <xdisplay>))
+         (result      (self dsp))
+         (results     (if (list? result) result (list result)))
+         (io          (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
+         (images      (map to-image results))
+         (shapes      (map (cut apply window-size <> args) images))
+         (fullscreen  (apply fullscreen-flag args))
+         (show-method (if fullscreen show-fullscreen show))
+         (window      (cut make <xwindow> #:display dsp #:shape <> #:io io))
+         (windows     (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
-    (for-each show windows)
+    (for-each show-method windows)
     (while (not (quit? dsp))
       (set! result (self dsp))
       (if result
