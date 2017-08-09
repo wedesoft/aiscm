@@ -84,6 +84,8 @@ The *fullscreen* keyword can be used to display a video in a borderless maximize
 
 If necessary, one can also handle the display and window objects directly.
 Possible types of output are *IO-XIMAGE*, *IO-OPENGL*, and *IO-XVIDEO*.
+The following example shows showing, hiding, moving, resizing of windows.
+*process-events* needs to be invoked to process pending events.
 
 ```Scheme
 @../tests/integration/xorg_window.scm@

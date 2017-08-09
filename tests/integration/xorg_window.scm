@@ -14,7 +14,6 @@
 (wait)
 (move-resize w 60 30 480 360)
 (wait)
-(hide w)
 (show-fullscreen w)
 (wait)
 (hide w)

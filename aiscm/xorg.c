@@ -444,7 +444,7 @@ static void show_window(Display *display, Window window)
 {
   XEvent event;
   XMapWindow(display, window);
-  XIfEvent(display, &event, wait_for_notify, (char *)window);
+  XCheckIfEvent(display, &event, wait_for_notify, (char *)window);
 }
 
 static void enable_window_border(Display *display, Window window, char on)
@@ -542,7 +542,7 @@ SCM window_hide(SCM scm_self)
   XEvent event;
   struct window_t *self = get_window(scm_self);
   XUnmapWindow(self->display->display, self->window);
-  XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
+  XCheckIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
