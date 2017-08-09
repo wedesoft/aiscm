@@ -440,6 +440,13 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
+static void show_window(Display *display, Window window)
+{
+  XEvent event;
+  XMapWindow(display, window);
+  XIfEvent(display, &event, wait_for_notify, (char *)window);
+}
+
 static void enable_window_border(Display *display, Window window, char on)
 {
   Atom wm_property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
@@ -452,7 +459,6 @@ static void enable_window_border(Display *display, Window window, char on)
 
 SCM window_show(SCM scm_self)
 {
-  XEvent event;
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
 
@@ -460,8 +466,7 @@ SCM window_show(SCM scm_self)
   enable_window_border(display, self->window, 1);
 
   // Show window.
-  XMapWindow(display, self->window);
-  XIfEvent(display, &event, wait_for_notify, (char *)self->window);
+  show_window(display, self->window);
   return scm_self;
 }
 
@@ -476,9 +481,7 @@ SCM window_show_fullscreen(SCM scm_self)
   enable_window_border(display, self->window, 0);
 
   // Show window.
-  XEvent event;
-  XMapWindow(display, self->window);
-  XIfEvent(display, &event, wait_for_notify, (char *)self->window);
+  show_window(display, self->window);
 
   // Enlarge window
   XMoveResizeWindow(display, self->window, 0, 0, width, height);
