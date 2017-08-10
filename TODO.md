@@ -1,12 +1,12 @@
 ## Ready
 
+* colour swapped when converting MJPEG video to FFmpeg video
+* tensor indices
 * show after show-fullscreen does not allow to restore window size
-* remove Pandoc date (Debian warning triggers even with static date)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * += and other cumulative operations have superfluous output argument
 * Debian sid FFmpeg API changes
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
-* scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
@@ -20,7 +20,6 @@
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * diagonal injection, convolution, median, dilation, ...
-* convolution in tensor
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
@@ -62,8 +61,7 @@
 * fractions, \*\*
 * separate function for defining operation for array?
 * separate module for register allocation
-* Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
-  multi-threading, SIMD, memory access (cache)
+* multi-threading, SIMD, memory access (cache)
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * car, cadr, ... -> first, second, ...
