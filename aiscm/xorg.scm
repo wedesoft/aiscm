@@ -27,7 +27,7 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
-            fullscreen-flag IO-XIMAGE IO-OPENGL IO-XVIDEO)
+            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
@@ -68,17 +68,23 @@
   "Check whether fullscreen keyword is set to true"
   (flag? fullscreen args))
 
+(define (xorg-io-type is-video images . args)
+  "Select X.Org IO type"
+  (let-keywords args #t (io)
+    (or io (if is-video (if (null? (cdr images)) IO-XVIDEO IO-OPENGL) IO-XIMAGE))))
+
 (define-method (show (self <xwindow>))
   (window-show (get-window self)))
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
 (define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
   (let* [(dsp         (make <xdisplay>))
+         (io          (apply xorg-io-type #f self args))
          (images      (map to-image self))
          (shapes      (map (cut apply window-size <> args) images))
          (fullscreen  (apply fullscreen-flag args))
          (show-method(if fullscreen show-fullscreen show))
-         (window      (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
+         (window      (cut make <xwindow> #:display dsp #:shape <> #:io io))
          (windows     (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
@@ -91,7 +97,7 @@
   (let* [(dsp         (make <xdisplay>))
          (result      (self dsp))
          (results     (if (list? result) result (list result)))
-         (io          (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
+         (io          (apply xorg-io-type #t results args))
          (images      (map to-image results))
          (shapes      (map (cut apply window-size <> args) images))
          (fullscreen  (apply fullscreen-flag args))

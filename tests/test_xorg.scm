@@ -41,7 +41,7 @@
     '(320 240) (window-size img #:height 240))
   (test-equal "Round height to nearest integer"
     '(29 22) (window-size img #:height 22))
-  (test-equal "Ignore other arguments"
+  (test-equal "Ignore other keyword arguments"
     '(320 240) (window-size img #:fullscreen #t))
 (test-end "window-size")
 
@@ -52,5 +52,20 @@
     (fullscreen-flag #:fullscreen #t))
   (test-assert "Explicitely disable fullscreen"
     (not (fullscreen-flag #:fullscreen #f)))
+  (test-assert "Ignore other keyword arguments"
+    (not (fullscreen-flag #:width 640)))
 (test-end "fullscreen-flag")
+
+(test-begin "xorg-io-type")
+  (test-eq "default for static image is XImage"
+    IO-XIMAGE (xorg-io-type #f '(img)))
+  (test-eq "default for video is XVideo"
+    IO-XVIDEO (xorg-io-type #t '(img)))
+  (test-eq "default for multiple videos is OpenGL"
+    IO-OPENGL (xorg-io-type #t '(img1 img2)))
+  (test-eq "override the default using a keyword argument"
+    IO-XVIDEO (xorg-io-type #f '(img) #:io IO-XVIDEO))
+  (test-eq "ignore other keyword arguments"
+    IO-XIMAGE (xorg-io-type #f '(img) #:fullscreen #t))
+(test-end "xorg-io-type")
 (test-end "aiscm xorg")
