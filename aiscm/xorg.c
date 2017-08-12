@@ -440,33 +440,15 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
-static void show_window(Display *display, Window window)
-{
-  XEvent event;
-  XMapWindow(display, window);
-  XCheckIfEvent(display, &event, wait_for_notify, (char *)window);
-}
-
-static void enable_window_border(Display *display, Window window, char on)
-{
-  Atom wm_property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
-  Hints hints;
-  hints.flags = 2;
-  hints.decorations = on;
-  XChangeProperty(display, window, wm_property, wm_property, 32,
-                  PropModeReplace, (unsigned char *)&hints, 5);
-}
-
 SCM window_show(SCM scm_self)
 {
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
 
-  // Enable window border
-  enable_window_border(display, self->window, 1);
-
   // Show window.
-  show_window(display, self->window);
+  XEvent event;
+  XMapWindow(display, self->window);
+  XCheckIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
@@ -474,17 +456,22 @@ SCM window_show_fullscreen(SCM scm_self)
 {
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
-  int width = DisplayWidth(display, DefaultScreen(display));
-  int height = DisplayHeight(display, DefaultScreen(display));
 
-  // Disable window border
-  enable_window_border(display, self->window, 0);
+  // Switch to fullscreen
+  XEvent event;
+  Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+  Atom fullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
 
-  // Show window.
-  show_window(display, self->window);
-
-  // Enlarge window
-  XMoveResizeWindow(display, self->window, 0, 0, width, height);
+  memset(&event, 0, sizeof(event));
+  event.type = ClientMessage;
+  event.xclient.window = self->window;
+  event.xclient.message_type = wm_state;
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = 1;
+  event.xclient.data.l[1] = fullscreen;
+  event.xclient.data.l[2] = 0;
+  XMapWindow(display, self->window);
+  XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
   XFlush(display);
   return scm_self;
 }
