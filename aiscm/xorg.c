@@ -445,9 +445,22 @@ SCM window_show(SCM scm_self)
   struct window_t *self = get_window(scm_self);
   Display *display = self->display->display;
 
-  // Show window.
+  // Switch to fullscreen
+  // https://pyra-handheld.com/boards/threads/x11-fullscreen-howto.70443/
   XEvent event;
+  Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+  Atom fullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+
+  memset(&event, 0, sizeof(event));
+  event.type = ClientMessage;
+  event.xclient.window = self->window;
+  event.xclient.message_type = wm_state;
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = 0;
+  event.xclient.data.l[1] = fullscreen;
+  event.xclient.data.l[2] = 0;
   XMapWindow(display, self->window);
+  XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
   XCheckIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
@@ -458,6 +471,7 @@ SCM window_show_fullscreen(SCM scm_self)
   Display *display = self->display->display;
 
   // Switch to fullscreen
+  // https://pyra-handheld.com/boards/threads/x11-fullscreen-howto.70443/
   XEvent event;
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom fullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
@@ -472,7 +486,7 @@ SCM window_show_fullscreen(SCM scm_self)
   event.xclient.data.l[2] = 0;
   XMapWindow(display, self->window);
   XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
-  XFlush(display);
+  XCheckIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
