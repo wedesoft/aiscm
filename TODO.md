@@ -1,10 +1,10 @@
 ## Ready
 
+* += and other cumulative operations have superfluous output argument
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices
-* show after show-fullscreen does not allow to restore window size
+* galaxy simulation
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
-* += and other cumulative operations have superfluous output argument
 * Debian sid FFmpeg API changes
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
