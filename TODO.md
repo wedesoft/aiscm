@@ -4,6 +4,7 @@
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices
 * galaxy simulation
+* procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Debian sid FFmpeg API changes
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2

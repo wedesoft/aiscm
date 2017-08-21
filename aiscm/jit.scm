@@ -92,7 +92,7 @@
          (define-composite-collect name arity)
          (define-jit-dispatch name arity name)))
 
-(define-syntax-rule (define-cumulative2 name arity)
+(define-syntax-rule (define-cumulative name arity)
   (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
 
 (define-syntax-rule (define-composite-cumulative name arity)
@@ -101,7 +101,7 @@
 
 (define-syntax-rule (define-cumulative-method name arity)
   (begin
-    (define-cumulative2 name arity)
+    (define-cumulative name arity)
     (define-composite-cumulative name arity)))
 
 (define-cumulative-method -=   1)
