@@ -69,7 +69,7 @@
 
 (define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
 
-(define-syntax-rule (n-ary-base2 name arity coercion fun)
+(define-syntax-rule (n-ary-base name arity coercion fun)
   (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
 
 (define (force-composite-parameters targets args fun)
@@ -87,7 +87,7 @@
 
 (define-syntax-rule (define-jit-method coercion name arity)
   (begin (set! operations (cons (quote name) operations))
-         (n-ary-base2 name arity coercion (delegate-fun name))
+         (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-composite-collect name arity)
          (define-jit-dispatch name arity name)))
