@@ -1,9 +1,9 @@
 ## Ready
 
 * += and other cumulative operations have superfluous output argument
+* Lucas-Kanade tracker
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices
-* galaxy simulation
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Debian sid FFmpeg API changes
@@ -12,6 +12,7 @@
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * ==, != for complex numbers
+* galaxy simulation
 * to-type in tensor
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
@@ -26,7 +27,6 @@
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
-* Lucas-Kanade tracker
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
