@@ -224,7 +224,7 @@
 
 (define ((cumulative-code op) out . args)
   "Adapter for cumulative operations"
-  (operation-code (type out) op out (cdr args)))
+  (operation-code (type out) op out args))
 
 (define ((mutating-code name) out . args)
   "Adapter for machine code overwriting its first argument"

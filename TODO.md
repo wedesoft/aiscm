@@ -1,6 +1,6 @@
 ## Ready
 
-* += and other cumulative operations have superfluous output argument
+* refactor changes
 * Lucas-Kanade tracker
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices

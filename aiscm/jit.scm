@@ -68,6 +68,7 @@
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
 (define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
+(define ((delegate-cumulative name) . args) (apply (apply name (map type args)) args))
 
 (define-syntax-rule (n-ary-base name arity coercion fun)
   (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
@@ -93,11 +94,11 @@
          (define-jit-dispatch name arity name)))
 
 (define-syntax-rule (define-cumulative name arity)
-  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
+  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-cumulative name) args))))
 
 (define-syntax-rule (define-composite-cumulative name arity)
   (define-nary-typed-method name arity <meta<composite>>
-    (lambda types (lambda (out . args) (force-composite-parameters types args (cut name <...>))))))
+    (lambda types (lambda args (force-composite-parameters types args (cut name <...>))))))
 
 (define-syntax-rule (define-cumulative-method name arity)
   (begin
@@ -155,7 +156,7 @@
 
 (define-syntax-rule (define-object-cumulative name basis)
   (define-method (name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out . args) (duplicate out (apply basis args)))))
+    (lambda args (duplicate (car args) (apply basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
