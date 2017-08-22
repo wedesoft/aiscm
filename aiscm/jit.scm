@@ -67,7 +67,7 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
+(define ((delegate-fun name) . args) (apply (apply name (map type (cdr args))) args))
 (define ((delegate-cumulative name) . args) (apply (apply name (map type args)) args))
 
 (define-syntax-rule (n-ary-base name arity coercion fun)
@@ -94,11 +94,11 @@
          (define-jit-dispatch name arity name)))
 
 (define-syntax-rule (define-cumulative name arity)
-  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-cumulative name) args))))
+  (define-nary-typed-method name arity <param> (delegate-cumulative name)))
 
 (define-syntax-rule (define-composite-cumulative name arity)
   (define-nary-typed-method name arity <meta<composite>>
-    (lambda types (lambda args (force-composite-parameters types args (cut name <...>))))))
+    (lambda types (lambda args (force-composite-parameters types args name)))))
 
 (define-syntax-rule (define-cumulative-method name arity)
   (begin
