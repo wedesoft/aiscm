@@ -1,11 +1,11 @@
 ## Ready
 
-* refactor changes
+* assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
+* recognise Aruco marker cube, calibrated inverse kinematic
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
-* assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Debian sid FFmpeg API changes
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
