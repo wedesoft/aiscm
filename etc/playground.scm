@@ -5,6 +5,15 @@
 
 (define ctx (make <context>))
 
+(define (set3 self value)
+  (let* [(classes      (list (class-of self) (class-of value)))
+         (args         (map skeleton classes))
+         (parameters   (map parameter args))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))]
+    (apply instructions (append-map unbuild classes (list self value)))
+    value))
+
 (define classes (list (sequence <ubyte>) (sequence <ubyte>)))
 (define args (map skeleton classes))
 (define parameters (map parameter args))
@@ -33,7 +42,7 @@ s
     '(0 0 0) (to-list s))
   (test-eqv "return value after setting array"
     0 (set2 s 0))
-  (set2 s (seq 2 3 5))
+  (set3 s (seq 2 3 5))
   (test-equal "copy content of other array"
     '(2 3 5) (to-list s)))
 (test-end "playground")
