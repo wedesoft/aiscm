@@ -28,9 +28,13 @@
     '(0 0 0) (to-list s))
   (test-eqv "return value after setting array"
     0 (set3 s 0))
-  (set3 s (seq 2 3 5))
-  (test-equal "copy content of other array"
-    '(2 3 5) (to-list s))
   (test-equal "return value when setting array"
-    '(2 3 5) (to-list (set3 s (seq 2 3 5)))))
+    '(2 3 5) (to-list (set3 s (seq 2 3 5))))
+  (test-equal "copy content of other array"
+    '(2 3 5) (to-list s)))
+(let [(m (arr (1 2 3) (4 5 6)))]
+  (test-equal "return value when setting 2D array"
+    '(7 8) (to-list (set3 m (seq 7 8))))
+  (test-equal "set values of 2D array using 1D array"
+    '((7 7 7) (8 8 8)) (to-list m)))
 (test-end "playground")
