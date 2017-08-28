@@ -17,19 +17,6 @@
     (apply instructions (append-map unbuild classes (list self value)))
     value))
 
-(define classes (list (sequence <ubyte>) (sequence <ubyte>)))
-(define args (map skeleton classes))
-(define parameters (map parameter args))
-(define commands (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-(define instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-
-(define s (seq 2 3 5))
-(define t (seq 3 5 7))
-(define header (list s t))
-
-(apply instructions (append-map unbuild classes header))
-s
-
 (test-begin "playground")
 (test-eqv "set value of integer"
   123 (let [(i (make <int> #:value 0))] (set3 i 123) (get i)))
@@ -43,5 +30,7 @@ s
     0 (set3 s 0))
   (set3 s (seq 2 3 5))
   (test-equal "copy content of other array"
-    '(2 3 5) (to-list s)))
+    '(2 3 5) (to-list s))
+  (test-equal "return value when setting array"
+    '(2 3 5) (to-list (set3 s (seq 2 3 5)))))
 (test-end "playground")
