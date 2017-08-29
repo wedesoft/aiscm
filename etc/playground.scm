@@ -2,20 +2,27 @@
 (use-modules (srfi srfi-1))
 (use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm element) (aiscm int) (aiscm sequence) (aiscm pointer) (aiscm expression) (aiscm operation) (aiscm util))
 
+(define (element offset self) (project (dump offset self)))
 
 (define ctx (make <context>))
+
+(define (compiled-copy self value)
+  (let* [(classes      (list (class-of self) (class-of (wrap value))))
+           (args         (map skeleton classes))
+           (parameters   (map parameter args))
+           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))]
+      (apply instructions (append-map unbuild classes (list self value)))
+      value))
 
 (define-method (set3 (self <element>) value)
   (slot-set! self 'value value))
 
-(define-method (set3 (self <sequence<>>) value)
-  (let* [(classes      (list (class-of self) (class-of (wrap value))))
-         (args         (map skeleton classes))
-         (parameters   (map parameter args))
-         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))]
-    (apply instructions (append-map unbuild classes (list self value)))
-    value))
+(define-method (set3 (self <pointer<>>) value)
+  (compiled-copy self value))
+
+(define-method (set3 (self <sequence<>>) . args)
+  (compiled-copy (fold-right element self (all-but-last args)) (last args)))
 
 (test-begin "playground")
 (test-eqv "set value of integer"
@@ -37,4 +44,12 @@
     '(7 8) (to-list (set3 m (seq 7 8))))
   (test-equal "set values of 2D array using 1D array"
     '((7 7 7) (8 8 8)) (to-list m)))
+(let [(s (seq 1 2 3))]
+  (set3 s 1 5)
+  (test-equal "set one value of a 1D array"
+    '(1 5 3) (to-list s)))
+(let [(m (arr (1 2 3) (4 5 6)))]
+  (set3 m 0 1 7)
+  (test-equal "set one value of a 2D array"
+    '((1 2 3) (7 5 6)) (to-list m)))
 (test-end "playground")
