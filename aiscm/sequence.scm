@@ -91,10 +91,15 @@
 (define-method (dump (n <null>) (self <sequence<>>)) self)
 (define-method (dump (n <pair>) (self <sequence<>>))
   (dump (last n) (roll (dump (all-but-last n) (unroll self)))))
-(define (element offset self) (project (dump offset self)))
+
+(define-method (element (offset <integer>) self) (project (dump offset self)))
+(define-method (element (offset <pair>) self) (unroll (crop (- (cdr offset) (car offset)) (dump (car offset) self))))
+
 (define-method (fetch (self <sequence<>>)) self)
+
 (define-method (get (self <sequence<>>) . args)
   (if (null? args) self (get (fetch (fold-right element self args)))))
+
 (define-method (set (self <sequence<>>) . args)
   (store (fold-right element self (all-but-last args)) (last args)))
 (define-method (store (self <sequence<>>) value)
