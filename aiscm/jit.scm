@@ -223,7 +223,9 @@
                    (make <method>
                          #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
                          #:procedure (lambda (type shape value)
-                               (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
+                                       (let [(result (make result-type #:shape shape))]
+                                         (proc result value)
+                                         (get (fetch result))))))
       (fill type shape value))))
 
 (define-syntax-rule (define-jit-dispatch name arity delegate)

@@ -7,25 +7,29 @@
 
 (define ctx (make <context>))
 
-; TODO: cache
-
-(define (compiled-copy self value)
-  (let* [(classes      (list (class-of self) (class-of (wrap value))))
+(define-method (compiled-copy self value)
+  (let* [(classes        (list (class-of self) (class-of value)))
            (args         (map skeleton classes))
            (parameters   (map parameter args))
            (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))]
-      (apply instructions (append-map unbuild classes (list self value)))
-      value))
+           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
+      (add-method! compiled-copy
+                   (make <method>
+                         #:specializers classes
+                         #:procedure (lambda (self value)
+                                       (proc self (get value))
+                                       (get value))))
+      (compiled-copy self value)))
 
 (define-method (set3 (self <element>) value)
   (slot-set! self 'value value))
 
 (define-method (set3 (self <pointer<>>) value)
-  (compiled-copy self value))
+  (compiled-copy self (wrap value)))
 
 (define-method (set3 (self <sequence<>>) . args)
-  (compiled-copy (fold-right element self (all-but-last args)) (last args)))
+  (compiled-copy (fold-right element self (all-but-last args)) (wrap (last args))))
 
 (test-begin "playground")
 (test-eqv "set value of integer"
