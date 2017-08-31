@@ -21,6 +21,7 @@
              (aiscm element)
              (aiscm variable)
              (aiscm expression)
+             (aiscm mem)
              (aiscm bool)
              (aiscm int)
              (aiscm obj)
@@ -34,7 +35,8 @@
 (define s1 (make (sequence <sint>) #:size 3))
 (define s2 (make (sequence <sint>) #:size 3))
 (define s3 (make (sequence <sint>) #:size 3))
-(set s1 0 2) (set s1 1 3) (set s1 2 5)
+(write-bytes (value s1) #vu8(2 0 3 0 5 0))
+
 (define a (make <var> #:type <long> #:symbol 'a))
 (define b (make <var> #:type <long> #:symbol 'b))
 (define c (make <var> #:type <long> #:symbol 'c))
@@ -51,8 +53,6 @@
   <sint> (typecode s1))
 (test-equal "Query element type of sequence"
   (pointer <sint>) (project (sequence <sint>)))
-(test-eqv "Write value to sequence"
-  9 (begin (set s2 2 9) (get s2 2)))
 (test-eqv "Check number of dimensions of sequence type"
   1 (dimensions (sequence <sint>)))
 (test-eqv "Query dimension of sequence"
@@ -90,12 +90,6 @@
   6 (size-of (make (sequence <sint>) #:size 3)))
 (test-eqv "Size of converted list"
   3 (size (to-array '(1 2 3))))
-(test-equal "Assignment list to sequence"
-  '(2 3 5) (begin (set s3 '(2 3 5)) (to-list s3)))
-(test-equal "Assignment number to sequence"
-  '(3 3 3) (begin (set s3 3) (to-list s3)))
-(test-equal "Return value of assignment to sequence"
-  '(2 3 5) (set s3 '(2 3 5)))
 (test-equal "Convert list of integers to multiarray and back"
   '(2 4 8) (to-list (to-array '(2 4 8))))
 (test-equal "Convert list of boleans to multiarray and back"
@@ -186,10 +180,6 @@
     '(1 2) (to-list (get (arr ((1) (2)) ((3) (4)) ((5) (6))) 0 '(0 . 2) 0)))
 (test-end "get")
 
-(test-equal "Setting an element in a 2D array"
-  42 (let [(m (arr (1 2 3) (4 5 6)))] (set m 1 0 42) (get m 1 0)))
-(test-equal "Setting a row in a 2D array"
-  '((1 2) (5 6)) (let [(m (arr (1 2) (3 4)))] (set m 1 '(5 6)) (to-list m)))
 (test-equal "Drop 2 elements of an array"
   '(3 4 5) (to-list (dump 2 (seq 1 2 3 4 5))))
 (test-equal "Drop rows and columns from 2D array"

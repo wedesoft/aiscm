@@ -114,6 +114,36 @@
     (list (rgb 2 3 5) (rgb 2 3 5)) (to-list (fill <intrgb> '(2) (rgb 2 3 5))))
 (test-end "filling arrays")
 
+(test-begin "set")
+  (test-eqv "set value of integer"
+    123 (let [(i (make <int> #:value 0))] (set i 123) (get i)))
+  (test-eqv "return value after setting integer"
+    123 (set (make <int> #:value 0) 123))
+  (let [(s (seq 1 2 3))]
+    (test-eqv "Write value to sequence"
+      9 (begin (set s 2 9) (get s 2)))
+    (set s 0)
+    (test-equal "fill array with zeros"
+      '(0 0 0) (to-list s))
+    (test-eqv "return value after setting array"
+      0 (set s 0))
+    (test-equal "return value when setting array"
+      '(2 3 5) (to-list (set s (seq 2 3 5))))
+    (test-equal "copy content of other array"
+      '(2 3 5) (to-list s)))
+  (let [(m (arr (1 2 3) (4 5 6)))]
+    (test-equal "return value when setting 2D array"
+      '(7 8) (to-list (set m (seq 7 8))))
+    (test-equal "set values of 2D array using 1D array"
+      '((7 7 7) (8 8 8)) (to-list m)))
+  (let [(s (seq 1 2 3))]
+    (set s 1 5)
+    (test-equal "set one value of a 1D array"
+      '(1 5 3) (to-list s)))
+  (test-equal "Setting an element in a 2D array"
+    42 (let [(m (arr (1 2 3) (4 5 6)))] (set m 1 0 42) (get m 1 0)))
+(test-end "set")
+
 (test-begin "ensure compact storage")
   (test-assert "'ensure-default-strides' should do nothing by default"
     (let [(m (make (multiarray <int> 2) #:shape '(6 4)))] (eq? m (ensure-default-strides m))))

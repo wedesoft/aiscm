@@ -1,5 +1,6 @@
 ## Ready
 
+* implement fill using set
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic

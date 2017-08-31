@@ -51,7 +51,7 @@
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
-               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max= set)
   #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
@@ -227,6 +227,30 @@
                                          (proc result value)
                                          (get (fetch result))))))
       (fill type shape value))))
+
+(define-method (compiled-copy self value)
+  (let* [(classes        (list (class-of self) (class-of value)))
+           (args         (map skeleton classes))
+           (parameters   (map parameter args))
+           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
+      (add-method! compiled-copy
+                   (make <method>
+                         #:specializers classes
+                         #:procedure (lambda (self value)
+                                       (proc self (get value))
+                                       (get value))))
+      (compiled-copy self value)))
+
+(define-method (set (self <element>) value)
+  (slot-set! self 'value value))
+
+(define-method (set (self <pointer<>>) value)
+  (compiled-copy self (wrap value)))
+
+(define-method (set (self <sequence<>>) . args)
+  (compiled-copy (fold-right element self (all-but-last args)) (wrap (last args))))
 
 (define-syntax-rule (define-jit-dispatch name arity delegate)
   (define-nary-typed-method name arity <element>
