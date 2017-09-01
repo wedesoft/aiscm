@@ -43,7 +43,7 @@
 (define-method (typecode (self <meta<element>>)) self)
 (define-method (typecode (self <element>)) (typecode (class-of self)))
 (define-method (get (self <element>)) (value self))
-(define-method (set (self <element>) value) (slot-set! self 'value value))
+(define-method (set (self <element>) value) (slot-set! self 'value value) value)
 (define-generic slice)
 (define-generic coerce)
 (define-generic native-type)

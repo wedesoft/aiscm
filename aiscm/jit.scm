@@ -243,9 +243,6 @@
                                        (get value))))
       (compiled-copy self value)))
 
-(define-method (set (self <element>) value)
-  (slot-set! self 'value value))
-
 (define-method (set (self <pointer<>>) value)
   (compiled-copy self (wrap value)))
 
