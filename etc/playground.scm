@@ -12,7 +12,7 @@
   (list #xc5 (logior #x82 (ash (logxor #xf (get-code xmm)) 3))))
 
 (define (VCVTSI2SS xmm ignore reg)
-  (append (VEX xmm) (list #x2a) (ModR/M 3 xmm 7)))
+  (append (VEX xmm) (list #x2a) (ModR/M 3 xmm reg)))
 
 (define ctx (make <context>))
 (define target <byte>)
@@ -45,9 +45,11 @@
 ; VEX.NDS.LIG.F3.0F.W0 2A/r
 
 (test-begin "playground")
-(test-equal "Set XMM0 to integer value"
+(test-equal "Set XMM0 to EDI's integer value"
   '(#xc5 #xfa #x2a #xc7) (VCVTSI2SS XMM0 XMM0 EDI))
-(test-equal "Set XMM1 to integer value"
+(test-equal "Set XMM1 to EDI's integer value"
   '(#xc5 #xf2 #x2a #xcf) (VCVTSI2SS XMM1 XMM1 EDI))
+(test-equal "Set XMM0 to ESI's integer value"
+  '(#xc5 #xfa #x2a #xc6) (VCVTSI2SS XMM0 XMM0 ESI))
 
 (test-end "playground")
