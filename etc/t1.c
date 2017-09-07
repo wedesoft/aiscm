@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-char f(char **p, char *q)
+int f(int y, int x)
 {
-  **p = *q;
+  return (int)((float)x + (float)y);
 }

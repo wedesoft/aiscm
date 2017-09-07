@@ -5,6 +5,14 @@
 
 (to-type <byte> (seq <int> 2 3 5))
 
+
+
+(define (VEX xmm)
+  (list #xc5 (logior #x82 (ash (logxor #xf (get-code xmm)) 3))))
+
+(define (VCVTSI2SS xmm ignore reg)
+  (append (VEX xmm) (list #x2a (logior #xc7 (ash (get-code xmm) 3)))))
+
 (define ctx (make <context>))
 (define target <byte>)
 (define self (seq <int> 2 3 5))
@@ -27,30 +35,18 @@
 (define blocked (blocked-intervals instructions))
 (define prog(flatten-code (relabel (filter-blocks instructions))))
 
-(define live                 (live-analysis prog results))
-(define temp-vars            (map temporary-variables prog))
-(define intervals            (append (live-intervals live (variables prog))
-                             (unit-intervals temp-vars)))
-(define predefined-registers (register-parameter-locations (register-parameters parameters)))
-(define parameters-to-move   (blocked-predefined predefined-registers intervals blocked))
-(define remaining-predefines (non-blocked-predefined predefined-registers parameters-to-move))
-(define stack-parameters     (stack-parameters parameters))
-(define colors               (linear-scan-coloring intervals registers remaining-predefines blocked))
-(define callee-saved         (used-callee-saved colors))
-(define stack-offset         (* 8 (1+ (number-spilled-variables colors stack-parameters))))
-(define parameter-offset     (+ stack-offset (* 8 (length callee-saved))))
-(define stack-locations      (stack-parameter-locations stack-parameters parameter-offset))
-(define allocation           (add-stack-parameter-information colors stack-locations))
-(define temporaries          (map (temporary-registers allocation) temp-vars))
-(define locations            (add-spill-information allocation 8 8))
-;(append-map (cut replace-variables locations <...>) prog temporaries)
+((asm ctx <int> (list <int>) (list (list #xc5 #xfa #x2a #xc7) (list #xc5 #xfa #x2c #xc0) (RET))) 42)
 
-;((lambda (x) (replace-variables locations (list-ref prog x) (list-ref temporaries x))) 18)
-(define allocation locations)
-(define cmd (list-ref prog 18))
-(define temporaries (list-ref temporaries 18))
-(define substituted (substitute-variables cmd allocation))
-(define spilled? (lambda (var) (is-a? (assq-ref allocation var) <address>)))
+; TODO: compiled-copy -> set3
+; TODO: set array using list
+; MOVD
+
+; VEX.NDS.LIG.F3.0F.W0 2A/r
 
 (test-begin "playground")
+(test-equal "Set XMM0 to integer value"
+  '(#xc5 #xfa #x2a #xc7) (VCVTSI2SS XMM0 XMM0 EDI))
+(test-equal "Set XMM1 to integer value"
+  '(#xc5 #xf2 #x2a #xcf) (VCVTSI2SS XMM1 XMM1 EDI))
+
 (test-end "playground")
