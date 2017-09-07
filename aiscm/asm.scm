@@ -24,7 +24,7 @@
   #:use-module (aiscm mem)
   #:use-module (aiscm element)
   #:use-module (aiscm int)
-  #:export (<context> <operand> <register> <address> <jcc>
+  #:export (<context> <operand> <register> <xmm> <address> <jcc>
             reg get-code xmm
             AL CL DL BL SPL BPL SIL DIL AH CH DH BH
             R8L R9L R10L R11L R12L R13L R14L R15L

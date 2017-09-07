@@ -5,13 +5,14 @@
 
 (to-type <byte> (seq <int> 2 3 5))
 
+(define-method (bits3 (x <xmm>)) (bits3 (get-code x)))
 
 
 (define (VEX xmm)
   (list #xc5 (logior #x82 (ash (logxor #xf (get-code xmm)) 3))))
 
 (define (VCVTSI2SS xmm ignore reg)
-  (append (VEX xmm) (list #x2a (logior #xc7 (ash (get-code xmm) 3)))))
+  (append (VEX xmm) (list #x2a) (ModR/M 3 xmm 7)))
 
 (define ctx (make <context>))
 (define target <byte>)
