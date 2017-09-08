@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-int f(int y, int x)
+int f(int a, int b, int c, int d, int e, int f)
 {
-  return (int)((float)x + (float)y);
+  return (int)((float)a + (float)b + (float)c + (float)d + (float)e + (float)f);
 }

@@ -13,7 +13,7 @@
 
 (define (VCVTSI2SS xmm ignore reg)
   (append (VEX xmm) (list #x2a) (ModR/M 3 xmm reg)))
-
+; postfixes
 (define ctx (make <context>))
 (define target <byte>)
 (define self (seq <int> 2 3 5))
@@ -51,5 +51,7 @@
   '(#xc5 #xf2 #x2a #xcf) (VCVTSI2SS XMM1 XMM1 EDI))
 (test-equal "Set XMM0 to ESI's integer value"
   '(#xc5 #xfa #x2a #xc6) (VCVTSI2SS XMM0 XMM0 ESI))
-
+(test-skip 1)
+(test-equal "Set XMM1 to R8D's integer value"
+  '(#xc4 #xc1 #x72 #x2a #xc9) (VCVTSI2SS XMM1 XMM1 R8D))
 (test-end "playground")

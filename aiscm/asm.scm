@@ -43,7 +43,8 @@
             SETB SETNB SETE SETNE SETBE SETNBE SETL SETNL SETLE SETNLE
             JMP JB JNB JE JNE JBE JNBE JL JNL JLE JNLE conditional?
             CMOVB CMOVNB CMOVE CMOVNE CMOVBE CMOVNBE CMOVL CMOVNL CMOVLE CMOVNLE
-            CALL))
+            CALL
+            ModR/M bits3 bit4))
 
 
 ; http://www.drpaulcarter.com/pcasm/
