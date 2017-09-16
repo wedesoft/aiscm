@@ -209,32 +209,13 @@
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
-(define-method (fill type shape value)
-  (if (< (dimensions type) (length shape))
-    (fill (multiarray type (length shape)) shape value)
-    (let* [(result-type  (pointer type))
-           (classes      (list result-type (typecode type)))
-           (args         (map skeleton classes))
-           (parameters   (map parameter args))
-           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
-      (add-method! fill
-                   (make <method>
-                         #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
-                         #:procedure (lambda (type shape value)
-                                       (let [(result (make result-type #:shape shape))]
-                                         (proc result value)
-                                         (get (fetch result))))))
-      (fill type shape value))))
-
 (define-method (compiled-copy self value)
   (let* [(classes        (list (class-of self) (class-of value)))
-           (args         (map skeleton classes))
-           (parameters   (map parameter args))
-           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
+         (args         (map skeleton classes))
+         (parameters   (map parameter args))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+         (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
       (add-method! compiled-copy
                    (make <method>
                          #:specializers classes
@@ -248,6 +229,11 @@
 
 (define-method (set (self <sequence<>>) . args)
   (compiled-copy (fold-right element self (all-but-last args)) (wrap (last args))))
+
+(define-method (fill type shape value)
+  (let [(retval (make (multiarray type (length shape)) #:shape shape))]
+    (set retval value)
+    retval))
 
 (define-syntax-rule (define-jit-dispatch name arity delegate)
   (define-nary-typed-method name arity <element>

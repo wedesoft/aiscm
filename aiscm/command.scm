@@ -68,16 +68,26 @@
    "Get first argument of machine instruction"
    (car (get-args self)))
 
-(define (mov-part a b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
-(define (movzx32 a b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
+(define-method (movsx a b) (MOVSX a b))
+(define-method (movsx (a <ptr>) b)
+  (let [(intermediate (var (typecode a)))]
+    (list (movsx intermediate b) (MOV a intermediate))))
+(define-method (movzx a b) (MOVZX a b)); TODO: test both cases
+(define-method (movzx (a <ptr>) b)
+  (let [(intermediate (var (typecode a)))]
+    (list (movzx intermediate b) (MOV a intermediate))))
+; TODO: pointer?
+(define-method (mov-part a (b <register>)) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
+(define-method (movzx32 (a <register>) b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
+(define-method (size-of (p <ptr>)) (size-of (typecode p)))
 (define (mov-cmd movxx movxx32 a b)
   (cond
         ((eqv? (size-of a) (size-of b)) MOV)
         ((<    (size-of a) (size-of b)) mov-part)
         ((eqv? (size-of b) 4)           movxx32)
         (else                           movxx)))
-(define-method (mov-signed   (a <operand>) (b <operand>)) ((mov-cmd MOVSX MOVSX   a b) a b))
-(define-method (mov-unsigned (a <operand>) (b <operand>)) ((mov-cmd MOVZX movzx32 a b) a b))
+(define (mov-signed   a b) ((mov-cmd movsx movsx   a b) a b))
+(define (mov-unsigned a b) ((mov-cmd movzx movzx32 a b) a b))
 (define (mov a b)
   (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
 
@@ -90,8 +100,10 @@
 (define-syntax-rule (state-reading-op op)
   (define-method (op . args) (make <cmd> #:op op #:out args)))
 
-(functional-op    mov-signed  )
-(functional-op    mov-unsigned)
+(functional-op    mov-part    )
+(functional-op    movzx32     )
+;(functional-op    movsx       )
+;(functional-op    movzx       )
 (functional-op    MOV         )
 (functional-op    MOVSX       )
 (functional-op    MOVZX       )

@@ -123,7 +123,7 @@
     (test-eqv "Write value to sequence"
       9 (begin (set s 2 9) (get s 2)))
     (set s 0)
-    (test-equal "fill array with zeros"
+    (test-equal "fill byte array with zeros"
       '(0 0 0) (to-list s))
     (test-eqv "return value after setting array"
       0 (set s 0))
@@ -131,6 +131,10 @@
       '(2 3 5) (to-list (set s (seq 2 3 5))))
     (test-equal "copy content of other array"
       '(2 3 5) (to-list s)))
+  (let [(s  (seq <int> 1 2 3))]
+    (set s 0)
+    (test-equal "fill integer array with zeros"
+      '(0 0 0) (to-list s)))
   (let [(m (arr (1 2 3) (4 5 6)))]
     (test-equal "return value when setting 2D array"
       '(7 8) (to-list (set m (seq 7 8))))

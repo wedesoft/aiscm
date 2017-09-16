@@ -1,5 +1,7 @@
 ## Ready
 
+* (MOVZX (ptr <int> RSI) CL)
+* (MOVSX (ptr <int> RSI) CL)
 * implement fill using set
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
