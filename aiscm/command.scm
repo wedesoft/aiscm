@@ -78,6 +78,7 @@
     (list (movzx intermediate b) (MOV a intermediate))))
 ; TODO: pointer?
 (define-method (mov-part a (b <register>)) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
+(define-method (mov-part (a <register>) b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b))); TODO: test <ptr> in second argument
 (define-method (movzx32 (a <register>) b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
 (define-method (size-of (p <ptr>)) (size-of (typecode p)))
 (define (mov-cmd movxx movxx32 a b)
@@ -102,8 +103,6 @@
 
 (functional-op    mov-part    )
 (functional-op    movzx32     )
-;(functional-op    movsx       )
-;(functional-op    movzx       )
 (functional-op    MOV         )
 (functional-op    MOVSX       )
 (functional-op    MOVZX       )
