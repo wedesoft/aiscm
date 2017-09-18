@@ -1,8 +1,6 @@
 ## Ready
 
-* (MOVZX (ptr <int> RSI) CL)
-* (MOVSX (ptr <int> RSI) CL)
-* implement fill using set
+* movzx, movsx -> redevelop using unit tests instead of relying on integration tests
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic

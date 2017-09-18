@@ -233,7 +233,7 @@
 (define-method (fill type shape value)
   (let [(retval (make (multiarray type (length shape)) #:shape shape))]
     (set retval value)
-    retval))
+    (get (fetch retval))))
 
 (define-syntax-rule (define-jit-dispatch name arity delegate)
   (define-nary-typed-method name arity <element>
