@@ -1,7 +1,4 @@
 #!/bin/bash
-tmux set mouse-resize-pane on
-tmux set mouse-select-pane on
-tmux set mouse-select-window on
 tmux split-window -d -h
 tmux split-window -d -p 70
 tmux select-pane -t0

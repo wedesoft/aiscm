@@ -15,28 +15,8 @@
   (append (VEX xmm) (list #x2a) (ModR/M 3 xmm reg)))
 ; postfixes
 (define ctx (make <context>))
-(define target <byte>)
-(define self (seq <int> 2 3 5))
-;(jit ctx (list (class-of self)) (cut to-type target <>))
 
-(define context ctx)
-(define classes (list (class-of self)))
-(define proc (cut to-type target <>))
-(define args         (map skeleton classes))
-(define parameters   (map parameter args))
-(define expr         (apply proc parameters))
-(define result-type  (type expr))
-(define intermediate (parameter result-type))
-(define result       (generate-return-code args intermediate expr))
-(define lst          (apply assemble result))
-(define results      (list-ref lst 0))
-(define parameters   (list-ref lst 1))
-(define instructions (list-ref lst 2))
-(define registers    default-registers)
-(define blocked (blocked-intervals instructions))
-(define prog(flatten-code (relabel (filter-blocks instructions))))
-
-((asm ctx <int> (list <int>) (list (list #xc5 #xfa #x2a #xc7) (list #xc5 #xfa #x2c #xc0) (RET))) 42)
+((asm ctx <int> (list <int>) (list (VCVTSI2SS XMM0 XMM0 EDI) (list #xc5 #xfa #x2c #xc0) (RET))) 42)
 
 ; TODO: compiled-copy -> set3
 ; TODO: set array using list
