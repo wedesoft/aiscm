@@ -1,6 +1,8 @@
 ## Ready
 
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * jit methods with multiple return values
+* use bytevectors instead of memory objects?
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
@@ -15,7 +17,6 @@
 * ==, != for complex numbers
 * galaxy simulation
 * to-type in tensor
-* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * floating point convolution: sharpening filter, corner filters
 * linear algebra bindings (blas, lapack, gsl, mkl)
