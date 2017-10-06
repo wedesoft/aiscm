@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (srfi srfi-1)
              (aiscm asm)
              (aiscm variable)
              (aiscm command)
@@ -63,22 +64,50 @@
       (list p) (get-ptr-args (MOV (ptr <int> p 16) 42))))
 (test-end "input and output variables")
 
-(test-begin "copy integer values")
-  (test-equal "copy signed 16-bit value"
-    (MOV AX CX) (mov-signed AX CX))
-  (test-equal "copy with sign extension"
-    (MOVSX EAX CX) (mov-signed EAX CX))
-  (test-equal "copy part of signed value"
-    (MOV CL SIL) (mov-signed CL ESI))
-  (test-equal "copy unsigned 16-bit value"
-    (MOV AX CX) (mov-unsigned AX CX))
-  (test-equal "copy with zero extension"
-    (MOVZX EAX CX) (mov-unsigned EAX CX))
-  (test-equal "copy part of unsigned value"
-    (MOV CL SIL) (mov-unsigned CL ESI))
-  (test-equal "zero-extending 32-bit value is done by default"
-    (MOV EAX ECX) (mov-unsigned RAX ECX))
-(test-end "copy integer values")
+(test-begin "generic copy")
+  (define-syntax-rule (naive-register-allocate expr)
+    (let* [(cmd  expr)
+           (vars (variables cmd))
+           (registers (take (list RAX RCX RDX) (length vars)))]
+      (substitute-variables cmd (map cons vars registers))))
+  (let [(p  (var <long>))
+        (x  (var <bool>))
+        (y  (var <bool>))
+        (b  (var <byte>))
+        (ub (var <ubyte>))
+        (s  (var <sint>))
+        (ul (var <ulong>))
+        (us (var <usint>))
+        (i  (var <int>))
+        (ui (var <int>))
+        (j  (var <int>))]
+    (test-equal "use MOV to copy registers"
+      (list (MOV RCX RAX)) (mov RCX RAX))
+    (test-equal "copy integer variable"
+      (list (MOV EAX ECX)) (naive-register-allocate (mov i j)))
+    (test-equal "sign-extend when copying signed value to larger variable"
+      (list (MOVSX EAX CX)) (naive-register-allocate (mov i s)))
+    (test-equal "zero-extend when copying unsigned value to a larger variable"
+      (list (MOVZX EAX CX)) (naive-register-allocate (mov i us)))
+    (test-equal "write to smaller memory location"
+      (list (MOV (ptr <byte> RAX) CL)) (naive-register-allocate (mov (ptr <byte> p) i)))
+    (test-equal "copy to smaller variable"
+      (list (MOV AX CX)) (naive-register-allocate (mov s i)))
+    (test-equal "copy 32 bit integer to signed larger unsigned variable"
+      (list (MOV EAX ECX)) (naive-register-allocate (mov ul ui)))
+    (test-equal "read from larger memory location"
+      (list (MOV AL (ptr <byte> RCX))) (naive-register-allocate (mov b (ptr <sint> p))))
+    (test-equal "copy boolean variable"
+      (list (MOV AL CL)) (naive-register-allocate (mov x y)))
+    (test-equal "copy boolean variable to larger integer"
+      (list (MOVZX AX CL)) (naive-register-allocate (mov s x)))
+    (test-equal "use intermediate variable when writing sign-extended value to memory"
+      (list (MOVSX AX CL) (MOV (ptr <sint> RDX) AX))
+      (naive-register-allocate (mov (ptr <sint> p) b)))
+    (test-equal "use intermediate variable when writing zero-padded value to memory"
+      (list (MOVZX AX CL) (MOV (ptr <usint> RDX) AX))
+      (naive-register-allocate (mov (ptr <sint> p) ub))))
+(test-end "generic copy")
 
 (test-begin "first argument of command")
   (let [(a (var <int>))
@@ -130,17 +159,17 @@
   (test-equal "shl blocks RCX register"
     RCX (get-reg (shl s n)))
   (test-equal "shl uses SHL for unsigned input"
-    (list (mov-unsigned CL n) (SHL u CL)) (filter-blocks (shl u n)))
+    (list (mov CL n) (SHL u CL)) (filter-blocks (shl u n)))
   (test-equal "shl uses SAL for signed input"
-    (list (mov-unsigned CL n) (SAL s CL)) (filter-blocks (shl s n)))
+    (list (mov CL n) (SAL s CL)) (filter-blocks (shl s n)))
   (test-equal "shl with one unsigned argument"
     (list (SHL u)) (shl u))
   (test-equal "shl with one signed argument"
     (list (SAL s)) (shl s))
   (test-equal "shr uses SHR for unsigned input"
-    (list (mov-unsigned CL n) (SHR u CL)) (filter-blocks (shr u n)))
+    (list (mov CL n) (SHR u CL)) (filter-blocks (shr u n)))
   (test-equal "shr uses SAR for signed input"
-    (list (mov-unsigned CL n) (SAR s CL)) (filter-blocks (shr s n)))
+    (list (mov CL n) (SAR s CL)) (filter-blocks (shr s n)))
   (test-equal "shr with one unsigned argument"
     (list (SHR u)) (shr u))
   (test-equal "shr with one signed argument"

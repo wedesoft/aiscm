@@ -66,18 +66,18 @@
   (let [(out (skeleton <int>))
         (in  (skeleton <int>))]
     (test-equal "generate code for copying an integer"
-      (list (list (mov-signed (get out) (get in)))) (duplicate out in))
+      (list (list (MOV (get out) (get in)))) (duplicate out in))
     (test-equal "generate code for identity function"
-      (list (list (get out)) (list (get in)) (list (list (mov-signed (get out) (get in))) (RET)))
+      (list (list (get out)) (list (get in)) (list (list (MOV (get out) (get in))) (RET)))
       (assemble (list out) (list in) (duplicate out in))))
   (let [(out (skeleton <int>))
         (in  (skeleton (pointer <int>)))]
     (test-equal "generate code for reading integer from memory"
-      (list (list (mov-signed (get out) (ptr <int> (get in))))) (duplicate out in)))
+      (list (list (MOV (get out) (ptr <int> (get in))))) (duplicate out in)))
   (let [(out (skeleton (pointer <int>)))
         (in  (skeleton <int>))]
     (test-equal "generate code for writing integer to memory"
-      (list (list (mov-signed (ptr <int> (get out)) (get in)))) (duplicate out in)))
+      (list (list (MOV (ptr <int> (get out)) (get in)))) (duplicate out in)))
   (let [(out (skeleton <int>))]
     (test-equal "Generate code for setting variable to zero"
       (list (MOV (get out) 0)) (duplicate out 0)))
@@ -189,7 +189,7 @@
   (let [(out (skeleton <int>))
         (a   (skeleton <int>))]
     (test-equal "generate code for negating number"
-      (list (list (mov-signed (get out) (get a))) (NEG (get out))) (duplicate (parameter out) (- (parameter a)))))
+      (list (list (MOV (get out) (get a))) (NEG (get out))) (duplicate (parameter out) (- (parameter a)))))
   (test-equal "Negate integer"
     -42 ((jit ctx (list <int>) -) 42))
   (test-equal "compile and run function for negating array"
@@ -206,7 +206,7 @@
         (a   (skeleton <int>))
         (b   (skeleton <int>))]
     (test-equal "generate code for adding two numbers"
-      (list (list (mov-signed (get out) (get a))) (ADD (get out) (get b)))
+      (list (list (MOV (get out) (get a))) (ADD (get out) (get b)))
       (duplicate (parameter out) (+ (parameter a) (parameter b)))))
   (test-equal "compile and run function adding two numbers"
     42 ((jit ctx (list <int> <int>) +) 19 23))

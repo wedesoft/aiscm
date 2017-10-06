@@ -1,6 +1,6 @@
 ## Ready
 
-* movzx, movsx -> redevelop using unit tests instead of relying on integration tests
+* jit methods with multiple return values
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic

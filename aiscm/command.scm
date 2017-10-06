@@ -27,7 +27,7 @@
   #:use-module (aiscm variable)
   #:use-module (aiscm util)
   #:export (<cmd> <block>
-            get-op get-ptr-args input output first-argument mov-signed mov-unsigned mov
+            get-op get-ptr-args input output first-argument mov
             blocked sign-extend-ax div mod shl shr test-zero test-non-zero bool-and bool-or
             cmp cmp-equal cmp-not-equal cmp-lower-than cmp-lower-equal cmp-greater-than cmp-greater-equal
             minor major cmp-where cmp-abs repeat each-element)
@@ -68,29 +68,24 @@
    "Get first argument of machine instruction"
    (car (get-args self)))
 
-(define-method (movsx a b) (MOVSX a b))
+(define-method (movsx a b) (list (MOVSX a b)))
 (define-method (movsx (a <ptr>) b)
   (let [(intermediate (var (typecode a)))]
-    (list (movsx intermediate b) (MOV a intermediate))))
-(define-method (movzx a b) (MOVZX a b)); TODO: test both cases
+    (attach (movsx intermediate b) (MOV a intermediate))))
+(define-method (movzx a b) (list (MOVZX a b)))
 (define-method (movzx (a <ptr>) b)
   (let [(intermediate (var (typecode a)))]
-    (list (movzx intermediate b) (MOV a intermediate))))
-; TODO: pointer?
+    (attach (movzx intermediate b) (MOV a intermediate))))
+
 (define-method (mov-part a (b <register>)) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
-(define-method (mov-part (a <register>) b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b))); TODO: test <ptr> in second argument
+(define-method (mov-part (a <register>) b) (MOV a (to-type (integer (* 8 (size-of a)) signed) b)))
 (define-method (movzx32 (a <register>) b) (MOV (to-type (integer (* 8 (size-of b))unsigned) a) b))
-(define-method (size-of (p <ptr>)) (size-of (typecode p)))
-(define (mov-cmd movxx movxx32 a b)
-  (cond
-        ((eqv? (size-of a) (size-of b)) MOV)
-        ((<    (size-of a) (size-of b)) mov-part)
-        ((eqv? (size-of b) 4)           movxx32)
-        (else                           movxx)))
-(define (mov-signed   a b) ((mov-cmd movsx movsx   a b) a b))
-(define (mov-unsigned a b) ((mov-cmd movzx movzx32 a b) a b))
 (define (mov a b)
-  (list ((if (or (eq? (typecode b) <bool>) (signed? b)) mov-signed mov-unsigned) a b)))
+  (cond
+    ((eqv? (size-of a) (size-of b)) (list (MOV a b)))
+    ((<    (size-of a) (size-of b)) (list (mov-part a b)))
+    ((eqv? (size-of b) 4)           (list (movzx32 a b)))
+    (else                           ((if (signed? b) movsx movzx) a b))))
 
 (define-syntax-rule (mutating-op op)
   (define-method (op . args) (make <cmd> #:op op #:io (list (car args)) #:in (cdr args))))
@@ -177,7 +172,7 @@
   (let [(shift (if (signed? r) shift-signed shift-unsigned))]
     (if (null? x)
         (list (shift r))
-        (blocked RCX (apply mov-unsigned CL x) (shift r CL)))))
+        (blocked RCX (apply mov CL x) (shift r CL)))))
 (define (shl r . x) (apply (shx SAL SHL) r x))
 (define (shr r . x) (apply (shx SAR SHR) r x))
 
