@@ -1,7 +1,9 @@
 ## Ready
 
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* jit methods with multiple return values
+* check against NumPy, Theano, Tensorflow for completeness
+* "let" for tensors
+* structs, jit methods with multiple return values
 * use bytevectors instead of memory objects?
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
@@ -36,9 +38,7 @@
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
-* check against NumPy, Theano for completeness
 * how to run test suite
-* "let" for tensors
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
