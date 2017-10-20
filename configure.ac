@@ -12,8 +12,6 @@ AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_EXTRA_RECURSIVE_TARGETS([bench recheck integration reintegration])
 LT_INIT
 AC_PROG_CC
-dnl required to workaround circular dependency error with AC_LANG_COMPILER
-AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_AWK
@@ -35,7 +33,7 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 
-AX_PTHREAD([],[AC_MSG_ERROR([Could not find pthread library])])
+AX_PTHREAD([AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Could not find pthread library])])
 AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
 
@@ -162,10 +160,21 @@ fi
 AC_SUBST(X_CFLAGS)
 AC_SUBST(X_LIBS)
 
+AX_HAVE_OPENGL
 AC_MSG_CHECKING([for GL])
-AX_CHECK_GL([], [AC_MSG_ERROR([Could not find GL])])
+if test "x$have_GL" != "xyes"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Could not find GL])
+else
+  AC_MSG_RESULT([yes])
+fi
 AC_MSG_CHECKING([for GLU])
-AX_CHECK_GLU([], [AC_MSG_ERROR([Could not find GLU])])
+if test "x$have_GLU" != "xyes"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Could not find GLU])
+else
+  AC_MSG_RESULT([yes])
+fi
 
 AC_MSG_CHECKING([for Xvideo])
 LIBS="$LIBS -lXv"
