@@ -1,5 +1,6 @@
 ## Ready
 
+* LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * check against NumPy, Theano, Tensorflow for completeness
 * "let" for tensors

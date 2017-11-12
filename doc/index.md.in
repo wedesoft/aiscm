@@ -65,6 +65,9 @@ Control all data and machine code down to every single bit and byte.
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
 * [Julia language](https://julialang.org/)
 * [Kona language](https://github.com/kevinlawler/kona)
+* [Guile SDL2](https://dthompson.us/projects/guile-sdl2.html)
+* [Guile OpenGL](https://github.com/guildhall/guile-opengl)
+* [Softbody Physics Tutorial](http://cg.skeelogy.com/?download=SoftBodyPhysicsTutorial)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 
