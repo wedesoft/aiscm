@@ -2,20 +2,35 @@
 !#
 (use-modules (glut) (gl) (gl low-level) (glu) (srfi srfi-1))
 
-(define m 250)
-(define vertex `((100 20 ,m 0) (200 20 0 ,m) (200 120 ,(- m) 0) (100 120 0 ,(- m))))
-(define connect '((1 2 3) (0 2 3) (0 1 3) (0 1 2)))
-;(define x 200)
-;(define y 20)
-;(define x2 300)
-;(define y2 20)
-;(define vx 0)
-;(define vy 0)
-(define dt 0.02)
+(define pi 3.1415926)
+
+(define m 0)
+
+(define n 8)
+
+(define vertex
+  (apply append (map (lambda (i)
+    (let* [(a (/ (* i 2 pi) (/ n 2)))
+           (sa (sin a))
+           (ca (cos a))]
+      (list
+        (list (+ 125 (* ca 50)) (+ 50 (* sa 50)) (* -1 m sa) (* m ca))
+        (list (+ 125 (* ca 70)) (+ 50 (* sa 70)) (* -1 m sa) (* m ca)))))
+    (iota (/ n 2)))))
+
+(define f '((1 2 3) (0 2 3)))
+
+(define connect (apply append (map (lambda (i)
+  (list (map (lambda (j) (remainder (+ (* 2 i) j) n)) (car f))
+        (map (lambda (j) (remainder (+ (* 2 i) j) n)) (cadr f))))
+  (iota (/ n 2)))))
+
+(define l 10)
+(define dt 0.001)
 (define g 20)
 (define drag -0.1)
-(define damp 0.5)
-(define stiff 15)
+(define damp 2.0)
+(define stiff 28)
 
 (define (sqr x) (* x x))
 (define (int v) (inexact->exact (round v)))
@@ -41,7 +56,7 @@
          (vy2 (cadddr b))
          (d  (sqrt (+ (sqr (- x2 x1)) (sqr (- y2 y1)))))
          (rv (/ (+ (* (- vx2 vx1) (- x2 x1)) (* (- vy2 vy1) (- y2 y1))) d))
-         (s (- d 100))
+         (s (- d l))
          (h (+ (* stiff s) (* damp rv)))
          (ax (* h (/ (- x2 x1) d)))
          (ay (* h (/ (- y2 y1) d)))]
@@ -60,12 +75,12 @@
         (gl-vertex (car (list-ref vertex i)) (cadr (list-ref vertex i)) 0)
         (gl-vertex (car (list-ref vertex j)) (cadr (list-ref vertex j)) 0))
       (list-ref connect i)))
-      (iota 4)))
+      (iota n)))
   (swap-buffers)
 )
 
 (define (on-idle)
-   (let [( acc (map (lambda (i) (reduce (lambda (a b) (map + a b)) #f (map (lambda (j) (change (list-ref vertex i) (list-ref vertex j))) (list-ref connect i)))) (iota 4)))]
+   (let [( acc (map (lambda (i) (reduce (lambda (a b) (map + a b)) #f (map (lambda (j) (change (list-ref vertex i) (list-ref vertex j))) (list-ref connect i)))) (iota n)))]
      (set! vertex (map (lambda (v a) (list (+ (car v) (* (caddr v) dt))
                                            (+ (cadr v) (* (cadddr v) dt))
                                            (+ (caddr v) (* (+ (car a) (* drag (caddr v))) dt))
@@ -74,7 +89,7 @@
   (post-redisplay main-window)
 )
 
-(initialize-glut (program-arguments) #:window-size '(1280 . 480) #:display-mode  (display-mode rgb double))
+(initialize-glut (program-arguments) #:window-size '(640 . 480) #:display-mode  (display-mode rgb double))
 (set! main-window (make-window "rigs"))
 (set-display-callback  on-display)
 (set-reshape-callback  on-reshape)
