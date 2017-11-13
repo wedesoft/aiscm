@@ -6,31 +6,30 @@
 
 (define m 0)
 
-(define n 8)
+(define n 16)
 
-(define vertex
-  (apply append (map (lambda (i)
-    (let* [(a (/ (* i 2 pi) (/ n 2)))
-           (sa (sin a))
-           (ca (cos a))]
-      (list
-        (list (+ 125 (* ca 50)) (+ 50 (* sa 50)) (* -1 m sa) (* m ca))
-        (list (+ 125 (* ca 70)) (+ 50 (* sa 70)) (* -1 m sa) (* m ca)))))
-    (iota (/ n 2)))))
+(define v 30)
 
-(define f '((1 2 3) (0 2 3)))
-
-(define connect (apply append (map (lambda (i)
-  (list (map (lambda (j) (remainder (+ (* 2 i) j) n)) (car f))
-        (map (lambda (j) (remainder (+ (* 2 i) j) n)) (cadr f))))
+(define vertex (apply append (map (lambda (i)
+  (let [(o (+ 50 (* 50 i)))] (list (list o 50 0 (* i v)) (list o 100 0 (* i v)))))
   (iota (/ n 2)))))
 
-(define l 10)
-(define dt 0.001)
+;(define (clip x) (if (< x 0) (+ x n) (if (>= x n) (- x n) x)))
+(define (clip x) x)
+
+(define connect (apply append (map (lambda (i)
+  (list (map (lambda (j) (clip (+ (* 2 i) j))) '(-2 -1 1 3 2))
+        (map (lambda (j) (clip (+ (* 2 i) j))) '(-2 -1 0 2 3))))
+  (iota (/ n 2)))))
+
+(set! connect (map (lambda (l) (filter (lambda (i) (and (>= i 0) (< i n))) l)) connect))
+
+(define l 50)
+(define dt 0.01)
 (define g 20)
 (define drag -0.1)
-(define damp 2.0)
-(define stiff 28)
+(define damp 2)
+(define stiff 50)
 
 (define (sqr x) (* x x))
 (define (int v) (inexact->exact (round v)))
@@ -45,7 +44,7 @@
   (gl-ortho 0 width height 0 -1 +1)
 )
 
-(define (change a b)
+(define (change a b l)
   (let* [(x1 (car a))
          (y1 (cadr a))
          (x2 (car b))
@@ -80,7 +79,7 @@
 )
 
 (define (on-idle)
-   (let [( acc (map (lambda (i) (reduce (lambda (a b) (map + a b)) #f (map (lambda (j) (change (list-ref vertex i) (list-ref vertex j))) (list-ref connect i)))) (iota n)))]
+   (let [( acc (map (lambda (i) (reduce (lambda (a b) (map + a b)) '(0 0) (map (lambda (j) (change (list-ref vertex i) (list-ref vertex j) l)) (list-ref connect i)))) (iota n)))]
      (set! vertex (map (lambda (v a) (list (+ (car v) (* (caddr v) dt))
                                            (+ (cadr v) (* (cadddr v) dt))
                                            (+ (caddr v) (* (+ (car a) (* drag (caddr v))) dt))
