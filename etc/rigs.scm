@@ -5,33 +5,31 @@
 
 (define pi 3.141592653589793)
 (define g 20)
-(define drag -0.5)
-(define damp 2)
-(define stiff 200)
+(define drag -0.1)
+(define damp 5)
+(define stiff 500)
 (define (sqr x) (* x x))
 (define (int v) (inexact->exact (round v)))
 (define (vector a b) (map - b a))
 (define (distance a b) (sqrt (apply + (map sqr (vector a b)))))
 
 (define dt 0.05)
-(define n   16)
-(define v  200)
-(define r1  30)
+(define n   32)
+(define r1  40)
 (define r2  70)
+(define v2 20)
+(define v1 (* v2 (/ r1 r2)))
 (define cx 100)
 (define cy 100)
 
 (define n2 (/ n 2))
 
-; speed values
-; accelerations for given positions and speeds
-; 4th order Runger-Kutta 4
-
 (define angles (map (cut * 2 (/ pi n2) <>) (iota n)))
 (define radius (append (make-list n2 r1) (make-list n2 r2)))
+(define v (append (make-list n2 v1) (make-list n2 v2)))
 
 (define vertex (map (lambda (a r) (list (+ cx (* r (cos a))) (+ cy (* r (sin a)))) ) angles radius))
-(define speed (make-list n '(0 0)))
+(define speed (map (lambda (a r) (list (* r -1 (sin a)) (* r (cos a))) ) angles v))
 
 (define (inner-index index offset) (remainder (+ index offset n2) n2))
 (define (outer-index index offset) (+ (remainder (+ index offset n2) n2) n2))
