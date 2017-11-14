@@ -1,20 +1,21 @@
 #!/usr/bin/env guile
 !#
 ; https://www.youtube.com/watch?v=GnzzmA9x1q4
+; http://docs.rigsofrods.org/vehicle-creation/wheels-axles-steering/
 (use-modules (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26))
 
 (define pi 3.141592653589793)
 (define g 50)
 (define drag -0.1)
-(define damp 10)
-(define stiff 1000)
+(define damp 15)
+(define stiff 500)
 (define (sqr x) (* x x))
 (define (int v) (inexact->exact (round v)))
 (define (vector a b) (map - b a))
 (define (distance a b) (sqrt (apply + (map sqr (vector a b)))))
 
-(define dt 0.025)
-(define n   32)
+(define dt 0.05)
+(define n   24)
 (define r1  40)
 (define r2  70)
 (define v2 200)
