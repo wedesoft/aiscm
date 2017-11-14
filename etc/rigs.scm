@@ -64,7 +64,7 @@
   (add (reduce add '(0 0) (map (cut spring vertex speed <...>) vs dvs ls))
        (add (scale speed drag) (list 0 g))))
 
-(define (acceleration-all vertex)
+(define (acceleration-all vertex speed)
   (map acceleration vertex speed (adjacent vertex) (adjacent speed) nominal))
 
 (define (state-all vertex speed) (map append vertex speed))
@@ -72,7 +72,7 @@
 (define (speed-state state) (map (cut drop <> 2) state))
 
 (define (change-all state)
-  (map append (speed-state state) (acceleration-all (vertex-state state))))
+  (map append (speed-state state) (acceleration-all (vertex-state state) (speed-state state))))
 
 (define main-window #f)
 
@@ -85,9 +85,9 @@
 
 (define (on-idle)
   (let* [(state  (state-all vertex speed))
-         (statex (add-all state (scale-all (change-all state) dt)))]
-    (set! speed (speed-state statex))
-    (set! vertex (vertex-state statex)))
+         (update (add-all state (scale-all (change-all state) dt)))]
+    (set! speed (speed-state update))
+    (set! vertex (vertex-state update)))
   (set! vertex (map (lambda (v s) (if (and (>= (cadr v) 470) (> (cadr s) 0)) (list (car v) 470) v)) vertex speed))
   (set! speed (map (lambda (v s) (if (and (>= (cadr v) 470) (> (cadr s) 0)) (list 0 0) s)) vertex speed))
   (post-redisplay))
