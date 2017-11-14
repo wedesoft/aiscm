@@ -13,8 +13,8 @@
 (define (vector a b) (map - b a))
 (define (distance a b) (sqrt (apply + (map sqr (vector a b)))))
 
-(define dt 0.01)
-(define n   24)
+(define dt 0.05)
+(define n   16)
 (define v  200)
 (define r1  30)
 (define r2  70)
@@ -85,7 +85,11 @@
 
 (define (on-idle)
   (let* [(state  (state-all vertex speed))
-         (update (add-all state (scale-all (change-all state) dt)))]
+         (k1     (change-all state))
+         (k2     (change-all (add-all state (scale-all k1 (/ dt 2)))))
+         (k3     (change-all (add-all state (scale-all k2 (/ dt 2)))))
+         (k4     (change-all (add-all state (scale-all k3 dt      ))))
+         (update (add-all state (reduce add-all #f (map scale-all (list k1 k2 k3 k4) (list (/ dt 6) (/ dt 3) (/ dt 3) (/ dt 6))))))]
     (set! speed (speed-state update))
     (set! vertex (vertex-state update)))
   (set! vertex (map (lambda (v s) (if (and (>= (cadr v) 470) (> (cadr s) 0)) (list (car v) 470) v)) vertex speed))
