@@ -10,7 +10,7 @@ site_DATA = jit.scm llvm.scm mem.scm element.scm scalar.scm bool.scm int.scm poi
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-obj.la libguile-aiscm-samples.la
+												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-llvm.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
@@ -76,6 +76,11 @@ libguile_aiscm_samples_la_SOURCES = samples.c samples-helpers.c util-helpers.c
 libguile_aiscm_samples_la_CFLAGS = $(GUILE_CFLAGS) $(SWRESAMPLE_CFLAGS) $(AVRESAMPLE_CFLAGS) $(AVUTIL_CFLAGS)
 libguile_aiscm_samples_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS) $(SWRESAMPLE_LIBS) $(AVRESAMPLE_LIBS) $(AVUTIL_LIBS)
+
+libguile_aiscm_llvm_la_SOURCES = llvm.c
+libguile_aiscm_llvm_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
+libguile_aiscm_llvm_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
+libguile_aiscm_llvm_la_LIBADD = $(GUILE_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

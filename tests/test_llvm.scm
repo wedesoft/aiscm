@@ -21,15 +21,20 @@
 
 (test-begin "aiscm llvm")
 
+(define llvm (make-llvm))
+
 (test-equal "Create LLVM instance"
-  <llvm> (class-of (make-llvm)))
+  <llvm> (class-of llvm))
+(test-assert "LLVM context slot defined"
+  (slot-ref llvm 'llvmcontext))
 (test-equal "Create LLVM function"
-  <function> (class-of (make-function (make-llvm))))
+  <function> (class-of (make-function llvm)))
 (test-assert "Compile and run empty function"
-  (unspecified? (let* [(llvm (make-llvm))
-                       (fun  (make-function llvm))]
+  (unspecified? (let [(fun  (make-function llvm))]
     (function-ret fun)
     (function-compile fun)
     (function-apply fun))))
+
+(destroy llvm)
 
 (test-end "aiscm llvm")

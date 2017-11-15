@@ -16,18 +16,27 @@
 ;;
 (define-module (aiscm llvm)
   #:use-module (oop goops)
-  #:export (<llvm>
+  #:use-module (aiscm util)
+  #:export (<llvm> <meta<llvm>>
             <function>
             make-llvm
             make-function
             function-ret
             function-compile
-            function-apply))
+            function-apply)
+  #:re-export (destroy))
 
-(define-class <llvm> ())
-(define-class <function> ())
+(load-extension "libguile-aiscm-llvm" "init_llvm")
 
+(define-class* <llvm> <object> <meta<llvm>> <class>
+               (llvmcontext #:init-keyword #:llvmcontext))
+
+(define-method (initialize (self <llvm>) initargs)
+  (next-method self (list #:llvmcontext  (make-llvmcontext))))
 (define (make-llvm) (make <llvm>))
+(define-method (destroy (self <llvm>)) (llvmcontext-destroy (slot-ref self 'llvmcontext)))
+
+(define-class <function> ())
 
 (define (make-function llvm) (make <function>))
 

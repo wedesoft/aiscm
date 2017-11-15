@@ -33,6 +33,8 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 
+AX_LLVM([orcjit])
+
 AX_PTHREAD([AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Could not find pthread library])])
 AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
