@@ -21,4 +21,15 @@
 
 (test-begin "aiscm llvm")
 
+(test-equal "Create LLVM instance"
+  <llvm> (class-of (make-llvm)))
+(test-equal "Create LLVM function"
+  <function> (class-of (make-function (make-llvm))))
+(test-assert "Compile and run empty function"
+  (unspecified? (let* [(llvm (make-llvm))
+                       (fun  (make-function llvm))]
+    (function-ret fun)
+    (function-compile fun)
+    (function-apply fun))))
+
 (test-end "aiscm llvm")

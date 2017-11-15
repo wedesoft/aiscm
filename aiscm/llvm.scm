@@ -15,4 +15,22 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm llvm)
-  #:export ())
+  #:use-module (oop goops)
+  #:export (<llvm>
+            <function>
+            make-llvm
+            make-function
+            function-ret
+            function-compile
+            function-apply))
+
+(define-class <llvm> ())
+(define-class <function> ())
+
+(define (make-llvm) (make <llvm>))
+
+(define (make-function llvm) (make <function>))
+
+(define (function-ret fun) #f)
+(define (function-compile fun) #f)
+(define (function-apply fun) (if #f #f))
