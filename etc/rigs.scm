@@ -5,7 +5,7 @@
 (use-modules (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26))
 
 (define pi 3.141592653589793)
-(define g 50)
+(define g 100)
 (define drag -0.2)
 (define damp  50)
 (define stiff 700)
