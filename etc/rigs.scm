@@ -6,21 +6,27 @@
 
 (define pi 3.141592653589793)
 (define g 50)
-(define drag -0.1)
-(define damp 5)
-(define stiff 1000)
+(define drag -0.2)
+(define damp  50)
+(define stiff 700)
 (define (sqr x) (* x x))
 (define (int v) (inexact->exact (round v)))
 (define (vector a b) (map - b a))
 (define (distance a b) (sqrt (apply + (map sqr (vector a b)))))
 
-(define dt  0.025)
+(define dt  0.010)
 (define n      13)
 (define n1 (1- n))
 (define r      50)
-(define v     200)
-(define cx    100)
-(define cy    300)
+(define v       0)
+(define cx    320)
+(define cy    400)
+(define gs  -1900)
+(define stick 3000)
+(define w    0.98)
+
+(define (friction v)
+  (max gs (- v (* stick dt))))
 
 (define angles (map (cut * 2 (/ pi n1) <>) (iota n1)))
 (define radius (append (make-list n1 r)))
@@ -56,7 +62,8 @@
        (add (scale speed drag) (list 0 g))))
 
 (define (acceleration-all vertex speed)
-  (map acceleration vertex speed (adjacent vertex) (adjacent speed) nominal))
+  (let [(acc (map acceleration vertex speed (adjacent vertex) (adjacent speed) nominal))]
+    (cons (add (scale (car acc) (- 1 w)) (scale (list 0 g) w)) (cdr acc))))
 
 (define (state-all vertex speed) (map append vertex speed))
 (define (vertex-state state) (map (cut take <> 2) state))
@@ -75,17 +82,20 @@
   (gl-ortho 0 width height 0 -1 +1))
 
 (define (on-idle)
-  (let* [(state  (state-all vertex speed))
-         (k1     (change-all state))
-         (k2     (change-all (add-all state (scale-all k1 (/ dt 2)))))
-         (k3     (change-all (add-all state (scale-all k2 (/ dt 2)))))
-         (k4     (change-all (add-all state (scale-all k3 dt      ))))
-         (update (add-all state (reduce add-all #f (map scale-all (list k1 k2 k3 k4) (list (/ dt 6) (/ dt 3) (/ dt 3) (/ dt 6))))))]
-    (set! speed (speed-state update))
-    (set! vertex (vertex-state update)))
-  (set! vertex (map (lambda (v s) (if (and (>= (cadr v) 470) (> (cadr s) 0)) (list (car v) 470) v)) vertex speed))
-  (set! speed (map (lambda (v s) (if (and (>= (cadr v) 470) (> (cadr s) 0)) (list 0 0) s)) vertex speed))
-  (post-redisplay))
+  (for-each (lambda _
+    (let* [(state  (state-all vertex speed))
+           (k1     (change-all state))
+           (k2     (change-all (add-all state (scale-all k1 (/ dt 2)))))
+           (k3     (change-all (add-all state (scale-all k2 (/ dt 2)))))
+           (k4     (change-all (add-all state (scale-all k3 dt      ))))
+           (update (add-all state (reduce add-all #f (map scale-all (list k1 k2 k3 k4) (list (/ dt 6) (/ dt 3) (/ dt 3) (/ dt 6))))))]
+      (set! speed (speed-state update))
+      (set! vertex (vertex-state update))
+      (set! vertex (map (lambda (v s) (if (and (>= (cadr v) 480) (>= (cadr s) 0)) (list (car v) 480) v)) vertex speed))
+      (set! speed (map (lambda (v s) (if (and (>= (cadr v) 480) (>= (cadr s) 0)) (list (friction (car s)) 0) s)) vertex speed))
+      (set! vertex (cons (list cx (cadar vertex)) (cdr vertex)))
+      (set! speed (cons (list 0 (cadar speed)) (cdr speed)))
+      (post-redisplay))) (iota 3)))
 
 (define (gl-vertex-2d v) (gl-vertex (car v) (cadr v) 0))
 
