@@ -51,7 +51,7 @@ AC_ARG_WITH([llvm],
 	if test "x$want_llvm" = "xyes"; then
 		if test -e "$ac_llvm_config_path"; then
 			LLVM_CFLAGS=`$ac_llvm_config_path --cflags`
-			LLVM_LDFLAGS=`ac_llvm_config_path --ldflags`
+			LLVM_LDFLAGS=`$ac_llvm_config_path --ldflags`
 			LLVM_LIBS="$($ac_llvm_config_path --libs $1)"
 
 			AC_REQUIRE([AC_PROG_CC])
