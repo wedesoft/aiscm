@@ -28,11 +28,11 @@
 (test-assert "LLVM context slot defined"
   (slot-ref llvm 'llvm-context))
 (test-equal "Create LLVM function"
-  <function> (class-of (make-function llvm)))
+  <function> (class-of (make-function llvm "test1")))
 (test-equal "Keep LLVM instance alive"
-  llvm (slot-ref (make-function llvm) 'context))
+  llvm (slot-ref (make-function llvm "test2") 'context))
 (test-assert "Compile and run empty function"
-  (unspecified? (let [(fun  (make-function llvm))]
+  (unspecified? (let [(fun  (make-function llvm "test3"))]
     (function-ret fun)
     (function-compile fun)
     (function-apply fun))))
