@@ -35,7 +35,7 @@ AC_CHECK_FUNCS([strcmp])
 
 AX_LLVM([orcjit])
 
-AX_PTHREAD([AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Could not find pthread library])])
+AX_PTHREAD([],[AC_MSG_ERROR([Could not find pthread library])])
 AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
 
