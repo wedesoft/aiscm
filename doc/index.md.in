@@ -68,9 +68,9 @@ Control all data and machine code down to every single bit and byte.
 * [Guile SDL2](https://dthompson.us/projects/guile-sdl2.html)
 * [Guile OpenGL](https://github.com/guildhall/guile-opengl)
 * [Softbody Physics Tutorial](http://cg.skeelogy.com/?download=SoftBodyPhysicsTutorial)
-* [Advanced Character Physics](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.206.4908&rep=rep1&type=pdf)
-* [Game physics for beginners](http://brm.io/game-physics-for-beginners/)
+* [Advanced Character Physics](http://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf)
 * [Soft-Body Physics Implementation](https://github.com/mikemarek/soft-body-physics)
+* [Using Verlet Integration and Constraints in a Six Degrees of Freedom Rigid Body Simulation](http://twvideo01.ubm-us.net/o1/vault/gdc04/slides/using_verlet_integration.pdf)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 
