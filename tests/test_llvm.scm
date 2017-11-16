@@ -26,7 +26,7 @@
 (test-equal "Create LLVM instance"
   <llvm> (class-of llvm))
 (test-assert "LLVM context slot defined"
-  (slot-ref llvm 'llvmcontext))
+  (slot-ref llvm 'llvm-context))
 (test-equal "Create LLVM function"
   <function> (class-of (make-function llvm)))
 (test-assert "Compile and run empty function"

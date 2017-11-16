@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
-            <function>
+            <function> <meta<function>>
             make-llvm
             make-function
             function-ret
@@ -29,16 +29,20 @@
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
 (define-class* <llvm> <object> <meta<llvm>> <class>
-               (llvmcontext #:init-keyword #:llvmcontext))
+               (llvm-context #:init-keyword #:llvm-context))
 
 (define-method (initialize (self <llvm>) initargs)
-  (next-method self (list #:llvmcontext  (make-llvmcontext))))
+  (next-method self (list #:llvm-context  (make-llvm-context))))
 (define (make-llvm) (make <llvm>))
-(define-method (destroy (self <llvm>)) (llvmcontext-destroy (slot-ref self 'llvmcontext)))
+(define-method (destroy (self <llvm>)) (llvm-context-destroy (slot-ref self 'llvm-context)))
 
-(define-class <function> ())
+(define-class* <function> <object> <meta<function>> <class>
+               (llvm-function #:init-keyword #:llvm-function))
 
+(define-method (initialize (self <function>) initargs)
+  (next-method self (list #:llvm-function  (make-llvm-function))))
 (define (make-function llvm) (make <function>))
+(define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
 (define (function-ret fun) #f)
 (define (function-compile fun) #f)
