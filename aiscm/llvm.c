@@ -31,6 +31,7 @@ struct llvm_t {
 };
 
 struct llvm_function_t {
+  LLVMBuilderRef builder;
 };
 
 static struct llvm_t *get_llvm_no_check(SCM scm_self)
@@ -86,16 +87,20 @@ SCM llvm_context_destroy(SCM scm_self)
 SCM make_llvm_function(void)
 {
   SCM retval;
-  struct llvm_t *self;
-  self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
-  SCM_NEWSMOB(retval, llvm_tag, self);
-  self->module = LLVMModuleCreateWithName("aiscm");
+  struct llvm_function_t *self;
+  self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvm");
+  SCM_NEWSMOB(retval, llvm_function_tag, self);
+  self->builder = LLVMCreateBuilder();
   return retval;
 }
 
 SCM llvm_function_destroy(SCM scm_self)
 {
   struct llvm_function_t *self = get_llvm_function_no_check(scm_self);
+  if (self->builder) {
+    LLVMDisposeBuilder(self->builder);
+    self->builder = NULL;
+  };
   return SCM_UNSPECIFIED;
 }
 
