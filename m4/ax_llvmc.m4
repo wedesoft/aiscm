@@ -4,7 +4,7 @@
 #
 # SYNOPSIS
 #
-#   AX_LLVM([llvm-libs])
+#   AX_LLVMC([llvm-libs])
 #
 # DESCRIPTION
 #
@@ -26,7 +26,7 @@
 
 #serial 12
 
-AC_DEFUN([AX_LLVM],
+AC_DEFUN([AX_LLVMC],
 [
 AC_ARG_WITH([llvm],
 	AS_HELP_STRING([--with-llvm@<:@=DIR@:>@], [use llvm (default is yes) - it is possible to specify the root directory for llvm (optional)]),
@@ -67,7 +67,7 @@ AC_ARG_WITH([llvm],
 			LIBS="$LIBS $LLVM_LIBS"
 			export LIBS
 
-			AC_CACHE_CHECK(can compile with and link with llvm([$1]),
+			AC_CACHE_CHECK(can compile with and link with llvm-c 3.9 ([$1]),
 						   ax_cv_llvm,
 		[AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <llvm-c/ExecutionEngine.h>
 													]],
