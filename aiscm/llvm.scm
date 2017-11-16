@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm llvm)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
             <function> <meta<function>>
@@ -37,11 +38,13 @@
 (define-method (destroy (self <llvm>)) (llvm-context-destroy (slot-ref self 'llvm-context)))
 
 (define-class* <function> <object> <meta<function>> <class>
+               (context       #:init-keyword #:context      )
                (llvm-function #:init-keyword #:llvm-function))
 
 (define-method (initialize (self <function>) initargs)
-  (next-method self (list #:llvm-function  (make-llvm-function))))
-(define (make-function llvm) (make <function>))
+  (let-keywords initargs #f (context)
+    (next-method self (list #:llvm-function (make-llvm-function) #:context context))))
+(define (make-function llvm) (make <function> #:context llvm))
 (define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
 (define (function-ret fun) #f)

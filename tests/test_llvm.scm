@@ -29,6 +29,8 @@
   (slot-ref llvm 'llvm-context))
 (test-equal "Create LLVM function"
   <function> (class-of (make-function llvm)))
+(test-equal "Keep LLVM instance alive"
+  llvm (slot-ref (make-function llvm) 'context))
 (test-assert "Compile and run empty function"
   (unspecified? (let [(fun  (make-function llvm))]
     (function-ret fun)
