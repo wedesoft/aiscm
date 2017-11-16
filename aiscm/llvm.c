@@ -32,11 +32,18 @@ struct llvm_t {
 
 struct llvm_function_t {
   LLVMBuilderRef builder;
+  LLVMValueRef function;
 };
 
 static struct llvm_t *get_llvm_no_check(SCM scm_self)
 {
   return (struct llvm_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct llvm_t *get_llvm(SCM scm_self)
+{
+  scm_assert_smob_type(llvm_tag, scm_self);
+  return get_llvm_no_check(scm_self);
 }
 
 static struct llvm_function_t *get_llvm_function_no_check(SCM scm_self)
@@ -84,13 +91,18 @@ SCM llvm_context_destroy(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM make_llvm_function(SCM scm_name)
+SCM make_llvm_function(SCM scm_llvm, SCM scm_name)
 {
   SCM retval;
+  struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *self;
   self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvm");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
   self->builder = LLVMCreateBuilder();
+  self->function = LLVMAddFunction(llvm->module, scm_to_locale_string(scm_name), LLVMFunctionType(LLVMVoidType(), NULL, 0, 0));
+  LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
+  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(self->function, "entry");
+  LLVMPositionBuilderAtEnd(self->builder, entry);
   return retval;
 }
 
@@ -119,6 +131,6 @@ void init_llvm(void)
 
   scm_c_define_gsubr("make-llvm-context"    , 0, 0, 0, SCM_FUNC(make_llvm_context    ));
   scm_c_define_gsubr("llvm-context-destroy" , 1, 0, 0, SCM_FUNC(llvm_context_destroy ));
-  scm_c_define_gsubr("make-llvm-function"   , 1, 0, 0, SCM_FUNC(make_llvm_function   ));
+  scm_c_define_gsubr("make-llvm-function"   , 2, 0, 0, SCM_FUNC(make_llvm_function   ));
   scm_c_define_gsubr("llvm-function-destroy", 1, 0, 0, SCM_FUNC(llvm_function_destroy));
 }

@@ -43,7 +43,8 @@
 
 (define-method (initialize (self <function>) initargs)
   (let-keywords initargs #f (context name)
-    (next-method self (list #:llvm-function (make-llvm-function name) #:context context))))
+    (next-method self (list #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) name)
+                            #:context context ))))
 (define (make-function llvm name) (make <function> #:context llvm #:name name))
 (define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
