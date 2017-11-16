@@ -51,7 +51,8 @@ AC_ARG_WITH([llvm],
 	if test "x$want_llvm" = "xyes"; then
 		if test -e "$ac_llvm_config_path"; then
 			LLVM_CFLAGS=`$ac_llvm_config_path --cflags`
-			LLVM_LDFLAGS="$($ac_llvm_config_path --ldflags) $($ac_llvm_config_path --libs $1)"
+			LLVM_LDFLAGS=`ac_llvm_config_path --ldflags`
+			LLVM_LIBS="$($ac_llvm_config_path --libs $1)"
 
 			AC_REQUIRE([AC_PROG_CC])
 			CFLAGS_SAVED="$CFLAGS"
@@ -62,9 +63,13 @@ AC_ARG_WITH([llvm],
 			LDFLAGS="$LDFLAGS $LLVM_LDFLAGS"
 			export LDFLAGS
 
+			LIBS_SAVED="$LIBS"
+			LIBS="$LIBS $LLVM_LIBS"
+			export LIBS
+
 			AC_CACHE_CHECK(can compile with and link with llvm([$1]),
 						   ax_cv_llvm,
-		[AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <llvm-c/Core.h>
+		[AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <llvm-c/ExecutionEngine.h>
 													]],
 					   [[LLVMLinkInMCJIT(); return 0;]])],
 			   ax_cv_llvm=yes, ax_cv_llvm=no)
@@ -75,7 +80,8 @@ AC_ARG_WITH([llvm],
 			fi
 
 			CFLAGS="$CFLAGS_SAVED"
-		LDFLAGS="$LDFLAGS_SAVED"
+      LDFLAGS="$LDFLAGS_SAVED"
+      LIBS="$LIBS_SAVED"
 		else
 			succeeded=no
 		fi
@@ -86,6 +92,7 @@ AC_ARG_WITH([llvm],
 		else
 			AC_SUBST(LLVM_CFLAGS)
 			AC_SUBST(LLVM_LDFLAGS)
+			AC_SUBST(LLVM_LIBS)
 			AC_DEFINE(HAVE_LLVM,,[define if the llvm library is available])
 		fi
 ])

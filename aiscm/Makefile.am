@@ -80,7 +80,7 @@ libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS) $(SWRESAMPLE_LIBS) $(AVRESAMPLE
 libguile_aiscm_llvm_la_SOURCES = llvm.c
 libguile_aiscm_llvm_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
 libguile_aiscm_llvm_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
-libguile_aiscm_llvm_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_llvm_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))
