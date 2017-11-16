@@ -51,6 +51,12 @@ static struct llvm_function_t *get_llvm_function_no_check(SCM scm_self)
   return (struct llvm_function_t *)SCM_SMOB_DATA(scm_self);
 }
 
+static struct llvm_function_t *get_llvm_function(SCM scm_self)
+{
+  scm_assert_smob_type(llvm_function_tag, scm_self);
+  return get_llvm_function_no_check(scm_self);
+}
+
 SCM llvm_context_destroy(SCM scm_self);
 
 size_t free_llvm(SCM scm_self)
@@ -116,6 +122,13 @@ SCM llvm_function_destroy(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_function_ret(SCM scm_self)
+{
+  struct llvm_function_t *self = get_llvm_function(scm_self);
+  LLVMBuildRetVoid(self->builder);
+  return SCM_UNSPECIFIED;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -133,4 +146,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-context-destroy" , 1, 0, 0, SCM_FUNC(llvm_context_destroy ));
   scm_c_define_gsubr("make-llvm-function"   , 2, 0, 0, SCM_FUNC(make_llvm_function   ));
   scm_c_define_gsubr("llvm-function-destroy", 1, 0, 0, SCM_FUNC(llvm_function_destroy));
+  scm_c_define_gsubr("llvm-function-ret"    , 1, 0, 0, SCM_FUNC(llvm_function_ret    ));
 }
