@@ -145,6 +145,14 @@ SCM llvm_function_ret(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_context_apply(SCM scm_llvm, SCM scm_function)
+{
+  struct llvm_t *llvm = get_llvm(scm_llvm);
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  LLVMRunFunction(llvm->engine, function->function, 0, NULL);
+  return SCM_UNSPECIFIED;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -163,4 +171,5 @@ void init_llvm(void)
   scm_c_define_gsubr("make-llvm-function"   , 2, 0, 0, SCM_FUNC(make_llvm_function   ));
   scm_c_define_gsubr("llvm-function-destroy", 1, 0, 0, SCM_FUNC(llvm_function_destroy));
   scm_c_define_gsubr("llvm-function-ret"    , 1, 0, 0, SCM_FUNC(llvm_function_ret    ));
+  scm_c_define_gsubr("llvm-context-apply"   , 2, 0, 0, SCM_FUNC(llvm_context_apply   ));
 }

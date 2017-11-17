@@ -23,7 +23,7 @@
             make-llvm
             make-function
             function-ret
-            function-apply)
+            llvm-apply)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -48,4 +48,5 @@
 (define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
 (define (function-ret self) (llvm-function-ret (slot-ref self 'llvm-function)))
-(define (function-apply fun) (if #f #f))
+
+(define (llvm-apply llvm fun) (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))
