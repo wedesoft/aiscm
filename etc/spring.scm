@@ -24,9 +24,9 @@
   (set! cy (+ cy (* vy dt))))
 
 (define (verlet)
-  (define d/m*dt (* d/m dt))
+  (define f (* d/m dt))
   (define ay (* k/m (- l (- cy oy))))
-  (define update (+ (- (* (- 2 d/m*dt) cy) (* (- 1 d/m*dt) cy_)) (* ay dt dt)))
+  (define update (+ (- (* (- 2 f) cy) (* (- 1 f) cy_)) (* ay dt dt)))
   (set! cy_ cy)
   (set! cy update))
 
