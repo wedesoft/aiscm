@@ -1,6 +1,6 @@
 #!/usr/bin/env guile
 !#
-; https://www.gamedev.net/articles/programming/math-and-physics/towards-a-simpler-stiffer-and-more-stable-spring-r3227/
+; https://www.saylor.org/site/wp-content/uploads/2011/06/MA221-6.1.pdf
 (use-modules (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26))
 
 (define ox 320)
@@ -12,7 +12,8 @@
 (define k/m 200)
 (define d/m 2)
 
-(define dt 0.16)
+;(define dt 0.08)
+(define dt 0.08)
 
 (define main-window #f)
 
@@ -21,8 +22,15 @@
   (set! vy (+ vy (* ay dt)))
   (set! cy (+ cy (* vy dt))))
 
+(define (verlet)
+  (define ay (- (* k/m (- l (- cy oy))) (* d/m vy)))
+  (set! cy (+ cy (* vy dt) (* 0.5 ay (* dt dt))))
+  (let [(ay_ (- (* k/m (- l (- cy oy))) (* d/m vy)))]
+    (set! vy (+ vy (* 0.5 (+ ay ay_) dt)))))
+
 (define (on-idle)
-  (euler)
+  (verlet)
+  ;(euler)
   (post-redisplay))
 
 (define (on-display)
