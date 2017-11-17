@@ -12,14 +12,17 @@
 (define k/m 200)
 (define d/m 2)
 
-(define dt 0.01)
+(define dt 0.16)
 
 (define main-window #f)
 
-(define (on-idle)
+(define (euler)
   (define ay (- (* k/m (- l (- cy oy))) (* d/m vy)))
   (set! vy (+ vy (* ay dt)))
-  (set! cy (+ cy (* vy dt)))
+  (set! cy (+ cy (* vy dt))))
+
+(define (on-idle)
+  (euler)
   (post-redisplay))
 
 (define (on-display)
