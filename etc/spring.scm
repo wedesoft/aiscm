@@ -7,13 +7,14 @@
 (define oy 20)
 (define cx 320)
 (define cy 100)
+(define cy_ cy)
 (define vy 0)
 (define l 250)
 (define k/m 200)
 (define d/m 2)
 
 ;(define dt 0.08)
-(define dt 0.08)
+(define dt 0.02)
 
 (define main-window #f)
 
@@ -23,14 +24,22 @@
   (set! cy (+ cy (* vy dt))))
 
 (define (verlet)
+  (define ay (* k/m (- l (- cy oy))))
+  (define update (+ (- (* 2 cy) cy_) (* ay dt dt)))
+  (set! cy_ cy)
+  (set! cy update))
+
+(define (velocity-verlet)
   (define ay (- (* k/m (- l (- cy oy))) (* d/m vy)))
-  (set! cy (+ cy (* vy dt) (* 0.5 ay (* dt dt))))
-  (let [(ay_ (- (* k/m (- l (- cy oy))) (* d/m vy)))]
-    (set! vy (+ vy (* 0.5 (+ ay ay_) dt)))))
+  (define vy2 (+ vy (* 0.5 ay dt)))
+  (set! cy (+ cy (* vy2 dt)))
+  (let [(ay2 (- (* k/m (- l (- cy oy))) (* d/m vy2)))]
+    (set! vy (+ vy2 (* 0.5 ay2 dt)))))
 
 (define (on-idle)
-  (verlet)
   ;(euler)
+  (verlet)
+  ;(velocity-verlet)
   (post-redisplay))
 
 (define (on-display)
