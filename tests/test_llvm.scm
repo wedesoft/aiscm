@@ -34,7 +34,6 @@
 (test-assert "Compile and run empty function"
   (unspecified? (let [(fun  (make-function llvm "test3"))]
     (function-ret fun)
-    (function-compile fun)
     (function-apply fun))))
 
 (destroy llvm)

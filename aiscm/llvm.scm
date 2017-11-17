@@ -23,7 +23,6 @@
             make-llvm
             make-function
             function-ret
-            function-compile
             function-apply)
   #:re-export (destroy))
 
@@ -49,5 +48,4 @@
 (define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
 (define (function-ret self) (llvm-function-ret (slot-ref self 'llvm-function)))
-(define (function-compile fun) #f)
 (define (function-apply fun) (if #f #f))

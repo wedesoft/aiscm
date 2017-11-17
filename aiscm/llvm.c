@@ -28,6 +28,7 @@ static scm_t_bits llvm_function_tag;
 
 struct llvm_t {
   LLVMModuleRef module;
+  LLVMExecutionEngineRef engine;
 };
 
 struct llvm_function_t {
@@ -84,12 +85,27 @@ SCM make_llvm_context(void)
   self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
   SCM_NEWSMOB(retval, llvm_tag, self);
   self->module = LLVMModuleCreateWithName("aiscm");
+  char *error = NULL;
+  if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
+    SCM scm_error = scm_from_locale_string(error);
+    LLVMDisposeMessage(error);
+    scm_misc_error("make-llvm", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
+  };
   return retval;
 }
 
 SCM llvm_context_destroy(SCM scm_self)
 {
   struct llvm_t *self = get_llvm_no_check(scm_self);
+  if (self->engine) {
+    if (self->module) {
+      char *error = NULL;
+      LLVMRemoveModule(self->engine, self->module, &self->module, &error);
+      if (error) LLVMDisposeMessage(error);
+    };
+    LLVMDisposeExecutionEngine(self->engine);
+    self->engine = NULL;
+  };
   if (self->module) {
     LLVMDisposeModule(self->module);
     self->module = NULL;
