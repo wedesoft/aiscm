@@ -38,9 +38,7 @@
     (set! vy (+ vy2 (* 0.5 ay2 dt)))))
 
 (define (on-idle)
-  ;(euler)
   (verlet)
-  ;(velocity-verlet)
   (post-redisplay))
 
 (define (on-display)
