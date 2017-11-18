@@ -69,10 +69,12 @@
     (set! position position+)
     (set! angle_ angle)
     (set! angle angle+)
-    (if (>= (apply max(map (compose cadr (cut dot (matrix position angle) <>)) body)) ground)
-      (begin
-        (set! position_ position)
-        (set! angle_ angle)))
+    (let* [(outer     (map (cut dot (matrix position angle) <>) body))
+           (collision (find (lambda (p) (>= (cadr p) ground)) outer))]
+      (if collision
+        (begin
+          (set! position_ position)
+          (set! angle_ angle))))
     (post-redisplay)))
 
 (define (gl-vertex-2d v) (gl-vertex (car v) (cadr v) 0))
