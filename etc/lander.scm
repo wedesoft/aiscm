@@ -1,9 +1,10 @@
 #!/usr/bin/env guile
 !#
-; http://twvideo01.ubm-us.net/o1/vault/gdc04/slides/using_verlet_integration.pdf
+; http://www.cs.unc.edu/~lin/COMP768-F07/
 (use-modules (oop goops) (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26))
 
-(define dt 0.08)
+(define dt 0.04)
+(define scale (/ 1 dt))
 (define pi 3.141592653589793)
 (define g '(0 0.1 0))
 (define engine '(0 -0.3 0))
@@ -16,16 +17,20 @@
 (define-method (* (a <real>) (b <list>)) (map (cut * a <>) b))
 (define-method (* (a <list>) (b <real>)) (map (cut * <> b) a))
 
+(define corners '((-4 -2 1) (4 -2 1) (-4 2 1) (4 2 1)))
 (define body '((-4 -2 1) ( 4 -2 1)
-               (-5 -2 1) (-4  2 1)
-               ( 4 -3 1) ( 4  2 1)
+               (-4 -2 1) (-4  2 1)
+               ( 4 -2 1) ( 4  2 1)
                (-4  2 1) ( 4  2 1)))
 
 (define position '(32 24 1))
 (define position_ '(32 24 1))
-(define angle 0)
-(define angle_ 0)
-(define ground 47.0)
+(define angle -0.3)
+(define angle_ -0.29)
+(define ground 40.0)
+
+(define (spin p dangle)
+  (* dangle (list (- (cadr p)) (car p) 0)))
 
 (define (matrix position angle)
   (let [(x (car position))
@@ -64,6 +69,10 @@
     (set! position position+)
     (set! angle_ angle)
     (set! angle angle+)
+    (if (>= (apply max(map (compose cadr (cut dot (matrix position angle) <>)) body)) ground)
+      (begin
+        (set! position_ position)
+        (set! angle_ angle)))
     (post-redisplay)))
 
 (define (gl-vertex-2d v) (gl-vertex (car v) (cadr v) 0))
@@ -73,7 +82,13 @@
   (gl-begin (begin-mode lines)
     (gl-color 0 1 0)
     (for-each gl-vertex-2d (map (cut dot (matrix position angle) <>) body))
-    (gl-vertex-2d (list 0 ground)) (gl-vertex-2d (list 640 ground)))
+    (gl-vertex-2d (list 0 ground)) (gl-vertex-2d (list 640 ground))
+    (gl-color 0 0 1)
+    (gl-vertex-2d position) (gl-vertex-2d (- (* (1+ scale) position) (* scale position_)))
+    (for-each (lambda (p)
+      (gl-vertex-2d p)
+      (gl-vertex-2d (+ p (* scale (+ (- position position_) (spin (- p position) (- angle angle_)))))))
+      (map (cut dot (matrix position angle) <>) corners)))
   (swap-buffers))
 
 (initialize-glut (program-arguments) #:window-size '(640 . 480) #:display-mode (display-mode rgb double))
