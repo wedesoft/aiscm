@@ -16,6 +16,8 @@
 (define m 1)
 (define t (* (/ 1 12) (+ (* 4 4) (* 2 2))))
 
+(define loss 0.3)
+
 (define-method (+ (a <list>) (b <list>)) (map + a b))
 (define-method (- (a <list>) (b <list>)) (map - a b))
 (define-method (* (a <real>) (b <list>)) (map (cut * a <>) b))
@@ -78,16 +80,18 @@
     (set! angle angle+)
     (let* [(outer     (map (cut dot (matrix position angle) <>) body))
            (collision (find (lambda (p) (>= (cadr p) ground)) outer))]
-      (if (and collision (>= (cadr position) (cadr position_)))
+      (if collision
         (let* [(r    (- collision position))
                (vrel (cadr (+ (- position position_) (spin (- collision position) (- angle angle_)))))
-               (j    (/ (* -2 vrel) (+ (/ 1 m) (* (car r) (car r) (/ 1 t)))))
+               (j    (/ (* (- loss 2) vrel) (+ (/ 1 m) (* (car r) (car r) (/ 1 t)))))
                (dv   (/ j m))
                (dw   (* (car r) (/ j t)))]
-          (format #t "vrel: ~a, dangle: ~a, j: ~a, dv: ~a, dw: ~a~&" vrel (- angle angle_) j dv dw)
-          (set! position_ (list (car position_) (- (cadr position_) dv)))
-          (set! angle_ (- angle_ dw))
-         (format #t "vrel': ~a~&" (cadr (+ (- position position_) (spin (- collision position) (- angle angle_))))))))
+          (if (>= vrel 0)
+            (begin
+              (format #t "vrel: ~a, dangle: ~a, j: ~a, dv: ~a, dw: ~a~&" vrel (- angle angle_) j dv dw)
+              (set! position_ (list (car position_) (- (cadr position_) dv)))
+              (set! angle_ (- angle_ dw))
+              (format #t "vrel': ~a~&" (cadr (+ (- position position_) (spin (- collision position) (- angle angle_))))))))))
     (post-redisplay)))
 
 (define (gl-vertex-2d v) (gl-vertex (car v) (cadr v) 0))
