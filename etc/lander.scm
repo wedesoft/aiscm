@@ -1,7 +1,9 @@
 #!/usr/bin/env guile
 !#
 ; http://www.cs.unc.edu/~lin/COMP768-F07/
-(use-modules (oop goops) (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26))
+; http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf
+; http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd2.pdf
+(use-modules (oop goops) (glut) (gl) (gl low-level) (glu) (srfi srfi-1) (srfi srfi-26) (ice-9 format))
 
 (define dt 0.04)
 (define scale (/ 1 dt))
@@ -11,6 +13,8 @@
 (define nozzle -0.05)
 (define thrust 0)
 (define rcs 0)
+(define m 1)
+(define t (* (/ 1 12) (+ (* 4 4) (* 2 2))))
 
 (define-method (+ (a <list>) (b <list>)) (map + a b))
 (define-method (- (a <list>) (b <list>)) (map - a b))
@@ -28,6 +32,9 @@
 (define angle -0.3)
 (define angle_ -0.29)
 (define ground 40.0)
+
+(define (cross r n)
+  (- (* (car r) (cadr n)) (* (cadr r) (car n))))
 
 (define (spin p dangle)
   (* dangle (list (- (cadr p)) (car p) 0)))
@@ -71,10 +78,16 @@
     (set! angle angle+)
     (let* [(outer     (map (cut dot (matrix position angle) <>) body))
            (collision (find (lambda (p) (>= (cadr p) ground)) outer))]
-      (if collision
-        (begin
-          (set! position_ position)
-          (set! angle_ angle))))
+      (if (and collision (>= (cadr position) (cadr position_)))
+        (let* [(r    (- collision position))
+               (vrel (cadr (+ (- position position_) (spin (- collision position) (- angle angle_)))))
+               (j    (/ (* -2 vrel) (+ (/ 1 m) (* (car r) (car r) (/ 1 t)))))
+               (dv   (/ j m))
+               (dw   (* (car r) (/ j t)))]
+          (format #t "vrel: ~a, dangle: ~a, j: ~a, dv: ~a, dw: ~a~&" vrel (- angle angle_) j dv dw)
+          (set! position_ (list (car position_) (- (cadr position_) dv)))
+          (set! angle_ (- angle_ dw))
+         (format #t "vrel': ~a~&" (cadr (+ (- position position_) (spin (- collision position) (- angle angle_))))))))
     (post-redisplay)))
 
 (define (gl-vertex-2d v) (gl-vertex (car v) (cadr v) 0))
