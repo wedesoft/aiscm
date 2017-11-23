@@ -1,6 +1,7 @@
 ## Ready
 
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
+* xorg\_scale\_video has frame offset
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * "let" for tensors
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
