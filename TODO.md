@@ -1,5 +1,7 @@
 ## Ready
 
+* test different type of constants (unsigned/signed integer, float)
+* test different types of return values
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * OpenGL vertex array object
 * "let" for tensors

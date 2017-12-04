@@ -27,6 +27,8 @@ static scm_t_bits llvm_tag;
 
 static scm_t_bits llvm_function_tag;
 
+static scm_t_bits llvm_value_tag;
+
 struct llvm_t {
   LLVMModuleRef module;
   LLVMExecutionEngineRef engine;
@@ -35,6 +37,10 @@ struct llvm_t {
 struct llvm_function_t {
   LLVMBuilderRef builder;
   LLVMValueRef function;
+};
+
+struct llvm_value_t {
+  LLVMValueRef value;
 };
 
 static struct llvm_t *get_llvm_no_check(SCM scm_self)
@@ -57,6 +63,17 @@ static struct llvm_function_t *get_llvm_function(SCM scm_self)
 {
   scm_assert_smob_type(llvm_function_tag, scm_self);
   return get_llvm_function_no_check(scm_self);
+}
+
+static struct llvm_value_t *get_llvm_value_no_check(SCM scm_self)
+{
+  return (struct llvm_value_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct llvm_value_t *get_llvm_value(SCM scm_self)
+{
+  scm_assert_smob_type(llvm_value_tag, scm_self);
+  return get_llvm_value_no_check(scm_self);
 }
 
 SCM llvm_context_destroy(SCM scm_self);
@@ -114,15 +131,25 @@ SCM llvm_context_destroy(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM make_llvm_function(SCM scm_llvm, SCM scm_name)
+static LLVMTypeRef llvm_type(SCM scm_type)
+{
+  switch (scm_to_int(scm_type)) {
+    case 8:
+      return LLVMInt32Type();
+    default:
+      return LLVMVoidType();
+  };
+}
+
+SCM make_llvm_function(SCM scm_llvm, SCM scm_type, SCM scm_name)
 {
   SCM retval;
   struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *self;
-  self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvm");
+  self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvmfunction");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
   self->builder = LLVMCreateBuilder();
-  self->function = LLVMAddFunction(llvm->module, scm_to_locale_string(scm_name), LLVMFunctionType(LLVMVoidType(), NULL, 0, 0));
+  self->function = LLVMAddFunction(llvm->module, scm_to_locale_string(scm_name), LLVMFunctionType(llvm_type(scm_type), NULL, 0, 0));
   LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(self->function, "entry");
   LLVMPositionBuilderAtEnd(self->builder, entry);
@@ -139,19 +166,40 @@ SCM llvm_function_destroy(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_function_ret(SCM scm_self)
+SCM llvm_function_return(SCM scm_self, SCM scm_value)
+{
+  struct llvm_function_t *self = get_llvm_function(scm_self);
+  struct llvm_value_t *value = get_llvm_value(scm_value);
+  LLVMBuildRet(self->builder, value->value);
+  return SCM_UNSPECIFIED;
+}
+
+SCM llvm_function_return_void(SCM scm_self)
 {
   struct llvm_function_t *self = get_llvm_function(scm_self);
   LLVMBuildRetVoid(self->builder);
   return SCM_UNSPECIFIED;
 }
 
+static SCM scm_from_llvm_value(LLVMTypeRef type, LLVMGenericValueRef value)
+{
+  switch (LLVMGetTypeKind(type)) {
+    case LLVMIntegerTypeKind:
+      return scm_from_int(LLVMGenericValueToInt(value, 0));
+    default:
+      return SCM_UNSPECIFIED;
+  };
+}
+
 SCM llvm_context_apply(SCM scm_llvm, SCM scm_function)
 {
   struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *function = get_llvm_function(scm_function);
-  LLVMRunFunction(llvm->engine, function->function, 0, NULL);
-  return SCM_UNSPECIFIED;
+  LLVMGenericValueRef result = LLVMRunFunction(llvm->engine, function->function, 0, NULL);
+  LLVMTypeRef return_type = LLVMGetReturnType(LLVMGetElementType(LLVMTypeOf(function->function)));
+  SCM retval = scm_from_llvm_value(return_type, result);
+  LLVMDisposeGenericValue(result);
+  return retval;
 }
 
 SCM llvm_verify_module(SCM scm_llvm)
@@ -164,6 +212,16 @@ SCM llvm_verify_module(SCM scm_llvm)
     scm_misc_error("verify-module", "Module is not valid: ~a", scm_list_1(scm_error));
   };
   return SCM_UNSPECIFIED;
+}
+
+SCM make_llvm_constant(SCM scm_type, SCM scm_value)
+{
+  SCM retval;
+  struct llvm_value_t *self;
+  self = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, self);
+  self->value = LLVMConstInt(llvm_type(scm_type), scm_to_int(scm_value), 0);
+  return retval;
 }
 
 void init_llvm(void)
@@ -179,11 +237,15 @@ void init_llvm(void)
   llvm_function_tag = scm_make_smob_type("llvmfunction", sizeof(struct llvm_function_t));
   scm_set_smob_free(llvm_function_tag, free_llvm_function);
 
-  scm_c_define_gsubr("make-llvm-context"    , 0, 0, 0, SCM_FUNC(make_llvm_context    ));
-  scm_c_define_gsubr("llvm-context-destroy" , 1, 0, 0, SCM_FUNC(llvm_context_destroy ));
-  scm_c_define_gsubr("make-llvm-function"   , 2, 0, 0, SCM_FUNC(make_llvm_function   ));
-  scm_c_define_gsubr("llvm-function-destroy", 1, 0, 0, SCM_FUNC(llvm_function_destroy));
-  scm_c_define_gsubr("llvm-function-ret"    , 1, 0, 0, SCM_FUNC(llvm_function_ret    ));
-  scm_c_define_gsubr("llvm-context-apply"   , 2, 0, 0, SCM_FUNC(llvm_context_apply   ));
-  scm_c_define_gsubr("llvm-verify-module"   , 1, 0, 0, SCM_FUNC(llvm_verify_module   ));
+  llvm_value_tag = scm_make_smob_type("llvmvalue", sizeof(struct llvm_value_t));
+
+  scm_c_define_gsubr("make-llvm-context"        , 0, 0, 0, SCM_FUNC(make_llvm_context        ));
+  scm_c_define_gsubr("llvm-context-destroy"     , 1, 0, 0, SCM_FUNC(llvm_context_destroy     ));
+  scm_c_define_gsubr("make-llvm-function"       , 3, 0, 0, SCM_FUNC(make_llvm_function       ));
+  scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
+  scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
+  scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
+  scm_c_define_gsubr("llvm-context-apply"       , 2, 0, 0, SCM_FUNC(llvm_context_apply       ));
+  scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
+  scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
 }

@@ -25,7 +25,7 @@
             make-function
             function-ret
             llvm-apply
-            make-llvm-constant)
+            make-constant)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -43,19 +43,27 @@
                (llvm-function #:init-keyword #:llvm-function))
 
 (define-method (initialize (self <llvm-function>) initargs)
-  (let-keywords initargs #f (context name)
-    (next-method self (list #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) name)
+  (let-keywords initargs #f (context type name)
+    (next-method self (list #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) type name)
                             #:context context ))))
-(define (make-function llvm name) (make <llvm-function> #:context llvm #:name name))
+(define (make-function llvm type name) (make <llvm-function> #:context llvm #:type type #:name name))
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
-(define (function-ret self) (llvm-function-ret (slot-ref self 'llvm-function)))
+(define* (function-ret self #:optional (result #f))
+  (let [(llvm-function (slot-ref self 'llvm-function))]
+    (if result
+      (llvm-function-return llvm-function (slot-ref result 'llvm-value))
+      (llvm-function-return-void llvm-function))))
 
 (define (llvm-apply llvm fun)
   (llvm-verify-module (slot-ref llvm 'llvm-context))
   (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
-)
-(define (make-llvm-constant value)
-  (make <llvm-value>))
+               (llvm-value #:init-keyword #:llvm-value))
+
+(define-method (initialize (self <llvm-value>) initargs)
+  (let-keywords initargs #f (type value)
+    (next-method self (list #:llvm-value (make-llvm-constant type value)))))
+(define (make-constant type value)
+  (make <llvm-value> #:type type #:value value))
