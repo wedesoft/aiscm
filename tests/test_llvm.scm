@@ -38,5 +38,10 @@
            (fun  (make-function llvm "test3"))]
       (function-ret fun)
       (llvm-apply llvm fun))))
+(test-error "Throw error if verification of module failed"
+  'misc-error
+  (let* [(llvm (make-llvm))
+         (fun  (make-function llvm "test4"))]
+    (llvm-apply llvm fun)))
 
 (test-end "aiscm llvm")

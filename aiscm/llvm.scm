@@ -49,4 +49,6 @@
 
 (define (function-ret self) (llvm-function-ret (slot-ref self 'llvm-function)))
 
-(define (llvm-apply llvm fun) (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))
+(define (llvm-apply llvm fun)
+  (llvm-verify-module (slot-ref llvm 'llvm-context))
+  (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))

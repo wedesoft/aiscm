@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <libguile.h>
+#include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
@@ -153,6 +154,18 @@ SCM llvm_context_apply(SCM scm_llvm, SCM scm_function)
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_verify_module(SCM scm_llvm)
+{
+  struct llvm_t *llvm = get_llvm(scm_llvm);
+  char *error = NULL;
+  if (LLVMVerifyModule(llvm->module, LLVMPrintMessageAction, &error)) {
+    SCM scm_error = scm_from_locale_string(error);
+    LLVMDisposeMessage(error);
+    scm_misc_error("verify-module", "Module is not valid: ~a", scm_list_1(scm_error));
+  };
+  return SCM_UNSPECIFIED;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -172,4 +185,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-function-destroy", 1, 0, 0, SCM_FUNC(llvm_function_destroy));
   scm_c_define_gsubr("llvm-function-ret"    , 1, 0, 0, SCM_FUNC(llvm_function_ret    ));
   scm_c_define_gsubr("llvm-context-apply"   , 2, 0, 0, SCM_FUNC(llvm_context_apply   ));
+  scm_c_define_gsubr("llvm-verify-module"   , 1, 0, 0, SCM_FUNC(llvm_verify_module   ));
 }

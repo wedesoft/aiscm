@@ -1,10 +1,10 @@
 ## Ready
 
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
+* OpenGL vertex array object
 * "let" for tensors
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
 * use bytevectors instead of memory objects?
-* check against NumPy, Theano, Tensorflow for completeness
 * assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
