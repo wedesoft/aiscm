@@ -19,11 +19,13 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
-            <function> <meta<function>>
+            <llvm-function> <meta<llvm-function>>
+            <llvm-value> <meta<llvm-value>>
             make-llvm
             make-function
             function-ret
-            llvm-apply)
+            llvm-apply
+            make-llvm-constant)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -36,19 +38,24 @@
 (define (make-llvm) (make <llvm>))
 (define-method (destroy (self <llvm>)) (llvm-context-destroy (slot-ref self 'llvm-context)))
 
-(define-class* <function> <object> <meta<function>> <class>
+(define-class* <llvm-function> <object> <meta<llvm-function>> <class>
                (context       #:init-keyword #:context      )
                (llvm-function #:init-keyword #:llvm-function))
 
-(define-method (initialize (self <function>) initargs)
+(define-method (initialize (self <llvm-function>) initargs)
   (let-keywords initargs #f (context name)
     (next-method self (list #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) name)
                             #:context context ))))
-(define (make-function llvm name) (make <function> #:context llvm #:name name))
-(define-method (destroy (self <function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
+(define (make-function llvm name) (make <llvm-function> #:context llvm #:name name))
+(define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
 (define (function-ret self) (llvm-function-ret (slot-ref self 'llvm-function)))
 
 (define (llvm-apply llvm fun)
   (llvm-verify-module (slot-ref llvm 'llvm-context))
   (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))
+
+(define-class* <llvm-value> <object> <meta<llvm-value>> <class>
+)
+(define (make-llvm-constant value)
+  (make <llvm-value>))

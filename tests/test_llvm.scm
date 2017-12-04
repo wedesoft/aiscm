@@ -28,7 +28,7 @@
 (test-assert "LLVM context slot defined"
   (slot-ref (make-llvm) 'llvm-context))
 (test-equal "Create LLVM function"
-  <function> (class-of (let [(llvm (make-llvm))] (make-function llvm "test1"))))
+  <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm "test1"))))
 (let [(llvm (make-llvm))]
   (test-equal "Keep LLVM instance alive"
     llvm (slot-ref (make-function llvm "test2") 'context)))
@@ -43,5 +43,6 @@
   (let* [(llvm (make-llvm))
          (fun  (make-function llvm "test4"))]
     (llvm-apply llvm fun)))
-
+(test-equal "Build an integer constant"
+  <llvm-value> (class-of (make-llvm-constant 42)))
 (test-end "aiscm llvm")
