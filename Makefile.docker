@@ -30,7 +30,7 @@ detach-sig: aiscm-$(VERSION).tar.xz.asc
 
 # "mentors" needs to be defined in ~/.dput.cf (see https://mentors.debian.net/intro-maintainers)
 dput: sign
-	cd pkg && dput mentors $(PACKAGE)_amd64.changes && cd ..
+	cd pkg && dput -f mentors $(PACKAGE)_amd64.changes && cd ..
 
 report:
 	uscan --report-status
