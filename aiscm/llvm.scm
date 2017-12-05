@@ -21,8 +21,7 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant get-type
-            make-llvm make-function function-ret llvm-apply)
+            make-constant make-llvm make-function function-ret llvm-apply get-type)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")

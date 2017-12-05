@@ -31,12 +31,12 @@
 (test-end "LLVM context")
 
 (test-begin "LLVM value")
-  (test-equal "Build an integer constant"
+  (test-equal "Build an integer value"
     <llvm-value> (class-of (make-constant int32 42)))
-  (test-equal "Check type of integer constant"
+  (test-equal "Return type of 32-bit integer value"
     int32 (get-type (make-constant int32 42)))
-  (test-equal "Check type of unsigned integer constant"
-    uint32 (get-type (make-constant uint32 42)))
+  (test-equal "Type of value ignores signed-ness"
+    int32 (get-type (make-constant uint32 42)))
 (test-end "LLVM value")
 
 (test-begin "LLVM function")

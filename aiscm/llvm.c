@@ -41,7 +41,6 @@ struct llvm_function_t {
 };
 
 struct llvm_value_t {
-  int type;
   LLVMValueRef value;
 };
 
@@ -144,6 +143,16 @@ static LLVMTypeRef llvm_type(int type)
   };
 }
 
+static int llvm_type_to_foreign_type(LLVMTypeRef type)
+{
+  switch (LLVMGetTypeKind(type)) {
+    case LLVMIntegerTypeKind:
+      return 8;// int32
+    default:
+      return 0;// void
+  };
+}
+
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
@@ -226,15 +235,14 @@ SCM make_llvm_constant(SCM scm_type, SCM scm_value)
   struct llvm_value_t *self;
   self = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, self);
-  self->type = scm_to_int(scm_type);
-  self->value = LLVMConstInt(llvm_type(self->type), scm_to_int(scm_value), 0);
+  self->value = LLVMConstInt(llvm_type(scm_to_int(scm_type)), scm_to_int(scm_value), 0);
   return retval;
 }
 
 SCM llvm_get_type(SCM scm_self)
 {
   struct llvm_value_t *self = get_llvm_value(scm_self);
-  return scm_from_int(self->type);
+  return scm_from_int(llvm_type_to_foreign_type(LLVMTypeOf(self->value)));
 }
 
 void init_llvm(void)
