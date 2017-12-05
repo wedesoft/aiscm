@@ -2,7 +2,8 @@
 CODENAME=sid
 BASEIMAGE=debian:$(CODENAME)
 IMAGE=wedesoft/aiscm-$(BASEIMAGE)
-OPTS=
+# make -f Makefile.docker clean all OPTS=--no-cache
+OPTS?=
 #OPTS+=--no-cache
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
