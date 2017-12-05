@@ -1,6 +1,7 @@
 aiscm (0.14.1-1) unstable; urgency=low
 
   - New upstream release
+  - Bumped Standards-Version to 4.1.1 (no change needed)
 
  -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Dec 2017 19:58:11 +0000
 
