@@ -32,9 +32,11 @@
 
 (test-begin "LLVM value")
   (test-equal "Build an integer constant"
-    <llvm-value> (class-of (make-constant int 42)))
+    <llvm-value> (class-of (make-constant int32 42)))
   (test-equal "Check type of integer constant"
-    int (get-type (make-constant int 42)))
+    int32 (get-type (make-constant int32 42)))
+  (test-equal "Check type of unsigned integer constant"
+    uint32 (get-type (make-constant uint32 42)))
 (test-end "LLVM value")
 
 (test-begin "LLVM function")
@@ -54,11 +56,17 @@
     (let* [(llvm (make-llvm))
            (fun  (make-function llvm void "test4"))]
       (llvm-apply llvm fun)))
-  (test-equal "Compile and run function returning a constant"
+  (test-equal "Compile and run function returning an integer"
+    -42
+    (let* [(llvm (make-llvm))
+           (fun  (make-function llvm int32 "test5"))]
+      (function-ret fun (make-constant int32 -42))
+      (llvm-apply llvm fun)))
+  (test-equal "Compile and run function returning an unsigned integer"
     42
     (let* [(llvm (make-llvm))
-           (fun  (make-function llvm int "test5"))]
-      (function-ret fun (make-constant int 42))
+           (fun  (make-function llvm uint32 "test5"))]
+      (function-ret fun (make-constant uint32 42))
       (llvm-apply llvm fun)))
 (test-end "LLVM function")
 
