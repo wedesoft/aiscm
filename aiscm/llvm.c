@@ -1,4 +1,3 @@
-
 // AIscm - Guile extension for numerical arrays and tensors.
 // Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 //
@@ -173,12 +172,32 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
   };
 }
 
+static LLVMBool foreign_type_is_signed(int type)
+{
+  switch (type) {
+    case SCM_FOREIGN_TYPE_INT8:
+    case SCM_FOREIGN_TYPE_INT16:
+    case SCM_FOREIGN_TYPE_INT32:
+    case SCM_FOREIGN_TYPE_INT64:
+      return 1;
+    default:
+      return 0;
+  };
+}
+
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_UINT8:
+    case SCM_FOREIGN_TYPE_UINT16:
     case SCM_FOREIGN_TYPE_UINT32:
+    case SCM_FOREIGN_TYPE_UINT64:
+      return scm_from_uint64(LLVMGenericValueToInt(value, 0));
+    case SCM_FOREIGN_TYPE_INT8:
+    case SCM_FOREIGN_TYPE_INT16:
     case SCM_FOREIGN_TYPE_INT32:
-      return scm_from_int(LLVMGenericValueToInt(value, 1));// TODO: check sign
+    case SCM_FOREIGN_TYPE_INT64:
+      return scm_from_int64(LLVMGenericValueToInt(value, 1));
     default:
       return SCM_UNSPECIFIED;
   };
@@ -255,7 +274,11 @@ SCM make_llvm_constant(SCM scm_type, SCM scm_value)
   struct llvm_value_t *self;
   self = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, self);
-  self->value = LLVMConstInt(llvm_type(scm_to_int(scm_type)), scm_to_int(scm_value), 0);
+  int type = scm_to_int(scm_type);
+  if (foreign_type_is_signed(type))
+    self->value = LLVMConstInt(llvm_type(type), scm_to_int64(scm_value), 1);
+  else
+    self->value = LLVMConstInt(llvm_type(type), scm_to_uint64(scm_value), 0);
   return retval;
 }
 
