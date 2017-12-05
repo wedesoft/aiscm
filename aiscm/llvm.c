@@ -181,10 +181,20 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-static SCM scm_from_llvm_value(LLVMTypeRef type, LLVMGenericValueRef value)
+static int llvm_type_to_foreign_type(LLVMTypeRef type)
 {
   switch (LLVMGetTypeKind(type)) {
     case LLVMIntegerTypeKind:
+      return 8;// int
+    default:
+      return 0;// void
+  };
+}
+
+static SCM scm_from_llvm_value(LLVMTypeRef type, LLVMGenericValueRef value)
+{
+  switch (llvm_type_to_foreign_type(type)) {
+    case 8:
       return scm_from_int(LLVMGenericValueToInt(value, 0));
     default:
       return SCM_UNSPECIFIED;
@@ -224,6 +234,12 @@ SCM make_llvm_constant(SCM scm_type, SCM scm_value)
   return retval;
 }
 
+SCM llvm_get_type(SCM scm_self)
+{
+  struct llvm_value_t *self = get_llvm_value(scm_self);
+  return scm_from_int(llvm_type_to_foreign_type(LLVMTypeOf(self->value)));
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -248,4 +264,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-context-apply"       , 2, 0, 0, SCM_FUNC(llvm_context_apply       ));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
+  scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
 }

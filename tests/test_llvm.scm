@@ -21,34 +21,45 @@
 
 (test-begin "aiscm llvm")
 
-(test-equal "Create LLVM instance"
-  <llvm> (class-of (make-llvm)))
-(test-assert "Destroy LLVM instance"
-  (unspecified? (destroy (make-llvm))))
-(test-assert "LLVM context slot defined"
-  (slot-ref (make-llvm) 'llvm-context))
-(test-equal "Create LLVM function"
-  <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm void "test1"))))
-(let [(llvm (make-llvm))]
-  (test-equal "Keep LLVM instance alive"
-    llvm (slot-ref (make-function llvm void "test2") 'context)))
-(test-assert "Compile and run empty function"
-  (unspecified?
+(test-begin "LLVM context")
+  (test-equal "Create LLVM instance"
+    <llvm> (class-of (make-llvm)))
+  (test-assert "Destroy LLVM instance"
+    (unspecified? (destroy (make-llvm))))
+  (test-assert "LLVM context slot defined"
+    (slot-ref (make-llvm) 'llvm-context))
+(test-end "LLVM context")
+
+(test-begin "LLVM value")
+  (test-equal "Build an integer constant"
+    <llvm-value> (class-of (make-constant int 42)))
+  (test-equal "Check type of integer constant"
+    int (get-type (make-constant int 42)))
+(test-end "LLVM value")
+
+(test-begin "LLVM function")
+  (test-equal "Create LLVM function"
+    <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm void "test1"))))
+  (let [(llvm (make-llvm))]
+    (test-equal "Keep LLVM instance alive"
+      llvm (slot-ref (make-function llvm void "test2") 'context)))
+  (test-assert "Compile and run empty function"
+    (unspecified?
+      (let* [(llvm (make-llvm))
+             (fun  (make-function llvm void "test3"))]
+        (function-ret fun)
+        (llvm-apply llvm fun))))
+  (test-error "Throw error if verification of module failed"
+    'misc-error
     (let* [(llvm (make-llvm))
-           (fun  (make-function llvm void "test3"))]
-      (function-ret fun)
-      (llvm-apply llvm fun))))
-(test-error "Throw error if verification of module failed"
-  'misc-error
-  (let* [(llvm (make-llvm))
-         (fun  (make-function llvm void "test4"))]
-    (llvm-apply llvm fun)))
-(test-equal "Build an integer constant"
-  <llvm-value> (class-of (make-constant int 42)))
-(test-equal "Compile and run function returning a constant"
-  42
-  (let* [(llvm (make-llvm))
-         (fun  (make-function llvm int "test5"))]
-    (function-ret fun (make-constant int 42))
-    (llvm-apply llvm fun)))
+           (fun  (make-function llvm void "test4"))]
+      (llvm-apply llvm fun)))
+  (test-equal "Compile and run function returning a constant"
+    42
+    (let* [(llvm (make-llvm))
+           (fun  (make-function llvm int "test5"))]
+      (function-ret fun (make-constant int 42))
+      (llvm-apply llvm fun)))
+(test-end "LLVM function")
+
 (test-end "aiscm llvm")
