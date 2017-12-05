@@ -38,14 +38,16 @@
 
 (define-class* <llvm-function> <object> <meta<llvm-function>> <class>
                (context       #:init-keyword #:context      )
+               (return-type   #:init-keyword #:return-type  )
                (llvm-function #:init-keyword #:llvm-function))
 
 (define-method (initialize (self <llvm-function>) initargs)
-  (let-keywords initargs #f (context type name)
-    (next-method self (list #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) type name)
-                            #:context context ))))
+  (let-keywords initargs #f (context return-type name)
+    (next-method self (list #:context context
+                            #:return-type return-type
+                            #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) return-type name)))))
 
-(define (make-function llvm type name) (make <llvm-function> #:context llvm #:type type #:name name))
+(define (make-function llvm return-type name) (make <llvm-function> #:context llvm #:return-type return-type #:name name))
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
@@ -57,7 +59,7 @@
 
 (define (llvm-apply llvm fun)
   (llvm-verify-module (slot-ref llvm 'llvm-context))
-  (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'llvm-function)))
+  (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'return-type) (slot-ref fun 'llvm-function)))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))
