@@ -33,10 +33,19 @@
 (test-begin "LLVM value")
   (test-equal "Build an integer value"
     <llvm-value> (class-of (make-constant int32 42)))
-  (test-equal "Return type of 32-bit integer value"
-    int32 (get-type (make-constant int32 42)))
-  (test-equal "Type of value ignores signed-ness"
-    int32 (get-type (make-constant uint32 42)))
+  (for-each
+    (lambda (type bits)
+      (test-equal (format #f "Get type of ~a-bit integer value" bits)
+        type (get-type (make-constant type 42))))
+    (list int8 int16 int32 int64)
+    '(8 16 32 64))
+  (for-each
+    (lambda (unsigned-type signed-type bits)
+      (test-equal (format #f "Type of ~a-bit value ignores signed-ness" bits)
+        signed-type (get-type (make-constant unsigned-type 42))))
+    (list uint8 uint16 uint32 uint64)
+    (list int8 int16 int32 int64)
+    '(8 16 32 64))
 (test-end "LLVM value")
 
 (test-begin "LLVM function")

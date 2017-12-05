@@ -134,9 +134,18 @@ SCM llvm_context_destroy(SCM scm_self)
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
-    case 7:
-    case 8:
+    case SCM_FOREIGN_TYPE_UINT8:
+    case SCM_FOREIGN_TYPE_INT8:
+      return LLVMInt8Type();
+    case SCM_FOREIGN_TYPE_UINT16:
+    case SCM_FOREIGN_TYPE_INT16:
+      return LLVMInt16Type();
+    case SCM_FOREIGN_TYPE_UINT32:
+    case SCM_FOREIGN_TYPE_INT32:
       return LLVMInt32Type();
+    case SCM_FOREIGN_TYPE_UINT64:
+    case SCM_FOREIGN_TYPE_INT64:
+      return LLVMInt64Type();
     default:
       return LLVMVoidType();
   };
@@ -144,19 +153,31 @@ static LLVMTypeRef llvm_type(int type)
 
 static int llvm_type_to_foreign_type(LLVMTypeRef type)
 {
+  LLVMDumpType(type);
   switch (LLVMGetTypeKind(type)) {
     case LLVMIntegerTypeKind:
-      return 8;// int32
+      switch (LLVMGetIntTypeWidth(type)) {
+        case 8:
+          return SCM_FOREIGN_TYPE_INT8;
+        case 16:
+          return SCM_FOREIGN_TYPE_INT16;
+        case 32:
+          return SCM_FOREIGN_TYPE_INT32;
+        case 64:
+          return SCM_FOREIGN_TYPE_INT64;
+        default:
+          return SCM_FOREIGN_TYPE_VOID;
+      };
     default:
-      return 0;// void
+      return SCM_FOREIGN_TYPE_VOID;
   };
 }
 
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
-    case 7:// uint32
-    case 8:// int32
+    case SCM_FOREIGN_TYPE_UINT32:
+    case SCM_FOREIGN_TYPE_INT32:
       return scm_from_int(LLVMGenericValueToInt(value, 1));// TODO: check sign
     default:
       return SCM_UNSPECIFIED;
