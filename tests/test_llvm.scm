@@ -78,7 +78,13 @@
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
-    (list -128 -32768 -2147483648 -9223372036854775808 255 65535 4294967295 18446744073709551615))
+    '(-128 -32768 -2147483648 -9223372036854775808 255 65535 4294967295 18446744073709551615))
+   (test-equal "Compile and run function returning a double-precision floating point number"
+        0.5
+        (let* [(llvm (make-llvm))
+               (fun  (make-function llvm double "test6"))]
+          (function-ret fun (make-constant double 0.5))
+          (llvm-apply llvm fun)))
 (test-end "LLVM function")
 
 (test-end "aiscm llvm")

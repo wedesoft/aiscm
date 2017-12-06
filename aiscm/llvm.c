@@ -179,6 +179,8 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_DOUBLE:
+      return scm_from_double(LLVMGenericValueToFloat(llvm_type(type), value));
     case SCM_FOREIGN_TYPE_UINT8:
     case SCM_FOREIGN_TYPE_UINT16:
     case SCM_FOREIGN_TYPE_UINT32:
