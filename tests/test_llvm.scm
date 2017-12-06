@@ -54,27 +54,27 @@
 
 (test-begin "LLVM function")
   (test-equal "Create LLVM function"
-    <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm void "test1"))))
+    <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm void "function"))))
   (let [(llvm (make-llvm))]
     (test-equal "Keep LLVM instance alive"
-      llvm (slot-ref (make-function llvm void "test2") 'context)))
+      llvm (slot-ref (make-function llvm void "function") 'context)))
   (test-assert "Compile and run empty function"
     (unspecified?
       (let* [(llvm (make-llvm))
-             (fun  (make-function llvm void "test3"))]
+             (fun  (make-function llvm void "empty"))]
         (function-ret fun)
         (llvm-apply llvm fun))))
   (test-error "Throw error if verification of module failed"
     'misc-error
     (let* [(llvm (make-llvm))
-           (fun  (make-function llvm void "test4"))]
+           (fun  (make-function llvm void "incomplete"))]
       (llvm-apply llvm fun)))
   (for-each
     (lambda (type sign bits value)
       (test-equal (format #f "Compile and run function returning a ~a ~a-bit integer" sign bits)
         value
         (let* [(llvm (make-llvm))
-               (fun  (make-function llvm type "test5"))]
+               (fun  (make-function llvm type "constant_int"))]
           (function-ret fun (make-constant type value))
           (llvm-apply llvm fun))))
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
@@ -86,7 +86,7 @@
        (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
           0.5
           (let* [(llvm (make-llvm))
-                 (fun  (make-function llvm type "test6"))]
+                 (fun  (make-function llvm type "constant_double"))]
             (function-ret fun (make-constant type 0.5))
             (llvm-apply llvm fun))))
      (list float double)

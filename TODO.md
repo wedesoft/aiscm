@@ -1,7 +1,7 @@
 ## Ready
 
-* floating-point constant and return value
-* pointers constant and return-value
+* dump module
+* pointer constants and return-values
 * method arguments
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)

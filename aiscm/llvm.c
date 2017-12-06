@@ -130,6 +130,13 @@ SCM llvm_context_destroy(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_dump_module(SCM scm_self)
+{
+  struct llvm_t *self = get_llvm(scm_self);
+  LLVMDumpModule(self->module);
+  return SCM_UNSPECIFIED;
+}
+
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
@@ -321,6 +328,7 @@ void init_llvm(void)
 
   scm_c_define_gsubr("make-llvm-context"        , 0, 0, 0, SCM_FUNC(make_llvm_context        ));
   scm_c_define_gsubr("llvm-context-destroy"     , 1, 0, 0, SCM_FUNC(llvm_context_destroy     ));
+  scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
   scm_c_define_gsubr("make-llvm-function"       , 3, 0, 0, SCM_FUNC(make_llvm_function       ));
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
