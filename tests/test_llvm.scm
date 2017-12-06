@@ -48,6 +48,8 @@
     '(8 16 32 64))
   (test-equal "Get type of double-precision floating point value"
     double (get-type (make-constant double (exp 1))))
+  (test-equal "Get type of single-precision floating point value"
+    float (get-type (make-constant float (exp 1))))
 (test-end "LLVM value")
 
 (test-begin "LLVM function")
@@ -79,12 +81,16 @@
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
     '(-128 -32768 -2147483648 -9223372036854775808 255 65535 4294967295 18446744073709551615))
-   (test-equal "Compile and run function returning a double-precision floating point number"
-        0.5
-        (let* [(llvm (make-llvm))
-               (fun  (make-function llvm double "test6"))]
-          (function-ret fun (make-constant double 0.5))
-          (llvm-apply llvm fun)))
+   (for-each
+     (lambda (type precision)
+       (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
+          0.5
+          (let* [(llvm (make-llvm))
+                 (fun  (make-function llvm type "test6"))]
+            (function-ret fun (make-constant type 0.5))
+            (llvm-apply llvm fun))))
+     (list float double)
+     (list "single" "double"))
 (test-end "LLVM function")
 
 (test-end "aiscm llvm")

@@ -133,6 +133,8 @@ SCM llvm_context_destroy(SCM scm_self)
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_FLOAT:
+      return LLVMFloatType();
     case SCM_FOREIGN_TYPE_DOUBLE:
       return LLVMDoubleType();
     case SCM_FOREIGN_TYPE_UINT8:
@@ -156,6 +158,8 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
 {
   LLVMDumpType(type);
   switch (LLVMGetTypeKind(type)) {
+    case LLVMFloatTypeKind:
+      return SCM_FOREIGN_TYPE_FLOAT;
     case LLVMDoubleTypeKind:
       return SCM_FOREIGN_TYPE_DOUBLE;
     case LLVMIntegerTypeKind:
@@ -179,6 +183,7 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_FLOAT:
     case SCM_FOREIGN_TYPE_DOUBLE:
       return scm_from_double(LLVMGenericValueToFloat(llvm_type(type), value));
     case SCM_FOREIGN_TYPE_UINT8:
@@ -199,6 +204,7 @@ static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_FLOAT:
     case SCM_FOREIGN_TYPE_DOUBLE:
       return LLVMConstReal(llvm_type(type), scm_to_double(scm_value));
     case SCM_FOREIGN_TYPE_UINT8:
