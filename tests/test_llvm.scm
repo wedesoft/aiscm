@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (rnrs bytevectors)
              (oop goops)
              (system foreign)
              (aiscm llvm))
@@ -65,6 +66,12 @@
         (function-ret fun)
         (llvm-verify llvm)
         (llvm-apply llvm fun))))
+  (test-assert "Dump module containing a function"
+    (unspecified?
+      (let* [(llvm (make-llvm))
+             (fun  (make-function llvm void "empty"))]
+        (function-ret fun)
+        (llvm-dump llvm))))
   (test-error "Throw error if verification of module failed"
     'misc-error
     (let* [(llvm (make-llvm))
@@ -95,4 +102,13 @@
      (list "single" "double"))
 (test-end "LLVM function")
 
+(test-begin "LLVM pointer")
+  (test-equal "Load unsigned byte from memory"
+    42
+    (let* [(data #vu8(42 1 2 3))
+           (llvm (make-llvm))
+           (fun  (make-function llvm int8 "read_mem"))]
+      (function-ret fun (function-load fun int8 (make-constant int64 (pointer-address (bytevector->pointer data)))))
+      (llvm-apply llvm fun)))
+(test-end "LLVM pointer")
 (test-end "aiscm llvm")

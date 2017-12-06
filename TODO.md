@@ -1,7 +1,8 @@
 ## Ready
 
-* dump module
+* load/store different type of values
 * pointer constants and return-values
+* pointer <-> bytevector
 * method arguments
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)

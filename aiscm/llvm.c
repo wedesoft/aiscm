@@ -311,6 +311,20 @@ SCM llvm_get_type(SCM scm_self)
   return scm_from_int(llvm_type_to_foreign_type(LLVMTypeOf(self->value)));
 }
 
+// https://github.com/adobe/chromium/blob/master/third_party/mesa/MesaLib/src/gallium/auxiliary/draw/draw_llvm_translate.c
+SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *result;
+  result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  struct llvm_value_t *address = get_llvm_value(scm_address);
+  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(LLVMInt8Type(), 0), "");
+  result->value = LLVMBuildLoad(function->builder, pointer, "");
+  return retval;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -337,4 +351,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
+  scm_c_define_gsubr("llvm-build-load"          , 3, 0, 0, SCM_FUNC(llvm_build_load          ));
 }

@@ -21,7 +21,9 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant make-llvm make-function function-ret llvm-apply get-type llvm-verify llvm-dump)
+            make-constant make-llvm make-function llvm-verify llvm-dump
+            function-ret llvm-apply get-type llvm-verify
+            function-load)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -30,7 +32,7 @@
                (llvm-context #:init-keyword #:llvm-context))
 
 (define-method (initialize (self <llvm>) initargs)
-  (next-method self (list #:llvm-context  (make-llvm-context))))
+  (next-method self (list #:llvm-context (make-llvm-context))))
 
 (define (make-llvm) (make <llvm>))
 
@@ -67,12 +69,11 @@
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))
 
-(define-method (initialize (self <llvm-value>) initargs)
-  (let-keywords initargs #f (type value)
-    (next-method self (list #:llvm-value (make-llvm-constant type value)))))
-
 (define (make-constant type value)
-  (make <llvm-value> #:type type #:value value))
+  (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
 
 (define (get-type value)
   (llvm-get-type (slot-ref value 'llvm-value)))
+
+(define (function-load self type address)
+  (make <llvm-value> #:llvm-value (llvm-build-load (slot-ref self 'llvm-function) type (slot-ref address 'llvm-value))))
