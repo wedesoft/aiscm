@@ -58,16 +58,18 @@
   (let [(llvm (make-llvm))]
     (test-equal "Keep LLVM instance alive"
       llvm (slot-ref (make-function llvm void "function") 'context)))
-  (test-assert "Compile and run empty function"
+  (test-assert "Compile, verify, and run empty function"
     (unspecified?
       (let* [(llvm (make-llvm))
              (fun  (make-function llvm void "empty"))]
         (function-ret fun)
+        (llvm-verify llvm)
         (llvm-apply llvm fun))))
   (test-error "Throw error if verification of module failed"
     'misc-error
     (let* [(llvm (make-llvm))
            (fun  (make-function llvm void "incomplete"))]
+      (llvm-verify llvm)
       (llvm-apply llvm fun)))
   (for-each
     (lambda (type sign bits value)

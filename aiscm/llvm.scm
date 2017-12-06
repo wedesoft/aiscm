@@ -21,7 +21,7 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant make-llvm make-function function-ret llvm-apply get-type llvm-dump)
+            make-constant make-llvm make-function function-ret llvm-apply get-type llvm-verify llvm-dump)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -57,10 +57,11 @@
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
 
+(define (llvm-verify self) (llvm-verify-module (slot-ref self 'llvm-context)))
+
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-context)))
 
 (define (llvm-apply llvm fun)
-  (llvm-verify-module (slot-ref llvm 'llvm-context))
   (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'return-type) (slot-ref fun 'llvm-function)))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
