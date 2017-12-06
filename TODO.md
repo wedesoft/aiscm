@@ -1,13 +1,13 @@
 ## Ready
 
-* test different type of constants (unsigned/signed integer, float)
-* test different types of return values
-* LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
-* OpenGL vertex array object
+* floating-point constant and return value
+* pointers constant and return-value
+* method arguments
+* OpenGL vertex array object example
+* rigid-body impulse-based dynamics example (and microcollisions)
 * "let" for tensors
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
 * use bytevectors instead of memory objects?
-* assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
 * colour swapped when converting MJPEG video to FFmpeg video

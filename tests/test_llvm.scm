@@ -46,6 +46,8 @@
     (list uint8 uint16 uint32 uint64)
     (list int8 int16 int32 int64)
     '(8 16 32 64))
+  (test-equal "Get type of double-precision floating point value"
+    double (get-type (make-constant double (exp 1))))
 (test-end "LLVM value")
 
 (test-begin "LLVM function")

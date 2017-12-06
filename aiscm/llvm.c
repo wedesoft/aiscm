@@ -133,6 +133,8 @@ SCM llvm_context_destroy(SCM scm_self)
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_DOUBLE:
+      return LLVMDoubleType();
     case SCM_FOREIGN_TYPE_UINT8:
     case SCM_FOREIGN_TYPE_INT8:
       return LLVMInt8Type();
@@ -154,6 +156,8 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
 {
   LLVMDumpType(type);
   switch (LLVMGetTypeKind(type)) {
+    case LLVMDoubleTypeKind:
+      return SCM_FOREIGN_TYPE_DOUBLE;
     case LLVMIntegerTypeKind:
       switch (LLVMGetIntTypeWidth(type)) {
         case 8:
@@ -172,19 +176,6 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
   };
 }
 
-static LLVMBool foreign_type_is_signed(int type)
-{
-  switch (type) {
-    case SCM_FOREIGN_TYPE_INT8:
-    case SCM_FOREIGN_TYPE_INT16:
-    case SCM_FOREIGN_TYPE_INT32:
-    case SCM_FOREIGN_TYPE_INT64:
-      return 1;
-    default:
-      return 0;
-  };
-}
-
 static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
@@ -200,6 +191,26 @@ static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
       return scm_from_int64(LLVMGenericValueToInt(value, 1));
     default:
       return SCM_UNSPECIFIED;
+  };
+}
+
+static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
+{
+  switch (type) {
+    case SCM_FOREIGN_TYPE_DOUBLE:
+      return LLVMConstReal(llvm_type(type), scm_to_double(scm_value));
+    case SCM_FOREIGN_TYPE_UINT8:
+    case SCM_FOREIGN_TYPE_UINT16:
+    case SCM_FOREIGN_TYPE_UINT32:
+    case SCM_FOREIGN_TYPE_UINT64:
+      return LLVMConstInt(llvm_type(type), scm_to_uint64(scm_value), 0);
+    case SCM_FOREIGN_TYPE_INT8:
+    case SCM_FOREIGN_TYPE_INT16:
+    case SCM_FOREIGN_TYPE_INT32:
+    case SCM_FOREIGN_TYPE_INT64:
+      return LLVMConstInt(llvm_type(type), scm_to_int64(scm_value), 1);
+    default:
+      return NULL;
   };
 }
 
@@ -275,10 +286,7 @@ SCM make_llvm_constant(SCM scm_type, SCM scm_value)
   self = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, self);
   int type = scm_to_int(scm_type);
-  if (foreign_type_is_signed(type))
-    self->value = LLVMConstInt(llvm_type(type), scm_to_int64(scm_value), 1);
-  else
-    self->value = LLVMConstInt(llvm_type(type), scm_to_uint64(scm_value), 0);
+  self->value = scm_to_llvm_value(type, scm_value);
   return retval;
 }
 
