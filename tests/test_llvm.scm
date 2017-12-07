@@ -85,6 +85,7 @@
         (let* [(llvm (make-llvm))
                (fun  (make-function llvm type "constant_int"))]
           (function-ret fun (make-constant type value))
+          (llvm-verify llvm)
           (llvm-apply llvm fun))))
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
@@ -97,6 +98,7 @@
           (let* [(llvm (make-llvm))
                  (fun  (make-function llvm type "constant_double"))]
             (function-ret fun (make-constant type 0.5))
+            (llvm-verify llvm)
             (llvm-apply llvm fun))))
      (list float double)
      (list "single" "double"))
@@ -110,6 +112,7 @@
              (llvm (make-llvm))
              (fun  (make-function llvm type "read_mem"))]
         (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
+        (llvm-verify llvm)
         (llvm-apply llvm fun))))
     '(2 770)
     (list int8 int16)
@@ -121,7 +124,7 @@
            (fun  (make-function llvm void "write_mem"))]
       (function-store fun int8 (make-constant int8 2) (make-constant int64 (pointer-address (bytevector->pointer data))))
       (function-ret fun)
-      ;(llvm-verify llvm)
+      (llvm-verify llvm)
       (llvm-apply llvm fun)
       data))
 (test-end "LLVM pointer")

@@ -311,7 +311,6 @@ SCM llvm_get_type(SCM scm_self)
   return scm_from_int(llvm_type_to_foreign_type(LLVMTypeOf(self->value)));
 }
 
-// https://github.com/adobe/chromium/blob/master/third_party/mesa/MesaLib/src/gallium/auxiliary/draw/draw_llvm_translate.c
 SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
 {
   SCM retval;
@@ -321,7 +320,7 @@ SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
   SCM_NEWSMOB(retval, llvm_value_tag, result);
   struct llvm_value_t *address = get_llvm_value(scm_address);
   int type = scm_to_int(scm_type);
-  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "");
+  LLVMValueRef pointer = LLVMConstIntToPtr(address->value, LLVMPointerType(llvm_type(type), 0));
   result->value = LLVMBuildLoad(function->builder, pointer, "");
   return retval;
 }
@@ -332,7 +331,7 @@ SCM llvm_build_store(SCM scm_function, SCM scm_type, SCM scm_value, SCM scm_addr
   struct llvm_value_t *value = get_llvm_value(scm_value);
   struct llvm_value_t *address = get_llvm_value(scm_address);
   int type = scm_to_int(scm_type);
-  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "");
+  LLVMValueRef pointer = LLVMConstIntToPtr(address->value, LLVMPointerType(llvm_type(type), 0));
   LLVMBuildStore(function->builder, value->value, pointer);
   // TODO: what is the return value of store instruction?
   return SCM_UNSPECIFIED;
