@@ -320,7 +320,8 @@ SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
   result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
   struct llvm_value_t *address = get_llvm_value(scm_address);
-  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(LLVMInt8Type(), 0), "");
+  int type = scm_to_int(scm_type);
+  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "");
   result->value = LLVMBuildLoad(function->builder, pointer, "");
   return retval;
 }

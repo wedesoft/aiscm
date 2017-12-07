@@ -103,12 +103,16 @@
 (test-end "LLVM function")
 
 (test-begin "LLVM pointer")
-  (test-equal "Load unsigned byte from memory"
-    42
-    (let* [(data #vu8(42 1 2 3))
-           (llvm (make-llvm))
-           (fun  (make-function llvm int8 "read_mem"))]
-      (function-ret fun (function-load fun int8 (make-constant int64 (pointer-address (bytevector->pointer data)))))
-      (llvm-apply llvm fun)))
+  (for-each (lambda (value type name)
+    (test-equal (format #f "Load ~a from memory" name)
+      value
+      (let* [(data #vu8(2 3 5 7))
+             (llvm (make-llvm))
+             (fun  (make-function llvm type "read_mem"))]
+        (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
+        (llvm-apply llvm fun))))
+    '(2 770)
+    (list int8 int16)
+    '("byte" "short integer"))
 (test-end "LLVM pointer")
 (test-end "aiscm llvm")
