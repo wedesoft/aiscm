@@ -143,5 +143,12 @@
       (function-ret fun)
       (llvm-verify llvm)
       (llvm-apply llvm fun 42)))
+  (test-equal "Compile, verify, and run identity function"
+    42
+    (let* [(llvm (make-llvm))
+           (fun  (make-function llvm int "with_arg" int))]
+      (function-ret fun (function-param fun 0))
+      (llvm-verify llvm)
+      (llvm-apply llvm fun 42)))
 (test-end "method arguments")
 (test-end "aiscm llvm")

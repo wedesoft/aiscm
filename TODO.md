@@ -1,6 +1,7 @@
 ## Ready
 
-* method arguments
+* different method argument types
+* multiple arguments
 * LLVM modules
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)

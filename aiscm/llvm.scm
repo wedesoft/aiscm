@@ -23,7 +23,7 @@
             <llvm-value> <meta<llvm-value>>
             make-constant make-llvm make-function llvm-verify llvm-dump
             function-ret llvm-apply get-type llvm-verify
-            function-load function-store)
+            function-load function-store function-param)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -44,13 +44,19 @@
                (llvm-function #:init-keyword #:llvm-function))
 
 (define-method (initialize (self <llvm-function>) initargs)
-  (let-keywords initargs #f (context return-type name)
+  (let-keywords initargs #f (context return-type name argument-types)
     (next-method self (list #:context context
                             #:return-type return-type
-                            #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) return-type name)))))
+                            #:llvm-function (make-llvm-function (slot-ref context 'llvm-context)
+                                                                return-type
+                                                                name
+                                                                argument-types)))))
 
-(define (make-function llvm return-type name . args)
-  (make <llvm-function> #:context llvm #:return-type return-type #:name name))
+(define (make-function llvm return-type name . argument-types)
+  (make <llvm-function> #:context llvm
+                        #:return-type return-type
+                        #:name name
+                        #:argument-types argument-types))
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
@@ -64,8 +70,11 @@
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-context)))
 
-(define (llvm-apply llvm fun . args)
-  (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'return-type) (slot-ref fun 'llvm-function)))
+(define (llvm-apply llvm fun . arguments)
+  (llvm-context-apply (slot-ref llvm 'llvm-context)
+                      (slot-ref fun 'return-type)
+                      (slot-ref fun 'llvm-function)
+                      arguments))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))
@@ -74,6 +83,7 @@
   (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
 
 (define (get-type value)
+  "Query type of LLVM value"
   (llvm-get-type (slot-ref value 'llvm-value)))
 
 (define (function-load self type address)
@@ -83,3 +93,7 @@
 (define (function-store self type value address)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref self 'llvm-function) type (slot-ref value 'llvm-value) (slot-ref address 'llvm-value)))
+
+(define (function-param self index)
+  "Get value of INDEXth function parameter"
+  (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref self 'llvm-function) index)))

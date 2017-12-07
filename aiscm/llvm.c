@@ -229,18 +229,22 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
   };
 }
 
-SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name)
+SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_argument_types)
 {
   SCM retval;
   struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *self;
   self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvmfunction");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
+  int n_arguments = scm_ilength(scm_argument_types);
+  LLVMTypeRef *parameters = scm_gc_malloc_pointerless(n_arguments * sizeof(LLVMTypeRef), "make-llvm-function");
+  for (int i=0; i<n_arguments; i++)
+    parameters[i] = llvm_type(scm_to_int(scm_car(scm_argument_types)));
   self->builder = LLVMCreateBuilder();
   self->function = LLVMAddFunction(llvm->module,
                                    scm_to_locale_string(scm_name),
                                    LLVMFunctionType(llvm_type(scm_to_int(scm_return_type)),
-                                   NULL, 0, 0));
+                                                    parameters, n_arguments, 0));
   LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(self->function, "entry");
   LLVMPositionBuilderAtEnd(self->builder, entry);
@@ -272,11 +276,15 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_context_apply(SCM scm_llvm, SCM scm_return_type, SCM scm_function)
+SCM llvm_context_apply(SCM scm_llvm, SCM scm_return_type, SCM scm_function, SCM scm_arguments)
 {
   struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *function = get_llvm_function(scm_function);
-  LLVMGenericValueRef result = LLVMRunFunction(llvm->engine, function->function, 0, NULL);
+  int n_arguments = scm_ilength(scm_arguments);
+  LLVMGenericValueRef *arguments = scm_gc_malloc(n_arguments * sizeof(LLVMGenericValueRef), "llvm-context-apply");
+  for (int i=0; i<n_arguments; i++)
+    arguments[i] = LLVMCreateGenericValueOfInt(LLVMInt32Type(), scm_to_int(scm_car(scm_arguments)), 1);
+  LLVMGenericValueRef result = LLVMRunFunction(llvm->engine, function->function, n_arguments, arguments);
   SCM retval = scm_from_llvm_value(scm_to_int(scm_return_type), result);
   LLVMDisposeGenericValue(result);
   return retval;
@@ -336,6 +344,18 @@ SCM llvm_build_store(SCM scm_function, SCM scm_type, SCM scm_value, SCM scm_addr
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_get_param(SCM scm_function, SCM scm_index)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  int index = scm_to_int(scm_index);
+  struct llvm_value_t *result;
+  result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMGetParam(function->function, index);
+  return retval;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -354,14 +374,15 @@ void init_llvm(void)
   scm_c_define_gsubr("make-llvm-context"        , 0, 0, 0, SCM_FUNC(make_llvm_context        ));
   scm_c_define_gsubr("llvm-context-destroy"     , 1, 0, 0, SCM_FUNC(llvm_context_destroy     ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
-  scm_c_define_gsubr("make-llvm-function"       , 3, 0, 0, SCM_FUNC(make_llvm_function       ));
+  scm_c_define_gsubr("make-llvm-function"       , 4, 0, 0, SCM_FUNC(make_llvm_function       ));
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
   scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-context-apply"       , 3, 0, 0, SCM_FUNC(llvm_context_apply       ));
+  scm_c_define_gsubr("llvm-context-apply"       , 4, 0, 0, SCM_FUNC(llvm_context_apply       ));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
   scm_c_define_gsubr("llvm-build-load"          , 3, 0, 0, SCM_FUNC(llvm_build_load          ));
   scm_c_define_gsubr("llvm-build-store"         , 4, 0, 0, SCM_FUNC(llvm_build_store         ));
+  scm_c_define_gsubr("llvm-get-param"           , 2, 0, 0, SCM_FUNC(llvm_get_param          ));
 }
