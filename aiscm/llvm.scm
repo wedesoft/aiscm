@@ -23,7 +23,7 @@
             <llvm-value> <meta<llvm-value>>
             make-constant make-llvm make-function llvm-verify llvm-dump
             function-ret llvm-apply get-type llvm-verify
-            function-load)
+            function-load function-store)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -76,4 +76,9 @@
   (llvm-get-type (slot-ref value 'llvm-value)))
 
 (define (function-load self type address)
+  "Generate code for reading value from memory"
   (make <llvm-value> #:llvm-value (llvm-build-load (slot-ref self 'llvm-function) type (slot-ref address 'llvm-value))))
+
+(define (function-store self type value address)
+  "Generate code for writing value to memory"
+  (llvm-build-store (slot-ref self 'llvm-function) type (slot-ref value 'llvm-value) (slot-ref address 'llvm-value)))

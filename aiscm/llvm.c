@@ -326,6 +326,18 @@ SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
   return retval;
 }
 
+SCM llvm_build_store(SCM scm_function, SCM scm_type, SCM scm_value, SCM scm_address)
+{
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value = get_llvm_value(scm_value);
+  struct llvm_value_t *address = get_llvm_value(scm_address);
+  int type = scm_to_int(scm_type);
+  LLVMValueRef pointer = LLVMBuildBitCast(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "");
+  LLVMBuildStore(function->builder, value->value, pointer);
+  // TODO: what is the return value of store instruction?
+  return SCM_UNSPECIFIED;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -353,4 +365,5 @@ void init_llvm(void)
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
   scm_c_define_gsubr("llvm-build-load"          , 3, 0, 0, SCM_FUNC(llvm_build_load          ));
+  scm_c_define_gsubr("llvm-build-store"         , 4, 0, 0, SCM_FUNC(llvm_build_store         ));
 }

@@ -104,7 +104,7 @@
 
 (test-begin "LLVM pointer")
   (for-each (lambda (value type name)
-    (test-equal (format #f "Load ~a from memory" name)
+    (test-equal (format #f "Read ~a value from memory" name)
       value
       (let* [(data #vu8(2 3 5 7))
              (llvm (make-llvm))
@@ -114,5 +114,15 @@
     '(2 770)
     (list int8 int16)
     '("byte" "short integer"))
+  (test-equal "Write byte to memory"
+    #vu8(2 3 5 7)
+    (let* [(data #vu8(0 3 5 7))
+           (llvm (make-llvm))
+           (fun  (make-function llvm void "write_mem"))]
+      (function-store fun int8 (make-constant int8 2) (make-constant int64 (pointer-address (bytevector->pointer data))))
+      (function-ret fun)
+      ;(llvm-verify llvm)
+      (llvm-apply llvm fun)
+      data))
 (test-end "LLVM pointer")
 (test-end "aiscm llvm")
