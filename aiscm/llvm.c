@@ -333,7 +333,6 @@ SCM llvm_build_store(SCM scm_function, SCM scm_type, SCM scm_value, SCM scm_addr
   int type = scm_to_int(scm_type);
   LLVMValueRef pointer = LLVMConstIntToPtr(address->value, LLVMPointerType(llvm_type(type), 0));
   LLVMBuildStore(function->builder, value->value, pointer);
-  // TODO: what is the return value of store instruction?
   return SCM_UNSPECIFIED;
 }
 
