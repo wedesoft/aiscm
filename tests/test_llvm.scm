@@ -31,7 +31,7 @@
     (slot-ref (make-llvm) 'llvm-context))
 (test-end "LLVM context")
 
-(test-begin "LLVM value")
+(test-begin "constant values")
   (test-equal "Build an integer value"
     <llvm-value> (class-of (make-constant int32 42)))
   (for-each
@@ -51,9 +51,9 @@
     double (get-type (make-constant double (exp 1))))
   (test-equal "Get type of single-precision floating point value"
     float (get-type (make-constant float (exp 1))))
-(test-end "LLVM value")
+(test-end "constant values")
 
-(test-begin "LLVM function")
+(test-begin "functions")
   (test-equal "Create LLVM function"
     <llvm-function> (class-of (let [(llvm (make-llvm))] (make-function llvm void "function"))))
   (let [(llvm (make-llvm))]
@@ -91,20 +91,20 @@
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
     '(-128 -32768 -2147483648 -9223372036854775808 255 65535 4294967295 18446744073709551615))
-   (for-each
-     (lambda (type precision)
-       (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
-          0.5
-          (let* [(llvm (make-llvm))
-                 (fun  (make-function llvm type "constant_double"))]
-            (function-ret fun (make-constant type 0.5))
-            (llvm-verify llvm)
-            (llvm-apply llvm fun))))
-     (list float double)
-     (list "single" "double"))
-(test-end "LLVM function")
+  (for-each
+    (lambda (type precision)
+      (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
+         0.5
+         (let* [(llvm (make-llvm))
+                (fun  (make-function llvm type "constant_double"))]
+           (function-ret fun (make-constant type 0.5))
+           (llvm-verify llvm)
+           (llvm-apply llvm fun))))
+    (list float double)
+    (list "single" "double"))
+(test-end "functions")
 
-(test-begin "LLVM pointer")
+(test-begin "pointers")
   (for-each (lambda (value type name)
     (test-equal (format #f "Read ~a value from memory" name)
       value
@@ -131,5 +131,17 @@
     '(2 770)
     (list int8 int16)
     '("byte" "short integer"))
-(test-end "LLVM pointer")
+(test-end "pointers")
+
+(test-begin "method arguments")
+  (test-assert "Declare a function which accepts arguments"
+    (let [(llvm (make-llvm))]
+      (make-function llvm int "with_arg" int)))
+  (test-assert "Call a function accepting an argument"
+    (let* [(llvm (make-llvm))
+           (fun  (make-function llvm void "with_arg" int))]
+      (function-ret fun)
+      (llvm-verify llvm)
+      (llvm-apply llvm fun 42)))
+(test-end "method arguments")
 (test-end "aiscm llvm")

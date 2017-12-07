@@ -1,9 +1,7 @@
 ## Ready
 
-* load/store different type of values
-* pointer constants and return-values
-* pointer <-> bytevector
 * method arguments
+* LLVM modules
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
 * "let" for tensors

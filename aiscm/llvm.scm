@@ -49,7 +49,8 @@
                             #:return-type return-type
                             #:llvm-function (make-llvm-function (slot-ref context 'llvm-context) return-type name)))))
 
-(define (make-function llvm return-type name) (make <llvm-function> #:context llvm #:return-type return-type #:name name))
+(define (make-function llvm return-type name . args)
+  (make <llvm-function> #:context llvm #:return-type return-type #:name name))
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
@@ -63,7 +64,7 @@
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-context)))
 
-(define (llvm-apply llvm fun)
+(define (llvm-apply llvm fun . args)
   (llvm-context-apply (slot-ref llvm 'llvm-context) (slot-ref fun 'return-type) (slot-ref fun 'llvm-function)))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
