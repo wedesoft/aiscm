@@ -39,18 +39,20 @@
 (define-method (destroy (self <llvm>)) (llvm-context-destroy (slot-ref self 'llvm-context)))
 
 (define-class* <llvm-function> <object> <meta<llvm-function>> <class>
-               (context       #:init-keyword #:context      )
-               (return-type   #:init-keyword #:return-type  )
-               (llvm-function #:init-keyword #:llvm-function))
+               (context        #:init-keyword #:context       )
+               (return-type    #:init-keyword #:return-type   )
+               (llvm-function  #:init-keyword #:llvm-function )
+               (argument-types #:init-keyword #:argument-types))
 
 (define-method (initialize (self <llvm-function>) initargs)
   (let-keywords initargs #f (context return-type name argument-types)
-    (next-method self (list #:context context
-                            #:return-type return-type
-                            #:llvm-function (make-llvm-function (slot-ref context 'llvm-context)
-                                                                return-type
-                                                                name
-                                                                argument-types)))))
+    (next-method self (list #:context        context
+                            #:return-type    return-type
+                            #:llvm-function  (make-llvm-function (slot-ref context 'llvm-context)
+                                                                 return-type
+                                                                 name
+                                                                 argument-types)
+                            #:argument-types argument-types))))
 
 (define (make-function llvm return-type name . argument-types)
   (make <llvm-function> #:context llvm
@@ -74,6 +76,7 @@
   (llvm-context-apply (slot-ref llvm 'llvm-context)
                       (slot-ref fun 'return-type)
                       (slot-ref fun 'llvm-function)
+                      (slot-ref fun 'argument-types)
                       arguments))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>

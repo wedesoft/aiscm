@@ -95,48 +95,6 @@ size_t free_llvm_function(SCM scm_self)
   return 0;
 }
 
-SCM make_llvm_context(void)
-{
-  SCM retval;
-  struct llvm_t *self;
-  self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
-  SCM_NEWSMOB(retval, llvm_tag, self);
-  self->module = LLVMModuleCreateWithName("aiscm");
-  char *error = NULL;
-  if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
-    SCM scm_error = scm_from_locale_string(error);
-    LLVMDisposeMessage(error);
-    scm_misc_error("make-llvm", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
-  };
-  return retval;
-}
-
-SCM llvm_context_destroy(SCM scm_self)
-{
-  struct llvm_t *self = get_llvm_no_check(scm_self);
-  if (self->engine) {
-    if (self->module) {
-      char *error = NULL;
-      LLVMRemoveModule(self->engine, self->module, &self->module, &error);
-      if (error) LLVMDisposeMessage(error);
-    };
-    LLVMDisposeExecutionEngine(self->engine);
-    self->engine = NULL;
-  };
-  if (self->module) {
-    LLVMDisposeModule(self->module);
-    self->module = NULL;
-  };
-  return SCM_UNSPECIFIED;
-}
-
-SCM llvm_dump_module(SCM scm_self)
-{
-  struct llvm_t *self = get_llvm(scm_self);
-  LLVMDumpModule(self->module);
-  return SCM_UNSPECIFIED;
-}
-
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
@@ -187,7 +145,7 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
   };
 }
 
-static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
+static SCM scm_from_llvm_generic_value(int type, LLVMGenericValueRef value)
 {
   switch (type) {
     case SCM_FOREIGN_TYPE_FLOAT:
@@ -205,6 +163,18 @@ static SCM scm_from_llvm_value(int type, LLVMGenericValueRef value)
       return scm_from_int64(LLVMGenericValueToInt(value, 1));
     default:
       return SCM_UNSPECIFIED;
+  };
+}
+
+LLVMGenericValueRef scm_to_llvm_generic_value(int type, SCM scm_value)
+{
+  switch (type) {
+    case SCM_FOREIGN_TYPE_DOUBLE:
+      return LLVMCreateGenericValueOfFloat(llvm_type(type), scm_to_double(scm_value));
+    case SCM_FOREIGN_TYPE_INT32:
+      return LLVMCreateGenericValueOfInt(llvm_type(type), scm_to_int(scm_value), 1);
+    default:
+      return NULL;
   };
 }
 
@@ -227,6 +197,48 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
     default:
       return NULL;
   };
+}
+
+SCM make_llvm_context(void)
+{
+  SCM retval;
+  struct llvm_t *self;
+  self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
+  SCM_NEWSMOB(retval, llvm_tag, self);
+  self->module = LLVMModuleCreateWithName("aiscm");
+  char *error = NULL;
+  if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
+    SCM scm_error = scm_from_locale_string(error);
+    LLVMDisposeMessage(error);
+    scm_misc_error("make-llvm", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
+  };
+  return retval;
+}
+
+SCM llvm_context_destroy(SCM scm_self)
+{
+  struct llvm_t *self = get_llvm_no_check(scm_self);
+  if (self->engine) {
+    if (self->module) {
+      char *error = NULL;
+      LLVMRemoveModule(self->engine, self->module, &self->module, &error);
+      if (error) LLVMDisposeMessage(error);
+    };
+    LLVMDisposeExecutionEngine(self->engine);
+    self->engine = NULL;
+  };
+  if (self->module) {
+    LLVMDisposeModule(self->module);
+    self->module = NULL;
+  };
+  return SCM_UNSPECIFIED;
+}
+
+SCM llvm_dump_module(SCM scm_self)
+{
+  struct llvm_t *self = get_llvm(scm_self);
+  LLVMDumpModule(self->module);
+  return SCM_UNSPECIFIED;
 }
 
 SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_argument_types)
@@ -276,16 +288,16 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_context_apply(SCM scm_llvm, SCM scm_return_type, SCM scm_function, SCM scm_arguments)
+SCM llvm_context_apply(SCM scm_llvm, SCM scm_return_type, SCM scm_function, SCM scm_argument_types, SCM scm_arguments)
 {
   struct llvm_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *function = get_llvm_function(scm_function);
   int n_arguments = scm_ilength(scm_arguments);
   LLVMGenericValueRef *arguments = scm_gc_malloc(n_arguments * sizeof(LLVMGenericValueRef), "llvm-context-apply");
   for (int i=0; i<n_arguments; i++)
-    arguments[i] = LLVMCreateGenericValueOfInt(LLVMInt32Type(), scm_to_int(scm_car(scm_arguments)), 1);
+    arguments[i] = scm_to_llvm_generic_value(scm_to_int(scm_car(scm_argument_types)), scm_car(scm_arguments));
   LLVMGenericValueRef result = LLVMRunFunction(llvm->engine, function->function, n_arguments, arguments);
-  SCM retval = scm_from_llvm_value(scm_to_int(scm_return_type), result);
+  SCM retval = scm_from_llvm_generic_value(scm_to_int(scm_return_type), result);
   LLVMDisposeGenericValue(result);
   return retval;
 }
@@ -378,7 +390,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
   scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-context-apply"       , 4, 0, 0, SCM_FUNC(llvm_context_apply       ));
+  scm_c_define_gsubr("llvm-context-apply"       , 5, 0, 0, SCM_FUNC(llvm_context_apply       ));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));

@@ -1,5 +1,6 @@
 ## Ready
 
+* dispose generic values
 * different method argument types
 * multiple arguments
 * LLVM modules

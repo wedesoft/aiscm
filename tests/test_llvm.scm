@@ -143,12 +143,20 @@
       (function-ret fun)
       (llvm-verify llvm)
       (llvm-apply llvm fun 42)))
-  (test-equal "Compile, verify, and run identity function"
+  (test-equal "Compile, verify, and run integer identity function"
     42
     (let* [(llvm (make-llvm))
            (fun  (make-function llvm int "with_arg" int))]
       (function-ret fun (function-param fun 0))
       (llvm-verify llvm)
       (llvm-apply llvm fun 42)))
+  (test-expect-fail 1)
+  (test-equal "Compile, verify, and run floating point identity function"
+    0.5
+    (let* [(llvm (make-llvm))
+           (fun  (make-function llvm double "with_arg" double))]
+      (function-ret fun (function-param fun 0))
+      (llvm-verify llvm)
+      (llvm-apply llvm fun 0.5)))
 (test-end "method arguments")
 (test-end "aiscm llvm")
