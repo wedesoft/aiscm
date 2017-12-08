@@ -1,5 +1,6 @@
 ## Ready
 
+* use LLVMGetFunctionAddress and the ffi library to perform the function call
 * dispose generic values
 * different method argument types
 * multiple arguments
