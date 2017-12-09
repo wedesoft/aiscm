@@ -48,14 +48,15 @@
 
 (define-method (initialize (self <llvm-function>) initargs)
   (let-keywords initargs #f (context return-type name argument-types)
+    (let* [(fun (make-llvm-function (slot-ref context 'llvm-context)
+                                   return-type
+                                   name
+                                   argument-types))]
     (next-method self (list #:context        context
                             #:name           name
                             #:return-type    return-type
-                            #:llvm-function  (make-llvm-function (slot-ref context 'llvm-context)
-                                                                 return-type
-                                                                 name
-                                                                 argument-types)
-                            #:argument-types argument-types))))
+                            #:llvm-function  fun
+                            #:argument-types argument-types)))))
 
 (define (make-function llvm return-type name . argument-types)
   (make <llvm-function> #:context llvm
