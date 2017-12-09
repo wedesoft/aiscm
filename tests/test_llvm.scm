@@ -150,7 +150,6 @@
       (function-ret fun (function-param fun 0))
       (llvm-verify llvm)
       (llvm-apply llvm fun 42)))
-  (test-expect-fail 1)
   (test-equal "Compile, verify, and run floating point identity function"
     0.5
     (let* [(llvm (make-llvm))

@@ -17,6 +17,7 @@
 (define-module (aiscm llvm)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (system foreign)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
@@ -40,6 +41,7 @@
 
 (define-class* <llvm-function> <object> <meta<llvm-function>> <class>
                (context        #:init-keyword #:context       )
+               (name           #:init-keyword #:name          )
                (return-type    #:init-keyword #:return-type   )
                (llvm-function  #:init-keyword #:llvm-function )
                (argument-types #:init-keyword #:argument-types))
@@ -47,6 +49,7 @@
 (define-method (initialize (self <llvm-function>) initargs)
   (let-keywords initargs #f (context return-type name argument-types)
     (next-method self (list #:context        context
+                            #:name           name
                             #:return-type    return-type
                             #:llvm-function  (make-llvm-function (slot-ref context 'llvm-context)
                                                                  return-type
@@ -73,11 +76,10 @@
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-context)))
 
 (define (llvm-apply llvm fun . arguments)
-  (llvm-context-apply (slot-ref llvm 'llvm-context)
-                      (slot-ref fun 'return-type)
-                      (slot-ref fun 'llvm-function)
-                      (slot-ref fun 'argument-types)
-                      arguments))
+  (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-context) (slot-ref fun 'name)))]
+    (apply (pointer->procedure (slot-ref fun 'return-type)
+                               ptr
+                              (slot-ref fun 'argument-types)) arguments)))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))

@@ -145,39 +145,6 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
   };
 }
 
-static SCM scm_from_llvm_generic_value(int type, LLVMGenericValueRef value)
-{
-  switch (type) {
-    case SCM_FOREIGN_TYPE_FLOAT:
-    case SCM_FOREIGN_TYPE_DOUBLE:
-      return scm_from_double(LLVMGenericValueToFloat(llvm_type(type), value));
-    case SCM_FOREIGN_TYPE_UINT8:
-    case SCM_FOREIGN_TYPE_UINT16:
-    case SCM_FOREIGN_TYPE_UINT32:
-    case SCM_FOREIGN_TYPE_UINT64:
-      return scm_from_uint64(LLVMGenericValueToInt(value, 0));
-    case SCM_FOREIGN_TYPE_INT8:
-    case SCM_FOREIGN_TYPE_INT16:
-    case SCM_FOREIGN_TYPE_INT32:
-    case SCM_FOREIGN_TYPE_INT64:
-      return scm_from_int64(LLVMGenericValueToInt(value, 1));
-    default:
-      return SCM_UNSPECIFIED;
-  };
-}
-
-LLVMGenericValueRef scm_to_llvm_generic_value(int type, SCM scm_value)
-{
-  switch (type) {
-    case SCM_FOREIGN_TYPE_DOUBLE:
-      return LLVMCreateGenericValueOfFloat(llvm_type(type), scm_to_double(scm_value));
-    case SCM_FOREIGN_TYPE_INT32:
-      return LLVMCreateGenericValueOfInt(llvm_type(type), scm_to_int(scm_value), 1);
-    default:
-      return NULL;
-  };
-}
-
 static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
 {
   switch (type) {
@@ -288,18 +255,10 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_context_apply(SCM scm_llvm, SCM scm_return_type, SCM scm_function, SCM scm_argument_types, SCM scm_arguments)
+SCM llvm_get_function_address(SCM scm_llvm, SCM scm_name)
 {
   struct llvm_t *llvm = get_llvm(scm_llvm);
-  struct llvm_function_t *function = get_llvm_function(scm_function);
-  int n_arguments = scm_ilength(scm_arguments);
-  LLVMGenericValueRef *arguments = scm_gc_malloc(n_arguments * sizeof(LLVMGenericValueRef), "llvm-context-apply");
-  for (int i=0; i<n_arguments; i++)
-    arguments[i] = scm_to_llvm_generic_value(scm_to_int(scm_car(scm_argument_types)), scm_car(scm_arguments));
-  LLVMGenericValueRef result = LLVMRunFunction(llvm->engine, function->function, n_arguments, arguments);
-  SCM retval = scm_from_llvm_generic_value(scm_to_int(scm_return_type), result);
-  LLVMDisposeGenericValue(result);
-  return retval;
+  return scm_from_pointer((void *)LLVMGetFunctionAddress(llvm->engine, scm_to_locale_string(scm_name)), NULL);
 }
 
 SCM llvm_verify_module(SCM scm_llvm)
@@ -390,7 +349,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
   scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-context-apply"       , 5, 0, 0, SCM_FUNC(llvm_context_apply       ));
+  scm_c_define_gsubr("llvm-get-function-address", 2, 0, 0, SCM_FUNC(llvm_get_function_address));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
