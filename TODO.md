@@ -1,7 +1,6 @@
 ## Ready
 
-* use LLVMGetFunctionAddress and the ffi library to perform the function call
-* dispose generic values
+* separate engine
 * different method argument types
 * multiple arguments
 * LLVM modules
