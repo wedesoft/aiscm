@@ -173,12 +173,6 @@ SCM make_llvm_module(void)
   self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
   SCM_NEWSMOB(retval, llvm_tag, self);
   self->module = LLVMModuleCreateWithName("aiscm");
-  char *error = NULL;
-  if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
-    SCM scm_error = scm_from_locale_string(error);
-    LLVMDisposeMessage(error);
-    scm_misc_error("make-llvm", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
-  };
   return retval;
 }
 
@@ -257,8 +251,16 @@ SCM llvm_function_return_void(SCM scm_self)
 
 SCM llvm_get_function_address(SCM scm_llvm, SCM scm_name)
 {
-  struct llvm_t *llvm = get_llvm(scm_llvm);
-  return scm_from_pointer((void *)LLVMGetFunctionAddress(llvm->engine, scm_to_locale_string(scm_name)), NULL);
+  struct llvm_t *self = get_llvm(scm_llvm);
+  if (!self->engine) {
+    char *error = NULL;
+    if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
+      SCM scm_error = scm_from_locale_string(error);
+      LLVMDisposeMessage(error);
+      scm_misc_error("make-module", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
+    };
+  };
+  return scm_from_pointer((void *)LLVMGetFunctionAddress(self->engine, scm_to_locale_string(scm_name)), NULL);
 }
 
 SCM llvm_verify_module(SCM scm_llvm)
