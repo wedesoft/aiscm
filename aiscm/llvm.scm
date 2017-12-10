@@ -77,7 +77,7 @@
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
 (define (llvm-apply llvm fun . arguments)
-  (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
+  (let [(ptr (llvm-compile-function (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
     (apply (pointer->procedure (slot-ref fun 'return-type)
                                ptr
                               (slot-ref fun 'argument-types)) arguments)))

@@ -249,7 +249,7 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_get_function_address(SCM scm_llvm, SCM scm_name)
+SCM llvm_compile_function(SCM scm_llvm, SCM scm_name)
 {
   struct llvm_t *self = get_llvm(scm_llvm);
   if (!self->engine) {
@@ -351,7 +351,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
   scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-get-function-address", 2, 0, 0, SCM_FUNC(llvm_get_function_address));
+  scm_c_define_gsubr("llvm-compile-function"    , 2, 0, 0, SCM_FUNC(llvm_compile_function    ));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
