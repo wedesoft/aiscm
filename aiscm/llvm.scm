@@ -22,7 +22,7 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant make-llvm make-function llvm-verify llvm-dump
+            make-constant make-module make-function llvm-verify llvm-dump
             function-ret llvm-apply get-type llvm-verify
             function-load function-store function-param)
   #:re-export (destroy))
@@ -35,7 +35,7 @@
 (define-method (initialize (self <llvm>) initargs)
   (next-method self (list #:llvm-module (make-llvm-module))))
 
-(define (make-llvm) (make <llvm>))
+(define (make-module) (make <llvm>))
 
 (define-method (destroy (self <llvm>)) (llvm-module-destroy (slot-ref self 'llvm-module)))
 
