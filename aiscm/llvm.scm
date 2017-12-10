@@ -30,36 +30,36 @@
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
 (define-class* <llvm> <object> <meta<llvm>> <class>
-               (llvm-context #:init-keyword #:llvm-context))
+               (llvm-module #:init-keyword #:llvm-module))
 
 (define-method (initialize (self <llvm>) initargs)
-  (next-method self (list #:llvm-context (make-llvm-context))))
+  (next-method self (list #:llvm-module (make-llvm-module))))
 
 (define (make-llvm) (make <llvm>))
 
-(define-method (destroy (self <llvm>)) (llvm-context-destroy (slot-ref self 'llvm-context)))
+(define-method (destroy (self <llvm>)) (llvm-module-destroy (slot-ref self 'llvm-module)))
 
 (define-class* <llvm-function> <object> <meta<llvm-function>> <class>
-               (context        #:init-keyword #:context       )
+               (module         #:init-keyword #:module        )
                (name           #:init-keyword #:name          )
                (return-type    #:init-keyword #:return-type   )
                (llvm-function  #:init-keyword #:llvm-function )
                (argument-types #:init-keyword #:argument-types))
 
 (define-method (initialize (self <llvm-function>) initargs)
-  (let-keywords initargs #f (context return-type name argument-types)
-    (let* [(fun (make-llvm-function (slot-ref context 'llvm-context)
+  (let-keywords initargs #f (module return-type name argument-types)
+    (let* [(fun (make-llvm-function (slot-ref module 'llvm-module)
                                    return-type
                                    name
                                    argument-types))]
-    (next-method self (list #:context        context
+    (next-method self (list #:module         module
                             #:name           name
                             #:return-type    return-type
                             #:llvm-function  fun
                             #:argument-types argument-types)))))
 
-(define (make-function llvm return-type name . argument-types)
-  (make <llvm-function> #:context llvm
+(define (make-function module return-type name . argument-types)
+  (make <llvm-function> #:module module
                         #:return-type return-type
                         #:name name
                         #:argument-types argument-types))
@@ -72,12 +72,12 @@
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
 
-(define (llvm-verify self) (llvm-verify-module (slot-ref self 'llvm-context)))
+(define (llvm-verify self) (llvm-verify-module (slot-ref self 'llvm-module)))
 
-(define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-context)))
+(define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
 (define (llvm-apply llvm fun . arguments)
-  (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-context) (slot-ref fun 'name)))]
+  (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
     (apply (pointer->procedure (slot-ref fun 'return-type)
                                ptr
                               (slot-ref fun 'argument-types)) arguments)))

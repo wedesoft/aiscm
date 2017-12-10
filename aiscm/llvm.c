@@ -75,12 +75,12 @@ static struct llvm_value_t *get_llvm_value(SCM scm_self)
   return get_llvm_value_no_check(scm_self);
 }
 
-SCM llvm_context_destroy(SCM scm_self);
+SCM llvm_module_destroy(SCM scm_self);
 
 size_t free_llvm(SCM scm_self)
 {
   struct llvm_t *self = get_llvm_no_check(scm_self);
-  llvm_context_destroy(scm_self);
+  llvm_module_destroy(scm_self);
   scm_gc_free(self, sizeof(struct llvm_t), "llvm");
   return 0;
 }
@@ -166,7 +166,7 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
   };
 }
 
-SCM make_llvm_context(void)
+SCM make_llvm_module(void)
 {
   SCM retval;
   struct llvm_t *self;
@@ -182,7 +182,7 @@ SCM make_llvm_context(void)
   return retval;
 }
 
-SCM llvm_context_destroy(SCM scm_self)
+SCM llvm_module_destroy(SCM scm_self)
 {
   struct llvm_t *self = get_llvm_no_check(scm_self);
   if (self->engine) {
@@ -334,7 +334,7 @@ void init_llvm(void)
   LLVMInitializeNativeAsmPrinter();
   LLVMInitializeNativeAsmParser();
 
-  llvm_tag = scm_make_smob_type("llvmcontext", sizeof(struct llvm_t));
+  llvm_tag = scm_make_smob_type("llvmmodule", sizeof(struct llvm_t));
   scm_set_smob_free(llvm_tag, free_llvm);
 
   llvm_function_tag = scm_make_smob_type("llvmfunction", sizeof(struct llvm_function_t));
@@ -342,8 +342,8 @@ void init_llvm(void)
 
   llvm_value_tag = scm_make_smob_type("llvmvalue", sizeof(struct llvm_value_t));
 
-  scm_c_define_gsubr("make-llvm-context"        , 0, 0, 0, SCM_FUNC(make_llvm_context        ));
-  scm_c_define_gsubr("llvm-context-destroy"     , 1, 0, 0, SCM_FUNC(llvm_context_destroy     ));
+  scm_c_define_gsubr("make-llvm-module"         , 0, 0, 0, SCM_FUNC(make_llvm_module         ));
+  scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
   scm_c_define_gsubr("make-llvm-function"       , 4, 0, 0, SCM_FUNC(make_llvm_function       ));
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
