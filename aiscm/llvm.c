@@ -345,6 +345,18 @@ SCM llvm_build_add(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return retval;
 }
 
+SCM llvm_build_fadd(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value_a = get_llvm_value(scm_value_a);
+  struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMBuildFAdd(function->builder, value_a->value, value_b->value, "");
+  return retval;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -376,4 +388,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-store"         , 4, 0, 0, SCM_FUNC(llvm_build_store         ));
   scm_c_define_gsubr("llvm-get-param"           , 2, 0, 0, SCM_FUNC(llvm_get_param           ));
   scm_c_define_gsubr("llvm-build-add"           , 3, 0, 0, SCM_FUNC(llvm_build_add           ));
+  scm_c_define_gsubr("llvm-build-fadd"          , 3, 0, 0, SCM_FUNC(llvm_build_fadd          ));
 }

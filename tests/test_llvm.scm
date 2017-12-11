@@ -173,5 +173,12 @@
       (function-ret fun (llvm-add fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
       ((llvm-func mod fun) 2 3)))
+  (test-equal "Add two floating-point numbers"
+    5.75
+    (let* [(mod (make-module))
+           (fun (make-function mod double "add" double double))]
+      (function-ret fun (llvm-fadd fun (function-param fun 0) (function-param fun 1)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 2.5 3.25)))
 (test-end "binary expressions")
 (test-end "aiscm llvm")

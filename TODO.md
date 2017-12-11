@@ -1,8 +1,7 @@
 ## Ready
 
-* arithmetic expression + is LLVMBuildFAdd?
 * make-module is core binding
-* test multiple arguments
+* unary and binary arithmetic expressions, refactor
 * simple lambda to define function
 * functions with let statement
 * pointer arguments (memory?)
