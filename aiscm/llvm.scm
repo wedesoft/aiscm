@@ -23,8 +23,8 @@
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
             make-constant make-module make-function llvm-dump
-            function-ret llvm-func get-type llvm-compile
-            function-load function-store function-param)
+            function-ret llvm-func get-type llvm-compile function-load function-store function-param
+            llvm-add)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -86,6 +86,7 @@
                (llvm-value #:init-keyword #:llvm-value))
 
 (define (make-constant type value)
+  "Create a constant LLVM value"
   (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
 
 (define (get-type value)
@@ -103,3 +104,9 @@
 (define (function-param self index)
   "Get value of INDEXth function parameter"
   (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref self 'llvm-function) index)))
+
+(define (llvm-add self value-a value-b)
+  "Instruction to add two values"
+  (make <llvm-value> #:llvm-value (llvm-build-add (slot-ref self 'llvm-function)
+                                                  (slot-ref value-a 'llvm-value)
+                                                  (slot-ref value-b 'llvm-value))))

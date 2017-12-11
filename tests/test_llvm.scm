@@ -164,4 +164,14 @@
       (llvm-compile mod)
       ((llvm-func mod fun) 0.5)))
 (test-end "method arguments")
+
+(test-begin "binary expressions")
+  (test-equal "Add two integers"
+    5
+    (let* [(mod (make-module))
+           (fun (make-function mod int "add" int int))]
+      (function-ret fun (llvm-add fun (function-param fun 0) (function-param fun 1)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 2 3)))
+(test-end "binary expressions")
 (test-end "aiscm llvm")

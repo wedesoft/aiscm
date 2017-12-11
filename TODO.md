@@ -1,7 +1,11 @@
 ## Ready
 
-* pointer arguments
-* multiple arguments
+* arithmetic expression + is LLVMBuildFAdd?
+* make-module is core binding
+* test multiple arguments
+* simple lambda to define function
+* functions with let statement
+* pointer arguments (memory?)
 * LLVM modules
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
