@@ -1,4 +1,6 @@
 #include <libguile.h>
+#define SCM_FUNC(ptr) ((void *)(size_t)ptr)
+
 
 int *ret;
 
@@ -26,6 +28,6 @@ SCM negate(SCM scm_ptr, SCM scm_stride, SCM scm_size)
 
 void init_bench(void)
 {
-  scm_c_define_gsubr("allocation", 1, 0, 0, allocation);
-  scm_c_define_gsubr("negate", 3, 0, 0, negate);
+  scm_c_define_gsubr("allocation", 1, 0, 0, SCM_FUNC(allocation));
+  scm_c_define_gsubr("negate"    , 3, 0, 0, SCM_FUNC(negate    ));
 }

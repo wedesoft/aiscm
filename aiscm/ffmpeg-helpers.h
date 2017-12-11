@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef __AISCM_FFMPEG_HELPERS_H
-#define __AISCM_FFMPEG_HELPERS_H
-
+#pragma once
 #include <libguile.h>
 
 
@@ -48,5 +46,3 @@ void *ring_buffer_pop(struct ring_buffer_t *ring_buffer);
 int ring_buffer_full(struct ring_buffer_t *ring_buffer);
 
 int ring_buffer_empty(struct ring_buffer_t *ring_buffer);
-
-#endif

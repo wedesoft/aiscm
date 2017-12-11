@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "ffmpeg-helpers.h"
+#include "util-helpers.h"
 
 
 SCM int_array_to_long_one_element(void)
@@ -141,18 +142,18 @@ SCM pack_short_int_audio_samples(void)
 
 void init_ffmpeg_helpers_tests(void)
 {
-  scm_c_define_gsubr("int-array-to-long-one-element"   , 0, 0, 0, int_array_to_long_one_element   );
-  scm_c_define_gsubr("int-array-to-long-second-element", 0, 0, 0, int_array_to_long_second_element);
-  scm_c_define_gsubr("from-array-empty"                , 0, 0, 0, from_array_empty                );
-  scm_c_define_gsubr("from-array-three-elements"       , 0, 0, 0, from_array_three_elements       );
-  scm_c_define_gsubr("from-array-stop-at-zero"         , 0, 0, 0, from_array_stop_at_zero         );
-  scm_c_define_gsubr("from-array-at-least-one"         , 0, 0, 0, from_array_at_least_one         );
-  scm_c_define_gsubr("from-array-long-integers"        , 0, 0, 0, from_array_long_integers        );
-  scm_c_define_gsubr("first-offset-is-zero"            , 0, 0, 0, first_offset_is_zero            );
-  scm_c_define_gsubr("second-offset-correct"           , 0, 0, 0, second_offset_correct           );
-  scm_c_define_gsubr("zero-offset-for-null-pointer"    , 0, 0, 0, zero_offset_for_null_pointer    );
-  scm_c_define_gsubr("offsets-have-64-bit"             , 1, 0, 0, offsets_have_64_bit             );
-  scm_c_define_gsubr("pack-byte-audio-sample"          , 0, 0, 0, pack_byte_audio_sample          );
-  scm_c_define_gsubr("pack-byte-audio-samples"         , 0, 0, 0, pack_byte_audio_samples         );
-  scm_c_define_gsubr("pack-short-int-audio-samples"    , 0, 0, 0, pack_short_int_audio_samples    );
+  scm_c_define_gsubr("int-array-to-long-one-element"   , 0, 0, 0, SCM_FUNC(int_array_to_long_one_element   ));
+  scm_c_define_gsubr("int-array-to-long-second-element", 0, 0, 0, SCM_FUNC(int_array_to_long_second_element));
+  scm_c_define_gsubr("from-array-empty"                , 0, 0, 0, SCM_FUNC(from_array_empty                ));
+  scm_c_define_gsubr("from-array-three-elements"       , 0, 0, 0, SCM_FUNC(from_array_three_elements       ));
+  scm_c_define_gsubr("from-array-stop-at-zero"         , 0, 0, 0, SCM_FUNC(from_array_stop_at_zero         ));
+  scm_c_define_gsubr("from-array-at-least-one"         , 0, 0, 0, SCM_FUNC(from_array_at_least_one         ));
+  scm_c_define_gsubr("from-array-long-integers"        , 0, 0, 0, SCM_FUNC(from_array_long_integers        ));
+  scm_c_define_gsubr("first-offset-is-zero"            , 0, 0, 0, SCM_FUNC(first_offset_is_zero            ));
+  scm_c_define_gsubr("second-offset-correct"           , 0, 0, 0, SCM_FUNC(second_offset_correct           ));
+  scm_c_define_gsubr("zero-offset-for-null-pointer"    , 0, 0, 0, SCM_FUNC(zero_offset_for_null_pointer    ));
+  scm_c_define_gsubr("offsets-have-64-bit"             , 1, 0, 0, SCM_FUNC(offsets_have_64_bit             ));
+  scm_c_define_gsubr("pack-byte-audio-sample"          , 0, 0, 0, SCM_FUNC(pack_byte_audio_sample          ));
+  scm_c_define_gsubr("pack-byte-audio-samples"         , 0, 0, 0, SCM_FUNC(pack_byte_audio_samples         ));
+  scm_c_define_gsubr("pack-short-int-audio-samples"    , 0, 0, 0, SCM_FUNC(pack_short_int_audio_samples    ));
 }

@@ -26,8 +26,8 @@
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
-            process-events event-loop quit? quit=
-            show hide title= resize IO-XIMAGE IO-OPENGL IO-XVIDEO)
+            process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
+            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO)
   #:re-export (destroy write-image))
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
@@ -47,37 +47,66 @@
               (window #:init-keyword #:window #:getter get-window))
 (define-method (initialize (self <xwindow>) initargs)
   (let-keywords initargs #f (display shape io)
-    (let [(io (or io IO-XIMAGE))]
+    (let [(io     (or io IO-XIMAGE))]
       (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
-(define-method (show (self <xwindow>)) (window-show (get-window self)))
-(define-method (show (self <image>)) (show (list self)) self)
-(define-method (show (self <sequence<>>)) (show (list self)) self)
-(define-method (show (self <list>))
-  (let* [(dsp     (make <xdisplay>))
-         (images  (map to-image self))
-         (shapes  (map shape images))
-         (window  (cut make <xwindow> #:display dsp #:shape <> #:io IO-XIMAGE))
-         (windows (map window shapes))]
+
+(define (window-size img . args)
+  "Determine window size for an image and some optional keyword arguments"
+  (let* [(shp (shape img))
+         (w   (car shp))
+         (h   (cadr shp))]
+    (or (let-keywords args #t (shape width height)
+      (or shape
+          (and width  (list width (round (* (/ width w) h))))
+          (and height (list (round (* (/ height h) w)) height))))
+    shp)))
+
+(define-syntax-rule (flag? name args)
+  (let-keywords args #t (name) name))
+
+(define (fullscreen-flag . args)
+  "Check whether fullscreen keyword is set to true"
+  (flag? fullscreen args))
+
+(define (xorg-io-type is-video images . args)
+  "Select X.Org IO type"
+  (let-keywords args #t (io)
+    (or io (if is-video (if (null? (cdr images)) IO-XVIDEO IO-OPENGL) IO-XIMAGE))))
+
+(define-method (show (self <xwindow>))
+  (window-show (get-window self)))
+(define-method (show (self <image>) . args) (apply show (list self) args) self)
+(define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
+(define-method (show (self <list>) . args)
+  (let* [(dsp         (make <xdisplay>))
+         (io          (apply xorg-io-type #f self args))
+         (images      (map to-image self))
+         (shapes      (map (cut apply window-size <> args) images))
+         (fullscreen  (apply fullscreen-flag args))
+         (show-method(if fullscreen show-fullscreen show))
+         (window      (cut make <xwindow> #:display dsp #:shape <> #:io io))
+         (windows     (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
-    (for-each show windows)
+    (for-each show-method windows)
     (event-loop dsp #f)
     (for-each hide windows)
     (destroy dsp)
     self))
-(define-method (show (self <sequence<>>)) (show (to-image self)) self)
-(define-method (show (self <procedure>))
-  (let* [(dsp     (make <xdisplay>))
-         (result  (self dsp))
-         (results (if (list? result) result (list result)))
-         (io      (if (null? (cdr results)) IO-XVIDEO IO-XIMAGE))
-         (images  (map to-image results))
-         (shapes  (map shape images))
-         (window  (cut make <xwindow> #:display dsp #:shape <> #:io io))
-         (windows (map window shapes))]
+(define-method (show (self <procedure>) . args)
+  (let* [(dsp         (make <xdisplay>))
+         (result      (self dsp))
+         (results     (if (list? result) result (list result)))
+         (io          (apply xorg-io-type #t results args))
+         (images      (map to-image results))
+         (shapes      (map (cut apply window-size <> args) images))
+         (fullscreen  (apply fullscreen-flag args))
+         (show-method (if fullscreen show-fullscreen show))
+         (window      (cut make <xwindow> #:display dsp #:shape <> #:io io))
+         (windows     (map window shapes))]
     (for-each (cut title= <> "AIscm") windows)
     (for-each write-image images windows)
-    (for-each show windows)
+    (for-each show-method windows)
     (while (not (quit? dsp))
       (set! result (self dsp))
       (if result
@@ -90,10 +119,19 @@
     (for-each hide windows)
     (destroy dsp)
     result))
+
+(define-method (show-fullscreen (self <xwindow>)) (window-show-fullscreen (get-window self)))
+
 (define-method (hide (self <xwindow>)) (window-hide (get-window self)))
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
-(define-method (resize (self <xwindow>) (shape <list>))
-  (window-resize (get-window self) (car shape) (cadr shape)))
+
+(define-method (move (self <xwindow>) (x <integer>) (y <integer>))
+  (window-move (get-window self) x y))
+(define-method (resize (self <xwindow>) (w <integer>) (h <integer>))
+  (window-resize (get-window self) w h))
+(define-method (move-resize (self <xwindow>) (x <integer>) (y <integer>) (w <integer>) (h <integer>))
+  (window-move-resize (get-window self) x y w h))
+
 (define-method (write-image (image <image>) (self <xwindow>)) (window-write (get-window self) image))
 (define-method (write-image (arr <sequence<>>) (self <xwindow>)) (show self (to-image arr)) arr)
