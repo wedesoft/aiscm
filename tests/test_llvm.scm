@@ -55,38 +55,45 @@
 
 (test-begin "functions")
   (test-equal "Create LLVM function"
-    <llvm-function> (class-of (let [(llvm (make-module))] (make-function llvm void "function"))))
-  (let [(llvm (make-module))]
+    <llvm-function> (class-of (let [(mod (make-module))] (make-function mod void "function"))))
+  (let [(mod (make-module))]
     (test-equal "Keep LLVM instance alive"
-      llvm (slot-ref (make-function llvm void "function") 'module)))
+      mod (slot-ref (make-function mod void "function") 'module)))
   (test-assert "Compile, verify, and run empty function"
     (unspecified?
-      (let* [(llvm (make-module))
-             (fun  (make-function llvm void "empty"))]
+      (let* [(mod  (make-module))
+             (fun  (make-function mod void "empty"))]
         (function-ret fun)
-        (llvm-compile llvm)
-        (llvm-apply llvm fun))))
+        (llvm-compile mod)
+        (llvm-apply mod fun))))
   (test-assert "Dump module containing a function"
     (unspecified?
-      (let* [(llvm (make-module))
-             (fun  (make-function llvm void "empty"))]
+      (let* [(mod  (make-module))
+             (fun  (make-function mod void "empty"))]
         (function-ret fun)
-        (llvm-dump llvm))))
+        (llvm-dump mod))))
   (test-error "Throw error if verification of module failed"
     'misc-error
-    (let* [(llvm (make-module))
-           (fun  (make-function llvm void "incomplete"))]
+    (let* [(mod  (make-module))
+           (fun  (make-function mod void "incomplete"))]
       (llvm-compile llvm)
-      (llvm-apply llvm fun)))
+      (llvm-apply mod fun)))
+  (test-error "Throw error when attempting to compile again"
+    'misc-error
+    (let* [(mod  (make-module))
+           (fun  (make-function mod void "empty"))]
+      (function-ret fun)
+      (llvm-compile llvm)
+      (llvm-compile llvm)))
   (for-each
     (lambda (type sign bits value)
       (test-equal (format #f "Compile and run function returning a ~a ~a-bit integer" sign bits)
         value
-        (let* [(llvm (make-module))
-               (fun  (make-function llvm type "constant_int"))]
+        (let* [(mod (make-module))
+               (fun (make-function mod type "constant_int"))]
           (function-ret fun (make-constant type value))
-          (llvm-compile llvm)
-          (llvm-apply llvm fun))))
+          (llvm-compile mod)
+          (llvm-apply mod fun))))
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
@@ -95,11 +102,11 @@
     (lambda (type precision)
       (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
          0.5
-         (let* [(llvm (make-module))
-                (fun  (make-function llvm type "constant_double"))]
+         (let* [(mod  (make-module))
+                (fun  (make-function mod type "constant_double"))]
            (function-ret fun (make-constant type 0.5))
-           (llvm-compile llvm)
-           (llvm-apply llvm fun))))
+           (llvm-compile mod)
+           (llvm-apply mod fun))))
     (list float double)
     (list "single" "double"))
 (test-end "functions")
@@ -109,23 +116,23 @@
     (test-equal (format #f "Read ~a value from memory" name)
       value
       (let* [(data #vu8(2 3 5 7))
-             (llvm (make-module))
-             (fun  (make-function llvm type "read_mem"))]
+             (mod  (make-module))
+             (fun  (make-function mod type "read_mem"))]
         (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
-        (llvm-compile llvm)
-        (llvm-apply llvm fun))))
+        (llvm-compile mod)
+        (llvm-apply mod fun))))
     '(2 770)
     (list int8 int16)
     '("byte" "short integer"))
   (for-each (lambda (data value type name)
     (test-equal (format #f "Write ~a to memory" name)
       #vu8(2 3 5 7)
-      (let* [(llvm (make-module))
-             (fun  (make-function llvm void "write_mem"))]
+      (let* [(mod  (make-module))
+             (fun  (make-function mod void "write_mem"))]
         (function-store fun type (make-constant type value) (make-constant int64 (pointer-address (bytevector->pointer data))))
         (function-ret fun)
-        (llvm-compile llvm)
-        (llvm-apply llvm fun)
+        (llvm-compile mod)
+        (llvm-apply mod fun)
         data)))
     (list #vu8(0 3 5 7) #vu8(0 0 5 7))
     '(2 770)
@@ -135,27 +142,27 @@
 
 (test-begin "method arguments")
   (test-assert "Declare a function which accepts arguments"
-    (let [(llvm (make-module))]
-      (make-function llvm int "with_arg" int)))
+    (let [(mod (make-module))]
+      (make-function mod int "with_arg" int)))
   (test-assert "Call a function accepting an argument"
-    (let* [(llvm (make-module))
-           (fun  (make-function llvm void "accept_arg" int))]
+    (let* [(mod  (make-module))
+           (fun  (make-function mod void "accept_arg" int))]
       (function-ret fun)
-      (llvm-compile llvm)
-      (llvm-apply llvm fun 42)))
+      (llvm-compile mod)
+      (llvm-apply mod fun 42)))
   (test-equal "Compile, verify, and run integer identity function"
     42
-    (let* [(llvm (make-module))
-           (fun  (make-function llvm int "int_identity" int))]
+    (let* [(mod  (make-module))
+           (fun  (make-function mod int "int_identity" int))]
       (function-ret fun (function-param fun 0))
-      (llvm-compile llvm)
-      (llvm-apply llvm fun 42)))
+      (llvm-compile mod)
+      (llvm-apply mod fun 42)))
   (test-equal "Compile, verify, and run floating point identity function"
     0.5
-    (let* [(llvm (make-module))
-           (fun  (make-function llvm double "double_identity" double))]
+    (let* [(mod  (make-module))
+           (fun  (make-function mod double "double_identity" double))]
       (function-ret fun (function-param fun 0))
-      (llvm-compile llvm)
-      (llvm-apply llvm fun 0.5)))
+      (llvm-compile mod)
+      (llvm-apply mod fun 0.5)))
 (test-end "method arguments")
 (test-end "aiscm llvm")

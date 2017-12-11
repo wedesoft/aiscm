@@ -252,13 +252,13 @@ SCM llvm_function_return_void(SCM scm_self)
 SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
 {
   struct llvm_module_t *self = get_llvm(scm_llvm);
-  if (!self->engine) {
-    char *error = NULL;
-    if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
-      SCM scm_error = scm_from_locale_string(error);
-      LLVMDisposeMessage(error);
-      scm_misc_error("make-module", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
-    };
+  if (self->engine != NULL)
+    scm_misc_error("llvm-compile", "LLVM module already compiled", SCM_EOL);
+  char *error = NULL;
+  if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
+    SCM scm_error = scm_from_locale_string(error);
+    LLVMDisposeMessage(error);
+    scm_misc_error("llvm-compile", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
   };
   return SCM_UNSPECIFIED;
 }
