@@ -22,13 +22,13 @@
 #include "util-helpers.h"
 
 
-static scm_t_bits llvm_tag;
+static scm_t_bits llvm_module_tag;
 
 static scm_t_bits llvm_function_tag;
 
 static scm_t_bits llvm_value_tag;
 
-struct llvm_t {
+struct llvm_module_t {
   LLVMModuleRef module;
   LLVMExecutionEngineRef engine;
 };
@@ -42,14 +42,14 @@ struct llvm_value_t {
   LLVMValueRef value;
 };
 
-static struct llvm_t *get_llvm_no_check(SCM scm_self)
+static struct llvm_module_t *get_llvm_no_check(SCM scm_self)
 {
-  return (struct llvm_t *)SCM_SMOB_DATA(scm_self);
+  return (struct llvm_module_t *)SCM_SMOB_DATA(scm_self);
 }
 
-static struct llvm_t *get_llvm(SCM scm_self)
+static struct llvm_module_t *get_llvm(SCM scm_self)
 {
-  scm_assert_smob_type(llvm_tag, scm_self);
+  scm_assert_smob_type(llvm_module_tag, scm_self);
   return get_llvm_no_check(scm_self);
 }
 
@@ -77,11 +77,11 @@ static struct llvm_value_t *get_llvm_value(SCM scm_self)
 
 SCM llvm_module_destroy(SCM scm_self);
 
-size_t free_llvm(SCM scm_self)
+size_t free_llvm_module(SCM scm_self)
 {
-  struct llvm_t *self = get_llvm_no_check(scm_self);
+  struct llvm_module_t *self = get_llvm_no_check(scm_self);
   llvm_module_destroy(scm_self);
-  scm_gc_free(self, sizeof(struct llvm_t), "llvm");
+  scm_gc_free(self, sizeof(struct llvm_module_t), "llvm");
   return 0;
 }
 
@@ -169,16 +169,16 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
 SCM make_llvm_module(void)
 {
   SCM retval;
-  struct llvm_t *self;
-  self = (struct llvm_t *)scm_gc_calloc(sizeof(struct llvm_t), "llvm");
-  SCM_NEWSMOB(retval, llvm_tag, self);
+  struct llvm_module_t *self;
+  self = (struct llvm_module_t *)scm_gc_calloc(sizeof(struct llvm_module_t), "llvm");
+  SCM_NEWSMOB(retval, llvm_module_tag, self);
   self->module = LLVMModuleCreateWithName("aiscm");
   return retval;
 }
 
 SCM llvm_module_destroy(SCM scm_self)
 {
-  struct llvm_t *self = get_llvm_no_check(scm_self);
+  struct llvm_module_t *self = get_llvm_no_check(scm_self);
   if (self->engine) {
     if (self->module) {
       char *error = NULL;
@@ -197,7 +197,7 @@ SCM llvm_module_destroy(SCM scm_self)
 
 SCM llvm_dump_module(SCM scm_self)
 {
-  struct llvm_t *self = get_llvm(scm_self);
+  struct llvm_module_t *self = get_llvm(scm_self);
   LLVMDumpModule(self->module);
   return SCM_UNSPECIFIED;
 }
@@ -205,7 +205,7 @@ SCM llvm_dump_module(SCM scm_self)
 SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_argument_types)
 {
   SCM retval;
-  struct llvm_t *llvm = get_llvm(scm_llvm);
+  struct llvm_module_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *self;
   self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvmfunction");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
@@ -249,9 +249,9 @@ SCM llvm_function_return_void(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_compile_function(SCM scm_llvm, SCM scm_name)
+SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
 {
-  struct llvm_t *self = get_llvm(scm_llvm);
+  struct llvm_module_t *self = get_llvm(scm_llvm);
   if (!self->engine) {
     char *error = NULL;
     if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
@@ -260,12 +260,18 @@ SCM llvm_compile_function(SCM scm_llvm, SCM scm_name)
       scm_misc_error("make-module", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
     };
   };
+  return SCM_UNSPECIFIED;
+}
+
+SCM llvm_get_function_address(SCM scm_llvm, SCM scm_name)
+{
+  struct llvm_module_t *self = get_llvm(scm_llvm);
   return scm_from_pointer((void *)LLVMGetFunctionAddress(self->engine, scm_to_locale_string(scm_name)), NULL);
 }
 
 SCM llvm_verify_module(SCM scm_llvm)
 {
-  struct llvm_t *llvm = get_llvm(scm_llvm);
+  struct llvm_module_t *llvm = get_llvm(scm_llvm);
   char *error = NULL;
   if (LLVMVerifyModule(llvm->module, LLVMPrintMessageAction, &error)) {
     SCM scm_error = scm_from_locale_string(error);
@@ -336,8 +342,8 @@ void init_llvm(void)
   LLVMInitializeNativeAsmPrinter();
   LLVMInitializeNativeAsmParser();
 
-  llvm_tag = scm_make_smob_type("llvmmodule", sizeof(struct llvm_t));
-  scm_set_smob_free(llvm_tag, free_llvm);
+  llvm_module_tag = scm_make_smob_type("llvmmodule", sizeof(struct llvm_module_t));
+  scm_set_smob_free(llvm_module_tag, free_llvm_module);
 
   llvm_function_tag = scm_make_smob_type("llvmfunction", sizeof(struct llvm_function_t));
   scm_set_smob_free(llvm_function_tag, free_llvm_function);
@@ -351,7 +357,8 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
   scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
   scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-compile-function"    , 2, 0, 0, SCM_FUNC(llvm_compile_function    ));
+  scm_c_define_gsubr("llvm-compile-module"      , 1, 0, 0, SCM_FUNC(llvm_compile_module      ));
+  scm_c_define_gsubr("llvm-get-function-address", 2, 0, 0, SCM_FUNC(llvm_get_function_address));
   scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
   scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
   scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
