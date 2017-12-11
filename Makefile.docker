@@ -10,8 +10,8 @@ PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
 XSOCK=/tmp/.X11-unix
 
 all: package
-	cd apt && reprepro includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..
-	cd apt && reprepro includedsc $(CODENAME) ../pkg/$(PACKAGE).dsc && cd ..
+	cd apt && reprepro -S lisp -P optional includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..
+	cd apt && reprepro -S lisp -P optional includedsc $(CODENAME) ../pkg/$(PACKAGE).dsc && cd ..
 
 container: docker docker/Dockerfile docker/aiscm.tar.gz docker/aiscm.tar.gz.asc \
 	docker/debian docker/configure.ac docker/Makefile.package
