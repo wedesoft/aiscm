@@ -1,7 +1,7 @@
 ## Ready
 
-* separate engine
-* different method argument types
+* store function address after compiling
+* pointer arguments
 * multiple arguments
 * LLVM modules
 * OpenGL vertex array object example

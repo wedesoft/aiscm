@@ -22,8 +22,8 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant make-module make-function llvm-verify llvm-dump
-            function-ret llvm-apply get-type llvm-verify
+            make-constant make-module make-function llvm-dump
+            function-ret llvm-apply get-type llvm-compile
             function-load function-store function-param)
   #:re-export (destroy))
 
@@ -72,12 +72,13 @@
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
 
-(define (llvm-verify self) (llvm-verify-module (slot-ref self 'llvm-module)))
+(define (llvm-compile self)
+  (llvm-verify-module (slot-ref self 'llvm-module))
+  (llvm-compile-module (slot-ref self 'llvm-module)))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
 (define (llvm-apply llvm fun . arguments)
-  (llvm-compile-module (slot-ref llvm 'llvm-module))
   (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
     (apply (pointer->procedure (slot-ref fun 'return-type)
                                ptr
