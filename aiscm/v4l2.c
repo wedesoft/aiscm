@@ -41,7 +41,7 @@ struct videodev2_t {
   char capture;
 };
 
-static int xioctl(int fd, int request, void *arg)
+static int xioctl(int fd, unsigned long int request, void *arg)
 {
   int r;
   do {
@@ -337,8 +337,8 @@ void init_v4l2(void)
   scm_c_define("V4L2_PIX_FMT_UYVY"  ,scm_from_int(V4L2_PIX_FMT_UYVY));
   scm_c_define("V4L2_PIX_FMT_YUYV"  ,scm_from_int(V4L2_PIX_FMT_YUYV));
   scm_c_define("V4L2_PIX_FMT_MJPEG" ,scm_from_int(V4L2_PIX_FMT_MJPEG));
-  scm_c_define_gsubr("make-videodev2", 3, 0, 0, make_videodev2);
-  scm_c_define_gsubr("videodev2-destroy", 1, 0, 0, videodev2_destroy);
-  scm_c_define_gsubr("videodev2-shape", 1, 0, 0, videodev2_shape);
-  scm_c_define_gsubr("videodev2-read-image", 1, 0, 0, videodev2_read_image);
+  scm_c_define_gsubr("make-videodev2"      , 3, 0, 0, SCM_FUNC(make_videodev2      ));
+  scm_c_define_gsubr("videodev2-destroy"   , 1, 0, 0, SCM_FUNC(videodev2_destroy   ));
+  scm_c_define_gsubr("videodev2-shape"     , 1, 0, 0, SCM_FUNC(videodev2_shape     ));
+  scm_c_define_gsubr("videodev2-read-image", 1, 0, 0, SCM_FUNC(videodev2_read_image));
 }

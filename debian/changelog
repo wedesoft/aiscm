@@ -1,13 +1,20 @@
-aiscm (0.13.1-1+deb9u1) UNRELEASED; urgency=low
+aiscm (0.14.1-1+deb9u1) UNRELEASED; urgency=low
 
   * Minor adjustments for Debian Stretch
 
- -- Jan Wedekind <jan@wedesoft.de>  Tue, 25 Jul 2017 17:17:49 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Dec 2017 19:58:11 +0000
+
+aiscm (0.14.1-1) unstable; urgency=low
+
+  - New upstream release
+  - Bumped Standards-Version to 4.1.1 (no change needed)
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Dec 2017 19:58:11 +0000
 
 aiscm (0.13.1-1) unstable; urgency=low
 
   - New upstream release
-  - Updated Standards-Version to 4.0.0
+  - Bumped Standards-Version to 4.0.0 (no change needed)
 
  -- Jan Wedekind <jan@wedesoft.de>  Tue, 25 Jul 2017 17:17:49 +0100
 

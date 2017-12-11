@@ -207,6 +207,10 @@
   (let [(t (clock))] (usleep 100000) (< (elapsed t) 0.2)))
 (test-assert "Wait for one second"
   (let [(t (clock))] (synchronise #t 1 (compose sleep inexact->exact round)) (>= (elapsed t) 1)))
+(test-assert "Check time with reset"
+  (let [(t (clock))] (sleep 1) (elapsed t #t) (< (elapsed t) 1)))
+(test-assert "Check time without reset"
+  (let [(t (clock))] (sleep 1) (elapsed t) (>= (elapsed t) 1)))
 (test-assert "Do not attempt to wait negative time"
   (synchronise #t -1 (compose sleep inexact->exact round)))
 (test-eqv "Return specified result after synchronisation"

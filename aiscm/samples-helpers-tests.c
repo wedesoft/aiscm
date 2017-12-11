@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "samples-helpers.h"
+#include "util-helpers.h"
+
 
 SCM first_pointer_from_offset(void)
 {
@@ -38,6 +40,6 @@ SCM second_pointer_from_offset(void)
 
 void init_samples_helpers_tests(void)
 {
-  scm_c_define_gsubr("first-pointer-from-offset" , 0, 0, 0, first_pointer_from_offset );
-  scm_c_define_gsubr("second-pointer-from-offset", 0, 0, 0, second_pointer_from_offset);
+  scm_c_define_gsubr("first-pointer-from-offset" , 0, 0, 0, SCM_FUNC(first_pointer_from_offset ));
+  scm_c_define_gsubr("second-pointer-from-offset", 0, 0, 0, SCM_FUNC(second_pointer_from_offset));
 }

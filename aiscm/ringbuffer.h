@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef __AISCM_RINGBUFFER_H
-#define __AISCM_RINGBUFFER_H
+#pragma once
+
 
 struct ringbuffer_t {
   int fill;
@@ -36,5 +36,3 @@ void ringbuffer_fetch(struct ringbuffer_t *ringbuffer, int count, ringbuffer_cal
 void ringbuffer_store(struct ringbuffer_t *ringbuffer, const char *data, int count);
 
 void ringbuffer_flush(struct ringbuffer_t *ringbuffer);
-
-#endif

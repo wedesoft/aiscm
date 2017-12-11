@@ -99,8 +99,7 @@
             (append-map loop-setup (loop-details source))
             (repeat 0 (dimension a)
                     (duplicate (body dest) (body source))
-                    (append-map loop-increment (loop-details dest))
-                    (append-map loop-increment (loop-details source))))))
+                    (append-map loop-increment (append (loop-details dest) (loop-details source)))))))
 (define-method (duplicate (out <element>) (fun <function>))
   (if (need-conversion? (typecode out) (type fun))
     (let-skeleton* [(tmp (type fun) fun)] (duplicate out tmp))
@@ -224,7 +223,7 @@
 
 (define ((cumulative-code op) out . args)
   "Adapter for cumulative operations"
-  (operation-code (type out) op out (cdr args)))
+  (operation-code (type out) op out args))
 
 (define ((mutating-code name) out . args)
   "Adapter for machine code overwriting its first argument"

@@ -65,6 +65,10 @@ Control all data and machine code down to every single bit and byte.
 * [Maxima computer algebra system](http://maxima.sourceforge.net/)
 * [Julia language](https://julialang.org/)
 * [Kona language](https://github.com/kevinlawler/kona)
+* [Guile SDL2](https://dthompson.us/projects/guile-sdl2.html)
+* [Guile OpenGL](https://github.com/guildhall/guile-opengl)
+* [Jakobsen: Advanced Character Physics](http://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf)
+* [COMP768: Rigid Body Dynamics (I)](http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf) [(I)](http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd2.pdf)
 
 Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
 
