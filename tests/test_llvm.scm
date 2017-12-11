@@ -65,7 +65,7 @@
              (fun  (make-function mod void "empty"))]
         (function-ret fun)
         (llvm-compile mod)
-        (llvm-apply mod fun))))
+        ((llvm-func mod fun)))))
   (test-assert "Dump module containing a function"
     (unspecified?
       (let* [(mod  (make-module))
@@ -76,8 +76,7 @@
     'misc-error
     (let* [(mod  (make-module))
            (fun  (make-function mod void "incomplete"))]
-      (llvm-compile llvm)
-      (llvm-apply mod fun)))
+      (llvm-compile llvm)))
   (test-error "Throw error when attempting to compile again"
     'misc-error
     (let* [(mod  (make-module))
@@ -93,7 +92,7 @@
                (fun (make-function mod type "constant_int"))]
           (function-ret fun (make-constant type value))
           (llvm-compile mod)
-          (llvm-apply mod fun))))
+          ((llvm-func mod fun)))))
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
@@ -106,7 +105,7 @@
                 (fun  (make-function mod type "constant_double"))]
            (function-ret fun (make-constant type 0.5))
            (llvm-compile mod)
-           (llvm-apply mod fun))))
+           ((llvm-func mod fun)))))
     (list float double)
     (list "single" "double"))
 (test-end "functions")
@@ -120,7 +119,7 @@
              (fun  (make-function mod type "read_mem"))]
         (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
         (llvm-compile mod)
-        (llvm-apply mod fun))))
+        ((llvm-func mod fun)))))
     '(2 770)
     (list int8 int16)
     '("byte" "short integer"))
@@ -132,7 +131,7 @@
         (function-store fun type (make-constant type value) (make-constant int64 (pointer-address (bytevector->pointer data))))
         (function-ret fun)
         (llvm-compile mod)
-        (llvm-apply mod fun)
+        ((llvm-func mod fun))
         data)))
     (list #vu8(0 3 5 7) #vu8(0 0 5 7))
     '(2 770)
@@ -149,20 +148,20 @@
            (fun  (make-function mod void "accept_arg" int))]
       (function-ret fun)
       (llvm-compile mod)
-      (llvm-apply mod fun 42)))
+      ((llvm-func mod fun) 42)))
   (test-equal "Compile, verify, and run integer identity function"
     42
     (let* [(mod  (make-module))
            (fun  (make-function mod int "int_identity" int))]
       (function-ret fun (function-param fun 0))
       (llvm-compile mod)
-      (llvm-apply mod fun 42)))
+      ((llvm-func mod fun) 42)))
   (test-equal "Compile, verify, and run floating point identity function"
     0.5
     (let* [(mod  (make-module))
            (fun  (make-function mod double "double_identity" double))]
       (function-ret fun (function-param fun 0))
       (llvm-compile mod)
-      (llvm-apply mod fun 0.5)))
+      ((llvm-func mod fun) 0.5)))
 (test-end "method arguments")
 (test-end "aiscm llvm")

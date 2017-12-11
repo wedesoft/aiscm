@@ -23,7 +23,7 @@
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
             make-constant make-module make-function llvm-dump
-            function-ret llvm-apply get-type llvm-compile
+            function-ret llvm-func get-type llvm-compile
             function-load function-store function-param)
   #:re-export (destroy))
 
@@ -78,11 +78,9 @@
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
-(define (llvm-apply llvm fun . arguments)
-  (let [(ptr (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
-    (apply (pointer->procedure (slot-ref fun 'return-type)
-                               ptr
-                              (slot-ref fun 'argument-types)) arguments)))
+(define (llvm-func llvm fun)
+  (let [(pointer (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
+    (pointer->procedure (slot-ref fun 'return-type) pointer (slot-ref fun 'argument-types))))
 
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))
