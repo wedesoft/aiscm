@@ -41,7 +41,7 @@
   (let [(substituted (substitute-variables cmd allocation))
         (spilled?    (lambda (var) (is-a? (assq-ref allocation var) <address>)))]
     (if (is-a? substituted <cmd>)
-      (let* [(target    (car (filter spilled? (append (get-ptr-args cmd) (output cmd) (input cmd)))))
+      (let* [(target    (car (append (filter spilled? (append (get-ptr-args cmd) (output cmd) (input cmd))))))
              (location  (assq-ref allocation target))
              (is-input  (memv target (input cmd)))
              (is-output (memv target (output cmd)))

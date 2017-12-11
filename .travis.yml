@@ -11,7 +11,7 @@ before_install:
   - sudo sh doc/dependencies.sh
 install:
   - ./bootstrap
-  - ./configure CC=colorgcc
+  - ./configure CC=colorgcc CFLAGS=-Wpedantic
   - make -j
 script:
   - make check -j

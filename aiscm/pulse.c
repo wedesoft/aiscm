@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <libguile.h>
 #include "ringbuffer.h"
+#include "util-helpers.h"
 
 
 // https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/
@@ -250,7 +251,7 @@ SCM pulsedev_latency(SCM scm_self)
 
 static void fetch_callback(char *data, int count, int offset, void *userdata)
 {
-  memcpy(userdata + offset, data, count);
+  memcpy((char *)userdata + offset, data, count);
 }
 
 SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open
@@ -275,11 +276,11 @@ void init_pulse(void)
   scm_c_define("PA_SAMPLE_S16LE"    , scm_from_int(PA_SAMPLE_S16LE    ));
   scm_c_define("PA_SAMPLE_S32LE"    , scm_from_int(PA_SAMPLE_S32LE    ));
   scm_c_define("PA_SAMPLE_FLOAT32LE", scm_from_int(PA_SAMPLE_FLOAT32LE));
-  scm_c_define_gsubr("make-pulsedev"         , 6, 0, 0, make_pulsedev         );
-  scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, pulsedev_destroy      );
-  scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, pulsedev_write        );
-  scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, pulsedev_flush        );
-  scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, pulsedev_drain        );
-  scm_c_define_gsubr("pulsedev-latency"      , 1, 0, 0, pulsedev_latency      );
-  scm_c_define_gsubr("pulsedev-read"         , 2, 0, 0, pulsedev_read         );
+  scm_c_define_gsubr("make-pulsedev"         , 6, 0, 0, SCM_FUNC(make_pulsedev   ));
+  scm_c_define_gsubr("pulsedev-destroy"      , 1, 0, 0, SCM_FUNC(pulsedev_destroy));
+  scm_c_define_gsubr("pulsedev-write"        , 3, 0, 0, SCM_FUNC(pulsedev_write  ));
+  scm_c_define_gsubr("pulsedev-flush"        , 1, 0, 0, SCM_FUNC(pulsedev_flush  ));
+  scm_c_define_gsubr("pulsedev-drain"        , 1, 0, 0, SCM_FUNC(pulsedev_drain  ));
+  scm_c_define_gsubr("pulsedev-latency"      , 1, 0, 0, SCM_FUNC(pulsedev_latency));
+  scm_c_define_gsubr("pulsedev-read"         , 2, 0, 0, SCM_FUNC(pulsedev_read   ));
 }

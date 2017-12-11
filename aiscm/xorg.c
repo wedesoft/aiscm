@@ -23,7 +23,9 @@
 #include <X11/extensions/Xvlib.h>
 #include <X11/xpm.h>
 #include <libguile.h>
+#include "util-helpers.h"
 #include "aiscm.xpm"
+
 
 #ifndef timersub
 #define timersub(a, b, result)                       \
@@ -66,6 +68,14 @@ struct window_t {
   int color_key;
   XvImage *xv_image;
 };
+
+typedef struct {
+  unsigned long flags;
+  unsigned long functions;
+  unsigned long decorations;
+  long inputMode;
+  unsigned long status;
+} Hints;
 
 static struct display_t *get_display_no_check(SCM scm_self)
 {
@@ -430,12 +440,44 @@ static Bool wait_for_notify(Display *d, XEvent *e, char *arg)
          (e->xmap.window == (Window)arg);
 }
 
+void fullscreen_mode(Display *display, Window window, char on)
+{
+  // Turn on/off fullscreen
+  // https://pyra-handheld.com/boards/threads/x11-fullscreen-howto.70443/
+  XEvent event;
+  Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+  Atom fullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+
+  memset(&event, 0, sizeof(event));
+  event.type = ClientMessage;
+  event.xclient.window = window;
+  event.xclient.message_type = wm_state;
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = on;
+  event.xclient.data.l[1] = fullscreen;
+  event.xclient.data.l[2] = 0;
+  XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
+}
+
 SCM window_show(SCM scm_self)
 {
   XEvent event;
   struct window_t *self = get_window(scm_self);
-  XMapWindow(self->display->display, self->window);
-  XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
+  Display *display = self->display->display;
+  XMapWindow(display, self->window);
+  fullscreen_mode(display, self->window, 0);
+  XCheckIfEvent(display, &event, wait_for_notify, (char *)self->window);
+  return scm_self;
+}
+
+SCM window_show_fullscreen(SCM scm_self)
+{
+  XEvent event;
+  struct window_t *self = get_window(scm_self);
+  Display *display = self->display->display;
+  XMapWindow(display, self->window);
+  fullscreen_mode(display, self->window, 1);
+  XCheckIfEvent(display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
@@ -468,12 +510,31 @@ SCM window_write(SCM scm_self, SCM scm_image)
   return scm_image;
 }
 
+SCM window_move(SCM scm_self, SCM scm_x, SCM scm_y)
+{
+  XEvent event;
+  struct window_t *self = get_window(scm_self);
+  XMoveWindow(self->display->display, self->window, scm_to_int(scm_x), scm_to_int(scm_y));
+  XFlush(self->display->display);
+  return scm_self;
+}
+
+SCM window_move_resize(SCM scm_self, SCM scm_x, SCM scm_y, SCM scm_width, SCM scm_height)
+{
+  XEvent event;
+  struct window_t *self = get_window(scm_self);
+  XMoveResizeWindow(self->display->display, self->window,
+                    scm_to_int(scm_x), scm_to_int(scm_y), scm_to_int(scm_width), scm_to_int(scm_height));
+  XFlush(self->display->display);
+  return scm_self;
+}
+
 SCM window_hide(SCM scm_self)
 {
   XEvent event;
   struct window_t *self = get_window(scm_self);
   XUnmapWindow(self->display->display, self->window);
-  XIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
+  XCheckIfEvent(self->display->display, &event, wait_for_notify, (char *)self->window);
   return scm_self;
 }
 
@@ -485,7 +546,7 @@ void gl_error(const char *context)
   while (1) {
     GLenum err = glGetError();
     if (err == GL_NO_ERROR) break;
-    msg = scm_cons(scm_from_locale_string(gluErrorString(err)), msg);
+    msg = scm_cons(scm_from_locale_string((const char *)gluErrorString(err)), msg);
   };
   SCM str = scm_list_1(scm_string_join(msg,
                                        scm_from_locale_string(", "),
@@ -637,18 +698,21 @@ void init_xorg(void)
   scm_c_define("IO-XIMAGE" ,scm_from_int(IO_XIMAGE));
   scm_c_define("IO-OPENGL" ,scm_from_int(IO_OPENGL));
   scm_c_define("IO-XVIDEO" ,scm_from_int(IO_XVIDEO));
-  scm_c_define_gsubr("make-display", 1, 0, 0, make_display);
-  scm_c_define_gsubr("display-shape", 1, 0, 0, display_shape);
-  scm_c_define_gsubr("display-process-events", 1, 0, 0, display_process_events);
-  scm_c_define_gsubr("display-event-loop", 2, 0, 0, display_event_loop);
-  scm_c_define_gsubr("display-quit?", 1, 0, 0, display_quit);
-  scm_c_define_gsubr("display-quit=", 2, 0, 0, display_set_quit);
-  scm_c_define_gsubr("display-destroy", 1, 0, 0, display_destroy);
-  scm_c_define_gsubr("make-window", 4, 0, 0, make_window);
-  scm_c_define_gsubr("window-show", 1, 0, 0, window_show);
-  scm_c_define_gsubr("window-title=", 2, 0, 0, window_title);
-  scm_c_define_gsubr("window-resize", 3, 0, 0, window_resize);
-  scm_c_define_gsubr("window-write", 2, 0, 0, window_write);
-  scm_c_define_gsubr("window-hide", 1, 0, 0, window_hide);
-  scm_c_define_gsubr("window-destroy", 1, 0, 0, window_destroy);
+  scm_c_define_gsubr("make-display"          , 1, 0, 0, SCM_FUNC(make_display          ));
+  scm_c_define_gsubr("display-shape"         , 1, 0, 0, SCM_FUNC(display_shape         ));
+  scm_c_define_gsubr("display-process-events", 1, 0, 0, SCM_FUNC(display_process_events));
+  scm_c_define_gsubr("display-event-loop"    , 2, 0, 0, SCM_FUNC(display_event_loop    ));
+  scm_c_define_gsubr("display-quit?"         , 1, 0, 0, SCM_FUNC(display_quit          ));
+  scm_c_define_gsubr("display-quit="         , 2, 0, 0, SCM_FUNC(display_set_quit      ));
+  scm_c_define_gsubr("display-destroy"       , 1, 0, 0, SCM_FUNC(display_destroy       ));
+  scm_c_define_gsubr("make-window"           , 4, 0, 0, SCM_FUNC(make_window           ));
+  scm_c_define_gsubr("window-show"           , 1, 0, 0, SCM_FUNC(window_show           ));
+  scm_c_define_gsubr("window-show-fullscreen", 1, 0, 0, SCM_FUNC(window_show_fullscreen));
+  scm_c_define_gsubr("window-title="         , 2, 0, 0, SCM_FUNC(window_title          ));
+  scm_c_define_gsubr("window-resize"         , 3, 0, 0, SCM_FUNC(window_resize         ));
+  scm_c_define_gsubr("window-move-resize"    , 5, 0, 0, SCM_FUNC(window_move_resize    ));
+  scm_c_define_gsubr("window-write"          , 2, 0, 0, SCM_FUNC(window_write          ));
+  scm_c_define_gsubr("window-move"           , 3, 0, 0, SCM_FUNC(window_move           ));
+  scm_c_define_gsubr("window-hide"           , 1, 0, 0, SCM_FUNC(window_hide           ));
+  scm_c_define_gsubr("window-destroy"        , 1, 0, 0, SCM_FUNC(window_destroy        ));
 }

@@ -99,8 +99,8 @@
       (test-equal "Substitution works with 'SETB'"
         (SETB CL) (substitute-variables (SETB u) (list (cons u RCX))))
       (test-equal "Use correct type when substituting variable with pointer"
-        (MOVZX DI (ptr <ubyte> RSP 24))
-        (substitute-variables (mov-unsigned x u) (list (cons x RDI) (cons u (ptr <long> RSP 24)))))))
+        (list (MOVZX DI (ptr <ubyte> RSP 24)))
+        (substitute-variables (mov x u) (list (cons x RDI) (cons u (ptr <long> RSP 24)))))))
 (test-end "variable substitution")
 
 (test-equal "'relabel' should create separate namespaces for labels"

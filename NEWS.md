@@ -1,3 +1,12 @@
+# aiscm (0.14.1)
+
+* Refactored implementation of "mov"
+* use intermediate result when MOVSX and MOVZX encounter pointer target
+* "set" method for setting subarrays
+* "get" method for getting subarrays
+* X.Org fullscreen windows
+* move and resize windows programmatically
+
 # aiscm (0.13.1)
 
 * n-dimensional convolutions
