@@ -54,3 +54,10 @@
     <ubyte> (typecode (var <bool>)))
 (test-end "\"var\"' shortcut")
 (test-end "aiscm variable")
+
+(test-begin "size-of")
+  (test-eqv "size of variable is size of typecode"
+    4 (size-of (var <int>)))
+  (test-eqv "size of pointer is size of target's typecode"
+    2 (size-of (ptr <sint> (var <long>))))
+(test-end "size-of")

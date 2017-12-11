@@ -51,7 +51,7 @@
             scm-eol scm-cons scm-gc-malloc-pointerless scm-gc-malloc operations
             coerce-where)
   #:re-export (min max to-type + - * == && || ! != ~ & | ^ << >> % =0 !=0 lt le gt ge
-               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max=)
+               -= ~= abs= += *= <<= >>= &= |= ^= &&= ||= min= max= set)
   #:export-syntax (define-jit-method pass-parameters))
 
 (define ctx (make <context>))
@@ -67,9 +67,10 @@
 (define (is-pointer? value) (and (delegate value) (is-a? (delegate value) <pointer<>>)))
 (define (call-needs-intermediate? t value) (or (is-pointer? value) (code-needs-intermediate? t value)))
 
-(define ((delegate-fun name) out . args) (apply (apply name (map type args)) out args))
+(define ((delegate-fun name) . args) (apply (apply name (map type (cdr args))) args))
+(define ((delegate-cumulative name) . args) (apply (apply name (map type args)) args))
 
-(define-syntax-rule (n-ary-base2 name arity coercion fun)
+(define-syntax-rule (n-ary-base name arity coercion fun)
   (define-nary-typed-method name arity <param> (lambda args (make-function name coercion fun args))))
 
 (define (force-composite-parameters targets args fun)
@@ -87,21 +88,21 @@
 
 (define-syntax-rule (define-jit-method coercion name arity)
   (begin (set! operations (cons (quote name) operations))
-         (n-ary-base2 name arity coercion (delegate-fun name))
+         (n-ary-base name arity coercion (delegate-fun name))
          (define-nary-collect name arity)
          (define-composite-collect name arity)
          (define-jit-dispatch name arity name)))
 
-(define-syntax-rule (define-cumulative2 name arity)
-  (define-nary-typed-method name arity <param> (lambda args (apply (delegate-fun name) (car args) args))))
+(define-syntax-rule (define-cumulative name arity)
+  (define-nary-typed-method name arity <param> (delegate-cumulative name)))
 
 (define-syntax-rule (define-composite-cumulative name arity)
   (define-nary-typed-method name arity <meta<composite>>
-    (lambda types (lambda (out . args) (force-composite-parameters types args (cut name <...>))))))
+    (lambda types (lambda args (force-composite-parameters types args name)))))
 
 (define-syntax-rule (define-cumulative-method name arity)
   (begin
-    (define-cumulative2 name arity)
+    (define-cumulative name arity)
     (define-composite-cumulative name arity)))
 
 (define-cumulative-method -=   1)
@@ -155,7 +156,7 @@
 
 (define-syntax-rule (define-object-cumulative name basis)
   (define-method (name (a <meta<obj>>) (b <meta<obj>>))
-    (lambda (out . args) (duplicate out (apply basis args)))))
+    (lambda args (duplicate (car args) (apply basis args)))))
 
 (define-object-cumulative +=   +  )
 (define-object-cumulative *=   *  )
@@ -208,22 +209,31 @@
          (fun          (lambda header (apply instructions (append-map unbuild classes header))))]
     (lambda args (build result-type (address->scm (apply fun args))))))
 
-(define-method (fill type shape value)
-  (if (< (dimensions type) (length shape))
-    (fill (multiarray type (length shape)) shape value)
-    (let* [(result-type  (pointer type))
-           (classes      (list result-type (typecode type)))
-           (args         (map skeleton classes))
-           (parameters   (map parameter args))
-           (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
-           (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
-           (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
-      (add-method! fill
+(define-method (compiled-copy self value)
+  (let* [(classes        (list (class-of self) (class-of value)))
+         (args         (map skeleton classes))
+         (parameters   (map parameter args))
+         (commands     (virtual-variables '() (content-vars args) (attach (apply duplicate parameters) (RET))))
+         (instructions (asm ctx <null> (map typecode (content-vars args)) commands))
+         (proc         (lambda header (apply instructions (append-map unbuild classes header))))]
+      (add-method! compiled-copy
                    (make <method>
-                         #:specializers (list (class-of type) (if (null? shape) <null> <list>) <top>)
-                         #:procedure (lambda (type shape value)
-                               (let [(result (make result-type #:shape shape))] (proc result value) (get (fetch result))))))
-      (fill type shape value))))
+                         #:specializers classes
+                         #:procedure (lambda (self value)
+                                       (proc self (get value))
+                                       (get value))))
+      (compiled-copy self value)))
+
+(define-method (set (self <pointer<>>) value)
+  (compiled-copy self (wrap value)))
+
+(define-method (set (self <sequence<>>) . args)
+  (compiled-copy (fold-right element self (all-but-last args)) (wrap (last args))))
+
+(define-method (fill type shape value)
+  (let [(retval (make (multiarray type (length shape)) #:shape shape))]
+    (set retval value)
+    (get (fetch retval))))
 
 (define-syntax-rule (define-jit-dispatch name arity delegate)
   (define-nary-typed-method name arity <element>

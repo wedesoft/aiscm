@@ -206,14 +206,23 @@
 (define (typed-header2 lst tags) (map list lst tags))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37
-(define (clock) (current-time))
-(define (elapsed since)
-  (let [(difference (time-difference (current-time) since))]
+
+(define (clock)
+  "Get current time with high precision"
+  (current-time))
+
+(define* (elapsed reference #:optional (reset #f))
+  "Return time elapsed and optionally reset the clock"
+  (let [(difference (time-difference (current-time) reference))]
+    (if reset (add-duration! reference difference))
     (+ (time-second difference) (* 1e-9 (time-nanosecond difference)))))
+
 (define-syntax-rule (synchronise expr time-remaining method)
+  "Abstract time synchronisation method"
   (let [(result expr)]
     (method (max 0 time-remaining))
     result))
+
 (define (object-slots obj) (map (compose (cut slot-ref obj <>) slot-definition-name) (class-slots (class-of obj))))
 
 (define (scm->address scm) (pointer-address (scm->pointer scm)))

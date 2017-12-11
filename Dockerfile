@@ -5,6 +5,8 @@
 FROM ubuntu:trusty
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN apt-get update
+RUN apt-get -q -y dist-upgrade
+RUN apt-get install -q -y apt-utils
 RUN apt-get install -q -y build-essential
 RUN apt-get install -q -y autoconf automake libtool
 RUN apt-get install -q -y devscripts equivs
@@ -22,12 +24,12 @@ RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
 RUN apt-get install -q -y libavformat-dev
 RUN apt-get install -q -y libxpm-dev
-RUN apt-get install -q -y colorgcc
 RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
 RUN mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 COPY aiscm.tar.gz .
+COPY aiscm.tar.gz.asc .
 ADD configure.ac .
 ADD debian debian
 ADD Makefile.package .

@@ -1,29 +1,38 @@
 ## Ready
 
-* assigning sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
-* += and other cumulative operations have superfluous output argument
+* LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
+* xorg\_scale\_video has frame offset
+* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
+* "let" for tensors
+* structs, jit methods with multiple return values, packed objects (e.g. quaternion)
+* use bytevectors instead of memory objects?
+* check against NumPy, Theano, Tensorflow for completeness
+* assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
+* Lucas-Kanade tracker
+* recognise Aruco marker cube, calibrated inverse kinematic
+* colour swapped when converting MJPEG video to FFmpeg video
+* tensor indices
+* procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * Debian sid FFmpeg API changes
-* scaled xorg display (keyword argument) -> Conway, full screen display, frame rate
+  deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * ==, != for complex numbers
+* galaxy simulation
 * to-type in tensor
-* deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
-* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
 * floating point exception (SIGFPE)
 * floating point convolution: sharpening filter, corner filters
+* linear algebra bindings (blas, lapack, gsl, mkl)
 * separable convolution
 * convolve with set of sobel filters
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * diagonal injection, convolution, median, dilation, ...
-* convolution in tensor
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
-* Lucas-Kanade tracker
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
 * dimension checks for array/tensor operations; array compatibility check
@@ -31,9 +40,7 @@
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
-* check against NumPy, Theano for completeness
 * how to run test suite
-* "let" for tensors
 * documentation for objects and arrays of objects
 * cast to higher integer type when doing a tensor injection
 * multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
@@ -59,8 +66,7 @@
 * fractions, \*\*
 * separate function for defining operation for array?
 * separate module for register allocation
-* Lee - Debunking the 100X GPU vs. CPU myth: an evaluation of throughput computing on CPU and GPU
-  multi-threading, SIMD, memory access (cache)
+* multi-threading, SIMD, memory access (cache)
 * add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
 * car, cadr, ... -> first, second, ...
@@ -80,7 +86,7 @@
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * ArUco markers robot control
-* hypercomplex numbers
+* hypercomplex numbers and quaternions
 * linalg bindings
 * Kinect bindings
 * OpenCV bindings
@@ -101,8 +107,6 @@
 * https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* shape of xorg window
-* xorg window set size, fullscreen windows
 * use hash tables
 * use assp http://www.scheme.com/csug7/objects.html
 * conditional/select

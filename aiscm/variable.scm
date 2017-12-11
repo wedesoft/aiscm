@@ -26,7 +26,7 @@
   #:use-module (aiscm util)
   #:export (<var> <ptr>
             var native-equivalent variables get-args)
-  #:re-export (typecode signed?))
+  #:re-export (typecode signed? size-of ptr))
 
 
 (define-method (get-args self) '())
@@ -46,6 +46,7 @@
   (display (cons 'ptr (cons (class-name (typecode self)) (get-args self))) port))
 (define-method (equal? (a <ptr>) (b <ptr>)) (equal? (object-slots a) (object-slots b)))
 (define-method (ptr (type <meta<element>>) . args) (make <ptr> #:type type #:args args))
+(define-method (size-of (p <ptr>)) (size-of (typecode p)))
 
 (define-method (native-equivalent  self                   ) #f      )
 (define-method (native-equivalent (self <meta<bool>>     )) <ubyte> )
