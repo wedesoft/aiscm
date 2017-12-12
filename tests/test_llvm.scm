@@ -176,7 +176,7 @@
   (test-equal "Bitwise not for unsigned integer"
     -42
     (let* [(mod (make-llvm-module))
-           (fun (make-function mod int "neg" int))]
+           (fun (make-function mod int "not" int))]
       (function-ret fun (llvm-neg fun (function-param fun 0)))
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
@@ -197,6 +197,13 @@
       (function-ret fun (llvm-add fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
       ((llvm-func mod fun) 2 3)))
+  (test-equal "Subtract two integers"
+    70
+    (let* [(mod (make-llvm-module))
+           (fun (make-function mod int "sub" int int))]
+      (function-ret fun (llvm-sub fun (function-param fun 0) (function-param fun 1)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 100 30)))
   (test-equal "Add two floating-point numbers"
     5.75
     (let* [(mod (make-llvm-module))
@@ -204,5 +211,12 @@
       (function-ret fun (llvm-fadd fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
       ((llvm-func mod fun) 2.5 3.25)))
+  (test-equal "Subtract two floating-point numbers"
+    2.5
+    (let* [(mod (make-llvm-module))
+           (fun (make-function mod double "fsub" double double))]
+      (function-ret fun (llvm-fsub fun (function-param fun 0) (function-param fun 1)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 5.75 3.25)))
 (test-end "binary expressions")
 (test-end "aiscm llvm")

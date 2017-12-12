@@ -383,6 +383,16 @@ SCM llvm_build_fadd(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildFAdd, scm_function, scm_value_a, scm_value_b);
 }
 
+SCM llvm_build_sub(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
+{
+  return llvm_build_binary(LLVMBuildSub, scm_function, scm_value_a, scm_value_b);
+}
+
+SCM llvm_build_fsub(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
+{
+  return llvm_build_binary(LLVMBuildFSub, scm_function, scm_value_a, scm_value_b);
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -418,4 +428,6 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-not"           , 2, 0, 0, SCM_FUNC(llvm_build_not           ));
   scm_c_define_gsubr("llvm-build-add"           , 3, 0, 0, SCM_FUNC(llvm_build_add           ));
   scm_c_define_gsubr("llvm-build-fadd"          , 3, 0, 0, SCM_FUNC(llvm_build_fadd          ));
+  scm_c_define_gsubr("llvm-build-sub"           , 3, 0, 0, SCM_FUNC(llvm_build_sub           ));
+  scm_c_define_gsubr("llvm-build-fsub"          , 3, 0, 0, SCM_FUNC(llvm_build_fsub          ));
 }

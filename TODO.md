@@ -1,6 +1,7 @@
 ## Ready
 
-* more unary and binary arithmetic expressions
+* unary =0, !=0, !, <<, >>
+* binary \*, /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * simple lambda to define function
 * functions with let statement
 * pointer arguments (memory?)

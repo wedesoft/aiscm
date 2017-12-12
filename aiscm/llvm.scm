@@ -25,7 +25,7 @@
             make-constant make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
-            llvm-add llvm-fadd)
+            llvm-add llvm-fadd llvm-sub llvm-fsub)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -130,5 +130,17 @@
 (define (llvm-fadd self value-a value-b)
   "Instruction to add two floating-point values"
   (make <llvm-value> #:llvm-value (llvm-build-fadd (slot-ref self 'llvm-function)
+                                                   (slot-ref value-a 'llvm-value)
+                                                   (slot-ref value-b 'llvm-value))))
+
+(define (llvm-sub self value-a value-b)
+  "Instruction for integer subtraction"
+  (make <llvm-value> #:llvm-value (llvm-build-sub (slot-ref self 'llvm-function)
+                                                  (slot-ref value-a 'llvm-value)
+                                                  (slot-ref value-b 'llvm-value))))
+
+(define (llvm-fsub self value-a value-b)
+  "Instruction for floating-point subtraction"
+  (make <llvm-value> #:llvm-value (llvm-build-fsub (slot-ref self 'llvm-function)
                                                    (slot-ref value-a 'llvm-value)
                                                    (slot-ref value-b 'llvm-value))))
