@@ -166,7 +166,7 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
   };
 }
 
-SCM make_llvm_module(void)
+SCM make_llvm_module_base(void)
 {
   SCM retval;
   struct llvm_module_t *self;
@@ -394,7 +394,7 @@ void init_llvm(void)
 
   llvm_value_tag = scm_make_smob_type("llvmvalue", sizeof(struct llvm_value_t));
 
-  scm_c_define_gsubr("make-llvm-module"         , 0, 0, 0, SCM_FUNC(make_llvm_module         ));
+  scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
   scm_c_define_gsubr("make-llvm-function"       , 4, 0, 0, SCM_FUNC(make_llvm_function       ));

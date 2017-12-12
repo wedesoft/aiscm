@@ -1,11 +1,10 @@
 ## Ready
 
-* make-module is core binding
 * unary and binary arithmetic expressions, refactor
 * simple lambda to define function
 * functions with let statement
 * pointer arguments (memory?)
-* LLVM modules
+* add Guile to dependencies
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
 * "let" for tensors

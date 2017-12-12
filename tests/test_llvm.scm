@@ -24,11 +24,11 @@
 
 (test-begin "module")
   (test-equal "Create LLVM instance"
-    <llvm> (class-of (make-module)))
+    <llvm> (class-of (make-llvm-module)))
   (test-assert "Destroy LLVM instance"
-    (unspecified? (destroy (make-module))))
+    (unspecified? (destroy (make-llvm-module))))
   (test-assert "LLVM module slot defined"
-    (slot-ref (make-module) 'llvm-module))
+    (slot-ref (make-llvm-module) 'llvm-module))
 (test-end "module")
 
 (test-begin "constant values")
@@ -55,31 +55,31 @@
 
 (test-begin "functions")
   (test-equal "Create LLVM function"
-    <llvm-function> (class-of (let [(mod (make-module))] (make-function mod void "function"))))
-  (let [(mod (make-module))]
+    <llvm-function> (class-of (let [(mod (make-llvm-module))] (make-function mod void "function"))))
+  (let [(mod (make-llvm-module))]
     (test-equal "Keep LLVM instance alive"
       mod (slot-ref (make-function mod void "function") 'module)))
   (test-assert "Compile, verify, and run empty function"
     (unspecified?
-      (let* [(mod  (make-module))
+      (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "empty"))]
         (function-ret fun)
         (llvm-compile mod)
         ((llvm-func mod fun)))))
   (test-assert "Dump module containing a function"
     (unspecified?
-      (let* [(mod  (make-module))
+      (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "empty"))]
         (function-ret fun)
         (llvm-dump mod))))
   (test-error "Throw error if verification of module failed"
     'misc-error
-    (let* [(mod  (make-module))
+    (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "incomplete"))]
       (llvm-compile llvm)))
   (test-error "Throw error when attempting to compile again"
     'misc-error
-    (let* [(mod  (make-module))
+    (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "empty"))]
       (function-ret fun)
       (llvm-compile llvm)
@@ -88,7 +88,7 @@
     (lambda (type sign bits value)
       (test-equal (format #f "Compile and run function returning a ~a ~a-bit integer" sign bits)
         value
-        (let* [(mod (make-module))
+        (let* [(mod (make-llvm-module))
                (fun (make-function mod type "constant_int"))]
           (function-ret fun (make-constant type value))
           (llvm-compile mod)
@@ -101,7 +101,7 @@
     (lambda (type precision)
       (test-equal (format #f "Compile and run function returning a ~a-precision floating point number" precision)
          0.5
-         (let* [(mod  (make-module))
+         (let* [(mod  (make-llvm-module))
                 (fun  (make-function mod type "constant_double"))]
            (function-ret fun (make-constant type 0.5))
            (llvm-compile mod)
@@ -115,7 +115,7 @@
     (test-equal (format #f "Read ~a value from memory" name)
       value
       (let* [(data #vu8(2 3 5 7))
-             (mod  (make-module))
+             (mod  (make-llvm-module))
              (fun  (make-function mod type "read_mem"))]
         (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
         (llvm-compile mod)
@@ -126,7 +126,7 @@
   (for-each (lambda (data value type name)
     (test-equal (format #f "Write ~a to memory" name)
       #vu8(2 3 5 7)
-      (let* [(mod  (make-module))
+      (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "write_mem"))]
         (function-store fun type (make-constant type value) (make-constant int64 (pointer-address (bytevector->pointer data))))
         (function-ret fun)
@@ -141,24 +141,24 @@
 
 (test-begin "method arguments")
   (test-assert "Declare a function which accepts arguments"
-    (let [(mod (make-module))]
+    (let [(mod (make-llvm-module))]
       (make-function mod int "with_arg" int)))
   (test-assert "Call a function accepting an argument"
-    (let* [(mod  (make-module))
+    (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "accept_arg" int))]
       (function-ret fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
   (test-equal "Compile, verify, and run integer identity function"
     42
-    (let* [(mod  (make-module))
+    (let* [(mod  (make-llvm-module))
            (fun  (make-function mod int "int_identity" int))]
       (function-ret fun (function-param fun 0))
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
   (test-equal "Compile, verify, and run floating point identity function"
     0.5
-    (let* [(mod  (make-module))
+    (let* [(mod  (make-llvm-module))
            (fun  (make-function mod double "double_identity" double))]
       (function-ret fun (function-param fun 0))
       (llvm-compile mod)
@@ -168,14 +168,14 @@
 (test-begin "unary expressions")
   (test-equal "Negate integer"
     -42
-    (let* [(mod (make-module))
+    (let* [(mod (make-llvm-module))
            (fun (make-function mod int "neg" int))]
       (function-ret fun (llvm-neg fun (function-param fun 0)))
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
   (test-equal "Negate floating-point value"
     -2.5
-    (let* [(mod (make-module))
+    (let* [(mod (make-llvm-module))
            (fun (make-function mod double "fneg" double))]
       (function-ret fun (llvm-fneg fun (function-param fun 0)))
       (llvm-compile mod)
@@ -185,14 +185,14 @@
 (test-begin "binary expressions")
   (test-equal "Add two integers"
     5
-    (let* [(mod (make-module))
+    (let* [(mod (make-llvm-module))
            (fun (make-function mod int "add" int int))]
       (function-ret fun (llvm-add fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
       ((llvm-func mod fun) 2 3)))
   (test-equal "Add two floating-point numbers"
     5.75
-    (let* [(mod (make-module))
+    (let* [(mod (make-llvm-module))
            (fun (make-function mod double "fadd" double double))]
       (function-ret fun (llvm-fadd fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
