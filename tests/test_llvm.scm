@@ -165,6 +165,16 @@
       ((llvm-func mod fun) 0.5)))
 (test-end "method arguments")
 
+(test-begin "unary expressions")
+  (test-equal "Negate integer"
+    -42
+    (let* [(mod (make-module))
+           (fun (make-function mod int "neg" int))]
+      (function-ret fun (llvm-neg fun (function-param fun 0)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 42)))
+(test-end "unary expressions")
+
 (test-begin "binary expressions")
   (test-equal "Add two integers"
     5

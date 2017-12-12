@@ -24,7 +24,7 @@
             <llvm-value> <meta<llvm-value>>
             make-constant make-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
-            llvm-add llvm-fadd)
+            llvm-neg llvm-add llvm-fadd)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -104,6 +104,11 @@
 (define (function-param self index)
   "Get value of INDEXth function parameter"
   (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref self 'llvm-function) index)))
+
+(define (llvm-neg self value)
+  "Instruction to negate integer value"
+  (make <llvm-value> #:llvm-value (llvm-build-neg (slot-ref self 'llvm-function)
+                                                  (slot-ref value 'llvm-value))))
 
 (define (llvm-add self value-a value-b)
   "Instruction to add two integer values"

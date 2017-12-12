@@ -333,6 +333,17 @@ SCM llvm_get_param(SCM scm_function, SCM scm_index)
   return retval;
 }
 
+SCM llvm_build_neg(SCM scm_function, SCM scm_value)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value = get_llvm_value(scm_value);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMBuildNeg(function->builder, value->value, "");
+  return retval;
+}
+
 SCM llvm_build_add(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
 {
   SCM retval;
@@ -387,6 +398,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-load"          , 3, 0, 0, SCM_FUNC(llvm_build_load          ));
   scm_c_define_gsubr("llvm-build-store"         , 4, 0, 0, SCM_FUNC(llvm_build_store         ));
   scm_c_define_gsubr("llvm-get-param"           , 2, 0, 0, SCM_FUNC(llvm_get_param           ));
+  scm_c_define_gsubr("llvm-build-neg"           , 2, 0, 0, SCM_FUNC(llvm_build_neg           ));
   scm_c_define_gsubr("llvm-build-add"           , 3, 0, 0, SCM_FUNC(llvm_build_add           ));
   scm_c_define_gsubr("llvm-build-fadd"          , 3, 0, 0, SCM_FUNC(llvm_build_fadd          ));
 }
