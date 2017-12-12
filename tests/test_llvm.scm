@@ -165,12 +165,12 @@
 (test-begin "unary expressions")
   (for-each (lambda (value op result type)
     (test-equal (format #f "(~a ~a) should be ~a" (procedure-name op) value result)
-      213
+      result
       (let* [(mod (make-llvm-module))
-             (fun (make-function mod uint8 "neg" uint8))]
-        (function-ret fun (llvm-not fun (function-param fun 0)))
+             (fun (make-function mod type "op" type))]
+        (function-ret fun (op fun (function-param fun 0)))
         (llvm-compile mod)
-        ((llvm-func mod fun) 42))))
+        ((llvm-func mod fun) value))))
     '(42 42 2.5)
     (list llvm-not llvm-neg llvm-fneg)
     '(213 -42 -2.5)
@@ -192,4 +192,21 @@
     '(5 70 35 5.75 2.5 8.125)
     (list int int int double double double))
 (test-end "binary expressions")
+
+(test-begin "convenience wrapper")
+  (test-assert "Define empty function using convenience wrapper"
+    (unspecified? ((llvm-wrap void '() (lambda (fun) #f)))))
+  (test-equal "Define identity function using convenience wrapper"
+    42
+    ((llvm-wrap int (list int) (lambda (fun value) value)) 42))
+  (test-equal "Define negating function using convenience wrapper"
+    -42
+    ((llvm-wrap int (list int) (lambda (fun value) (llvm-neg fun value))) 42))
+  (test-equal "Define function with side-effect but no return value"
+    #vu8(42)
+    (let* [(data    #vu8(0))
+           (pointer (make-constant int64 (pointer-address (bytevector->pointer data))))]
+      ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer))) 42)
+      data))
+(test-end "convenience wrapper")
 (test-end "aiscm llvm")

@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm llvm)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (aiscm util)
@@ -25,7 +26,8 @@
             make-constant make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
-            llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul)
+            llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
+            llvm-wrap)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -73,11 +75,12 @@
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
 
+(define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
+
 (define (llvm-compile self)
   (llvm-verify-module (slot-ref self 'llvm-module))
-  (llvm-compile-module (slot-ref self 'llvm-module)))
-
-(define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
+  (llvm-compile-module (slot-ref self 'llvm-module))
+  (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
 
 (define (llvm-func llvm fun)
   (let [(pointer (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
@@ -127,3 +130,18 @@
 (define-llvm-binary llvm-fsub llvm-build-fsub)
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
+
+(define module-list '())
+
+(define (llvm-wrap return-type argument-types function)
+  "Convenience wrapper for compiling JIT functions"
+  (let* [(mod    (make-llvm-module))
+         (fun    (apply make-function mod return-type "wrapped" argument-types))
+         (args   (map (cut function-param fun <>) (iota (length argument-types))))
+         (result (apply function (cons fun args)))]
+    (if (eqv? return-type void)
+      (function-ret fun)
+      (function-ret fun result))
+    (llvm-compile mod)
+    (set! module-list (cons mod module-list))
+    (llvm-func mod fun)))
