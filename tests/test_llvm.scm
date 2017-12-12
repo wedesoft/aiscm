@@ -149,74 +149,47 @@
       (function-ret fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
-  (test-equal "Compile, verify, and run integer identity function"
-    42
-    (let* [(mod  (make-llvm-module))
-           (fun  (make-function mod int "int_identity" int))]
-      (function-ret fun (function-param fun 0))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 42)))
-  (test-equal "Compile, verify, and run floating point identity function"
-    0.5
-    (let* [(mod  (make-llvm-module))
-           (fun  (make-function mod double "double_identity" double))]
-      (function-ret fun (function-param fun 0))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 0.5)))
+  (for-each (lambda (value type name)
+    (test-equal (format #f "Compile, verify, and run ~a identity function" name)
+      value
+      (let* [(mod  (make-llvm-module))
+             (fun  (make-function mod type "int_identity" type))]
+        (function-ret fun (function-param fun 0))
+        (llvm-compile mod)
+        ((llvm-func mod fun) value))))
+    '(42 0.5)
+    (list int double)
+    '("integer" "floating-point"))
 (test-end "method arguments")
 
 (test-begin "unary expressions")
-  (test-equal "Negate unsigned integer"
-    213
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod uint8 "neg" uint8))]
-      (function-ret fun (llvm-not fun (function-param fun 0)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 42)))
-  (test-equal "Bitwise not for unsigned integer"
-    -42
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod int "not" int))]
-      (function-ret fun (llvm-neg fun (function-param fun 0)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 42)))
-  (test-equal "Negate floating-point value"
-    -2.5
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod double "fneg" double))]
-      (function-ret fun (llvm-fneg fun (function-param fun 0)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 2.5)))
+  (for-each (lambda (value op result type)
+    (test-equal (format #f "(~a ~a) should be ~a" (procedure-name op) value result)
+      213
+      (let* [(mod (make-llvm-module))
+             (fun (make-function mod uint8 "neg" uint8))]
+        (function-ret fun (llvm-not fun (function-param fun 0)))
+        (llvm-compile mod)
+        ((llvm-func mod fun) 42))))
+    '(42 42 2.5)
+    (list llvm-not llvm-neg llvm-fneg)
+    '(213 -42 -2.5)
+    (list uint8 int double))
 (test-end "unary expressions")
 
 (test-begin "binary expressions")
-  (test-equal "Add two integers"
-    5
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod int "add" int int))]
-      (function-ret fun (llvm-add fun (function-param fun 0) (function-param fun 1)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 2 3)))
-  (test-equal "Subtract two integers"
-    70
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod int "sub" int int))]
-      (function-ret fun (llvm-sub fun (function-param fun 0) (function-param fun 1)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 100 30)))
-  (test-equal "Add two floating-point numbers"
-    5.75
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod double "fadd" double double))]
-      (function-ret fun (llvm-fadd fun (function-param fun 0) (function-param fun 1)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 2.5 3.25)))
-  (test-equal "Subtract two floating-point numbers"
-    2.5
-    (let* [(mod (make-llvm-module))
-           (fun (make-function mod double "fsub" double double))]
-      (function-ret fun (llvm-fsub fun (function-param fun 0) (function-param fun 1)))
-      (llvm-compile mod)
-      ((llvm-func mod fun) 5.75 3.25)))
+  (for-each (lambda (value-a value-b op result type)
+    (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
+      result
+      (let* [(mod (make-llvm-module))
+             (fun (make-function mod type "add" type type))]
+        (function-ret fun (op fun (function-param fun 0) (function-param fun 1)))
+        (llvm-compile mod)
+        ((llvm-func mod fun) value-a value-b))))
+    '(2 100 2.5 5.75)
+    '(3 30 3.25 3.25)
+    (list llvm-add llvm-sub llvm-fadd llvm-fsub)
+    '(5 70 5.75 2.5)
+    (list int int double double))
 (test-end "binary expressions")
 (test-end "aiscm llvm")
