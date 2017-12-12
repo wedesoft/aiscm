@@ -25,7 +25,7 @@
             make-constant make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
-            llvm-add llvm-fadd llvm-sub llvm-fsub)
+            llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -125,3 +125,5 @@
 (define-llvm-binary llvm-fadd llvm-build-fadd)
 (define-llvm-binary llvm-sub  llvm-build-sub )
 (define-llvm-binary llvm-fsub llvm-build-fsub)
+(define-llvm-binary llvm-mul  llvm-build-mul )
+(define-llvm-binary llvm-fmul llvm-build-fmul)
