@@ -173,6 +173,13 @@
       (function-ret fun (llvm-neg fun (function-param fun 0)))
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
+  (test-equal "Negate floating-point value"
+    -2.5
+    (let* [(mod (make-module))
+           (fun (make-function mod double "fneg" double))]
+      (function-ret fun (llvm-fneg fun (function-param fun 0)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 2.5)))
 (test-end "unary expressions")
 
 (test-begin "binary expressions")
@@ -186,7 +193,7 @@
   (test-equal "Add two floating-point numbers"
     5.75
     (let* [(mod (make-module))
-           (fun (make-function mod double "add" double double))]
+           (fun (make-function mod double "fadd" double double))]
       (function-ret fun (llvm-fadd fun (function-param fun 0) (function-param fun 1)))
       (llvm-compile mod)
       ((llvm-func mod fun) 2.5 3.25)))
