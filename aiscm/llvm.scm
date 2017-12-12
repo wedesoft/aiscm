@@ -106,41 +106,22 @@
   "Get value of INDEXth function parameter"
   (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref self 'llvm-function) index)))
 
-(define (llvm-neg self value)
-  "Instruction to negate integer value"
-  (make <llvm-value> #:llvm-value (llvm-build-neg (slot-ref self 'llvm-function)
-                                                  (slot-ref value 'llvm-value))))
+(define-syntax-rule (define-llvm-unary function delegate)
+  (define (function self value)
+    (make <llvm-value> #:llvm-value (delegate (slot-ref self 'llvm-function)
+                                              (slot-ref value 'llvm-value)))))
 
-(define (llvm-fneg self value)
-  "Instruction to negate floating-point value"
-  (make <llvm-value> #:llvm-value (llvm-build-fneg (slot-ref self 'llvm-function)
-                                                   (slot-ref value 'llvm-value))))
+(define-llvm-unary llvm-neg  llvm-build-neg )
+(define-llvm-unary llvm-fneg llvm-build-fneg)
+(define-llvm-unary llvm-not  llvm-build-not )
 
-(define (llvm-not self value)
-  "Bitwise not for integer value"
-  (make <llvm-value> #:llvm-value (llvm-build-not (slot-ref self 'llvm-function)
-                                                  (slot-ref value 'llvm-value))))
+(define-syntax-rule (define-llvm-binary function delegate)
+  (define (function self value-a value-b)
+    (make <llvm-value> #:llvm-value (delegate (slot-ref self    'llvm-function)
+                                              (slot-ref value-a 'llvm-value)
+                                              (slot-ref value-b 'llvm-value)))))
 
-(define (llvm-add self value-a value-b)
-  "Instruction to add two integer values"
-  (make <llvm-value> #:llvm-value (llvm-build-add (slot-ref self 'llvm-function)
-                                                  (slot-ref value-a 'llvm-value)
-                                                  (slot-ref value-b 'llvm-value))))
-
-(define (llvm-fadd self value-a value-b)
-  "Instruction to add two floating-point values"
-  (make <llvm-value> #:llvm-value (llvm-build-fadd (slot-ref self 'llvm-function)
-                                                   (slot-ref value-a 'llvm-value)
-                                                   (slot-ref value-b 'llvm-value))))
-
-(define (llvm-sub self value-a value-b)
-  "Instruction for integer subtraction"
-  (make <llvm-value> #:llvm-value (llvm-build-sub (slot-ref self 'llvm-function)
-                                                  (slot-ref value-a 'llvm-value)
-                                                  (slot-ref value-b 'llvm-value))))
-
-(define (llvm-fsub self value-a value-b)
-  "Instruction for floating-point subtraction"
-  (make <llvm-value> #:llvm-value (llvm-build-fsub (slot-ref self 'llvm-function)
-                                                   (slot-ref value-a 'llvm-value)
-                                                   (slot-ref value-b 'llvm-value))))
+(define-llvm-binary llvm-add  llvm-build-add )
+(define-llvm-binary llvm-fadd llvm-build-fadd)
+(define-llvm-binary llvm-sub  llvm-build-sub )
+(define-llvm-binary llvm-fsub llvm-build-fsub)
