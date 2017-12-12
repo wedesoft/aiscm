@@ -24,7 +24,8 @@
             <llvm-value> <meta<llvm-value>>
             make-constant make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
-            llvm-neg llvm-fneg llvm-add llvm-fadd)
+            llvm-neg llvm-fneg llvm-not
+            llvm-add llvm-fadd)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -114,6 +115,11 @@
   "Instruction to negate floating-point value"
   (make <llvm-value> #:llvm-value (llvm-build-fneg (slot-ref self 'llvm-function)
                                                    (slot-ref value 'llvm-value))))
+
+(define (llvm-not self value)
+  "Bitwise not for integer value"
+  (make <llvm-value> #:llvm-value (llvm-build-not (slot-ref self 'llvm-function)
+                                                  (slot-ref value 'llvm-value))))
 
 (define (llvm-add self value-a value-b)
   "Instruction to add two integer values"

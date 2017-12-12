@@ -166,7 +166,14 @@
 (test-end "method arguments")
 
 (test-begin "unary expressions")
-  (test-equal "Negate integer"
+  (test-equal "Negate unsigned integer"
+    213
+    (let* [(mod (make-llvm-module))
+           (fun (make-function mod uint8 "neg" uint8))]
+      (function-ret fun (llvm-not fun (function-param fun 0)))
+      (llvm-compile mod)
+      ((llvm-func mod fun) 42)))
+  (test-equal "Bitwise not for unsigned integer"
     -42
     (let* [(mod (make-llvm-module))
            (fun (make-function mod int "neg" int))]

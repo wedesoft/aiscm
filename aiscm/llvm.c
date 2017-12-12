@@ -355,6 +355,11 @@ SCM llvm_build_fneg(SCM scm_function, SCM scm_value)
   return llvm_build_unary(LLVMBuildFNeg, scm_function, scm_value);
 }
 
+SCM llvm_build_not(SCM scm_function, SCM scm_value)
+{
+  return llvm_build_unary(LLVMBuildNot, scm_function, scm_value);
+}
+
 SCM llvm_build_binary(LLVMValueRef (*build_binary)(LLVMBuilderRef, LLVMValueRef, LLVMValueRef, const char*),
                       SCM scm_function, SCM scm_value_a, SCM scm_value_b)
 {
@@ -410,6 +415,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-get-param"           , 2, 0, 0, SCM_FUNC(llvm_get_param           ));
   scm_c_define_gsubr("llvm-build-neg"           , 2, 0, 0, SCM_FUNC(llvm_build_neg           ));
   scm_c_define_gsubr("llvm-build-fneg"          , 2, 0, 0, SCM_FUNC(llvm_build_fneg          ));
+  scm_c_define_gsubr("llvm-build-not"           , 2, 0, 0, SCM_FUNC(llvm_build_not           ));
   scm_c_define_gsubr("llvm-build-add"           , 3, 0, 0, SCM_FUNC(llvm_build_add           ));
   scm_c_define_gsubr("llvm-build-fadd"          , 3, 0, 0, SCM_FUNC(llvm_build_fadd          ));
 }

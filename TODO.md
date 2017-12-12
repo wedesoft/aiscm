@@ -1,6 +1,6 @@
 ## Ready
 
-* unary and binary arithmetic expressions, refactor
+* more unary and binary arithmetic expressions
 * simple lambda to define function
 * functions with let statement
 * pointer arguments (memory?)
