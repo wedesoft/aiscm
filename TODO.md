@@ -1,7 +1,7 @@
 ## Ready
 
-* pointer arguments (memory?)
-* simple lambda to define function
+* make function argument superfluous (list of calls, monad-like construct)
+* type coercions
 * functions with let statement
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
