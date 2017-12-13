@@ -208,5 +208,10 @@
            (pointer (make-constant-pointer (bytevector->pointer data)))]
       ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer))) 42)
       data))
+  (test-equal "Pass pointer argument"
+    42
+    (let* [(data    #vu8(42))
+           (pointer (pointer-address (bytevector->pointer data)))]
+      ((llvm-wrap int8 (list int64) (lambda (fun value) (function-load fun int8 value))) pointer)))
 (test-end "convenience wrapper")
 (test-end "aiscm llvm")
