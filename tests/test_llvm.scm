@@ -194,24 +194,25 @@
 (test-end "binary expressions")
 
 (test-begin "convenience wrapper")
-  (test-assert "Define empty function using convenience wrapper"
-    (unspecified? ((llvm-wrap void '() (lambda (fun) #f)))))
-  (test-equal "Define identity function using convenience wrapper"
+  (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap int (list int) (lambda (fun value) value)) 42))
-  (test-equal "Define negating function using convenience wrapper"
+    ((llvm-wrap int '() (lambda (fun) (function-ret fun (make-constant int 42))))))
+  (test-eqv "Define identity function using convenience wrapper"
+    42
+    ((llvm-wrap int (list int) (lambda (fun value) (function-ret fun value))) 42))
+  (test-eqv "Define negating function using convenience wrapper"
     -42
-    ((llvm-wrap int (list int) (lambda (fun value) (llvm-neg fun value))) 42))
+    ((llvm-wrap int (list int) (lambda (fun value) (function-ret fun (llvm-neg fun value)))) 42))
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer))) 42)
+      ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer) (function-ret fun))) 42)
       data))
-  (test-equal "Pass pointer argument"
+  (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap int8 (list int64) (lambda (fun value) (function-load fun int8 value))) pointer)))
+      ((llvm-wrap int8 (list int64) (lambda (fun value) (function-ret fun (function-load fun int8 value)))) pointer)))
 (test-end "convenience wrapper")
 (test-end "aiscm llvm")

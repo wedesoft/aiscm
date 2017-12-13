@@ -141,11 +141,8 @@
   "Convenience wrapper for compiling JIT functions"
   (let* [(mod    (make-llvm-module))
          (fun    (apply make-function mod return-type "wrapped" argument-types))
-         (args   (map (cut function-param fun <>) (iota (length argument-types))))
-         (result (apply function (cons fun args)))]
-    (if (eqv? return-type void)
-      (function-ret fun)
-      (function-ret fun result))
+         (args   (map (cut function-param fun <>) (iota (length argument-types))))]
+    (apply function (cons fun args))
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
