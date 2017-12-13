@@ -23,7 +23,7 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             <llvm-value> <meta<llvm-value>>
-            make-constant make-llvm-module make-function llvm-dump
+            make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
@@ -92,6 +92,10 @@
 (define (make-constant type value)
   "Create a constant LLVM value"
   (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
+
+(define (make-constant-pointer address)
+  "Create pointer constant"
+  (make-constant int64 (pointer-address address)))
 
 (define (get-type value)
   "Query type of LLVM value"

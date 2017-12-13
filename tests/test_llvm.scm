@@ -117,7 +117,7 @@
       (let* [(data #vu8(2 3 5 7))
              (mod  (make-llvm-module))
              (fun  (make-function mod type "read_mem"))]
-        (function-ret fun (function-load fun type (make-constant int64 (pointer-address (bytevector->pointer data)))))
+        (function-ret fun (function-load fun type (make-constant-pointer (bytevector->pointer data))))
         (llvm-compile mod)
         ((llvm-func mod fun)))))
     '(2 770)
@@ -128,7 +128,7 @@
       #vu8(2 3 5 7)
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "write_mem"))]
-        (function-store fun type (make-constant type value) (make-constant int64 (pointer-address (bytevector->pointer data))))
+        (function-store fun type (make-constant type value) (make-constant-pointer (bytevector->pointer data)))
         (function-ret fun)
         (llvm-compile mod)
         ((llvm-func mod fun))
@@ -205,7 +205,7 @@
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
-           (pointer (make-constant int64 (pointer-address (bytevector->pointer data))))]
+           (pointer (make-constant-pointer (bytevector->pointer data)))]
       ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer))) 42)
       data))
 (test-end "convenience wrapper")

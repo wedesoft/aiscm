@@ -1,10 +1,10 @@
 ## Ready
 
-* unary =0, !=0, !, <<, >>
-* binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
+* pointer arguments (memory?)
 * simple lambda to define function
 * functions with let statement
-* pointer arguments (memory?)
+* unary =0, !=0, !, <<, >>
+* binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
