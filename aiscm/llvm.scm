@@ -27,7 +27,8 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-wrap)
+            llvm-wrap llvm-monad
+            function-ret2)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -74,6 +75,13 @@
     (if result
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
+
+(define* (function-ret2 #:optional (result #f))
+  (lambda (fun)
+    (let [(llvm-function (slot-ref fun 'llvm-function))]
+      (if result
+        (llvm-function-return llvm-function (slot-ref result 'llvm-value))
+        (llvm-function-return-void llvm-function)))))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
@@ -146,3 +154,6 @@
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
+
+(define (llvm-monad return-type argument-types function)
+  (llvm-wrap return-type argument-types (lambda (fun . args) ((apply function args) fun))))

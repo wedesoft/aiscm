@@ -72,12 +72,12 @@
              (fun  (make-function mod void "empty"))]
         (function-ret fun)
         (llvm-dump mod))))
-  (test-error "Throw error if verification of module failed"
+  (test-error "Throw error if module is not valid"
     'misc-error
     (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "incomplete"))]
       (llvm-compile llvm)))
-  (test-error "Throw error when attempting to compile again"
+  (test-error "Throw error when attempting to compile twice"
     'misc-error
     (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "empty"))]
@@ -215,4 +215,16 @@
            (pointer (pointer-address (bytevector->pointer data)))]
       ((llvm-wrap int8 (list int64) (lambda (fun value) (function-ret fun (function-load fun int8 value)))) pointer)))
 (test-end "convenience wrapper")
+
+(test-begin "monadic expressions")
+  (test-assert "Empty function"
+    (unspecified?
+      ((llvm-monad void '() (lambda () (function-ret2))))))
+  (test-equal "Identity function"
+    42
+    ((llvm-monad int (list int) (lambda (value) (function-ret2 value))) 42))
+  (test-equal "Constant function"
+    42
+    ((llvm-monad int '() (lambda () (function-ret2 (make-constant int 42))))))
+(test-end "monadic expressions")
 (test-end "aiscm llvm")
