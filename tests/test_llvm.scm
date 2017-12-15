@@ -225,6 +225,9 @@
     ((llvm-monad int (list int) (lambda (value) (function-ret2 value))) 42))
   (test-equal "Constant function"
     42
-    ((llvm-monad int '() (lambda () (function-ret2 (make-constant int 42))))))
+    ((llvm-monad int '() (lambda () (function-ret2 (make-constant2 int 42))))))
+  (test-equal "Unary negate"
+    -42
+    ((llvm-monad int (list int) (lambda (value) (function-ret2 (llvm-neg2 value)))) 42))
 (test-end "monadic expressions")
 (test-end "aiscm llvm")

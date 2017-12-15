@@ -28,7 +28,7 @@
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-monad
-            function-ret2)
+            function-ret2 llvm-neg2 make-constant2)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -76,12 +76,9 @@
       (llvm-function-return llvm-function (slot-ref result 'llvm-value))
       (llvm-function-return-void llvm-function))))
 
-(define* (function-ret2 #:optional (result #f))
+(define* (function-ret2 #:optional (result (lambda (fun) #f)))
   (lambda (fun)
-    (let [(llvm-function (slot-ref fun 'llvm-function))]
-      (if result
-        (llvm-function-return llvm-function (slot-ref result 'llvm-value))
-        (llvm-function-return-void llvm-function)))))
+    (function-ret fun (result fun))))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
@@ -100,6 +97,10 @@
 (define (make-constant type value)
   "Create a constant LLVM value"
   (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
+
+(define (make-constant2 type value)
+  (lambda (fun)
+    (make-constant type value)))
 
 (define (make-constant-pointer address)
   "Create pointer constant"
@@ -130,6 +131,9 @@
 (define-llvm-unary llvm-fneg llvm-build-fneg)
 (define-llvm-unary llvm-not  llvm-build-not )
 
+(define (llvm-neg2 value)
+  (lambda (fun) (llvm-neg fun (value fun))))
+
 (define-syntax-rule (define-llvm-binary function delegate)
   (define (function self value-a value-b)
     (make <llvm-value> #:llvm-value (delegate (slot-ref self    'llvm-function)
@@ -156,4 +160,6 @@
     (llvm-func mod fun)))
 
 (define (llvm-monad return-type argument-types function)
-  (llvm-wrap return-type argument-types (lambda (fun . args) ((apply function args) fun))))
+  (llvm-wrap return-type argument-types
+    (lambda (fun . args)
+      ((apply function (map (lambda (arg) (lambda (fun) arg)) args)) fun))))
