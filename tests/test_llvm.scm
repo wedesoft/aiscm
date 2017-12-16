@@ -229,5 +229,8 @@
   (test-equal "Unary negate"
     -42
     ((llvm-monad int (list int) (lambda (value) (function-ret2 (llvm-neg2 value)))) 42))
+  (test-equal "Binary add"
+    36
+    ((llvm-monad int (list int int) (lambda (value-a value-b) (function-ret2 (llvm-add2 value-a value-b)))) 21 15))
 (test-end "monadic expressions")
 (test-end "aiscm llvm")

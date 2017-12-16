@@ -28,7 +28,7 @@
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-monad
-            function-ret2 llvm-neg2 make-constant2)
+            function-ret2 llvm-neg2 make-constant2 llvm-add2)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -146,6 +146,9 @@
 (define-llvm-binary llvm-fsub llvm-build-fsub)
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
+
+(define (llvm-add2 value-a value-b)
+  (lambda (fun) (llvm-add fun (value-a fun) (value-b fun))))
 
 (define module-list '())
 
