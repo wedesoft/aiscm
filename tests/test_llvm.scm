@@ -33,24 +33,24 @@
 
 (test-begin "constant values")
   (test-equal "Build an integer value"
-    <llvm-value> (class-of (make-constant int32 42)))
+    <llvm-value> (class-of ((make-constant int32 42) #f)))
   (for-each
     (lambda (type bits)
       (test-equal (format #f "Get type of ~a-bit integer value" bits)
-        type (get-type (make-constant type 42))))
+        type (get-type ((make-constant type 42) #f))))
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (for-each
     (lambda (unsigned-type signed-type bits)
       (test-equal (format #f "Type of ~a-bit value ignores signed-ness" bits)
-        signed-type (get-type (make-constant unsigned-type 42))))
+        signed-type (get-type ((make-constant unsigned-type 42) #f))))
     (list uint8 uint16 uint32 uint64)
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (test-equal "Get type of double-precision floating point value"
-    double (get-type (make-constant double (exp 1))))
+    double (get-type ((make-constant double (exp 1)) #f)))
   (test-equal "Get type of single-precision floating point value"
-    float (get-type (make-constant float (exp 1))))
+    float (get-type ((make-constant float (exp 1)) #f)))
 (test-end "constant values")
 
 (test-begin "functions")
@@ -63,14 +63,14 @@
     (unspecified?
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "empty"))]
-        (function-ret fun)
+        ((function-ret) fun)
         (llvm-compile mod)
         ((llvm-func mod fun)))))
   (test-assert "Dump module containing a function"
     (unspecified?
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "empty"))]
-        (function-ret fun)
+        ((function-ret) fun)
         (llvm-dump mod))))
   (test-error "Throw error if module is not valid"
     'misc-error
@@ -81,7 +81,7 @@
     'misc-error
     (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "empty"))]
-      (function-ret fun)
+      ((function-ret) fun)
       (llvm-compile llvm)
       (llvm-compile llvm)))
   (for-each
@@ -90,7 +90,7 @@
         value
         (let* [(mod (make-llvm-module))
                (fun (make-function mod type "constant_int"))]
-          (function-ret fun (make-constant type value))
+          ((function-ret (make-constant type value)) fun)
           (llvm-compile mod)
           ((llvm-func mod fun)))))
     (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
@@ -103,7 +103,7 @@
          0.5
          (let* [(mod  (make-llvm-module))
                 (fun  (make-function mod type "constant_double"))]
-           (function-ret fun (make-constant type 0.5))
+           ((function-ret (make-constant type 0.5)) fun)
            (llvm-compile mod)
            ((llvm-func mod fun)))))
     (list float double)
@@ -117,7 +117,7 @@
       (let* [(data #vu8(2 3 5 7))
              (mod  (make-llvm-module))
              (fun  (make-function mod type "read_mem"))]
-        (function-ret fun (function-load fun type (make-constant-pointer (bytevector->pointer data))))
+        ((function-ret (function-load type (make-constant-pointer (bytevector->pointer data)))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun)))))
     '(2 770)
@@ -128,8 +128,8 @@
       #vu8(2 3 5 7)
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "write_mem"))]
-        (function-store fun type (make-constant type value) (make-constant-pointer (bytevector->pointer data)))
-        (function-ret fun)
+        ((function-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data))) fun)
+        ((function-ret) fun)
         (llvm-compile mod)
         ((llvm-func mod fun))
         data)))
@@ -146,7 +146,7 @@
   (test-assert "Call a function accepting an argument"
     (let* [(mod  (make-llvm-module))
            (fun  (make-function mod void "accept_arg" int))]
-      (function-ret fun)
+      ((function-ret) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
   (for-each (lambda (value type name)
@@ -154,7 +154,7 @@
       value
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod type "int_identity" type))]
-        (function-ret fun (function-param fun 0))
+        ((function-ret (lambda (fun) (function-param fun 0))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
     '(42 0.5)
@@ -168,7 +168,7 @@
       result
       (let* [(mod (make-llvm-module))
              (fun (make-function mod type "op" type))]
-        (function-ret fun (op fun (function-param fun 0)))
+        ((function-ret (op (lambda (fun) (function-param fun 0)))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
     '(42 42 2.5)
@@ -183,7 +183,7 @@
       result
       (let* [(mod (make-llvm-module))
              (fun (make-function mod type "add" type type))]
-        (function-ret fun (op fun (function-param fun 0) (function-param fun 1)))
+        ((function-ret (op (lambda (fun) (function-param fun 0)) (lambda (fun) (function-param fun 1)))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
     '(2 100 5 2.5 5.75 2.5)
@@ -196,41 +196,45 @@
 (test-begin "convenience wrapper")
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap int '() (lambda (fun) (function-ret fun (make-constant int 42))))))
+    ((llvm-wrap int '() (lambda (fun) ((function-ret (make-constant int 42)) fun)))))
   (test-eqv "Define identity function using convenience wrapper"
     42
-    ((llvm-wrap int (list int) (lambda (fun value) (function-ret fun value))) 42))
+    ((llvm-wrap int (list int) (lambda (fun value) ((function-ret value) fun))) 42))
   (test-eqv "Define negating function using convenience wrapper"
     -42
-    ((llvm-wrap int (list int) (lambda (fun value) (function-ret fun (llvm-neg fun value)))) 42))
+    ((llvm-wrap int (list int) (lambda (fun value) ((function-ret (llvm-neg value)) fun))) 42))
+  (test-eqv "Define addition function using convenience wrapper"
+    36
+    ((llvm-wrap int (list int int) (lambda (fun value-a value-b) ((function-ret (llvm-add value-a value-b)) fun))) 21 15))
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap void (list int8) (lambda (fun value) (function-store fun int8 value pointer) (function-ret fun))) 42)
+      ((llvm-wrap void (list int8) (lambda (fun value) ((function-store int8 value pointer) fun) ((function-ret) fun))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap int8 (list int64) (lambda (fun value) (function-ret fun (function-load fun int8 value)))) pointer)))
+      ((llvm-wrap int8 (list int64) (lambda (fun value) ((function-ret (function-load int8 value)) fun))) pointer)))
 (test-end "convenience wrapper")
 
+(test-skip 5)
 (test-begin "monadic expressions")
   (test-assert "Empty function"
     (unspecified?
-      ((llvm-monad void '() (lambda () (function-ret2))))))
+      ((llvm-monad void '() (lambda () (function-ret))))))
   (test-equal "Identity function"
     42
-    ((llvm-monad int (list int) (lambda (value) (function-ret2 value))) 42))
+    ((llvm-monad int (list int) (lambda (value) (function-ret value))) 42))
   (test-equal "Constant function"
     42
-    ((llvm-monad int '() (lambda () (function-ret2 (make-constant2 int 42))))))
+    ((llvm-monad int '() (lambda () (function-ret (make-constant int 42))))))
   (test-equal "Unary negate"
     -42
-    ((llvm-monad int (list int) (lambda (value) (function-ret2 (llvm-neg2 value)))) 42))
+    ((llvm-monad int (list int) (lambda (value) (function-ret (llvm-neg value)))) 42))
   (test-equal "Binary add"
     36
-    ((llvm-monad int (list int int) (lambda (value-a value-b) (function-ret2 (llvm-add2 value-a value-b)))) 21 15))
+    ((llvm-monad int (list int int) (lambda (value-a value-b) (function-ret (llvm-add value-a value-b)))) 21 15))
 (test-end "monadic expressions")
 (test-end "aiscm llvm")

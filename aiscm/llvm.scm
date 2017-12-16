@@ -18,6 +18,7 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
@@ -27,8 +28,7 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-wrap llvm-monad
-            function-ret2 llvm-neg2 make-constant2 llvm-add2)
+            llvm-wrap llvm-monad)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -70,15 +70,12 @@
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
-(define* (function-ret self #:optional (result #f))
-  (let [(llvm-function (slot-ref self 'llvm-function))]
-    (if result
-      (llvm-function-return llvm-function (slot-ref result 'llvm-value))
+(define* ((function-ret #:optional (result (lambda (fun) #f))) fun)
+  (let [(llvm-function (slot-ref fun 'llvm-function))
+        (return-value  (result fun))]
+    (if return-value
+      (llvm-function-return llvm-function (slot-ref return-value 'llvm-value))
       (llvm-function-return-void llvm-function))))
-
-(define* (function-ret2 #:optional (result (lambda (fun) #f)))
-  (lambda (fun)
-    (function-ret fun (result fun))))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
@@ -94,13 +91,9 @@
 (define-class* <llvm-value> <object> <meta<llvm-value>> <class>
                (llvm-value #:init-keyword #:llvm-value))
 
-(define (make-constant type value)
+(define ((make-constant type value) fun)
   "Create a constant LLVM value"
   (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
-
-(define (make-constant2 type value)
-  (lambda (fun)
-    (make-constant type value)))
 
 (define (make-constant-pointer address)
   "Create pointer constant"
@@ -110,35 +103,37 @@
   "Query type of LLVM value"
   (llvm-get-type (slot-ref value 'llvm-value)))
 
-(define (function-load self type address)
+(define ((function-load type address) fun)
   "Generate code for reading value from memory"
-  (make <llvm-value> #:llvm-value (llvm-build-load (slot-ref self 'llvm-function) type (slot-ref address 'llvm-value))))
+  (make <llvm-value> #:llvm-value (llvm-build-load (slot-ref fun 'llvm-function)
+                                                   type
+                                                   (slot-ref (address fun) 'llvm-value))))
 
-(define (function-store self type value address)
+(define ((function-store type value address) fun)
   "Generate code for writing value to memory"
-  (llvm-build-store (slot-ref self 'llvm-function) type (slot-ref value 'llvm-value) (slot-ref address 'llvm-value)))
+  (llvm-build-store (slot-ref fun 'llvm-function)
+                    type
+                    (slot-ref (value fun) 'llvm-value)
+                    (slot-ref (address fun) 'llvm-value)))
 
 (define (function-param self index)
   "Get value of INDEXth function parameter"
   (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref self 'llvm-function) index)))
 
 (define-syntax-rule (define-llvm-unary function delegate)
-  (define (function self value)
-    (make <llvm-value> #:llvm-value (delegate (slot-ref self 'llvm-function)
-                                              (slot-ref value 'llvm-value)))))
+  (define ((function value) fun)
+    (make <llvm-value> #:llvm-value (delegate (slot-ref fun 'llvm-function)
+                                              (slot-ref (value fun) 'llvm-value)))))
 
 (define-llvm-unary llvm-neg  llvm-build-neg )
 (define-llvm-unary llvm-fneg llvm-build-fneg)
 (define-llvm-unary llvm-not  llvm-build-not )
 
-(define (llvm-neg2 value)
-  (lambda (fun) (llvm-neg fun (value fun))))
-
 (define-syntax-rule (define-llvm-binary function delegate)
-  (define (function self value-a value-b)
-    (make <llvm-value> #:llvm-value (delegate (slot-ref self    'llvm-function)
-                                              (slot-ref value-a 'llvm-value)
-                                              (slot-ref value-b 'llvm-value)))))
+  (define ((function value-a value-b) fun)
+    (make <llvm-value> #:llvm-value (delegate (slot-ref fun 'llvm-function)
+                                              (slot-ref (value-a fun) 'llvm-value)
+                                              (slot-ref (value-b fun) 'llvm-value)))))
 
 (define-llvm-binary llvm-add  llvm-build-add )
 (define-llvm-binary llvm-fadd llvm-build-fadd)
@@ -147,9 +142,6 @@
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
 
-(define (llvm-add2 value-a value-b)
-  (lambda (fun) (llvm-add fun (value-a fun) (value-b fun))))
-
 (define module-list '())
 
 (define (llvm-wrap return-type argument-types function)
@@ -157,7 +149,7 @@
   (let* [(mod    (make-llvm-module))
          (fun    (apply make-function mod return-type "wrapped" argument-types))
          (args   (map (cut function-param fun <>) (iota (length argument-types))))]
-    (apply function (cons fun args))
+    (apply function (cons fun (map (lambda (arg) (lambda (fun) arg)) args)))
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
