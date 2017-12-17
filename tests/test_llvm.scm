@@ -154,7 +154,7 @@
       value
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod type "int_identity" type))]
-        ((function-ret (lambda (fun) (function-param fun 0))) fun)
+        ((function-ret (function-param 0)) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
     '(42 0.5)
@@ -168,7 +168,7 @@
       result
       (let* [(mod (make-llvm-module))
              (fun (make-function mod type "op" type))]
-        ((function-ret (op (lambda (fun) (function-param fun 0)))) fun)
+        ((function-ret (op (function-param 0))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
     '(42 42 2.5)
@@ -183,7 +183,7 @@
       result
       (let* [(mod (make-llvm-module))
              (fun (make-function mod type "add" type type))]
-        ((function-ret (op (lambda (fun) (function-param fun 0)) (lambda (fun) (function-param fun 1)))) fun)
+        ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
     '(2 100 5 2.5 5.75 2.5)
