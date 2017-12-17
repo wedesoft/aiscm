@@ -1,7 +1,5 @@
 ## Ready
 
-* use monad for function-param
-* implement concatenation of commands (function with side-effect)
 * type coercions
 * functions with let statement using intermediate value
 * unary =0, !=0, !, <<, >>

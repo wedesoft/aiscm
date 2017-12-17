@@ -193,44 +193,40 @@
     (list int int int double double double))
 (test-end "binary expressions")
 
+(test-begin "sequential program")
+  (test-eqv "Sequence with one statement"
+    3 ((llvm-sequential 1+) 2))
+  (test-eqv "Sequence with two statements returns result of last statement"
+    2 ((llvm-sequential 1+ 1-) 3))
+  (test-eqv "All statements are executed"
+    2 (let [(x 0)] ((llvm-sequential (lambda (v) (set! x v)) (lambda (v) (+ v x))) 1)))
+(test-end "sequential program")
+
 (test-begin "convenience wrapper")
   (test-assert "Define empty function using convenience wrapper"
-    (unspecified? ((llvm-monad void '() (lambda () (function-ret))))))
+    (unspecified? ((llvm-wrap void '() function-ret))))
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-monad int '() (lambda () (function-ret (make-constant int 42))))))
+    ((llvm-wrap int '() (lambda () (function-ret (make-constant int 42))))))
   (test-eqv "Define identity function using convenience wrapper"
     42
-    ((llvm-wrap int (list int) (lambda (fun value) ((function-ret value) fun))) 42))
+    ((llvm-wrap int (list int) (lambda (value) (function-ret value))) 42))
   (test-eqv "Define negating function using convenience wrapper"
     -42
-    ((llvm-wrap int (list int) (lambda (fun value) ((function-ret (llvm-neg value)) fun))) 42))
+    ((llvm-wrap int (list int) (lambda (value) (function-ret (llvm-neg value)))) 42))
   (test-eqv "Define addition function using convenience wrapper"
     36
-    ((llvm-wrap int (list int int) (lambda (fun value-a value-b) ((function-ret (llvm-add value-a value-b)) fun))) 21 15))
+    ((llvm-wrap int (list int int) (lambda (value-a value-b) (function-ret (llvm-add value-a value-b)))) 21 15))
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap void (list int8) (lambda (fun value) ((function-store int8 value pointer) fun) ((function-ret) fun))) 42)
+      ((llvm-wrap void (list int8) (lambda (value) (llvm-sequential (function-store int8 value pointer) (function-ret)))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap int8 (list int64) (lambda (fun value) ((function-ret (function-load int8 value)) fun))) pointer)))
+      ((llvm-wrap int8 (list int64) (lambda (value) (function-ret (function-load int8 value)))) pointer)))
 (test-end "convenience wrapper")
-
-(test-skip 3)
-(test-begin "monadic expressions")
-  (test-equal "Identity function"
-    42
-    ((llvm-monad int (list int) (lambda (value) (function-ret value))) 42))
-  (test-equal "Unary negate"
-    -42
-    ((llvm-monad int (list int) (lambda (value) (function-ret (llvm-neg value)))) 42))
-  (test-equal "Binary add"
-    36
-    ((llvm-monad int (list int int) (lambda (value-a value-b) (function-ret (llvm-add value-a value-b)))) 21 15))
-(test-end "monadic expressions")
 (test-end "aiscm llvm")

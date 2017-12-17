@@ -28,7 +28,7 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not
             llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-wrap llvm-monad)
+            llvm-sequential llvm-wrap)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -144,17 +144,20 @@
 
 (define module-list '())
 
+(define ((llvm-sequential instruction . instructions) fun)
+  "Execute list of instructions sequentially"
+  (if (null? instructions)
+    (instruction fun)
+    (begin
+      (instruction fun)
+      ((apply llvm-sequential instructions) fun))))
+
 (define (llvm-wrap return-type argument-types function)
   "Convenience wrapper for compiling JIT functions"
   (let* [(mod    (make-llvm-module))
          (fun    (apply make-function mod return-type "wrapped" argument-types))
          (args   (map function-param (iota (length argument-types))))]
-    (apply function (cons fun args))
+    ((apply function args) fun)
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
-
-(define (llvm-monad return-type argument-types function)
-  (llvm-wrap return-type argument-types
-    (lambda (fun . args)
-      ((apply function (map (lambda (arg) (lambda (fun) arg)) args)) fun))))
