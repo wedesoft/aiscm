@@ -194,9 +194,11 @@
 (test-end "binary expressions")
 
 (test-begin "convenience wrapper")
+  (test-assert "Define empty function using convenience wrapper"
+    (unspecified? ((llvm-monad void '() (lambda () (function-ret))))))
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap int '() (lambda (fun) ((function-ret (make-constant int 42)) fun)))))
+    ((llvm-monad int '() (lambda () (function-ret (make-constant int 42))))))
   (test-eqv "Define identity function using convenience wrapper"
     42
     ((llvm-wrap int (list int) (lambda (fun value) ((function-ret value) fun))) 42))
@@ -219,17 +221,11 @@
       ((llvm-wrap int8 (list int64) (lambda (fun value) ((function-ret (function-load int8 value)) fun))) pointer)))
 (test-end "convenience wrapper")
 
-(test-skip 5)
+(test-skip 3)
 (test-begin "monadic expressions")
-  (test-assert "Empty function"
-    (unspecified?
-      ((llvm-monad void '() (lambda () (function-ret))))))
   (test-equal "Identity function"
     42
     ((llvm-monad int (list int) (lambda (value) (function-ret value))) 42))
-  (test-equal "Constant function"
-    42
-    ((llvm-monad int '() (lambda () (function-ret (make-constant int 42))))))
   (test-equal "Unary negate"
     -42
     ((llvm-monad int (list int) (lambda (value) (function-ret (llvm-neg value)))) 42))
