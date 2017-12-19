@@ -1,7 +1,6 @@
 ## Ready
 
 * type coercions
-* functions with let statement using intermediate value
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies
