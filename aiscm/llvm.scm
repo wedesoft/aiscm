@@ -28,7 +28,7 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-sequential llvm-wrap)
-  #:export-syntax (llvm-let)
+  #:export-syntax (llvm-let*)
   #:re-export (destroy))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -162,5 +162,13 @@
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
 
-(define-syntax-rule (llvm-let [definitions ...] body ...)
-  (let [definitions ...] (llvm-sequential body ...)))
+(define-syntax llvm-let*
+  (lambda (x)
+    (syntax-case x ()
+      ((llvm-let* [] body ...)
+       #'(llvm-sequential body ...))
+      ((llvm-let* [(variable expression) definitions ...] body ...)
+       #'(lambda (fun)
+           (let* [(intermediate (expression fun))
+                  (variable (lambda (fun) intermediate))]
+             ((llvm-let* [definitions ...] body ...) fun)))))))
