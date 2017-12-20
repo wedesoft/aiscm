@@ -403,6 +403,29 @@ SCM llvm_build_fmul(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildFMul, scm_function, scm_value_a, scm_value_b);
 }
 
+SCM llvm_build_cast(LLVMValueRef (*build_cast)(LLVMBuilderRef, LLVMValueRef, LLVMTypeRef, const char*),
+                    SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value = get_llvm_value(scm_value);
+  LLVMTypeRef type = llvm_type(scm_to_int(scm_type));
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = (*build_cast)(function->builder, value->value, type, "");
+  return retval;
+}
+
+SCM llvm_build_sext(SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  return llvm_build_cast(LLVMBuildSExt, scm_function, scm_type, scm_value);
+}
+
+SCM llvm_build_zext(SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  return llvm_build_cast(LLVMBuildZExt, scm_function, scm_type, scm_value);
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -442,4 +465,6 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-fsub"          , 3, 0, 0, SCM_FUNC(llvm_build_fsub          ));
   scm_c_define_gsubr("llvm-build-mul"           , 3, 0, 0, SCM_FUNC(llvm_build_mul           ));
   scm_c_define_gsubr("llvm-build-fmul"          , 3, 0, 0, SCM_FUNC(llvm_build_fmul          ));
+  scm_c_define_gsubr("llvm-build-sext"          , 3, 0, 0, SCM_FUNC(llvm_build_sext          ));
+  scm_c_define_gsubr("llvm-build-zext"          , 3, 0, 0, SCM_FUNC(llvm_build_zext          ));
 }

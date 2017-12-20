@@ -230,6 +230,19 @@
       ((llvm-wrap int8 (list int64) (lambda (value) (function-ret (function-load int8 value)))) pointer)))
 (test-end "convenience wrapper")
 
+(test-begin "typecast")
+  (test-equal "Zero-extend integer"
+    255
+    (let* [(data #vu8(255))
+           (pointer (pointer-address (bytevector->pointer data)))]
+      ((llvm-wrap uint32 (list int64) (lambda (value) (function-ret (llvm-zext uint32 (function-load uint8 value))))) pointer)))
+  (test-equal "Sign-extend integer"
+    -1
+    (let* [(data #vu8(255))
+           (pointer (pointer-address (bytevector->pointer data)))]
+      ((llvm-wrap int32 (list int64) (lambda (value) (function-ret (llvm-sext int32 (function-load int8 value))))) pointer)))
+(test-end "typecast")
+
 (test-begin "local variables")
   (test-eqv "Empty list of local variables"
     3 ((llvm-let* [] 1+) 2))
