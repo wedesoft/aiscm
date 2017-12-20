@@ -6,7 +6,7 @@ TEST_EXTENSIONS = .scm
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 SCM_LOG_DRIVER = $(GUILE) -L $(top_builddir) -L $(srcdir) $(top_srcdir)/build-aux/test-driver.scm
 
-TESTS = test_asm.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmpeg_out.scm test_float.scm \
+TESTS = test_asm.scm test_basictype.scm test_bool.scm test_complex.scm test_ffmpeg_in.scm test_ffmpeg_out.scm test_float.scm \
 				test_image.scm test_int.scm test_jit.scm test_llvm.scm test_magick.scm test_mem.scm \
 				test_method.scm test_obj.scm test_pointer.scm test_pulse.scm test_rgb.scm test_ringbuffer.scm \
 				test_sequence.scm test_util.scm test_samples.scm test_tensor.scm test_variable.scm test_command.scm test_program.scm \
