@@ -17,7 +17,7 @@
 (define-module (aiscm basictype)
   #:use-module (oop goops)
   #:use-module (aiscm util)
-  #:export (integer signed unsigned bits signed? coerce
+  #:export (get integer signed unsigned bits signed? coerce
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
             <usint> <meta<usint>> <int<16,unsigned>> <meta<int<16,unsigned>>>
@@ -31,7 +31,11 @@
 (define signed   'signed)
 (define unsigned 'unsigned)
 
-(define-class* <int<>> <object> <meta<int<>>> <class>)
+(define-class* <int<>> <object> <meta<int<>>> <class>
+               (value #:init-keyword #:value #:getter get))
+
+(define-method (equal? (a <int<>>) (b <int<>>))
+  (equal? (get a) (get b)))
 
 (define (integer nbits sgn)
   "Retrieve integer class with specified number of bits and sign"

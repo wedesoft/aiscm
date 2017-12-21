@@ -18,6 +18,7 @@
              (rnrs bytevectors)
              (oop goops)
              (system foreign)
+             (aiscm basictype)
              (aiscm llvm))
 
 (test-begin "aiscm llvm")
@@ -257,4 +258,11 @@
   (test-eqv "Intermediate results are cached"
     1 (let [(x 0)] ((llvm-let* [(result (lambda (v) (set! x (+ v x)) x))] result result) 1)))
 (test-end "local variables")
+
+(test-begin "type inference")
+  (test-equal "identity function with integer"
+    (make <int> #:value 42) ((llvm-typed (list <int>) identity) (make <int> #:value 42)))
+  (test-equal "identity function with short integer"
+    (make <sint> #:value 42) ((llvm-typed (list <sint>) identity) (make <sint> #:value 42)))
+(test-end "type inference")
 (test-end "aiscm llvm")

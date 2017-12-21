@@ -1,6 +1,6 @@
 ## Ready
 
-* integer conversions, and inference
+* integer type inference
 * floating-point coercions, conversions, and inference
 * pointers, objects, structures/composite values
 * unary =0, !=0, !, <<, >>

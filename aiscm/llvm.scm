@@ -20,6 +20,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
+  #:use-module (aiscm basictype)
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
@@ -27,7 +28,7 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext)
+            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed)
   #:export-syntax (llvm-let*)
   #:re-export (destroy))
 
@@ -182,3 +183,8 @@
            (let* [(intermediate (expression fun))
                   (variable (lambda (fun) intermediate))]
              ((llvm-let* [definitions ...] body ...) fun)))))))
+
+(define (llvm-typed argument-types function)
+  "Infer types and compile function"
+  (let [(fun (llvm-wrap int (list int) (lambda args (function-ret (apply function args)))))]
+    (lambda args (make (class-of (car args)) #:value (apply fun (map get args))))))

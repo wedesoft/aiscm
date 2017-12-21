@@ -43,4 +43,16 @@
     (list <sint> <sint> <int>  <uint> <usint> <int>   <uint> <byte>)
     (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long>))
 (test-end "integer coercions")
+
+(test-begin "integer values")
+  (test-eqv "Wrap and unwrap value"
+    42 (get (make <int> #:value 42)))
+  (test-equal "Equal values"
+    (make <int> #:value 42) (make <int> #:value 42))
+  (test-assert "Unequal values"
+    (not (equal? (make <int> #:value 42) (make <int> #:value 43))))
+  (test-assert "Unequal types values"
+    (not (equal? (make <uint> #:value 42) (make <int> #:value 42))))
+(test-end "integer values")
+
 (test-end "aiscm basictype")
