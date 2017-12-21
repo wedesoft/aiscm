@@ -1,6 +1,8 @@
 ## Ready
 
-* type coercions
+* integer conversions, and inference
+* floating-point coercions, conversions, and inference
+* pointers, objects, structures/composite values
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies

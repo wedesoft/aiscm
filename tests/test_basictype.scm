@@ -20,6 +20,7 @@
 
 
 (test-begin "aiscm basictype")
+(test-begin "construct integer types")
   (for-each
     (lambda (nbits sign cls)
       (test-eq (format #f "Class for ~a-bit ~a integer should be ~a" nbits sign (class-name cls))
@@ -31,4 +32,15 @@
     (list 8 8 16 16 32 32 64 64)
     (list unsigned signed unsigned signed unsigned signed unsigned signed)
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+(test-end "construct integer types")
+
+(test-begin "integer coercions")
+  (for-each
+    (lambda (a b result)
+      (test-eq (format #f "Type coercion of ~a and ~a should return ~a" (class-name a) (class-name b) (class-name result))
+        result (coerce a b)))
+    (list <sint> <int>  <sint> <uint> <int>   <usint> <byte> <uint>)
+    (list <sint> <sint> <int>  <uint> <usint> <int>   <uint> <byte>)
+    (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long>))
+(test-end "integer coercions")
 (test-end "aiscm basictype")

@@ -17,7 +17,7 @@
 (define-module (aiscm basictype)
   #:use-module (oop goops)
   #:use-module (aiscm util)
-  #:export (integer signed unsigned bits signed?
+  #:export (integer signed unsigned bits signed? coerce
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
             <usint> <meta<usint>> <int<16,unsigned>> <meta<int<16,unsigned>>>
@@ -34,6 +34,7 @@
 (define-class* <int<>> <object> <meta<int<>>> <class>)
 
 (define (integer nbits sgn)
+  "Retrieve integer class with specified number of bits and sign"
   (template-class (int nbits sgn) <int<>>
     (lambda (class metaclass)
       (define-method (bits (self metaclass)) nbits)
@@ -47,3 +48,10 @@
 (define <int>   (integer 32 signed  )) (define <meta<int>>   (class-of <int>  ))
 (define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
 (define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
+
+(define (coerce a b)
+  "Type coercion for integers"
+  (let* [(is-signed? (or (signed? a) (signed? b)))
+         (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
+         (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
+    (integer (max (bits (adapt a)) (bits (adapt b))) (if is-signed? signed unsigned))))
