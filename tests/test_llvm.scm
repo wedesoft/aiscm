@@ -241,6 +241,8 @@
     (let* [(data #vu8(255))
            (pointer (pointer-address (bytevector->pointer data)))]
       ((llvm-wrap int32 (list int64) (lambda (value) (function-ret (llvm-sext int32 (function-load int8 value))))) pointer)))
+  (test-equal "Truncate integer"
+    #xcd ((llvm-wrap uint8 (list uint16) (lambda (value) (function-ret (llvm-trunc int8 value)))) #xabcd))
 (test-end "typecast")
 
 (test-begin "local variables")

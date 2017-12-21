@@ -416,6 +416,11 @@ SCM llvm_build_cast(LLVMValueRef (*build_cast)(LLVMBuilderRef, LLVMValueRef, LLV
   return retval;
 }
 
+SCM llvm_build_trunc(SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  return llvm_build_cast(LLVMBuildTrunc, scm_function, scm_type, scm_value);
+}
+
 SCM llvm_build_sext(SCM scm_function, SCM scm_type, SCM scm_value)
 {
   return llvm_build_cast(LLVMBuildSExt, scm_function, scm_type, scm_value);
@@ -465,6 +470,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-fsub"          , 3, 0, 0, SCM_FUNC(llvm_build_fsub          ));
   scm_c_define_gsubr("llvm-build-mul"           , 3, 0, 0, SCM_FUNC(llvm_build_mul           ));
   scm_c_define_gsubr("llvm-build-fmul"          , 3, 0, 0, SCM_FUNC(llvm_build_fmul          ));
+  scm_c_define_gsubr("llvm-build-trunc"         , 3, 0, 0, SCM_FUNC(llvm_build_trunc         ));
   scm_c_define_gsubr("llvm-build-sext"          , 3, 0, 0, SCM_FUNC(llvm_build_sext          ));
   scm_c_define_gsubr("llvm-build-zext"          , 3, 0, 0, SCM_FUNC(llvm_build_zext          ));
 }
