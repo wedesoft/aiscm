@@ -59,7 +59,7 @@
   (let* [(is-signed? (or (signed? a) (signed? b)))
          (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
          (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
-    (integer (max (bits (adapt a)) (bits (adapt b))) (if is-signed? signed unsigned))))
+    (integer (min 64 (max (bits (adapt a)) (bits (adapt b)))) (if is-signed? signed unsigned))))
 
 (define (foreign-type type)
   "Get foreign type for integer type"

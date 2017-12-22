@@ -40,9 +40,9 @@
     (lambda (a b result)
       (test-eq (format #f "Type coercion of ~a and ~a should return ~a" (class-name a) (class-name b) (class-name result))
         result (coerce a b)))
-    (list <sint> <int>  <sint> <uint> <int>   <usint> <byte> <uint>)
-    (list <sint> <sint> <int>  <uint> <usint> <int>   <uint> <byte>)
-    (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long>))
+    (list <sint> <int>  <sint> <uint> <int>   <usint> <byte> <uint> <ulong>)
+    (list <sint> <sint> <int>  <uint> <usint> <int>   <uint> <byte> <long> )
+    (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long> <long> ))
 (test-end "integer coercions")
 
 (test-begin "integer values")
