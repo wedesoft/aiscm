@@ -16,6 +16,7 @@
 ;;
 (use-modules (srfi srfi-64)
              (oop goops)
+             (system foreign)
              (aiscm basictype))
 
 
@@ -54,5 +55,13 @@
   (test-assert "Unequal types values"
     (not (equal? (make <uint> #:value 42) (make <int> #:value 42))))
 (test-end "integer values")
+
+(test-begin "get foreign type")
+  (for-each (lambda (type foreign)
+    (test-eqv (format #f "get foreign type of ~a" (class-name type))
+      foreign (foreign-type type)))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)
+    (list uint8   int8   uint16  int16  uint32 int32 uint64  int64))
+(test-end "get foreign type")
 
 (test-end "aiscm basictype")

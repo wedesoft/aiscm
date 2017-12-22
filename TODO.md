@@ -1,5 +1,6 @@
 ## Ready
 
+* limit coercion to 64 bit
 * integer type inference
 * floating-point coercions, conversions, and inference
 * pointers, objects, structures/composite values

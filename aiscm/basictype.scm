@@ -16,8 +16,9 @@
 ;;
 (define-module (aiscm basictype)
   #:use-module (oop goops)
+  #:use-module (system foreign)
   #:use-module (aiscm util)
-  #:export (get integer signed unsigned bits signed? coerce
+  #:export (get integer signed unsigned bits signed? coerce foreign-type
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
             <usint> <meta<usint>> <int<16,unsigned>> <meta<int<16,unsigned>>>
@@ -59,3 +60,7 @@
          (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
          (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
     (integer (max (bits (adapt a)) (bits (adapt b))) (if is-signed? signed unsigned))))
+
+(define (foreign-type type)
+  "Get foreign type for integer type"
+  (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
