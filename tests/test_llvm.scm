@@ -260,13 +260,17 @@
 (test-end "local variables")
 
 (test-begin "unary expression")
-  (test-equal "unary minus"
+  (test-equal "unary minus invokes llvm negation"
     -42
     (let* [(mod (make-llvm-module))
            (fun (make-function mod int "op" int))]
       ((function-ret (get (- (make <int> #:value (function-param 0))))) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
+  (for-each (lambda (type)
+    (test-equal (format #f "unary minus should preserve ~a type" type)
+      type (class-of (- (make type #:value (function-param 0))))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
 (test-end "unary expression")
 
 (test-begin "type inference")

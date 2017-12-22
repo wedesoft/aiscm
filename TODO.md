@@ -2,6 +2,7 @@
 
 * minus for integers, parameters
 * integer type inference
+* compiled minus vs method call minus (do not use minus in compiled expressions?)
 * floating-point coercions, conversions, and inference
 * pointers, objects, structures/composite values
 * unary =0, !=0, !, <<, >>

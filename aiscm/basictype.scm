@@ -19,6 +19,7 @@
   #:use-module (system foreign)
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
+            <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
             <usint> <meta<usint>> <int<16,unsigned>> <meta<int<16,unsigned>>>

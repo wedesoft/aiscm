@@ -184,8 +184,8 @@
                   (variable (lambda (fun) intermediate))]
              ((llvm-let* [definitions ...] body ...) fun)))))))
 
-(define-method (- (value <int>))
-  (make <int> #:value (llvm-neg (get value))))
+(define-method (- (value <int<>>))
+  (make (class-of value) #:value (llvm-neg (get value))))
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
