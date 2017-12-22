@@ -1,5 +1,6 @@
 ## Ready
 
+* minus for integers, parameters
 * integer type inference
 * floating-point coercions, conversions, and inference
 * pointers, objects, structures/composite values

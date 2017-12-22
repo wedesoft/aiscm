@@ -163,7 +163,7 @@
     '("integer" "floating-point"))
 (test-end "method arguments")
 
-(test-begin "unary expressions")
+(test-begin "unary operation")
   (for-each (lambda (value op result type)
     (test-equal (format #f "(~a ~a) should be ~a" (procedure-name op) value result)
       result
@@ -176,7 +176,7 @@
     (list llvm-not llvm-neg llvm-fneg)
     '(213 -42 -2.5)
     (list uint8 int double))
-(test-end "unary expressions")
+(test-end "unary operation")
 
 (test-begin "binary expressions")
   (for-each (lambda (value-a value-b op result type)
@@ -258,6 +258,16 @@
   (test-eqv "Intermediate results are cached"
     1 (let [(x 0)] ((llvm-let* [(result (lambda (v) (set! x (+ v x)) x))] result result) 1)))
 (test-end "local variables")
+
+(test-begin "unary expression")
+  (test-equal "unary minus"
+    -42
+    (let* [(mod (make-llvm-module))
+           (fun (make-function mod int "op" int))]
+      ((function-ret (get (- (make <int> #:value (function-param 0))))) fun)
+      (llvm-compile mod)
+      ((llvm-func mod fun) 42)))
+(test-end "unary expression")
 
 (test-begin "type inference")
   (test-equal "identity function with integer"
