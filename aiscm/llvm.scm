@@ -163,12 +163,15 @@
       (instruction fun)
       ((apply llvm-sequential instructions) fun))))
 
-(define (llvm-wrap return-type argument-types function)
+(define (llvm-wrap argument-types function)
   "Convenience wrapper for compiling JIT functions"
-  (let* [(mod    (make-llvm-module))
-         (fun    (apply make-function mod return-type "wrapped" argument-types))
-         (args   (map function-param (iota (length argument-types))))]
-    ((apply function args) fun)
+  (let* [(mod         (make-llvm-module))
+         (args        (map function-param (iota (length argument-types))))
+         (result      (apply function args))
+         (return-type (car result))
+         (expression  (cdr result))
+         (fun         (apply make-function mod return-type "wrapped" argument-types)) ]
+    (expression fun)
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
@@ -189,5 +192,8 @@
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
-  (let [(fun (llvm-wrap int (list int) (lambda args (function-ret (apply function args)))))]
-    (lambda args (make (class-of (car args)) #:value (apply fun (map get args))))))
+  (llvm-wrap (map foreign-type argument-types)
+    (lambda arguments
+      (let* [(arguments-typed (map (lambda (cls value) (make cls #:value value)) argument-types arguments))
+             (expression      (apply function arguments-typed))]
+        (cons (foreign-type (class-of expression)) (function-ret (get expression)))))))

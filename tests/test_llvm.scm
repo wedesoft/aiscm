@@ -205,30 +205,30 @@
 
 (test-begin "convenience wrapper")
   (test-assert "Define empty function using convenience wrapper"
-    (unspecified? ((llvm-wrap void '() function-ret))))
+    (unspecified? ((llvm-wrap '() (lambda () (cons void (function-ret)))))))
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap int '() (lambda () (function-ret (make-constant int 42))))))
+    ((llvm-wrap '() (lambda () (cons int (function-ret (make-constant int 42)))))))
   (test-eqv "Define identity function using convenience wrapper"
     42
-    ((llvm-wrap int (list int) (lambda (value) (function-ret value))) 42))
+    ((llvm-wrap (list int) (lambda (value) (cons int (function-ret value)))) 42))
   (test-eqv "Define negating function using convenience wrapper"
     -42
-    ((llvm-wrap int (list int) (lambda (value) (function-ret (llvm-neg value)))) 42))
+    ((llvm-wrap (list int) (lambda (value) (cons int (function-ret (llvm-neg value))))) 42))
   (test-eqv "Define addition function using convenience wrapper"
     36
-    ((llvm-wrap int (list int int) (lambda (value-a value-b) (function-ret (llvm-add value-a value-b)))) 21 15))
+    ((llvm-wrap (list int int) (lambda (value-a value-b) (cons int (function-ret (llvm-add value-a value-b))))) 21 15))
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap void (list int8) (lambda (value) (llvm-sequential (function-store int8 value pointer) (function-ret)))) 42)
+      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (function-store int8 value pointer) (function-ret))))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap int8 (list int64) (lambda (value) (function-ret (function-load int8 value)))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (function-load int8 value))))) pointer)))
 (test-end "convenience wrapper")
 
 (test-begin "typecast")
@@ -236,14 +236,14 @@
     255
     (let* [(data #vu8(255))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap uint32 (list int64) (lambda (value) (function-ret (llvm-zext uint32 (function-load uint8 value))))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (function-load uint8 value)))))) pointer)))
   (test-equal "Sign-extend integer"
     -1
     (let* [(data #vu8(255))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap int32 (list int64) (lambda (value) (function-ret (llvm-sext int32 (function-load int8 value))))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (function-load int8 value)))))) pointer)))
   (test-equal "Truncate integer"
-    #xcd ((llvm-wrap uint8 (list uint16) (lambda (value) (function-ret (llvm-trunc int8 value)))) #xabcd))
+    #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd))
 (test-end "typecast")
 
 (test-begin "local variables")
@@ -275,8 +275,8 @@
 
 (test-begin "type inference")
   (test-equal "identity function with integer"
-    (make <int> #:value 42) ((llvm-typed (list <int>) identity) (make <int> #:value 42)))
-  (test-equal "identity function with short integer"
-    (make <sint> #:value 42) ((llvm-typed (list <sint>) identity) (make <sint> #:value 42)))
+    42 ((llvm-typed (list <int>) identity) 42))
+  (test-equal "compact negation"
+    -42 ((llvm-typed (list <int>) -) 42))
 (test-end "type inference")
 (test-end "aiscm llvm")
