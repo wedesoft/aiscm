@@ -188,14 +188,17 @@
              ((llvm-let* [definitions ...] body ...) fun)))))))
 
 (define (to-type cls value)
-  (let [(conversion (if (> (bits cls) (bits value)) (if (signed? cls) llvm-sext llvm-zext) llvm-trunc))]
+  (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
 
 (define-method (- (value <int<>>))
   (make (class-of value) #:value (llvm-neg (get value))))
 
 (define-method (+ (value-a <int<>>) (value-b <int<>>))
-  (make (class-of value-a) #:value (llvm-add (get value-a) (get value-b))))
+  (let* [(target  (coerce (class-of value-a) (class-of value-b)))
+         (adapt-a (to-type target value-a ))
+         (adapt-b (to-type target value-b))]
+    (make target #:value (llvm-add (get adapt-a) (get adapt-b)))))
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"

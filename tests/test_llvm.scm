@@ -291,7 +291,9 @@
     42 ((llvm-typed (list <int>) identity) 42))
   (test-equal "compact negation"
     -42 ((llvm-typed (list <int>) -) 42))
-  (test-equal "sum of two numbers"
+  (test-equal "sum of two integers"
     5 ((llvm-typed (list <int> <int>) +) 2 3))
+  (test-equal "sum of unsigned byte and byte"
+    382 ((llvm-typed (list <ubyte> <byte>) +) 255 127))
 (test-end "type inference")
 (test-end "aiscm llvm")
