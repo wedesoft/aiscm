@@ -28,7 +28,7 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed)
+            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type)
   #:export-syntax (llvm-let*)
   #:re-export (destroy - +))
 
@@ -186,6 +186,10 @@
            (let* [(intermediate (expression fun))
                   (variable (lambda (fun) intermediate))]
              ((llvm-let* [definitions ...] body ...) fun)))))))
+
+(define (to-type cls value)
+  (let [(conversion (if (> (bits cls) (bits value)) (if (signed? cls) llvm-sext llvm-zext) llvm-trunc))]
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
 
 (define-method (- (value <int<>>))
   (make (class-of value) #:value (llvm-neg (get value))))

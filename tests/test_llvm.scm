@@ -273,6 +273,19 @@
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
 (test-end "unary expression")
 
+(test-begin "type conversion")
+  (test-equal "trivial conversion"
+    42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> value))) 42))
+  (test-equal "truncating integer conversion"
+    #xcd ((llvm-typed (list <uint>) (lambda (value) (to-type <ubyte> value))) #xabcd))
+  (test-equal "zero-extending integer conversion"
+    42 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 42))
+  (test-equal "zero-extending integer conversion"
+    42 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 42))
+  (test-equal "sign-extending integer conversion"
+    -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42))
+(test-end "type conversion")
+
 (test-begin "type inference")
   (test-equal "identity function with integer"
     42 ((llvm-typed (list <int>) identity) 42))

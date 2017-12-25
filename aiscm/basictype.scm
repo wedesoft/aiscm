@@ -46,6 +46,9 @@
       (define-method (bits (self metaclass)) nbits)
       (define-method (signed? (self metaclass)) (eq? sgn 'signed)))))
 
+(define-method (bits (value <int<>>)) (bits (class-of value)))
+(define-method (signed? (value <int<>>)) (signed? (class-of value)))
+
 (define <ubyte> (integer  8 unsigned)) (define <meta<ubyte>> (class-of <ubyte>))
 (define <byte>  (integer  8 signed  )) (define <meta<byte>>  (class-of <byte> ))
 (define <usint> (integer 16 unsigned)) (define <meta<usint>> (class-of <usint>))
