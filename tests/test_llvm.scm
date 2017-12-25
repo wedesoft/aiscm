@@ -278,5 +278,7 @@
     42 ((llvm-typed (list <int>) identity) 42))
   (test-equal "compact negation"
     -42 ((llvm-typed (list <int>) -) 42))
+  (test-equal "sum of two numbers"
+    5 ((llvm-typed (list <int> <int>) +) 2 3))
 (test-end "type inference")
 (test-end "aiscm llvm")

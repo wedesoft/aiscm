@@ -30,7 +30,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed)
   #:export-syntax (llvm-let*)
-  #:re-export (destroy -))
+  #:re-export (destroy - +))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
@@ -189,6 +189,9 @@
 
 (define-method (- (value <int<>>))
   (make (class-of value) #:value (llvm-neg (get value))))
+
+(define-method (+ (value-a <int<>>) (value-b <int<>>))
+  (make (class-of value-a) #:value (llvm-add (get value-a) (get value-b))))
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
