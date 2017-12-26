@@ -1,10 +1,10 @@
 ## Ready
 
-* minus for integers, parameters
-* integer type inference
+* floating point basic types
+* floating point expressions, type conversions, coercion, type inference
 * compiled minus vs method call minus (do not use minus in compiled expressions?)
-* floating-point coercions, conversions, and inference
 * pointers, objects, structures/composite values
+* boolean basic type
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies

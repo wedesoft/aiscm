@@ -28,9 +28,10 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type)
+            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
+            ~)
   #:export-syntax (llvm-let*)
-  #:re-export (destroy - +))
+  #:re-export (destroy - + *))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
@@ -191,14 +192,23 @@
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
 
-(define-method (- (value <int<>>))
-  (make (class-of value) #:value (llvm-neg (get value))))
+(define-syntax-rule (define-unary-operation operation delegate)
+  (define-method (operation (value <int<>>))
+    (make (class-of value) #:value (delegate (get value)))))
 
-(define-method (+ (value-a <int<>>) (value-b <int<>>))
-  (let* [(target  (coerce (class-of value-a) (class-of value-b)))
-         (adapt-a (to-type target value-a ))
-         (adapt-b (to-type target value-b))]
-    (make target #:value (llvm-add (get adapt-a) (get adapt-b)))))
+(define-unary-operation - llvm-neg)
+(define-unary-operation ~ llvm-not)
+
+(define-syntax-rule (define-binary-operation operation delegate)
+  (define-method (operation (value-a <int<>>) (value-b <int<>>))
+    (let* [(target  (coerce (class-of value-a) (class-of value-b)))
+           (adapt-a (to-type target value-a ))
+           (adapt-b (to-type target value-b))]
+      (make target #:value (delegate (get adapt-a) (get adapt-b))))))
+
+(define-binary-operation + llvm-add)
+(define-binary-operation - llvm-sub)
+(define-binary-operation * llvm-mul)
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"

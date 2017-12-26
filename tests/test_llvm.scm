@@ -259,7 +259,7 @@
     1 (let [(x 0)] ((llvm-let* [(result (lambda (v) (set! x (+ v x)) x))] result result) 1)))
 (test-end "local variables")
 
-(test-begin "unary expression")
+(test-begin "expression basics")
   (test-equal "unary minus invokes llvm negation"
     -42
     (let* [(mod (make-llvm-module))
@@ -271,7 +271,7 @@
     (test-equal (format #f "unary minus should preserve ~a type" type)
       type (class-of (- (make type #:value (function-param 0))))))
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
-(test-end "unary expression")
+(test-end "expression basics")
 
 (test-begin "type conversion")
   (test-equal "trivial conversion"
@@ -289,11 +289,27 @@
 (test-begin "type inference")
   (test-equal "identity function with integer"
     42 ((llvm-typed (list <int>) identity) 42))
-  (test-equal "compact negation"
+  (test-equal "compact integer negation"
     -42 ((llvm-typed (list <int>) -) 42))
   (test-equal "sum of two integers"
     5 ((llvm-typed (list <int> <int>) +) 2 3))
   (test-equal "sum of unsigned byte and byte"
     382 ((llvm-typed (list <ubyte> <byte>) +) 255 127))
 (test-end "type inference")
+
+(test-begin "integer unary expressions")
+  (for-each (lambda (op result)
+    (test-equal (format #f "(~a 42) should be ~a" (procedure-name op) result)
+      result ((llvm-typed (list <int>) op) 42)))
+    (list ~ -)
+    '(-43 -42))
+(test-end "integer unary expressions")
+
+(test-begin "integer binary expressions")
+  (for-each (lambda (op result)
+    (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
+      result ((llvm-typed (list <int> <int>) op) 2 3)))
+    (list + - *)
+    '(5 -1 6))
+(test-end "integer binary expressions")
 (test-end "aiscm llvm")
