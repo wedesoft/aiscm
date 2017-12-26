@@ -1,3 +1,9 @@
+aiscm (0.15.1-1) unstable; urgency=low
+
+  - Update dependency to Guile-2.2. Closes: #885187
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue, 26 Dec 2017 14:43:00 +0000
+
 aiscm (0.14.1-1) unstable; urgency=low
 
   - New upstream release
