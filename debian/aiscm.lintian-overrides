@@ -2,8 +2,12 @@
 # "libguile-aiscm-v4l2.so" still gets flagged.
 hardening-no-fortify-functions
 
-# Guile object files (*.go) mistakenly identified as shared libraries.
+# Guile-2.2 object files (*.go) mistakenly identified as binary object.
+# `strip' does not recognize Guile-2.2 objects.
+unstripped-binary-or-object
+
+# Guile-2.2 object files (*.go) mistakenly identified as shared libraries.
 shared-lib-without-dependency-information
 
-# Guile object files mistakenly (*.go) identified as shared libraries from other architecture.
+# Guile-2.2 object files mistakenly (*.go) identified as binaries from another architecture.
 binary-from-other-architecture
