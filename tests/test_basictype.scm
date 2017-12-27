@@ -68,4 +68,15 @@
     (list uint8   int8   uint16  int16  uint32 int32 uint64  int64))
 (test-end "get foreign type")
 
+(test-begin "construct floating point types")
+  (test-assert "single precision"
+    (not (double-precision? (floating-point single-precision))))
+  (test-assert "double precision"
+    (double-precision? (floating-point double-precision)))
+  (test-eq "compare single precision types"
+    <float> (floating-point single-precision))
+  (test-eq "compare double precision types"
+    <double> (floating-point double-precision))
+(test-end "construct floating point types")
+
 (test-end "aiscm basictype")

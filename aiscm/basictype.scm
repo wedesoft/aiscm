@@ -19,6 +19,7 @@
   #:use-module (system foreign)
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
+            floating-point single-precision double-precision double-precision?
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
@@ -27,7 +28,10 @@
             <uint>  <meta<uint>>  <int<32,unsigned>> <meta<int<32,unsigned>>>
             <int>   <meta<int>>   <int<32,signed>>   <meta<int<32,signed>>>
             <ulong> <meta<ulong>> <int<64,unsigned>> <meta<int<64,unsigned>>>
-            <long>  <meta<long>>  <int<64,signed>>   <meta<int<64,signed>>>))
+            <long>  <meta<long>>  <int<64,signed>>   <meta<int<64,signed>>>
+            <float<>> <meta<float<>>>
+            <float>               <float<single>>
+            <double>               <float<double>>))
 
 
 (define signed   'signed)
@@ -68,3 +72,17 @@
 (define (foreign-type type)
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
+
+
+(define single-precision 'single)
+(define double-precision 'double)
+
+(define-class* <float<>> <object> <meta<float<>>> <class>)
+
+(define (floating-point precision)
+  (template-class (float precision) <float<>>
+    (lambda (class metaclass)
+      (define-method (double-precision? (self metaclass)) (eq? precision double-precision)) )))
+
+(define <float> (floating-point single-precision))
+(define <double> (floating-point double-precision))
