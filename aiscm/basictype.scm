@@ -69,10 +69,9 @@
          (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
     (integer (min 64 (max (bits (adapt a)) (bits (adapt b)))) (if is-signed? signed unsigned))))
 
-(define (foreign-type type)
+(define-method (foreign-type (type <meta<int<>>>))
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
-
 
 (define single-precision 'single)
 (define double-precision 'double)
@@ -93,3 +92,7 @@
 
 (define-method (equal? (a <float<>>) (b <float<>>))
   (equal? (get a) (get b))); TODO: refactor with int?
+
+(define-method (foreign-type (type <meta<float<>>>))
+  "Get foreign type for floating-point type"
+  (if (double-precision? type) double float))

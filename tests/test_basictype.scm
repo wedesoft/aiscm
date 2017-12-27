@@ -60,13 +60,13 @@
     (not (equal? (make <uint> #:value 42) (make <int> #:value 42))))
 (test-end "integer values")
 
-(test-begin "get foreign type")
+(test-begin "get foreign integer type")
   (for-each (lambda (type foreign)
     (test-eqv (format #f "get foreign type of ~a" (class-name type))
       foreign (foreign-type type)))
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)
     (list uint8   int8   uint16  int16  uint32 int32 uint64  int64))
-(test-end "get foreign type")
+(test-end "get foreign integer type")
 
 (test-begin "construct floating point types")
   (test-assert "single precision"
@@ -100,5 +100,12 @@
   (test-assert "Unequal types values"
     (not (equal? (make <float> #:value 1.5) (make <double> #:value 1.5))))
 (test-end "floating-point values")
+
+(test-begin "get foreign floating-point type")
+  (test-eqv "get foreign type of <float>"
+    float (foreign-type <float>))
+  (test-eqv "get foreign type of <double>"
+    double (foreign-type <double>))
+(test-end "get foreign floating-point type")
 
 (test-end "aiscm basictype")
