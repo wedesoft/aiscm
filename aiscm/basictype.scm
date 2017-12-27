@@ -30,8 +30,8 @@
             <ulong> <meta<ulong>> <int<64,unsigned>> <meta<int<64,unsigned>>>
             <long>  <meta<long>>  <int<64,signed>>   <meta<int<64,signed>>>
             <float<>> <meta<float<>>>
-            <float>               <float<single>>
-            <double>               <float<double>>))
+            <float>  <meta<float>>  <float<single>> <meta<float<single>>>
+            <double> <meta<double>> <float<double>> <meta<float<double>>>))
 
 
 (define signed   'signed)
@@ -62,7 +62,7 @@
 (define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
 (define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
 
-(define (coerce a b)
+(define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   "Type coercion for integers"
   (let* [(is-signed? (or (signed? a) (signed? b)))
          (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
@@ -77,12 +77,19 @@
 (define single-precision 'single)
 (define double-precision 'double)
 
-(define-class* <float<>> <object> <meta<float<>>> <class>)
+(define-class* <float<>> <object> <meta<float<>>> <class>
+               (value #:init-keyword #:value #:getter get)); TODO: refactor with integer
 
 (define (floating-point precision)
   (template-class (float precision) <float<>>
     (lambda (class metaclass)
       (define-method (double-precision? (self metaclass)) (eq? precision double-precision)) )))
 
-(define <float> (floating-point single-precision))
-(define <double> (floating-point double-precision))
+(define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
+(define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
+
+(define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
+  (if (double-precision? a) a b))
+
+(define-method (equal? (a <float<>>) (b <float<>>))
+  (equal? (get a) (get b))); TODO: refactor with int?

@@ -79,4 +79,26 @@
     <double> (floating-point double-precision))
 (test-end "construct floating point types")
 
+(test-begin "floating-point coercions")
+  (test-equal "coerce single precision floats"
+    <float> (coerce <float> <float>))
+  (test-equal "coerce single and double precision float"
+    <double> (coerce <float> <double>))
+  (test-equal "coerce double and single precision float"
+    <double> (coerce <double> <float>))
+  (test-equal "coerce double precision floats"
+    <double> (coerce <double> <double>))
+(test-end "floating-point coercions")
+
+(test-begin "floating-point values")
+  (test-eqv "Wrap and unwrap value"
+    3.5 (get (make <float> #:value 3.5)))
+  (test-equal "Equal values"
+    (make <float> #:value 3.5) (make <float> #:value 3.5))
+  (test-assert "Unequal values"
+    (not (equal? (make <float> #:value 3.5) (make <float> #:value 4.5))))
+  (test-assert "Unequal types values"
+    (not (equal? (make <float> #:value 1.5) (make <double> #:value 1.5))))
+(test-end "floating-point values")
+
 (test-end "aiscm basictype")
