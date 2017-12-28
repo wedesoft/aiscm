@@ -233,13 +233,13 @@
 
 (test-begin "integer type conversions")
   (test-equal "Zero-extend integer"
-    255
-    (let* [(data #vu8(255))
+    254
+    (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
       ((llvm-wrap (list int64) (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (function-load uint8 value)))))) pointer)))
   (test-equal "Sign-extend integer"
-    -1
-    (let* [(data #vu8(255))
+    -2
+    (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
       ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (function-load int8 value)))))) pointer)))
   (test-equal "Truncate integer"
@@ -279,9 +279,9 @@
   (test-equal "truncating integer conversion"
     #xcd ((llvm-typed (list <uint>) (lambda (value) (to-type <ubyte> value))) #xabcd))
   (test-equal "zero-extending integer conversion"
-    42 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 42))
+    200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "zero-extending integer conversion"
-    42 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 42))
+    200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "sign-extending integer conversion"
     -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42))
 (test-end "type conversion")
@@ -319,5 +319,12 @@
   (test-equal "convert double-precision to single-precision float"
     3.5 ((llvm-wrap (list double) (lambda (value) (cons float (function-ret (llvm-fp-cast float value))))) 3.5))
 (test-end "floating-point type conversions")
+
+(test-begin "convert floating-point to integer")
+  (test-equal "convert floating-point to signed integer "
+    -42 ((llvm-wrap (list float) (lambda (value) (cons int32 (function-ret (llvm-fp-to-si int32 value))))) -42.0))
+  (test-equal "convert floating-point to unsigned integer "
+    200 ((llvm-wrap (list float) (lambda (value) (cons uint8 (function-ret (llvm-fp-to-ui uint8 value))))) 200.0))
+(test-end "convert floating-point to integer")
 
 (test-end "aiscm llvm")
