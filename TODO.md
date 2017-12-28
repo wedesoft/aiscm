@@ -1,6 +1,5 @@
 ## Ready
 
-* floating point basic types
 * floating point expressions, type conversions, coercion, type inference
 * compiled minus vs method call minus (do not use minus in compiled expressions?)
 * pointers, objects, structures/composite values

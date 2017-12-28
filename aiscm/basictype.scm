@@ -88,6 +88,7 @@
 (define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
 
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
+  "Coerce floating-point numbers"
   (if (double-precision? a) a b))
 
 (define-method (equal? (a <float<>>) (b <float<>>))
@@ -96,3 +97,11 @@
 (define-method (foreign-type (type <meta<float<>>>))
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
+
+(define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>))
+  "Coerce floating-point number and integer"
+  a)
+
+(define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>))
+  "Coerce integer and floating-point number"
+  b)

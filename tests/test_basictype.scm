@@ -108,4 +108,14 @@
     double (foreign-type <double>))
 (test-end "get foreign floating-point type")
 
+(test-begin "coercing floating-point and integer types")
+  (test-equal "coerce single-precision floating point and integer"
+    <float> (coerce <float> <int>))
+  (test-equal "coerce double-precision floating point and integer"
+    <double> (coerce <double> <int>))
+  (test-equal "coerce integer and single-precision floating point"
+    <float> (coerce <int> <float>))
+  (test-equal "coerce integer and double-precision floating point"
+    <double> (coerce <int> <double>))
+(test-end "coercing floating-point and integer types")
 (test-end "aiscm basictype")
