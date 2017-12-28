@@ -231,7 +231,7 @@
       ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (function-load int8 value))))) pointer)))
 (test-end "convenience wrapper")
 
-(test-begin "typecast")
+(test-begin "integer type conversions")
   (test-equal "Zero-extend integer"
     255
     (let* [(data #vu8(255))
@@ -244,7 +244,7 @@
       ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (function-load int8 value)))))) pointer)))
   (test-equal "Truncate integer"
     #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd))
-(test-end "typecast")
+(test-end "integer type conversions")
 
 (test-begin "local variables")
   (test-eqv "Empty list of local variables"
@@ -312,4 +312,12 @@
     (list + - *)
     '(5 -1 6))
 (test-end "integer binary expressions")
+
+(test-begin "floating-point type conversions")
+  (test-equal "convert single-precision to double-precision float"
+    3.5 ((llvm-wrap (list float) (lambda (value) (cons double (function-ret (llvm-fp-cast double value))))) 3.5))
+  (test-equal "convert double-precision to single-precision float"
+    3.5 ((llvm-wrap (list double) (lambda (value) (cons float (function-ret (llvm-fp-cast float value))))) 3.5))
+(test-end "floating-point type conversions")
+
 (test-end "aiscm llvm")

@@ -28,7 +28,7 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
+            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type llvm-fp-cast
             ~)
   #:export-syntax (llvm-let*)
   #:re-export (destroy - + *))
@@ -150,9 +150,10 @@
                                               type
                                               (slot-ref (value fun) 'llvm-value)))))
 
-(define-llvm-cast llvm-trunc llvm-build-trunc)
-(define-llvm-cast llvm-sext  llvm-build-sext )
-(define-llvm-cast llvm-zext  llvm-build-zext )
+(define-llvm-cast llvm-trunc   llvm-build-trunc  )
+(define-llvm-cast llvm-sext    llvm-build-sext   )
+(define-llvm-cast llvm-zext    llvm-build-zext   )
+(define-llvm-cast llvm-fp-cast llvm-build-fp-cast)
 
 (define module-list '())
 
