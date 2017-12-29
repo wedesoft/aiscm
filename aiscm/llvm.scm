@@ -202,6 +202,16 @@
   "Floating-point conversions"
   (make cls #:value (llvm-fp-cast (foreign-type cls) (get value))))
 
+(define-method (to-type (cls <meta<float<>>>) (value <int<>>))
+  "Convert integer to floating-point"
+  (let [(conversion (if (signed? value) llvm-si-to-fp llvm-ui-to-fp))]
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
+
+(define-method (to-type (cls <meta<int<>>>) (value <float<>>))
+  "Floating-point to integer conversion"
+  (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
+
 (define-syntax-rule (define-unary-operation operation delegate)
   (define-method (operation (value <int<>>))
     (make (class-of value) #:value (delegate (get value)))))

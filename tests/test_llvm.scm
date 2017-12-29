@@ -341,4 +341,15 @@
     42.5 ((llvm-typed (list <float>) (lambda (value) (to-type <double> value))) 42.5))
 (test-end "floating point type conversions")
 
+(test-begin "convert between integer and floating-point")
+  (test-equal "signed byte to float"
+    -42.0 ((llvm-typed (list <byte>) (lambda (value) (to-type <float> value))) -42))
+  (test-equal "unsigned byte to float"
+    200.0 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <float> value))) 200))
+  (test-equal "convert float to signed integer"
+    -42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> (to-type <double> value)))) -42))
+  (test-equal "convert float to unsigned int"
+    200 ((llvm-typed (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200))
+(test-end "convert between integer and floating-point")
+
 (test-end "aiscm llvm")
