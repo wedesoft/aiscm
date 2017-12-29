@@ -193,9 +193,14 @@
                   (variable (lambda (fun) intermediate))]
              ((llvm-let* [definitions ...] body ...) fun)))))))
 
-(define (to-type cls value)
+(define-method (to-type (cls <meta<int<>>>) (value <int<>>))
+  "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
+
+(define-method (to-type (cls <meta<float<>>>) (value <float<>>))
+  "Floating-point conversions"
+  (make cls #:value (llvm-fp-cast (foreign-type cls) (get value))))
 
 (define-syntax-rule (define-unary-operation operation delegate)
   (define-method (operation (value <int<>>))

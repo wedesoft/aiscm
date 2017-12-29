@@ -273,7 +273,7 @@
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
 (test-end "expression basics")
 
-(test-begin "type conversion")
+(test-begin "integer type conversion")
   (test-equal "trivial conversion"
     42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> value))) 42))
   (test-equal "truncating integer conversion"
@@ -284,7 +284,7 @@
     200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "sign-extending integer conversion"
     -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42))
-(test-end "type conversion")
+(test-end "integer type conversion")
 
 (test-begin "type inference")
   (test-equal "identity function with integer"
@@ -333,5 +333,12 @@
   (test-equal "convert unsigned integer to floating-point"
     200.0 ((llvm-wrap (list uint8) (lambda (value) (cons double (function-ret (llvm-ui-to-fp double value))))) 200))
 (test-end "convert integer to floating-point")
+
+(test-begin "floating point type conversions")
+  (test-equal "returns requested type"
+    <double> (class-of (to-type <double> (make <float> #:value (make-constant float 42.5)))))
+  (test-equal "perform conversion"
+    42.5 ((llvm-typed (list <float>) (lambda (value) (to-type <double> value))) 42.5))
+(test-end "floating point type conversions")
 
 (test-end "aiscm llvm")
