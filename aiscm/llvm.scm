@@ -29,7 +29,7 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
-            llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui ~)
+            llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp ~)
   #:export-syntax (llvm-let*)
   #:re-export (destroy - + *))
 
@@ -156,6 +156,8 @@
 (define-llvm-cast llvm-fp-cast  llvm-build-fp-cast )
 (define-llvm-cast llvm-fp-to-si llvm-build-fp-to-si)
 (define-llvm-cast llvm-fp-to-ui llvm-build-fp-to-ui)
+(define-llvm-cast llvm-si-to-fp llvm-build-si-to-fp)
+(define-llvm-cast llvm-ui-to-fp llvm-build-ui-to-fp)
 
 (define module-list '())
 

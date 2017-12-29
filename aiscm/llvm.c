@@ -446,6 +446,16 @@ SCM llvm_build_fp_to_ui(SCM scm_function, SCM scm_type, SCM scm_value)
   return llvm_build_cast(LLVMBuildFPToUI, scm_function, scm_type, scm_value);
 }
 
+SCM llvm_build_si_to_fp(SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  return llvm_build_cast(LLVMBuildSIToFP, scm_function, scm_type, scm_value);
+}
+
+SCM llvm_build_ui_to_fp(SCM scm_function, SCM scm_type, SCM scm_value)
+{
+  return llvm_build_cast(LLVMBuildUIToFP, scm_function, scm_type, scm_value);
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -491,4 +501,6 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-fp-cast"       , 3, 0, 0, SCM_FUNC(llvm_build_fp_cast       ));
   scm_c_define_gsubr("llvm-build-fp-to-si"      , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_si      ));
   scm_c_define_gsubr("llvm-build-fp-to-ui"      , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_ui      ));
+  scm_c_define_gsubr("llvm-build-si-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp      ));
+  scm_c_define_gsubr("llvm-build-ui-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp      ));
 }

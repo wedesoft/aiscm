@@ -327,4 +327,11 @@
     200 ((llvm-wrap (list float) (lambda (value) (cons uint8 (function-ret (llvm-fp-to-ui uint8 value))))) 200.0))
 (test-end "convert floating-point to integer")
 
+(test-begin "convert integer to floating-point")
+  (test-equal "convert signed integer to floating-point"
+    -42.0 ((llvm-wrap (list int) (lambda (value) (cons float (function-ret (llvm-si-to-fp float value))))) -42))
+  (test-equal "convert unsigned integer to floating-point"
+    200.0 ((llvm-wrap (list uint8) (lambda (value) (cons double (function-ret (llvm-ui-to-fp double value))))) 200))
+(test-end "convert integer to floating-point")
+
 (test-end "aiscm llvm")
