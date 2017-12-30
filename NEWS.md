@@ -1,3 +1,8 @@
+# aiscm (0.15.1)
+
+* Update dependency of Debian package to Guile-2.2
+* Update standards version of Debian package
+
 # aiscm (0.14.1)
 
 * Refactored implementation of "mov"
