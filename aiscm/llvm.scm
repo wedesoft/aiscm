@@ -220,16 +220,25 @@
 (define-unary-operation <float<>> - llvm-fneg)
 (define-unary-operation <int<>>   ~ llvm-not )
 
-(define-syntax-rule (define-binary-operation operation delegate)
-  (define-method (operation (value-a <int<>>) (value-b <int<>>))
+(define-syntax-rule (define-binary-operation type-a type-b operation delegate)
+  (define-method (operation (value-a type-a) (value-b type-b))
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
       (make target #:value (delegate (get adapt-a) (get adapt-b))))))
 
-(define-binary-operation + llvm-add)
-(define-binary-operation - llvm-sub)
-(define-binary-operation * llvm-mul)
+(define-binary-operation <int<>>   <int<>>   + llvm-add )
+(define-binary-operation <float<>> <int<>>   + llvm-fadd)
+(define-binary-operation <int<>>   <float<>> + llvm-fadd)
+(define-binary-operation <float<>> <float<>> + llvm-fadd)
+(define-binary-operation <int<>>   <int<>>   - llvm-sub )
+(define-binary-operation <int<>>   <float<>> - llvm-fsub)
+(define-binary-operation <float<>> <int<>>   - llvm-fsub)
+(define-binary-operation <float<>> <float<>> - llvm-fsub)
+(define-binary-operation <int<>>   <int<>>   * llvm-mul )
+(define-binary-operation <int<>>   <float<>> * llvm-fmul)
+(define-binary-operation <float<>> <int<>>   * llvm-fmul)
+(define-binary-operation <float<>> <float<>> * llvm-fmul)
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"

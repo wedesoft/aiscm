@@ -211,8 +211,10 @@ SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_
   SCM_NEWSMOB(retval, llvm_function_tag, self);
   int n_arguments = scm_ilength(scm_argument_types);
   LLVMTypeRef *parameters = scm_gc_malloc_pointerless(n_arguments * sizeof(LLVMTypeRef), "make-llvm-function");
-  for (int i=0; i<n_arguments; i++)
+  for (int i=0; i<n_arguments; i++) {
     parameters[i] = llvm_type(scm_to_int(scm_car(scm_argument_types)));
+    scm_argument_types = scm_cdr(scm_argument_types);
+  };
   self->builder = LLVMCreateBuilder();
   self->function = LLVMAddFunction(llvm->module,
                                    scm_to_locale_string(scm_name),

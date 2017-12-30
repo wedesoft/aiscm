@@ -154,10 +154,21 @@
     (test-equal (format #f "Compile, verify, and run ~a identity function" name)
       value
       (let* [(mod  (make-llvm-module))
-             (fun  (make-function mod type "int_identity" type))]
+             (fun  (make-function mod type "identity" type))]
         ((function-ret (function-param 0)) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
+    '(42 0.5)
+    (list int double)
+    '("integer" "floating-point"))
+  (for-each (lambda (value type name)
+    (test-equal (format #f "Compile, verify, and run function returning second ~a argument" name)
+      value
+      (let* [(mod  (make-llvm-module))
+             (fun  (make-function mod type "second" int type))]
+        ((function-ret (function-param 1)) fun)
+        (llvm-compile mod)
+        ((llvm-func mod fun) -1 value))))
     '(42 0.5)
     (list int double)
     '("integer" "floating-point"))
@@ -297,27 +308,6 @@
     382 ((llvm-typed (list <ubyte> <byte>) +) 255 127))
 (test-end "type inference")
 
-(test-begin "integer unary expressions")
-  (for-each (lambda (op result)
-    (test-equal (format #f "(~a 42) should be ~a" (procedure-name op) result)
-      result ((llvm-typed (list <int>) op) 42)))
-    (list ~ -)
-    '(-43 -42))
-(test-end "integer unary expressions")
-
-(test-begin "floating-point unary expression")
-  (test-equal "(- 42.5) should be -42.5"
-    -42.5 ((llvm-typed (list <float>) -) 42.5))
-(test-end "floating-point unary expression")
-
-(test-begin "integer binary expressions")
-  (for-each (lambda (op result)
-    (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
-      result ((llvm-typed (list <int> <int>) op) 2 3)))
-    (list + - *)
-    '(5 -1 6))
-(test-end "integer binary expressions")
-
 (test-begin "floating-point type conversions")
   (test-equal "convert single-precision to double-precision float"
     3.5 ((llvm-wrap (list float) (lambda (value) (cons double (function-ret (llvm-fp-cast double value))))) 3.5))
@@ -356,5 +346,40 @@
   (test-equal "convert float to unsigned int"
     200 ((llvm-typed (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200))
 (test-end "convert between integer and floating-point")
+
+(test-begin "integer unary expressions")
+  (for-each (lambda (op result)
+    (test-equal (format #f "(~a 42) should be ~a" (procedure-name op) result)
+      result ((llvm-typed (list <int>) op) 42)))
+    (list ~ -)
+    '(-43 -42))
+(test-end "integer unary expressions")
+
+(test-begin "floating-point unary expression")
+  (test-equal "(- 42.5) single-precision should be -42.5"
+    -42.5 ((llvm-typed (list <float>) -) 42.5))
+  (test-equal "(- 42.5) double-precision should be -42.5"
+    -42.5 ((llvm-typed (list <double>) -) 42.5))
+(test-end "floating-point unary expression")
+
+(test-begin "integer binary expressions")
+  (for-each (lambda (op result)
+    (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
+      result ((llvm-typed (list <int> <int>) op) 2 3)))
+    (list + - *)
+    '(5 -1 6))
+(test-end "integer binary expressions")
+
+(test-begin "floating-point binary expression")
+  (for-each (lambda (value-a value-b op result)
+    (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
+      result ((llvm-typed (list (if (integer? value-a) <int> <float>)
+                                (if (integer? value-b) <int> <float>))
+                          op) value-a value-b)))
+    '(2.5 2.5 2 3.75 2 2.5 1.5 2 1.25)
+    '(3.75 3 3.75 2.5 1.5 1 2.5 1.25 2)
+    (list + + + - - - * * *)
+    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5))
+(test-end "floating-point binary expression")
 
 (test-end "aiscm llvm")

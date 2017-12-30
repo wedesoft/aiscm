@@ -1,6 +1,6 @@
 ## Ready
 
-* floating point expressions, coercion, type inference
+* Scheme objects
 * compiled minus vs method call minus (do not use minus in compiled expressions?)
 * pointers, objects, structures/composite values
 * boolean basic type
