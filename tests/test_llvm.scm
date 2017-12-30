@@ -305,6 +305,11 @@
     '(-43 -42))
 (test-end "integer unary expressions")
 
+(test-begin "floating-point unary expression")
+  (test-equal "(- 42.5) should be -42.5"
+    -42.5 ((llvm-typed (list <float>) -) 42.5))
+(test-end "floating-point unary expression")
+
 (test-begin "integer binary expressions")
   (for-each (lambda (op result)
     (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)

@@ -212,12 +212,13 @@
   (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
 
-(define-syntax-rule (define-unary-operation operation delegate)
-  (define-method (operation (value <int<>>))
+(define-syntax-rule (define-unary-operation type operation delegate)
+  (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
 
-(define-unary-operation - llvm-neg)
-(define-unary-operation ~ llvm-not)
+(define-unary-operation <int<>>   - llvm-neg )
+(define-unary-operation <float<>> - llvm-fneg)
+(define-unary-operation <int<>>   ~ llvm-not )
 
 (define-syntax-rule (define-binary-operation operation delegate)
   (define-method (operation (value-a <int<>>) (value-b <int<>>))
