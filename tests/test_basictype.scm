@@ -109,13 +109,24 @@
 (test-end "get foreign floating-point type")
 
 (test-begin "coercing floating-point and integer types")
-  (test-equal "coerce single-precision floating point and integer"
+  (test-eq "coerce single-precision floating point and integer"
     <float> (coerce <float> <int>))
-  (test-equal "coerce double-precision floating point and integer"
+  (test-eq "coerce double-precision floating point and integer"
     <double> (coerce <double> <int>))
-  (test-equal "coerce integer and single-precision floating point"
+  (test-eq "coerce integer and single-precision floating point"
     <float> (coerce <int> <float>))
-  (test-equal "coerce integer and double-precision floating point"
+  (test-eq "coerce integer and double-precision floating point"
     <double> (coerce <int> <double>))
 (test-end "coercing floating-point and integer types")
+
+(test-begin "complex numbers")
+  (test-eq "single-precision complex number"
+    <complex<float>> (complex (floating-point single-precision)))
+  (test-eq "double-precision complex number"
+    <complex<double>> (complex (floating-point double-precision)))
+  (test-eq "basic type of single-precision complex number"
+    <float> (base <complex<float>>))
+  (test-eq "basic type of double-precision complex number"
+    <double> (base <complex<double>>))
+(test-end "complex numbers")
 (test-end "aiscm basictype")

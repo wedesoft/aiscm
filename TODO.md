@@ -1,8 +1,9 @@
 ## Ready
 
-* pass structures element-wise
+* decompose types
+* decompose complex number
 * method calls such as gc\_malloc
-* return structures gc\_malloc and pointer
+* compose complex return value using pointer and gc\_malloc
 * structures/composite values (complex numbers, vectors, quaternions)
 * pointers and arrays
 * dynamic array operations

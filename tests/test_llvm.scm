@@ -382,4 +382,11 @@
     '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5))
 (test-end "floating-point binary expression")
 
+(test-begin "decompose values and types")
+  (test-equal "decompose integer"
+    '(42) (decompose-value <int> 42))
+  (test-equal "decompose floating-point number"
+    '(1.25) (decompose-value <float> 1.25))
+(test-end "decompose values and types")
+
 (test-end "aiscm llvm")

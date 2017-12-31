@@ -20,6 +20,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
+            complex base
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
@@ -31,7 +32,9 @@
             <long>  <meta<long>>  <int<64,signed>>   <meta<int<64,signed>>>
             <float<>> <meta<float<>>>
             <float>  <meta<float>>  <float<single>> <meta<float<single>>>
-            <double> <meta<double>> <float<double>> <meta<float<double>>>))
+            <double> <meta<double>> <float<double>> <meta<float<double>>>
+            <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
+            <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>))
 
 
 (define signed   'signed)
@@ -105,3 +108,14 @@
 (define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>))
   "Coerce integer and floating-point number"
   b)
+
+(define-class* <complex<>> <object> <meta<complex<>>> <class>
+               (value #:init-keyword #:value #:getter get)); TODO: refactor with integer
+
+(define (complex base-type)
+  (template-class (complex base-type) <complex<>>
+    (lambda (class metaclass)
+      (define-method (base (self metaclass)) base-type) )))
+
+(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
+(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))

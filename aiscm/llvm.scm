@@ -29,7 +29,9 @@
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
-            llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp ~)
+            llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
+            decompose-value
+            ~)
   #:export-syntax (llvm-let*)
   #:re-export (destroy - + *))
 
@@ -247,3 +249,7 @@
       (let* [(arguments-typed (map (lambda (cls value) (make cls #:value value)) argument-types arguments))
              (expression      (apply function arguments-typed))]
         (cons (foreign-type (class-of expression)) (function-ret (get expression)))))))
+
+(define (decompose-value type value)
+  "Decompose scalar value"
+  (list value))
