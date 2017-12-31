@@ -1,15 +1,18 @@
 ## Ready
 
+* pass structures element-wise
+* method calls such as gc\_malloc
+* return structures gc\_malloc and pointer
+* structures/composite values (complex numbers, vectors, quaternions)
+* pointers and arrays
+* dynamic array operations
 * Scheme objects
-* compiled minus vs method call minus (do not use minus in compiled expressions?)
-* pointers, objects, structures/composite values
 * boolean basic type
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
-* "let" for tensors
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
 * use bytevectors instead of memory objects?
 * Lucas-Kanade tracker
