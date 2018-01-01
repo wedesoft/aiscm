@@ -1,7 +1,5 @@
 ## Ready
 
-* decompose types
-* decompose complex number
 * method calls such as gc\_malloc
 * compose complex return value using pointer and gc\_malloc
 * structures/composite values (complex numbers, vectors, quaternions)

@@ -130,12 +130,21 @@
     <double> (base <complex<double>>))
 (test-end "complex numbers")
 
-(test-begin "decompose values and types")
+(test-begin "decompose values")
   (test-equal "decompose integer"
     '(42) (decompose-value <int> 42))
   (test-equal "decompose floating-point number"
     '(1.25) (decompose-value <float> 1.25))
   (test-equal "decompose complex number"
      '(2.5 3.25) (decompose-value <complex<float>> 2.5+3.25i))
-(test-end "decompose values and types")
+(test-end "decompose values")
+
+(test-begin "decompose types")
+  (test-equal "decompose integer type"
+    (list <ubyte>) (decompose-type <ubyte>))
+  (test-equal "decompose floating-point type"
+    (list <float>) (decompose-type <float>))
+  (test-equal "decompose complex type"
+    (list <double> <double>) (decompose-type <complex<double>>))
+(test-end "decompose types")
 (test-end "aiscm basictype")
