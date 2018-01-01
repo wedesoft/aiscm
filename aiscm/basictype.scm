@@ -20,6 +20,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
+            decompose-value
             complex base
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -108,6 +109,10 @@
 (define-method (coerce (a <meta<int<>>>) (b <meta<float<>>>))
   "Coerce integer and floating-point number"
   b)
+
+(define (decompose-value type value)
+  "Decompose scalar value"
+  (list value))
 
 (define-class* <complex<>> <object> <meta<complex<>>> <class>
                (value #:init-keyword #:value #:getter get)); TODO: refactor with integer

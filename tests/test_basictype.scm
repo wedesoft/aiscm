@@ -129,4 +129,11 @@
   (test-eq "basic type of double-precision complex number"
     <double> (base <complex<double>>))
 (test-end "complex numbers")
+
+(test-begin "decompose values and types")
+  (test-equal "decompose integer"
+    '(42) (decompose-value <int> 42))
+  (test-equal "decompose floating-point number"
+    '(1.25) (decompose-value <float> 1.25))
+(test-end "decompose values and types")
 (test-end "aiscm basictype")
