@@ -22,6 +22,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-value
             complex base
+            <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
@@ -41,11 +42,13 @@
 (define signed   'signed)
 (define unsigned 'unsigned)
 
-(define-class* <int<>> <object> <meta<int<>>> <class>
+(define-class* <scalar> <object> <meta<scalar>> <class>
                (value #:init-keyword #:value #:getter get))
 
-(define-method (equal? (a <int<>>) (b <int<>>))
+(define-method (equal? (a <scalar>) (b <scalar>))
   (equal? (get a) (get b)))
+
+(define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define (integer nbits sgn)
   "Retrieve integer class with specified number of bits and sign"
@@ -80,8 +83,7 @@
 (define single-precision 'single)
 (define double-precision 'double)
 
-(define-class* <float<>> <object> <meta<float<>>> <class>
-               (value #:init-keyword #:value #:getter get)); TODO: refactor with integer
+(define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
 
 (define (floating-point precision)
   (template-class (float precision) <float<>>
@@ -95,9 +97,6 @@
   "Coerce floating-point numbers"
   (if (double-precision? a) a b))
 
-(define-method (equal? (a <float<>>) (b <float<>>))
-  (equal? (get a) (get b))); TODO: refactor with int?
-
 (define-method (foreign-type (type <meta<float<>>>))
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
@@ -110,7 +109,7 @@
   "Coerce integer and floating-point number"
   b)
 
-(define (decompose-value type value)
+(define-method (decompose-value (type <meta<scalar>>) value)
   "Decompose scalar value"
   (list value))
 
@@ -124,3 +123,7 @@
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))
+
+(define-method (decompose-value (type <meta<complex<>>>) value)
+  "Decompose scalar value"
+  (list (real-part value) (imag-part value)))

@@ -135,5 +135,7 @@
     '(42) (decompose-value <int> 42))
   (test-equal "decompose floating-point number"
     '(1.25) (decompose-value <float> 1.25))
+  (test-equal "decompose complex number"
+     '(2.5 3.25) (decompose-value <complex<float>> 2.5+3.25i))
 (test-end "decompose values and types")
 (test-end "aiscm basictype")
