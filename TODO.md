@@ -1,7 +1,9 @@
 ## Ready
 
+* get real or imaginary part of complex number in compiled code
 * method calls such as gc\_malloc
 * compose complex return value using pointer and gc\_malloc
+* complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
 * pointers and arrays
 * dynamic array operations

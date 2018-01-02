@@ -35,7 +35,8 @@
             <float>  <meta<float>>  <float<single>> <meta<float<single>>>
             <double> <meta<double>> <float<double>> <meta<float<double>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
-            <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>))
+            <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>)
+  #:re-export (real-part imag-part))
 
 
 (define signed   'signed)
@@ -134,3 +135,9 @@
 (define-method (decompose-type (type <meta<complex<>>>))
   "Decompose complex type"
   (list (base type) (base type)))
+
+(define-method (real-part (self <complex<>>))
+  (make (base (class-of self)) #:value (car (get self))))
+
+(define-method (imag-part (self <complex<>>))
+  (make (base (class-of self)) #:value (cadr (get self))))

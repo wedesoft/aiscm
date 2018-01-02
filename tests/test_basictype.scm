@@ -128,6 +128,18 @@
     <float> (base <complex<float>>))
   (test-eq "basic type of double-precision complex number"
     <double> (base <complex<double>>))
+  (test-eq "real component of single-precision floating-point complex number is a float"
+    <float> (class-of (real-part (make <complex<float>> #:value '(2.5 3.25)))))
+  (test-eq "real component of double-precision floating-point complex number is a double"
+    <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
+  (test-eqv "get real component of complex number"
+    2.5 (get (real-part (make <complex<float>> #:value '(2.5 3.25)))))
+  (test-eq "imaginary component of single-precision floating-point complex number is a float"
+    <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
+  (test-eq "imaginary component of double-precision floating-point complex number is a double"
+    <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
+  (test-eqv "get imaginary component of complex number"
+    3.25 (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
 (test-end "complex numbers")
 
 (test-begin "decompose values")
