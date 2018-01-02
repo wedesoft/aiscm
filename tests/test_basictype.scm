@@ -120,45 +120,58 @@
 (test-end "coercing floating-point and integer types")
 
 (test-begin "complex numbers")
-  (test-eq "single-precision complex number"
+  (test-eq "Single-precision complex number"
     <complex<float>> (complex (floating-point single-precision)))
-  (test-eq "double-precision complex number"
+  (test-eq "Double-precision complex number"
     <complex<double>> (complex (floating-point double-precision)))
-  (test-eq "basic type of single-precision complex number"
+  (test-eq "Basic type of single-precision complex number"
     <float> (base <complex<float>>))
-  (test-eq "basic type of double-precision complex number"
+  (test-eq "Basic type of double-precision complex number"
     <double> (base <complex<double>>))
-  (test-eq "real component of single-precision floating-point complex number is a float"
+  (test-eq "Real component of single-precision floating-point complex number is a float"
     <float> (class-of (real-part (make <complex<float>> #:value '(2.5 3.25)))))
-  (test-eq "real component of double-precision floating-point complex number is a double"
+  (test-eq "Real component of double-precision floating-point complex number is a double"
     <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-eqv "get real component of complex number"
+  (test-eqv "Get real component of complex number"
     2.5 (get (real-part (make <complex<float>> #:value '(2.5 3.25)))))
-  (test-eq "imaginary component of single-precision floating-point complex number is a float"
+  (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
-  (test-eq "imaginary component of double-precision floating-point complex number is a double"
+  (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-eqv "get imaginary component of complex number"
+  (test-eqv "Get imaginary component of complex number"
     3.25 (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
 (test-end "complex numbers")
 
 (test-begin "decompose values")
-  (test-equal "decompose integer"
+  (test-equal "Decompose integer"
     '(42) (decompose-value <int> 42))
-  (test-equal "decompose floating-point number"
+  (test-equal "Decompose floating-point number"
     '(1.25) (decompose-value <float> 1.25))
-  (test-equal "decompose complex number"
+  (test-equal "Decompose complex number"
      '(2.5 3.25) (decompose-value <complex<float>> 2.5+3.25i))
 (test-end "decompose values")
 
-(test-begin "compose values")
-  (test-eq "composing integer creates correct type"
+(test-begin "compose value")
+  (test-eq "Composing integer creates correct type"
     <sint> (class-of (compose-value <sint> '(42))))
-  (test-equal "composing integer uses provided value"
+  (test-equal "Composing integer uses provided value"
     '(42) (get (compose-value <sint> '(42))))
-  (test-equal "compose complex number"
+  (test-equal "Compose complex number"
     '(2.5 3.25) (get (compose-value <complex<float>> '(2.5 3.25))))
-(test-end "compose values")
+(test-end "compose value")
+
+(test-begin "compose multiple values")
+  (test-assert "Compose no values"
+    (null? (compose-values '() '())))
+  (test-equal "Composing an integer value creates an object of correct type"
+    (list <sint>) (map class-of (compose-values (list <sint>) '(42))))
+  (test-equal "Composing an integer value uses the provided value"
+    '(42) (get (car (compose-values (list <sint>) '(42)))))
+  (test-equal "Composing a complex number uses two values"
+    '(2.5 3.25) (get (car (compose-values (list <complex<float>>) '(2.5 3.25)))))
+  (test-equal "Compose two integer values"
+    '((5) (7)) (map get (compose-values (list <int> <int>) '(5 7))))
+(test-end "compose multiple values")
 
 (test-begin "decompose types")
   (test-equal "decompose integer type"

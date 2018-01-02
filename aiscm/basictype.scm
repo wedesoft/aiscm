@@ -17,10 +17,11 @@
 (define-module (aiscm basictype)
   #:use-module (oop goops)
   #:use-module (system foreign)
+  #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-value decompose-type compose-value complex base
+            decompose-value decompose-type compose-value compose-values complex base
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -118,8 +119,17 @@
   (list type))
 
 (define (compose-value type lst)
-  "Compose scalar value"
+  "Compose a value"
   (make type #:value lst))
+
+(define (compose-values types lst)
+  "Compose multiple values"
+  (if (null? types)
+    '()
+    (let* [(type       (car types))
+           (base-types (decompose-type type))
+           (count      (length base-types))]
+      (cons (compose-value type (take lst count)) (compose-values (cdr types) (drop lst count))))))
 
 (define-class* <complex<>> <object> <meta<complex<>>> <class>
                (value #:init-keyword #:value #:getter get)); TODO: refactor with scalar
