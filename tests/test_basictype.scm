@@ -29,11 +29,11 @@
       (test-eqv (format #f "~a should have ~a bits" (class-name cls) nbits)
         nbits (bits cls))
       (test-eqv (format #f "instance of ~a should have ~a bits" (class-name cls) nbits)
-        nbits (bits (make cls #:value 0)))
+        nbits (bits (make cls #:value #f)))
       (test-eq (format #f "~a should be ~a" (class-name cls) sign)
         (eq? sign 'signed) (signed? cls))
       (test-eq (format #f "instance of ~a should be ~a" (class-name cls) sign)
-        (eq? sign 'signed) (signed? (make cls #:value 0))))
+        (eq? sign 'signed) (signed? (make cls #:value #f))))
     (list 8 8 16 16 32 32 64 64)
     (list unsigned signed unsigned signed unsigned signed unsigned signed)
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
@@ -50,14 +50,14 @@
 (test-end "integer coercions")
 
 (test-begin "integer values")
-  (test-eqv "Wrap and unwrap value"
-    42 (get (make <int> #:value 42)))
+  (test-equal "Wrap and unwrap value"
+    '(42) (get (make <int> #:value '(42))))
   (test-equal "Equal values"
-    (make <int> #:value 42) (make <int> #:value 42))
+    (make <int> #:value '(42)) (make <int> #:value '(42)))
   (test-assert "Unequal values"
-    (not (equal? (make <int> #:value 42) (make <int> #:value 43))))
+    (not (equal? (make <int> #:value '(42)) (make <int> #:value '(43)))))
   (test-assert "Unequal types values"
-    (not (equal? (make <uint> #:value 42) (make <int> #:value 42))))
+    (not (equal? (make <uint> #:value '(42)) (make <int> #:value '(42)))))
 (test-end "integer values")
 
 (test-begin "get foreign integer type")
@@ -91,14 +91,14 @@
 (test-end "floating-point coercions")
 
 (test-begin "floating-point values")
-  (test-eqv "Wrap and unwrap value"
-    3.5 (get (make <float> #:value 3.5)))
+  (test-equal "Wrap and unwrap value"
+    '(3.5) (get (make <float> #:value '(3.5))))
   (test-equal "Equal values"
-    (make <float> #:value 3.5) (make <float> #:value 3.5))
+    (make <float> #:value '(3.5)) (make <float> #:value '(3.5)))
   (test-assert "Unequal values"
-    (not (equal? (make <float> #:value 3.5) (make <float> #:value 4.5))))
+    (not (equal? (make <float> #:value '(3.5)) (make <float> #:value '(4.5)))))
   (test-assert "Unequal types values"
-    (not (equal? (make <float> #:value 1.5) (make <double> #:value 1.5))))
+    (not (equal? (make <float> #:value '(1.5)) (make <double> #:value '(1.5)))))
 (test-end "floating-point values")
 
 (test-begin "get foreign floating-point type")
@@ -150,6 +150,15 @@
   (test-equal "decompose complex number"
      '(2.5 3.25) (decompose-value <complex<float>> 2.5+3.25i))
 (test-end "decompose values")
+
+(test-begin "compose values")
+  (test-eq "composing integer creates correct type"
+    <sint> (class-of (compose-value <sint> '(42))))
+  (test-equal "composing integer uses provided value"
+    '(42) (get (compose-value <sint> '(42))))
+  (test-equal "compose complex number"
+    '(2.5 3.25) (get (compose-value <complex<float>> '(2.5 3.25))))
+(test-end "compose values")
 
 (test-begin "decompose types")
   (test-equal "decompose integer type"

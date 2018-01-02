@@ -275,12 +275,12 @@
     -42
     (let* [(mod (make-llvm-module))
            (fun (make-function mod int "op" int))]
-      ((function-ret (get (- (make <int> #:value (function-param 0))))) fun)
+      ((function-ret (car (get (- (make <int> #:value (list (function-param 0))))))) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
   (for-each (lambda (type)
     (test-equal (format #f "unary minus should preserve ~a type" type)
-      type (class-of (- (make type #:value (function-param 0))))))
+      type (class-of (- (make type #:value (list (function-param 0)))))))
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
 (test-end "expression basics")
 
@@ -331,7 +331,7 @@
 
 (test-begin "floating point type conversions")
   (test-equal "returns requested type"
-    <double> (class-of (to-type <double> (make <float> #:value (make-constant float 42.5)))))
+    <double> (class-of (to-type <double> (make <float> #:value (list (make-constant float 42.5))))))
   (test-equal "perform conversion"
     42.5 ((llvm-typed (list <float>) (lambda (value) (to-type <double> value))) 42.5))
 (test-end "floating point type conversions")

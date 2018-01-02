@@ -197,25 +197,25 @@
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
-    (make cls #:value (conversion (foreign-type cls) (get value)))))
+    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
 
 (define-method (to-type (cls <meta<float<>>>) (value <float<>>))
   "Floating-point conversions"
-  (make cls #:value (llvm-fp-cast (foreign-type cls) (get value))))
+  (make cls #:value (list (llvm-fp-cast (foreign-type cls) (car (get value))))))
 
 (define-method (to-type (cls <meta<float<>>>) (value <int<>>))
   "Convert integer to floating-point"
   (let [(conversion (if (signed? value) llvm-si-to-fp llvm-ui-to-fp))]
-    (make cls #:value (conversion (foreign-type cls) (get value)))))
+    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
 
 (define-method (to-type (cls <meta<int<>>>) (value <float<>>))
   "Floating-point to integer conversion"
   (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
-    (make cls #:value (conversion (foreign-type cls) (get value)))))
+    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
 
 (define-syntax-rule (define-unary-operation type operation delegate)
   (define-method (operation (value type))
-    (make (class-of value) #:value (delegate (get value)))))
+    (make (class-of value) #:value (list (delegate (car (get value)))))))
 
 (define-unary-operation <int<>>   - llvm-neg )
 (define-unary-operation <float<>> - llvm-fneg)
@@ -226,7 +226,7 @@
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
-      (make target #:value (delegate (get adapt-a) (get adapt-b))))))
+      (make target #:value (list (delegate (car (get adapt-a)) (car (get adapt-b))))))))
 
 (define-binary-operation <int<>>   <int<>>   + llvm-add )
 (define-binary-operation <float<>> <int<>>   + llvm-fadd)
@@ -245,6 +245,6 @@
   "Infer types and compile function"
   (llvm-wrap (map foreign-type argument-types)
     (lambda arguments
-      (let* [(arguments-typed (map (lambda (cls value) (make cls #:value value)) argument-types arguments))
+      (let* [(arguments-typed (map (lambda (cls value) (make cls #:value (list value))) argument-types arguments))
              (expression      (apply function arguments-typed))]
-        (cons (foreign-type (class-of expression)) (function-ret (get expression)))))))
+        (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))
