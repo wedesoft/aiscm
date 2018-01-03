@@ -1,19 +1,14 @@
-(use-modules (oop goops) (aiscm llvm) (system foreign) (rnrs bytevectors))
-
-(define llvm (make <llvm>))
-
-(define constant (make-function llvm double "constant_double2"))
-(function-ret constant (make-constant double (exp 1)))
-
-(define identity (make-function llvm int "identity" int))
-(function-ret identity (function-param identity 0))
-
-(define test (make-function llvm double "test" double))
-(function-ret test (function-param test 0))
-
-(llvm-verify llvm)
-(llvm-dump llvm)
-
-(llvm-apply llvm constant)
-(llvm-apply llvm identity 12345)
-(llvm-apply llvm test (exp 1))
+(use-modules (oop goops) (aiscm llvm) (system foreign) (rnrs bytevectors) (aiscm basictype) (srfi srfi-1))
+(define argument-types (list <complex<float>>))
+(define function real-part)
+(define foreign-types (map foreign-type (decompose-types argument-types)))
+(define arguments (map function-param (iota (length foreign-types))))
+(define arguments-typed (compose-values argument-types arguments))
+(define expression (apply function arguments-typed))
+(define result (cons (foreign-type (class-of expression)) (function-ret (car (get expression)))))
+(define mod (make-llvm-module))
+(define return-type (car result))
+(define expression (cdr result))
+(define fun (apply make-function mod return-type "wrapped" foreign-types))
+(expression fun)
+(llvm-compile mod)

@@ -170,14 +170,14 @@
       (instruction fun)
       ((apply llvm-sequential instructions) fun))))
 
-(define (llvm-wrap argument-types function)
+(define (llvm-wrap foreign-types function)
   "Convenience wrapper for compiling JIT functions"
   (let* [(mod         (make-llvm-module))
-         (args        (map function-param (iota (length argument-types))))
-         (result      (apply function args))
+         (arguments   (map function-param (iota (length foreign-types))))
+         (result      (apply function arguments))
          (return-type (car result))
          (expression  (cdr result))
-         (fun         (apply make-function mod return-type "wrapped" argument-types)) ]
+         (fun         (apply make-function mod return-type "wrapped" foreign-types)) ]
     (expression fun)
     (llvm-compile mod)
     (set! module-list (cons mod module-list))
@@ -243,8 +243,9 @@
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
-  (llvm-wrap (map foreign-type (decompose-types argument-types))
-    (lambda arguments
-      (let* [(arguments-typed (compose-values argument-types arguments))
-             (expression      (apply function arguments-typed))]
-        (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))
+  (let [(fun (llvm-wrap (map foreign-type (decompose-types argument-types))
+               (lambda arguments
+                 (let* [(arguments-typed (compose-values argument-types arguments))
+                        (expression      (apply function arguments-typed))]
+                   (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))]
+    (lambda args (apply fun (decompose-arguments argument-types args)))))

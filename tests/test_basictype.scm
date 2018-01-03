@@ -132,14 +132,14 @@
     <float> (class-of (real-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Real component of double-precision floating-point complex number is a double"
     <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-eqv "Get real component of complex number"
-    2.5 (get (real-part (make <complex<float>> #:value '(2.5 3.25)))))
+  (test-equal "Get real component of complex number"
+    '(2.5) (get (real-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-eqv "Get imaginary component of complex number"
-    3.25 (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
+  (test-equal "Get imaginary component of complex number"
+    '(3.25) (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
 (test-end "complex numbers")
 
 (test-begin "decompose arguments")
@@ -150,6 +150,15 @@
   (test-equal "Decompose complex number"
      '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i))
 (test-end "decompose arguments")
+
+(test-begin "decompose multiple arguments")
+  (test-equal "Decompose empty list of arguments"
+    '() (decompose-arguments '() '()))
+  (test-equal "Decompose floating-point number"
+    '(1.25) (decompose-arguments (list <float>) '(1.25)))
+  (test-equal "Decompose complex number"
+    '(2.5 3.25) (decompose-arguments (list <complex<float>>) '(2.5+3.25i)))
+(test-end "decompose multiple arguments")
 
 (test-begin "compose value")
   (test-eq "Composing integer creates correct type"

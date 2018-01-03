@@ -383,8 +383,9 @@
 (test-end "floating-point binary expression")
 
 (test-begin "composite types")
-  (test-expect-fail 1)
-  (test-equal "return real part of complex number"
+  (test-eqv "return real part of complex number"
     2.5 ((llvm-typed (list <complex<float>>) (lambda (value) (real-part value))) 2.5+3.25i))
+  (test-eqv "return imaginary part of complex number"
+    3.25 ((llvm-typed (list <complex<float>>) (lambda (value) (imag-part value))) 2.5+3.25i))
 (test-end "composite types")
 (test-end "aiscm llvm")
