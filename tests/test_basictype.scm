@@ -142,14 +142,14 @@
     3.25 (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
 (test-end "complex numbers")
 
-(test-begin "decompose values")
+(test-begin "decompose arguments")
   (test-equal "Decompose integer"
-    '(42) (decompose-value <int> 42))
+    '(42) (decompose-argument <int> 42))
   (test-equal "Decompose floating-point number"
-    '(1.25) (decompose-value <float> 1.25))
+    '(1.25) (decompose-argument <float> 1.25))
   (test-equal "Decompose complex number"
-     '(2.5 3.25) (decompose-value <complex<float>> 2.5+3.25i))
-(test-end "decompose values")
+     '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i))
+(test-end "decompose arguments")
 
 (test-begin "compose value")
   (test-eq "Composing integer creates correct type"

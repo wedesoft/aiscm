@@ -21,7 +21,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-value decompose-type compose-value compose-values complex base
+            decompose-argument decompose-type compose-value compose-values complex base
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -110,7 +110,7 @@
   "Coerce integer and floating-point number"
   b)
 
-(define-method (decompose-value (type <meta<scalar>>) value)
+(define-method (decompose-argument (type <meta<scalar>>) value)
   "Decompose scalar value"
   (list value))
 
@@ -142,7 +142,7 @@
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))
 
-(define-method (decompose-value (type <meta<complex<>>>) value)
+(define-method (decompose-argument (type <meta<complex<>>>) value)
   "Decompose scalar value"
   (list (real-part value) (imag-part value)))
 
