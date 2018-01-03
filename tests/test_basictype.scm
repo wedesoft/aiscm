@@ -173,12 +173,21 @@
     '((5) (7)) (map get (compose-values (list <int> <int>) '(5 7))))
 (test-end "compose multiple values")
 
-(test-begin "decompose types")
+(test-begin "decompose type")
   (test-equal "decompose integer type"
     (list <ubyte>) (decompose-type <ubyte>))
   (test-equal "decompose floating-point type"
     (list <float>) (decompose-type <float>))
   (test-equal "decompose complex type"
     (list <double> <double>) (decompose-type <complex<double>>))
-(test-end "decompose types")
+(test-end "decompose type")
+
+(test-begin "decompose multiple types")
+  (test-equal "decompose empty list of types"
+    '() (decompose-types '()))
+  (test-equal "decompose integer type"
+    (list <sint>) (decompose-types (list <sint>)))
+  (test-equal "decompose complex type"
+    (list <double> <double>) (decompose-types (list <complex<double>>)))
+(test-end "decompose multiple types")
 (test-end "aiscm basictype")

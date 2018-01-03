@@ -243,8 +243,8 @@
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
-  (llvm-wrap (map foreign-type argument-types)
+  (llvm-wrap (map foreign-type (decompose-types argument-types))
     (lambda arguments
-      (let* [(arguments-typed (map (lambda (cls value) (make cls #:value (list value))) argument-types arguments))
+      (let* [(arguments-typed (compose-values argument-types arguments))
              (expression      (apply function arguments-typed))]
         (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))

@@ -381,4 +381,10 @@
     (list + + + - - - * * *)
     '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5))
 (test-end "floating-point binary expression")
+
+(test-begin "composite types")
+  (test-expect-fail 1)
+  (test-equal "return real part of complex number"
+    2.5 ((llvm-typed (list <complex<float>>) (lambda (value) (real-part value))) 2.5+3.25i))
+(test-end "composite types")
 (test-end "aiscm llvm")
