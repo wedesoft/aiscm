@@ -17,6 +17,7 @@
 (use-modules (srfi srfi-64)
              (oop goops)
              (system foreign)
+             (rnrs bytevectors)
              (aiscm basictype))
 
 
@@ -199,4 +200,18 @@
   (test-equal "decompose complex type"
     (list <double> <double>) (decompose-types (list <complex<double>>)))
 (test-end "decompose multiple types")
+
+(test-begin "unpack values")
+  (test-eqv "unpack unsigned byte"
+    200 (unpack-value <ubyte> #vu8(200)))
+  (test-eqv "unpack signed byte"
+    -56 (unpack-value <byte> #vu8(200)))
+  (test-eqv "unpack short integer"
+    8716 (unpack-value <sint> #vu8(12 34)))
+  (test-eqv "unpack single-precision floating point number"
+    1.375 (unpack-value <float> #vu8(0 0 176 63)))
+  (test-eqv "unpack double-precision floating point number"
+    1.256525 (unpack-value <double> #vu8(208 179 89 245 185 26 244 63)))
+(test-end "unpack values")
+
 (test-end "aiscm basictype")

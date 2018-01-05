@@ -1,19 +1,15 @@
 #include <stdlib.h>
 
 typedef struct {
-  int a;
-  int b;
-  char c;
-  float d;
+  long a;
+  long b;
+  long c;
 } test_t;
 
-int f(test_t t)
-{
-  return t.a + t.b + t.c + (int)t.d;
-}
+test_t f();
 
-test_t g(int a, int b, char c, float d)
+long g()
 {
-  test_t result = {a, b, c, d};
-  return result;
+  test_t x = f();
+  return x.a + x.b + x.c;
 }

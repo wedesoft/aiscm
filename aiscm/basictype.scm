@@ -17,12 +17,13 @@
 (define-module (aiscm basictype)
   #:use-module (oop goops)
   #:use-module (system foreign)
+  #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
-            complex base
+            complex base unpack-value
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -71,6 +72,11 @@
 (define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
 (define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
 
+(define-method (unpack-value (self <meta<int<>>>) (packed <bytevector>))
+  "Unpack integer stored in a byte vector"
+  (let [(converter (if (signed? self) bytevector->sint-list bytevector->uint-list))]
+    (car (converter packed (native-endianness) (bytevector-length packed)))))
+
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   "Type coercion for integers"
   (let* [(is-signed? (or (signed? a) (signed? b)))
@@ -94,6 +100,11 @@
 
 (define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
 (define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
+
+(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>))
+  "Unpack floating-point value stored in a byte vector"
+    (let [(converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
+      (converter packed 0)))
 
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
   "Coerce floating-point numbers"

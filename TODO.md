@@ -1,10 +1,12 @@
 ## Ready
 
-* Scheme objects
-* complex return value using scm\_c\_make\_rectangular
+* complex return value (using hidden argument?)
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
+* compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
+* nested structures (e.g. state vector)
+* Scheme objects
 * pointers and arrays
 * dynamic array operations
 * boolean basic type
