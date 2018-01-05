@@ -1,13 +1,12 @@
 ## Ready
 
-* method calls such as scm\_c\_make\_rectangular (LLVMBuildCall)
-* polymorphic method calls (e.g. fabs, fabsf)
-* compose complex return value using pointer and gc\_malloc
+* Scheme objects
+* complex return value using scm\_c\_make\_rectangular
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
+* polymorphic method calls (e.g. fabs, fabsf)
 * pointers and arrays
 * dynamic array operations
-* Scheme objects
 * boolean basic type
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
