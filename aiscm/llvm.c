@@ -202,6 +202,17 @@ SCM llvm_dump_module(SCM scm_self)
   return SCM_UNSPECIFIED;
 }
 
+static LLVMTypeRef function_type(SCM scm_return_type, SCM scm_argument_types)
+{
+  int n_arguments = scm_ilength(scm_argument_types);
+  LLVMTypeRef *parameters = scm_gc_malloc_pointerless(n_arguments * sizeof(LLVMTypeRef), "make-llvm-function");
+  for (int i=0; i<n_arguments; i++) {
+    parameters[i] = llvm_type(scm_to_int(scm_car(scm_argument_types)));
+    scm_argument_types = scm_cdr(scm_argument_types);
+  };
+  return LLVMFunctionType(llvm_type(scm_to_int(scm_return_type)), parameters, n_arguments, 0);
+}
+
 SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_argument_types)
 {
   SCM retval;
@@ -209,17 +220,10 @@ SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_
   struct llvm_function_t *self;
   self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvmfunction");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
-  int n_arguments = scm_ilength(scm_argument_types);
-  LLVMTypeRef *parameters = scm_gc_malloc_pointerless(n_arguments * sizeof(LLVMTypeRef), "make-llvm-function");
-  for (int i=0; i<n_arguments; i++) {
-    parameters[i] = llvm_type(scm_to_int(scm_car(scm_argument_types)));
-    scm_argument_types = scm_cdr(scm_argument_types);
-  };
   self->builder = LLVMCreateBuilder();
   self->function = LLVMAddFunction(llvm->module,
                                    scm_to_locale_string(scm_name),
-                                   LLVMFunctionType(llvm_type(scm_to_int(scm_return_type)),
-                                                    parameters, n_arguments, 0));
+                                   function_type(scm_return_type, scm_argument_types));
   LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(self->function, "entry");
   LLVMPositionBuilderAtEnd(self->builder, entry);
@@ -458,6 +462,26 @@ SCM llvm_build_ui_to_fp(SCM scm_function, SCM scm_type, SCM scm_value)
   return llvm_build_cast(LLVMBuildUIToFP, scm_function, scm_type, scm_value);
 }
 
+SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm_function_name, SCM scm_argument_types, SCM scm_values)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_module_t *llvm = get_llvm(scm_llvm);
+  const char *function_name = scm_to_locale_string(scm_function_name);
+  LLVMValueRef function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
+  LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
+  int n_values = scm_ilength(scm_values);
+  LLVMValueRef *values = scm_gc_malloc_pointerless(n_values * sizeof(LLVMValueRef), "llvm-build-call");
+  for (int i=0; i<n_values; i++) {
+    values[i] = get_llvm_value(scm_car(scm_values))->value;
+    scm_values = scm_cdr(scm_values);
+  };
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMBuildCall(function->builder, function_pointer, values, n_values, "llvm-build-call");
+  return retval;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -505,4 +529,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-fp-to-ui"      , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_ui      ));
   scm_c_define_gsubr("llvm-build-si-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp      ));
   scm_c_define_gsubr("llvm-build-ui-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp      ));
+  scm_c_define_gsubr("llvm-build-call"          , 6, 0, 0, SCM_FUNC(llvm_build_call          ));
 }

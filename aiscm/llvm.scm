@@ -30,6 +30,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
+            llvm-call
             ~)
   #:export-syntax (llvm-let*)
   #:re-export (destroy - + *))
@@ -66,9 +67,9 @@
                             #:argument-types argument-types)))))
 
 (define (make-function module return-type name . argument-types)
-  (make <llvm-function> #:module module
-                        #:return-type return-type
-                        #:name name
+  (make <llvm-function> #:module         module
+                        #:return-type    return-type
+                        #:name           name
                         #:argument-types argument-types))
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
@@ -249,3 +250,12 @@
                         (expression      (apply function arguments-typed))]
                    (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))]
     (lambda args (apply fun (decompose-arguments argument-types args)))))
+
+(define ((llvm-call return-type function-name argument-types args) fun)
+  (make <llvm-value>
+        #:llvm-value (llvm-build-call (slot-ref fun 'llvm-function)
+                                      (slot-ref (slot-ref fun 'module) 'llvm-module)
+                                      return-type
+                                      function-name
+                                      argument-types
+                                      (map (lambda (arg) (slot-ref (arg fun) 'llvm-value)) args))))

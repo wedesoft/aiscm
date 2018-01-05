@@ -388,4 +388,15 @@
   (test-eqv "return imaginary part of complex number"
     3.25 ((llvm-typed (list <complex<float>>) (lambda (value) (imag-part value))) 2.5+3.25i))
 (test-end "composite types")
+
+(test-begin "method calls")
+  (test-equal "call libc's fabsf method"
+    1.25
+    ((llvm-wrap (list float) (lambda args (cons float (function-ret (llvm-call float "fabsf" (list float) args)))))
+     -1.25))
+  (test-equal "call libc's atan2 method"
+    0.0
+    ((llvm-wrap (list double double) (lambda args (cons double (function-ret (llvm-call double "atan2" (list double double) args)))))
+     0.0 1.0))
+(test-end "method calls")
 (test-end "aiscm llvm")

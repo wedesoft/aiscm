@@ -1,7 +1,7 @@
 ## Ready
 
-* get real or imaginary part of complex number in compiled code
-* method calls such as gc\_malloc
+* method calls such as scm\_c\_make\_rectangular (LLVMBuildCall)
+* polymorphic method calls (e.g. fabs, fabsf)
 * compose complex return value using pointer and gc\_malloc
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
