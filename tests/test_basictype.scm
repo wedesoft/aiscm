@@ -201,6 +201,21 @@
     (list <double> <double>) (decompose-types (list <complex<double>>)))
 (test-end "decompose multiple types")
 
+(test-begin "size of values")
+  (test-eqv "size of byte"
+    1 (size-of <byte>))
+  (test-eqv "size of integer"
+    4 (size-of <int>))
+  (test-eqv "size of float"
+    4 (size-of <float>))
+  (test-eqv "size of double"
+    8 (size-of <double>))
+  (test-eqv "size of single-precision complex number"
+    8 (size-of <complex<float>>))
+  (test-eqv "size of double-precision complex number"
+    16 (size-of <complex<double>>))
+(test-end "size of values")
+
 (test-begin "unpack values")
   (test-eqv "unpack unsigned byte"
     200 (unpack-value <ubyte> #vu8(200)))
@@ -212,6 +227,10 @@
     1.375 (unpack-value <float> #vu8(0 0 176 63)))
   (test-eqv "unpack double-precision floating point number"
     1.256525 (unpack-value <double> #vu8(208 179 89 245 185 26 244 63)))
+  (test-eqv "unpack single-precision complex value"
+    1.375+4.0i (unpack-value <complex<float>> #vu8(0 0 176 63 0 0 128 64)))
+  (test-eqv "unpack double-precision complex value"
+    1+2i (unpack-value <complex<double>> #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64)))
 (test-end "unpack values")
 
 (test-end "aiscm basictype")

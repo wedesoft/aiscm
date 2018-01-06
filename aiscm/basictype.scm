@@ -23,7 +23,7 @@
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
-            complex base unpack-value
+            complex base size-of unpack-value
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -88,6 +88,10 @@
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
 
+(define-method (size-of (type <meta<int<>>>))
+  "Get size of integer values"
+  (/ (bits type) 8))
+
 (define single-precision 'single)
 (define double-precision 'double)
 
@@ -101,18 +105,25 @@
 (define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
 (define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
 
-(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>))
+(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>) (index <integer>))
   "Unpack floating-point value stored in a byte vector"
     (let [(converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
-      (converter packed 0)))
+      (converter packed (* index (size-of self)))))
 
-(define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
-  "Coerce floating-point numbers"
-  (if (double-precision? a) a b))
+(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>))
+  (unpack-value self packed 0))
 
 (define-method (foreign-type (type <meta<float<>>>))
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
+
+(define-method (size-of (type <meta<float<>>>))
+  "Get size of floating-point values"
+  (if (double-precision? type) 8 4))
+
+(define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
+  "Coerce floating-point numbers"
+  (if (double-precision? a) a b))
 
 (define-method (coerce (a <meta<float<>>>) (b <meta<int<>>>))
   "Coerce floating-point number and integer"
@@ -157,6 +168,14 @@
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))
+
+(define-method (size-of (type <meta<complex<>>>))
+  "Get size of complex values"
+  (* 2 (size-of (base type))))
+
+(define-method (unpack-value (self <meta<complex<>>>) (packed <bytevector>))
+  "Unpack complex number stored in a byte vector"
+  (make-rectangular (unpack-value (base self) packed 0) (unpack-value (base self) packed 1)))
 
 (define-method (decompose-argument (type <meta<complex<>>>) value)
   "Decompose scalar value"
