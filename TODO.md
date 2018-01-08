@@ -1,5 +1,6 @@
 ## Ready
 
+* read directly from address (pointer)
 * complex return value (using hidden argument?)
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)

@@ -218,19 +218,19 @@
 
 (test-begin "unpack values")
   (test-eqv "unpack unsigned byte"
-    200 (unpack-value <ubyte> #vu8(200)))
+    200 (unpack-value <ubyte> (pointer-address (bytevector->pointer #vu8(200)))))
   (test-eqv "unpack signed byte"
-    -56 (unpack-value <byte> #vu8(200)))
+    -56 (unpack-value <byte> (pointer-address (bytevector->pointer #vu8(200)))))
   (test-eqv "unpack short integer"
-    8716 (unpack-value <sint> #vu8(12 34)))
+    8716 (unpack-value <sint> (pointer-address (bytevector->pointer #vu8(12 34)))))
   (test-eqv "unpack single-precision floating point number"
-    1.375 (unpack-value <float> #vu8(0 0 176 63)))
+    1.375 (unpack-value <float> (pointer-address (bytevector->pointer #vu8(0 0 176 63)))))
   (test-eqv "unpack double-precision floating point number"
-    1.256525 (unpack-value <double> #vu8(208 179 89 245 185 26 244 63)))
+    1.256525 (unpack-value <double> (pointer-address (bytevector->pointer #vu8(208 179 89 245 185 26 244 63)))))
   (test-eqv "unpack single-precision complex value"
-    1.375+4.0i (unpack-value <complex<float>> #vu8(0 0 176 63 0 0 128 64)))
+    1.375+4.0i (unpack-value <complex<float>> (pointer-address (bytevector->pointer #vu8(0 0 176 63 0 0 128 64)))))
   (test-eqv "unpack double-precision complex value"
-    1+2i (unpack-value <complex<double>> #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64)))
+    1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64)))))
 (test-end "unpack values")
 
 (test-end "aiscm basictype")

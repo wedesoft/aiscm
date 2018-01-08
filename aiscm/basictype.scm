@@ -72,9 +72,10 @@
 (define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
 (define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
 
-(define-method (unpack-value (self <meta<int<>>>) (packed <bytevector>))
+(define-method (unpack-value (self <meta<int<>>>) (address <integer>))
   "Unpack integer stored in a byte vector"
-  (let [(converter (if (signed? self) bytevector->sint-list bytevector->uint-list))]
+  (let [(packed    (pointer->bytevector (make-pointer address) (size-of self)))
+        (converter (if (signed? self) bytevector->sint-list bytevector->uint-list))]
     (car (converter packed (native-endianness) (bytevector-length packed)))))
 
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
@@ -105,13 +106,11 @@
 (define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
 (define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
 
-(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>) (index <integer>))
+(define-method (unpack-value (self <meta<float<>>>) (address <integer>))
   "Unpack floating-point value stored in a byte vector"
-    (let [(converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
-      (converter packed index)))
-
-(define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>))
-  (unpack-value self packed 0))
+    (let [(packed    (pointer->bytevector (make-pointer address) (size-of self)))
+          (converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
+      (converter packed 0)))
 
 (define-method (foreign-type (type <meta<float<>>>))
   "Get foreign type for floating-point type"
@@ -173,9 +172,9 @@
   "Get size of complex values"
   (* 2 (size-of (base type))))
 
-(define-method (unpack-value (self <meta<complex<>>>) (packed <bytevector>))
+(define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
   "Unpack complex number stored in a byte vector"
-  (make-rectangular (unpack-value (base self) packed 0) (unpack-value (base self) packed (size-of (base self)))))
+  (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
 
 (define-method (decompose-argument (type <meta<complex<>>>) value)
   "Decompose scalar value"
