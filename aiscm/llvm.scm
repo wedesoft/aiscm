@@ -19,6 +19,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 curried-definitions)
+  #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
   #:use-module (aiscm basictype)
   #:use-module (aiscm util)
@@ -244,12 +245,18 @@
 
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
-  (let [(fun (llvm-wrap (cons int64 (map foreign-type (decompose-types argument-types)))
+  (let* [(result-type #f)
+         (fun (llvm-wrap (cons int64 (map foreign-type (decompose-types argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values argument-types (cdr arguments)))
                         (expression      (apply function arguments-typed))]
-                   (cons (foreign-type (class-of expression)) (function-ret (car (get expression))))))))]
-    (lambda args (apply fun (cons 0 (decompose-arguments argument-types args))))))
+                   (set! result-type (class-of expression))
+                   (cons (foreign-type result-type) (function-ret (car (get expression))))))))]
+    (lambda args
+      (let [(memory (make-bytevector (size-of result-type)))]
+        (apply fun
+          (cons (pointer-address (bytevector->pointer memory))
+                (decompose-arguments argument-types args)))))))
 
 (define ((llvm-call return-type function-name argument-types args) fun)
   (make <llvm-value>
