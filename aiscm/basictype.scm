@@ -108,7 +108,7 @@
 (define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>) (index <integer>))
   "Unpack floating-point value stored in a byte vector"
     (let [(converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
-      (converter packed (* index (size-of self)))))
+      (converter packed index)))
 
 (define-method (unpack-value (self <meta<float<>>>) (packed <bytevector>))
   (unpack-value self packed 0))
@@ -175,7 +175,7 @@
 
 (define-method (unpack-value (self <meta<complex<>>>) (packed <bytevector>))
   "Unpack complex number stored in a byte vector"
-  (make-rectangular (unpack-value (base self) packed 0) (unpack-value (base self) packed 1)))
+  (make-rectangular (unpack-value (base self) packed 0) (unpack-value (base self) packed (size-of (base self)))))
 
 (define-method (decompose-argument (type <meta<complex<>>>) value)
   "Decompose scalar value"
