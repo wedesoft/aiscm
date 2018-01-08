@@ -114,12 +114,13 @@
                                                    type
                                                    (slot-ref (address fun) 'llvm-value))))
 
-(define ((function-store type value address) fun)
+(define ((function-store type value address offset) fun)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref fun 'llvm-function)
                     type
                     (slot-ref (value fun) 'llvm-value)
-                    (slot-ref (address fun) 'llvm-value)))
+                    (slot-ref (address fun) 'llvm-value)
+                    offset))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
@@ -243,6 +244,21 @@
 (define-binary-operation <float<>> <int<>>   * llvm-fmul)
 (define-binary-operation <float<>> <float<>> * llvm-fmul)
 
+(define-method (prepare-return (result <complex<>>) memory)
+  (llvm-sequential
+    (function-store (foreign-type (base (class-of result))) (car  (get result)) memory 0)
+    (function-store (foreign-type (base (class-of result))) (cadr (get result)) memory 1)
+    (function-ret memory)))
+
+(define-method (prepare-return (result <scalar>) memory)
+  (function-ret (car (get result))))
+
+(define-method (finish-return type result)
+  (unpack-value type result))
+
+(define-method (finish-return (type <meta<scalar>>) result)
+  result)
+
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
@@ -251,12 +267,14 @@
                  (let* [(arguments-typed (compose-values argument-types (cdr arguments)))
                         (expression      (apply function arguments-typed))]
                    (set! result-type (class-of expression))
-                   (cons (foreign-type result-type) (function-ret (car (get expression))))))))]
+                   (cons (foreign-type result-type) (prepare-return expression (car arguments)))))))]
     (lambda args
       (let [(memory (make-bytevector (size-of result-type)))]
-        (apply fun
-          (cons (pointer-address (bytevector->pointer memory))
-                (decompose-arguments argument-types args)))))))
+        (finish-return
+          result-type
+          (apply fun
+            (cons (pointer-address (bytevector->pointer memory))
+                  (decompose-arguments argument-types args))))))))
 
 (define ((llvm-call return-type function-name argument-types args) fun)
   (make <llvm-value>

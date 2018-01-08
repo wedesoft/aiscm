@@ -143,6 +143,9 @@
     '(3.25) (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
 (test-end "complex numbers")
 
+(test-eqv "get foreign type of complex type"
+  int64 (foreign-type <complex<float>>))
+
 (test-begin "decompose arguments")
   (test-equal "Decompose integer"
     '(42) (decompose-argument <int> 42))

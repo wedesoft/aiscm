@@ -37,10 +37,15 @@
             <float<>> <meta<float<>>>
             <float>  <meta<float>>  <float<single>> <meta<float<single>>>
             <double> <meta<double>> <float<double>> <meta<float<double>>>
+            <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>)
   #:re-export (real-part imag-part))
 
+
+(define-method (foreign-type type)
+  "Default foreign mapping for types is a pointer"
+  int64)
 
 (define signed   'signed)
 (define unsigned 'unsigned)
