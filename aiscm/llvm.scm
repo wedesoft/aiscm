@@ -114,13 +114,12 @@
                                                    type
                                                    (slot-ref (address fun) 'llvm-value))))
 
-(define ((function-store type value address offset) fun)
+(define ((function-store type value address) fun)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref fun 'llvm-function)
                     type
                     (slot-ref (value fun) 'llvm-value)
-                    (slot-ref (address fun) 'llvm-value)
-                    offset))
+                    (slot-ref (address fun) 'llvm-value)))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
@@ -245,10 +244,13 @@
 (define-binary-operation <float<>> <float<>> * llvm-fmul)
 
 (define-method (prepare-return (result <complex<>>) memory)
-  (llvm-sequential
-    (function-store (foreign-type (base (class-of result))) (car  (get result)) memory 0)
-    (function-store (foreign-type (base (class-of result))) (cadr (get result)) memory 1)
-    (function-ret memory)))
+  (let [(base (base (class-of result)))]
+    (llvm-let*
+      [(address0 memory)
+       (address1 (llvm-add memory (make-constant int64 (size-of base))))]
+      (function-store (foreign-type base) (car  (get result)) address0)
+      (function-store (foreign-type base) (cadr (get result)) address1)
+      (function-ret memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
   (function-ret (car (get result))))

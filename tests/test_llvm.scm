@@ -129,7 +129,7 @@
       #vu8(2 3 5 7)
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "write_mem"))]
-        ((function-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data)) 0) fun)
+        ((function-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data))) fun)
         ((function-ret) fun)
         (llvm-compile mod)
         ((llvm-func mod fun))
@@ -233,7 +233,7 @@
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (function-store int8 value pointer 0) (function-ret))))) 42)
+      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (function-store int8 value pointer) (function-ret))))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42

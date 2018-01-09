@@ -1,7 +1,6 @@
 ## Ready
 
-* read directly from address (pointer)
-* complex return value (using hidden argument?)
+* only use hidden argument if required
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
