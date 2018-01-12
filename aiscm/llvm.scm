@@ -243,6 +243,9 @@
 (define-binary-operation <float<>> <int<>>   * llvm-fmul)
 (define-binary-operation <float<>> <float<>> * llvm-fmul)
 
+(define-method (+ (value-a <complex<>>) (value-b <complex<>>))
+  (make <double> #:value (list (car (get value-a)))))
+
 (define-method (prepare-return (result <complex<>>) memory)
   (let [(base (base (class-of result)))]
     (llvm-let*

@@ -1,6 +1,7 @@
 ## Ready
 
-* only use hidden argument if required
+* compose complex number
+* typed let
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
@@ -16,7 +17,6 @@
 * OpenGL vertex array object example
 * rigid-body impulse-based dynamics example (and microcollisions)
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
-* use bytevectors instead of memory objects?
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
 * colour swapped when converting MJPEG video to FFmpeg video

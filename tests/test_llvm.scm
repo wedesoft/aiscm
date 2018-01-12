@@ -391,6 +391,9 @@
     2+3i ((llvm-typed (list <complex<float>>) identity) 2+3i))
   (test-eqv "complex double-precision identity"
     2+3i ((llvm-typed (list <complex<double>>) identity) 2+3i))
+  (test-expect-fail 1)
+  (test-eqv "complex plus"
+    7+10i ((llvm-typed (list <complex<double>> <complex<double>>) +) 2+3i 5+7i))
 (test-end "composite types")
 
 (test-begin "method calls")
