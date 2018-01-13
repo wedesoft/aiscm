@@ -1,6 +1,7 @@
 ## Ready
 
-* compose complex number
+* function should return list, sequential computation of complex number
+* coercion when composing or adding complex numbers
 * typed let
 * complex operations
 * structures/composite values (complex numbers, vectors, quaternions)

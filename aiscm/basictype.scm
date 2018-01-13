@@ -165,7 +165,7 @@
 (define-class* <complex<>> <object> <meta<complex<>>> <class>
                (value #:init-keyword #:value #:getter get)); TODO: refactor with scalar
 
-(define (complex base-type)
+(define-method (complex (base-type <meta<scalar>>))
   (template-class (complex base-type) <complex<>>
     (lambda (class metaclass)
       (define-method (base (self metaclass)) base-type) )))
