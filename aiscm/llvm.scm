@@ -230,7 +230,7 @@
 (define-binary-operation <float<>> <float<>> * llvm-fmul)
 
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
-  (make (complex (class-of value-a)) #:value (list (car (get value-a)) (car (get value-b)))))
+  (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
   (complex (+ (real-part value-a) (real-part value-b))
