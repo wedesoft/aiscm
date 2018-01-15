@@ -33,8 +33,6 @@
 (test-end "module")
 
 (test-begin "constant values")
-  (test-equal "Build an integer value"
-    <llvm-value> (class-of ((make-constant int32 42) #f)))
   (for-each
     (lambda (type bits)
       (test-equal (format #f "Get type of ~a-bit integer value" bits)
@@ -383,11 +381,11 @@
 (test-end "floating-point binary expression")
 
 (test-begin "composite types")
-  (test-expect-fail 7)
   (test-eqv "return real part of complex number"
     2.5 ((llvm-typed (list <complex<float>>) (lambda (value) (real-part value))) 2.5+3.25i))
   (test-eqv "return imaginary part of complex number"
     3.25 ((llvm-typed (list <complex<float>>) (lambda (value) (imag-part value))) 2.5+3.25i))
+  (test-expect-fail 5)
   (test-eqv "complex single-precision identity"
     2+3i ((llvm-typed (list <complex<float>>) identity) 2+3i))
   (test-eqv "complex double-precision identity"

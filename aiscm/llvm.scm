@@ -25,7 +25,6 @@
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
-            <llvm-value> <meta<llvm-value>>
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
@@ -79,7 +78,7 @@
   (let [(llvm-function (slot-ref fun 'llvm-function))
         (return-value  (result fun))]
     (if return-value
-      (llvm-function-return llvm-function (car (slot-ref return-value 'llvm-value)))
+      (llvm-function-return llvm-function (car return-value))
       (llvm-function-return-void llvm-function))))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
@@ -93,12 +92,9 @@
   (let [(pointer (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
     (pointer->procedure (slot-ref fun 'return-type) pointer (slot-ref fun 'argument-types))))
 
-(define-class* <llvm-value> <object> <meta<llvm-value>> <class>
-               (llvm-value #:init-keyword #:llvm-value))
-
 (define ((make-constant type value) fun)
   "Create a constant LLVM value"
-  (make <llvm-value> #:llvm-value (list (make-llvm-constant type value))))
+  (list (make-llvm-constant type value)))
 
 (define (make-constant-pointer address)
   "Create pointer constant"
@@ -106,28 +102,23 @@
 
 (define (get-type value)
   "Query type of LLVM value"
-  (map llvm-get-type (slot-ref value 'llvm-value)))
+  (map llvm-get-type value))
 
 (define ((function-load type address) fun)
   "Generate code for reading value from memory"
-  (make <llvm-value> #:llvm-value (list (llvm-build-load (slot-ref fun 'llvm-function)
-                                                         type
-                                                         (car (slot-ref (address fun) 'llvm-value))))))
+  (list (llvm-build-load (slot-ref fun 'llvm-function) type (car (address fun)))))
 
 (define ((function-store type value address) fun)
   "Generate code for writing value to memory"
-  (llvm-build-store (slot-ref fun 'llvm-function)
-                    type
-                    (car (slot-ref (value fun) 'llvm-value))
-                    (car (slot-ref (address fun) 'llvm-value))))
+  (llvm-build-store (slot-ref fun 'llvm-function) type (car (value fun)) (car (address fun))))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
-  (make <llvm-value> #:llvm-value (list (llvm-get-param (slot-ref fun 'llvm-function) index))))
+  (list (llvm-get-param (slot-ref fun 'llvm-function) index)))
 
 (define-syntax-rule (define-llvm-unary function delegate)
   (define ((function value) fun)
-    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function) (car (slot-ref (value fun) 'llvm-value)))))))
+    (list (delegate (slot-ref fun 'llvm-function) (car (value fun))))))
 
 (define-llvm-unary llvm-neg  llvm-build-neg )
 (define-llvm-unary llvm-fneg llvm-build-fneg)
@@ -135,9 +126,7 @@
 
 (define-syntax-rule (define-llvm-binary function delegate)
   (define ((function value-a value-b) fun)
-    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
-                                                    (car (slot-ref (value-a fun) 'llvm-value))
-                                                    (car (slot-ref (value-b fun) 'llvm-value)))))))
+    (list (delegate (slot-ref fun 'llvm-function) (car (value-a fun)) (car (value-b fun))))))
 
 (define-llvm-binary llvm-add  llvm-build-add )
 (define-llvm-binary llvm-fadd llvm-build-fadd)
@@ -148,9 +137,7 @@
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define ((function type value) fun)
-    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
-                                                    type
-                                                    (car (slot-ref (value fun) 'llvm-value)))))))
+    (list (delegate (slot-ref fun 'llvm-function) type (car (value fun))))))
 
 (define-llvm-cast llvm-trunc    llvm-build-trunc   )
 (define-llvm-cast llvm-sext     llvm-build-sext    )
@@ -285,10 +272,9 @@
                   (decompose-arguments argument-types args))))))))
 
 (define ((llvm-call return-type function-name argument-types args) fun)
-  (make <llvm-value>
-        #:llvm-value (list (llvm-build-call (slot-ref fun 'llvm-function)
-                                            (slot-ref (slot-ref fun 'module) 'llvm-module)
-                                            return-type
-                                            function-name
-                                            argument-types
-                                            (map (lambda (arg) (car (slot-ref (arg fun) 'llvm-value))) args)))))
+  (list (llvm-build-call (slot-ref fun 'llvm-function)
+                         (slot-ref (slot-ref fun 'module) 'llvm-module)
+                         return-type
+                         function-name
+                         argument-types
+                         (map (lambda (arg) (car (arg fun))) args))))
