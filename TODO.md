@@ -1,5 +1,7 @@
 ## Ready
 
+* remove value lists
+* is llvm-value required?
 * function should return list, sequential computation of complex number
 * coercion when composing or adding complex numbers
 * typed let

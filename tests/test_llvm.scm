@@ -38,20 +38,20 @@
   (for-each
     (lambda (type bits)
       (test-equal (format #f "Get type of ~a-bit integer value" bits)
-        type (get-type ((make-constant type 42) #f))))
+        (list type) (get-type ((make-constant type 42) #f))))
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (for-each
     (lambda (unsigned-type signed-type bits)
       (test-equal (format #f "Type of ~a-bit value ignores signed-ness" bits)
-        signed-type (get-type ((make-constant unsigned-type 42) #f))))
+        (list signed-type) (get-type ((make-constant unsigned-type 42) #f))))
     (list uint8 uint16 uint32 uint64)
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (test-equal "Get type of double-precision floating point value"
-    double (get-type ((make-constant double (exp 1)) #f)))
+    (list double) (get-type ((make-constant double (exp 1)) #f)))
   (test-equal "Get type of single-precision floating point value"
-    float (get-type ((make-constant float (exp 1)) #f)))
+    (list float) (get-type ((make-constant float (exp 1)) #f)))
 (test-end "constant values")
 
 (test-begin "functions")

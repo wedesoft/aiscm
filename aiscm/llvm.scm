@@ -79,7 +79,7 @@
   (let [(llvm-function (slot-ref fun 'llvm-function))
         (return-value  (result fun))]
     (if return-value
-      (llvm-function-return llvm-function (slot-ref return-value 'llvm-value))
+      (llvm-function-return llvm-function (car (slot-ref return-value 'llvm-value)))
       (llvm-function-return-void llvm-function))))
 
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
@@ -98,7 +98,7 @@
 
 (define ((make-constant type value) fun)
   "Create a constant LLVM value"
-  (make <llvm-value> #:llvm-value (make-llvm-constant type value)))
+  (make <llvm-value> #:llvm-value (list (make-llvm-constant type value))))
 
 (define (make-constant-pointer address)
   "Create pointer constant"
@@ -106,29 +106,29 @@
 
 (define (get-type value)
   "Query type of LLVM value"
-  (llvm-get-type (slot-ref value 'llvm-value)))
+  (map llvm-get-type (slot-ref value 'llvm-value)))
 
 (define ((function-load type address) fun)
   "Generate code for reading value from memory"
-  (make <llvm-value> #:llvm-value (llvm-build-load (slot-ref fun 'llvm-function)
-                                                   type
-                                                   (slot-ref (address fun) 'llvm-value))))
+  (make <llvm-value> #:llvm-value (list (llvm-build-load (slot-ref fun 'llvm-function)
+                                                         type
+                                                         (car (slot-ref (address fun) 'llvm-value))))))
 
 (define ((function-store type value address) fun)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref fun 'llvm-function)
                     type
-                    (slot-ref (value fun) 'llvm-value)
-                    (slot-ref (address fun) 'llvm-value)))
+                    (car (slot-ref (value fun) 'llvm-value))
+                    (car (slot-ref (address fun) 'llvm-value))))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
-  (make <llvm-value> #:llvm-value (llvm-get-param (slot-ref fun 'llvm-function) index)))
+  (make <llvm-value> #:llvm-value (list (llvm-get-param (slot-ref fun 'llvm-function) index))))
 
 (define-syntax-rule (define-llvm-unary function delegate)
   (define ((function value) fun)
-    (make <llvm-value> #:llvm-value (delegate (slot-ref fun 'llvm-function)
-                                              (slot-ref (value fun) 'llvm-value)))))
+    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
+                                                    (car (slot-ref (value fun) 'llvm-value)))))))
 
 (define-llvm-unary llvm-neg  llvm-build-neg )
 (define-llvm-unary llvm-fneg llvm-build-fneg)
@@ -136,9 +136,9 @@
 
 (define-syntax-rule (define-llvm-binary function delegate)
   (define ((function value-a value-b) fun)
-    (make <llvm-value> #:llvm-value (delegate (slot-ref fun 'llvm-function)
-                                              (slot-ref (value-a fun) 'llvm-value)
-                                              (slot-ref (value-b fun) 'llvm-value)))))
+    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
+                                                    (car (slot-ref (value-a fun) 'llvm-value))
+                                                    (car (slot-ref (value-b fun) 'llvm-value)))))))
 
 (define-llvm-binary llvm-add  llvm-build-add )
 (define-llvm-binary llvm-fadd llvm-build-fadd)
@@ -149,9 +149,9 @@
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define ((function type value) fun)
-    (make <llvm-value> #:llvm-value (delegate (slot-ref fun 'llvm-function)
-                                              type
-                                              (slot-ref (value fun) 'llvm-value)))))
+    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
+                                                    type
+                                                    (car (slot-ref (value fun) 'llvm-value)))))))
 
 (define-llvm-cast llvm-trunc    llvm-build-trunc   )
 (define-llvm-cast llvm-sext     llvm-build-sext    )
@@ -287,9 +287,9 @@
 
 (define ((llvm-call return-type function-name argument-types args) fun)
   (make <llvm-value>
-        #:llvm-value (llvm-build-call (slot-ref fun 'llvm-function)
-                                      (slot-ref (slot-ref fun 'module) 'llvm-module)
-                                      return-type
-                                      function-name
-                                      argument-types
-                                      (map (lambda (arg) (slot-ref (arg fun) 'llvm-value)) args))))
+        #:llvm-value (list (llvm-build-call (slot-ref fun 'llvm-function)
+                                            (slot-ref (slot-ref fun 'module) 'llvm-module)
+                                            return-type
+                                            function-name
+                                            argument-types
+                                            (map (lambda (arg) (car (slot-ref (arg fun) 'llvm-value))) args)))))
