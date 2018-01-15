@@ -135,13 +135,13 @@
   (test-eq "Real component of double-precision floating-point complex number is a double"
     <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get real component of complex number"
-    '(2.5) ((get (real-part (make <complex<float>> #:value (lambda (fun) '(2.5 3.25))))) #f))
+    '(2.5) ((get (real-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
   (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get imaginary component of complex number"
-    '(3.25) ((get (imag-part (make <complex<float>> #:value (lambda (fun) '(2.5 3.25))))) #f))
+    '(3.25) ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
 (test-end "complex numbers")
 
 (test-eqv "get foreign type of complex type"

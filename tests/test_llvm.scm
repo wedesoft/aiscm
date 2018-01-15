@@ -214,10 +214,10 @@
 
 (test-begin "convenience wrapper")
   (test-assert "Define empty function using convenience wrapper"
-    (unspecified? ((llvm-wrap '() (lambda () (cons void (function-ret)))))))
+    (unspecified? ((llvm-wrap '() (const (cons void (function-ret)))))))
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap '() (lambda () (cons int (function-ret (make-constant int 42)))))))
+    ((llvm-wrap '() (const (cons int (function-ret (make-constant int 42)))))))
   (test-eqv "Define identity function using convenience wrapper"
     42
     ((llvm-wrap (list int) (lambda (value) (cons int (function-ret value)))) 42))
@@ -284,9 +284,9 @@
 
 (test-begin "integer type conversion")
   (test-equal "trivial conversion"
-    42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> value))) 42))
+    42 ((llvm-typed (list <int>) (cut to-type <int> <>)) 42))
   (test-equal "truncating integer conversion"
-    #xcd ((llvm-typed (list <uint>) (lambda (value) (to-type <ubyte> value))) #xabcd))
+    #xcd ((llvm-typed (list <uint>) (cut to-type <ubyte> <>)) #xabcd))
   (test-equal "zero-extending integer conversion"
     200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "zero-extending integer conversion"
@@ -331,14 +331,14 @@
   (test-equal "returns requested type"
     <double> (class-of (to-type <double> (make <float> #:value (list (make-constant float 42.5))))))
   (test-equal "perform conversion"
-    42.5 ((llvm-typed (list <float>) (lambda (value) (to-type <double> value))) 42.5))
+    42.5 ((llvm-typed (list <float>) (cut to-type <double> <>)) 42.5))
 (test-end "floating point type conversions")
 
 (test-begin "convert between integer and floating-point")
   (test-equal "signed byte to float"
-    -42.0 ((llvm-typed (list <byte>) (lambda (value) (to-type <float> value))) -42))
+    -42.0 ((llvm-typed (list <byte>) (cut to-type <float> <>)) -42))
   (test-equal "unsigned byte to float"
-    200.0 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <float> value))) 200))
+    200.0 ((llvm-typed (list <ubyte>) (cut to-type <float> <>)) 200))
   (test-equal "convert float to signed integer"
     -42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> (to-type <double> value)))) -42))
   (test-equal "convert float to unsigned int"
@@ -382,17 +382,17 @@
 
 (test-begin "composite types")
   (test-eqv "return real part of complex number"
-    2.5 ((llvm-typed (list <complex<float>>) (lambda (value) (real-part value))) 2.5+3.25i))
+    2.5 ((llvm-typed (list <complex<float>>) real-part) 2.5+3.25i))
   (test-eqv "return imaginary part of complex number"
-    3.25 ((llvm-typed (list <complex<float>>) (lambda (value) (imag-part value))) 2.5+3.25i))
+    3.25 ((llvm-typed (list <complex<float>>) imag-part) 2.5+3.25i))
   (test-eqv "complex single-precision identity"
     2+3i ((llvm-typed (list <complex<float>>) identity) 2+3i))
   (test-eqv "complex double-precision identity"
     2+3i ((llvm-typed (list <complex<double>>) identity) 2+3i))
   (test-eqv "compose single-precision complex number"
-    2+3i ((llvm-typed (list <float> <float>) (lambda (a b) (complex a b))) 2 3))
+    2+3i ((llvm-typed (list <float> <float>) complex) 2 3))
   (test-eqv "compose double-precision complex number"
-    2+3i ((llvm-typed (list <double> <double>) (lambda (a b) (complex a b))) 2 3))
+    2+3i ((llvm-typed (list <double> <double>) complex) 2 3))
   (test-eqv "complex plus"
     7+10i ((llvm-typed (list <complex<double>> <complex<double>>) +) 2+3i 5+7i))
 (test-end "composite types")
