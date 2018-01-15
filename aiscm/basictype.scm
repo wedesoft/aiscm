@@ -19,6 +19,7 @@
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
@@ -151,7 +152,7 @@
 
 (define (compose-value type lst)
   "Compose a value"
-  (make type #:value lst))
+  (make type #:value (lambda (fun) (append-map (cut <> fun) lst))))
 
 (define (compose-values types lst)
   "Compose multiple values"
@@ -194,7 +195,7 @@
   (list (base type) (base type)))
 
 (define-method (real-part (self <complex<>>))
-  (make (base (class-of self)) #:value (list (car (get self)))))
+  (make (base (class-of self)) #:value (lambda (fun) (list (car ((get self) fun))))))
 
 (define-method (imag-part (self <complex<>>))
-  (make (base (class-of self)) #:value (list (cadr (get self)))))
+  (make (base (class-of self)) #:value (lambda (fun) (list (cadr ((get self) fun))))))

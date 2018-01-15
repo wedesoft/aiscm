@@ -127,8 +127,7 @@
 
 (define-syntax-rule (define-llvm-unary function delegate)
   (define ((function value) fun)
-    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function)
-                                                    (car (slot-ref (value fun) 'llvm-value)))))))
+    (make <llvm-value> #:llvm-value (list (delegate (slot-ref fun 'llvm-function) (car (slot-ref (value fun) 'llvm-value)))))))
 
 (define-llvm-unary llvm-neg  llvm-build-neg )
 (define-llvm-unary llvm-fneg llvm-build-fneg)
@@ -199,25 +198,25 @@
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
-    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
 
 (define-method (to-type (cls <meta<float<>>>) (value <float<>>))
   "Floating-point conversions"
-  (make cls #:value (list (llvm-fp-cast (foreign-type cls) (car (get value))))))
+  (make cls #:value (llvm-fp-cast (foreign-type cls) (get value))))
 
 (define-method (to-type (cls <meta<float<>>>) (value <int<>>))
   "Convert integer to floating-point"
   (let [(conversion (if (signed? value) llvm-si-to-fp llvm-ui-to-fp))]
-    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
 
 (define-method (to-type (cls <meta<int<>>>) (value <float<>>))
   "Floating-point to integer conversion"
   (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
-    (make cls #:value (list (conversion (foreign-type cls) (car (get value)))))))
+    (make cls #:value (conversion (foreign-type cls) (get value)))))
 
 (define-syntax-rule (define-unary-operation type operation delegate)
   (define-method (operation (value type))
-    (make (class-of value) #:value (list (delegate (car (get value)))))))
+    (make (class-of value) #:value (delegate (get value)))))
 
 (define-unary-operation <int<>>   - llvm-neg )
 (define-unary-operation <float<>> - llvm-fneg)
@@ -228,7 +227,7 @@
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
-      (make target #:value (list (delegate (car (get adapt-a)) (car (get adapt-b))))))))
+      (make target #:value (delegate (get adapt-a) (get adapt-b))))))
 
 (define-binary-operation <int<>>   <int<>>   + llvm-add )
 (define-binary-operation <float<>> <int<>>   + llvm-fadd)
@@ -260,7 +259,7 @@
       (function-ret memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
-  (function-ret (car (get result))))
+  (function-ret (get result)))
 
 (define-method (finish-return type result)
   (unpack-value type result))

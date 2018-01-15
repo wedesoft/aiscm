@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (srfi srfi-1)
              (oop goops)
              (system foreign)
              (rnrs bytevectors)
@@ -134,13 +135,13 @@
   (test-eq "Real component of double-precision floating-point complex number is a double"
     <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get real component of complex number"
-    '(2.5) (get (real-part (make <complex<float>> #:value '(2.5 3.25)))))
+    '(2.5) ((get (real-part (make <complex<float>> #:value (lambda (fun) '(2.5 3.25))))) #f))
   (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get imaginary component of complex number"
-    '(3.25) (get (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
+    '(3.25) ((get (imag-part (make <complex<float>> #:value (lambda (fun) '(2.5 3.25))))) #f))
 (test-end "complex numbers")
 
 (test-eqv "get foreign type of complex type"
@@ -166,24 +167,24 @@
 
 (test-begin "compose value")
   (test-eq "Composing integer creates correct type"
-    <sint> (class-of (compose-value <sint> '(42))))
+    <sint> (class-of (compose-value <sint> (list (const '(42))))))
   (test-equal "Composing integer uses provided value"
-    '(42) (get (compose-value <sint> '(42))))
+    '(42) ((get (compose-value <sint> (list (const '(42))))) #f))
   (test-equal "Compose complex number"
-    '(2.5 3.25) (get (compose-value <complex<float>> '(2.5 3.25))))
+    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const '(2.5)) (const '(3.25))))) #f))
 (test-end "compose value")
 
 (test-begin "compose multiple values")
   (test-assert "Compose no values"
     (null? (compose-values '() '())))
   (test-equal "Composing an integer value creates an object of correct type"
-    (list <sint>) (map class-of (compose-values (list <sint>) '(42))))
+    (list <sint>) (map class-of (compose-values (list <sint>) (list (const '(42))))))
   (test-equal "Composing an integer value uses the provided value"
-    '(42) (get (car (compose-values (list <sint>) '(42)))))
+    '(42) ((get (car (compose-values (list <sint>) (list (const '(42)))))) #f))
   (test-equal "Composing a complex number uses two values"
-    '(2.5 3.25) (get (car (compose-values (list <complex<float>>) '(2.5 3.25)))))
+    '(2.5 3.25) ((get (car (compose-values (list <complex<float>>) (list (const '(2.5)) (const '(3.25)))))) #f))
   (test-equal "Compose two integer values"
-    '((5) (7)) (map get (compose-values (list <int> <int>) '(5 7))))
+    '((5) (7)) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const '(5)) (const '(7))))))
 (test-end "compose multiple values")
 
 (test-begin "decompose type")
