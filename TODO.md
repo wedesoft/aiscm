@@ -1,7 +1,7 @@
 ## Ready
 
 * remove value lists
-* is llvm-value required?
+* refactor llvm-let and prepare-return for complex numbers
 * function should return list, sequential computation of complex number
 * coercion when composing or adding complex numbers
 * typed let

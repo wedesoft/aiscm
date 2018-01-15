@@ -237,13 +237,14 @@
            (+ (imag-part value-a) (imag-part value-b))))
 
 (define-method (prepare-return (result <complex<>>) memory)
-  (let [(base (base (class-of result)))]
-    (llvm-let*
-      [(address0 memory)
-       (address1 (llvm-add memory (make-constant int64 (size-of base))))]
-      (function-store (foreign-type base) (car  (get result)) address0)
-      (function-store (foreign-type base) (cadr (get result)) address1)
-      (function-ret memory))))
+  (lambda (fun)
+    (let* [(base (base (class-of result)))
+           (address0 memory)
+           (address1 (llvm-add memory (make-constant int64 (size-of base))))
+           (lst      ((get result) fun))]
+      ((function-store (foreign-type base) (lambda (fun) (list (car  lst))) address0) fun)
+      ((function-store (foreign-type base) (lambda (fun) (list (cadr lst))) address1) fun)
+      ((function-ret memory) fun))))
 
 (define-method (prepare-return (result <scalar>) memory)
   (function-ret (get result)))

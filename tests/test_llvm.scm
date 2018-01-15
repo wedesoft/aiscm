@@ -385,11 +385,11 @@
     2.5 ((llvm-typed (list <complex<float>>) (lambda (value) (real-part value))) 2.5+3.25i))
   (test-eqv "return imaginary part of complex number"
     3.25 ((llvm-typed (list <complex<float>>) (lambda (value) (imag-part value))) 2.5+3.25i))
-  (test-expect-fail 5)
   (test-eqv "complex single-precision identity"
     2+3i ((llvm-typed (list <complex<float>>) identity) 2+3i))
   (test-eqv "complex double-precision identity"
     2+3i ((llvm-typed (list <complex<double>>) identity) 2+3i))
+  (test-expect-fail 3)
   (test-eqv "compose single-precision complex number"
     2+3i ((llvm-typed (list <float> <float>) (lambda (a b) (complex a b))) 2 3))
   (test-eqv "compose double-precision complex number"
