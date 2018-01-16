@@ -232,7 +232,10 @@
   (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
 
 (define-method (- (value <complex<>>))
-  (complex (- (real-part value)) (- (imag-part value))))
+  (make (class-of value) #:value (lambda (fun)
+    (let* [(intermediate ((get value) fun))]
+      (append ((llvm-fneg (const (list (car  intermediate)))) fun)
+              ((llvm-fneg (const (list (cadr intermediate)))) fun))))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
   (complex (+ (real-part value-a) (real-part value-b))
