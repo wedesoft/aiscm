@@ -1,6 +1,7 @@
 ## Ready
 
 * refactor llvm-let and prepare-return for complex numbers
+* llvm sequential, llvm let
 * intermediate results for complex operations
 * function should return list, sequential computation of complex number
 * coercion when composing or adding complex numbers

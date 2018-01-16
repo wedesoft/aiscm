@@ -28,11 +28,10 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile function-load function-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-sequential llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
+            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-call
+            llvm-sequential llvm-call
             ~)
-  #:export-syntax (llvm-let*)
   #:re-export (destroy - + *))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -171,16 +170,16 @@
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
 
-(define-syntax llvm-let*
-  (lambda (x)
-    (syntax-case x ()
-      ((llvm-let* [] body ...)
-       #'(llvm-sequential body ...))
-      ((llvm-let* [(variable expression) definitions ...] body ...)
-       #'(lambda (fun)
-           (let* [(intermediate (expression fun))
-                  (variable (lambda (fun) intermediate))]
-             ((llvm-let* [definitions ...] body ...) fun)))))))
+;(define-syntax llvm-let*
+;  (lambda (x)
+;    (syntax-case x ()
+;      ((llvm-let* [] body ...)
+;       #'(llvm-sequential body ...))
+;      ((llvm-let* [(variable expression) definitions ...] body ...)
+;       #'(lambda (fun)
+;           (let* [(intermediate (expression fun))
+;                  (variable (lambda (fun) intermediate))]
+;             ((llvm-let* [definitions ...] body ...) fun)))))))
 
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
@@ -231,6 +230,9 @@
 
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
   (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
+
+(define-method (- (value <complex<>>))
+  (complex (- (real-part value)) (- (imag-part value))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
   (complex (+ (real-part value-a) (real-part value-b))
