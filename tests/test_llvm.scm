@@ -255,19 +255,6 @@
     #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd))
 (test-end "integer type conversions")
 
-;(test-begin "local variables")
-;  (test-eqv "Empty list of local variables"
-;    3 ((llvm-let* [] 1+) 2))
-;  (test-eqv "Use function defining a local variable"
-;    3 ((llvm-let* [(result 1+)] result) 2))
-;  (test-eqv "Environment with two statements returns result of last statement"
-;    2 ((llvm-let* [] 1+ 1-) 3))
-;  (test-eqv "All statements are executed"
-;    2 (let [(x 0)] ((llvm-let* [] (lambda (v) (set! x v)) (lambda (v) (+ v x))) 1)))
-;  (test-eqv "Intermediate results are cached"
-;    1 (let [(x 0)] ((llvm-let* [(result (lambda (v) (set! x (+ v x)) x))] result result) 1)))
-;(test-end "local variables")
-
 (test-begin "expression basics")
   (test-equal "unary minus invokes llvm negation"
     -42

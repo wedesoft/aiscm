@@ -1,5 +1,6 @@
 ## Ready
 
+* create LLVM value, assign to it, create typed values
 * refactor llvm-let and prepare-return for complex numbers
 * llvm sequential, llvm let
 * intermediate results for complex operations

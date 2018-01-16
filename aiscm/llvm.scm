@@ -170,17 +170,6 @@
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
 
-;(define-syntax llvm-let*
-;  (lambda (x)
-;    (syntax-case x ()
-;      ((llvm-let* [] body ...)
-;       #'(llvm-sequential body ...))
-;      ((llvm-let* [(variable expression) definitions ...] body ...)
-;       #'(lambda (fun)
-;           (let* [(intermediate (expression fun))
-;                  (variable (lambda (fun) intermediate))]
-;             ((llvm-let* [definitions ...] body ...) fun)))))))
-
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
@@ -231,9 +220,12 @@
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
   (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
 
+(define (create-intermediate value fun)
+  (make (class-of value) #:value (const ((get value) fun))))
+
 (define-method (- (value <complex<>>))
   (make (class-of value) #:value (lambda (fun)
-    (let* [(intermediate (make (class-of value) #:value (const ((get value) fun))))]
+    (let* [(intermediate (create-intermediate value fun))]
       ((get (complex (- (real-part intermediate)) (- (imag-part intermediate)))) fun)))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
