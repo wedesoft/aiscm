@@ -1,10 +1,8 @@
 ## Ready
 
-* memoize?
-* llvm-let (trigger memoization)
 * refactor llvm-let and prepare-return for complex numbers
-* llvm sequential, llvm let
-* intermediate results for complex operations
+* llvm-let (trigger memoization), llvm-sequential
+* standards version 4.1.3
 * function should return list, sequential computation of complex number
 * coercion when composing or adding complex numbers
 * typed let
