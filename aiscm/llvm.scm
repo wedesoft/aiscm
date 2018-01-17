@@ -18,6 +18,7 @@
   #:use-module (oop goops)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 curried-definitions)
   #:use-module (rnrs bytevectors)
   #:use-module (system foreign)
@@ -32,6 +33,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call
             ~)
+  #:export-syntax (memoize)
   #:re-export (destroy - + *))
 
 (load-extension "libguile-aiscm-llvm" "init_llvm")
@@ -73,6 +75,9 @@
 
 (define-method (destroy (self <llvm-function>)) (llvm-function-destroy (slot-ref self 'llvm-function)))
 
+(define-syntax-rule (memoize (arguments ...) body ...)
+  (perfect-funcq 1 (lambda (arguments ...) body ...)))
+
 (define* ((function-ret #:optional (result (lambda (fun) #f))) fun)
   (let [(llvm-function (slot-ref fun 'llvm-function))
         (return-value  (result fun))]
@@ -91,9 +96,9 @@
   (let [(pointer (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
     (pointer->procedure (slot-ref fun 'return-type) pointer (slot-ref fun 'argument-types))))
 
-(define ((make-constant type value) fun)
+(define (make-constant type value)
   "Create a constant LLVM value"
-  (list (make-llvm-constant type value)))
+  (memoize (fun) (list (make-llvm-constant type value))))
 
 (define (make-constant-pointer address)
   "Create pointer constant"
@@ -103,9 +108,9 @@
   "Query type of LLVM value"
   (map llvm-get-type value))
 
-(define ((function-load type address) fun)
+(define (function-load type address)
   "Generate code for reading value from memory"
-  (list (llvm-build-load (slot-ref fun 'llvm-function) type (car (address fun)))))
+  (memoize (fun) (list (llvm-build-load (slot-ref fun 'llvm-function) type (car (address fun))))))
 
 (define ((function-store type value address) fun)
   "Generate code for writing value to memory"
@@ -116,16 +121,16 @@
   (list (llvm-get-param (slot-ref fun 'llvm-function) index)))
 
 (define-syntax-rule (define-llvm-unary function delegate)
-  (define ((function value) fun)
-    (list (delegate (slot-ref fun 'llvm-function) (car (value fun))))))
+  (define (function value)
+    (memoize (fun) (list (delegate (slot-ref fun 'llvm-function) (car (value fun)))))))
 
 (define-llvm-unary llvm-neg  llvm-build-neg )
 (define-llvm-unary llvm-fneg llvm-build-fneg)
 (define-llvm-unary llvm-not  llvm-build-not )
 
 (define-syntax-rule (define-llvm-binary function delegate)
-  (define ((function value-a value-b) fun)
-    (list (delegate (slot-ref fun 'llvm-function) (car (value-a fun)) (car (value-b fun))))))
+  (define (function value-a value-b)
+    (memoize (fun) (list (delegate (slot-ref fun 'llvm-function) (car (value-a fun)) (car (value-b fun)))))))
 
 (define-llvm-binary llvm-add  llvm-build-add )
 (define-llvm-binary llvm-fadd llvm-build-fadd)
@@ -135,8 +140,8 @@
 (define-llvm-binary llvm-fmul llvm-build-fmul)
 
 (define-syntax-rule (define-llvm-cast function delegate)
-  (define ((function type value) fun)
-    (list (delegate (slot-ref fun 'llvm-function) type (car (value fun))))))
+  (define (function type value)
+    (memoize (fun) (list (delegate (slot-ref fun 'llvm-function) type (car (value fun)))))))
 
 (define-llvm-cast llvm-trunc    llvm-build-trunc   )
 (define-llvm-cast llvm-sext     llvm-build-sext    )
@@ -224,9 +229,7 @@
   (make (class-of value) #:value (const ((get value) fun))))
 
 (define-method (- (value <complex<>>))
-  (make (class-of value) #:value (lambda (fun)
-    (let* [(intermediate (create-intermediate value fun))]
-      ((get (complex (- (real-part intermediate)) (- (imag-part intermediate)))) fun)))))
+  (complex (- (real-part value)) (- (imag-part value))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
   (complex (+ (real-part value-a) (real-part value-b))

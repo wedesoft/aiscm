@@ -52,6 +52,19 @@
     (list float) (get-type ((make-constant float (exp 1)) #f)))
 (test-end "constant values")
 
+(test-begin "memoization")
+  (test-eqv "implements function"
+    42 ((memoize () 42)))
+  (test-eqv "accept parameters"
+    5 ((memoize (x y) (+ x y)) 2 3))
+  (test-eqv "multiple statements"
+    21 ((memoize (x) (set! x (1+ x)) x) 20))
+  (let* [(x 20)
+         (f (memoize () (set! x (1+ x)) x))]
+    (test-eqv "cache return value"
+      21 (begin (f) (f))))
+(test-end "memoization")
+
 (test-begin "functions")
   (test-equal "Create LLVM function"
     <llvm-function> (class-of (let [(mod (make-llvm-module))] (make-function mod void "function"))))
