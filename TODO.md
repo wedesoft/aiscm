@@ -1,7 +1,7 @@
 ## Ready
 
 * llvm-sequential
-* store/fetch scalars and composite values
+* store/fetch composite values
 * complex constant
 * refactor llvm-let and prepare-return for complex numbers
 * llvm-let (trigger memoization)

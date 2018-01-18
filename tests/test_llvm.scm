@@ -430,6 +430,10 @@
            (ptr  (typed-pointer (bytevector->pointer data)))]
       ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2)
       data))
+  (let* [(data #vu8(2 3 5 7))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-eqv "read byte from memory"
+      2 ((llvm-typed '() (lambda () (fetch <byte> ptr))))))
 (test-end "typed store/fetch")
 
 (test-end "aiscm llvm")
