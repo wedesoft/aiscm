@@ -31,7 +31,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-sequential llvm-call typed-constant typed-pointer store fetch
+            llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~)
   #:export-syntax (memoize)
   #:re-export (destroy - + *))
@@ -293,3 +293,9 @@
 
 (define (fetch type address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
+
+(define (llvm-begin instruction . instructions)
+  (if (null? instructions)
+    instruction
+    (let [(result (apply llvm-begin instructions))]
+      (make (class-of result) #:value (lambda (fun) ((get instruction) fun) ((get result) fun))))))

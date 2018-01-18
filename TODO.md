@@ -3,6 +3,7 @@
 * llvm-sequential
 * store/fetch composite values
 * complex constant
+* pointer types
 * refactor llvm-let and prepare-return for complex numbers
 * llvm-let (trigger memoization)
 * standards version 4.1.3

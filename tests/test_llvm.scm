@@ -436,4 +436,15 @@
       2 ((llvm-typed '() (lambda () (fetch <byte> ptr))))))
 (test-end "typed store/fetch")
 
+(test-begin "instruction sequence")
+  (test-eqv "test single instruction"
+    42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value))) 42))
+  (test-eqv "test two instructions"
+    42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value value))) 42))
+  (let* [(data #vu8(0 0 0 0))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-eqv "ensure both instructions are executed"
+      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch <int> ptr)))) 42)))
+(test-end "instruction sequence")
+
 (test-end "aiscm llvm")
