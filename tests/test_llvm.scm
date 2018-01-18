@@ -409,4 +409,14 @@
     ((llvm-wrap (list double double) (lambda args (cons double (function-ret (llvm-call double "atan2" (list double double) args)))))
      0.0 1.0))
 (test-end "method calls")
+
+(test-begin "typed store/fetch")
+  (test-equal "write byte to memory"
+    #vu8(2 3 5 7)
+    (let* [(data #vu8(0 3 5 7))
+           (ptr  (make <ulong> #:value (make-constant-pointer (bytevector->pointer data))))]
+      ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2)
+      data))
+(test-end "typed store/fetch")
+
 (test-end "aiscm llvm")

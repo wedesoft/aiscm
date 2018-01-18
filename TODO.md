@@ -1,8 +1,10 @@
 ## Ready
 
+* typed constant
+* llvm-sequential
 * store/fetch scalars and composite values
 * refactor llvm-let and prepare-return for complex numbers
-* llvm-let (trigger memoization), llvm-sequential
+* llvm-let (trigger memoization)
 * standards version 4.1.3
 * function should return list, sequential computation of complex number
 * coercion when composing or adding complex numbers

@@ -31,7 +31,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-sequential llvm-call
+            llvm-sequential llvm-call store
             ~)
   #:export-syntax (memoize)
   #:re-export (destroy - + *))
@@ -115,6 +115,12 @@
 (define ((llvm-store type value address) fun)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref fun 'llvm-function) type (car (value fun)) (car (address fun))))
+
+(define (store address value)
+  (make (class-of value)
+        #:value (lambda (fun)
+                  ((llvm-store (foreign-type (class-of value)) (get value) (get address)) fun)
+                  ((get value) fun))))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
