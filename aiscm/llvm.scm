@@ -235,49 +235,11 @@
   (complex (+ (real-part value-a) (real-part value-b))
            (+ (imag-part value-a) (imag-part value-b))))
 
-(define-method (prepare-return (result <complex<>>) memory)
-  (lambda (fun)
-    (let* [(base (base (class-of result)))
-           (address0 memory)
-           (address1 (llvm-add memory (make-constant int64 (size-of base))))
-           (lst      ((get result) fun))]
-      ((llvm-store (foreign-type base) (lambda (fun) (list (car  lst))) address0) fun)
-      ((llvm-store (foreign-type base) (lambda (fun) (list (cadr lst))) address1) fun)
-      ((function-ret memory) fun))))
-
-(define-method (prepare-return (result <scalar>) memory)
-  (function-ret (get result)))
-
-(define-method (finish-return type result)
-  (unpack-value type result))
-
-(define-method (finish-return (type <meta<scalar>>) result)
-  result)
-
-(define (llvm-typed argument-types function)
-  "Infer types and compile function"
-  (let* [(result-type #f)
-         (fun (llvm-wrap (cons int64 (map foreign-type (decompose-types argument-types)))
-               (lambda arguments
-                 (let* [(arguments-typed (compose-values argument-types (cdr arguments)))
-                        (expression      (apply function arguments-typed))]
-                   (set! result-type (class-of expression))
-                   (cons (foreign-type result-type) (prepare-return expression (car arguments)))))))]
-    (lambda args
-      (let [(memory (make-bytevector (size-of result-type)))]
-        (finish-return
-          result-type
-          (apply fun
-            (cons (pointer-address (bytevector->pointer memory))
-                  (decompose-arguments argument-types args))))))))
-
-(define ((llvm-call return-type function-name argument-types args) fun)
-  (list (llvm-build-call (slot-ref fun 'llvm-function)
-                         (slot-ref (slot-ref fun 'module) 'llvm-module)
-                         return-type
-                         function-name
-                         argument-types
-                         (map (lambda (arg) (car (arg fun))) args))))
+(define (llvm-begin instruction . instructions)
+  (if (null? instructions)
+    instruction
+    (let [(result (apply llvm-begin instructions))]
+      (make (class-of result) #:value (lambda (fun) ((get instruction) fun) ((get result) fun))))))
 
 (define (typed-constant type value)
   (make type #:value (make-constant (foreign-type type) value)))
@@ -294,8 +256,44 @@
 (define (fetch type address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
 
-(define (llvm-begin instruction . instructions)
-  (if (null? instructions)
-    instruction
-    (let [(result (apply llvm-begin instructions))]
-      (make (class-of result) #:value (lambda (fun) ((get instruction) fun) ((get result) fun))))))
+(define-method (prepare-return (result <complex<>>) memory)
+  (let* [(address0 memory)
+         (address1 (+ address0 (typed-constant <long> (size-of (base (class-of result))))))]
+    (llvm-begin
+      (store address0 (real-part result))
+      (store address1 (imag-part result))
+      (make <long> #:value (function-ret (get memory))))))
+
+(define-method (prepare-return (result <scalar>) memory)
+  (make (class-of result) #:value (function-ret (get result))))
+
+(define-method (finish-return type result)
+  (unpack-value type result))
+
+(define-method (finish-return (type <meta<scalar>>) result)
+  result)
+
+(define (llvm-typed argument-types function)
+  "Infer types and compile function"
+  (let* [(result-type #f)
+         (fun (llvm-wrap (cons int64 (map foreign-type (decompose-types argument-types)))
+               (lambda arguments
+                 (let* [(arguments-typed (compose-values (cons <long> argument-types) arguments))
+                        (expression      (apply function (cdr arguments-typed)))]
+                   (set! result-type (class-of expression))
+                   (cons (foreign-type result-type) (get (prepare-return expression (car arguments-typed))))))))]
+    (lambda args
+      (let [(memory (make-bytevector (size-of result-type)))]
+        (finish-return
+          result-type
+          (apply fun
+            (cons (pointer-address (bytevector->pointer memory))
+                  (decompose-arguments argument-types args))))))))
+
+(define ((llvm-call return-type function-name argument-types args) fun)
+  (list (llvm-build-call (slot-ref fun 'llvm-function)
+                         (slot-ref (slot-ref fun 'module) 'llvm-module)
+                         return-type
+                         function-name
+                         argument-types
+                         (map (lambda (arg) (car (arg fun))) args))))
