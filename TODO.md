@@ -1,5 +1,6 @@
 ## Ready
 
+* store/fetch scalars and composite values
 * refactor llvm-let and prepare-return for complex numbers
 * llvm-let (trigger memoization), llvm-sequential
 * standards version 4.1.3

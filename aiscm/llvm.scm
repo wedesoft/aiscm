@@ -27,7 +27,7 @@
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
-            function-ret llvm-func get-type llvm-compile function-load function-store function-param
+            function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
@@ -108,11 +108,11 @@
   "Query type of LLVM value"
   (map llvm-get-type value))
 
-(define (function-load type address)
+(define (llvm-fetch type address)
   "Generate code for reading value from memory"
   (memoize (fun) (list (llvm-build-load (slot-ref fun 'llvm-function) type (car (address fun))))))
 
-(define ((function-store type value address) fun)
+(define ((llvm-store type value address) fun)
   "Generate code for writing value to memory"
   (llvm-build-store (slot-ref fun 'llvm-function) type (car (value fun)) (car (address fun))))
 
@@ -241,8 +241,8 @@
            (address0 memory)
            (address1 (llvm-add memory (make-constant int64 (size-of base))))
            (lst      ((get result) fun))]
-      ((function-store (foreign-type base) (lambda (fun) (list (car  lst))) address0) fun)
-      ((function-store (foreign-type base) (lambda (fun) (list (cadr lst))) address1) fun)
+      ((llvm-store (foreign-type base) (lambda (fun) (list (car  lst))) address0) fun)
+      ((llvm-store (foreign-type base) (lambda (fun) (list (cadr lst))) address1) fun)
       ((function-ret memory) fun))))
 
 (define-method (prepare-return (result <scalar>) memory)

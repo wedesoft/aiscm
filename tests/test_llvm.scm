@@ -129,7 +129,7 @@
       (let* [(data #vu8(2 3 5 7))
              (mod  (make-llvm-module))
              (fun  (make-function mod type "read_mem"))]
-        ((function-ret (function-load type (make-constant-pointer (bytevector->pointer data)))) fun)
+        ((function-ret (llvm-fetch type (make-constant-pointer (bytevector->pointer data)))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun)))))
     '(2 770)
@@ -140,7 +140,7 @@
       #vu8(2 3 5 7)
       (let* [(mod  (make-llvm-module))
              (fun  (make-function mod void "write_mem"))]
-        ((function-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data))) fun)
+        ((llvm-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data))) fun)
         ((function-ret) fun)
         (llvm-compile mod)
         ((llvm-func mod fun))
@@ -244,13 +244,13 @@
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (function-store int8 value pointer) (function-ret))))) 42)
+      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (llvm-store int8 value pointer) (function-ret))))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (function-load int8 value))))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (llvm-fetch int8 value))))) pointer)))
 (test-end "convenience wrapper")
 
 (test-begin "integer type conversions")
@@ -258,12 +258,12 @@
     254
     (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (function-load uint8 value)))))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (llvm-fetch uint8 value)))))) pointer)))
   (test-equal "Sign-extend integer"
     -2
     (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (function-load int8 value)))))) pointer)))
+      ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (llvm-fetch int8 value)))))) pointer)))
   (test-equal "Truncate integer"
     #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd))
 (test-end "integer type conversions")
