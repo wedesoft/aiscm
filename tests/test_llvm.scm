@@ -50,6 +50,8 @@
     (list double) (get-type ((make-constant double (exp 1)) #f)))
   (test-equal "Get type of single-precision floating point value"
     (list float) (get-type ((make-constant float (exp 1)) #f)))
+  (test-equal "Memory address is 64 bit"
+    (list int64) (get-type ((make-constant-pointer (make-pointer 1234)) #f)))
 (test-end "constant values")
 
 (test-begin "memoization")
@@ -329,7 +331,7 @@
 
 (test-begin "floating point type conversions")
   (test-equal "returns requested type"
-    <double> (class-of (to-type <double> (make <float> #:value (list (make-constant float 42.5))))))
+    <double> (class-of (to-type <double> (typed-constant <float> 42.5))))
   (test-equal "perform conversion"
     42.5 ((llvm-typed (list <float>) (cut to-type <double> <>)) 42.5))
 (test-end "floating point type conversions")
@@ -410,11 +412,22 @@
      0.0 1.0))
 (test-end "method calls")
 
+(test-begin "typed constants")
+  (test-eq "Type of constant should be of specified type"
+    <sint> (class-of (typed-constant <sint> 42)))
+  (test-equal "Use corresponding foreign type"
+    (list int16) (get-type ((get (typed-constant <sint> 42)) #f)))
+  (test-equal "Pointer constant is 64-bit"
+    (list int64) (get-type ((get (typed-pointer (make-pointer 1234))) #f)))
+  (test-equal "Pointer type is long integer"
+    <long> (class-of (typed-pointer (make-pointer 1234))))
+(test-end "typed constants")
+
 (test-begin "typed store/fetch")
   (test-equal "write byte to memory"
     #vu8(2 3 5 7)
     (let* [(data #vu8(0 3 5 7))
-           (ptr  (make <ulong> #:value (make-constant-pointer (bytevector->pointer data))))]
+           (ptr  (typed-pointer (bytevector->pointer data)))]
       ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2)
       data))
 (test-end "typed store/fetch")
