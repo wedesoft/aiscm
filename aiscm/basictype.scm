@@ -25,6 +25,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
             complex base size-of unpack-value
+            <void> <meta<void>>
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -51,8 +52,19 @@
 (define signed   'signed)
 (define unsigned 'unsigned)
 
-(define-class* <scalar> <object> <meta<scalar>> <class>
+(define-class* <void> <object> <meta<void>> <class>
                (value #:init-keyword #:value #:getter get))
+
+(define-method (foreign-type (type <meta<void>>))
+  void)
+
+(define-method (size-of (type <meta<void>>))
+  0)
+
+(define-method (unpack-value (self <meta<void>>) address)
+  address)
+
+(define-class* <scalar> <void> <meta<scalar>> <meta<void>>)
 
 (define-method (equal? (a <scalar>) (b <scalar>))
   (equal? (get a) (get b)))

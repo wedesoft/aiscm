@@ -23,6 +23,20 @@
 
 
 (test-begin "aiscm basictype")
+
+(test-begin "void type")
+  (test-eq "Create void type"
+    <void> (class-of (make <void> #:value #f)))
+  (test-eq "Content of void type"
+    'content (get (make <void> #:value 'content)))
+  (test-eq "Foreign type of void is void"
+    void (foreign-type <void>))
+  (test-eqv "Size of void is zero"
+    0 (size-of <void>))
+  (test-eq "Unpacking void just returns address"
+    'unspecified (unpack-value <void> 'unspecified))
+(test-end "void type")
+
 (test-begin "construct integer types")
   (for-each
     (lambda (nbits sign cls)

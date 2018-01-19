@@ -29,7 +29,7 @@
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type
+            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~)
@@ -154,13 +154,8 @@
 
 (define module-list '())
 
-(define ((llvm-sequential instruction . instructions) fun)
-  "Execute list of instructions sequentially"
-  (if (null? instructions)
-    (instruction fun)
-    (begin
-      (instruction fun)
-      ((apply llvm-sequential instructions) fun))))
+(define (return . args)
+  (make <void> #:value (apply function-ret (map get args))))
 
 (define (llvm-wrap foreign-types function)
   "Convenience wrapper for compiling JIT functions"
@@ -225,9 +220,6 @@
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
   (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
 
-(define (create-intermediate value fun)
-  (make (class-of value) #:value (const ((get value) fun))))
-
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
 
@@ -248,10 +240,7 @@
   (make <long> #:value (make-constant-pointer value)))
 
 (define (store address value)
-  (make (class-of value)
-        #:value (lambda (fun)
-                  ((llvm-store (foreign-type (class-of value)) (get value) (get address)) fun)
-                  ((get value) fun))))
+  (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get address))))
 
 (define (fetch type address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
@@ -262,10 +251,13 @@
     (llvm-begin
       (store address0 (real-part result))
       (store address1 (imag-part result))
-      (make <long> #:value (function-ret (get memory))))))
+      (return memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
-  (make (class-of result) #:value (function-ret (get result))))
+  (return result))
+
+(define-method (prepare-return (result <void>) memory)
+  (llvm-begin result (return)))
 
 (define-method (finish-return type result)
   (unpack-value type result))

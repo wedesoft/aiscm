@@ -218,15 +218,6 @@
     (list int int int double double double))
 (test-end "binary expressions")
 
-(test-begin "sequential program")
-  (test-eqv "Sequence with one statement"
-    3 ((llvm-sequential 1+) 2))
-  (test-eqv "Sequence with two statements returns result of last statement"
-    2 ((llvm-sequential 1+ 1-) 3))
-  (test-eqv "All statements are executed"
-    2 (let [(x 0)] ((llvm-sequential (lambda (v) (set! x v)) (lambda (v) (+ v x))) 1)))
-(test-end "sequential program")
-
 (test-begin "convenience wrapper")
   (test-assert "Define empty function using convenience wrapper"
     (unspecified? ((llvm-wrap '() (const (cons void (function-ret)))))))
@@ -246,7 +237,9 @@
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap (list int8) (lambda (value) (cons void (llvm-sequential (llvm-store int8 value pointer) (function-ret))))) 42)
+      ((llvm-wrap (list int8)
+                  (lambda (value)
+                    (cons void (lambda (fun) ((llvm-store int8 value pointer) fun) ((function-ret) fun))))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
@@ -424,12 +417,15 @@
 (test-end "typed constants")
 
 (test-begin "typed store/fetch")
-  (test-equal "write byte to memory"
-    #vu8(2 3 5 7)
-    (let* [(data #vu8(0 3 5 7))
-           (ptr  (typed-pointer (bytevector->pointer data)))]
-      ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2)
-      data))
+  (let* [(data #vu8(0 3 5 7))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-equal "write byte to memory"
+      #vu8(2 3 5 7)
+      (begin ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2) data)))
+  (let* [(data #vu8(0 3 5 7))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-assert "storing a value returns no value"
+      (unspecified? ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2))))
   (let* [(data #vu8(2 3 5 7))
          (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-eqv "read byte from memory"

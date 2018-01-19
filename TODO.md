@@ -1,6 +1,5 @@
 ## Ready
 
-* llvm-sequential
 * store/fetch composite values
 * complex constant
 * pointer types
