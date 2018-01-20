@@ -375,6 +375,19 @@
     '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5))
 (test-end "floating-point binary expression")
 
+(test-begin "constant conversions")
+  (test-eqv "add integer constant to value"
+    5 ((llvm-typed (list <int>) (lambda (x) (+ x 3))) 2))
+  (test-eqv "add value to integer constant"
+    5 ((llvm-typed (list <int>) (lambda (x) (+ 2 x))) 3))
+  (test-eqv "subtract integer constant from value"
+    2 ((llvm-typed (list <int>) (lambda (x) (- x 3))) 5))
+  (test-eqv "subtract value from integer constant"
+    3 ((llvm-typed (list <int>) (lambda (x) (- 5 x))) 2))
+  (test-eqv "add floating-point constant to value"
+    5.5 ((llvm-typed (list <float>) (lambda (x) (+ x 3))) 2.5))
+(test-end "constant conversions")
+
 (test-begin "composite types")
   (test-eqv "return real part of complex number"
     2.5 ((llvm-typed (list <complex<float>>) real-part) 2.5+3.25i))

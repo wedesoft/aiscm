@@ -204,18 +204,25 @@
            (adapt-b (to-type target value-b))]
       (make target #:value (delegate (get adapt-a) (get adapt-b))))))
 
-(define-binary-operation <int<>>   <int<>>   + llvm-add )
-(define-binary-operation <float<>> <int<>>   + llvm-fadd)
-(define-binary-operation <int<>>   <float<>> + llvm-fadd)
-(define-binary-operation <float<>> <float<>> + llvm-fadd)
-(define-binary-operation <int<>>   <int<>>   - llvm-sub )
-(define-binary-operation <int<>>   <float<>> - llvm-fsub)
-(define-binary-operation <float<>> <int<>>   - llvm-fsub)
-(define-binary-operation <float<>> <float<>> - llvm-fsub)
-(define-binary-operation <int<>>   <int<>>   * llvm-mul )
-(define-binary-operation <int<>>   <float<>> * llvm-fmul)
-(define-binary-operation <float<>> <int<>>   * llvm-fmul)
-(define-binary-operation <float<>> <float<>> * llvm-fmul)
+(define-syntax-rule (define-op-with-constant type operation)
+  (begin
+    (define-method (operation (value-a type) value-b)
+      (operation value-a (typed-constant (class-of value-a) value-b)))
+    (define-method (operation value-a (value-b type))
+      (operation (typed-constant (class-of value-b) value-a) value-b))))
+
+(define-syntax-rule (define-binary-delegation operation delegate float-delegate)
+  (begin
+    (define-binary-operation <int<>>   <int<>>   operation delegate )
+    (define-binary-operation <float<>> <int<>>   operation float-delegate)
+    (define-binary-operation <int<>>   <float<>> operation float-delegate)
+    (define-binary-operation <float<>> <float<>> operation float-delegate)
+    (define-op-with-constant <int<>> operation)
+    (define-op-with-constant <float<>> operation)))
+
+(define-binary-delegation + llvm-add llvm-fadd)
+(define-binary-delegation - llvm-sub llvm-fsub)
+(define-binary-delegation * llvm-mul llvm-fmul)
 
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
   (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
@@ -247,7 +254,7 @@
 
 (define-method (prepare-return (result <complex<>>) memory)
   (let* [(address0 memory)
-         (address1 (+ address0 (typed-constant <long> (size-of (base (class-of result))))))]
+         (address1 (+ address0 (size-of (base (class-of result)))))]
     (llvm-begin
       (store address0 (real-part result))
       (store address1 (imag-part result))

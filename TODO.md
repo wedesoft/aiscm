@@ -1,5 +1,6 @@
 ## Ready
 
+* type matching (for constants), add floating point constant to integer
 * store/fetch composite values
 * complex constant
 * pointer types
