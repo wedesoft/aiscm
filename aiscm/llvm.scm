@@ -207,9 +207,9 @@
 (define-syntax-rule (define-op-with-constant type operation)
   (begin
     (define-method (operation (value-a type) value-b)
-      (operation value-a (typed-constant (class-of value-a) value-b)))
+      (operation value-a (typed-constant (native-type value-b) value-b)))
     (define-method (operation value-a (value-b type))
-      (operation (typed-constant (class-of value-b) value-a) value-b))))
+      (operation (typed-constant (native-type value-a) value-a) value-b))))
 
 (define-syntax-rule (define-binary-delegation operation delegate float-delegate)
   (begin

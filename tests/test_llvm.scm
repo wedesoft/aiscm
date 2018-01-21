@@ -386,6 +386,8 @@
     3 ((llvm-typed (list <int>) (lambda (x) (- 5 x))) 2))
   (test-eqv "add floating-point constant to value"
     5.5 ((llvm-typed (list <float>) (lambda (x) (+ x 3))) 2.5))
+  (test-eqv "add floating-point constant to integer value"
+    5.5 ((llvm-typed (list <int>) (lambda (x) (+ x 3.5))) 2))
 (test-end "constant conversions")
 
 (test-begin "composite types")

@@ -251,4 +251,37 @@
     1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64)))))
 (test-end "unpack values")
 
+(test-begin "type matching")
+  (test-equal "type matching for 255"
+    <ubyte> (native-type 255))
+  (test-equal "type matching for 256"
+    <usint> (native-type 256))
+  (test-equal "type matching for 65535"
+    <usint> (native-type 65535))
+  (test-equal "type matching for 65536"
+    <uint> (native-type 65536))
+  (test-equal "type matching for 4294967295"
+    <uint> (native-type 4294967295))
+  (test-equal "type matching for 4294967296"
+    <ulong> (native-type 4294967296))
+  (test-equal "type matching for 18446744073709551615"
+    <ulong> (native-type 18446744073709551615))
+  (test-equal "type matching for -128"
+    <byte> (native-type -128))
+  (test-equal "type matching for -129"
+    <sint> (native-type -129))
+  (test-equal "type matching for -32768"
+    <sint> (native-type -32768))
+  (test-equal "type matching for -32769"
+    <int> (native-type -32769))
+  (test-equal "type matching for -2147483648"
+    <int> (native-type -2147483648))
+  (test-equal "type matching for -2147483649"
+    <long> (native-type -2147483649))
+  (test-equal "type matching for -9223372036854775808"
+    <long> (native-type -9223372036854775808))
+  (test-equal "type matching for 1.5"
+    <double> (native-type 1.5))
+(test-end "type matching")
+
 (test-end "aiscm basictype")

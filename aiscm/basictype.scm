@@ -24,7 +24,7 @@
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
-            complex base size-of unpack-value
+            complex base size-of unpack-value native-type
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
@@ -106,6 +106,21 @@
 (define-method (foreign-type (type <meta<int<>>>))
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
+
+(define-method (native-type (value <integer>))
+  (if (>= value 0)
+    (cond ((< value (ash 1  8)) <ubyte>)
+          ((< value (ash 1 16)) <usint>)
+          ((< value (ash 1 32)) <uint> )
+          (else <ulong>))
+    (let [(nvalue (lognot value))]
+      (cond ((< nvalue (ash 1  7)) <byte>)
+            ((< nvalue (ash 1 15)) <sint>)
+            ((< nvalue (ash 1 31))  <int>)
+            (else <long>)))))
+
+(define-method (native-type (value <real>))
+  <double>)
 
 (define-method (size-of (type <meta<int<>>>))
   "Get size of integer values"
