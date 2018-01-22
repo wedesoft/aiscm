@@ -225,7 +225,10 @@
 (define-binary-delegation * llvm-mul llvm-fmul)
 
 (define-method (complex (value-a <float<>>) (value-b <float<>>))
-  (make (complex (class-of value-a)) #:value (lambda (fun) (append ((get value-a) fun) ((get value-b) fun)))))
+  (let* [(target  (coerce (class-of value-a) (class-of value-b)))
+         (adapt-a (to-type target value-a))
+         (adapt-b (to-type target value-b))]
+    (make (complex target) #:value (lambda (fun) (append ((get adapt-a) fun) ((get adapt-b) fun))))))
 
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))

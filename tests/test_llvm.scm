@@ -403,6 +403,8 @@
     2+3i ((llvm-typed (list <float> <float>) complex) 2 3))
   (test-eqv "compose double-precision complex number"
     2+3i ((llvm-typed (list <double> <double>) complex) 2 3))
+  (test-eqv "compose complex number from different precision numbers"
+    2+3i ((llvm-typed (list <float> <double>) complex) 2 3))
   (test-eqv "complex negation"
     -2-3i ((llvm-typed (list <complex<double>>) -) 2+3i))
   (test-eqv "complex plus"
