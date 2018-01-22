@@ -429,6 +429,8 @@
     (list int64) (get-type ((get (typed-pointer (make-pointer 1234))) #f)))
   (test-equal "Pointer type is long integer"
     <long> (class-of (typed-pointer (make-pointer 1234))))
+  (test-equal "complex constant"
+    2+3i ((llvm-typed '() (cut typed-constant <complex<float>> 2+3i))))
 (test-end "typed constants")
 
 (test-begin "typed store/fetch")

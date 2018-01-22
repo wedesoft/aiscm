@@ -240,8 +240,12 @@
     (let [(result (apply llvm-begin instructions))]
       (make (class-of result) #:value (lambda (fun) ((get instruction) fun) ((get result) fun))))))
 
-(define (typed-constant type value)
+(define-method (typed-constant (type <meta<scalar>>) value)
   (make type #:value (make-constant (foreign-type type) value)))
+
+(define-method (typed-constant (type <meta<complex<>>>) value)
+  (let [(basetype (base type))]
+    (complex (typed-constant basetype (real-part value)) (typed-constant basetype (imag-part value)))))
 
 (define (typed-pointer value)
   (make <long> #:value (make-constant-pointer value)))
