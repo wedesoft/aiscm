@@ -254,17 +254,21 @@
     (store address (real-part value))
     (store (+ address (size-of (base (class-of value)))) (imag-part value))))
 
-(define (fetch type address)
+(define-method (fetch (type <meta<scalar>>) address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
 
-(define-method (prepare-return (result <complex<>>) memory)
-  (llvm-begin (store memory result) (return memory)))
+(define-method (fetch (type <meta<complex<>>>) address)
+  (let [(basetype (base type))]
+    (complex (fetch basetype address) (fetch basetype (+ address (size-of basetype))))))
+
+(define-method (prepare-return (result <void>) memory)
+  (llvm-begin result (return)))
 
 (define-method (prepare-return (result <scalar>) memory)
   (return result))
 
-(define-method (prepare-return (result <void>) memory)
-  (llvm-begin result (return)))
+(define-method (prepare-return (result <complex<>>) memory)
+  (llvm-begin (store memory result) (return memory)))
 
 (define-method (finish-return type result)
   (unpack-value type result))

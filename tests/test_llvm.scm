@@ -450,6 +450,10 @@
     (test-equal "write complex number to memory"
       #vu8(0 0 0 64 0 0 64 64 9 10)
       (begin ((llvm-typed (list <complex<float>>) (lambda (value) (store ptr value))) 2+3i) data)))
+  (let* [(data #vu8(0 0 0 64 0 0 64 64))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-eqv "read complex number from memory"
+      2+3i ((llvm-typed '() (lambda () (fetch <complex<float>> ptr))))))
 (test-end "typed store/fetch")
 
 (test-begin "instruction sequence")

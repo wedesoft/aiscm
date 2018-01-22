@@ -1,6 +1,5 @@
 ## Ready
 
-* fetch composite values
 * complex constant
 * pointer types
 * refactor llvm-let and prepare-return for complex numbers
