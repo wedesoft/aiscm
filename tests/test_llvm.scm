@@ -445,6 +445,11 @@
          (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-eqv "read byte from memory"
       2 ((llvm-typed '() (lambda () (fetch <byte> ptr))))))
+  (let* [(data #vu8(1 2 3 4 5 6 7 8 9 10))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-equal "write complex number to memory"
+      #vu8(0 0 0 64 0 0 64 64 9 10)
+      (begin ((llvm-typed (list <complex<float>>) (lambda (value) (store ptr value))) 2+3i) data)))
 (test-end "typed store/fetch")
 
 (test-begin "instruction sequence")

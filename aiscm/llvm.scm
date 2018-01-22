@@ -246,19 +246,19 @@
 (define (typed-pointer value)
   (make <long> #:value (make-constant-pointer value)))
 
-(define (store address value)
+(define-method (store address (value <scalar>))
   (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get address))))
+
+(define-method (store address (value <complex<>>))
+  (llvm-begin
+    (store address (real-part value))
+    (store (+ address (size-of (base (class-of value)))) (imag-part value))))
 
 (define (fetch type address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
 
 (define-method (prepare-return (result <complex<>>) memory)
-  (let* [(address0 memory)
-         (address1 (+ address0 (size-of (base (class-of result)))))]
-    (llvm-begin
-      (store address0 (real-part result))
-      (store address1 (imag-part result))
-      (return memory))))
+  (llvm-begin (store memory result) (return memory)))
 
 (define-method (prepare-return (result <scalar>) memory)
   (return result))
