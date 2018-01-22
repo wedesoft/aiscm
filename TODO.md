@@ -1,6 +1,5 @@
 ## Ready
 
-* type match complex type
 * store/fetch composite values
 * complex constant
 * pointer types
@@ -17,6 +16,7 @@
 * nested structures (e.g. state vector)
 * Scheme objects
 * pointers and arrays
+* type matching for uniform arrays
 * dynamic array operations
 * boolean basic type
 * unary =0, !=0, !, <<, >>

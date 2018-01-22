@@ -282,6 +282,8 @@
     <long> (native-type -9223372036854775808))
   (test-equal "type matching for 1.5"
     <double> (native-type 1.5))
+  (test-equal "type matching for 2+3i"
+    <complex<double>> (native-type 2+3i))
 (test-end "type matching")
 
 (test-end "aiscm basictype")

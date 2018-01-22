@@ -122,6 +122,9 @@
 (define-method (native-type (value <real>))
   <double>)
 
+(define-method (native-type (value <complex>))
+  <complex<double>>)
+
 (define-method (size-of (type <meta<int<>>>))
   "Get size of integer values"
   (/ (bits type) 8))
