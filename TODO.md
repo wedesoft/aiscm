@@ -1,11 +1,11 @@
 ## Ready
 
-* complex operations
 * pointer types
+* structures/composite values (complex numbers, vectors, quaternions)
+* complex operations
 * standards version 4.1.3
 * function should return list, sequential computation of complex number
 * typed let (trigger memoization)
-* structures/composite values (complex numbers, vectors, quaternions)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
 * nested structures (e.g. state vector)

@@ -206,9 +206,9 @@
 
 (define-syntax-rule (define-op-with-constant type operation)
   (begin
-    (define-method (operation (value-a type) value-b)
+    (define-method (operation (value-a type) (value-b <complex>))
       (operation value-a (typed-constant (native-type value-b) value-b)))
-    (define-method (operation value-a (value-b type))
+    (define-method (operation (value-a <complex>) (value-b type))
       (operation (typed-constant (native-type value-a) value-a) value-b))))
 
 (define-syntax-rule (define-binary-delegation operation delegate float-delegate)
@@ -234,8 +234,13 @@
   (complex (- (real-part value)) (- (imag-part value))))
 
 (define-method (+ (value-a <complex<>>) (value-b <complex<>>))
-  (complex (+ (real-part value-a) (real-part value-b))
-           (+ (imag-part value-a) (imag-part value-b))))
+  (complex (+ (real-part value-a) (real-part value-b)) (+ (imag-part value-a) (imag-part value-b))))
+
+(define-method (+ (value-a <complex<>>) (value-b <scalar>))
+  (complex (+ (real-part value-a) value-b) (imag-part value-a)))
+
+(define-method (+ (value-a <scalar>) (value-b <complex<>>))
+  (complex (+ value-a (real-part value-b)) (imag-part value-b)))
 
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)

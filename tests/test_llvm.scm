@@ -409,6 +409,10 @@
     -2-3i ((llvm-typed (list <complex<double>>) -) 2+3i))
   (test-eqv "complex plus"
     7+10i ((llvm-typed (list <complex<double>> <complex<double>>) +) 2+3i 5+7i))
+  (test-eqv "add scalar to complex value"
+    7+3i ((llvm-typed (list <complex<double>> <int>) +) 2+3i 5))
+  (test-eqv "add complex value to scalar"
+    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i))
 (test-end "composite types")
 
 (test-begin "method calls")
