@@ -1,13 +1,10 @@
 ## Ready
 
+* complex operations
 * pointer types
-* refactor llvm-let and prepare-return for complex numbers
-* llvm-let (trigger memoization)
 * standards version 4.1.3
 * function should return list, sequential computation of complex number
-* coercion when composing or adding complex numbers
-* typed let
-* complex operations
+* typed let (trigger memoization)
 * structures/composite values (complex numbers, vectors, quaternions)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
