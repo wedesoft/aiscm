@@ -1,7 +1,10 @@
 ## Ready
 
-* pointer types
-* structures/composite values (complex numbers, vectors, quaternions)
+* nested structures/composite values (complex numbers, vectors, quaternions)
+* runge kutta with state vector
+* pointers and arrays
+* Scheme objects
+* boolean basic type
 * complex operations
 * standards version 4.1.3
 * function should return list, sequential computation of complex number
@@ -9,11 +12,8 @@
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
 * nested structures (e.g. state vector)
-* Scheme objects
-* pointers and arrays
 * type matching for uniform arrays
 * dynamic array operations
-* boolean basic type
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies

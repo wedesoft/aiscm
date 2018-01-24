@@ -388,6 +388,8 @@
     5.5 ((llvm-typed (list <float>) (lambda (x) (+ x 3))) 2.5))
   (test-eqv "add floating-point constant to integer value"
     5.5 ((llvm-typed (list <int>) (lambda (x) (+ x 3.5))) 2))
+  (test-eqv "add complex number to integer value"
+    7+3i ((llvm-typed (list <int>) (lambda (x) (+ x 2+3i))) 5))
 (test-end "constant conversions")
 
 (test-begin "composite types")

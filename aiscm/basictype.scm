@@ -45,10 +45,6 @@
   #:re-export (real-part imag-part))
 
 
-(define-method (foreign-type type)
-  "Default foreign mapping for types is a pointer"
-  int64)
-
 (define signed   'signed)
 (define unsigned 'unsigned)
 
@@ -193,20 +189,25 @@
            (count      (length base-types))]
       (cons (compose-value type (take lst count)) (compose-values (cdr types) (drop lst count))))))
 
-(define-class* <complex<>> <object> <meta<complex<>>> <class>
-               (value #:init-keyword #:value #:getter get)); TODO: refactor with scalar
+(define-class* <complex<>> <void> <meta<complex<>>> <meta<void>>)
 
 (define-method (complex (base-type <meta<scalar>>))
   (template-class (complex base-type) <complex<>>
     (lambda (class metaclass)
       (define-method (base (self metaclass)) base-type) )))
 
+(define-method (components (type <meta<complex<>>>)) (list real-part imag-part))
+
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))
 
+(define-method (foreign-type (type <meta<complex<>>>))
+  "Foreign mapping for complex type is a pointer"
+  int64)
+
 (define-method (size-of (type <meta<complex<>>>))
   "Get size of complex values"
-  (* 2 (size-of (base type))))
+  (* (length (components type)) (size-of (base type))))
 
 (define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
   "Unpack complex number stored in a byte vector"
@@ -214,7 +215,7 @@
 
 (define-method (decompose-argument (type <meta<complex<>>>) value)
   "Decompose scalar value"
-  (list (real-part value) (imag-part value)))
+  (map (cut <> value) (components type)))
 
 (define (decompose-arguments types lst)
   "Decompose multiple values"
@@ -222,7 +223,7 @@
 
 (define-method (decompose-type (type <meta<complex<>>>))
   "Decompose complex type"
-  (list (base type) (base type)))
+  (make-list (length (components type)) (base type)))
 
 (define-method (real-part (self <complex<>>))
   (make (base (class-of self)) #:value (lambda (fun) (list (car ((get self) fun))))))
