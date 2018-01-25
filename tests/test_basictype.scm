@@ -288,9 +288,11 @@
 
 (test-begin "define composite type")
   (define-class <container> () (content #:init-keyword #:content #:getter content))
-  (define-structure container content)
-  (test-assert "Defines an abstract typed container"
+  (define-structure container)
+  (test-assert "Defines an abstract composite type"
     (defined? '<container<>>))
+  (test-eq "Defines a metaclass for the abstract composite type"
+    '<meta<container<>>> (class-name (class-of <container<>>)))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")

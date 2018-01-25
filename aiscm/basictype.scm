@@ -193,9 +193,13 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name members) #`(define-class #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name)))) ())))))
+      ((k name)
+       #`(define-class* #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
+                        <void>
+                        #,(datum->syntax #'k (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
+                        <meta<void>>)))))
 
-(define-class* <complex<>> <void> <meta<complex<>>> <meta<void>>)
+(define-structure complex)
 
 (define-method (complex (base-type <meta<scalar>>))
   (template-class (complex base-type) <complex<>>
