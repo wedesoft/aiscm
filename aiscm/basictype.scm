@@ -42,6 +42,7 @@
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>)
+  #:export-syntax (define-structure)
   #:re-export (real-part imag-part))
 
 
@@ -188,6 +189,11 @@
            (base-types (decompose-type type))
            (count      (length base-types))]
       (cons (compose-value type (take lst count)) (compose-values (cdr types) (drop lst count))))))
+
+(define-syntax define-structure
+  (lambda (x)
+    (syntax-case x ()
+      ((k name members) #`(define-class #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name)))) ())))))
 
 (define-class* <complex<>> <void> <meta<complex<>>> <meta<void>>)
 

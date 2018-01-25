@@ -286,4 +286,11 @@
     <complex<double>> (native-type 2+3i))
 (test-end "type matching")
 
+(test-begin "define composite type")
+  (define-class <container> () (content #:init-keyword #:content #:getter content))
+  (define-structure container content)
+  (test-assert "Defines an abstract typed container"
+    (defined? '<container<>>))
+(test-end "define composite type")
+
 (test-end "aiscm basictype")
