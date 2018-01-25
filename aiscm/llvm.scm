@@ -217,8 +217,7 @@
     (define-binary-operation <float<>> <int<>>   operation float-delegate)
     (define-binary-operation <int<>>   <float<>> operation float-delegate)
     (define-binary-operation <float<>> <float<>> operation float-delegate)
-    (define-op-with-constant <int<>> operation)
-    (define-op-with-constant <float<>> operation)))
+    (define-op-with-constant <void> operation)))
 
 (define-binary-delegation + llvm-add llvm-fadd)
 (define-binary-delegation - llvm-sub llvm-fsub)

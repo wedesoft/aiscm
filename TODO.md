@@ -1,9 +1,11 @@
 ## Ready
 
-* nested structures/composite values (complex numbers, vectors, quaternions)
-* runge kutta with state vector
-* pointers and arrays
+* (nested) structures/composite values (e.g. complex numbers and scalar)
+* uniform structure
+* pointers/cells and arrays (distinguish pointer+ and ordinary +)
+* (complex int, int)
 * Scheme objects
+* runge kutta with state vector
 * boolean basic type
 * complex operations
 * standards version 4.1.3
