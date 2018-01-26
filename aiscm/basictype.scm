@@ -194,15 +194,14 @@
   (lambda (x)
     (syntax-case x ()
       ((k name members)
-       #`(begin
-           (define-class* #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
-                          <void>
-                          #,(datum->syntax #'k (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
-                          <meta<void>>)
-           (define-method (name members)
-             (template-class (name members) #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name)))); TODO: refactor
-               (lambda (class metaclass)
-                 (define-method (base (self metaclass)) members)))))))))
+        (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
+              (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))]
+          #`(begin
+              (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
+              (define-method (name members)
+                (template-class (name members) #,(datum->syntax #'k class)
+                  (lambda (class metaclass)
+                    (define-method (base (self metaclass)) members))))))))))
 
 (define-structure complex base)
 
