@@ -193,13 +193,15 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name)
+      ((k name members)
        #`(begin
            (define-class* #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
                           <void>
                           #,(datum->syntax #'k (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
                           <meta<void>>)
-           (define-method (name) #f))))))
+           (define-method (name members)
+             (template-class (name members) #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name)))); TODO: refactor
+               (lambda (class metaclass) #f))))))))
 
 (define-class* <complex<>> <void> <meta<complex<>>> <meta<void>>)
 
