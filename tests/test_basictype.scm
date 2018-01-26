@@ -287,18 +287,20 @@
 (test-end "type matching")
 
 (test-begin "define composite type")
-  (define-class <container> () (content #:init-keyword #:content #:getter content))
-  (define-structure container content)
+  ;(define-class <testcontainer> () (testcontent #:init-keyword #:testcontent #:getter testcontent))
+  (define-structure testcontainer testcontent)
   (test-assert "Defines an abstract composite type"
-    (defined? '<container<>>))
+    (defined? '<testcontainer<>>))
   (test-eq "Defines a metaclass for the abstract composite type"
-    '<meta<container<>>> (class-name (class-of <container<>>)))
+    '<meta<testcontainer<>>> (class-name (class-of <testcontainer<>>)))
   (test-assert "Defines a template type"
-    (defined? 'container))
+    (defined? 'testcontainer))
   (test-eq "Instantiate composite type"
-    '<container<int<32,signed>>> (class-name (container <int>)))
-  (test-eq "Base class of composite type is abstract composite type"
-    '<container<>> (class-name (car (class-direct-supers (container <int>)))))
+    '<testcontainer<int<32,signed>>> (class-name (testcontainer <int>)))
+  (test-eq "Super class of composite type is abstract composite type"
+    '<testcontainer<>> (class-name (car (class-direct-supers (testcontainer <int>)))))
+  (test-eq "Define method for querying base type"
+    <int> (base (testcontainer <int>)))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")

@@ -201,19 +201,15 @@
                           <meta<void>>)
            (define-method (name members)
              (template-class (name members) #,(datum->syntax #'k (string->symbol (format #f "<~a<>>" (syntax->datum #'name)))); TODO: refactor
-               (lambda (class metaclass) #f))))))))
+               (lambda (class metaclass)
+                 (define-method (base (self metaclass)) members)))))))))
 
-(define-class* <complex<>> <void> <meta<complex<>>> <meta<void>>)
-
-(define-method (complex base-type)
-  (template-class (complex base-type) <complex<>>
-    (lambda (class metaclass)
-      (define-method (base (self metaclass)) base-type) )))
+(define-structure complex base)
 
 (define-method (components (type <meta<complex<>>>)) (list real-part imag-part))
 
-(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of <complex<float>> ))
-(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of <complex<double>>))
+(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
+(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
 
 (define-method (foreign-type (type <meta<complex<>>>))
   "Foreign mapping for complex type is a pointer"
