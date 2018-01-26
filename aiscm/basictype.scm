@@ -199,10 +199,13 @@
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
               (define-method (name members)
+                "Instantiate a composite type using the type template"
                 (template-class (name members) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
                     (define-method (base (self metaclass)) members))))
-              (define-method (foreign-type (type #,(datum->syntax #'k metaclass))) int64)))))))
+              (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
+                "Foreign type of template class is pointer"
+                int64)))))))
 
 (define-structure complex base)
 
