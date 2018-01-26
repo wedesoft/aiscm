@@ -201,7 +201,8 @@
               (define-method (name members)
                 (template-class (name members) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) members))))))))))
+                    (define-method (base (self metaclass)) members))))
+              (define-method (foreign-type (type #,(datum->syntax #'k metaclass))) int64)))))))
 
 (define-structure complex base)
 
@@ -209,10 +210,6 @@
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
-
-(define-method (foreign-type (type <meta<complex<>>>))
-  "Foreign mapping for complex type is a pointer"
-  int64)
 
 (define-method (size-of (type <meta<complex<>>>))
   "Get size of complex values"

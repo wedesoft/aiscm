@@ -301,6 +301,8 @@
     '<testcontainer<>> (class-name (car (class-direct-supers (testcontainer <int>)))))
   (test-eq "Define method for querying base type"
     <int> (base (testcontainer <int>)))
+  (test-eqv "Assign pointer type as foreign type"
+    int64 (foreign-type (testcontainer <int>)))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")
