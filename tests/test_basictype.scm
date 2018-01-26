@@ -293,6 +293,8 @@
     (defined? '<container<>>))
   (test-eq "Defines a metaclass for the abstract composite type"
     '<meta<container<>>> (class-name (class-of <container<>>)))
+  (test-assert "Defines a template type"
+    (defined? 'container))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")
