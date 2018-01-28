@@ -193,45 +193,44 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name members)
+      ((k name . members)
         (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
-              (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))]
+              (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
+              (n         (length (syntax->datum #'members)))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
-              (define-method (name members)
+              (define-method (name base-type)
                 "Instantiate a composite type using the type template"
-                (template-class (name members) #,(datum->syntax #'k class)
+                (template-class (name base-type) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) members))))
+                    (define-method (base (self metaclass)) base-type))))
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
-                int64)))))))
+                int64)
+              (define-method (size-of (type #,(datum->syntax #'k metaclass)))
+                (* #,(datum->syntax #'k n) (size-of (base type))))))))))
 
-(define-structure complex base)
+(define-structure complex real-part imag-part)
 
 (define-method (components (type <meta<complex<>>>)) (list real-part imag-part))
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
 
-(define-method (size-of (type <meta<complex<>>>))
-  "Get size of complex values"
-  (* (length (components type)) (size-of (base type))))
-
 (define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
   "Unpack complex number stored in a byte vector"
   (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
 
-(define-method (decompose-argument (type <meta<complex<>>>) value)
-  "Decompose scalar value"
+(define-method (decompose-argument (type <meta<void>>) value)
+  "Decompose composite value"
   (map (cut <> value) (components type)))
 
 (define (decompose-arguments types lst)
   "Decompose multiple values"
   (concatenate (map decompose-argument types lst)))
 
-(define-method (decompose-type (type <meta<complex<>>>))
-  "Decompose complex type"
+(define-method (decompose-type (type <meta<void>>))
+  "Decompose composite type"
   (make-list (length (components type)) (base type)))
 
 (define-method (real-part (self <complex<>>))

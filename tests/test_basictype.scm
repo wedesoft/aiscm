@@ -289,6 +289,7 @@
 (test-begin "define composite type")
   ;(define-class <testcontainer> () (testcontent #:init-keyword #:testcontent #:getter testcontent))
   (define-structure testcontainer testcontent)
+  (define-structure testtwo test-a test-b)
   (test-assert "Defines an abstract composite type"
     (defined? '<testcontainer<>>))
   (test-eq "Defines a metaclass for the abstract composite type"
@@ -303,6 +304,10 @@
     <int> (base (testcontainer <int>)))
   (test-eqv "Assign pointer type as foreign type"
     int64 (foreign-type (testcontainer <int>)))
+  (test-eq "Define method to query size of type"
+    (size-of <int>) (size-of (testcontainer <int>)))
+  (test-eq "Query size of type with two elements"
+    (* 2 (size-of <int>)) (size-of (testtwo <int>)))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")
