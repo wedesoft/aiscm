@@ -24,7 +24,7 @@
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
-            complex base size-of unpack-value native-type
+            complex base size-of unpack-value native-type components
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
@@ -55,8 +55,8 @@
 (define-method (foreign-type (type <meta<void>>))
   void)
 
-(define-method (size-of (type <meta<void>>))
-  0)
+(define-method (components (type <meta<void>>))
+  '())
 
 (define-method (unpack-value (self <meta<void>>) address)
   address)
@@ -207,19 +207,11 @@
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
                 int64)
-              (define-method (size-of (type #,(datum->syntax #'k metaclass)))
-                (* #,(datum->syntax #'k n) (size-of (base type))))))))))
+              (define-method (components (type #,(datum->syntax #'k metaclass)))
+                (list . members))))))))
 
-(define-structure complex real-part imag-part)
-
-(define-method (components (type <meta<complex<>>>)) (list real-part imag-part))
-
-(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
-(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
-
-(define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
-  "Unpack complex number stored in a byte vector"
-  (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
+(define-method (size-of (type <meta<void>>))
+  (if (null? (components type)) 0 (* (length (components type)) (size-of (base type)))))
 
 (define-method (decompose-argument (type <meta<void>>) value)
   "Decompose composite value"
@@ -232,6 +224,15 @@
 (define-method (decompose-type (type <meta<void>>))
   "Decompose composite type"
   (make-list (length (components type)) (base type)))
+
+(define-structure complex real-part imag-part)
+
+(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
+(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
+
+(define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
+  "Unpack complex number stored in a byte vector"
+  (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
 
 (define-method (real-part (self <complex<>>))
   (make (base (class-of self)) #:value (lambda (fun) (list (car ((get self) fun))))))

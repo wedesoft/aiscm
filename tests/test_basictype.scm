@@ -287,7 +287,11 @@
 (test-end "type matching")
 
 (test-begin "define composite type")
-  ;(define-class <testcontainer> () (testcontent #:init-keyword #:testcontent #:getter testcontent))
+  (define-class <testcontainer> ()
+                (testcontent #:init-keyword #:testcontent #:getter testcontent))
+  (define-class <testtwo> ()
+                (test-a #:init-keyword #:test-a #:getter test-a)
+                (test-b #:init-keyword #:test-b #:getter test-b))
   (define-structure testcontainer testcontent)
   (define-structure testtwo test-a test-b)
   (test-assert "Defines an abstract composite type"
@@ -308,6 +312,8 @@
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
     (* 2 (size-of <int>)) (size-of (testtwo <int>)))
+  (test-equal "Get list of member accessors"
+    (list testcontent) (components <testcontainer<>>))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")
