@@ -193,10 +193,10 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name . members)
+      ((k name members ...)
         (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
-              (n         (length (syntax->datum #'members)))]
+              (n         (length (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
               (define-method (name base-type)
@@ -209,14 +209,14 @@
                 int64)
               (define-method (components (type #,(datum->syntax #'k metaclass)))
                 "List component accessor methods of composite type"
-                (list . members))
+                (list members ...))
               (begin .
                 #,(map (lambda (member-name index)
                          #`(define-method (#,(datum->syntax #'k member-name) self)
                              "Access a component of the composite type"
                              (make (base (class-of self))
                                    #:value (lambda (fun) (list (list-ref ((get self) fun) #,(datum->syntax #'k index)))))))
-                       (syntax->datum #'members)
+                       (syntax->datum #'(members ...))
                        (iota n)))))))))
 
 (define-method (size-of (type <meta<void>>))
