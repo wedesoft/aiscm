@@ -193,7 +193,7 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name members ...)
+      ((k name (members ...))
         (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
               (n         (length (syntax->datum #'(members ...))))]
@@ -234,7 +234,7 @@
   "Decompose composite type"
   (make-list (length (components type)) (base type)))
 
-(define-structure complex real-part imag-part)
+(define-structure complex (real-part imag-part))
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))

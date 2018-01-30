@@ -271,8 +271,8 @@
 (define-class <testtwo> ()
               (test-a #:init-keyword #:test-a #:getter test-a)
               (test-b #:init-keyword #:test-b #:getter test-b))
-(define-structure testcontainer testcontent)
-(define-structure testtwo test-a test-b)
+(define-structure testcontainer (testcontent))
+(define-structure testtwo (test-a test-b))
 (test-group "define composite type"
   (test-assert "'define-structure' defines an abstract composite type"
     (defined? '<testcontainer<>>))
