@@ -294,19 +294,19 @@
                 (test-b #:init-keyword #:test-b #:getter test-b))
   (define-structure testcontainer testcontent)
   (define-structure testtwo test-a test-b)
-  (test-assert "Defines an abstract composite type"
+  (test-assert "'define-structure' defines an abstract composite type"
     (defined? '<testcontainer<>>))
-  (test-eq "Defines a metaclass for the abstract composite type"
+  (test-eq "'define-structure' defines a metaclass for the abstract composite type"
     '<meta<testcontainer<>>> (class-name (class-of <testcontainer<>>)))
-  (test-assert "Defines a template type"
+  (test-assert "'define-structure' defines a template type"
     (defined? 'testcontainer))
   (test-eq "Instantiate composite type"
     '<testcontainer<int<32,signed>>> (class-name (testcontainer <int>)))
   (test-eq "Super class of composite type is abstract composite type"
     '<testcontainer<>> (class-name (car (class-direct-supers (testcontainer <int>)))))
-  (test-eq "Define method for querying base type"
+  (test-eq "'define-structure' defines method for querying base type"
     <int> (base (testcontainer <int>)))
-  (test-eqv "Assign pointer type as foreign type"
+  (test-eqv "Foreign type of composite values is a pointer"
     int64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
     (size-of <int>) (size-of (testcontainer <int>)))
@@ -314,6 +314,8 @@
     (* 2 (size-of <int>)) (size-of (testtwo <int>)))
   (test-equal "Get list of member accessors"
     (list testcontent) (components <testcontainer<>>))
+  (test-assert "Create member accessor for container"
+    (testcontent (make (testcontainer <int>) #:value (lambda (fun) (list 42)))))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")

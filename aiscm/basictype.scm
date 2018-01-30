@@ -208,7 +208,10 @@
                 "Foreign type of template class is pointer"
                 int64)
               (define-method (components (type #,(datum->syntax #'k metaclass)))
-                (list . members))))))))
+                (list . members))
+              (define-method (#,(datum->syntax #'k (car (syntax->datum #'members))) value)
+                #t)
+              ))))))
 
 (define-method (size-of (type <meta<void>>))
   (if (null? (components type)) 0 (* (length (components type)) (size-of (base type)))))

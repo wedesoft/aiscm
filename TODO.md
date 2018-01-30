@@ -1,6 +1,7 @@
 ## Ready
 
 * (nested) structures/composite values (e.g. complex numbers and scalar)
+* replace define-macro with hygienic ones
 * uniform structure
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * (complex int, int)
