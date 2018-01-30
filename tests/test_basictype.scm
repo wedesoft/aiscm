@@ -24,7 +24,7 @@
 
 (test-begin "aiscm basictype")
 
-(test-begin "void type")
+(test-group "void type"
   (test-eq "Create void type"
     <void> (class-of (make <void> #:value #f)))
   (test-eq "Content of void type"
@@ -34,10 +34,9 @@
   (test-eqv "Size of void is zero"
     0 (size-of <void>))
   (test-eq "Unpacking void just returns address"
-    'unspecified (unpack-value <void> 'unspecified))
-(test-end "void type")
+    'unspecified (unpack-value <void> 'unspecified)))
 
-(test-begin "construct integer types")
+(test-group "construct integer types"
   (for-each
     (lambda (nbits sign cls)
       (test-eq (format #f "Class for ~a-bit ~a integer should be ~a" nbits sign (class-name cls))
@@ -52,20 +51,18 @@
         (eq? sign 'signed) (signed? (make cls #:value #f))))
     (list 8 8 16 16 32 32 64 64)
     (list unsigned signed unsigned signed unsigned signed unsigned signed)
-    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
-(test-end "construct integer types")
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)))
 
-(test-begin "integer coercions")
+(test-group "integer coercions"
   (for-each
     (lambda (a b result)
       (test-eq (format #f "Type coercion of ~a and ~a should return ~a" (class-name a) (class-name b) (class-name result))
         result (coerce a b)))
     (list <sint> <int>  <sint> <uint> <int>   <usint> <byte> <uint> <ulong>)
     (list <sint> <sint> <int>  <uint> <usint> <int>   <uint> <byte> <long> )
-    (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long> <long> ))
-(test-end "integer coercions")
+    (list <sint> <int>  <int>  <uint> <int>   <int>   <long> <long> <long> )))
 
-(test-begin "integer values")
+(test-group "integer values"
   (test-equal "Wrap and unwrap value"
     '(42) (get (make <int> #:value '(42))))
   (test-equal "Equal values"
@@ -73,18 +70,16 @@
   (test-assert "Unequal values"
     (not (equal? (make <int> #:value '(42)) (make <int> #:value '(43)))))
   (test-assert "Unequal types values"
-    (not (equal? (make <uint> #:value '(42)) (make <int> #:value '(42)))))
-(test-end "integer values")
+    (not (equal? (make <uint> #:value '(42)) (make <int> #:value '(42))))))
 
-(test-begin "get foreign integer type")
+(test-group "get foreign integer type"
   (for-each (lambda (type foreign)
     (test-eqv (format #f "get foreign type of ~a" (class-name type))
       foreign (foreign-type type)))
     (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)
-    (list uint8   int8   uint16  int16  uint32 int32 uint64  int64))
-(test-end "get foreign integer type")
+    (list uint8   int8   uint16  int16  uint32 int32 uint64  int64)))
 
-(test-begin "construct floating point types")
+(test-group "construct floating point types"
   (test-assert "single precision"
     (not (double-precision? (floating-point single-precision))))
   (test-assert "double precision"
@@ -92,10 +87,9 @@
   (test-eq "compare single precision types"
     <float> (floating-point single-precision))
   (test-eq "compare double precision types"
-    <double> (floating-point double-precision))
-(test-end "construct floating point types")
+    <double> (floating-point double-precision)))
 
-(test-begin "floating-point coercions")
+(test-group "floating-point coercions"
   (test-equal "coerce single precision floats"
     <float> (coerce <float> <float>))
   (test-equal "coerce single and double precision float"
@@ -103,10 +97,9 @@
   (test-equal "coerce double and single precision float"
     <double> (coerce <double> <float>))
   (test-equal "coerce double precision floats"
-    <double> (coerce <double> <double>))
-(test-end "floating-point coercions")
+    <double> (coerce <double> <double>)))
 
-(test-begin "floating-point values")
+(test-group "floating-point values"
   (test-equal "Wrap and unwrap value"
     '(3.5) (get (make <float> #:value '(3.5))))
   (test-equal "Equal values"
@@ -114,17 +107,15 @@
   (test-assert "Unequal values"
     (not (equal? (make <float> #:value '(3.5)) (make <float> #:value '(4.5)))))
   (test-assert "Unequal types values"
-    (not (equal? (make <float> #:value '(1.5)) (make <double> #:value '(1.5)))))
-(test-end "floating-point values")
+    (not (equal? (make <float> #:value '(1.5)) (make <double> #:value '(1.5))))))
 
-(test-begin "get foreign floating-point type")
+(test-group "get foreign floating-point type"
   (test-eqv "get foreign type of <float>"
     float (foreign-type <float>))
   (test-eqv "get foreign type of <double>"
-    double (foreign-type <double>))
-(test-end "get foreign floating-point type")
+    double (foreign-type <double>)))
 
-(test-begin "coercing floating-point and integer types")
+(test-group "coercing floating-point and integer types"
   (test-eq "coerce single-precision floating point and integer"
     <float> (coerce <float> <int>))
   (test-eq "coerce double-precision floating point and integer"
@@ -132,10 +123,9 @@
   (test-eq "coerce integer and single-precision floating point"
     <float> (coerce <int> <float>))
   (test-eq "coerce integer and double-precision floating point"
-    <double> (coerce <int> <double>))
-(test-end "coercing floating-point and integer types")
+    <double> (coerce <int> <double>)))
 
-(test-begin "complex numbers")
+(test-group "complex numbers"
   (test-eq "Single-precision complex number"
     <complex<float>> (complex (floating-point single-precision)))
   (test-eq "Double-precision complex number"
@@ -155,40 +145,36 @@
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get imaginary component of complex number"
-    '(3.25) ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
-(test-end "complex numbers")
+    '(3.25) ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f)))
 
 (test-eqv "get foreign type of complex type"
   int64 (foreign-type <complex<float>>))
 
-(test-begin "decompose arguments")
+(test-group "decompose arguments"
   (test-equal "Decompose integer"
     '(42) (decompose-argument <int> 42))
   (test-equal "Decompose floating-point number"
     '(1.25) (decompose-argument <float> 1.25))
   (test-equal "Decompose complex number"
-     '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i))
-(test-end "decompose arguments")
+     '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i)))
 
-(test-begin "decompose multiple arguments")
+(test-group "decompose multiple arguments"
   (test-equal "Decompose empty list of arguments"
     '() (decompose-arguments '() '()))
   (test-equal "Decompose floating-point number"
     '(1.25) (decompose-arguments (list <float>) '(1.25)))
   (test-equal "Decompose complex number"
-    '(2.5 3.25) (decompose-arguments (list <complex<float>>) '(2.5+3.25i)))
-(test-end "decompose multiple arguments")
+    '(2.5 3.25) (decompose-arguments (list <complex<float>>) '(2.5+3.25i))))
 
-(test-begin "compose value")
+(test-group "compose value"
   (test-eq "Composing integer creates correct type"
     <sint> (class-of (compose-value <sint> (list (const '(42))))))
   (test-equal "Composing integer uses provided value"
     '(42) ((get (compose-value <sint> (list (const '(42))))) #f))
   (test-equal "Compose complex number"
-    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const '(2.5)) (const '(3.25))))) #f))
-(test-end "compose value")
+    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const '(2.5)) (const '(3.25))))) #f)))
 
-(test-begin "compose multiple values")
+(test-group "compose multiple values"
   (test-assert "Compose no values"
     (null? (compose-values '() '())))
   (test-equal "Composing an integer value creates an object of correct type"
@@ -198,28 +184,25 @@
   (test-equal "Composing a complex number uses two values"
     '(2.5 3.25) ((get (car (compose-values (list <complex<float>>) (list (const '(2.5)) (const '(3.25)))))) #f))
   (test-equal "Compose two integer values"
-    '((5) (7)) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const '(5)) (const '(7))))))
-(test-end "compose multiple values")
+    '((5) (7)) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const '(5)) (const '(7)))))))
 
-(test-begin "decompose type")
+(test-group "decompose type"
   (test-equal "decompose integer type"
     (list <ubyte>) (decompose-type <ubyte>))
   (test-equal "decompose floating-point type"
     (list <float>) (decompose-type <float>))
   (test-equal "decompose complex type"
-    (list <double> <double>) (decompose-type <complex<double>>))
-(test-end "decompose type")
+    (list <double> <double>) (decompose-type <complex<double>>)))
 
-(test-begin "decompose multiple types")
+(test-group "decompose multiple types"
   (test-equal "decompose empty list of types"
     '() (decompose-types '()))
   (test-equal "decompose integer type"
     (list <sint>) (decompose-types (list <sint>)))
   (test-equal "decompose complex type"
-    (list <double> <double>) (decompose-types (list <complex<double>>)))
-(test-end "decompose multiple types")
+    (list <double> <double>) (decompose-types (list <complex<double>>))))
 
-(test-begin "size of values")
+(test-group "size of values"
   (test-eqv "size of byte"
     1 (size-of <byte>))
   (test-eqv "size of integer"
@@ -231,10 +214,9 @@
   (test-eqv "size of single-precision complex number"
     8 (size-of <complex<float>>))
   (test-eqv "size of double-precision complex number"
-    16 (size-of <complex<double>>))
-(test-end "size of values")
+    16 (size-of <complex<double>>)))
 
-(test-begin "unpack values")
+(test-group "unpack values"
   (test-eqv "unpack unsigned byte"
     200 (unpack-value <ubyte> (pointer-address (bytevector->pointer #vu8(200)))))
   (test-eqv "unpack signed byte"
@@ -248,10 +230,9 @@
   (test-eqv "unpack single-precision complex value"
     1.375+4.0i (unpack-value <complex<float>> (pointer-address (bytevector->pointer #vu8(0 0 176 63 0 0 128 64)))))
   (test-eqv "unpack double-precision complex value"
-    1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64)))))
-(test-end "unpack values")
+    1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64))))))
 
-(test-begin "type matching")
+(test-group "type matching"
   (test-equal "type matching for 255"
     <ubyte> (native-type 255))
   (test-equal "type matching for 256"
@@ -283,17 +264,16 @@
   (test-equal "type matching for 1.5"
     <double> (native-type 1.5))
   (test-equal "type matching for 2+3i"
-    <complex<double>> (native-type 2+3i))
-(test-end "type matching")
+    <complex<double>> (native-type 2+3i)))
 
-(test-begin "define composite type")
-  (define-class <testcontainer> ()
-                (testcontent #:init-keyword #:testcontent #:getter testcontent))
-  (define-class <testtwo> ()
-                (test-a #:init-keyword #:test-a #:getter test-a)
-                (test-b #:init-keyword #:test-b #:getter test-b))
-  (define-structure testcontainer testcontent)
-  (define-structure testtwo test-a test-b)
+(define-class <testcontainer> ()
+              (testcontent #:init-keyword #:testcontent #:getter testcontent))
+(define-class <testtwo> ()
+              (test-a #:init-keyword #:test-a #:getter test-a)
+              (test-b #:init-keyword #:test-b #:getter test-b))
+(define-structure testcontainer testcontent)
+(define-structure testtwo test-a test-b)
+(test-group "define composite type"
   (test-assert "'define-structure' defines an abstract composite type"
     (defined? '<testcontainer<>>))
   (test-eq "'define-structure' defines a metaclass for the abstract composite type"
@@ -321,7 +301,5 @@
   (test-equal "Access content of first member"
     '(42) ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
   (test-equal "Access content of second member"
-    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
-(test-end "define composite type")
-
+    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f)))
 (test-end "aiscm basictype")

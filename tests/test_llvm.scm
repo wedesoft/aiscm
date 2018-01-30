@@ -23,16 +23,15 @@
 
 (test-begin "aiscm llvm")
 
-(test-begin "module")
+(test-group "module"
   (test-equal "Create LLVM instance"
     <llvm> (class-of (make-llvm-module)))
   (test-assert "Destroy LLVM instance"
     (unspecified? (destroy (make-llvm-module))))
   (test-assert "LLVM module slot defined"
-    (slot-ref (make-llvm-module) 'llvm-module))
-(test-end "module")
+    (slot-ref (make-llvm-module) 'llvm-module)))
 
-(test-begin "constant values")
+(test-group "constant values"
   (for-each
     (lambda (type bits)
       (test-equal (format #f "Get type of ~a-bit integer value" bits)
@@ -51,10 +50,9 @@
   (test-equal "Get type of single-precision floating point value"
     (list float) (get-type ((make-constant float (exp 1)) #f)))
   (test-equal "Memory address is 64 bit"
-    (list int64) (get-type ((make-constant-pointer (make-pointer 1234)) #f)))
-(test-end "constant values")
+    (list int64) (get-type ((make-constant-pointer (make-pointer 1234)) #f))))
 
-(test-begin "memoization")
+(test-group "memoization"
   (test-eqv "implements function"
     42 ((memoize () 42)))
   (test-eqv "accept parameters"
@@ -64,10 +62,9 @@
   (let* [(x 20)
          (f (memoize () (set! x (1+ x)) x))]
     (test-eqv "cache return value"
-      21 (begin (f) (f))))
-(test-end "memoization")
+      21 (begin (f) (f)))))
 
-(test-begin "functions")
+(test-group "functions"
   (test-equal "Create LLVM function"
     <llvm-function> (class-of (let [(mod (make-llvm-module))] (make-function mod void "function"))))
   (let [(mod (make-llvm-module))]
@@ -121,10 +118,9 @@
            (llvm-compile mod)
            ((llvm-func mod fun)))))
     (list float double)
-    (list "single" "double"))
-(test-end "functions")
+    (list "single" "double")))
 
-(test-begin "pointers")
+(test-group "pointers"
   (for-each (lambda (value type name)
     (test-equal (format #f "Read ~a value from memory" name)
       value
@@ -150,10 +146,9 @@
     (list #vu8(0 3 5 7) #vu8(0 0 5 7))
     '(2 770)
     (list int8 int16)
-    '("byte" "short integer"))
-(test-end "pointers")
+    '("byte" "short integer")))
 
-(test-begin "method arguments")
+(test-group "method arguments"
   (test-assert "Declare a function which accepts arguments"
     (let [(mod (make-llvm-module))]
       (make-function mod int "with_arg" int)))
@@ -184,10 +179,9 @@
         ((llvm-func mod fun) -1 value))))
     '(42 0.5)
     (list int double)
-    '("integer" "floating-point"))
-(test-end "method arguments")
+    '("integer" "floating-point")))
 
-(test-begin "unary operation")
+(test-group "unary operation"
   (for-each (lambda (value op result type)
     (test-equal (format #f "(~a ~a) should be ~a" (procedure-name op) value result)
       result
@@ -199,10 +193,9 @@
     '(42 42 2.5)
     (list llvm-not llvm-neg llvm-fneg)
     '(213 -42 -2.5)
-    (list uint8 int double))
-(test-end "unary operation")
+    (list uint8 int double)))
 
-(test-begin "binary expressions")
+(test-group "binary expressions"
   (for-each (lambda (value-a value-b op result type)
     (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
       result
@@ -215,10 +208,9 @@
     '(3 30 7 3.25 3.25 3.25)
     (list llvm-add llvm-sub llvm-mul llvm-fadd llvm-fsub llvm-fmul)
     '(5 70 35 5.75 2.5 8.125)
-    (list int int int double double double))
-(test-end "binary expressions")
+    (list int int int double double double)))
 
-(test-begin "convenience wrapper")
+(test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
     (unspecified? ((llvm-wrap '() (const (cons void (function-ret)))))))
   (test-eqv "Define constant function using convenience wrapper"
@@ -245,10 +237,9 @@
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (llvm-fetch int8 value))))) pointer)))
-(test-end "convenience wrapper")
+      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (llvm-fetch int8 value))))) pointer))))
 
-(test-begin "integer type conversions")
+(test-group "integer type conversions"
   (test-equal "Zero-extend integer"
     254
     (let* [(data #vu8(254))
@@ -260,10 +251,9 @@
            (pointer (pointer-address (bytevector->pointer data)))]
       ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (llvm-fetch int8 value)))))) pointer)))
   (test-equal "Truncate integer"
-    #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd))
-(test-end "integer type conversions")
+    #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd)))
 
-(test-begin "expression basics")
+(test-group "expression basics"
   (test-equal "unary minus invokes llvm negation"
     -42
     (let* [(mod (make-llvm-module))
@@ -274,10 +264,9 @@
   (for-each (lambda (type)
     (test-equal (format #f "unary minus should preserve ~a type" type)
       type (class-of (- (make type #:value (function-param 0))))))
-    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
-(test-end "expression basics")
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)))
 
-(test-begin "integer type conversion")
+(test-group "integer type conversion"
   (test-equal "trivial conversion"
     42 ((llvm-typed (list <int>) (cut to-type <int> <>)) 42))
   (test-equal "truncating integer conversion"
@@ -287,10 +276,9 @@
   (test-equal "zero-extending integer conversion"
     200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "sign-extending integer conversion"
-    -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42))
-(test-end "integer type conversion")
+    -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42)))
 
-(test-begin "type inference")
+(test-group "type inference"
   (test-equal "identity function with integer"
     42 ((llvm-typed (list <int>) identity) 42))
   (test-equal "compact integer negation"
@@ -298,38 +286,33 @@
   (test-equal "sum of two integers"
     5 ((llvm-typed (list <int> <int>) +) 2 3))
   (test-equal "sum of unsigned byte and byte"
-    382 ((llvm-typed (list <ubyte> <byte>) +) 255 127))
-(test-end "type inference")
+    382 ((llvm-typed (list <ubyte> <byte>) +) 255 127)))
 
-(test-begin "floating-point type conversions")
+(test-group "floating-point type conversions"
   (test-equal "convert single-precision to double-precision float"
     3.5 ((llvm-wrap (list float) (lambda (value) (cons double (function-ret (llvm-fp-cast double value))))) 3.5))
   (test-equal "convert double-precision to single-precision float"
-    3.5 ((llvm-wrap (list double) (lambda (value) (cons float (function-ret (llvm-fp-cast float value))))) 3.5))
-(test-end "floating-point type conversions")
+    3.5 ((llvm-wrap (list double) (lambda (value) (cons float (function-ret (llvm-fp-cast float value))))) 3.5)))
 
-(test-begin "convert floating-point to integer")
+(test-group "convert floating-point to integer"
   (test-equal "convert floating-point to signed integer "
     -42 ((llvm-wrap (list float) (lambda (value) (cons int32 (function-ret (llvm-fp-to-si int32 value))))) -42.0))
   (test-equal "convert floating-point to unsigned integer "
-    200 ((llvm-wrap (list float) (lambda (value) (cons uint8 (function-ret (llvm-fp-to-ui uint8 value))))) 200.0))
-(test-end "convert floating-point to integer")
+    200 ((llvm-wrap (list float) (lambda (value) (cons uint8 (function-ret (llvm-fp-to-ui uint8 value))))) 200.0)))
 
-(test-begin "convert integer to floating-point")
+(test-group "convert integer to floating-point"
   (test-equal "convert signed integer to floating-point"
     -42.0 ((llvm-wrap (list int) (lambda (value) (cons float (function-ret (llvm-si-to-fp float value))))) -42))
   (test-equal "convert unsigned integer to floating-point"
-    200.0 ((llvm-wrap (list uint8) (lambda (value) (cons double (function-ret (llvm-ui-to-fp double value))))) 200))
-(test-end "convert integer to floating-point")
+    200.0 ((llvm-wrap (list uint8) (lambda (value) (cons double (function-ret (llvm-ui-to-fp double value))))) 200)))
 
-(test-begin "floating point type conversions")
+(test-group "floating point type conversions"
   (test-equal "returns requested type"
     <double> (class-of (to-type <double> (typed-constant <float> 42.5))))
   (test-equal "perform conversion"
-    42.5 ((llvm-typed (list <float>) (cut to-type <double> <>)) 42.5))
-(test-end "floating point type conversions")
+    42.5 ((llvm-typed (list <float>) (cut to-type <double> <>)) 42.5)))
 
-(test-begin "convert between integer and floating-point")
+(test-group "convert between integer and floating-point"
   (test-equal "signed byte to float"
     -42.0 ((llvm-typed (list <byte>) (cut to-type <float> <>)) -42))
   (test-equal "unsigned byte to float"
@@ -337,33 +320,29 @@
   (test-equal "convert float to signed integer"
     -42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> (to-type <double> value)))) -42))
   (test-equal "convert float to unsigned int"
-    200 ((llvm-typed (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200))
-(test-end "convert between integer and floating-point")
+    200 ((llvm-typed (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200)))
 
-(test-begin "integer unary expressions")
+(test-group "integer unary expressions"
   (for-each (lambda (op result)
     (test-equal (format #f "(~a 42) should be ~a" (procedure-name op) result)
       result ((llvm-typed (list <int>) op) 42)))
     (list ~ -)
-    '(-43 -42))
-(test-end "integer unary expressions")
+    '(-43 -42)))
 
-(test-begin "floating-point unary expression")
+(test-group "floating-point unary expression"
   (test-equal "(- 42.5) single-precision should be -42.5"
     -42.5 ((llvm-typed (list <float>) -) 42.5))
   (test-equal "(- 42.5) double-precision should be -42.5"
-    -42.5 ((llvm-typed (list <double>) -) 42.5))
-(test-end "floating-point unary expression")
+    -42.5 ((llvm-typed (list <double>) -) 42.5)))
 
-(test-begin "integer binary expressions")
+(test-group "integer binary expressions"
   (for-each (lambda (op result)
     (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((llvm-typed (list <int> <int>) op) 2 3)))
     (list + - *)
-    '(5 -1 6))
-(test-end "integer binary expressions")
+    '(5 -1 6)))
 
-(test-begin "floating-point binary expression")
+(test-group "floating-point binary expression"
   (for-each (lambda (value-a value-b op result)
     (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
       result ((llvm-typed (list (if (integer? value-a) <int> <float>)
@@ -372,10 +351,9 @@
     '(2.5 2.5 2 3.75 2 2.5 1.5 2 1.25)
     '(3.75 3 3.75 2.5 1.5 1 2.5 1.25 2)
     (list + + + - - - * * *)
-    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5))
-(test-end "floating-point binary expression")
+    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5)))
 
-(test-begin "constant conversions")
+(test-group "constant conversions"
   (test-eqv "add integer constant to value"
     5 ((llvm-typed (list <int>) (lambda (x) (+ x 3))) 2))
   (test-eqv "add value to integer constant"
@@ -391,10 +369,9 @@
   (test-eqv "add complex number to integer value"
     7+3i ((llvm-typed (list <int>) (lambda (x) (+ x 2+3i))) 5))
   (test-eqv "add complex number to complex value"
-    7+10i ((llvm-typed (list <complex<float>>) (lambda (x) (+ x 2+3i))) 5+7i))
-(test-end "constant conversions")
+    7+10i ((llvm-typed (list <complex<float>>) (lambda (x) (+ x 2+3i))) 5+7i)))
 
-(test-begin "composite types")
+(test-group "composite types"
   (test-eqv "return real part of complex number"
     2.5 ((llvm-typed (list <complex<float>>) real-part) 2.5+3.25i))
   (test-eqv "return imaginary part of complex number"
@@ -416,10 +393,9 @@
   (test-eqv "add scalar to complex value"
     7+3i ((llvm-typed (list <complex<double>> <int>) +) 2+3i 5))
   (test-eqv "add complex value to scalar"
-    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i))
-(test-end "composite types")
+    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i)))
 
-(test-begin "method calls")
+(test-group "method calls"
   (test-equal "call libc's fabsf method"
     1.25
     ((llvm-wrap (list float) (lambda args (cons float (function-ret (llvm-call float "fabsf" (list float) args)))))
@@ -427,10 +403,9 @@
   (test-equal "call libc's atan2 method"
     0.0
     ((llvm-wrap (list double double) (lambda args (cons double (function-ret (llvm-call double "atan2" (list double double) args)))))
-     0.0 1.0))
-(test-end "method calls")
+     0.0 1.0)))
 
-(test-begin "typed constants")
+(test-group "typed constants"
   (test-eq "Type of constant should be of specified type"
     <sint> (class-of (typed-constant <sint> 42)))
   (test-equal "Use corresponding foreign type"
@@ -440,10 +415,9 @@
   (test-equal "Pointer type is long integer"
     <long> (class-of (typed-pointer (make-pointer 1234))))
   (test-equal "complex constant"
-    2+3i ((llvm-typed '() (cut typed-constant <complex<float>> 2+3i))))
-(test-end "typed constants")
+    2+3i ((llvm-typed '() (cut typed-constant <complex<float>> 2+3i)))))
 
-(test-begin "typed store/fetch")
+(test-group "typed store/fetch"
   (let* [(data #vu8(0 3 5 7))
          (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-equal "write byte to memory"
@@ -465,10 +439,9 @@
   (let* [(data #vu8(0 0 0 64 0 0 64 64))
          (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-eqv "read complex number from memory"
-      2+3i ((llvm-typed '() (lambda () (fetch <complex<float>> ptr))))))
-(test-end "typed store/fetch")
+      2+3i ((llvm-typed '() (lambda () (fetch <complex<float>> ptr)))))))
 
-(test-begin "instruction sequence")
+(test-group "instruction sequence"
   (test-eqv "test single instruction"
     42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value))) 42))
   (test-eqv "test two instructions"
@@ -476,7 +449,6 @@
   (let* [(data #vu8(0 0 0 0))
          (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
-      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch <int> ptr)))) 42)))
-(test-end "instruction sequence")
+      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch <int> ptr)))) 42))))
 
 (test-end "aiscm llvm")
