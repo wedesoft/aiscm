@@ -208,10 +208,16 @@
                 "Foreign type of template class is pointer"
                 int64)
               (define-method (components (type #,(datum->syntax #'k metaclass)))
+                "List component accessor methods of composite type"
                 (list . members))
-              (define-method (#,(datum->syntax #'k (car (syntax->datum #'members))) value)
-                #t)
-              ))))))
+              (begin .
+                #,(map (lambda (member-name index)
+                         #`(define-method (#,(datum->syntax #'k member-name) self)
+                             "Access a component of the composite type"
+                             (make (base (class-of self))
+                                   #:value (lambda (fun) (list (list-ref ((get self) fun) #,(datum->syntax #'k index)))))))
+                       (syntax->datum #'members)
+                       (iota n)))))))))
 
 (define-method (size-of (type <meta<void>>))
   (if (null? (components type)) 0 (* (length (components type)) (size-of (base type)))))
@@ -236,9 +242,3 @@
 (define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
   "Unpack complex number stored in a byte vector"
   (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
-
-(define-method (real-part (self <complex<>>))
-  (make (base (class-of self)) #:value (lambda (fun) (list (car ((get self) fun))))))
-
-(define-method (imag-part (self <complex<>>))
-  (make (base (class-of self)) #:value (lambda (fun) (list (cadr ((get self) fun))))))

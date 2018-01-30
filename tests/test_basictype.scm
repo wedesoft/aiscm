@@ -316,6 +316,12 @@
     (list testcontent) (components <testcontainer<>>))
   (test-assert "Create member accessor for container"
     (testcontent (make (testcontainer <int>) #:value (lambda (fun) (list 42)))))
+  (test-assert "Create second member accessor for container"
+    (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60)))))
+  (test-equal "Access content of first member"
+    '(42) ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
+  (test-equal "Access content of second member"
+    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
 (test-end "define composite type")
 
 (test-end "aiscm basictype")
