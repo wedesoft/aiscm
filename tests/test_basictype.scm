@@ -268,11 +268,13 @@
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
+(define (make-testcontainer testcontent) (make <testcontainer> #:testcontent testcontent))
 (define-class <testtwo> ()
               (test-a #:init-keyword #:test-a #:getter test-a)
               (test-b #:init-keyword #:test-b #:getter test-b))
-(define-structure testcontainer (testcontent))
-(define-structure testtwo (test-a test-b))
+(define (make-testtwo test-a test-b) (make <testtwo> #:test-a test-a #:test-b test-b))
+(define-structure testcontainer make-testcontainer (testcontent))
+(define-structure testtwo make-testtwo (test-a test-b))
 (test-group "define composite type"
   (test-assert "'define-structure' defines an abstract composite type"
     (defined? '<testcontainer<>>))
@@ -301,5 +303,10 @@
   (test-equal "Access content of first member"
     '(42) ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
   (test-equal "Access content of second member"
-    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f)))
+    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
+  (test-eqv "Unpack first member of composite value"
+    2 (test-a (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3))))))
+  (test-eqv "Unpack second member of composite value"
+    3 (test-b (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3)))))))
+
 (test-end "aiscm basictype")

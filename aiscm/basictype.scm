@@ -193,12 +193,15 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name (members ...))
+      ((k name constructor (members ...))
         (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
               (n         (length (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
+              (define-method (construct (type #,(datum->syntax #'k metaclass)) arguments)
+                "Construct Scheme object from composite type"
+                (apply constructor arguments))
               (define-method (name base-type)
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)
@@ -234,11 +237,13 @@
   "Decompose composite type"
   (make-list (length (components type)) (base type)))
 
-(define-structure complex (real-part imag-part))
+(define-method (unpack-value (self <meta<void>>) (address <integer>))
+  "Unpack composite value stored in a byte vector"
+  (construct self
+             (map (lambda (offset) (unpack-value (base self) (+ address offset)))
+                  (iota (length (components self)) 0 (size-of (base self))))))
+
+(define-structure complex make-rectangular (real-part imag-part))
 
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
-
-(define-method (unpack-value (self <meta<complex<>>>) (address <integer>))
-  "Unpack complex number stored in a byte vector"
-  (make-rectangular (unpack-value (base self) address) (unpack-value (base self) (+ address (size-of (base self))))))
