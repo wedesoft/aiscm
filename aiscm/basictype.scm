@@ -199,7 +199,7 @@
               (n         (length (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
-              (define-method (construct (type #,(datum->syntax #'k metaclass)) arguments)
+              (define-method (construct-from-composite (type #,(datum->syntax #'k metaclass)) arguments)
                 "Construct Scheme object from composite type"
                 (apply constructor arguments))
               (define-method (name base-type)
@@ -239,9 +239,9 @@
 
 (define-method (unpack-value (self <meta<void>>) (address <integer>))
   "Unpack composite value stored in a byte vector"
-  (construct self
-             (map (lambda (offset) (unpack-value (base self) (+ address offset)))
-                  (iota (length (components self)) 0 (size-of (base self))))))
+  (construct-from-composite self
+                            (map (lambda (offset) (unpack-value (base self) (+ address offset)))
+                                 (iota (length (components self)) 0 (size-of (base self))))))
 
 (define-structure complex make-rectangular (real-part imag-part))
 
