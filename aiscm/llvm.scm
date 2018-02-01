@@ -36,6 +36,9 @@
   #:export-syntax (memoize)
   #:re-export (destroy - + *))
 
+
+; TODO: move into test suite and integrate into library
+
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
 (define-class* <llvm> <object> <meta<llvm>> <class>
@@ -223,7 +226,7 @@
 (define-binary-delegation - llvm-sub llvm-fsub)
 (define-binary-delegation * llvm-mul llvm-fmul)
 
-(define-method (complex (value-a <float<>>) (value-b <float<>>))
+(define-method (complex value-a value-b)
   (let* [(target  (coerce (class-of value-a) (class-of value-b)))
          (adapt-a (to-type target value-a))
          (adapt-b (to-type target value-b))]
@@ -273,13 +276,12 @@
     (complex (fetch basetype address) (fetch basetype (+ address (size-of basetype))))))
 
 (define-method (prepare-return (result <void>) memory)
-  (llvm-begin result (return)))
+  (if (null? (components (class-of result)))
+    (llvm-begin result (return))
+    (llvm-begin (store memory result) (return memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
   (return result))
-
-(define-method (prepare-return (result <complex<>>) memory)
-  (llvm-begin (store memory result) (return memory)))
 
 (define-method (finish-return type result)
   (unpack-value type result))

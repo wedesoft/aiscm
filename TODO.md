@@ -1,5 +1,8 @@
 ## Ready
 
+* etc/playground code -> integrate into library
+* base class for composite values <-> void
+* define complex constructor using define-structure macro
 * (nested) structures/composite values (e.g. complex numbers and scalar)
 * replace define-macro with hygienic ones
 * uniform structure
