@@ -14,20 +14,13 @@
 ;              (- (jmag-part value))
 ;              (- (kmag-part value))))
 
-(define-method (quaternion value-a value-b value-c value-d)
-  (let* [(target  (reduce coerce #f (map class-of (list value-a value-b value-c value-d))))
-         (adapt-a (to-type target value-a))
-         (adapt-b (to-type target value-b))
-         (adapt-c (to-type target value-c))
-         (adapt-d (to-type target value-d))]
-    (make (quaternion target)
-          #:value (lambda (fun) (append ((get adapt-a) fun) ((get adapt-b) fun) ((get adapt-c) fun) ((get adapt-d) fun))))))
-
-(define-method (store address (value <quaternion<>>))
-  (llvm-begin
-    (store address (real-part value))
-    (store (+ address (size-of (base (class-of value)))) (imag-part value))
-    (store (+ address (* 2 (size-of (base (class-of value))))) (jmag-part value))
-    (store (+ address (* 3 (size-of (base (class-of value))))) (kmag-part value))))
+;(define-method (quaternion value-a value-b value-c value-d)
+;  (let* [(target  (reduce coerce #f (map class-of (list value-a value-b value-c value-d))))
+;         (adapt-a (to-type target value-a))
+;         (adapt-b (to-type target value-b))
+;         (adapt-c (to-type target value-c))
+;         (adapt-d (to-type target value-d))]
+;    (make (quaternion target)
+;          #:value (lambda (fun) (append ((get adapt-a) fun) ((get adapt-b) fun) ((get adapt-c) fun) ((get adapt-d) fun))))))
 
 (llvm-typed (list (quaternion <float>)) identity)
