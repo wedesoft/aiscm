@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm llvm)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 poe)
@@ -263,10 +264,11 @@
 (define-method (store address (value <scalar>))
   (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get address))))
 
-(define-method (store address (value <complex<>>))
-  (llvm-begin
-    (store address (real-part value))
-    (store (+ address (size-of (base (class-of value)))) (imag-part value))))
+(define-method (store address (value <void>))
+  (apply llvm-begin
+    (map (lambda (component offset) (store (+ address offset) (component value)))
+         (components (class-of value))
+         (iota (length (components (class-of value))) 0 (size-of (base (class-of value)))))))
 
 (define-method (fetch (type <meta<scalar>>) address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))

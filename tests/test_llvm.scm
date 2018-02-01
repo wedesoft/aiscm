@@ -456,7 +456,6 @@
 (define (make-testcontainer testcontent) (make <testcontainer> #:testcontent testcontent))
 (define-structure testcontainer make-testcontainer (testcontent))
 (test-group "operations for custom composite type"
-  (test-expect-fail 1)
   (test-assert "compile identity operation for composite type"
     (llvm-typed (list (testcontainer <int>)) identity)))
 (test-end "aiscm llvm")
