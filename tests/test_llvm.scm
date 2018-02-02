@@ -458,4 +458,9 @@
 (test-group "operations for custom composite type"
   (test-assert "compile identity operation for composite type"
     (llvm-typed (list (testcontainer <int>)) identity)))
+  (test-eqv "run identity operation for composite type"
+    42 (testcontent ((llvm-typed (list (testcontainer <int>)) identity) (make-testcontainer 42))))
+  (test-expect-fail 1)
+  (test-assert "compile constructor of test container"
+    (llvm-typed (list <int>) testcontainer))
 (test-end "aiscm llvm")
