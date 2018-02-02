@@ -227,11 +227,14 @@
 (define-binary-delegation - llvm-sub llvm-fsub)
 (define-binary-delegation * llvm-mul llvm-fmul)
 
+(define (construct-composite abstract-type . lst)
+  (let* [(target  (reduce coerce #f (map class-of lst)))
+         (adapted (map (cut to-type target <>) lst))]
+    (make (abstract-type target)
+          #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) adapted)))))
+
 (define-method (complex value-a value-b)
-  (let* [(target  (coerce (class-of value-a) (class-of value-b)))
-         (adapt-a (to-type target value-a))
-         (adapt-b (to-type target value-b))]
-    (make (complex target) #:value (lambda (fun) (append ((get adapt-a) fun) ((get adapt-b) fun))))))
+  (construct-composite complex value-a value-b))
 
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
