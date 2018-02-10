@@ -8,19 +8,10 @@
 (define (make-quaternion a b c d) (make <quaternion> #:real a #:imag b #:jmag c #:kmag d))
 (define-structure quaternion make-quaternion (real-part imag-part jmag-part kmag-part))
 
-;(define-method (- (value <quaternion<>>))
-;  (quaternion (- (real-part value))
-;              (- (imag-part value))
-;              (- (jmag-part value))
-;              (- (kmag-part value))))
+(define-method (- (value <quaternion<>>))
+  (quaternion (- (real-part value))
+              (- (imag-part value))
+              (- (jmag-part value))
+              (- (kmag-part value))))
 
-;(define-method (quaternion value-a value-b value-c value-d)
-;  (let* [(target  (reduce coerce #f (map class-of (list value-a value-b value-c value-d))))
-;         (adapt-a (to-type target value-a))
-;         (adapt-b (to-type target value-b))
-;         (adapt-c (to-type target value-c))
-;         (adapt-d (to-type target value-d))]
-;    (make (quaternion target)
-;          #:value (lambda (fun) (append ((get adapt-a) fun) ((get adapt-b) fun) ((get adapt-c) fun) ((get adapt-d) fun))))))
-
-(llvm-typed (list (quaternion <float>)) identity)
+(llvm-typed (list (quaternion <float>)) -)

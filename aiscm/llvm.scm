@@ -33,6 +33,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
+            construct-composite
             ~)
   #:export-syntax (memoize)
   #:re-export (destroy - + *))

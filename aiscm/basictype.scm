@@ -202,7 +202,7 @@
               (define-method (construct-from-composite (type #,(datum->syntax #'k metaclass)) arguments)
                 "Construct Scheme object from composite type"
                 (apply constructor arguments))
-              (define-method (name base-type)
+              (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
