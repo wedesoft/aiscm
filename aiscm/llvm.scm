@@ -33,9 +33,8 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
-            construct-composite
             ~)
-  #:export-syntax (memoize)
+  #:export-syntax (memoize define-constructor)
   #:re-export (destroy - + *))
 
 
@@ -234,8 +233,10 @@
     (make (abstract-type target)
           #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) adapted)))))
 
-(define-method (complex value-a value-b)
-  (construct-composite complex value-a value-b))
+(define-syntax-rule (define-constructor name)
+  (define-method (name . args) (apply construct-composite name args)))
+
+(define-constructor complex)
 
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
