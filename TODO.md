@@ -1,9 +1,8 @@
 ## Ready
 
-* etc/playground code -> integrate into library
-* base class for composite values <-> void
-* define complex constructor using define-structure macro
+* composite structures with multiple types
 * (nested) structures/composite values (e.g. complex numbers and scalar)
+* base class for composite values <-> void
 * replace define-macro with hygienic ones
 * uniform structure
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)

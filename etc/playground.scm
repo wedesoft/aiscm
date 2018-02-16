@@ -7,6 +7,7 @@
               (kmag #:init-keyword #:kmag #:getter kmag-part))
 (define (make-quaternion a b c d) (make <quaternion> #:real a #:imag b #:jmag c #:kmag d))
 (define-structure quaternion make-quaternion (real-part imag-part jmag-part kmag-part))
+(define-constructor quaternion)
 
 (define-method (- (value <quaternion<>>))
   (quaternion (- (real-part value))
