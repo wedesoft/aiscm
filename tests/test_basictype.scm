@@ -269,11 +269,11 @@
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
 (define (make-testcontainer testcontent) (make <testcontainer> #:testcontent testcontent))
+(define-structure testcontainer make-testcontainer (testcontent))
 (define-class <testtwo> ()
               (test-a #:init-keyword #:test-a #:getter test-a)
               (test-b #:init-keyword #:test-b #:getter test-b))
 (define (make-testtwo test-a test-b) (make <testtwo> #:test-a test-a #:test-b test-b))
-(define-structure testcontainer make-testcontainer (testcontent))
 (define-structure testtwo make-testtwo (test-a test-b))
 (test-group "define composite type"
   (test-assert "'define-structure' defines an abstract composite type"
@@ -308,5 +308,15 @@
     2 (test-a (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3))))))
   (test-eqv "Unpack second member of composite value"
     3 (test-b (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3)))))))
+
+(define-class <testmixed> ()
+              (test-a #:init-keyword #:test-a #:getter test-a)
+              (test-b #:init-keyword #:test-b #:getter test-b))
+(define (make-testmixed test-a test-b) (make <testmixed> #:test-a test-a #:test-b test-b))
+(define-structure testmixed make-testmixed (test-a test-b))
+(test-group "define composite type with multiple arguments"
+  (test-expect-fail 1)
+  (test-eq "Instantiate mixed composite type"
+    '<testmixed<int<32,signed>,int<16,signed>>> (class-name (testmixed <int> <sint>))))
 
 (test-end "aiscm basictype")
