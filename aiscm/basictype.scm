@@ -194,14 +194,19 @@
   (lambda (x)
     (syntax-case x ()
       ((k name constructor (members ...))
-        (let [(class     (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
-              (metaclass (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
-              (n         (length (syntax->datum #'(members ...))))]
+        (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
+              (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
+              (n           (length (syntax->datum #'(members ...))))
+              (cdr-members (cdr (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
               (define-method (construct-from-composite (type #,(datum->syntax #'k metaclass)) arguments)
                 "Construct Scheme object from composite type"
                 (apply constructor arguments))
+              (define-method (name (initial <meta<void>>) #,@(datum->syntax #'k cdr-members))
+                "Instantiate a composite type using the type template"
+                (template-class (name initial #,@(datum->syntax #'k cdr-members)) #,(datum->syntax #'k class)
+                  (lambda (class metaclass) #f)))
               (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)

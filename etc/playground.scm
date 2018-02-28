@@ -1,18 +1,14 @@
-(use-modules (oop goops) (aiscm llvm) (system foreign) (rnrs bytevectors) (aiscm basictype) (srfi srfi-1) (srfi srfi-26))
+(use-modules (oop goops) (aiscm llvm) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm basictype) (srfi srfi-1) (srfi srfi-26))
 
-(define-class <quaternion> ()
-              (real #:init-keyword #:real #:getter real-part)
-              (imag #:init-keyword #:imag #:getter imag-part)
-              (jmag #:init-keyword #:jmag #:getter jmag-part)
-              (kmag #:init-keyword #:kmag #:getter kmag-part))
-(define (make-quaternion a b c d) (make <quaternion> #:real a #:imag b #:jmag c #:kmag d))
-(define-structure quaternion make-quaternion (real-part imag-part jmag-part kmag-part))
-(define-constructor quaternion)
+(define-macro (testing name args type fun)
+  (let [(header (map list args (make-list (length args) type)))]
+    `(define-method (,name ,@header) (,fun ,@args))))
 
-(define-method (- (value <quaternion<>>))
-  (quaternion (- (real-part value))
-              (- (imag-part value))
-              (- (jmag-part value))
-              (- (kmag-part value))))
+(define-syntax testing
+  (lambda  (x)
+    (syntax-case x ()
+      ((k (name type args ...) body ...)
+       (let [(header (map (lambda (arg) (list arg (syntax->datum #'type))) (syntax->datum #'(args ...))))]
+         #`(define-method (name #,@(datum->syntax #'k header)) body ...))))))
 
-(llvm-typed (list (quaternion <float>)) -)
+(testing (t <real> a b) +)

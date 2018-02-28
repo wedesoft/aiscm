@@ -244,5 +244,4 @@
   (test-eqv "define a binary typed method"
     5 (typed-binary-method 8 3))
 (test-end "define n-ary typed method")
-
 (test-end "aiscm util")
