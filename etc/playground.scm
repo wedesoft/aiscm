@@ -8,4 +8,7 @@
 
 (define-method (+ (a <testmixed<>>) (b <testmixed<>>)) (testmixed (+ (test-a a) (test-a b)) (+ (test-b a) (test-b b))))
 
+(base (testmixed <int> <sint>))
+
+
 (llvm-typed (list (testmixed <int> <sint>) (testmixed <int> <sint>)) +)

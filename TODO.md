@@ -1,5 +1,6 @@
 ## Ready
 
+* have 'base' always return list
 * decompose and unpack mixed composed type
 * (nested) structures/composite values (e.g. complex numbers and scalar)
 * base class for composite values <-> void

@@ -206,7 +206,8 @@
               (define-method (name (initial <meta<void>>) #,@(datum->syntax #'k cdr-members))
                 "Instantiate a composite type using the type template"
                 (template-class (name initial #,@(datum->syntax #'k cdr-members)) #,(datum->syntax #'k class)
-                  (lambda (class metaclass) #f)))
+                  (lambda (class metaclass)
+                    (define-method (base (self metaclass)) (list initial #,@(datum->syntax #'k cdr-members))))))
               (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)

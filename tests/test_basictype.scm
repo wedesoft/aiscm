@@ -316,6 +316,8 @@
 (define-structure testmixed make-testmixed (test-a test-b))
 (test-group "define composite type with multiple arguments"
   (test-eq "Instantiate mixed composite type"
-    '<testmixed<int<32,signed>,int<16,signed>>> (class-name (testmixed <int> <sint>))))
+    '<testmixed<int<32,signed>,int<16,signed>>> (class-name (testmixed <int> <sint>)))
+  (test-equal "Get list of basic types"
+    (list <int> <sint>) (base (testmixed <int> <sint>))))
 
 (test-end "aiscm basictype")
