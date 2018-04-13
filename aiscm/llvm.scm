@@ -261,7 +261,7 @@
 
 (define-method (typed-constant (type <meta<complex<>>>) value)
   (let [(basetype (base type))]
-    (complex (typed-constant basetype (real-part value)) (typed-constant basetype (imag-part value)))))
+    (complex (typed-constant (car basetype) (real-part value)) (typed-constant (cadr basetype) (imag-part value)))))
 
 (define (typed-pointer value)
   (make <long> #:value (make-constant-pointer value)))
@@ -273,14 +273,14 @@
   (apply llvm-begin
     (map (lambda (component offset) (store (+ address offset) (component value)))
          (components (class-of value))
-         (iota (length (components (class-of value))) 0 (size-of (base (class-of value)))))))
+         (integral (cons 0 (all-but-last (map size-of (base (class-of value)))))))))
 
 (define-method (fetch (type <meta<scalar>>) address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
 
 (define-method (fetch (type <meta<complex<>>>) address)
   (let [(basetype (base type))]
-    (complex (fetch basetype address) (fetch basetype (+ address (size-of basetype))))))
+    (complex (fetch (car basetype) address) (fetch (cadr basetype) (+ address (size-of (car basetype)))))))
 
 (define-method (prepare-return (result <void>) memory)
   (if (null? (components (class-of result)))

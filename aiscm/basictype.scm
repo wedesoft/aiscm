@@ -23,7 +23,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-argument decompose-arguments decompose-type decompose-types compose-value compose-values
+            decompose-argument decompose-arguments decompose-types compose-value compose-values
             complex base size-of unpack-value native-type components
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -55,6 +55,9 @@
 (define-method (foreign-type (type <meta<void>>))
   void)
 
+(define-method (base (type <meta<void>>))
+  '())
+
 (define-method (components (type <meta<void>>))
   '())
 
@@ -62,6 +65,9 @@
   address)
 
 (define-class* <scalar> <void> <meta<scalar>> <meta<void>>)
+
+(define-method (base (type <meta<scalar>>))
+  (list type))
 
 (define-method (equal? (a <scalar>) (b <scalar>))
   (equal? (get a) (get b)))
@@ -169,13 +175,9 @@
   "Decompose scalar value"
   (list value))
 
-(define-method (decompose-type (type <meta<scalar>>))
-  "Decompose scalar type"
-  (list type))
-
 (define (decompose-types lst)
   "Decompose list of types"
-  (concatenate (map decompose-type lst)))
+  (concatenate (map base lst)))
 
 (define (compose-value type lst)
   "Compose a value"
@@ -186,7 +188,7 @@
   (if (null? types)
     '()
     (let* [(type       (car types))
-           (base-types (decompose-type type))
+           (base-types (base type))
            (count      (length base-types))]
       (cons (compose-value type (take lst count)) (compose-values (cdr types) (drop lst count))))))
 
@@ -212,7 +214,7 @@
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) base-type))))
+                    (define-method (base (self metaclass)) (make-list #,(datum->syntax #'k n) base-type)))))
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
                 int64)
@@ -223,13 +225,13 @@
                 #,(map (lambda (member-name index)
                          #`(define-method (#,(datum->syntax #'k member-name) self)
                              "Access a component of the composite type"
-                             (make (base (class-of self))
+                             (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
                                    #:value (lambda (fun) (list (list-ref ((get self) fun) #,(datum->syntax #'k index)))))))
                        (syntax->datum #'(members ...))
                        (iota n)))))))))
 
 (define-method (size-of (type <meta<void>>))
-  (if (null? (components type)) 0 (* (length (components type)) (size-of (base type)))))
+  (reduce + 0 (map size-of (base type))))
 
 (define-method (decompose-argument (type <meta<void>>) value)
   "Decompose composite value"
@@ -239,15 +241,12 @@
   "Decompose multiple values"
   (concatenate (map decompose-argument types lst)))
 
-(define-method (decompose-type (type <meta<void>>))
-  "Decompose composite type"
-  (make-list (length (components type)) (base type)))
-
 (define-method (unpack-value (self <meta<void>>) (address <integer>))
   "Unpack composite value stored in a byte vector"
   (construct-from-composite self
-                            (map (lambda (offset) (unpack-value (base self) (+ address offset)))
-                                 (iota (length (components self)) 0 (size-of (base self))))))
+                            (map (lambda (type offset) (unpack-value type (+ address offset)))
+                                 (base self)
+                                 (integral (cons 0 (all-but-last (map size-of (base self))))))))
 
 (define-structure complex make-rectangular (real-part imag-part))
 

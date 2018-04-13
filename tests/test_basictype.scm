@@ -130,10 +130,10 @@
     <complex<float>> (complex (floating-point single-precision)))
   (test-eq "Double-precision complex number"
     <complex<double>> (complex (floating-point double-precision)))
-  (test-eq "Basic type of single-precision complex number"
-    <float> (base <complex<float>>))
-  (test-eq "Basic type of double-precision complex number"
-    <double> (base <complex<double>>))
+  (test-equal "Basic type of single-precision complex number"
+    (list <float> <float>) (base <complex<float>>))
+  (test-equal "Basic type of double-precision complex number"
+    (list <double> <double>) (base <complex<double>>))
   (test-eq "Real component of single-precision floating-point complex number is a float"
     <float> (class-of (real-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Real component of double-precision floating-point complex number is a double"
@@ -185,14 +185,6 @@
     '(2.5 3.25) ((get (car (compose-values (list <complex<float>>) (list (const '(2.5)) (const '(3.25)))))) #f))
   (test-equal "Compose two integer values"
     '((5) (7)) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const '(5)) (const '(7)))))))
-
-(test-group "decompose type"
-  (test-equal "decompose integer type"
-    (list <ubyte>) (decompose-type <ubyte>))
-  (test-equal "decompose floating-point type"
-    (list <float>) (decompose-type <float>))
-  (test-equal "decompose complex type"
-    (list <double> <double>) (decompose-type <complex<double>>)))
 
 (test-group "decompose multiple types"
   (test-equal "decompose empty list of types"
@@ -286,8 +278,8 @@
     '<testcontainer<int<32,signed>>> (class-name (testcontainer <int>)))
   (test-eq "Super class of composite type is abstract composite type"
     '<testcontainer<>> (class-name (car (class-direct-supers (testcontainer <int>)))))
-  (test-eq "'define-structure' defines method for querying base type"
-    <int> (base (testcontainer <int>)))
+  (test-equal "'define-structure' defines method for querying base type"
+    (list <int>) (base (testcontainer <int>)))
   (test-eqv "Foreign type of composite values is a pointer"
     int64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
