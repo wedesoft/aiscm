@@ -1,6 +1,6 @@
 ## Ready
 
-* decompose and unpack mixed composed type
+* write mixed value to memory
 * (nested) structures/composite values (e.g. complex numbers and scalar)
 * base class for composite values <-> void
 * replace define-macro with hygienic ones

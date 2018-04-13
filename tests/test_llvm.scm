@@ -463,4 +463,18 @@
     42 (testcontent ((llvm-typed (list (testcontainer <int>)) identity) (make-testcontainer 42))))
   (test-assert "compile constructor of test container"
     (llvm-typed (list <int>) testcontainer))
+
+(define-class <testmixed> ()
+              (test-a #:init-keyword #:test-a #:getter test-a)
+              (test-b #:init-keyword #:test-b #:getter test-b))
+(define (make-testmixed test-a test-b) (make <testmixed> #:test-a test-a #:test-b test-b))
+(define-structure testmixed make-testmixed (test-a test-b))
+(define-constructor testmixed)
+(test-group "operations for mixed composite type"
+  (let* [(data #vu8(3 5 7))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-eqv "read first value of mixed variable"
+      1283 (test-a ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))
+    (test-eqv "read second value of mixed variable"
+      7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))))
 (test-end "aiscm llvm")

@@ -259,9 +259,11 @@
 (define-method (typed-constant (type <meta<scalar>>) value)
   (make type #:value (make-constant (foreign-type type) value)))
 
-(define-method (typed-constant (type <meta<complex<>>>) value)
-  (let [(basetype (base type))]
-    (complex (typed-constant (car basetype) (real-part value)) (typed-constant (cadr basetype) (imag-part value)))))
+(define-method (typed-constant (type <meta<void>>) value)
+  (apply (build type)
+         (map (lambda (type component) (typed-constant type (component value)))
+              (base type)
+              (components type))))
 
 (define (typed-pointer value)
   (make <long> #:value (make-constant-pointer value)))
@@ -278,9 +280,10 @@
 (define-method (fetch (type <meta<scalar>>) address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))
 
-(define-method (fetch (type <meta<complex<>>>) address)
-  (let [(basetype (base type))]
-    (complex (fetch (car basetype) address) (fetch (cadr basetype) (+ address (size-of (car basetype)))))))
+(define-method (fetch (type <meta<void>>) address)
+  (apply (build type) (map (lambda (type offset) (fetch type (+ address offset)))
+                           (base type)
+                           (integral (cons 0 (all-but-last (map size-of (base type))))))))
 
 (define-method (prepare-return (result <void>) memory)
   (if (null? (components (class-of result)))

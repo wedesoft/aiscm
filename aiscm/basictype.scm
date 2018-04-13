@@ -24,7 +24,7 @@
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-arguments decompose-types compose-value compose-values
-            complex base size-of unpack-value native-type components
+            complex base size-of unpack-value native-type components constructor build
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <int<>> <meta<int<>>>
@@ -195,16 +195,19 @@
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
-      ((k name constructor (members ...))
+      ((k name construct (members ...))
         (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
               (n           (length (syntax->datum #'(members ...))))
               (cdr-members (cdr (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
-              (define-method (construct-from-composite (type #,(datum->syntax #'k metaclass)) arguments)
-                "Construct Scheme object from composite type"
-                (apply constructor arguments))
+              (define-method (constructor (type #,(datum->syntax #'k metaclass)))
+                "Get constructor for composite type"
+                construct)
+              (define-method (build (type #,(datum->syntax #'k metaclass)))
+                "Get method for composing value in compiled code"
+                name)
               (define-method (name (initial <meta<void>>) #,@(datum->syntax #'k cdr-members))
                 "Instantiate a composite type using the type template"
                 (template-class (name initial #,@(datum->syntax #'k cdr-members)) #,(datum->syntax #'k class)
@@ -243,8 +246,7 @@
 
 (define-method (unpack-value (self <meta<void>>) (address <integer>))
   "Unpack composite value stored in a byte vector"
-  (construct-from-composite self
-                            (map (lambda (type offset) (unpack-value type (+ address offset)))
+  (apply (constructor self) (map (lambda (type offset) (unpack-value type (+ address offset)))
                                  (base self)
                                  (integral (cons 0 (all-but-last (map size-of (base self))))))))
 
