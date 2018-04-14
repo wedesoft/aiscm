@@ -476,5 +476,13 @@
     (test-eqv "read first value of mixed variable"
       1283 (test-a ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))
     (test-eqv "read second value of mixed variable"
-      7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))))
+      7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr)))))))
+    (let* [(data #vu8(1 2 3))
+           (ptr  (typed-pointer (bytevector->pointer data)))]
+      (test-equal "write composite value to memory"
+        #vu8(3 5 7)
+        (begin
+          ((llvm-typed (list (testmixed <sint> <byte>)) (lambda (value) (store ptr value)))
+           (make-testmixed 1283 7))
+          data))))
 (test-end "aiscm llvm")
