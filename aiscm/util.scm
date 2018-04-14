@@ -233,12 +233,16 @@
 
 (define-syntax define-typed-method
   (lambda (x)
+    "Define a method for a combination of types"
     (syntax-case x ()
       ((k name types fun)
        (let* [(args   (symbol-list (length (syntax->datum #'types))))
               (header (map list args (syntax->datum #'types)))]
          #`(define-method (name #,@(datum->syntax #'k header)) (fun #,@(datum->syntax #'k args))))))))
 
-(define-macro (define-nary-typed-method name arity type fun)
-  "Define an n-ary method with arguments of a specified type"
-  `(define-typed-method ,name ,(make-list arity type) ,fun))
+(define-syntax define-nary-typed-method
+  (lambda (x)
+    "Define an n-ary method with arguments of a specified type"
+    (syntax-case x ()
+      ((k name arity type fun)
+       #`(define-typed-method name #,(datum->syntax #'k (make-list (syntax->datum #'arity) (syntax->datum #'type))) fun)))))
