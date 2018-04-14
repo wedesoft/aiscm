@@ -1,6 +1,7 @@
 ## Ready
 
 * write mixed value to memory
+* composite constructor without coercion
 * (nested) structures/composite values (e.g. complex numbers and scalar)
 * base class for composite values <-> void
 * replace define-macro with hygienic ones

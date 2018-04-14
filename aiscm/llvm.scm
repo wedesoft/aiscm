@@ -227,14 +227,12 @@
 (define-binary-delegation - llvm-sub llvm-fsub)
 (define-binary-delegation * llvm-mul llvm-fmul)
 
-(define (construct-composite abstract-type . lst)
-  (let* [(target  (reduce coerce #f (map class-of lst)))
-         (adapted (map (cut to-type target <>) lst))]
-    (make (abstract-type target)
-          #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) adapted)))))
-
 (define-syntax-rule (define-constructor name)
-  (define-method (name . args) (apply construct-composite name args)))
+  (define-method (name . args)
+    (let* [(target  (reduce coerce #f (map class-of args)))
+           (adapted (map (cut to-type target <>) args))]
+      (make (name target)
+            #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) adapted))))))
 
 (define-constructor complex)
 
