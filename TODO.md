@@ -2,7 +2,6 @@
 
 * composite constructor without coercion
 * (nested) structures/composite values (e.g. complex numbers and scalar)
-* base class for composite values <-> void
 * replace define-macro with hygienic ones
 * uniform structure
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)

@@ -231,11 +231,13 @@
 (define (list-with lst idx val)
   (if (null? lst) lst (cons (if (zero? idx) val (car lst)) (list-with (cdr lst) (1- idx) val))))
 
-(define-macro (define-typed-method name types fun)
-  "Define a method for a combination of types"
-  (let* [(args   (symbol-list (length types)))
-         (header (map list args types))]
-    `(define-method (,name ,@header) (,fun ,@args))))
+(define-syntax define-typed-method
+  (lambda (x)
+    (syntax-case x ()
+      ((k name types fun)
+       (let* [(args   (symbol-list (length (syntax->datum #'types))))
+              (header (map list args (syntax->datum #'types)))]
+         #`(define-method (name #,@(datum->syntax #'k header)) (fun #,@(datum->syntax #'k args))))))))
 
 (define-macro (define-nary-typed-method name arity type fun)
   "Define an n-ary method with arguments of a specified type"
