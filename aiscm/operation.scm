@@ -237,9 +237,12 @@
   "Adapter for machine code to extract part of a composite value"
   (duplicate (delegate out) (apply op (map delegate args))))
 
-(define-macro (define-operator-mapping name types fun)
-  (let [(header (typed-header2 (symbol-list (length types)) types))]
-    `(define-method (,name ,@header) ,fun)))
+(define-syntax define-operator-mapping
+  (lambda (x)
+    (syntax-case x ()
+      ((k name types fun)
+       (let [(header (typed-header (symbol-list (length (syntax->datum #'types))) (syntax->datum #'types)))]
+         #`(define-method (name #,@(datum->syntax #'k header)) fun))))))
 
 (define-operator-mapping -=   (<meta<int<>>>              ) (cumulative-code NEG     ))
 (define-operator-mapping ~=   (<meta<int<>>>              ) (cumulative-code NOT     ))

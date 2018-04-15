@@ -29,7 +29,7 @@
             assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
             first-index last-index compact
-            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header typed-header2
+            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm list-with)
   #:export-syntax (define-class* template-class synchronise define-typed-method define-nary-typed-method))
 
@@ -202,8 +202,7 @@
 (define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
 (define (map-select select fun1 fun2 . lsts) (apply map (lambda (val . args) (apply (if val fun1 fun2) args)) select lsts))
 (define (symbol-list n) (map (lambda _ (gensym)) (iota n)))
-(define (typed-header lst tag) (map (cut list <> tag) lst))
-(define (typed-header2 lst tags) (map list lst tags))
+(define (typed-header lst tags) (map list lst tags))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37
 
