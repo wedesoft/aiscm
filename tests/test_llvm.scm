@@ -393,7 +393,13 @@
   (test-eqv "add scalar to complex value"
     7+3i ((llvm-typed (list <complex<double>> <int>) +) 2+3i 5))
   (test-eqv "add complex value to scalar"
-    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i)))
+    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i))
+  (test-eqv "complex minus"
+    -3-4i ((llvm-typed (list <complex<double>> <complex<double>>) -) 2+3i 5+7i))
+  (test-eqv "subtract scalar from complex value"
+    -3+3i ((llvm-typed (list <complex<double>> <int>) -) 2+3i 5))
+  (test-eqv "subtract complex value from scalar"
+    -1-5i ((llvm-typed (list <float> <complex<float>>) -) 2 3+5i)))
 
 (test-group "method calls"
   (test-equal "call libc's fabsf method"

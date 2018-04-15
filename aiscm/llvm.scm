@@ -248,6 +248,15 @@
 (define-method (+ (value-a <scalar>) (value-b <complex<>>))
   (complex (+ value-a (real-part value-b)) (imag-part value-b)))
 
+(define-method (- (value-a <complex<>>) (value-b <complex<>>))
+  (complex (- (real-part value-a) (real-part value-b)) (- (imag-part value-a) (imag-part value-b))))
+
+(define-method (- (value-a <complex<>>) (value-b <scalar>))
+  (complex (- (real-part value-a) value-b) (imag-part value-a)))
+
+(define-method (- (value-a <scalar>) (value-b <complex<>>))
+  (complex (- value-a (real-part value-b)) (- (imag-part value-b))))
+
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)
     instruction

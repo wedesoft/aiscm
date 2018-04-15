@@ -2,15 +2,13 @@
 
 * composite constructor without coercion
 * (nested) structures/composite values (e.g. complex numbers and scalar)
-* replace define-macro with hygienic ones
 * uniform structure
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * (complex int, int)
 * Scheme objects
 * runge kutta with state vector
 * boolean basic type
-* complex operations
-* standards version 4.1.3
+* complex multiplication, division
 * function should return list, sequential computation of complex number
 * typed let (trigger memoization)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
