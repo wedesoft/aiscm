@@ -227,19 +227,18 @@
 (define-binary-delegation - llvm-sub llvm-fsub)
 (define-binary-delegation * llvm-mul llvm-fmul)
 
-(define (construct-object name args)
-  (make (apply name (map class-of args))
-        #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) args))))
+(define (construct-object class args)
+  (make class #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) args))))
 
 (define-syntax-rule (define-mixed-constructor name)
   (define-method (name . args)
-    (construct-object name args)))
+    (construct-object (apply name (map class-of args)) args)))
 
 (define-syntax-rule (define-uniform-constructor name)
   (define-method (name . args)
     (let* [(target  (reduce coerce #f (map class-of args)))
            (adapted (map (cut to-type target <>) args))]
-      (construct-object name adapted))))
+      (construct-object (name target) adapted))))
 
 (define-uniform-constructor complex)
 

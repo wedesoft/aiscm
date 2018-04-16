@@ -464,11 +464,13 @@
 (define-uniform-constructor testcontainer)
 (test-group "operations for custom composite type"
   (test-assert "compile identity operation for composite type"
-    (llvm-typed (list (testcontainer <int>)) identity)))
+    (llvm-typed (list (testcontainer <int>)) identity))
   (test-eqv "run identity operation for composite type"
     42 (testcontent ((llvm-typed (list (testcontainer <int>)) identity) (make-testcontainer 42))))
   (test-assert "compile constructor of test container"
     (llvm-typed (list <int>) testcontainer))
+  (test-equal "Uniform container performs type coercion"
+    (complex <float>) (class-of (complex (typed-constant <int> 2) (typed-constant <float> 3)))))
 
 (define-class <testmixed> ()
               (test-a #:init-keyword #:test-a #:getter test-a)
@@ -490,5 +492,7 @@
         (begin
           ((llvm-typed (list (testmixed <sint> <byte>)) (lambda (value) (store ptr value)))
            (make-testmixed 1283 7))
-          data))))
+          data)))
+  (test-equal "Mixed constructor preserves types of components"
+    (testmixed <sint> <byte>) (class-of (testmixed (typed-constant <sint> 2) (typed-constant <byte> 3)))))
 (test-end "aiscm llvm")
