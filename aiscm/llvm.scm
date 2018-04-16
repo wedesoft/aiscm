@@ -34,7 +34,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~)
-  #:export-syntax (memoize define-constructor)
+  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
   #:re-export (destroy - + *))
 
 
@@ -227,14 +227,21 @@
 (define-binary-delegation - llvm-sub llvm-fsub)
 (define-binary-delegation * llvm-mul llvm-fmul)
 
-(define-syntax-rule (define-constructor name)
+(define (construct-object name args)
+  (make (apply name (map class-of args))
+        #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) args))))
+
+(define-syntax-rule (define-mixed-constructor name)
+  (define-method (name . args)
+    (construct-object name args)))
+
+(define-syntax-rule (define-uniform-constructor name)
   (define-method (name . args)
     (let* [(target  (reduce coerce #f (map class-of args)))
            (adapted (map (cut to-type target <>) args))]
-      (make (name target)
-            #:value (lambda (fun) (append-map (lambda (component) ((get component) fun)) adapted))))))
+      (construct-object name adapted))))
 
-(define-constructor complex)
+(define-uniform-constructor complex)
 
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))

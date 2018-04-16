@@ -461,7 +461,7 @@
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
 (define (make-testcontainer testcontent) (make <testcontainer> #:testcontent testcontent))
 (define-structure testcontainer make-testcontainer (testcontent))
-(define-constructor testcontainer)
+(define-uniform-constructor testcontainer)
 (test-group "operations for custom composite type"
   (test-assert "compile identity operation for composite type"
     (llvm-typed (list (testcontainer <int>)) identity)))
@@ -475,7 +475,7 @@
               (test-b #:init-keyword #:test-b #:getter test-b))
 (define (make-testmixed test-a test-b) (make <testmixed> #:test-a test-a #:test-b test-b))
 (define-structure testmixed make-testmixed (test-a test-b))
-(define-constructor testmixed)
+(define-mixed-constructor testmixed)
 (test-group "operations for mixed composite type"
   (let* [(data #vu8(3 5 7))
          (ptr  (typed-pointer (bytevector->pointer data)))]
@@ -483,10 +483,10 @@
       1283 (test-a ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))
     (test-eqv "read second value of mixed variable"
       7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr)))))))
-    (let* [(data #vu8(1 2 3))
+    (let* [(data #vu8(1 2 3 4))
            (ptr  (typed-pointer (bytevector->pointer data)))]
       (test-equal "write composite value to memory"
-        #vu8(3 5 7)
+        #vu8(3 5 7 4)
         (begin
           ((llvm-typed (list (testmixed <sint> <byte>)) (lambda (value) (store ptr value)))
            (make-testmixed 1283 7))
