@@ -192,7 +192,11 @@
   (test-equal "decompose integer type"
     (list <sint>) (decompose-types (list <sint>)))
   (test-equal "decompose complex type"
-    (list <double> <double>) (decompose-types (list <complex<double>>))))
+    (list <double> <double>) (decompose-types (list <complex<double>>)))
+  (test-equal "decompose nested type"
+    (list <double> <double> <double> <double>) (decompose-types (list (complex (complex <double>)))))
+  (test-equal "decompose nested mixed type"
+    (list <double> <double> <double> <double>) (decompose-types (list (complex (complex <double>) (complex <double>))))))
 
 (test-group "size of values"
   (test-eqv "size of byte"

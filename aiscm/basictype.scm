@@ -212,12 +212,12 @@
                 "Instantiate a composite type using the type template"
                 (template-class (name initial #,@(datum->syntax #'k cdr-members)) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) (list initial #,@(datum->syntax #'k cdr-members))))))
+                    (define-method (base (self metaclass)) (append-map base (list initial #,@(datum->syntax #'k cdr-members)))))))
               (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) (make-list #,(datum->syntax #'k n) base-type)))))
+                    (define-method (base (self metaclass)) (append-map base (make-list #,(datum->syntax #'k n) base-type))))))
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
                 int64)

@@ -1,6 +1,6 @@
 ## Ready
 
-* (nested) structures/composite values (e.g. complex numbers and scalar)
+* (nested) structures/composite values (e.g. complex numbers and scalar, state vector and quaternions)
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * Scheme objects
 * runge kutta with state vector
