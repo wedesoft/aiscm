@@ -22,11 +22,14 @@
 (define-structure state make-state (x y z))
 (define-mixed-constructor state)
 
-(make-state (make-vec 2 3 5))
-
-;(llvm-typed (list (state (vec <float>))) identity)
+(llvm-typed (list (state (vec <float>))) identity)
+((llvm-typed (list (state (vec <float>))) identity) (make-state (make-vec 2 3 5)))
 (define argument-types (list (state (vec <float>))))
 (define function identity)
 
-(map class-name (decompose-types argument-types))
+(map foreign-type (decompose-types argument-types))
 ; compose-values
+
+(real-part (make (complex <float>) #:value (lambda (fun) (list 2 3))))
+
+(base (state (vec <float>)))
