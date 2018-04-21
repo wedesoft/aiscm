@@ -199,7 +199,7 @@
         (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
               (n           (length (syntax->datum #'(members ...))))
-              (cdr-members (cdr (syntax->datum #'(members ...))))]
+              (header      (map (cut list <> '<meta<void>>) (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
               (define-method (constructor (type #,(datum->syntax #'k metaclass)))
@@ -208,11 +208,11 @@
               (define-method (build (type #,(datum->syntax #'k metaclass)))
                 "Get method for composing value in compiled code"
                 name)
-              (define-method (name (initial <meta<void>>) #,@(datum->syntax #'k cdr-members))
+              (define-method (name #,@(datum->syntax #'k header))
                 "Instantiate a composite type using the type template"
-                (template-class (name initial #,@(datum->syntax #'k cdr-members)) #,(datum->syntax #'k class)
+                (template-class (name members ...) #,(datum->syntax #'k class)
                   (lambda (class metaclass)
-                    (define-method (base (self metaclass)) (append-map base (list initial #,@(datum->syntax #'k cdr-members)))))))
+                    (define-method (base (self metaclass)) (append-map base (list members ...))))))
               (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
                 (template-class (name base-type) #,(datum->syntax #'k class)
