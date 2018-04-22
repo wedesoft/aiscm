@@ -179,9 +179,13 @@
   "Decompose list of types"
   (concatenate (map base lst)))
 
-(define (compose-value type lst)
-  "Compose a value"
-  (make type #:value (lambda (fun) (append-map (cut <> fun) lst))))
+(define-method (compose-value (type <meta<scalar>>) lst)
+  "Compose a scalar value"
+  (make type #:value (car lst)))
+
+(define-method (compose-value (type <meta<void>>) lst)
+  "Compose a composite value"
+  (make type #:value (lambda (fun) (map (cut <> fun) lst))))
 
 (define (compose-values types lst)
   "Compose multiple values"
@@ -229,7 +233,7 @@
                          #`(define-method (#,(datum->syntax #'k member-name) self)
                              "Access a component of the composite type"
                              (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
-                                   #:value (lambda (fun) (list (list-ref ((get self) fun) #,(datum->syntax #'k index)))))))
+                                   #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))))
                        (syntax->datum #'(members ...))
                        (iota n)))))))))
 

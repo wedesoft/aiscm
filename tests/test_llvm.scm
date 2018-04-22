@@ -34,23 +34,23 @@
 (test-group "constant values"
   (for-each
     (lambda (type bits)
-      (test-equal (format #f "Get type of ~a-bit integer value" bits)
-        (list type) (get-type ((make-constant type 42) #f))))
+      (test-eqv (format #f "Get type of ~a-bit integer value" bits)
+        type (get-type ((make-constant type 42) #f))))
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (for-each
     (lambda (unsigned-type signed-type bits)
-      (test-equal (format #f "Type of ~a-bit value ignores signed-ness" bits)
-        (list signed-type) (get-type ((make-constant unsigned-type 42) #f))))
+      (test-eqv (format #f "Type of ~a-bit value ignores signed-ness" bits)
+        signed-type (get-type ((make-constant unsigned-type 42) #f))))
     (list uint8 uint16 uint32 uint64)
     (list int8 int16 int32 int64)
     '(8 16 32 64))
   (test-equal "Get type of double-precision floating point value"
-    (list double) (get-type ((make-constant double (exp 1)) #f)))
+    double (get-type ((make-constant double (exp 1)) #f)))
   (test-equal "Get type of single-precision floating point value"
-    (list float) (get-type ((make-constant float (exp 1)) #f)))
+    float (get-type ((make-constant float (exp 1)) #f)))
   (test-equal "Memory address is 64 bit"
-    (list int64) (get-type ((make-constant-pointer (make-pointer 1234)) #f))))
+    int64 (get-type ((make-constant-pointer (make-pointer 1234)) #f))))
 
 (test-group "memoization"
   (test-eqv "implements function"
@@ -415,9 +415,9 @@
   (test-eq "Type of constant should be of specified type"
     <sint> (class-of (typed-constant <sint> 42)))
   (test-equal "Use corresponding foreign type"
-    (list int16) (get-type ((get (typed-constant <sint> 42)) #f)))
+    int16 (get-type ((get (typed-constant <sint> 42)) #f)))
   (test-equal "Pointer constant is 64-bit"
-    (list int64) (get-type ((get (typed-pointer (make-pointer 1234))) #f)))
+    int64 (get-type ((get (typed-pointer (make-pointer 1234))) #f)))
   (test-equal "Pointer type is long integer"
     <long> (class-of (typed-pointer (make-pointer 1234))))
   (test-equal "complex constant"

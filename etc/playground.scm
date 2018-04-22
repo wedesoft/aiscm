@@ -33,3 +33,7 @@
 (real-part (make (complex <float>) #:value (lambda (fun) (list 2 3))))
 
 (base (state (vec <float>)))
+
+; scalar: 0.3
+; complex: (0.1 0.2)
+; nested: ((0.1 0.2) (0.3 0.4))

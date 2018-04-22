@@ -1,6 +1,8 @@
 ## Ready
 
 * (nested) structures/composite values (e.g. complex numbers and scalar, state vector and quaternions)
+* www.demodashi.com
+* llvm-get-type needed?
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * Scheme objects
 * runge kutta with state vector

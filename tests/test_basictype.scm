@@ -64,13 +64,13 @@
 
 (test-group "integer values"
   (test-equal "Wrap and unwrap value"
-    '(42) (get (make <int> #:value '(42))))
+    42 (get (make <int> #:value 42)))
   (test-equal "Equal values"
-    (make <int> #:value '(42)) (make <int> #:value '(42)))
+    (make <int> #:value 42) (make <int> #:value 42))
   (test-assert "Unequal values"
-    (not (equal? (make <int> #:value '(42)) (make <int> #:value '(43)))))
+    (not (equal? (make <int> #:value 42) (make <int> #:value 43))))
   (test-assert "Unequal types values"
-    (not (equal? (make <uint> #:value '(42)) (make <int> #:value '(42))))))
+    (not (equal? (make <uint> #:value 42) (make <int> #:value 42)))))
 
 (test-group "get foreign integer type"
   (for-each (lambda (type foreign)
@@ -101,13 +101,13 @@
 
 (test-group "floating-point values"
   (test-equal "Wrap and unwrap value"
-    '(3.5) (get (make <float> #:value '(3.5))))
+    3.5 (get (make <float> #:value 3.5)))
   (test-equal "Equal values"
-    (make <float> #:value '(3.5)) (make <float> #:value '(3.5)))
+    (make <float> #:value 3.5) (make <float> #:value 3.5))
   (test-assert "Unequal values"
-    (not (equal? (make <float> #:value '(3.5)) (make <float> #:value '(4.5)))))
+    (not (equal? (make <float> #:value 3.5) (make <float> #:value 4.5))))
   (test-assert "Unequal types values"
-    (not (equal? (make <float> #:value '(1.5)) (make <double> #:value '(1.5))))))
+    (not (equal? (make <float> #:value 1.5) (make <double> #:value 1.5)))))
 
 (test-group "get foreign floating-point type"
   (test-eqv "get foreign type of <float>"
@@ -139,13 +139,13 @@
   (test-eq "Real component of double-precision floating-point complex number is a double"
     <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get real component of complex number"
-    '(2.5) ((get (real-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
+    2.5 ((get (real-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
   (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-equal "Get imaginary component of complex number"
-    '(3.25) ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f)))
+    3.25 ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f)))
 
 (test-eqv "get foreign type of complex type"
   int64 (foreign-type <complex<float>>))
@@ -168,23 +168,23 @@
 
 (test-group "compose value"
   (test-eq "Composing integer creates correct type"
-    <sint> (class-of (compose-value <sint> (list (const '(42))))))
+    <sint> (class-of (compose-value <sint> (list (const 42)))))
   (test-equal "Composing integer uses provided value"
-    '(42) ((get (compose-value <sint> (list (const '(42))))) #f))
+    42 ((get (compose-value <sint> (list (const 42)))) #f))
   (test-equal "Compose complex number"
-    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const '(2.5)) (const '(3.25))))) #f)))
+    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const 2.5) (const 3.25)))) #f)))
 
 (test-group "compose multiple values"
   (test-assert "Compose no values"
     (null? (compose-values '() '())))
   (test-equal "Composing an integer value creates an object of correct type"
-    (list <sint>) (map class-of (compose-values (list <sint>) (list (const '(42))))))
+    (list <sint>) (map class-of (compose-values (list <sint>) (list (const 42)))))
   (test-equal "Composing an integer value uses the provided value"
-    '(42) ((get (car (compose-values (list <sint>) (list (const '(42)))))) #f))
+    42 ((get (car (compose-values (list <sint>) (list (const 42))))) #f))
   (test-equal "Composing a complex number uses two values"
-    '(2.5 3.25) ((get (car (compose-values (list <complex<float>>) (list (const '(2.5)) (const '(3.25)))))) #f))
+    '(2.5 3.25) ((get (car (compose-values (list <complex<float>>) (list (const 2.5) (const 3.25))))) #f))
   (test-equal "Compose two integer values"
-    '((5) (7)) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const '(5)) (const '(7)))))))
+    '(5 7) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const 5) (const 7))))))
 
 (test-group "decompose multiple types"
   (test-equal "decompose empty list of types"
@@ -297,9 +297,9 @@
   (test-assert "Create second member accessor for container"
     (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60)))))
   (test-equal "Access content of first member"
-    '(42) ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
+    42 ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
   (test-equal "Access content of second member"
-    '(60) ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
+    60 ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
   (test-eqv "Unpack first member of composite value"
     2 (test-a (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3))))))
   (test-eqv "Unpack second member of composite value"
