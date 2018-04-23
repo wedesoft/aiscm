@@ -6,6 +6,7 @@
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * Scheme objects
 * runge kutta with state vector
+* matrix vector operations
 * boolean basic type
 * complex multiplication, division
 * function should return list, sequential computation of complex number

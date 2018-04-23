@@ -9,8 +9,6 @@
 (define-structure vec make-vec (x y z))
 (define-uniform-constructor vec)
 
-((llvm-typed (list (vec <float>)) identity) (make-vec 2 3 5))
-
 (define-method (+ (a <vec<>>) (b <vec<>>)) (vec (+ (x a) (x b)) (+ (y a) (y b)) (+ (z a) (z b))))
 
 ((llvm-typed (list (vec <float>) (vec <float>)) +) (make-vec 2 3 5) (make-vec 3 5 7))
@@ -19,20 +17,21 @@
               (v #:init-keyword #:v #:getter v))
 (define-method (write (self <state>) port) (format port "state(~a)" (v self)))
 (define (make-state v) (make <state> #:v v))
-(define-structure state make-state (x y z))
+(define-structure state make-state (v))
 (define-mixed-constructor state)
 
 (llvm-typed (list (state (vec <float>))) identity)
 ((llvm-typed (list (state (vec <float>))) identity) (make-state (make-vec 2 3 5)))
 (define argument-types (list (state (vec <float>))))
 (define function identity)
+(define foreign-types (cons int64 (map foreign-type (decompose-types argument-types))))
+(define mod (make-llvm-module))
+(define arguments (map function-param (iota (length foreign-types))))
+(define result (apply function arguments))
 
-(map foreign-type (decompose-types argument-types))
+(compose-values (cons <long> argument-types) arguments)
+
 ; compose-values
-
-(real-part (make (complex <float>) #:value (lambda (fun) (list 2 3))))
-
-(base (state (vec <float>)))
 
 ; scalar: 0.3
 ; complex: (0.1 0.2)

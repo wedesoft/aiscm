@@ -64,12 +64,12 @@
 
 (test-group "integer values"
   (test-equal "Wrap and unwrap value"
-    42 (get (make <int> #:value 42)))
+    42 ((get (make <int> #:value (const 42))) #f))
   (test-equal "Equal values"
     (make <int> #:value 42) (make <int> #:value 42))
   (test-assert "Unequal values"
     (not (equal? (make <int> #:value 42) (make <int> #:value 43))))
-  (test-assert "Unequal types values"
+  (test-assert "Differently typed values"
     (not (equal? (make <uint> #:value 42) (make <int> #:value 42)))))
 
 (test-group "get foreign integer type"
@@ -101,12 +101,12 @@
 
 (test-group "floating-point values"
   (test-equal "Wrap and unwrap value"
-    3.5 (get (make <float> #:value 3.5)))
+    3.5 ((get (make <float> #:value (const 3.5))) #f))
   (test-equal "Equal values"
     (make <float> #:value 3.5) (make <float> #:value 3.5))
   (test-assert "Unequal values"
     (not (equal? (make <float> #:value 3.5) (make <float> #:value 4.5))))
-  (test-assert "Unequal types values"
+  (test-assert "Differently typed values"
     (not (equal? (make <float> #:value 1.5) (make <double> #:value 1.5)))))
 
 (test-group "get foreign floating-point type"
@@ -194,9 +194,9 @@
   (test-equal "decompose complex type"
     (list <double> <double>) (decompose-types (list <complex<double>>)))
   (test-equal "decompose nested type"
-    (list <double> <double> <double> <double>) (decompose-types (list (complex (complex <double>)))))
+    (make-list 2 (complex <double>)) (decompose-types (list (complex (complex <double>)))))
   (test-equal "decompose nested mixed type"
-    (list <double> <double> <double> <double>) (decompose-types (list (complex (complex <double>) (complex <double>))))))
+    (make-list 2 (complex <double>)) (decompose-types (list (complex (complex <double>) (complex <double>))))))
 
 (test-group "size of values"
   (test-eqv "size of byte"
@@ -293,17 +293,23 @@
   (test-equal "Get list of member accessors"
     (list testcontent) (components <testcontainer<>>))
   (test-assert "Create member accessor for container"
-    (testcontent (make (testcontainer <int>) #:value (lambda (fun) (list 42)))))
+    (testcontent (make (testcontainer <int>) #:value (lambda (fun) '(42)))))
   (test-assert "Create second member accessor for container"
-    (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60)))))
-  (test-equal "Access content of first member"
-    42 ((get (test-a (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
-  (test-equal "Access content of second member"
-    60 ((get (test-b (make (testtwo <int>) #:value (lambda (fun) (list 42 60))))) #f))
+    (test-b (make (testtwo <int>) #:value (lambda (fun) '(42 60)))))
+  (test-eqv "Access content of first member"
+    42 ((get (test-a (make (testtwo <int>) #:value (lambda (fun) '(42 60))))) #f))
+  (test-eqv "Access content of second member"
+    60 ((get (test-b (make (testtwo <int>) #:value (lambda (fun) '(42 60))))) #f))
   (test-eqv "Unpack first member of composite value"
     2 (test-a (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3))))))
   (test-eqv "Unpack second member of composite value"
-    3 (test-b (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3)))))))
+    3 (test-b (unpack-value (testtwo <byte>) (pointer-address (bytevector->pointer #vu8(2 3))))))
+  (test-equal "Access content of nested container"
+    '(2 3) ((get (testcontent (make (testcontainer (testtwo <int>)) #:value (lambda (fun) '((2 3)))))) #f))
+  (test-eq "Content type of nested container"
+    (testtwo <int>) (class-of (testcontent (make (testcontainer (testtwo <int>)) #:value (lambda (fun) '((2 3)))))))
+  (test-equal "Access value of nested member"
+    3 ((get (test-b (testcontent (make (testcontainer (testtwo <int>)) #:value (lambda (fun) '((2 3))))))) #f)))
 
 (define-class <testmixed> ()
               (test-a #:init-keyword #:test-a #:getter test-a)
