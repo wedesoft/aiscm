@@ -315,7 +315,7 @@
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
-         (fun (llvm-wrap (cons int64 (map foreign-type (decompose-types argument-types)))
+         (fun (llvm-wrap (cons int64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values (cons <long> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]

@@ -23,7 +23,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-argument decompose-arguments decompose-types compose-value compose-values
+            decompose-argument decompose-arguments decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -175,9 +175,13 @@
   "Decompose scalar value"
   (list value))
 
-(define (decompose-types lst)
-  "Decompose list of types"
-  (concatenate (map base lst)))
+(define-method (decompose-type (type <meta<scalar>>))
+  "Decompose scalar type"
+  (base type))
+
+(define-method (decompose-type (type <meta<void>>))
+  "Decompose composite type"
+  (append-map decompose-type (base type)))
 
 (define-method (compose-value (type <meta<scalar>>) lst)
   "Compose a scalar value"

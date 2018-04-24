@@ -186,17 +186,15 @@
   (test-equal "Compose two integer values"
     '(5 7) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const 5) (const 7))))))
 
-(test-group "decompose multiple types"
-  (test-equal "decompose empty list of types"
-    '() (decompose-types '()))
+(test-group "decompose types"
   (test-equal "decompose integer type"
-    (list <sint>) (decompose-types (list <sint>)))
+    (list <sint>) (decompose-type <sint>))
   (test-equal "decompose complex type"
-    (list <double> <double>) (decompose-types (list <complex<double>>)))
+    (list <double> <double>) (decompose-type <complex<double>>))
   (test-equal "decompose nested type"
-    (make-list 2 (complex <double>)) (decompose-types (list (complex (complex <double>)))))
+    (make-list 4 <double>) (decompose-type (complex (complex <double>))))
   (test-equal "decompose nested mixed type"
-    (make-list 2 (complex <double>)) (decompose-types (list (complex (complex <double>) (complex <double>))))))
+    (make-list 4 <double>) (decompose-type (complex (complex <double>) (complex <double>)))))
 
 (test-group "size of values"
   (test-eqv "size of byte"
