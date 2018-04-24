@@ -23,7 +23,7 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-argument decompose-arguments decompose-type compose-value compose-values
+            decompose-argument decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -242,15 +242,12 @@
                        (iota n)))))))))
 
 (define-method (size-of (type <meta<void>>))
-  (reduce + 0 (map size-of (base type))))
+  "Determine size of type"
+  (apply + (map size-of (base type))))
 
 (define-method (decompose-argument (type <meta<void>>) value)
-  "Decompose composite value"
-  (map (cut <> value) (components type)))
-
-(define (decompose-arguments types lst)
-  "Decompose multiple values"
-  (concatenate (map decompose-argument types lst)))
+  "Recursively decompose composite value"
+  (append-map decompose-argument (base type) (map (cut <> value) (components type))))
 
 (define-method (unpack-value (self <meta<void>>) (address <integer>))
   "Unpack composite value stored in a byte vector"

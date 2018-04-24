@@ -327,7 +327,7 @@
           result-type
           (apply fun
             (cons (pointer-address (bytevector->pointer memory))
-                  (decompose-arguments argument-types args))))))))
+                  (append-map decompose-argument argument-types args))))))))
 
 (define ((llvm-call return-type function-name argument-types args) fun)
   (llvm-build-call (slot-ref fun 'llvm-function)

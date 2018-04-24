@@ -156,15 +156,9 @@
   (test-equal "Decompose floating-point number"
     '(1.25) (decompose-argument <float> 1.25))
   (test-equal "Decompose complex number"
-     '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i)))
-
-(test-group "decompose multiple arguments"
-  (test-equal "Decompose empty list of arguments"
-    '() (decompose-arguments '() '()))
-  (test-equal "Decompose floating-point number"
-    '(1.25) (decompose-arguments (list <float>) '(1.25)))
-  (test-equal "Decompose complex number"
-    '(2.5 3.25) (decompose-arguments (list <complex<float>>) '(2.5+3.25i))))
+     '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i))
+  (test-equal "Decompose nested type"
+    '(2.5 0 3.25 0) (decompose-argument (complex (complex <float>)) 2.5+3.25i)))
 
 (test-group "compose value"
   (test-eq "Composing integer creates correct type"
