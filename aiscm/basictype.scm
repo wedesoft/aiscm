@@ -183,22 +183,30 @@
   "Decompose composite type"
   (append-map decompose-type (base type)))
 
-(define-method (compose-value (type <meta<scalar>>) lst)
-  "Compose a scalar value"
-  (make type #:value (car lst)))
+(define (compose-base base-types lst)
+  (if (null? base-types)
+    (cons (const '()) lst)
+    (let* [(result (compose-content (car base-types) lst))
+           (rest   (compose-base (cdr base-types) (cdr result)))]
+      (cons (lambda (fun) (cons ((car result) fun) ((car rest) fun))) (cdr rest)))))
 
-(define-method (compose-value (type <meta<void>>) lst)
-  "Compose a composite value"
-  (make type #:value (lambda (fun) (map (cut <> fun) lst))))
+(define-method (compose-content (type <meta<void>>) lst)
+  (compose-base (base type) lst))
+
+(define-method (compose-content (type <meta<scalar>>) lst)
+  (cons (car lst) (cdr lst)))
+
+(define (compose-value type lst)
+  "Compose a scalar value"
+  (let [(content (compose-content type lst))]
+    (cons (make type #:value (car content)) (cdr content))))
 
 (define (compose-values types lst)
   "Compose multiple values"
   (if (null? types)
     '()
-    (let* [(type       (car types))
-           (base-types (base type))
-           (count      (length base-types))]
-      (cons (compose-value type (take lst count)) (compose-values (cdr types) (drop lst count))))))
+    (let [(result (compose-content (car types) lst))]
+      (cons (make (car types) #:value (car result)) (compose-values (cdr types) (cdr result))))))
 
 (define-syntax define-structure
   (lambda (x)

@@ -162,11 +162,17 @@
 
 (test-group "compose value"
   (test-eq "Composing integer creates correct type"
-    <sint> (class-of (compose-value <sint> (list (const 42)))))
+    <sint> (class-of (car (compose-value <sint> (list (const 42))))))
+  (test-eq "Return remaining values after composing integer"
+    'rest (cdr (compose-value <sint> (cons (const 42) 'rest))))
   (test-equal "Composing integer uses provided value"
-    42 ((get (compose-value <sint> (list (const 42)))) #f))
+    42 ((get (car (compose-value <sint> (list (const 42))))) #f))
   (test-equal "Compose complex number"
-    '(2.5 3.25) ((get (compose-value <complex<float>> (list (const 2.5) (const 3.25)))) #f)))
+    '(2.5 3.25) ((get (car (compose-value <complex<float>> (map const '(2.5 3.25))))) #f))
+  (test-equal "Return remaining values after composing complex number"
+    'rest (cdr (compose-value <complex<float>> (append (map const '(2.5 3.25)) 'rest))))
+  (test-equal "Compose nested value"
+    '((1.0 2.0) (3.0 4.0)) ((get (car (compose-value (complex (complex <float>)) (map const '(1.0 2.0 3.0 4.0))))) #f)))
 
 (test-group "compose multiple values"
   (test-assert "Compose no values"

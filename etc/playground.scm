@@ -20,19 +20,11 @@
 (define-structure state make-state (v))
 (define-mixed-constructor state)
 
+(define-method (+ (a <state<>>) (b <state<>>)) (state (+ (v a) (v b))))
+
 (llvm-typed (list (state (vec <float>))) identity)
 ((llvm-typed (list (state (vec <float>))) identity) (make-state (make-vec 2 3 5)))
-(define argument-types (list (state (vec <float>))))
-(define function identity)
-(define foreign-types (cons int64 (map foreign-type (decompose-types argument-types))))
-(define mod (make-llvm-module))
-(define arguments (map function-param (iota (length foreign-types))))
-(define result (apply function arguments))
 
-(compose-values (cons <long> argument-types) arguments)
-
-; compose-values
-
-; scalar: 0.3
-; complex: (0.1 0.2)
-; nested: ((0.1 0.2) (0.3 0.4))
+((llvm-typed (list (vec <float>)) identity) (make-vec 2 3 5))
+((llvm-typed (list (vec <float>)) state) (make-vec 2 3 5))
+((llvm-typed (list (state (vec <float>)) (state (vec <float>))) +) (make-state (make-vec 2 3 5)) (make-state (make-vec 3 5 7)))
