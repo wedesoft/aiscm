@@ -1,8 +1,6 @@
 ## Ready
 
-* (nested) structures/composite values (e.g. complex numbers and scalar, state vector and quaternions)
-* www.demodashi.com
-* llvm-get-type needed?
+* jumps, labels, conditionals, select statement,`loops
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * Scheme objects
 * runge kutta with state vector
@@ -123,7 +121,6 @@
   http://kodi.wiki/view/Samples
 * use hash tables
 * use assp http://www.scheme.com/csug7/objects.html
-* conditional/select
 * upsampling (and documentation about up- and downsampling)
 * something like Ruby's Struct
 * complex abs (magnitude), complex arg (and real)
