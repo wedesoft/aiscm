@@ -3,6 +3,11 @@
 * boolean (LLVMInt1Type)
 * llvm phi function or select?
 * Debian sid FFmpeg API changes
+* avcodec\_encode\_video2 deprecated
+* avcodec\_decode\_video2 deprecated
+* avcodec\_encode\_audio2 deprecated
+* avcodec\_decode\_audio4 deprecated
+* codec deprecated (ffmpeg.c: 271, 377, 417)
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * "let" for tensors
 * jumps, labels, conditionals, select statement,`loops
