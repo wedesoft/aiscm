@@ -29,12 +29,18 @@
     <void> (class-of (make <void> #:value #f)))
   (test-eq "Content of void type"
     'content (get (make <void> #:value 'content)))
-  (test-eq "Foreign type of void is void"
+  (test-eqv "Foreign type of void is void"
     void (foreign-type <void>))
   (test-eqv "Size of void is zero"
     0 (size-of <void>))
   (test-eq "Unpacking void just returns address"
     'unspecified (unpack-value <void> 'unspecified)))
+
+(test-group "boolean type"
+  (test-eq "Create boolean type"
+    <bool> (class-of (make <bool> #:value #t)))
+  (test-eqv "Foreign type of boolean is byte"
+    int8 (foreign-type <bool>)))
 
 (test-group "construct integer types"
   (for-each
@@ -151,6 +157,10 @@
   int64 (foreign-type <complex<float>>))
 
 (test-group "decompose arguments"
+  (test-equal "Decompose false"
+   '(0) (decompose-argument <bool> #f))
+  (test-equal "Decompose true"
+   '(1) (decompose-argument <bool> #t))
   (test-equal "Decompose integer"
     '(42) (decompose-argument <int> 42))
   (test-equal "Decompose floating-point number"
@@ -187,6 +197,8 @@
     '(5 7) (map (lambda (arg) ((get arg) #f)) (compose-values (list <int> <int>) (list (const 5) (const 7))))))
 
 (test-group "decompose types"
+  (test-equal "decompose boolean type"
+    (list <bool>) (decompose-type <bool>))
   (test-equal "decompose integer type"
     (list <sint>) (decompose-type <sint>))
   (test-equal "decompose complex type"
@@ -197,6 +209,8 @@
     (make-list 4 <double>) (decompose-type (complex (complex <double>) (complex <double>)))))
 
 (test-group "size of values"
+  (test-eqv "Size of boolean"
+    1 (size-of <bool>))
   (test-eqv "size of byte"
     1 (size-of <byte>))
   (test-eqv "size of integer"
@@ -211,6 +225,10 @@
     16 (size-of <complex<double>>)))
 
 (test-group "unpack values"
+  (test-eqv "unpack false"
+    #f (unpack-value <bool> (pointer-address (bytevector->pointer #vu8(0)))))
+  (test-eqv "unpack true"
+    #t (unpack-value <bool> (pointer-address (bytevector->pointer #vu8(1)))))
   (test-eqv "unpack unsigned byte"
     200 (unpack-value <ubyte> (pointer-address (bytevector->pointer #vu8(200)))))
   (test-eqv "unpack signed byte"
@@ -227,6 +245,8 @@
     1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64))))))
 
 (test-group "type matching"
+  (test-equal "type matching for #t"
+    <bool> (native-type #t))
   (test-equal "type matching for 255"
     <ubyte> (native-type 255))
   (test-equal "type matching for 256"

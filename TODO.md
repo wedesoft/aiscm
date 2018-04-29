@@ -1,6 +1,8 @@
 ## Ready
 
-* LLVMBuildBr
+* boolean (LLVMInt1Type)
+* llvm phi function or select?
+* Debian sid FFmpeg API changes
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * "let" for tensors
 * jumps, labels, conditionals, select statement,`loops
@@ -28,7 +30,6 @@
 * colour swapped when converting MJPEG video to FFmpeg video
 * tensor indices
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
-* Debian sid FFmpeg API changes
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * camera calibration, robot inverse kinematics, robot speech processing

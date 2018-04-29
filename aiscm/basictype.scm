@@ -27,6 +27,7 @@
             complex base size-of unpack-value native-type components constructor build
             <void> <meta<void>>
             <scalar> <meta<scalar>>
+            <bool>  <meta<bool>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
             <byte>  <meta<byte>>  <int<8,signed>>    <meta<int<8,signed>>>
@@ -72,6 +73,17 @@
 (define-method (equal? (a <scalar>) (b <scalar>))
   (equal? (get a) (get b)))
 
+(define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
+
+(define-method (foreign-type (type <meta<bool>>))
+  int8)
+
+(define-method (size-of (type <meta<bool>>))
+  1)
+
+(define-method (unpack-value (self <meta<bool>>) address)
+  (not (equal? (pointer->bytevector (make-pointer address) (size-of self)) #vu8(0))))
+
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define (integer nbits sgn)
@@ -109,6 +121,9 @@
 (define-method (foreign-type (type <meta<int<>>>))
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
+
+(define-method (native-type (value <boolean>))
+  <bool>)
 
 (define-method (native-type (value <integer>))
   (if (>= value 0)
@@ -178,6 +193,10 @@
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"
   (base type))
+
+(define-method (decompose-argument (type <meta<bool>>) value)
+  "Decompose boolean value"
+  (list (if value 1 0)))
 
 (define-method (decompose-type (type <meta<void>>))
   "Decompose composite type"
