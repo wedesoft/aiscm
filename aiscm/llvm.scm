@@ -27,6 +27,8 @@
   #:use-module (aiscm util)
   #:export (<llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
+            llvm-void llvm-bool llvm-float llvm-double llvm-uint8 llvm-int8 llvm-uint16 llvm-int16
+            llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
@@ -96,9 +98,12 @@
   (llvm-compile-module (slot-ref self 'llvm-module))
   (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
 
+(define (bool->int8 type)
+  (if (eqv? type llvm-bool) int8 type))
+
 (define (llvm-func llvm fun)
   (let [(pointer (llvm-get-function-address (slot-ref llvm 'llvm-module) (slot-ref fun 'name)))]
-    (pointer->procedure (slot-ref fun 'return-type) pointer (slot-ref fun 'argument-types))))
+    (pointer->procedure (bool->int8 (slot-ref fun 'return-type)) pointer (map bool->int8 (slot-ref fun 'argument-types)))))
 
 (define (make-constant type value)
   "Create a constant LLVM value"
@@ -106,7 +111,7 @@
 
 (define (make-constant-pointer address)
   "Create pointer constant"
-  (make-constant int64 (pointer-address address)))
+  (make-constant llvm-int64 (pointer-address address)))
 
 (define (get-type value)
   "Query type of LLVM value"
@@ -160,6 +165,9 @@
 
 (define (return . args)
   (make <void> #:value (apply function-ret (map get args))))
+
+(define (replace-bool-with-int8 type)
+  (if (eqv? type llvm-bool) int8 type))
 
 (define (llvm-wrap foreign-types function)
   "Convenience wrapper for compiling JIT functions"
@@ -312,10 +320,13 @@
 (define-method (finish-return (type <meta<scalar>>) result)
   result)
 
+(define-method (finish-return (type <meta<bool>>) result)
+  (not (zero? result)))
+
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
-         (fun (llvm-wrap (cons int64 (map foreign-type (append-map decompose-type argument-types)))
+         (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values (cons <long> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]

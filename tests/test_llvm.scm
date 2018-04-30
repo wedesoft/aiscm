@@ -32,25 +32,27 @@
     (slot-ref (make-llvm-module) 'llvm-module)))
 
 (test-group "constant values"
+  (test-eqv "Get type of 1-bit boolean value"
+    llvm-bool (get-type ((make-constant llvm-bool #t) #f)))
   (for-each
     (lambda (type bits)
       (test-eqv (format #f "Get type of ~a-bit integer value" bits)
         type (get-type ((make-constant type 42) #f))))
-    (list int8 int16 int32 int64)
+    (list llvm-int8 llvm-int16 llvm-int32 llvm-int64)
     '(8 16 32 64))
   (for-each
     (lambda (unsigned-type signed-type bits)
       (test-eqv (format #f "Type of ~a-bit value ignores signed-ness" bits)
         signed-type (get-type ((make-constant unsigned-type 42) #f))))
-    (list uint8 uint16 uint32 uint64)
-    (list int8 int16 int32 int64)
+    (list llvm-uint8 llvm-uint16 llvm-uint32 llvm-uint64)
+    (list llvm-int8 llvm-int16 llvm-int32 llvm-int64)
     '(8 16 32 64))
   (test-equal "Get type of double-precision floating point value"
-    double (get-type ((make-constant double (exp 1)) #f)))
+    llvm-double (get-type ((make-constant llvm-double (exp 1)) #f)))
   (test-equal "Get type of single-precision floating point value"
-    float (get-type ((make-constant float (exp 1)) #f)))
+    llvm-float (get-type ((make-constant llvm-float (exp 1)) #f)))
   (test-equal "Memory address is 64 bit"
-    int64 (get-type ((make-constant-pointer (make-pointer 1234)) #f))))
+    llvm-int64 (get-type ((make-constant-pointer (make-pointer 1234)) #f))))
 
 (test-group "memoization"
   (test-eqv "implements function"
@@ -66,32 +68,32 @@
 
 (test-group "functions"
   (test-equal "Create LLVM function"
-    <llvm-function> (class-of (let [(mod (make-llvm-module))] (make-function mod void "function"))))
+    <llvm-function> (class-of (let [(mod (make-llvm-module))] (make-function mod llvm-void "function"))))
   (let [(mod (make-llvm-module))]
     (test-equal "Keep LLVM instance alive"
-      mod (slot-ref (make-function mod void "function") 'module)))
+      mod (slot-ref (make-function mod llvm-void "function") 'module)))
   (test-assert "Compile, verify, and run empty function"
     (unspecified?
       (let* [(mod  (make-llvm-module))
-             (fun  (make-function mod void "empty"))]
+             (fun  (make-function mod llvm-void "empty"))]
         ((function-ret) fun)
         (llvm-compile mod)
         ((llvm-func mod fun)))))
   (test-assert "Dump module containing a function"
     (unspecified?
       (let* [(mod  (make-llvm-module))
-             (fun  (make-function mod void "empty"))]
+             (fun  (make-function mod llvm-void "empty"))]
         ((function-ret) fun)
         (llvm-dump mod))))
   (test-error "Throw error if module is not valid"
     'misc-error
     (let* [(mod  (make-llvm-module))
-           (fun  (make-function mod void "incomplete"))]
+           (fun  (make-function mod llvm-void "incomplete"))]
       (llvm-compile llvm)))
   (test-error "Throw error when attempting to compile twice"
     'misc-error
     (let* [(mod  (make-llvm-module))
-           (fun  (make-function mod void "empty"))]
+           (fun  (make-function mod llvm-void "empty"))]
       ((function-ret) fun)
       (llvm-compile llvm)
       (llvm-compile llvm)))
@@ -104,7 +106,7 @@
           ((function-ret (make-constant type value)) fun)
           (llvm-compile mod)
           ((llvm-func mod fun)))))
-    (list int8 int16 int32 int64 uint8 uint16 uint32 uint64)
+    (list llvm-int8 llvm-int16 llvm-int32 llvm-int64 llvm-uint8 llvm-uint16 llvm-uint32 llvm-uint64)
     (append (make-list 4 "signed") (make-list 4 "unsigned"))
     '(8 16 32 64 8 16 32 64)
     '(-128 -32768 -2147483648 -9223372036854775808 255 65535 4294967295 18446744073709551615))
@@ -117,7 +119,7 @@
            ((function-ret (make-constant type 0.5)) fun)
            (llvm-compile mod)
            ((llvm-func mod fun)))))
-    (list float double)
+    (list llvm-float llvm-double)
     (list "single" "double")))
 
 (test-group "pointers"
@@ -131,13 +133,13 @@
         (llvm-compile mod)
         ((llvm-func mod fun)))))
     '(2 770)
-    (list int8 int16)
+    (list llvm-int8 llvm-int16)
     '("byte" "short integer"))
   (for-each (lambda (data value type name)
     (test-equal (format #f "Write ~a to memory" name)
       #vu8(2 3 5 7)
       (let* [(mod  (make-llvm-module))
-             (fun  (make-function mod void "write_mem"))]
+             (fun  (make-function mod llvm-void "write_mem"))]
         ((llvm-store type (make-constant type value) (make-constant-pointer (bytevector->pointer data))) fun)
         ((function-ret) fun)
         (llvm-compile mod)
@@ -145,16 +147,16 @@
         data)))
     (list #vu8(0 3 5 7) #vu8(0 0 5 7))
     '(2 770)
-    (list int8 int16)
+    (list llvm-int8 llvm-int16)
     '("byte" "short integer")))
 
 (test-group "method arguments"
   (test-assert "Declare a function which accepts arguments"
     (let [(mod (make-llvm-module))]
-      (make-function mod int "with_arg" int)))
+      (make-function mod llvm-int32 "with_arg" llvm-int32)))
   (test-assert "Call a function accepting an argument"
     (let* [(mod  (make-llvm-module))
-           (fun  (make-function mod void "accept_arg" int))]
+           (fun  (make-function mod llvm-void "accept_arg" llvm-int32))]
       ((function-ret) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
@@ -167,18 +169,18 @@
         (llvm-compile mod)
         ((llvm-func mod fun) value))))
     '(42 0.5)
-    (list int double)
+    (list llvm-int32 llvm-double)
     '("integer" "floating-point"))
   (for-each (lambda (value type name)
     (test-equal (format #f "Compile, verify, and run function returning second ~a argument" name)
       value
       (let* [(mod  (make-llvm-module))
-             (fun  (make-function mod type "second" int type))]
+             (fun  (make-function mod type "second" llvm-int32 type))]
         ((function-ret (function-param 1)) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) -1 value))))
     '(42 0.5)
-    (list int double)
+    (list llvm-int32 llvm-double)
     '("integer" "floating-point")))
 
 (test-group "unary operation"
@@ -193,7 +195,7 @@
     '(42 42 2.5)
     (list llvm-not llvm-neg llvm-fneg)
     '(213 -42 -2.5)
-    (list uint8 int double)))
+    (list llvm-uint8 llvm-int32 llvm-double)))
 
 (test-group "binary expressions"
   (for-each (lambda (value-a value-b op result type)
@@ -208,56 +210,64 @@
     '(3 30 7 3.25 3.25 3.25)
     (list llvm-add llvm-sub llvm-mul llvm-fadd llvm-fsub llvm-fmul)
     '(5 70 35 5.75 2.5 8.125)
-    (list int int int double double double)))
+    (list llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
-    (unspecified? ((llvm-wrap '() (const (cons void (function-ret)))))))
+    (unspecified? ((llvm-wrap '() (const (cons llvm-void (function-ret)))))))
   (test-eqv "Define constant function using convenience wrapper"
     42
-    ((llvm-wrap '() (const (cons int (function-ret (make-constant int 42)))))))
-  (test-eqv "Define identity function using convenience wrapper"
+    ((llvm-wrap '() (const (cons llvm-int32 (function-ret (make-constant llvm-int32 42)))))))
+  (test-eqv "Define integer identity function using convenience wrapper"
     42
-    ((llvm-wrap (list int) (lambda (value) (cons int (function-ret value)))) 42))
+    ((llvm-wrap (list llvm-int32) (lambda (value) (cons llvm-int32 (function-ret value)))) 42))
+  (test-eqv "Use byte values instead of booleans"
+    1
+    ((llvm-wrap (list llvm-bool) (lambda (value) (cons llvm-bool (function-ret value)))) 1))
   (test-eqv "Define negating function using convenience wrapper"
     -42
-    ((llvm-wrap (list int) (lambda (value) (cons int (function-ret (llvm-neg value))))) 42))
+    ((llvm-wrap (list llvm-int32) (lambda (value) (cons llvm-int32 (function-ret (llvm-neg value))))) 42))
   (test-eqv "Define addition function using convenience wrapper"
     36
-    ((llvm-wrap (list int int) (lambda (value-a value-b) (cons int (function-ret (llvm-add value-a value-b))))) 21 15))
+    ((llvm-wrap (list llvm-int32 llvm-int32)
+                (lambda (value-a value-b) (cons llvm-int32 (function-ret (llvm-add value-a value-b))))) 21 15))
   (test-equal "Define function with side-effect but no return value"
     #vu8(42)
     (let* [(data    #vu8(0))
            (pointer (make-constant-pointer (bytevector->pointer data)))]
-      ((llvm-wrap (list int8)
+      ((llvm-wrap (list llvm-int8)
                   (lambda (value)
-                    (cons void (lambda (fun) ((llvm-store int8 value pointer) fun) ((function-ret) fun))))) 42)
+                    (cons llvm-void (lambda (fun) ((llvm-store llvm-int8 value pointer) fun) ((function-ret) fun))))) 42)
       data))
   (test-eqv "Pass pointer argument"
     42
     (let* [(data    #vu8(42))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons int8 (function-ret (llvm-fetch int8 value))))) pointer))))
+      ((llvm-wrap (list llvm-int64)
+                  (lambda (value) (cons llvm-int8 (function-ret (llvm-fetch llvm-int8 value))))) pointer))))
 
 (test-group "integer type conversions"
   (test-equal "Zero-extend integer"
     254
     (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (llvm-fetch uint8 value)))))) pointer)))
+      ((llvm-wrap (list int64)
+                  (lambda (value) (cons uint32 (function-ret (llvm-zext uint32 (llvm-fetch uint8 value)))))) pointer)))
   (test-equal "Sign-extend integer"
     -2
     (let* [(data #vu8(254))
            (pointer (pointer-address (bytevector->pointer data)))]
-      ((llvm-wrap (list int64) (lambda (value) (cons int32 (function-ret (llvm-sext int32 (llvm-fetch int8 value)))))) pointer)))
+      ((llvm-wrap (list llvm-int64)
+                  (lambda (value) (cons llvm-int32 (function-ret (llvm-sext llvm-int32 (llvm-fetch llvm-int8 value)))))) pointer)))
   (test-equal "Truncate integer"
-    #xcd ((llvm-wrap (list uint16) (lambda (value) (cons uint8 (function-ret (llvm-trunc int8 value))))) #xabcd)))
+    #xcd ((llvm-wrap (list llvm-uint16)
+                     (lambda (value) (cons llvm-uint8 (function-ret (llvm-trunc llvm-int8 value))))) #xabcd)))
 
 (test-group "expression basics"
   (test-equal "unary minus invokes llvm negation"
     -42
     (let* [(mod (make-llvm-module))
-           (fun (make-function mod int "op" int))]
+           (fun (make-function mod llvm-int32 "op" llvm-int32))]
       ((function-ret (get (- (make <int> #:value (function-param 0))))) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)))
@@ -281,6 +291,10 @@
 (test-group "type inference"
   (test-equal "identity function with integer"
     42 ((llvm-typed (list <int>) identity) 42))
+  (test-equal "identity function returning true"
+    #t ((llvm-typed (list <bool>) identity) #t))
+  (test-equal "identity function returning false"
+    #f ((llvm-typed (list <bool>) identity) #f))
   (test-equal "compact integer negation"
     -42 ((llvm-typed (list <int>) -) 42))
   (test-equal "sum of two integers"
@@ -290,21 +304,21 @@
 
 (test-group "floating-point type conversions"
   (test-equal "convert single-precision to double-precision float"
-    3.5 ((llvm-wrap (list float) (lambda (value) (cons double (function-ret (llvm-fp-cast double value))))) 3.5))
+    3.5 ((llvm-wrap (list llvm-float) (lambda (value) (cons llvm-double (function-ret (llvm-fp-cast llvm-double value))))) 3.5))
   (test-equal "convert double-precision to single-precision float"
-    3.5 ((llvm-wrap (list double) (lambda (value) (cons float (function-ret (llvm-fp-cast float value))))) 3.5)))
+    3.5 ((llvm-wrap (list llvm-double) (lambda (value) (cons llvm-float (function-ret (llvm-fp-cast llvm-float value))))) 3.5)))
 
 (test-group "convert floating-point to integer"
   (test-equal "convert floating-point to signed integer "
-    -42 ((llvm-wrap (list float) (lambda (value) (cons int32 (function-ret (llvm-fp-to-si int32 value))))) -42.0))
+    -42 ((llvm-wrap (list llvm-float) (lambda (value) (cons llvm-int32 (function-ret (llvm-fp-to-si llvm-int32 value))))) -42.0))
   (test-equal "convert floating-point to unsigned integer "
-    200 ((llvm-wrap (list float) (lambda (value) (cons uint8 (function-ret (llvm-fp-to-ui uint8 value))))) 200.0)))
+    200 ((llvm-wrap (list llvm-float) (lambda (value) (cons llvm-uint8 (function-ret (llvm-fp-to-ui llvm-uint8 value))))) 200.0)))
 
 (test-group "convert integer to floating-point"
   (test-equal "convert signed integer to floating-point"
-    -42.0 ((llvm-wrap (list int) (lambda (value) (cons float (function-ret (llvm-si-to-fp float value))))) -42))
+    -42.0 ((llvm-wrap (list llvm-int32) (lambda (value) (cons llvm-float (function-ret (llvm-si-to-fp llvm-float value))))) -42))
   (test-equal "convert unsigned integer to floating-point"
-    200.0 ((llvm-wrap (list uint8) (lambda (value) (cons double (function-ret (llvm-ui-to-fp double value))))) 200)))
+    200.0 ((llvm-wrap (list llvm-uint8) (lambda (value) (cons llvm-double (function-ret (llvm-ui-to-fp llvm-double value))))) 200)))
 
 (test-group "floating point type conversions"
   (test-equal "returns requested type"
@@ -404,11 +418,13 @@
 (test-group "method calls"
   (test-equal "call libc's fabsf method"
     1.25
-    ((llvm-wrap (list float) (lambda args (cons float (function-ret (llvm-call float "fabsf" (list float) args)))))
+    ((llvm-wrap (list llvm-float)
+                (lambda args (cons llvm-float (function-ret (llvm-call llvm-float "fabsf" (list llvm-float) args)))))
      -1.25))
   (test-equal "call libc's atan2 method"
     0.0
-    ((llvm-wrap (list double double) (lambda args (cons double (function-ret (llvm-call double "atan2" (list double double) args)))))
+    ((llvm-wrap (list llvm-double llvm-double)
+                (lambda args (cons llvm-double (function-ret (llvm-call llvm-double "atan2" (list llvm-double llvm-double) args)))))
      0.0 1.0)))
 
 (test-group "typed constants"

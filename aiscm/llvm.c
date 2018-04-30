@@ -98,6 +98,8 @@ size_t free_llvm_function(SCM scm_self)
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_LAST + 1:
+      return LLVMInt1Type();
     case SCM_FOREIGN_TYPE_FLOAT:
       return LLVMFloatType();
     case SCM_FOREIGN_TYPE_DOUBLE:
@@ -119,7 +121,7 @@ static LLVMTypeRef llvm_type(int type)
   };
 }
 
-static int llvm_type_to_foreign_type(LLVMTypeRef type)
+static int llvm_type_index(LLVMTypeRef type)
 {
   LLVMDumpType(type);
   switch (LLVMGetTypeKind(type)) {
@@ -129,6 +131,8 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
       return SCM_FOREIGN_TYPE_DOUBLE;
     case LLVMIntegerTypeKind:
       switch (LLVMGetIntTypeWidth(type)) {
+        case 1:
+          return SCM_FOREIGN_TYPE_LAST + 1;
         case 8:
           return SCM_FOREIGN_TYPE_INT8;
         case 16:
@@ -148,6 +152,8 @@ static int llvm_type_to_foreign_type(LLVMTypeRef type)
 static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
 {
   switch (type) {
+    case SCM_FOREIGN_TYPE_LAST + 1:
+      return LLVMConstInt(llvm_type(type), scm_is_true(scm_value), 0);
     case SCM_FOREIGN_TYPE_FLOAT:
     case SCM_FOREIGN_TYPE_DOUBLE:
       return LLVMConstReal(llvm_type(type), scm_to_double(scm_value));
@@ -301,7 +307,7 @@ SCM make_llvm_constant(SCM scm_type, SCM scm_value)
 SCM llvm_get_type(SCM scm_self)
 {
   struct llvm_value_t *self = get_llvm_value(scm_self);
-  return scm_from_int(llvm_type_to_foreign_type(LLVMTypeOf(self->value)));
+  return scm_from_int(llvm_type_index(LLVMTypeOf(self->value)));
 }
 
 SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
@@ -489,14 +495,26 @@ void init_llvm(void)
   LLVMInitializeNativeAsmPrinter();
   LLVMInitializeNativeAsmParser();
 
-  llvm_module_tag = scm_make_smob_type("llvmmodule", sizeof(struct llvm_module_t));
+  llvm_module_tag = scm_make_smob_type("llvm_module", sizeof(struct llvm_module_t));
   scm_set_smob_free(llvm_module_tag, free_llvm_module);
 
-  llvm_function_tag = scm_make_smob_type("llvmfunction", sizeof(struct llvm_function_t));
+  llvm_function_tag = scm_make_smob_type("llvm_function", sizeof(struct llvm_function_t));
   scm_set_smob_free(llvm_function_tag, free_llvm_function);
 
-  llvm_value_tag = scm_make_smob_type("llvmvalue", sizeof(struct llvm_value_t));
+  llvm_value_tag = scm_make_smob_type("llvm_value", sizeof(struct llvm_value_t));
 
+  scm_c_define("llvm-bool"  , scm_from_int(SCM_FOREIGN_TYPE_LAST + 1));
+  scm_c_define("llvm-void"  , scm_from_int(SCM_FOREIGN_TYPE_VOID    ));
+  scm_c_define("llvm-float" , scm_from_int(SCM_FOREIGN_TYPE_FLOAT   ));
+  scm_c_define("llvm-double", scm_from_int(SCM_FOREIGN_TYPE_DOUBLE  ));
+  scm_c_define("llvm-uint8" , scm_from_int(SCM_FOREIGN_TYPE_UINT8   ));
+  scm_c_define("llvm-int8"  , scm_from_int(SCM_FOREIGN_TYPE_INT8    ));
+  scm_c_define("llvm-uint16", scm_from_int(SCM_FOREIGN_TYPE_UINT16  ));
+  scm_c_define("llvm-int16" , scm_from_int(SCM_FOREIGN_TYPE_INT16   ));
+  scm_c_define("llvm-uint32", scm_from_int(SCM_FOREIGN_TYPE_UINT32  ));
+  scm_c_define("llvm-int32" , scm_from_int(SCM_FOREIGN_TYPE_INT32   ));
+  scm_c_define("llvm-uint64", scm_from_int(SCM_FOREIGN_TYPE_UINT64  ));
+  scm_c_define("llvm-int64" , scm_from_int(SCM_FOREIGN_TYPE_INT64   ));
   scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));

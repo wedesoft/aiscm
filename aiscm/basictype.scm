@@ -76,7 +76,7 @@
 (define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
 
 (define-method (foreign-type (type <meta<bool>>))
-  int8)
+  (1+ int64))
 
 (define-method (size-of (type <meta<bool>>))
   1)
