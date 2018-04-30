@@ -50,41 +50,66 @@
 (define signed   'signed)
 (define unsigned 'unsigned)
 
+(define bool (1+ int64)); int64 is last foreign type
+
 (define-class* <void> <object> <meta<void>> <class>
                (value #:init-keyword #:value #:getter get))
 
-(define-method (foreign-type (type <meta<void>>))
-  void)
-
-(define-method (base (type <meta<void>>))
-  '())
-
-(define-method (components (type <meta<void>>))
-  '())
-
-(define-method (unpack-value (self <meta<void>>) address)
-  address)
-
 (define-class* <scalar> <void> <meta<scalar>> <meta<void>>)
-
-(define-method (base (type <meta<scalar>>))
-  (list type))
-
-(define-method (equal? (a <scalar>) (b <scalar>))
-  (equal? (get a) (get b)))
 
 (define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
 
-(define-method (foreign-type (type <meta<bool>>))
-  (1+ int64))
-
-(define-method (size-of (type <meta<bool>>))
-  1)
-
-(define-method (unpack-value (self <meta<bool>>) address)
-  (not (equal? (pointer->bytevector (make-pointer address) (size-of self)) #vu8(0))))
-
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
+
+(define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
+
+(define-syntax define-structure
+  (lambda (x)
+    (syntax-case x ()
+      ((k name construct (members ...))
+        (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
+              (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
+              (n           (length (syntax->datum #'(members ...))))
+              (header      (map (cut list <> '<meta<void>>) (syntax->datum #'(members ...))))]
+          #`(begin
+              (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
+
+              (define-method (constructor (type #,(datum->syntax #'k metaclass)))
+                "Get constructor for composite type"
+                construct)
+
+              (define-method (build (type #,(datum->syntax #'k metaclass)))
+                "Get method for composing value in compiled code"
+                name)
+
+              (define-method (name #,@(datum->syntax #'k header))
+                "Instantiate a composite type using the type template"
+                (template-class (name members ...) #,(datum->syntax #'k class)
+                  (lambda (class metaclass)
+                    (define-method (base (self metaclass)) (list members ...)))))
+
+              (define-method (name (base-type <meta<void>>))
+                "Instantiate a composite type using the type template"
+                (template-class (name base-type) #,(datum->syntax #'k class)
+                  (lambda (class metaclass)
+                    (define-method (base (self metaclass)) base (make-list #,(datum->syntax #'k n) base-type)))))
+
+              (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
+                "Foreign type of template class is pointer"
+                int64)
+
+              (define-method (components (type #,(datum->syntax #'k metaclass)))
+                "List component accessor methods of composite type"
+                (list members ...))
+
+              (begin .
+                #,(map (lambda (member-name index)
+                         #`(define-method (#,(datum->syntax #'k member-name) self)
+                             "Access a component of the composite type"
+                             (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
+                                   #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))))
+                       (syntax->datum #'(members ...))
+                       (iota n)))))))))
 
 (define (integer nbits sgn)
   "Retrieve integer class with specified number of bits and sign"
@@ -105,22 +130,62 @@
 (define <ulong> (integer 64 unsigned)) (define <meta<ulong>> (class-of <ulong>))
 (define <long>  (integer 64 signed  )) (define <meta<long>>  (class-of <long> ))
 
-(define-method (unpack-value (self <meta<int<>>>) (address <integer>))
-  "Unpack integer stored in a byte vector"
-  (let [(packed    (pointer->bytevector (make-pointer address) (size-of self)))
-        (converter (if (signed? self) bytevector->sint-list bytevector->uint-list))]
-    (car (converter packed (native-endianness) (bytevector-length packed)))))
+(define single-precision 'single)
+(define double-precision 'double)
 
-(define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
-  "Type coercion for integers"
-  (let* [(is-signed? (or (signed? a) (signed? b)))
-         (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
-         (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
-    (integer (min 64 (max (bits (adapt a)) (bits (adapt b)))) (if is-signed? signed unsigned))))
+(define (floating-point precision)
+  (template-class (float precision) <float<>>
+    (lambda (class metaclass)
+      (define-method (double-precision? (self metaclass)) (eq? precision double-precision)) )))
+
+(define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
+(define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
+
+(define-structure complex make-rectangular (real-part imag-part))
+
+(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
+(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
+
+(define-method (equal? (a <void>) (b <void>))
+  (equal? (get a) (get b)))
+
+(define-method (base (type <meta<void>>))
+  '())
+
+(define-method (base (type <meta<scalar>>))
+  (list type))
+
+(define-method (components (type <meta<void>>))
+  '())
+
+(define-method (foreign-type (type <meta<void>>))
+  void)
+
+(define-method (foreign-type (type <meta<bool>>))
+  bool)
 
 (define-method (foreign-type (type <meta<int<>>>))
   "Get foreign type for integer type"
   (- (* 2 (inexact->exact (/ (log (bits type)) (log 2)))) (if (signed? type) 2 3)))
+
+(define-method (foreign-type (type <meta<float<>>>))
+  "Get foreign type for floating-point type"
+  (if (double-precision? type) double float))
+
+(define-method (size-of (type <meta<bool>>))
+  1)
+
+(define-method (size-of (type <meta<int<>>>))
+  "Get size of integer values"
+  (/ (bits type) 8))
+
+(define-method (size-of (type <meta<float<>>>))
+  "Get size of floating-point values"
+  (if (double-precision? type) 8 4))
+
+(define-method (size-of (type <meta<void>>))
+  "Determine size of type"
+  (apply + (map size-of (base type))))
 
 (define-method (native-type (value <boolean>))
   <bool>)
@@ -143,22 +208,17 @@
 (define-method (native-type (value <complex>))
   <complex<double>>)
 
-(define-method (size-of (type <meta<int<>>>))
-  "Get size of integer values"
-  (/ (bits type) 8))
+(define-method (unpack-value (self <meta<void>>) address)
+  address)
 
-(define single-precision 'single)
-(define double-precision 'double)
+(define-method (unpack-value (self <meta<bool>>) address)
+  (not (equal? (pointer->bytevector (make-pointer address) (size-of self)) #vu8(0))))
 
-(define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
-
-(define (floating-point precision)
-  (template-class (float precision) <float<>>
-    (lambda (class metaclass)
-      (define-method (double-precision? (self metaclass)) (eq? precision double-precision)) )))
-
-(define <float>  (floating-point single-precision)) (define <meta<float>>  (class-of <float> ))
-(define <double> (floating-point double-precision)) (define <meta<double>> (class-of <double>))
+(define-method (unpack-value (self <meta<int<>>>) (address <integer>))
+  "Unpack integer stored in a byte vector"
+  (let [(packed    (pointer->bytevector (make-pointer address) (size-of self)))
+        (converter (if (signed? self) bytevector->sint-list bytevector->uint-list))]
+    (car (converter packed (native-endianness) (bytevector-length packed)))))
 
 (define-method (unpack-value (self <meta<float<>>>) (address <integer>))
   "Unpack floating-point value stored in a byte vector"
@@ -166,13 +226,18 @@
           (converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
       (converter packed 0)))
 
-(define-method (foreign-type (type <meta<float<>>>))
-  "Get foreign type for floating-point type"
-  (if (double-precision? type) double float))
+(define-method (unpack-value (self <meta<void>>) (address <integer>))
+  "Unpack composite value stored in a byte vector"
+  (apply (constructor self) (map (lambda (type offset) (unpack-value type (+ address offset)))
+                                 (base self)
+                                 (integral (cons 0 (all-but-last (map size-of (base self))))))))
 
-(define-method (size-of (type <meta<float<>>>))
-  "Get size of floating-point values"
-  (if (double-precision? type) 8 4))
+(define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
+  "Type coercion for integers"
+  (let* [(is-signed? (or (signed? a) (signed? b)))
+         (to-signed  (lambda (t) (if (signed? t) t (integer (* 2 (bits t)) signed))))
+         (adapt      (if (eq? (signed? a) (signed? b)) identity to-signed))]
+    (integer (min 64 (max (bits (adapt a)) (bits (adapt b)))) (if is-signed? signed unsigned))))
 
 (define-method (coerce (a <meta<float<>>>) (b <meta<float<>>>))
   "Coerce floating-point numbers"
@@ -186,21 +251,25 @@
   "Coerce integer and floating-point number"
   b)
 
-(define-method (decompose-argument (type <meta<scalar>>) value)
-  "Decompose scalar value"
-  (list value))
-
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"
   (base type))
+
+(define-method (decompose-type (type <meta<void>>))
+  "Decompose composite type"
+  (append-map decompose-type (base type)))
+
+(define-method (decompose-argument (type <meta<scalar>>) value)
+  "Decompose scalar value"
+  (list value))
 
 (define-method (decompose-argument (type <meta<bool>>) value)
   "Decompose boolean value"
   (list (if value 1 0)))
 
-(define-method (decompose-type (type <meta<void>>))
-  "Decompose composite type"
-  (append-map decompose-type (base type)))
+(define-method (decompose-argument (type <meta<void>>) value)
+  "Recursively decompose composite value"
+  (append-map decompose-argument (base type) (map (cut <> value) (components type))))
 
 (define (compose-base base-types lst)
   (if (null? base-types)
@@ -226,63 +295,3 @@
     '()
     (let [(result (compose-content (car types) lst))]
       (cons (make (car types) #:value (car result)) (compose-values (cdr types) (cdr result))))))
-
-(define-syntax define-structure
-  (lambda (x)
-    (syntax-case x ()
-      ((k name construct (members ...))
-        (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
-              (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
-              (n           (length (syntax->datum #'(members ...))))
-              (header      (map (cut list <> '<meta<void>>) (syntax->datum #'(members ...))))]
-          #`(begin
-              (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
-              (define-method (constructor (type #,(datum->syntax #'k metaclass)))
-                "Get constructor for composite type"
-                construct)
-              (define-method (build (type #,(datum->syntax #'k metaclass)))
-                "Get method for composing value in compiled code"
-                name)
-              (define-method (name #,@(datum->syntax #'k header))
-                "Instantiate a composite type using the type template"
-                (template-class (name members ...) #,(datum->syntax #'k class)
-                  (lambda (class metaclass)
-                    (define-method (base (self metaclass)) (list members ...)))))
-              (define-method (name (base-type <meta<void>>))
-                "Instantiate a composite type using the type template"
-                (template-class (name base-type) #,(datum->syntax #'k class)
-                  (lambda (class metaclass)
-                    (define-method (base (self metaclass)) base (make-list #,(datum->syntax #'k n) base-type)))))
-              (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
-                "Foreign type of template class is pointer"
-                int64)
-              (define-method (components (type #,(datum->syntax #'k metaclass)))
-                "List component accessor methods of composite type"
-                (list members ...))
-              (begin .
-                #,(map (lambda (member-name index)
-                         #`(define-method (#,(datum->syntax #'k member-name) self)
-                             "Access a component of the composite type"
-                             (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
-                                   #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))))
-                       (syntax->datum #'(members ...))
-                       (iota n)))))))))
-
-(define-method (size-of (type <meta<void>>))
-  "Determine size of type"
-  (apply + (map size-of (base type))))
-
-(define-method (decompose-argument (type <meta<void>>) value)
-  "Recursively decompose composite value"
-  (append-map decompose-argument (base type) (map (cut <> value) (components type))))
-
-(define-method (unpack-value (self <meta<void>>) (address <integer>))
-  "Unpack composite value stored in a byte vector"
-  (apply (constructor self) (map (lambda (type offset) (unpack-value type (+ address offset)))
-                                 (base self)
-                                 (integral (cons 0 (all-but-last (map size-of (base self))))))))
-
-(define-structure complex make-rectangular (real-part imag-part))
-
-(define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
-(define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
