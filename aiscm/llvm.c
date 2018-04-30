@@ -22,6 +22,9 @@
 #include "util-helpers.h"
 
 
+#define SCM_FOREIGN_TYPE_BOOL (SCM_FOREIGN_TYPE_LAST + 1)
+
+
 static scm_t_bits llvm_module_tag;
 
 static scm_t_bits llvm_function_tag;
@@ -98,12 +101,12 @@ size_t free_llvm_function(SCM scm_self)
 static LLVMTypeRef llvm_type(int type)
 {
   switch (type) {
-    case SCM_FOREIGN_TYPE_LAST + 1:
-      return LLVMInt1Type();
     case SCM_FOREIGN_TYPE_FLOAT:
       return LLVMFloatType();
     case SCM_FOREIGN_TYPE_DOUBLE:
       return LLVMDoubleType();
+    case SCM_FOREIGN_TYPE_BOOL:
+      return LLVMInt1Type();
     case SCM_FOREIGN_TYPE_UINT8:
     case SCM_FOREIGN_TYPE_INT8:
       return LLVMInt8Type();
@@ -132,7 +135,7 @@ static int llvm_type_index(LLVMTypeRef type)
     case LLVMIntegerTypeKind:
       switch (LLVMGetIntTypeWidth(type)) {
         case 1:
-          return SCM_FOREIGN_TYPE_LAST + 1;
+          return SCM_FOREIGN_TYPE_BOOL;
         case 8:
           return SCM_FOREIGN_TYPE_INT8;
         case 16:
@@ -152,11 +155,11 @@ static int llvm_type_index(LLVMTypeRef type)
 static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
 {
   switch (type) {
-    case SCM_FOREIGN_TYPE_LAST + 1:
-      return LLVMConstInt(llvm_type(type), scm_is_true(scm_value), 0);
     case SCM_FOREIGN_TYPE_FLOAT:
     case SCM_FOREIGN_TYPE_DOUBLE:
       return LLVMConstReal(llvm_type(type), scm_to_double(scm_value));
+    case SCM_FOREIGN_TYPE_BOOL:
+      return LLVMConstInt(llvm_type(type), scm_is_true(scm_value), 0);
     case SCM_FOREIGN_TYPE_UINT8:
     case SCM_FOREIGN_TYPE_UINT16:
     case SCM_FOREIGN_TYPE_UINT32:
