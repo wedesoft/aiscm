@@ -219,7 +219,7 @@
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
-      (make target #:value (delegate (get adapt-a) (get adapt-b))))))
+      (make target #:value (delegate (get adapt-a) (get adapt-b)))))); TODO: remove redundant code below
 
 (define-method (< (value-a <int<>>) (value-b <int<>>))
   (let* [(target (coerce (class-of value-a) (class-of value-b)))
