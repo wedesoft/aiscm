@@ -37,7 +37,7 @@
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* camera calibration, robot inverse kinematics, robot speech processing
+* camera calibration, robot inverse kinematics, robot speech processing, Turtle Rover https://turtlerover.com/turtle/
 * 1+, 1-
 * ==, != for complex numbers
 * galaxy simulation

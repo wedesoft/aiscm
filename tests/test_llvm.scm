@@ -525,7 +525,9 @@
     #f ((llvm-typed (list <ubyte> <ubyte>) <) 120 120))
   (test-eqv "signed less-than"
     #t ((llvm-typed (list <byte> <ubyte>) <) -100 100))
-  (test-eqv "signed less-than"
-    #f ((llvm-typed (list <ubyte> <byte>) <) 100 -100)))
+  (test-eqv "not signed less-than"
+    #f ((llvm-typed (list <ubyte> <byte>) <) 100 -100))
+  (test-eqv "type coercion for signed less-than"
+    #t ((llvm-typed (list <byte> <ubyte>) <) -1 255)))
 
 (test-end "aiscm llvm")

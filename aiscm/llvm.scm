@@ -222,8 +222,11 @@
       (make target #:value (delegate (get adapt-a) (get adapt-b))))))
 
 (define-method (< (value-a <int<>>) (value-b <int<>>))
-  (let [(sign (signed? (coerce (class-of value-a) (class-of value-b))))]
-    (make <bool> #:value ((if sign llvm-s-cmp llvm-u-cmp) (get value-a) (get value-b)))))
+  (let* [(target (coerce (class-of value-a) (class-of value-b)))
+         (signed (signed? target))
+         (adapt-a (to-type target value-a ))
+         (adapt-b (to-type target value-b))]
+    (make <bool> #:value ((if signed llvm-s-cmp llvm-u-cmp) (get adapt-a) (get adapt-b)))))
 
 (define-syntax-rule (define-op-with-constant type operation)
   (begin
