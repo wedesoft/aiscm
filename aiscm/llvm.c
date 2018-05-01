@@ -418,6 +418,18 @@ SCM llvm_build_fmul(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildFMul, scm_function, scm_value_a, scm_value_b);
 }
 
+SCM llvm_build_i_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value_a = get_llvm_value(scm_value_a);
+  struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMBuildICmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "");
+  return retval;
+}
+
 SCM llvm_build_cast(LLVMValueRef (*build_cast)(LLVMBuilderRef, LLVMValueRef, LLVMTypeRef, const char*),
                     SCM scm_function, SCM scm_type, SCM scm_value)
 {
@@ -518,6 +530,8 @@ void init_llvm(void)
   scm_c_define("llvm-int32" , scm_from_int(SCM_FOREIGN_TYPE_INT32   ));
   scm_c_define("llvm-uint64", scm_from_int(SCM_FOREIGN_TYPE_UINT64  ));
   scm_c_define("llvm-int64" , scm_from_int(SCM_FOREIGN_TYPE_INT64   ));
+  scm_c_define("llvm-int-ult" , scm_from_int(LLVMIntULT));
+  scm_c_define("llvm-int-slt" , scm_from_int(LLVMIntSLT));
   scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
@@ -551,4 +565,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-si-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp      ));
   scm_c_define_gsubr("llvm-build-ui-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp      ));
   scm_c_define_gsubr("llvm-build-call"          , 6, 0, 0, SCM_FUNC(llvm_build_call          ));
+  scm_c_define_gsubr("llvm-build-i-cmp"         , 4, 0, 0, SCM_FUNC(llvm_build_i_cmp         ));
 }

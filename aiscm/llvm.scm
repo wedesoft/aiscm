@@ -37,7 +37,7 @@
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
-  #:re-export (destroy - + *))
+  #:re-export (destroy - + * <))
 
 
 ; TODO: move into test suite and integrate into library
@@ -148,6 +148,11 @@
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
 
+(define ((build-i-cmp predicate) fun value-a value-b) (llvm-build-i-cmp fun predicate value-a value-b))
+
+(define-llvm-binary llvm-u-cmp (build-i-cmp llvm-int-ult))
+(define-llvm-binary llvm-s-cmp (build-i-cmp llvm-int-slt))
+
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
     (memoize (fun) (delegate (slot-ref fun 'llvm-function) type (value fun)))))
@@ -215,6 +220,10 @@
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
       (make target #:value (delegate (get adapt-a) (get adapt-b))))))
+
+(define-method (< (value-a <int<>>) (value-b <int<>>))
+  (let [(sign (signed? (coerce (class-of value-a) (class-of value-b))))]
+    (make <bool> #:value ((if sign llvm-s-cmp llvm-u-cmp) (get value-a) (get value-b)))))
 
 (define-syntax-rule (define-op-with-constant type operation)
   (begin

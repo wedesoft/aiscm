@@ -517,4 +517,15 @@
           data)))
   (test-equal "Mixed constructor preserves types of components"
     (testmixed <sint> <byte>) (class-of (testmixed (typed-constant <sint> 2) (typed-constant <byte> 3)))))
+
+(test-group "comparison"
+  (test-eqv "unsigned less-than"
+    #t ((llvm-typed (list <ubyte> <ubyte>) <) 120 140))
+  (test-eqv "not unsigned less-than"
+    #f ((llvm-typed (list <ubyte> <ubyte>) <) 120 120))
+  (test-eqv "signed less-than"
+    #t ((llvm-typed (list <byte> <ubyte>) <) -100 100))
+  (test-eqv "signed less-than"
+    #f ((llvm-typed (list <ubyte> <byte>) <) 100 -100)))
+
 (test-end "aiscm llvm")
