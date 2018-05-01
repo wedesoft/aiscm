@@ -307,20 +307,25 @@
                            (integral (cons 0 (all-but-last (map size-of (base type))))))))
 
 (define-method (prepare-return (result <void>) memory)
+  "Generate return statement for composite value or void"
   (if (null? (components (class-of result)))
     (llvm-begin result (return))
     (llvm-begin (store memory result) (return memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
+  "Generate return statement for boolean, integer, or floating-point number"
   (return result))
 
 (define-method (finish-return type result)
+  "Provide composite return value"
   (unpack-value type result))
 
 (define-method (finish-return (type <meta<scalar>>) result)
+  "Provide integer or floating-point value"
   result)
 
 (define-method (finish-return (type <meta<bool>>) result)
+  "Provide boolean return value"
   (not (zero? result)))
 
 (define (llvm-typed argument-types function)

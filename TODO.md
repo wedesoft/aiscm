@@ -1,6 +1,6 @@
 ## Ready
 
-* boolean (LLVMInt1Type)
+* llvm comparison
 * llvm phi function or select?
 * Debian sid FFmpeg API changes
 * avcodec\_encode\_video2 deprecated
