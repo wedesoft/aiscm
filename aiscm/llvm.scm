@@ -148,10 +148,11 @@
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
 
-(define ((build-i-cmp predicate) fun value-a value-b) (llvm-build-i-cmp fun predicate value-a value-b))
+(define ((build-i-cmp predicate) fun value-a value-b)
+  (llvm-build-i-cmp fun predicate value-a value-b))
 
-(define-llvm-binary llvm-u-cmp (build-i-cmp llvm-int-ult))
 (define-llvm-binary llvm-s-cmp (build-i-cmp llvm-int-slt))
+(define-llvm-binary llvm-u-cmp (build-i-cmp llvm-int-ult))
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
@@ -214,19 +215,12 @@
 (define-unary-operation <float<>> - llvm-fneg)
 (define-unary-operation <int<>>   ~ llvm-not )
 
-(define-syntax-rule (define-binary-operation type-a type-b operation delegate)
+(define-syntax-rule (define-binary-operation type-a type-b type-map operation delegate)
   (define-method (operation (value-a type-a) (value-b type-b))
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
            (adapt-b (to-type target value-b))]
-      (make target #:value (delegate (get adapt-a) (get adapt-b)))))); TODO: remove redundant code below
-
-(define-method (< (value-a <int<>>) (value-b <int<>>))
-  (let* [(target (coerce (class-of value-a) (class-of value-b)))
-         (signed (signed? target))
-         (adapt-a (to-type target value-a ))
-         (adapt-b (to-type target value-b))]
-    (make <bool> #:value ((if signed llvm-s-cmp llvm-u-cmp) (get adapt-a) (get adapt-b)))))
+      (make (type-map target) #:value ((delegate target) (get adapt-a) (get adapt-b)))))); TODO: remove redundant code below
 
 (define-syntax-rule (define-op-with-constant type operation)
   (begin
@@ -237,15 +231,17 @@
 
 (define-syntax-rule (define-binary-delegation operation delegate float-delegate)
   (begin
-    (define-binary-operation <int<>>   <int<>>   operation delegate )
-    (define-binary-operation <float<>> <int<>>   operation float-delegate)
-    (define-binary-operation <int<>>   <float<>> operation float-delegate)
-    (define-binary-operation <float<>> <float<>> operation float-delegate)
+    (define-binary-operation <int<>>   <int<>>   identity operation delegate )
+    (define-binary-operation <float<>> <int<>>   identity operation float-delegate)
+    (define-binary-operation <int<>>   <float<>> identity operation float-delegate)
+    (define-binary-operation <float<>> <float<>> identity operation float-delegate)
     (define-op-with-constant <void> operation)))
 
-(define-binary-delegation + llvm-add llvm-fadd)
-(define-binary-delegation - llvm-sub llvm-fsub)
-(define-binary-delegation * llvm-mul llvm-fmul)
+(define-binary-delegation + (const llvm-add) (const llvm-fadd))
+(define-binary-delegation - (const llvm-sub) (const llvm-fsub))
+(define-binary-delegation * (const llvm-mul) (const llvm-fmul))
+
+(define-binary-operation <int<>> <int<>> (const <bool>) < (lambda (target) (if (signed? target) llvm-s-cmp llvm-u-cmp)))
 
 (define (construct-object class args)
   (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))
