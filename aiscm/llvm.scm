@@ -35,9 +35,9 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
-            ~)
+            ~ le lt ge gt)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
-  #:re-export (destroy - + * < <= > >=))
+  #:re-export (destroy - + *))
 
 
 ; TODO: move into test suite and integrate into library
@@ -247,10 +247,10 @@
 (define-binary-delegation - (const llvm-sub) (const llvm-fsub))
 (define-binary-delegation * (const llvm-mul) (const llvm-fmul))
 
-(define-binary-operation <int<>> <int<>> (const <bool>) <  (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)))
-(define-binary-operation <int<>> <int<>> (const <bool>) <= (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)))
-(define-binary-operation <int<>> <int<>> (const <bool>) >  (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)))
-(define-binary-operation <int<>> <int<>> (const <bool>) >= (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)))
+(define-binary-operation <int<>> <int<>> (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)))
+(define-binary-operation <int<>> <int<>> (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)))
+(define-binary-operation <int<>> <int<>> (const <bool>) gt (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)))
+(define-binary-operation <int<>> <int<>> (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)))
 
 (define (construct-object class args)
   (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))
