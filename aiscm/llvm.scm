@@ -37,7 +37,7 @@
             llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
-  #:re-export (destroy - + * <))
+  #:re-export (destroy - + * < <= > >=))
 
 
 ; TODO: move into test suite and integrate into library
@@ -151,8 +151,14 @@
 (define ((build-i-cmp predicate) fun value-a value-b)
   (llvm-build-i-cmp fun predicate value-a value-b))
 
-(define-llvm-binary llvm-s-cmp (build-i-cmp llvm-int-slt))
-(define-llvm-binary llvm-u-cmp (build-i-cmp llvm-int-ult))
+(define-llvm-binary llvm-s-lt (build-i-cmp llvm-int-slt))
+(define-llvm-binary llvm-u-lt (build-i-cmp llvm-int-ult))
+(define-llvm-binary llvm-s-le (build-i-cmp llvm-int-sle))
+(define-llvm-binary llvm-u-le (build-i-cmp llvm-int-ule))
+(define-llvm-binary llvm-s-gt (build-i-cmp llvm-int-sgt))
+(define-llvm-binary llvm-u-gt (build-i-cmp llvm-int-ugt))
+(define-llvm-binary llvm-s-ge (build-i-cmp llvm-int-sge))
+(define-llvm-binary llvm-u-ge (build-i-cmp llvm-int-uge))
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
@@ -241,7 +247,10 @@
 (define-binary-delegation - (const llvm-sub) (const llvm-fsub))
 (define-binary-delegation * (const llvm-mul) (const llvm-fmul))
 
-(define-binary-operation <int<>> <int<>> (const <bool>) < (lambda (target) (if (signed? target) llvm-s-cmp llvm-u-cmp)))
+(define-binary-operation <int<>> <int<>> (const <bool>) <  (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)))
+(define-binary-operation <int<>> <int<>> (const <bool>) <= (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)))
+(define-binary-operation <int<>> <int<>> (const <bool>) >  (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)))
+(define-binary-operation <int<>> <int<>> (const <bool>) >= (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)))
 
 (define (construct-object class args)
   (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))

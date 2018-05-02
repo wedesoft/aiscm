@@ -528,6 +528,30 @@
   (test-eqv "not signed less-than"
     #f ((llvm-typed (list <ubyte> <byte>) <) 100 -100))
   (test-eqv "type coercion for signed less-than"
-    #t ((llvm-typed (list <byte> <ubyte>) <) -1 255)))
+    #t ((llvm-typed (list <byte> <ubyte>) <) -1 255))
+  (test-eqv "unsigned less-than or equal"
+    #t ((llvm-typed (list <ubyte> <ubyte>) <=) 120 120))
+  (test-eqv "not unsigned less-than or equal"
+    #f ((llvm-typed (list <ubyte> <ubyte>) <=) 120 119))
+  (test-eqv "signed less-than or equal"
+    #t ((llvm-typed (list <byte> <ubyte>) <=) -100 100))
+  (test-eqv "not signed less-than or equal"
+    #f ((llvm-typed (list <ubyte> <byte>) <=) 100 -100))
+  (test-eqv "unsigned greater-than"
+    #t ((llvm-typed (list <ubyte> <ubyte>) >) 140 120))
+  (test-eqv "not unsigned greater-than"
+    #f ((llvm-typed (list <ubyte> <ubyte>) >) 120 120))
+  (test-eqv "signed greater-than"
+    #t ((llvm-typed (list <ubyte> <byte>) >) 100 -100))
+  (test-eqv "not signed greater-than"
+    #f ((llvm-typed (list <byte> <ubyte>) >) -100 100))
+  (test-eqv "unsigned greater-than or equal"
+    #t ((llvm-typed (list <ubyte> <ubyte>) >=) 120 120))
+  (test-eqv "not unsigned greater-than or equal"
+    #f ((llvm-typed (list <ubyte> <ubyte>) >=) 119 120))
+  (test-eqv "signed greater-than or equal"
+    #t ((llvm-typed (list <ubyte> <byte>) >=) 100 -100))
+  (test-eqv "not signed greater-than or equal"
+    #f ((llvm-typed (list <byte> <ubyte>) >=) -100 100)))
 
 (test-end "aiscm llvm")

@@ -530,8 +530,14 @@ void init_llvm(void)
   scm_c_define("llvm-int32" , scm_from_int(SCM_FOREIGN_TYPE_INT32   ));
   scm_c_define("llvm-uint64", scm_from_int(SCM_FOREIGN_TYPE_UINT64  ));
   scm_c_define("llvm-int64" , scm_from_int(SCM_FOREIGN_TYPE_INT64   ));
-  scm_c_define("llvm-int-ult" , scm_from_int(LLVMIntULT));
   scm_c_define("llvm-int-slt" , scm_from_int(LLVMIntSLT));
+  scm_c_define("llvm-int-ult" , scm_from_int(LLVMIntULT));
+  scm_c_define("llvm-int-sle" , scm_from_int(LLVMIntSLE));
+  scm_c_define("llvm-int-ule" , scm_from_int(LLVMIntULE));
+  scm_c_define("llvm-int-ugt" , scm_from_int(LLVMIntUGT));
+  scm_c_define("llvm-int-sgt" , scm_from_int(LLVMIntSGT));
+  scm_c_define("llvm-int-uge" , scm_from_int(LLVMIntUGE));
+  scm_c_define("llvm-int-sge" , scm_from_int(LLVMIntSGE));
   scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
