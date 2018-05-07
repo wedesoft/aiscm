@@ -5,6 +5,7 @@ aiscm (0.15.2-1) unstable; urgency=low
   - link some libraries with libc
   - do not strip Guile object (*.go) files
   - use https in copyright URL
+  - added metadata file
 
  -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 May 2018 16:40:11 +0100
 
