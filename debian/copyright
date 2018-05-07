@@ -1,5 +1,5 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: http://github.com/wedesoft/aiscm
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/wedesoft/aiscm
 Upstream-Name: AIscm
 Upstream-Contact: Jan Wedekind <jan@wedesoft.de>
 

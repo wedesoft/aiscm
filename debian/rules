@@ -16,3 +16,6 @@ override_dh_makeshlibs:
 	# NOOP to prevent debuild from adding an ldconfig trigger.
 	# aiscm does not install shared libraries in the library path,
 	# it merely installs native extensions to be loaded by the Guile interpreter.
+
+override_dh_strip:
+	dh_strip -X.go
