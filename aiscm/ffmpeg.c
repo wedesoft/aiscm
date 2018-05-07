@@ -577,7 +577,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-        self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        self->video_codec_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // Open output video codec
     open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
@@ -606,7 +606,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-        self->audio_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        self->audio_codec_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // Open output audio codec
     open_codec(retval, self->audio_codec_ctx, audio_encoder, "audio", scm_file_name);
