@@ -488,7 +488,7 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   retval->channel_layout = audio_codec->channel_layout;
   retval->sample_rate = audio_codec->sample_rate;
 
-  if (audio_codec->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE)
+  if (audio_codec->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
     retval->nb_samples = 2 * FF_MIN_BUFFER_SIZE;
   else
     retval->nb_samples = audio_codec->frame_size;
