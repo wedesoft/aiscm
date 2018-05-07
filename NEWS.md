@@ -1,3 +1,7 @@
+# aiscm (0.15.2)
+
+* FFMpeg 4.0.0 compatibility fixes
+
 # aiscm (0.15.1)
 
 * Update dependency of Debian package to Guile-2.2
