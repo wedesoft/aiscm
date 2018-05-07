@@ -70,7 +70,7 @@ Control all data and machine code down to every single bit and byte.
 * [Jakobsen: Advanced Character Physics](http://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf)
 * [COMP768: Rigid Body Dynamics (I)](http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd1.pdf) [(I)](http://www.cs.unc.edu/~lin/COMP768-F07/LEC/rbd2.pdf)
 
-Copyright © 2013, 2014, 2015, 2016, 2017 Jan Wedekind.
+Copyright © 2013, 2014, 2015, 2016, 2017, 2018 Jan Wedekind.
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"

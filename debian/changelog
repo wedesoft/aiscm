@@ -1,9 +1,21 @@
-aiscm (0.15.1-1+xenial1) UNRELEASED; urgency=low
+aiscm (0.15.2-1+xenial1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Xenial
 
- -- Jan Wedekind <jan@wedesoft.de>  Tue, 26 Dec 2017 14:43:00 +0000
+ -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 May 2018 16:40:11 +0100
 
+aiscm (0.15.2-1) unstable; urgency=low
+
+  - Bumped Standards-Version to 4.1.4
+  - Bumped debhelper compatibility version to 11
+  - link some libraries with libc
+  - do not strip Guile object (*.go) files
+  - use https in copyright URL
+  - added metadata file
+
+ -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 May 2018 16:40:11 +0100
+
+>>>>>>> master
 aiscm (0.15.1-1) unstable; urgency=low
 
   - Update dependency to Guile-2.2. Closes: #885187
