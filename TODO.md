@@ -1,5 +1,11 @@
 ## Ready
 
+* AV_INPUT_BUFFER_MIN_SIZE
+* avcodec\_encode\_video2 deprecated
+* avcodec\_decode\_video2 deprecated
+* avcodec\_encode\_audio2 deprecated
+* avcodec\_decode\_audio4 deprecated
+* codec deprecated (ffmpeg.c: 271, 377, 417)
 * LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * xorg\_scale\_video has frame offset
 * floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round

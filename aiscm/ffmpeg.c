@@ -1,5 +1,5 @@
 // AIscm - Guile extension for numerical arrays and tensors.
-// Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
+// Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018 Jan Wedekind <jan@wedesoft.de>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,6 +41,14 @@
 #endif
 
 #define PIX_FMT AV_PIX_FMT_YUV420P
+
+#ifndef AV_CODEC_CAP_VARIABLE_FRAME_SIZE
+#define AV_CODEC_CAP_VARIABLE_FRAME_SIZE CODEC_CAP_VARIABLE_FRAME_SIZE
+#endif
+
+#ifndef AV_CODEC_FLAG_GLOBAL_HEADER
+#define AV_CODEC_FLAG_GLOBAL_HEADER CODEC_FLAG_GLOBAL_HEADER
+#endif
 
 static scm_t_bits ffmpeg_tag;
 
@@ -488,8 +496,12 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   retval->channel_layout = audio_codec->channel_layout;
   retval->sample_rate = audio_codec->sample_rate;
 
-  if (audio_codec->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE)
+  if (audio_codec->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
+#ifndef FF_MIN_BUFFER_SIZE
+    retval->nb_samples = 10000;
+#else
     retval->nb_samples = 2 * FF_MIN_BUFFER_SIZE;
+#endif
   else
     retval->nb_samples = audio_codec->frame_size;
 
@@ -577,7 +589,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-        self->video_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        self->video_codec_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // Open output video codec
     open_codec(retval, self->video_codec_ctx, video_encoder, "video", scm_file_name);
@@ -606,7 +618,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
     // Some formats want stream headers to be separate.
     if (self->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-        self->audio_codec_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        self->audio_codec_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // Open output audio codec
     open_codec(retval, self->audio_codec_ctx, audio_encoder, "audio", scm_file_name);
