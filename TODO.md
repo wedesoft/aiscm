@@ -1,6 +1,5 @@
 ## Ready
 
-* llvm floating-point comparisons
 * llvm phi function or select?
 * Debian sid FFmpeg API changes
 * avcodec\_encode\_video2 deprecated

@@ -557,7 +557,21 @@
     #t ((llvm-typed (list <float> <float>) lt) 2.5 3.0))
   (test-eqv "floating-point not less-than"
     #f ((llvm-typed (list <float> <float>) lt) 3.0 3.0))
-
-  )
+  (test-eqv "compare floating-point and integer"
+    #t ((llvm-typed (list <float> <int>) lt) 2.5 3))
+  (test-eqv "compare integer and floating-point"
+    #t ((llvm-typed (list <int> <float>) lt) 2 3))
+  (test-eqv "floating-point less-than or equal"
+    #t ((llvm-typed (list <float> <float>) le) 3.0 3.0))
+  (test-eqv "floating-point not less-than or equal"
+    #f ((llvm-typed (list <float> <float>) le) 3.5 3.0))
+  (test-eqv "floating-point greater-than"
+    #t ((llvm-typed (list <float> <float>) gt) 2.5 2.0))
+  (test-eqv "not floating-point greater-than"
+    #f ((llvm-typed (list <float> <float>) gt) 3.5 3.5))
+  (test-eqv "floating-point greater-than or equal"
+    #t ((llvm-typed (list <float> <float>) ge) 2.5 2.5))
+  (test-eqv "not floating-point greater-than or equal"
+    #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
 
 (test-end "aiscm llvm")

@@ -154,7 +154,7 @@
 (define ((build-float-cmp predicate) fun value-a value-b)
   (llvm-build-float-cmp fun predicate value-a value-b))
 
-; numerical comparisons
+; integer comparisons
 (define-llvm-binary llvm-s-lt (build-integer-cmp llvm-int-slt))
 (define-llvm-binary llvm-u-lt (build-integer-cmp llvm-int-ult))
 (define-llvm-binary llvm-s-le (build-integer-cmp llvm-int-sle))
@@ -164,7 +164,11 @@
 (define-llvm-binary llvm-s-ge (build-integer-cmp llvm-int-sge))
 (define-llvm-binary llvm-u-ge (build-integer-cmp llvm-int-uge))
 
+; floating point comparisons
 (define-llvm-binary llvm-f-lt (build-float-cmp llvm-real-lt))
+(define-llvm-binary llvm-f-le (build-float-cmp llvm-real-le))
+(define-llvm-binary llvm-f-gt (build-float-cmp llvm-real-gt))
+(define-llvm-binary llvm-f-ge (build-float-cmp llvm-real-ge))
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
@@ -241,24 +245,22 @@
     (define-method (operation (value-a <complex>) (value-b type))
       (operation (typed-constant (native-type value-a) value-a) value-b))))
 
-(define-syntax-rule (define-binary-delegation operation delegate float-delegate)
+(define-syntax-rule (define-binary-delegation type-map operation delegate float-delegate)
   (begin
-    (define-binary-operation <int<>>   <int<>>   identity operation delegate )
-    (define-binary-operation <float<>> <int<>>   identity operation float-delegate)
-    (define-binary-operation <int<>>   <float<>> identity operation float-delegate)
-    (define-binary-operation <float<>> <float<>> identity operation float-delegate)
+    (define-binary-operation <int<>>   <int<>>   type-map operation delegate )
+    (define-binary-operation <float<>> <int<>>   type-map operation float-delegate)
+    (define-binary-operation <int<>>   <float<>> type-map operation float-delegate)
+    (define-binary-operation <float<>> <float<>> type-map operation float-delegate)
     (define-op-with-constant <void> operation)))
 
-(define-binary-delegation + (const llvm-add) (const llvm-fadd))
-(define-binary-delegation - (const llvm-sub) (const llvm-fsub))
-(define-binary-delegation * (const llvm-mul) (const llvm-fmul))
+(define-binary-delegation identity + (const llvm-add) (const llvm-fadd))
+(define-binary-delegation identity - (const llvm-sub) (const llvm-fsub))
+(define-binary-delegation identity * (const llvm-mul) (const llvm-fmul))
 
-(define-binary-operation <int<>> <int<>> (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)))
-(define-binary-operation <int<>> <int<>> (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)))
-(define-binary-operation <int<>> <int<>> (const <bool>) gt (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)))
-(define-binary-operation <int<>> <int<>> (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)))
-
-(define-binary-operation <float<>> <float<>> (const <bool>) lt (const llvm-f-lt))
+(define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
+(define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
+(define-binary-delegation (const <bool>) gt (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)) (const llvm-f-gt))
+(define-binary-delegation (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)) (const llvm-f-ge))
 
 (define (construct-object class args)
   (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))

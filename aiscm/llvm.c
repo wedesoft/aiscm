@@ -551,6 +551,9 @@ void init_llvm(void)
   scm_c_define("llvm-int-uge" , scm_from_int(LLVMIntUGE));
   scm_c_define("llvm-int-sge" , scm_from_int(LLVMIntSGE));
   scm_c_define("llvm-real-lt" , scm_from_int(LLVMRealOLT));
+  scm_c_define("llvm-real-le" , scm_from_int(LLVMRealOLE));
+  scm_c_define("llvm-real-gt" , scm_from_int(LLVMRealOGT));
+  scm_c_define("llvm-real-ge" , scm_from_int(LLVMRealOGE));
   scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
