@@ -7,7 +7,6 @@
 * avcodec\_encode\_audio2 deprecated
 * avcodec\_decode\_audio4 deprecated
 * codec deprecated (ffmpeg.c: 271, 377, 417)
-* LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
 * "let" for tensors
 * jumps, labels, conditionals, select statement,`loops
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
