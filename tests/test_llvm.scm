@@ -552,6 +552,12 @@
   (test-eqv "signed greater-than or equal"
     #t ((llvm-typed (list <ubyte> <byte>) ge) 100 -100))
   (test-eqv "not signed greater-than or equal"
-    #f ((llvm-typed (list <byte> <ubyte>) ge) -100 100)))
+    #f ((llvm-typed (list <byte> <ubyte>) ge) -100 100))
+  (test-eqv "floating-point less-than"
+    #t ((llvm-typed (list <float> <float>) lt) 2.5 3.0))
+  (test-eqv "floating-point not less-than"
+    #f ((llvm-typed (list <float> <float>) lt) 3.0 3.0))
+
+  )
 
 (test-end "aiscm llvm")

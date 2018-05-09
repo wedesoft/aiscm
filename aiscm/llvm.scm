@@ -148,17 +148,23 @@
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
 
-(define ((build-i-cmp predicate) fun value-a value-b)
-  (llvm-build-i-cmp fun predicate value-a value-b))
+(define ((build-integer-cmp predicate) fun value-a value-b)
+  (llvm-build-integer-cmp fun predicate value-a value-b))
 
-(define-llvm-binary llvm-s-lt (build-i-cmp llvm-int-slt))
-(define-llvm-binary llvm-u-lt (build-i-cmp llvm-int-ult))
-(define-llvm-binary llvm-s-le (build-i-cmp llvm-int-sle))
-(define-llvm-binary llvm-u-le (build-i-cmp llvm-int-ule))
-(define-llvm-binary llvm-s-gt (build-i-cmp llvm-int-sgt))
-(define-llvm-binary llvm-u-gt (build-i-cmp llvm-int-ugt))
-(define-llvm-binary llvm-s-ge (build-i-cmp llvm-int-sge))
-(define-llvm-binary llvm-u-ge (build-i-cmp llvm-int-uge))
+(define ((build-float-cmp predicate) fun value-a value-b)
+  (llvm-build-float-cmp fun predicate value-a value-b))
+
+; numerical comparisons
+(define-llvm-binary llvm-s-lt (build-integer-cmp llvm-int-slt))
+(define-llvm-binary llvm-u-lt (build-integer-cmp llvm-int-ult))
+(define-llvm-binary llvm-s-le (build-integer-cmp llvm-int-sle))
+(define-llvm-binary llvm-u-le (build-integer-cmp llvm-int-ule))
+(define-llvm-binary llvm-s-gt (build-integer-cmp llvm-int-sgt))
+(define-llvm-binary llvm-u-gt (build-integer-cmp llvm-int-ugt))
+(define-llvm-binary llvm-s-ge (build-integer-cmp llvm-int-sge))
+(define-llvm-binary llvm-u-ge (build-integer-cmp llvm-int-uge))
+
+(define-llvm-binary llvm-f-lt (build-float-cmp llvm-real-lt))
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
@@ -251,6 +257,8 @@
 (define-binary-operation <int<>> <int<>> (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)))
 (define-binary-operation <int<>> <int<>> (const <bool>) gt (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)))
 (define-binary-operation <int<>> <int<>> (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)))
+
+(define-binary-operation <float<>> <float<>> (const <bool>) lt (const llvm-f-lt))
 
 (define (construct-object class args)
   (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))

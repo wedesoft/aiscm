@@ -418,7 +418,7 @@ SCM llvm_build_fmul(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildFMul, scm_function, scm_value_a, scm_value_b);
 }
 
-SCM llvm_build_i_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
+SCM llvm_build_integer_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
 {
   SCM retval;
   struct llvm_function_t *function = get_llvm_function(scm_function);
@@ -427,6 +427,18 @@ SCM llvm_build_i_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM s
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
   result->value = LLVMBuildICmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "comparison");
+  return retval;
+}
+
+SCM llvm_build_float_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *value_a = get_llvm_value(scm_value_a);
+  struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  result->value = LLVMBuildFCmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "comparison");
   return retval;
 }
 
@@ -538,6 +550,7 @@ void init_llvm(void)
   scm_c_define("llvm-int-sgt" , scm_from_int(LLVMIntSGT));
   scm_c_define("llvm-int-uge" , scm_from_int(LLVMIntUGE));
   scm_c_define("llvm-int-sge" , scm_from_int(LLVMIntSGE));
+  scm_c_define("llvm-real-lt" , scm_from_int(LLVMRealOLT));
   scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
   scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
   scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
@@ -571,5 +584,6 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-si-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp      ));
   scm_c_define_gsubr("llvm-build-ui-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp      ));
   scm_c_define_gsubr("llvm-build-call"          , 6, 0, 0, SCM_FUNC(llvm_build_call          ));
-  scm_c_define_gsubr("llvm-build-i-cmp"         , 4, 0, 0, SCM_FUNC(llvm_build_i_cmp         ));
+  scm_c_define_gsubr("llvm-build-integer-cmp"   , 4, 0, 0, SCM_FUNC(llvm_build_integer_cmp   ));
+  scm_c_define_gsubr("llvm-build-float-cmp"     , 4, 0, 0, SCM_FUNC(llvm_build_float_cmp     ));
 }
