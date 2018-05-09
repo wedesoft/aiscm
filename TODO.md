@@ -3,7 +3,6 @@
 * llvm floating-point comparisons
 * llvm phi function or select?
 * Debian sid FFmpeg API changes
-* AV_INPUT_BUFFER_MIN_SIZE
 * avcodec\_encode\_video2 deprecated
 * avcodec\_decode\_video2 deprecated
 * avcodec\_encode\_audio2 deprecated
