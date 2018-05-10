@@ -578,9 +578,9 @@
   (test-equal "use branch instruction"
     (let* [(mod   (make-llvm-module))
            (fun   (make-function mod llvm-int32 "jump" llvm-int32))
-           (label (make-basic-block fun "label"))]
+           (label ((make-basic-block "label") fun))]
       (build-branch fun label)
-      (position-builder-at-end fun label)
+      ((position-builder-at-end label) fun)
       ((function-ret (function-param 0)) fun)
       (llvm-compile mod)
       ((llvm-func mod fun) 42)) 42))

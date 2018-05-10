@@ -101,10 +101,10 @@
   (llvm-compile-module (slot-ref self 'llvm-module))
   (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
 
-(define (make-basic-block fun name)
+(define ((make-basic-block name) fun)
   (make-llvm-basic-block (slot-ref fun 'llvm-function) name))
 
-(define (position-builder-at-end fun basic-block)
+(define ((position-builder-at-end basic-block) fun)
   (llvm-position-builder-at-end (slot-ref fun 'llvm-function) basic-block))
 
 (define (build-branch fun basic-block)
