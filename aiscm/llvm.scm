@@ -66,7 +66,9 @@
     (let* [(fun (make-llvm-function (slot-ref module 'llvm-module)
                                    return-type
                                    name
-                                   argument-types))]
+                                   argument-types))
+           (entry (make-llvm-basic-block fun "entry"))]
+    (llvm-position-builder-at-end fun entry)
     (next-method self (list #:module         module
                             #:name           name
                             #:return-type    return-type

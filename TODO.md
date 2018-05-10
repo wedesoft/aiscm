@@ -1,6 +1,6 @@
 ## Ready
 
-* llvm phi function or select?
+* jumps, labels, conditional jumps, select statement (phi function), loops
 * Debian sid FFmpeg API changes
 * avcodec\_encode\_video2 deprecated
 * avcodec\_decode\_video2 deprecated
@@ -8,7 +8,6 @@
 * avcodec\_decode\_audio4 deprecated
 * codec deprecated (ffmpeg.c: 271, 377, 417)
 * "let" for tensors
-* jumps, labels, conditionals, select statement,`loops
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * Scheme objects
 * runge kutta with state vector

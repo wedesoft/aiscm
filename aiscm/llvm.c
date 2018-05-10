@@ -31,6 +31,9 @@ static scm_t_bits llvm_function_tag;
 
 static scm_t_bits llvm_value_tag;
 
+static scm_t_bits llvm_basic_block_tag;
+
+
 struct llvm_module_t {
   LLVMModuleRef module;
   LLVMExecutionEngineRef engine;
@@ -44,6 +47,11 @@ struct llvm_function_t {
 struct llvm_value_t {
   LLVMValueRef value;
 };
+
+struct llvm_basic_block_t {
+  LLVMBasicBlockRef basic_block;
+};
+
 
 static struct llvm_module_t *get_llvm_no_check(SCM scm_self)
 {
@@ -77,6 +85,18 @@ static struct llvm_value_t *get_llvm_value(SCM scm_self)
   scm_assert_smob_type(llvm_value_tag, scm_self);
   return get_llvm_value_no_check(scm_self);
 }
+
+static struct llvm_basic_block_t *get_llvm_basic_block_no_check(SCM scm_self)
+{
+  return (struct llvm_basic_block_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct llvm_basic_block_t *get_llvm_basic_block(SCM scm_self)
+{
+  scm_assert_smob_type(llvm_basic_block_tag, scm_self);
+  return get_llvm_basic_block_no_check(scm_self);
+}
+
 
 SCM llvm_module_destroy(SCM scm_self);
 
@@ -227,15 +247,13 @@ SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_
   SCM retval;
   struct llvm_module_t *llvm = get_llvm(scm_llvm);
   struct llvm_function_t *self;
-  self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvmfunction");
+  self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvm function");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
   self->builder = LLVMCreateBuilder();
   self->function = LLVMAddFunction(llvm->module,
                                    scm_to_locale_string(scm_name),
                                    function_type(scm_return_type, scm_argument_types));
   LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
-  LLVMBasicBlockRef entry = LLVMAppendBasicBlock(self->function, "entry");
-  LLVMPositionBuilderAtEnd(self->builder, entry);
   return retval;
 }
 
@@ -293,6 +311,25 @@ SCM llvm_verify_module(SCM scm_llvm)
     LLVMDisposeMessage(error);
     scm_misc_error("verify-module", "Module is not valid: ~a", scm_list_1(scm_error));
   };
+  return SCM_UNSPECIFIED;
+}
+
+SCM make_llvm_basic_block(SCM scm_function, SCM scm_name)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_basic_block_t *self;
+  self = (struct llvm_basic_block_t *)scm_gc_calloc(sizeof(struct llvm_basic_block_t), "llvm basic block");
+  SCM_NEWSMOB(retval, llvm_basic_block_tag, self);
+  self->basic_block = LLVMAppendBasicBlock(function->function, scm_to_locale_string(scm_name));
+  return retval;
+}
+
+SCM llvm_position_builder_at_end(SCM scm_function, SCM scm_basic_block)
+{
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_basic_block_t *basic_block = get_llvm_basic_block(scm_basic_block);
+  LLVMPositionBuilderAtEnd(function->builder, basic_block->basic_block);
   return SCM_UNSPECIFIED;
 }
 
@@ -530,6 +567,8 @@ void init_llvm(void)
 
   llvm_value_tag = scm_make_smob_type("llvm_value", sizeof(struct llvm_value_t));
 
+  llvm_basic_block_tag = scm_make_smob_type("llvm_basic_block", sizeof(struct llvm_basic_block_t));
+
   scm_c_define("llvm-bool"  , scm_from_int(SCM_FOREIGN_TYPE_LAST + 1));
   scm_c_define("llvm-void"  , scm_from_int(SCM_FOREIGN_TYPE_VOID    ));
   scm_c_define("llvm-float" , scm_from_int(SCM_FOREIGN_TYPE_FLOAT   ));
@@ -554,39 +593,41 @@ void init_llvm(void)
   scm_c_define("llvm-real-le" , scm_from_int(LLVMRealOLE));
   scm_c_define("llvm-real-gt" , scm_from_int(LLVMRealOGT));
   scm_c_define("llvm-real-ge" , scm_from_int(LLVMRealOGE));
-  scm_c_define_gsubr("make-llvm-module-base"    , 0, 0, 0, SCM_FUNC(make_llvm_module_base    ));
-  scm_c_define_gsubr("llvm-module-destroy"      , 1, 0, 0, SCM_FUNC(llvm_module_destroy      ));
-  scm_c_define_gsubr("llvm-dump-module"         , 1, 0, 0, SCM_FUNC(llvm_dump_module         ));
-  scm_c_define_gsubr("make-llvm-function"       , 4, 0, 0, SCM_FUNC(make_llvm_function       ));
-  scm_c_define_gsubr("llvm-function-destroy"    , 1, 0, 0, SCM_FUNC(llvm_function_destroy    ));
-  scm_c_define_gsubr("llvm-function-return"     , 2, 0, 0, SCM_FUNC(llvm_function_return     ));
-  scm_c_define_gsubr("llvm-function-return-void", 1, 0, 0, SCM_FUNC(llvm_function_return_void));
-  scm_c_define_gsubr("llvm-compile-module"      , 1, 0, 0, SCM_FUNC(llvm_compile_module      ));
-  scm_c_define_gsubr("llvm-get-function-address", 2, 0, 0, SCM_FUNC(llvm_get_function_address));
-  scm_c_define_gsubr("llvm-verify-module"       , 1, 0, 0, SCM_FUNC(llvm_verify_module       ));
-  scm_c_define_gsubr("make-llvm-constant"       , 2, 0, 0, SCM_FUNC(make_llvm_constant       ));
-  scm_c_define_gsubr("llvm-get-type"            , 1, 0, 0, SCM_FUNC(llvm_get_type            ));
-  scm_c_define_gsubr("llvm-build-load"          , 3, 0, 0, SCM_FUNC(llvm_build_load          ));
-  scm_c_define_gsubr("llvm-build-store"         , 4, 0, 0, SCM_FUNC(llvm_build_store         ));
-  scm_c_define_gsubr("llvm-get-param"           , 2, 0, 0, SCM_FUNC(llvm_get_param           ));
-  scm_c_define_gsubr("llvm-build-neg"           , 2, 0, 0, SCM_FUNC(llvm_build_neg           ));
-  scm_c_define_gsubr("llvm-build-fneg"          , 2, 0, 0, SCM_FUNC(llvm_build_fneg          ));
-  scm_c_define_gsubr("llvm-build-not"           , 2, 0, 0, SCM_FUNC(llvm_build_not           ));
-  scm_c_define_gsubr("llvm-build-add"           , 3, 0, 0, SCM_FUNC(llvm_build_add           ));
-  scm_c_define_gsubr("llvm-build-fadd"          , 3, 0, 0, SCM_FUNC(llvm_build_fadd          ));
-  scm_c_define_gsubr("llvm-build-sub"           , 3, 0, 0, SCM_FUNC(llvm_build_sub           ));
-  scm_c_define_gsubr("llvm-build-fsub"          , 3, 0, 0, SCM_FUNC(llvm_build_fsub          ));
-  scm_c_define_gsubr("llvm-build-mul"           , 3, 0, 0, SCM_FUNC(llvm_build_mul           ));
-  scm_c_define_gsubr("llvm-build-fmul"          , 3, 0, 0, SCM_FUNC(llvm_build_fmul          ));
-  scm_c_define_gsubr("llvm-build-trunc"         , 3, 0, 0, SCM_FUNC(llvm_build_trunc         ));
-  scm_c_define_gsubr("llvm-build-sext"          , 3, 0, 0, SCM_FUNC(llvm_build_sext          ));
-  scm_c_define_gsubr("llvm-build-zext"          , 3, 0, 0, SCM_FUNC(llvm_build_zext          ));
-  scm_c_define_gsubr("llvm-build-fp-cast"       , 3, 0, 0, SCM_FUNC(llvm_build_fp_cast       ));
-  scm_c_define_gsubr("llvm-build-fp-to-si"      , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_si      ));
-  scm_c_define_gsubr("llvm-build-fp-to-ui"      , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_ui      ));
-  scm_c_define_gsubr("llvm-build-si-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp      ));
-  scm_c_define_gsubr("llvm-build-ui-to-fp"      , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp      ));
-  scm_c_define_gsubr("llvm-build-call"          , 6, 0, 0, SCM_FUNC(llvm_build_call          ));
-  scm_c_define_gsubr("llvm-build-integer-cmp"   , 4, 0, 0, SCM_FUNC(llvm_build_integer_cmp   ));
-  scm_c_define_gsubr("llvm-build-float-cmp"     , 4, 0, 0, SCM_FUNC(llvm_build_float_cmp     ));
+  scm_c_define_gsubr("make-llvm-module-base"       , 0, 0, 0, SCM_FUNC(make_llvm_module_base       ));
+  scm_c_define_gsubr("llvm-module-destroy"         , 1, 0, 0, SCM_FUNC(llvm_module_destroy         ));
+  scm_c_define_gsubr("llvm-dump-module"            , 1, 0, 0, SCM_FUNC(llvm_dump_module            ));
+  scm_c_define_gsubr("make-llvm-function"          , 4, 0, 0, SCM_FUNC(make_llvm_function          ));
+  scm_c_define_gsubr("llvm-function-destroy"       , 1, 0, 0, SCM_FUNC(llvm_function_destroy       ));
+  scm_c_define_gsubr("llvm-function-return"        , 2, 0, 0, SCM_FUNC(llvm_function_return        ));
+  scm_c_define_gsubr("llvm-function-return-void"   , 1, 0, 0, SCM_FUNC(llvm_function_return_void   ));
+  scm_c_define_gsubr("llvm-compile-module"         , 1, 0, 0, SCM_FUNC(llvm_compile_module         ));
+  scm_c_define_gsubr("llvm-get-function-address"   , 2, 0, 0, SCM_FUNC(llvm_get_function_address   ));
+  scm_c_define_gsubr("llvm-verify-module"          , 1, 0, 0, SCM_FUNC(llvm_verify_module          ));
+  scm_c_define_gsubr("make-llvm-basic-block"       , 2, 0, 0, SCM_FUNC(make_llvm_basic_block       ));
+  scm_c_define_gsubr("llvm-position-builder-at-end", 2, 0, 0, SCM_FUNC(llvm_position_builder_at_end));
+  scm_c_define_gsubr("make-llvm-constant"          , 2, 0, 0, SCM_FUNC(make_llvm_constant          ));
+  scm_c_define_gsubr("llvm-get-type"               , 1, 0, 0, SCM_FUNC(llvm_get_type               ));
+  scm_c_define_gsubr("llvm-build-load"             , 3, 0, 0, SCM_FUNC(llvm_build_load             ));
+  scm_c_define_gsubr("llvm-build-store"            , 4, 0, 0, SCM_FUNC(llvm_build_store            ));
+  scm_c_define_gsubr("llvm-get-param"              , 2, 0, 0, SCM_FUNC(llvm_get_param              ));
+  scm_c_define_gsubr("llvm-build-neg"              , 2, 0, 0, SCM_FUNC(llvm_build_neg              ));
+  scm_c_define_gsubr("llvm-build-fneg"             , 2, 0, 0, SCM_FUNC(llvm_build_fneg             ));
+  scm_c_define_gsubr("llvm-build-not"              , 2, 0, 0, SCM_FUNC(llvm_build_not              ));
+  scm_c_define_gsubr("llvm-build-add"              , 3, 0, 0, SCM_FUNC(llvm_build_add              ));
+  scm_c_define_gsubr("llvm-build-fadd"             , 3, 0, 0, SCM_FUNC(llvm_build_fadd             ));
+  scm_c_define_gsubr("llvm-build-sub"              , 3, 0, 0, SCM_FUNC(llvm_build_sub              ));
+  scm_c_define_gsubr("llvm-build-fsub"             , 3, 0, 0, SCM_FUNC(llvm_build_fsub             ));
+  scm_c_define_gsubr("llvm-build-mul"              , 3, 0, 0, SCM_FUNC(llvm_build_mul              ));
+  scm_c_define_gsubr("llvm-build-fmul"             , 3, 0, 0, SCM_FUNC(llvm_build_fmul             ));
+  scm_c_define_gsubr("llvm-build-trunc"            , 3, 0, 0, SCM_FUNC(llvm_build_trunc            ));
+  scm_c_define_gsubr("llvm-build-sext"             , 3, 0, 0, SCM_FUNC(llvm_build_sext             ));
+  scm_c_define_gsubr("llvm-build-zext"             , 3, 0, 0, SCM_FUNC(llvm_build_zext             ));
+  scm_c_define_gsubr("llvm-build-fp-cast"          , 3, 0, 0, SCM_FUNC(llvm_build_fp_cast          ));
+  scm_c_define_gsubr("llvm-build-fp-to-si"         , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_si         ));
+  scm_c_define_gsubr("llvm-build-fp-to-ui"         , 3, 0, 0, SCM_FUNC(llvm_build_fp_to_ui         ));
+  scm_c_define_gsubr("llvm-build-si-to-fp"         , 3, 0, 0, SCM_FUNC(llvm_build_si_to_fp         ));
+  scm_c_define_gsubr("llvm-build-ui-to-fp"         , 3, 0, 0, SCM_FUNC(llvm_build_ui_to_fp         ));
+  scm_c_define_gsubr("llvm-build-call"             , 6, 0, 0, SCM_FUNC(llvm_build_call             ));
+  scm_c_define_gsubr("llvm-build-integer-cmp"      , 4, 0, 0, SCM_FUNC(llvm_build_integer_cmp      ));
+  scm_c_define_gsubr("llvm-build-float-cmp"        , 4, 0, 0, SCM_FUNC(llvm_build_float_cmp        ));
 }
