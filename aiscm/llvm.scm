@@ -31,6 +31,7 @@
             llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
+            make-basic-block position-builder-at-end build-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
@@ -99,6 +100,15 @@
   (llvm-verify-module (slot-ref self 'llvm-module))
   (llvm-compile-module (slot-ref self 'llvm-module))
   (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
+
+(define (make-basic-block fun name)
+  (make-llvm-basic-block (slot-ref fun 'llvm-function) name))
+
+(define (position-builder-at-end fun basic-block)
+  (llvm-position-builder-at-end (slot-ref fun 'llvm-function) basic-block))
+
+(define (build-branch fun basic-block)
+  (llvm-build-branch (slot-ref fun 'llvm-function) basic-block))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))

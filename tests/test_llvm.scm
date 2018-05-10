@@ -574,4 +574,15 @@
   (test-eqv "not floating-point greater-than or equal"
     #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
 
+(test-group "basic blocks and branch instructions"
+  (test-equal "use branch instruction"
+    (let* [(mod   (make-llvm-module))
+           (fun   (make-function mod llvm-int32 "jump" llvm-int32))
+           (label (make-basic-block fun "label"))]
+      (build-branch fun label)
+      (position-builder-at-end fun label)
+      ((function-ret (function-param 0)) fun)
+      (llvm-compile mod)
+      ((llvm-func mod fun) 42)) 42))
+
 (test-end "aiscm llvm")
