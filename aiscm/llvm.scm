@@ -35,7 +35,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-sequential llvm-call typed-constant typed-pointer store fetch llvm-begin
+            llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~ le lt ge gt)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
   #:re-export (destroy - + *))
@@ -101,14 +101,14 @@
   (llvm-compile-module (slot-ref self 'llvm-module))
   (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
 
-(define ((make-basic-block name) fun)
-  (make-llvm-basic-block (slot-ref fun 'llvm-function) name))
+(define (make-basic-block name)
+  (memoize (fun) (make-llvm-basic-block (slot-ref fun 'llvm-function) name)))
 
-(define ((position-builder-at-end basic-block) fun)
-  (llvm-position-builder-at-end (slot-ref fun 'llvm-function) basic-block))
+(define (position-builder-at-end basic-block)
+  (make <void> #:value (lambda (fun) (llvm-position-builder-at-end (slot-ref fun 'llvm-function) (basic-block fun)))))
 
-(define (build-branch fun basic-block)
-  (llvm-build-branch (slot-ref fun 'llvm-function) basic-block))
+(define (build-branch basic-block)
+  (make <void> #:value (lambda (fun) (llvm-build-branch (slot-ref fun 'llvm-function) (basic-block fun)))))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))

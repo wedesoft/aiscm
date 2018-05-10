@@ -437,13 +437,13 @@
   (test-equal "Pointer type is long integer"
     <long> (class-of (typed-pointer (make-pointer 1234))))
   (test-equal "boolean constant"
-    #t ((llvm-typed '() (cut typed-constant <bool> #t))))
+    #t ((llvm-typed '() (const (typed-constant <bool> #t)))))
   (test-equal "integer constant"
-    42 ((llvm-typed '() (cut typed-constant <int> 42))))
+    42 ((llvm-typed '() (const (typed-constant <int> 42)))))
   (test-equal "floating-point constant"
-    2.5 ((llvm-typed '() (cut typed-constant <double> 2.5))))
+    2.5 ((llvm-typed '() (const (typed-constant <double> 2.5)))))
   (test-equal "complex constant"
-    2+3i ((llvm-typed '() (cut typed-constant <complex<float>> 2+3i)))))
+    2+3i ((llvm-typed '() (const (typed-constant <complex<float>> 2+3i))))))
 
 (test-group "typed store/fetch"
   (let* [(data #vu8(0 3 5 7))
@@ -576,13 +576,14 @@
 
 (test-group "basic blocks and branch instructions"
   (test-equal "use branch instruction"
-    (let* [(mod   (make-llvm-module))
-           (fun   (make-function mod llvm-int32 "jump" llvm-int32))
-           (label ((make-basic-block "label") fun))]
-      (build-branch fun label)
-      ((position-builder-at-end label) fun)
-      ((function-ret (function-param 0)) fun)
-      (llvm-compile mod)
-      ((llvm-func mod fun) 42)) 42))
+    ((llvm-typed (list <int>)
+                 (lambda (x)
+                   (let [(label (make-basic-block "label"))]
+                     (llvm-begin
+                       (build-branch label)
+                       (position-builder-at-end label)
+                       x))))
+     42)
+    42))
 
 (test-end "aiscm llvm")
