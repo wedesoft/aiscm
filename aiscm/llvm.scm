@@ -31,7 +31,7 @@
             llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
-            make-basic-block position-builder-at-end build-branch
+            make-basic-block position-builder-at-end build-branch phi
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
@@ -109,6 +109,14 @@
 
 (define (build-branch basic-block)
   (make <void> #:value (lambda (fun) (llvm-build-branch (slot-ref fun 'llvm-function) (basic-block fun)))))
+
+(define (phi vals blocks)
+  ; coercion
+  (make (class-of (car vals))
+        #:value (lambda (fun)
+          (llvm-build-phi (slot-ref fun 'llvm-function)
+                          (map (lambda (val) ((get val) fun)) vals)
+                          (map (lambda (block) (block fun)) blocks)))))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))

@@ -575,15 +575,42 @@
     #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
 
 (test-group "basic blocks and branch instructions"
-  (test-equal "use branch instruction"
+  (test-equal "branch instruction"
+    42
     ((llvm-typed (list <int>)
                  (lambda (x)
-                   (let [(label (make-basic-block "label"))]
+                   (let [(block (make-basic-block "block"))]
                      (llvm-begin
-                       (build-branch label)
-                       (position-builder-at-end label)
+                       (build-branch block)
+                       (position-builder-at-end block)
                        x))))
-     42)
-    42))
+     42))
+  (test-expect-fail 2)
+  (test-equal "phi instruction using first value"
+    2
+    ((llvm-typed (list <int> <int>)
+                 (lambda (x y)
+                   (let [(block-a (make-basic-block "block-a"))
+                         (block-b (make-basic-block "block-b"))]
+                     (llvm-begin
+                       (build-branch block-a)
+                       (position-builder-at-end block-b)
+                       (build-branch block-a)
+                       (position-builder-at-end block-a)
+                       (phi (list x y) (list block-a block-b))))))
+     2 3))
+  (test-equal "phi instruction using second value"
+    3
+    ((llvm-typed (list <int> <int>)
+                 (lambda (x y)
+                   (let [(block-a (make-basic-block "block-a"))
+                         (block-b (make-basic-block "block-b"))]
+                     (llvm-begin
+                       (build-branch block-b)
+                       (position-builder-at-end block-a)
+                       (build-branch block-b)
+                       (position-builder-at-end block-b)
+                       (phi (list x y) (list block-a block-b))))))
+     2 3)))
 
 (test-end "aiscm llvm")
