@@ -574,6 +574,18 @@
   (test-eqv "not floating-point greater-than or equal"
     #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
 
+(test-group "local variables"
+  (test-eq "Empty variable list declaration"
+    <int> (class-of (with-llvm-values () (typed-constant <int> 42))))
+  (test-eqv "Return result of last instruction"
+    <sint> (class-of (with-llvm-values () (typed-constant <byte> 20) (typed-constant <sint> 42))))
+(let* [(data #vu8(0 0 0 0))
+         (ptr  (typed-pointer (bytevector->pointer data)))]
+    (test-eqv "ensure both instructions are executed"
+      42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch <int> ptr)))) 42)))
+  (test-eqv "define variable"
+    42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [x] (llvm-set x value) x))) 42)))
+
 (test-group "basic blocks and branch instructions"
   (test-equal "branch instruction"
     42

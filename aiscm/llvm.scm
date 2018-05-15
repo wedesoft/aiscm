@@ -37,7 +37,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~ le lt ge gt)
-  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor)
+  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set)
   #:re-export (destroy - + *))
 
 
@@ -101,6 +101,20 @@
   (llvm-compile-module (slot-ref self 'llvm-module))
   (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
 
+(define-syntax with-llvm-values
+  (lambda (x)
+    (syntax-case x ()
+      ((k (variables ...) instructions ...)
+        (let [(preamble (map (cut list <> #f) (syntax->datum #'(variables ...))))]
+          #`(let #,(datum->syntax #'k preamble)
+              (let [(result (llvm-begin instructions ...))]
+                (make (class-of result) #:value (lambda (fun) ((get result) fun))))))))))
+
+(define-syntax-rule (llvm-set value expression)
+  (let [(result expression)]
+    (set! value expression)
+    (make <void> #:value (lambda (fun) ((get value) fun)))))
+
 (define (make-basic-block name)
   (memoize (fun) (make-llvm-basic-block (slot-ref fun 'llvm-function) name)))
 
@@ -111,7 +125,7 @@
   (make <void> #:value (lambda (fun) (llvm-build-branch (slot-ref fun 'llvm-function) (basic-block fun)))))
 
 (define (phi vals blocks)
-  ; coercion
+  ; TODO: coercion
   (make (class-of (car vals))
         #:value (lambda (fun)
           (llvm-build-phi (slot-ref fun 'llvm-function)
