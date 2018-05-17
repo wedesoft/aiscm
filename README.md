@@ -92,6 +92,7 @@ make reintegration
 * [Debian sbuild][3] (installed from jessie-backports because of [bug 827315][7])
 * [Docker][4]
 * [managing Debian packages][5]
+* [How to run test headlessly with Xvfb][9]
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"
@@ -101,3 +102,4 @@ make reintegration
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
 [7]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=827315
 [8]: https://tracker.debian.org/pkg/aiscm
+[9]: http://elementalselenium.com/tips/38-headless
