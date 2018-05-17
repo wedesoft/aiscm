@@ -1,6 +1,7 @@
 ## Ready
 
-* jumps, conditional jumps, select statement (phi function), loops
+* reference to entry block
+* conditional jumps, select statement (phi function), loops
 * Debian sid FFmpeg API changes
 * avcodec\_encode\_video2 deprecated
 * avcodec\_decode\_video2 deprecated

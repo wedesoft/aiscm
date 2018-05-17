@@ -597,32 +597,41 @@
                        (position-builder-at-end block)
                        x))))
      42))
-  (test-expect-fail 2)
   (test-equal "phi instruction using first value"
     2
     ((llvm-typed (list <int> <int>)
                  (lambda (x y)
                    (let [(block-a (make-basic-block "block-a"))
-                         (block-b (make-basic-block "block-b"))]
-                     (llvm-begin
-                       (build-branch block-a)
-                       (position-builder-at-end block-b)
+                         (block-b (make-basic-block "block-b"))
+                         (block-c (make-basic-block "block-c"))]
+                     (with-llvm-values (v w)
                        (build-branch block-a)
                        (position-builder-at-end block-a)
-                       (phi (list x y) (list block-a block-b))))))
+                       (llvm-set v x)
+                       (build-branch block-c)
+                       (position-builder-at-end block-b)
+                       (llvm-set w y)
+                       (build-branch block-c)
+                       (position-builder-at-end block-c)
+                       (phi (list v w) (list block-a block-b))))))
      2 3))
   (test-equal "phi instruction using second value"
     3
     ((llvm-typed (list <int> <int>)
                  (lambda (x y)
                    (let [(block-a (make-basic-block "block-a"))
-                         (block-b (make-basic-block "block-b"))]
-                     (llvm-begin
+                         (block-b (make-basic-block "block-b"))
+                         (block-c (make-basic-block "block-c"))]
+                     (with-llvm-values (v w)
                        (build-branch block-b)
                        (position-builder-at-end block-a)
-                       (build-branch block-b)
+                       (llvm-set v x)
+                       (build-branch block-c)
                        (position-builder-at-end block-b)
-                       (phi (list x y) (list block-a block-b))))))
+                       (llvm-set w y)
+                       (build-branch block-c)
+                       (position-builder-at-end block-c)
+                       (phi (list v w) (list block-a block-b))))))
      2 3)))
 
 (test-end "aiscm llvm")
