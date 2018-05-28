@@ -1,37 +1,39 @@
 ## Ready
 
-* reference to entry block
 * conditional jumps, select statement (phi function), loops
-* Debian sid FFmpeg API changes
-* avcodec\_encode\_video2 deprecated
-* avcodec\_decode\_video2 deprecated
-* avcodec\_encode\_audio2 deprecated
-* avcodec\_decode\_audio4 deprecated
-* codec deprecated (ffmpeg.c: 271, 377, 417)
-* "let" for tensors
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
+* type matching for uniform arrays
 * Scheme objects
+* complex multiplication, division
+* dynamic array operations
+* tensor indices
+* to-type in tensor expressions, implicit typecasting in tensor sum?
+* cast to higher integer type when doing a tensor injection
+* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
+* dimension checks for array/tensor operations; array compatibility check
+* Debian sid FFmpeg API changes
+  * avcodec\_encode\_video2 deprecated
+  * avcodec\_decode\_video2 deprecated
+  * avcodec\_encode\_audio2 deprecated
+  * avcodec\_decode\_audio4 deprecated
+  * codec deprecated (ffmpeg.c: 271, 377, 417)
 * runge kutta with state vector
 * matrix vector operations
-* boolean basic type
-* complex multiplication, division
+* rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
 * typed let (trigger memoization)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
-* nested structures (e.g. state vector)
-* type matching for uniform arrays
-* dynamic array operations
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies
 * OpenGL vertex array object example
-* rigid-body impulse-based dynamics example (and microcollisions)
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
 * colour swapped when converting MJPEG video to FFmpeg video
-* tensor indices
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
   deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
@@ -39,7 +41,6 @@
 * 1+, 1-
 * ==, != for complex numbers
 * galaxy simulation
-* to-type in tensor
 * floating point exception (SIGFPE)
 * floating point convolution: sharpening filter, corner filters
 * linear algebra bindings (blas, lapack, gsl, mkl)
@@ -52,18 +53,12 @@
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
-* to-type in tensor expressions, implicit typecasting in tensor sum?
-* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
-* dimension checks for array/tensor operations; array compatibility check
 * argmax
 * Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
 * how to run test suite
 * documentation for objects and arrays of objects
-* cast to higher integer type when doing a tensor injection
-* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
-* parameter passing for sequences, map, tensor operations, replace fill and other?
 * equality of arrays
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * ffmpeg-input, ffmpeg-output class (instead of "is-input?")
