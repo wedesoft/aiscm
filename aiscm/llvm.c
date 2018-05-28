@@ -341,6 +341,16 @@ SCM llvm_build_branch(SCM scm_function, SCM scm_basic_block)
   return SCM_UNSPECIFIED;
 }
 
+SCM llvm_build_cond_branch(SCM scm_function, SCM scm_condition, SCM scm_block_then, SCM scm_block_else)
+{
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *condition = get_llvm_value(scm_condition);
+  struct llvm_basic_block_t *block_then = get_llvm_basic_block(scm_block_then);
+  struct llvm_basic_block_t *block_else = get_llvm_basic_block(scm_block_else);
+  LLVMBuildCondBr(function->builder, condition->value, block_then->basic_block, block_else->basic_block);
+  return SCM_UNSPECIFIED;
+}
+
 SCM llvm_build_phi(SCM scm_function, SCM scm_values, SCM scm_blocks)
 {
   SCM retval;
@@ -635,6 +645,7 @@ void init_llvm(void)
   scm_c_define_gsubr("make-llvm-basic-block"       , 2, 0, 0, SCM_FUNC(make_llvm_basic_block       ));
   scm_c_define_gsubr("llvm-position-builder-at-end", 2, 0, 0, SCM_FUNC(llvm_position_builder_at_end));
   scm_c_define_gsubr("llvm-build-branch"           , 2, 0, 0, SCM_FUNC(llvm_build_branch           ));
+  scm_c_define_gsubr("llvm-build-cond-branch"      , 4, 0, 0, SCM_FUNC(llvm_build_cond_branch      ));
   scm_c_define_gsubr("llvm-build-phi"              , 3, 0, 0, SCM_FUNC(llvm_build_phi              ));
   scm_c_define_gsubr("make-llvm-constant"          , 2, 0, 0, SCM_FUNC(make_llvm_constant          ));
   scm_c_define_gsubr("llvm-get-type"               , 1, 0, 0, SCM_FUNC(llvm_get_type               ));

@@ -31,7 +31,7 @@
             llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
-            make-basic-block position-builder-at-end build-branch phi
+            make-basic-block position-builder-at-end build-branch build-cond-branch phi
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
@@ -123,6 +123,14 @@
 
 (define (build-branch basic-block)
   (make <void> #:value (lambda (fun) (llvm-build-branch (slot-ref fun 'llvm-function) (basic-block fun)))))
+
+(define (build-cond-branch condition block-then block-else)
+  (make <void>
+        #:value (lambda (fun)
+                  (llvm-build-cond-branch (slot-ref fun 'llvm-function)
+                                          ((get condition) fun)
+                                          (block-then fun)
+                                          (block-else fun)))))
 
 (define (phi vals blocks)
   ; TODO: coercion
