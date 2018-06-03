@@ -1,3 +1,7 @@
+# aiscm (0.15.3)
+
+* Add Guile dependency so that autotests pass
+
 # aiscm (0.15.2)
 
 * FFMpeg 4.0.0 compatibility fixes
