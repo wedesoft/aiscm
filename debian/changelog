@@ -1,21 +1,29 @@
-aiscm (0.15.2-1+trusty1) UNRELEASED; urgency=low
+aiscm (0.15.3-1+trusty1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Trusty
   * use gz instead of xz
 
- -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 May 2018 16:40:11 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Jun 2018 19:36:42 +0100
+
+aiscm (0.15.3-1) unstable; urgency=low
+
+  - Add Guile interpreter to dependencies so that auto test passes
+
+ -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Jun 2018 19:36:42 +0100
 
 aiscm (0.15.2-1) unstable; urgency=low
 
-  - FFMpeg 4.0 transition. Closes: #896823
+  - New upstream release
+    - FFMpeg 4.0 transition. Closes: #896823
+    - link some libraries with libc
   - Bumped Standards-Version to 4.1.4
   - Bumped debhelper compatibility version to 11
-  - link some libraries with libc
   - do not strip Guile object (*.go) files
   - use https in copyright URL
   - added metadata file
+  - added autotest instructions (see directory debian/tests)
 
- -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 May 2018 16:40:11 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 16 May 2018 21:26:51 +0100
 
 >>>>>>> master
 aiscm (0.15.1-1) unstable; urgency=low
