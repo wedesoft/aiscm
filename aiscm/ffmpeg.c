@@ -50,6 +50,11 @@
 #define AV_CODEC_FLAG_GLOBAL_HEADER CODEC_FLAG_GLOBAL_HEADER
 #endif
 
+#ifndef AV_INPUT_BUFFER_MIN_SIZE
+#define AV_INPUT_BUFFER_MIN_SIZE FF_MIN_BUFFER_SIZE
+#endif
+
+
 static scm_t_bits ffmpeg_tag;
 
 struct ffmpeg_t {
@@ -497,11 +502,7 @@ static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_
   retval->sample_rate = audio_codec->sample_rate;
 
   if (audio_codec->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
-#ifndef FF_MIN_BUFFER_SIZE
-    retval->nb_samples = 10000;
-#else
-    retval->nb_samples = 2 * FF_MIN_BUFFER_SIZE;
-#endif
+    retval->nb_samples = 2 * AV_INPUT_BUFFER_MIN_SIZE;
   else
     retval->nb_samples = audio_codec->frame_size;
 
