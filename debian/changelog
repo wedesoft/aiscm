@@ -1,3 +1,9 @@
+aiscm (0.15.4-1) unstable; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue,  5 Jun 2018 19:36:42 +0100
+
 aiscm (0.15.3-1) unstable; urgency=low
 
   - Add Guile interpreter to dependencies so that auto test passes
