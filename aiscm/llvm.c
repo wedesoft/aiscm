@@ -351,7 +351,7 @@ SCM llvm_build_cond_branch(SCM scm_function, SCM scm_condition, SCM scm_block_th
   return SCM_UNSPECIFIED;
 }
 
-SCM llvm_build_phi(SCM scm_function, SCM scm_values, SCM scm_blocks)
+SCM llvm_build_phi(SCM scm_function, SCM scm_result_type, SCM scm_values, SCM scm_blocks)
 {
   SCM retval;
   struct llvm_function_t *function = get_llvm_function(scm_function);
@@ -359,7 +359,7 @@ SCM llvm_build_phi(SCM scm_function, SCM scm_values, SCM scm_blocks)
   self = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, self);
   int n_values = scm_ilength(scm_values);
-  self->value = LLVMBuildPhi(function->builder, LLVMInt32Type(), "llvm-phi");// TODO: type
+  self->value = LLVMBuildPhi(function->builder, llvm_type(scm_to_int(scm_result_type)), "llvm-phi");
   LLVMValueRef *values = scm_gc_malloc_pointerless(n_values * sizeof(LLVMValueRef), "llvm-values");
   LLVMBasicBlockRef *blocks = scm_gc_malloc_pointerless(n_values * sizeof(LLVMBasicBlockRef), "llvm-blocks");
   for (int i=0; i<n_values; i++) {
@@ -646,7 +646,7 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-position-builder-at-end", 2, 0, 0, SCM_FUNC(llvm_position_builder_at_end));
   scm_c_define_gsubr("llvm-build-branch"           , 2, 0, 0, SCM_FUNC(llvm_build_branch           ));
   scm_c_define_gsubr("llvm-build-cond-branch"      , 4, 0, 0, SCM_FUNC(llvm_build_cond_branch      ));
-  scm_c_define_gsubr("llvm-build-phi"              , 3, 0, 0, SCM_FUNC(llvm_build_phi              ));
+  scm_c_define_gsubr("llvm-build-phi"              , 4, 0, 0, SCM_FUNC(llvm_build_phi              ));
   scm_c_define_gsubr("make-llvm-constant"          , 2, 0, 0, SCM_FUNC(make_llvm_constant          ));
   scm_c_define_gsubr("llvm-get-type"               , 1, 0, 0, SCM_FUNC(llvm_get_type               ));
   scm_c_define_gsubr("llvm-build-load"             , 3, 0, 0, SCM_FUNC(llvm_build_load             ));

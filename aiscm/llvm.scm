@@ -133,12 +133,13 @@
                                           (block-else fun)))))
 
 (define (phi vals blocks)
-  ; TODO: coercion
-  (make (class-of (car vals))
-        #:value (lambda (fun)
-          (llvm-build-phi (slot-ref fun 'llvm-function)
-                          (map (lambda (val) ((get val) fun)) vals)
-                          (map (lambda (block) (block fun)) blocks)))))
+  (let [(result-type (reduce coerce #f (map class-of vals)))]
+    (make result-type
+          #:value (lambda (fun)
+            (llvm-build-phi (slot-ref fun 'llvm-function)
+                            (foreign-type result-type)
+                            (map (lambda (val) ((get val) fun)) vals)
+                            (map (lambda (block) (block fun)) blocks))))))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))
@@ -427,12 +428,13 @@
   "Conditional statement"
   (let [(block-then  (make-basic-block "block-then"))
         (block-else  (make-basic-block "block-else"))
-        (block-endif (make-basic-block "block-endif"))]
+        (block-endif (make-basic-block "block-endif"))
+        (result-type (coerce (class-of value-if) (class-of value-else)))]
     (with-llvm-values (result-if result-else)
       (build-cond-branch condition block-then block-else)
-      (position-builder-at-end block-then) (llvm-set result-if value-if)
+      (position-builder-at-end block-then) (llvm-set result-if (to-type result-type value-if))
       (build-branch block-endif)
-      (position-builder-at-end block-else) (llvm-set result-else value-else)
+      (position-builder-at-end block-else) (llvm-set result-else (to-type result-type value-else))
       (build-branch block-endif)
       (position-builder-at-end block-endif)
       (phi (list result-if result-else) (list block-then block-else)))))

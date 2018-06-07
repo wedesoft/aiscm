@@ -1,6 +1,6 @@
 ## Ready
 
-* coercion in conditional statement?
+* phi: coercion with composite values
 * loops
 * C function calls in llvm-typed environment
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)

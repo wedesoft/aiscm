@@ -641,6 +641,8 @@
 (test-group "conditional statement"
   (test-equal "implement absolute value"
     '(3 5)
-    (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5))))
+    (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
+  (test-eqv "scalar coercion"
+    3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5)))
 
 (test-end "aiscm llvm")
