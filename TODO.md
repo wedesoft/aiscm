@@ -1,6 +1,8 @@
 ## Ready
 
-* conditional jumps, select statement (phi function), loops
+* coercion in conditional statement?
+* loops
+* C function calls in llvm-typed environment
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * type matching for uniform arrays
 * Scheme objects

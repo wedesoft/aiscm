@@ -638,4 +638,9 @@
                           (position-builder-at-end block-endif) (phi (list r1 r2) (list block-then block-else))))))
       '(5 9) '(10 7))))
 
+(test-group "conditional statement"
+  (test-equal "implement absolute value"
+    '(3 5)
+    (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5))))
+
 (test-end "aiscm llvm")

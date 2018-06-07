@@ -36,7 +36,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-constant typed-pointer store fetch llvm-begin
-            ~ le lt ge gt)
+            ~ le lt ge gt llvm-if)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set)
   #:re-export (destroy - + *))
 
@@ -415,9 +415,24 @@
                   (append-map decompose-argument argument-types args))))))))
 
 (define ((llvm-call return-type function-name argument-types args) fun)
+  "Call a C function"
   (llvm-build-call (slot-ref fun 'llvm-function)
                    (slot-ref (slot-ref fun 'module) 'llvm-module)
                    return-type
                    function-name
                    argument-types
                    (map (lambda (arg) (arg fun)) args)))
+
+(define (llvm-if condition value-if value-else)
+  "Conditional statement"
+  (let [(block-then  (make-basic-block "block-then"))
+        (block-else  (make-basic-block "block-else"))
+        (block-endif (make-basic-block "block-endif"))]
+    (with-llvm-values (result-if result-else)
+      (build-cond-branch condition block-then block-else)
+      (position-builder-at-end block-then) (llvm-set result-if value-if)
+      (build-branch block-endif)
+      (position-builder-at-end block-else) (llvm-set result-else value-else)
+      (build-branch block-endif)
+      (position-builder-at-end block-endif)
+      (phi (list result-if result-else) (list block-then block-else)))))
