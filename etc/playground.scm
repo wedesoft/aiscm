@@ -1,30 +1,17 @@
 (use-modules (oop goops) (aiscm llvm) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm basictype) (srfi srfi-1) (srfi srfi-26))
 
-(define-class <vec> ()
-              (x #:init-keyword #:x #:getter x)
-              (y #:init-keyword #:y #:getter y)
-              (z #:init-keyword #:z #:getter z))
-(define-method (write (self <vec>) port) (format port "[~a ~a ~a]" (x self) (y self) (z self)))
-(define (make-vec x y z) (make <vec> #:x x #:y y #:z z))
-(define-structure vec make-vec (x y z))
-(define-uniform-constructor vec)
-
-(define-method (+ (a <vec<>>) (b <vec<>>)) (vec (+ (x a) (x b)) (+ (y a) (y b)) (+ (z a) (z b))))
-
-((llvm-typed (list (vec <float>) (vec <float>)) +) (make-vec 2 3 5) (make-vec 3 5 7))
-
-(define-class <state> ()
-              (v #:init-keyword #:v #:getter v))
-(define-method (write (self <state>) port) (format port "state(~a)" (v self)))
-(define (make-state v) (make <state> #:v v))
-(define-structure state make-state (v))
-(define-mixed-constructor state)
-
-(define-method (+ (a <state<>>) (b <state<>>)) (state (+ (v a) (v b))))
-
-(llvm-typed (list (state (vec <float>))) identity)
-((llvm-typed (list (state (vec <float>))) identity) (make-state (make-vec 2 3 5)))
-
-((llvm-typed (list (vec <float>)) identity) (make-vec 2 3 5))
-((llvm-typed (list (vec <float>)) state) (make-vec 2 3 5))
-((llvm-typed (list (state (vec <float>)) (state (vec <float>))) +) (make-state (make-vec 2 3 5)) (make-state (make-vec 3 5 7)))
+((llvm-typed (list <int>)
+  (lambda (n)
+    (let [(block-begin (make-basic-block "block-begin"))
+          (block-start (make-basic-block "block-start"))
+          (block-end   (make-basic-block "block-end"  ))]
+      (with-llvm-values (i j)
+        (build-branch block-begin)
+        (position-builder-at-end block-begin)
+        (llvm-set i (typed-constant <int> 0))
+        (build-branch block-start)
+        (position-builder-at-end block-start)
+        (llvm-set j (+ (phi (list i j) (list block-begin block-start)) (typed-constant <int> 1)))
+        (build-cond-branch (lt i n) block-start block-end)
+        (position-builder-at-end block-end)
+        j)))) 3)

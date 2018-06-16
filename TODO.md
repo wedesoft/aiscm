@@ -1,7 +1,7 @@
 ## Ready
 
-* phi: coercion with composite values
-* loops
+* phi: coercion with composite values (requires coercion for composites)
+* loops (alloca)
 * C function calls in llvm-typed environment
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * type matching for uniform arrays

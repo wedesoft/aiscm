@@ -153,6 +153,14 @@
   (test-equal "Get imaginary component of complex number"
     3.25 ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f)))
 
+(test-group "complex coercion"
+  (test-eq "Coerce two complex types"
+    (complex <float>) (coerce (complex <float>) (complex <float>)))
+  (test-eq "Coerce single and double complex type"
+    (complex <double>) (coerce (complex <float>) (complex <double>)))
+  (test-eq "Coerce double and single complex type"
+    (complex <double>) (coerce (complex <double>) (complex <float>))))
+
 (test-eqv "get foreign type of complex type"
   int64 (foreign-type <complex<float>>))
 
