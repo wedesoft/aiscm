@@ -580,7 +580,7 @@
   (test-eqv "Return result of last instruction"
     <sint> (class-of (with-llvm-values () (typed-constant <byte> 20) (typed-constant <sint> 42))))
 (let* [(data #vu8(0 0 0 0))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+       (ptr  (typed-pointer (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
       42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch <int> ptr)))) 42)))
   (test-eqv "define variable"
@@ -644,5 +644,15 @@
     (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
   (test-eqv "scalar coercion"
     3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5)))
+
+(test-group "alloca for loop variables"
+  (test-equal "Allocate a variable on the stack"
+    42
+    ((llvm-typed (list <int>)
+                 (lambda (x)
+                   (with-llvm-values (ptr)
+                     (llvm-set ptr (typed-alloca <int>))
+                     (store ptr x)
+                     (fetch <int> ptr)))) 42)))
 
 (test-end "aiscm llvm")

@@ -1,6 +1,7 @@
 ## Ready
 
-* phi: coercion with composite values (requires coercion for composites)
+* coerce complex and scalar, type conversion to complex
+* phi: coercion with composite values
 * loops (alloca)
 * C function calls in llvm-typed environment
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)

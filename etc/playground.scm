@@ -15,3 +15,11 @@
         (build-cond-branch (lt i n) block-start block-end)
         (position-builder-at-end block-end)
         j)))) 3)
+
+
+(define-method (test (x <number>))
+  (add-method! test
+               (make <method>
+                     #:specializers (list (class-of x))
+                     #:procedure (llvm-typed (list (native-type x)) (lambda (x) (- x)))))
+  (test x))

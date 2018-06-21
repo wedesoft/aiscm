@@ -591,6 +591,17 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   return retval;
 }
 
+SCM llvm_build_alloca(SCM scm_function, SCM scm_type)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  int type = scm_to_int(scm_type);
+  result->value = LLVMBuildAlloca(function->builder, llvm_type(type), "alloca");
+  return retval;
+}
+
 void init_llvm(void)
 {
   LLVMLinkInMCJIT();
@@ -672,4 +683,5 @@ void init_llvm(void)
   scm_c_define_gsubr("llvm-build-call"             , 6, 0, 0, SCM_FUNC(llvm_build_call             ));
   scm_c_define_gsubr("llvm-build-integer-cmp"      , 4, 0, 0, SCM_FUNC(llvm_build_integer_cmp      ));
   scm_c_define_gsubr("llvm-build-float-cmp"        , 4, 0, 0, SCM_FUNC(llvm_build_float_cmp        ));
+  scm_c_define_gsubr("llvm-build-alloca"           , 2, 0, 0, SCM_FUNC(llvm_build_alloca           ));
 }
