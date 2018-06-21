@@ -16,10 +16,19 @@
         (position-builder-at-end block-end)
         j)))) 3)
 
-
-(define-method (test (x <number>))
-  (add-method! test
-               (make <method>
-                     #:specializers (list (class-of x))
-                     #:procedure (llvm-typed (list (native-type x)) (lambda (x) (- x)))))
-  (test x))
+((llvm-typed (list <int>)
+   (lambda (x)
+     (let [(b (make-basic-block "b"))
+           (c (make-basic-block "c"))
+           (d (make-basic-block "d"))]
+      (with-llvm-values (i)
+         (llvm-set i (typed-alloca <int>))
+         (store i (typed-constant <int> 0))
+         (build-branch b)
+         (position-builder-at-end b)
+         (build-cond-branch (lt (fetch <int> i) x) c d)
+         (position-builder-at-end c)
+         (store i (+ 1 (fetch <int> i)))
+         (build-branch b)
+         (position-builder-at-end d)
+         (fetch <int> i))))) 10)
