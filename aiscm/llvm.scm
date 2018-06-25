@@ -37,7 +37,8 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-constant typed-pointer store fetch llvm-begin
             ~ le lt ge gt llvm-if typed-alloca)
-  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set)
+  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set
+                   llvm-while)
   #:re-export (destroy - + *))
 
 
@@ -441,3 +442,16 @@
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make <long> #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
+
+(define-syntax-rule (llvm-while condition body ...)
+  (let [(block-while (make-basic-block "while"))
+        (block-body  (make-basic-block "body"))
+        (block-end   (make-basic-block "endwhile"))]
+    (llvm-begin
+      (build-branch block-while)
+      (position-builder-at-end block-while)
+      (build-cond-branch condition block-body block-end)
+      (position-builder-at-end block-body)
+      body ...
+      (build-branch block-while)
+      (position-builder-at-end block-end))))

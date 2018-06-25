@@ -1,8 +1,8 @@
 ## Ready
 
+* pointers (typed-alloca, store with integer or float, fetch
 * coerce complex and scalar, type conversion to complex
 * phi: coercion with composite values
-* loops (alloca)
 * C function calls in llvm-typed environment
 * pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * type matching for uniform arrays

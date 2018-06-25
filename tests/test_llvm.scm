@@ -646,13 +646,23 @@
     3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5)))
 
 (test-group "alloca for loop variables"
-  (test-equal "Allocate a variable on the stack"
+  (test-eqv "Allocate a variable on the stack"
     42
     ((llvm-typed (list <int>)
                  (lambda (x)
                    (with-llvm-values (ptr)
                      (llvm-set ptr (typed-alloca <int>))
                      (store ptr x)
-                     (fetch <int> ptr)))) 42)))
+                     (fetch <int> ptr)))) 42))
+  (test-eqv "While loop"
+    10
+    ((llvm-typed (list <int>)
+      (lambda (n)
+        (with-llvm-values (i)
+          (llvm-set i (typed-alloca <int>))
+          (store i (typed-constant <int> 0))
+          (llvm-while (lt (fetch <int> i) n)
+            (store i (+ 1 (fetch <int> i))))
+          (fetch <int> i)))) 10)))
 
 (test-end "aiscm llvm")
