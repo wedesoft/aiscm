@@ -25,6 +25,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
+            pointer target
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <bool>  <meta<bool>>
@@ -42,7 +43,8 @@
             <double> <meta<double>> <float<double>> <meta<float<double>>>
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
-            <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>)
+            <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
+            <pointer<>> <meta<pointer<>>>)
   #:export-syntax (define-structure)
   #:re-export (real-part imag-part))
 
@@ -62,6 +64,8 @@
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
+
+(define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
 (define-syntax define-structure
   (lambda (x)
@@ -146,6 +150,14 @@
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
 
+(define-generic target)
+
+(define (pointer tgt)
+  "Create pointer class"
+  (template-class (pointer tgt) <pointer<>>
+    (lambda (class metaclass)
+      (define-method (target (self metaclass)) tgt))))
+
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
 
@@ -172,6 +184,10 @@
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
 
+(define-method (foreign-type (type <meta<pointer<>>>))
+  "Get foreing type of pointer"
+  int64)
+
 (define-method (size-of (type <meta<bool>>))
   1)
 
@@ -186,6 +202,10 @@
 (define-method (size-of (type <meta<void>>))
   "Determine size of type"
   (apply + (map size-of (base type))))
+
+(define-method (size-of (type <meta<pointer<>>>))
+  "Size of pointer"
+  8)
 
 (define-method (native-type (value <boolean>))
   <bool>)
@@ -262,6 +282,9 @@
   "Decompose composite type"
   (append-map decompose-type (base type)))
 
+(define-method (decompose-type (type <meta<pointer<>>>))
+  (list <long>))
+
 (define-method (decompose-argument (type <meta<scalar>>) value)
   "Decompose scalar value"
   (list value))
@@ -273,6 +296,9 @@
 (define-method (decompose-argument (type <meta<void>>) value)
   "Recursively decompose composite value"
   (append-map decompose-argument (base type) (map (cut <> value) (components type))))
+
+(define-method (decompose-argument (type <meta<pointer<>>>) value)
+  (list (pointer-address value)))
 
 (define (compose-base base-types lst)
   (if (null? base-types)

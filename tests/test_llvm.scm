@@ -665,4 +665,8 @@
             (store i (+ 1 (fetch <int> i))))
           (fetch <int> i)))) 10)))
 
+(test-group "pointers"
+  (test-equal "Pointer identity function"
+    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123))))
+
 (test-end "aiscm llvm")

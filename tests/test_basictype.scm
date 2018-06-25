@@ -348,4 +348,16 @@
   (test-equal "Get list of basic types"
     (list <int> <sint>) (base (testmixed <int> <sint>))))
 
+(test-group "pointer types"
+  (test-eq "Get target type of pointer"
+    <int> (target (pointer <int>)))
+  (test-eqv "Foreign type of pointer"
+    int64 (foreign-type (pointer <int>)))
+  (test-eqv "Size of pointer"
+    8 (size-of (pointer <int>)))
+  (test-equal "Decompose pointer type"
+    (list <long>) (decompose-type (pointer <int>)))
+  (test-equal "Decompose pointer value"
+    (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
+
 (test-end "aiscm basictype")

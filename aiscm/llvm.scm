@@ -399,6 +399,10 @@
   "Provide boolean return value"
   (not (zero? result)))
 
+(define-method (finish-return (type <meta<pointer<>>>) result)
+  "Provide pointer return value"
+  (make-pointer result))
+
 (define (llvm-typed argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
