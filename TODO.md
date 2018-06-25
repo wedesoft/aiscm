@@ -1,10 +1,10 @@
 ## Ready
 
-* pointers (typed-alloca, store with integer or float, fetch
+* pointers/cells and arrays (typed-alloca, store with integer or float, fetch, distinguish pointer+ and ordinary +)
 * coerce complex and scalar, type conversion to complex
 * phi: coercion with composite values
+* for loop
 * C function calls in llvm-typed environment
-* pointers/cells and arrays (distinguish pointer+ and ordinary +)
 * type matching for uniform arrays
 * Scheme objects
 * complex multiplication, division
