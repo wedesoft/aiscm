@@ -667,6 +667,8 @@
 
 (test-group "pointers"
   (test-equal "Pointer identity function"
-    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123))))
+    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123)))
+  (test-eqv "Fetch pointer value"
+    42 ((llvm-typed (list (pointer <byte>)) (lambda (x) (fetch x))) (bytevector->pointer #vu8(42 63)))))
 
 (test-end "aiscm llvm")

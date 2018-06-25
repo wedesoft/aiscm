@@ -377,6 +377,9 @@
                            (base type)
                            (integral (cons 0 (all-but-last (map size-of (base type))))))))
 
+(define-method (fetch (ptr <pointer<>>))
+  (fetch (target (class-of ptr)) ptr))
+
 (define-method (prepare-return (result <void>) memory)
   "Generate return statement for composite value or void"
   (if (null? (components (class-of result)))
