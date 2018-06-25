@@ -1,6 +1,7 @@
 ## Ready
 
-* pointers/cells and arrays (typed-alloca, store with integer or float, fetch, distinguish pointer+ and ordinary +)
+* store at pointer location, pointer +, allocate pointer
+* cells
 * coerce complex and scalar, type conversion to complex
 * phi: coercion with composite values
 * for loop
