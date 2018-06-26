@@ -470,7 +470,7 @@
   (let* [(data #vu8(2 3 5 7))
          (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-eqv "read byte from memory"
-      2 ((llvm-typed '() (lambda () (fetch <byte> ptr))))))
+      2 ((llvm-typed '() (lambda () (fetch ptr))))))
   (let* [(data #vu8(1 2 3 4 5 6 7 8 9 10))
          (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-equal "write complex number to memory"
@@ -479,7 +479,7 @@
   (let* [(data #vu8(0 0 0 64 0 0 64 64))
          (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-eqv "read complex number from memory"
-      2+3i ((llvm-typed '() (lambda () (fetch <complex<float>> ptr)))))))
+      2+3i ((llvm-typed '() (lambda () (fetch ptr)))))))
 
 (test-group "instruction sequence"
   (test-eqv "test single instruction"
@@ -489,7 +489,7 @@
   (let* [(data #vu8(0 0 0 0))
          (ptr  (typed-pointer <int> (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
-      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch <int> ptr)))) 42))))
+      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch ptr)))) 42))))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
@@ -516,9 +516,9 @@
   (let* [(data #vu8(3 5 7))
          (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
     (test-eqv "read first value of mixed variable"
-      1283 (test-a ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))
+      1283 (test-a ((llvm-typed '() (lambda () (fetch ptr))))))
     (test-eqv "read second value of mixed variable"
-      7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr)))))))
+      7 (test-b ((llvm-typed '() (lambda () (fetch ptr)))))))
     (let* [(data #vu8(1 2 3 4))
            (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
       (test-equal "write composite value to memory"
@@ -594,7 +594,7 @@
 (let* [(data #vu8(0 0 0 0))
        (ptr  (typed-pointer <int> (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
-      42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch <int> ptr)))) 42)))
+      42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch ptr)))) 42)))
   (test-eqv "define variable"
     42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [x] (llvm-set x value) x))) 42)))
 
@@ -665,7 +665,7 @@
                    (with-llvm-values (ptr)
                      (llvm-set ptr (typed-alloca <int>))
                      (store ptr x)
-                     (fetch <int> ptr)))) 42))
+                     (fetch ptr)))) 42))
   (test-eqv "While loop"
     10
     ((llvm-typed (list <int>)
@@ -673,8 +673,8 @@
         (with-llvm-values (i)
           (llvm-set i (typed-alloca <int>))
           (store i (typed-constant <int> 0))
-          (llvm-while (lt (fetch <int> i) n)
-            (store i (+ 1 (fetch <int> i))))
-          (fetch <int> i)))) 10)))
+          (llvm-while (lt (fetch i) n)
+            (store i (+ 1 (fetch i))))
+          (fetch i)))) 10)))
 
 (test-end "aiscm llvm")
