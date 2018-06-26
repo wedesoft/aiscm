@@ -1,6 +1,6 @@
 ## Ready
 
-* store at pointer location, pointer +, allocate pointer
+* store at pointer location, constant pointers, pointer +, allocate pointer
 * cells
 * coerce complex and scalar, type conversion to complex
 * phi: coercion with composite values

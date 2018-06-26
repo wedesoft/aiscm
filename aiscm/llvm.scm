@@ -360,14 +360,18 @@
 (define (typed-pointer value)
   (make <long> #:value (make-constant-pointer value)))
 
-(define-method (store address (value <scalar>))
+(define-method (store address (value <scalar>)); TODO: remove this?
   (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get address))))
 
-(define-method (store address (value <void>))
+(define-method (store address (value <void>)); TODO: replace this?
   (apply llvm-begin
     (map (lambda (component offset) (store (+ address offset) (component value)))
          (components (class-of value))
          (integral (cons 0 (all-but-last (map size-of (base (class-of value)))))))))
+
+(define-method (store (ptr <pointer<>>) (value <void>))
+  (let [(type (target (class-of ptr)))]
+    (make <void> #:value (llvm-store (foreign-type type) (get (to-type type value)) (get ptr)))))
 
 (define-method (fetch (type <meta<scalar>>) address)
   (make type #:value (llvm-fetch (foreign-type type) (get address))))

@@ -669,6 +669,12 @@
   (test-equal "Pointer identity function"
     (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123)))
   (test-eqv "Fetch pointer value"
-    42 ((llvm-typed (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63)))))
+    42 ((llvm-typed (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63))))
+  (test-equal "Typecast when writing to pointer target"
+    #vu8(42 3 5 7)
+    (let [(data #vu8(2 3 5 7))]
+      ((llvm-typed (list (pointer <byte>) <int>) (lambda (ptr value) (store ptr value)))
+       (bytevector->pointer data) 42)
+      data)))
 
 (test-end "aiscm llvm")
