@@ -435,7 +435,7 @@
   (test-equal "Typecast when writing to pointer target"
     #vu8(42 3 5 7)
     (let [(data #vu8(2 3 5 7))]
-      ((llvm-typed (list (pointer <byte>) <byte>) (lambda (ptr value) (store ptr value)))
+      ((llvm-typed (list (pointer <byte>) <int>) (lambda (ptr value) (store ptr value)))
        (bytevector->pointer data) 42)
       data)))
 

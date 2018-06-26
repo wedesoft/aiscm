@@ -370,13 +370,16 @@
   (make (pointer target) #:value (make-constant-pointer value)))
 
 (define-method (store ptr (value <scalar>))
-  (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get ptr))))
+  (let [(type (target (class-of ptr)))]
+    (make <void> #:value (llvm-store (foreign-type type) (get (to-type type value)) (get ptr)))))
 
 (define-method (store ptr (value <void>))
-  (apply llvm-begin
-    (map (lambda (component offset) (store (+ ptr offset) (component value)))
-         (components (class-of value))
-         (integral (cons 0 (all-but-last (map size-of (base (class-of value)))))))))
+  (let [(type (target (class-of ptr)))]
+    (apply llvm-begin
+      (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) (component value)))
+           (components type)
+           (decompose-type type)
+           (integral (cons 0 (all-but-last (map size-of (base type)))))))))
 
 (define-method (fetch (type <meta<scalar>>) ptr)
   (make type #:value (llvm-fetch (foreign-type type) (get ptr))))
@@ -393,7 +396,7 @@
   "Generate return statement for composite value or void"
   (if (null? (components (class-of result)))
     (llvm-begin result (return))
-    (llvm-begin (store memory result) (return memory))))
+    (llvm-begin (store (to-type (pointer (class-of result)) memory) result) (return memory))))
 
 (define-method (prepare-return (result <scalar>) memory)
   "Generate return statement for boolean, integer, or floating-point number"
