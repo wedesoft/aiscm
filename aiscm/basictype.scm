@@ -274,6 +274,10 @@
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>))
   (complex (coerce (apply coerce (base a)) (apply coerce (base b)))))
 
+(define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
+  "Coerce pointers and integers"
+  a)
+
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"
   (base type))

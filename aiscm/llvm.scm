@@ -267,6 +267,14 @@
   (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
 
+(define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
+  "Typecast pointer"
+  (make cls #:value (get value)))
+
+(define-method (to-type (cls <meta<pointer<>>>) (value <int<>>))
+  "Convert integer to pointer"
+  (make cls #:value (get (to-type <long> value))))
+
 (define-syntax-rule (define-unary-operation type operation delegate)
   (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
@@ -291,10 +299,11 @@
 
 (define-syntax-rule (define-binary-delegation type-map operation delegate float-delegate)
   (begin
-    (define-binary-operation <int<>>   <int<>>   type-map operation delegate )
-    (define-binary-operation <float<>> <int<>>   type-map operation float-delegate)
-    (define-binary-operation <int<>>   <float<>> type-map operation float-delegate)
-    (define-binary-operation <float<>> <float<>> type-map operation float-delegate)
+    (define-binary-operation <int<>>     <int<>>   type-map operation delegate )
+    (define-binary-operation <float<>>   <int<>>   type-map operation float-delegate)
+    (define-binary-operation <int<>>     <float<>> type-map operation float-delegate)
+    (define-binary-operation <float<>>   <float<>> type-map operation float-delegate)
+    (define-binary-operation <pointer<>> <int<>>   type-map operation delegate )
     (define-op-with-constant <void> operation)))
 
 (define-binary-delegation identity + (const llvm-add) (const llvm-fadd))
@@ -357,27 +366,23 @@
               (base type)
               (components type))))
 
-(define (typed-pointer value)
-  (make <long> #:value (make-constant-pointer value)))
+(define (typed-pointer target value)
+  (make (pointer target) #:value (make-constant-pointer value)))
 
-(define-method (store address (value <scalar>)); TODO: remove this?
-  (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get address))))
+(define-method (store ptr (value <scalar>))
+  (make <void> #:value (llvm-store (foreign-type (class-of value)) (get value) (get ptr))))
 
-(define-method (store address (value <void>)); TODO: replace this?
+(define-method (store ptr (value <void>))
   (apply llvm-begin
-    (map (lambda (component offset) (store (+ address offset) (component value)))
+    (map (lambda (component offset) (store (+ ptr offset) (component value)))
          (components (class-of value))
          (integral (cons 0 (all-but-last (map size-of (base (class-of value)))))))))
 
-(define-method (store (ptr <pointer<>>) (value <void>))
-  (let [(type (target (class-of ptr)))]
-    (make <void> #:value (llvm-store (foreign-type type) (get (to-type type value)) (get ptr)))))
+(define-method (fetch (type <meta<scalar>>) ptr)
+  (make type #:value (llvm-fetch (foreign-type type) (get ptr))))
 
-(define-method (fetch (type <meta<scalar>>) address)
-  (make type #:value (llvm-fetch (foreign-type type) (get address))))
-
-(define-method (fetch (type <meta<void>>) address)
-  (apply (build type) (map (lambda (type offset) (fetch type (+ address offset)))
+(define-method (fetch (type <meta<void>>) ptr)
+  (apply (build type) (map (lambda (type offset) (fetch type (+ ptr offset)))
                            (base type)
                            (integral (cons 0 (all-but-last (map size-of (base type))))))))
 
@@ -415,7 +420,7 @@
   (let* [(result-type #f)
          (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
-                 (let* [(arguments-typed (compose-values (cons <long> argument-types) arguments))
+                 (let* [(arguments-typed (compose-values (cons <pointer<>> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]
                    (set! result-type (class-of expression))
                    (cons (foreign-type result-type) (get (prepare-return expression (car arguments-typed))))))))]

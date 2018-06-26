@@ -427,15 +427,27 @@
                 (lambda args (cons llvm-double (function-ret (llvm-call llvm-double "atan2" (list llvm-double llvm-double) args)))))
      0.0 1.0)))
 
+(test-group "pointers"
+  (test-equal "Pointer identity function"
+    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123)))
+  (test-eqv "Fetch pointer value"
+    42 ((llvm-typed (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63))))
+  (test-equal "Typecast when writing to pointer target"
+    #vu8(42 3 5 7)
+    (let [(data #vu8(2 3 5 7))]
+      ((llvm-typed (list (pointer <byte>) <byte>) (lambda (ptr value) (store ptr value)))
+       (bytevector->pointer data) 42)
+      data)))
+
 (test-group "typed constants"
   (test-eq "Type of constant should be of specified type"
     <sint> (class-of (typed-constant <sint> 42)))
   (test-equal "Use corresponding foreign type"
     int16 (get-type ((get (typed-constant <sint> 42)) #f)))
   (test-equal "Pointer constant is 64-bit"
-    int64 (get-type ((get (typed-pointer (make-pointer 1234))) #f)))
-  (test-equal "Pointer type is long integer"
-    <long> (class-of (typed-pointer (make-pointer 1234))))
+    int64 (get-type ((get (typed-pointer <int> (make-pointer 1234))) #f)))
+  (test-equal "Pointer type"
+    (pointer <int>) (class-of (typed-pointer <int> (make-pointer 1234))))
   (test-equal "boolean constant"
     #t ((llvm-typed '() (const (typed-constant <bool> #t)))))
   (test-equal "integer constant"
@@ -447,25 +459,25 @@
 
 (test-group "typed store/fetch"
   (let* [(data #vu8(0 3 5 7))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-equal "write byte to memory"
       #vu8(2 3 5 7)
       (begin ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2) data)))
   (let* [(data #vu8(0 3 5 7))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-assert "storing a value returns no value"
       (unspecified? ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2))))
   (let* [(data #vu8(2 3 5 7))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-eqv "read byte from memory"
       2 ((llvm-typed '() (lambda () (fetch <byte> ptr))))))
   (let* [(data #vu8(1 2 3 4 5 6 7 8 9 10))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-equal "write complex number to memory"
       #vu8(0 0 0 64 0 0 64 64 9 10)
       (begin ((llvm-typed (list <complex<float>>) (lambda (value) (store ptr value))) 2+3i) data)))
   (let* [(data #vu8(0 0 0 64 0 0 64 64))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-eqv "read complex number from memory"
       2+3i ((llvm-typed '() (lambda () (fetch <complex<float>> ptr)))))))
 
@@ -475,7 +487,7 @@
   (test-eqv "test two instructions"
     42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value value))) 42))
   (let* [(data #vu8(0 0 0 0))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer <int> (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
       42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch <int> ptr)))) 42))))
 
@@ -502,13 +514,13 @@
 (define-mixed-constructor testmixed)
 (test-group "operations for mixed composite type"
   (let* [(data #vu8(3 5 7))
-         (ptr  (typed-pointer (bytevector->pointer data)))]
+         (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
     (test-eqv "read first value of mixed variable"
       1283 (test-a ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr))))))
     (test-eqv "read second value of mixed variable"
       7 (test-b ((llvm-typed '() (lambda () (fetch (testmixed <sint> <byte>) ptr)))))))
     (let* [(data #vu8(1 2 3 4))
-           (ptr  (typed-pointer (bytevector->pointer data)))]
+           (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
       (test-equal "write composite value to memory"
         #vu8(3 5 7 4)
         (begin
@@ -580,7 +592,7 @@
   (test-eqv "Return result of last instruction"
     <sint> (class-of (with-llvm-values () (typed-constant <byte> 20) (typed-constant <sint> 42))))
 (let* [(data #vu8(0 0 0 0))
-       (ptr  (typed-pointer (bytevector->pointer data)))]
+       (ptr  (typed-pointer <int> (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
       42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch <int> ptr)))) 42)))
   (test-eqv "define variable"
@@ -664,17 +676,5 @@
           (llvm-while (lt (fetch <int> i) n)
             (store i (+ 1 (fetch <int> i))))
           (fetch <int> i)))) 10)))
-
-(test-group "pointers"
-  (test-equal "Pointer identity function"
-    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123)))
-  (test-eqv "Fetch pointer value"
-    42 ((llvm-typed (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63))))
-  (test-equal "Typecast when writing to pointer target"
-    #vu8(42 3 5 7)
-    (let [(data #vu8(2 3 5 7))]
-      ((llvm-typed (list (pointer <byte>) <int>) (lambda (ptr value) (store ptr value)))
-       (bytevector->pointer data) 42)
-      data)))
 
 (test-end "aiscm llvm")

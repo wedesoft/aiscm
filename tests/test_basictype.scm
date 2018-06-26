@@ -161,6 +161,10 @@
   (test-eq "Coerce double and single complex type"
     (complex <double>) (coerce (complex <double>) (complex <float>))))
 
+(test-group "coerce pointers"
+  (test-eq "Coerce pointer and integer"
+    (pointer <int>) (coerce (pointer <int>) <long>)))
+
 (test-eqv "get foreign type of complex type"
   int64 (foreign-type <complex<float>>))
 
