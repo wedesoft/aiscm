@@ -457,7 +457,7 @@
       (phi (list result-if result-else) (list block-then block-else)))))
 
 (define-method (typed-alloca (type <meta<scalar>>))
-  (make <long> #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
+  (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
 
 (define-syntax-rule (llvm-while condition body ...)
   (let [(block-while (make-basic-block "while"))
