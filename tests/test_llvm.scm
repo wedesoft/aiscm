@@ -413,7 +413,11 @@
   (test-eqv "subtract scalar from complex value"
     -3+3i ((llvm-typed (list <complex<double>> <int>) -) 2+3i 5))
   (test-eqv "subtract complex value from scalar"
-    -1-5i ((llvm-typed (list <float> <complex<float>>) -) 2 3+5i)))
+    -1-5i ((llvm-typed (list <float> <complex<float>>) -) 2 3+5i))
+  (test-eqv "real part of real number"
+    5.5 ((llvm-typed (list <float>) real-part) 5.5))
+  (test-eqv "imaginary part of real number"
+    0.0 ((llvm-typed (list <float>) imag-part) 5.5)))
 
 (test-group "method calls"
   (test-equal "call libc's fabsf method"

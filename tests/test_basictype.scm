@@ -141,16 +141,16 @@
   (test-equal "Basic type of double-precision complex number"
     (list <double> <double>) (base <complex<double>>))
   (test-eq "Real component of single-precision floating-point complex number is a float"
-    <float> (class-of (real-part (make <complex<float>> #:value '(2.5 3.25)))))
+    <float> (class-of (real-part (make <complex<float>> #:value (const '(2.5 3.25))))))
   (test-eq "Real component of double-precision floating-point complex number is a double"
-    <double> (class-of (real-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-equal "Get real component of complex number"
+    <double> (class-of (real-part (make <complex<double>> #:value (const '(2.5 3.25))))))
+  (test-eqv "Get real component of complex number"
     2.5 ((get (real-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
   (test-eq "Imaginary component of single-precision floating-point complex number is a float"
     <float> (class-of (imag-part (make <complex<float>> #:value '(2.5 3.25)))))
   (test-eq "Imaginary component of double-precision floating-point complex number is a double"
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
-  (test-equal "Get imaginary component of complex number"
+  (test-eqv "Get imaginary component of complex number"
     3.25 ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f)))
 
 (test-group "complex coercion"

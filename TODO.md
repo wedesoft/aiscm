@@ -1,12 +1,12 @@
 ## Ready
 
-* cells
-* coerce complex and scalar, type conversion to complex
-* phi: coercion with composite values
+* phi: coercion with composite values, llvm-if -> where
+* type conversion to complex
 * for loop
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
 * Scheme objects
+* cells?
 * complex multiplication, division
 * dynamic array operations
 * tensor indices

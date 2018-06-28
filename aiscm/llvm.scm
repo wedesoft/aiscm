@@ -330,6 +330,9 @@
 
 (define-uniform-constructor complex)
 
+(define-method (real-part (value <scalar>)) value)
+(define-method (imag-part (value <scalar>)) (typed-constant (class-of value) 0))
+
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
 
