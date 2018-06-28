@@ -1,5 +1,5 @@
 # make -f Makefile.docker clean all
-CODENAME=xenial
+CODENAME=bionic
 BASEIMAGE=ubuntu:$(CODENAME)
 IMAGE=wedesoft/aiscm-$(BASEIMAGE)
 # make -f Makefile.docker clean all OPTS=--no-cache
