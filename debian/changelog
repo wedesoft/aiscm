@@ -1,9 +1,15 @@
-aiscm (0.15.3-1+trusty1) UNRELEASED; urgency=low
+aiscm (0.15.4-1+trusty1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Trusty
   * use gz instead of xz
 
- -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Jun 2018 19:36:42 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Tue,  5 Jun 2018 19:36:42 +0100
+
+aiscm (0.15.4-1) unstable; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue,  5 Jun 2018 19:36:42 +0100
 
 aiscm (0.15.3-1) unstable; urgency=low
 
