@@ -37,3 +37,11 @@ Architectures: i386 amd64 source
 Components: main
 Description: Apt repository for AIscm
 SignWith: 3CF10A42
+
+Origin: AIscm
+Label: AIscm
+Codename: bionic
+Architectures: i386 amd64 source
+Components: main
+Description: Apt repository for AIscm
+SignWith: 3CF10A42
