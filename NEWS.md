@@ -1,3 +1,7 @@
+# aiscm (0.15.4)
+
+* set Pandoc template to avoid Cloudflare URLs
+
 # aiscm (0.15.3)
 
 * Add Guile dependency so that autotests pass
