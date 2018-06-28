@@ -24,7 +24,6 @@ aiscm (0.15.2-1) unstable; urgency=low
 
  -- Jan Wedekind <jan@wedesoft.de>  Wed, 16 May 2018 21:26:51 +0100
 
->>>>>>> master
 aiscm (0.15.1-1) unstable; urgency=low
 
   - Update dependency to Guile-2.2. Closes: #885187
