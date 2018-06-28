@@ -270,6 +270,10 @@
 (define-method (to-type (cls <meta<complex<>>>) (value <scalar>))
   (complex value (typed-constant (class-of value) 0)))
 
+(define-method (to-type (cls <meta<complex<>>>) (value <complex<>>))
+  (complex (to-type (car  (base cls)) (real-part value))
+           (to-type (cadr (base cls)) (imag-part value))))
+
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
   (make cls #:value (get value)))
