@@ -274,6 +274,12 @@
 (define-method (coerce (a <meta<complex<>>>) (b <meta<complex<>>>))
   (complex (coerce (apply coerce (base a)) (apply coerce (base b)))))
 
+(define-method (coerce (a <meta<scalar>>) (b <meta<complex<>>>))
+  (complex (coerce a (apply coerce (base b)))))
+
+(define-method (coerce (a <meta<complex<>>>) (b <meta<scalar>>))
+  (complex (coerce (apply coerce (base a)) b)))
+
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)

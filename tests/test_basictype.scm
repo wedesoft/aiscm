@@ -159,7 +159,11 @@
   (test-eq "Coerce single and double complex type"
     (complex <double>) (coerce (complex <float>) (complex <double>)))
   (test-eq "Coerce double and single complex type"
-    (complex <double>) (coerce (complex <double>) (complex <float>))))
+    (complex <double>) (coerce (complex <double>) (complex <float>)))
+  (test-eq "Coerce float and complex"
+    (complex <double>) (coerce <double> (complex <float>)))
+  (test-eq "Coerce complex and float"
+    (complex <double>) (coerce (complex <float>) <double>)))
 
 (test-group "coerce pointers"
   (test-eq "Coerce pointer and integer"
