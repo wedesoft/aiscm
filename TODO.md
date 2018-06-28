@@ -1,7 +1,6 @@
 ## Ready
 
 * phi: coercion with composite values, llvm-if -> where
-* type conversion to complex
 * for loop
 * C function calls in llvm-typed environment
 * type matching for uniform arrays

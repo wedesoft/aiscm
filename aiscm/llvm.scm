@@ -267,6 +267,9 @@
   (let [(conversion (if (signed? cls) llvm-fp-to-si llvm-fp-to-ui))]
     (make cls #:value (conversion (foreign-type cls) (get value)))))
 
+(define-method (to-type (cls <meta<complex<>>>) (value <scalar>))
+  (complex value (typed-constant (class-of value) 0)))
+
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
   (make cls #:value (get value)))

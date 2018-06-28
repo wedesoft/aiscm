@@ -417,7 +417,9 @@
   (test-eqv "real part of real number"
     5.5 ((llvm-typed (list <float>) real-part) 5.5))
   (test-eqv "imaginary part of real number"
-    0.0 ((llvm-typed (list <float>) imag-part) 5.5)))
+    0.0 ((llvm-typed (list <float>) imag-part) 5.5))
+  (test-eqv "convert float to complex"
+    5.0+0.0i ((llvm-typed (list <float>) (cut to-type <complex<float>> <>)) 5)))
 
 (test-group "method calls"
   (test-equal "call libc's fabsf method"
