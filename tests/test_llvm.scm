@@ -663,7 +663,10 @@
     '(3 5)
     (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
   (test-eqv "scalar coercion"
-    3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5)))
+    3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5))
+  (test-eqv "conditional with composite value"
+    2.0+0.0i
+    ((llvm-typed (list (complex <float>) (complex <float>)) (lambda (x y) (llvm-if (lt (real-part x) (real-part y)) x y))) 2 3)))
 
 (test-group "alloca for loop variables"
   (test-eqv "Allocate a variable on the stack"

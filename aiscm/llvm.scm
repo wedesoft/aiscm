@@ -98,9 +98,9 @@
 (define (llvm-dump self) (llvm-dump-module (slot-ref self 'llvm-module)))
 
 (define (llvm-compile self)
+  (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self))
   (llvm-verify-module (slot-ref self 'llvm-module))
-  (llvm-compile-module (slot-ref self 'llvm-module))
-  (if (equal? "YES" (getenv "DEBUG")) (llvm-dump self)))
+  (llvm-compile-module (slot-ref self 'llvm-module)))
 
 (define-syntax with-llvm-values
   (lambda (x)
@@ -136,11 +136,11 @@
 (define (phi vals blocks)
   (let [(result-type (reduce coerce #f (map class-of vals)))]
     (make result-type
-          #:value (lambda (fun)
-            (llvm-build-phi (slot-ref fun 'llvm-function)
-                            (foreign-type result-type)
-                            (map (lambda (val) ((get val) fun)) vals)
-                            (map (lambda (block) (block fun)) blocks))))))
+        #:value (lambda (fun)
+          (llvm-build-phi (slot-ref fun 'llvm-function)
+                          (foreign-type result-type)
+                          (map (lambda (val) ((get val) fun)) vals)
+                          (map (lambda (block) (block fun)) blocks))))))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))
@@ -454,20 +454,28 @@
                    argument-types
                    (map (lambda (arg) (arg fun)) args)))
 
-(define (llvm-if condition value-if value-else)
+(define-method (llvm-if condition value-if value-else)
+  "Conditional statement"
+  (let [(result-type (coerce (class-of value-if) (class-of value-else)))]
+    (llvm-if condition (to-type result-type value-if) (to-type result-type value-else) result-type)))
+
+(define-method (llvm-if condition value-if value-else (result-type <meta<scalar>>))
   "Conditional statement"
   (let [(block-then  (make-basic-block "block-then"))
         (block-else  (make-basic-block "block-else"))
-        (block-endif (make-basic-block "block-endif"))
-        (result-type (coerce (class-of value-if) (class-of value-else)))]
+        (block-endif (make-basic-block "block-endif"))]
     (with-llvm-values (result-if result-else)
       (build-cond-branch condition block-then block-else)
-      (position-builder-at-end block-then) (llvm-set result-if (to-type result-type value-if))
+      (position-builder-at-end block-then) (llvm-set result-if value-if)
       (build-branch block-endif)
-      (position-builder-at-end block-else) (llvm-set result-else (to-type result-type value-else))
+      (position-builder-at-end block-else) (llvm-set result-else value-else)
       (build-branch block-endif)
       (position-builder-at-end block-endif)
       (phi (list result-if result-else) (list block-then block-else)))))
+
+(define-method (llvm-if condition value-if value-else (result-type <meta<void>>))
+  (complex (llvm-if condition (real-part value-if) (real-part value-else))
+           (llvm-if condition (imag-part value-if) (imag-part value-else))))
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
