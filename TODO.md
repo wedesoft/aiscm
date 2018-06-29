@@ -1,6 +1,5 @@
 ## Ready
 
-* select with composite value
 * for loop
 * C function calls in llvm-typed environment
 * type matching for uniform arrays

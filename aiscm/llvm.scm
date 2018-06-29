@@ -445,13 +445,21 @@
                    argument-types
                    (map (lambda (arg) (arg fun)) args)))
 
-(define (llvm-if condition value-if value-else)
+(define-method (llvm-if condition value-if value-else)
   (let [(target (coerce (class-of value-if) (class-of value-else)))]
-    (make target #:value (lambda (fun)
-      (llvm-build-select (slot-ref fun 'llvm-function)
-                         ((get condition) fun)
-                         ((get (to-type target value-if  )) fun)
-                         ((get (to-type target value-else)) fun))))))
+    (llvm-if target condition value-if value-else)))
+
+(define-method (llvm-if (target <meta<scalar>>) condition value-if value-else)
+  (make target #:value (lambda (fun)
+    (llvm-build-select (slot-ref fun 'llvm-function)
+                       ((get condition) fun)
+                       ((get (to-type target value-if  )) fun)
+                       ((get (to-type target value-else)) fun)))))
+
+(define-method (llvm-if (target <meta<void>>) condition value-if value-else)
+  (let [(args (map (lambda (component) (llvm-if condition (component value-if) (component value-else)))
+                   (components target)))]
+    (construct-object target args)))
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
