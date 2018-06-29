@@ -474,8 +474,10 @@
       (phi (list result-if result-else) (list block-then block-else)))))
 
 (define-method (llvm-if condition value-if value-else (result-type <meta<void>>))
-  (complex (llvm-if condition (real-part value-if) (real-part value-else))
-           (llvm-if condition (imag-part value-if) (imag-part value-else))))
+  (let* [(args    (map (lambda (component) (llvm-if condition (component value-if) (component value-else)))
+                       (components result-type)))
+         (adapted (map to-type (base result-type) args))]
+    (construct-object result-type adapted)))
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))

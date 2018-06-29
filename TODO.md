@@ -1,5 +1,6 @@
 ## Ready
 
+* use llvm select?
 * for loop
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
