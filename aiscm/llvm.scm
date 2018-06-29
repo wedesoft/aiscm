@@ -31,7 +31,7 @@
             llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
             make-constant make-constant-pointer make-llvm-module make-function llvm-dump
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
-            make-basic-block position-builder-at-end build-branch build-cond-branch phi
+            make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
@@ -132,15 +132,6 @@
                                           ((get condition) fun)
                                           (block-then fun)
                                           (block-else fun)))))
-
-(define (phi vals blocks)
-  (let [(result-type (reduce coerce #f (map class-of vals)))]
-    (make result-type
-        #:value (lambda (fun)
-          (llvm-build-phi (slot-ref fun 'llvm-function)
-                          (foreign-type result-type)
-                          (map (lambda (val) ((get val) fun)) vals)
-                          (map (lambda (block) (block fun)) blocks))))))
 
 (define (bool->int8 type)
   (if (eqv? type llvm-bool) int8 type))
@@ -454,30 +445,13 @@
                    argument-types
                    (map (lambda (arg) (arg fun)) args)))
 
-(define-method (llvm-if condition value-if value-else)
-  "Conditional statement"
-  (let [(result-type (coerce (class-of value-if) (class-of value-else)))]
-    (llvm-if condition (to-type result-type value-if) (to-type result-type value-else) result-type)))
-
-(define-method (llvm-if condition value-if value-else (result-type <meta<scalar>>))
-  "Conditional statement"
-  (let [(block-then  (make-basic-block "block-then"))
-        (block-else  (make-basic-block "block-else"))
-        (block-endif (make-basic-block "block-endif"))]
-    (with-llvm-values (result-if result-else)
-      (build-cond-branch condition block-then block-else)
-      (position-builder-at-end block-then) (llvm-set result-if value-if)
-      (build-branch block-endif)
-      (position-builder-at-end block-else) (llvm-set result-else value-else)
-      (build-branch block-endif)
-      (position-builder-at-end block-endif)
-      (phi (list result-if result-else) (list block-then block-else)))))
-
-(define-method (llvm-if condition value-if value-else (result-type <meta<void>>))
-  (let* [(args    (map (lambda (component) (llvm-if condition (component value-if) (component value-else)))
-                       (components result-type)))
-         (adapted (map to-type (base result-type) args))]
-    (construct-object result-type adapted)))
+(define (llvm-if condition value-if value-else)
+  (let [(target (coerce (class-of value-if) (class-of value-else)))]
+    (make target #:value (lambda (fun)
+      (llvm-build-select (slot-ref fun 'llvm-function)
+                         ((get condition) fun)
+                         ((get (to-type target value-if  )) fun)
+                         ((get (to-type target value-else)) fun))))))
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
