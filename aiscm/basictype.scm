@@ -18,6 +18,7 @@
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
+  #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
@@ -25,7 +26,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
-            pointer target
+            pointer target multiarray dimension typecode shape memory memory-base
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <bool>  <meta<bool>>
@@ -44,7 +45,8 @@
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
-            <pointer<>> <meta<pointer<>>>)
+            <pointer<>> <meta<pointer<>>>
+            <multiarray<>> <meta<multiarray<>>>)
   #:export-syntax (define-structure)
   #:re-export (real-part imag-part))
 
@@ -334,3 +336,31 @@
     '()
     (let [(result (compose-content (car types) lst))]
       (cons (make (car types) #:value (car result)) (compose-values (cdr types) (cdr result))))))
+
+(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>
+               (shape       #:init-keyword #:shape       #:getter shape      )
+               (memory      #:init-keyword #:memory      #:getter memory     )
+               (memory-base #:init-keyword #:memory-base #:getter memory-base))
+
+(define-method (initialize (self <multiarray<>>) initargs)
+  (let-keywords initargs #f (shape allocator)
+    (let* [(allocator (or allocator gc-malloc))
+           (memory    (allocator (apply * (size-of (typecode self)) shape)))]
+      (next-method self (list #:shape       shape
+                              #:memory      memory
+                              #:memory-base memory)))))
+
+(define-generic dimension)
+
+(define-generic typecode)
+
+(define (multiarray type dim)
+  "Define multi-dimensional array"
+  (template-class (multiarray type dim) <multiarray<>>
+    (lambda (class metaclass)
+      (define-method (dimension metaclass) dim)
+      (define-method (typecode metaclass) type))))
+
+(define-method (size-of (arr <multiarray<>>))
+  "Size of multi-dimensional array"
+  (apply * (size-of (typecode (class-of arr))) (shape arr)))

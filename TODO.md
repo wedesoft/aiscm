@@ -1,9 +1,12 @@
 ## Ready
 
+* + -> add, - -> subtract, ...
+* array with memory and base (pointerless or with pointers)
+* multiarray, set, get
+* Scheme objects
 * for loop
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
-* Scheme objects
 * cells?
 * complex multiplication, division
 * dynamic array operations

@@ -1,5 +1,5 @@
 ;; AIscm - Guile extension for numerical arrays and tensors.
-;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
+;; Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018 Jan Wedekind <jan@wedesoft.de>
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -367,5 +367,21 @@
     (list <long>) (decompose-type (pointer <int>)))
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
+
+(test-group "Multi-dimensional arrays"
+  (test-eqv "Dimension of multi array"
+    2 (dimension (multiarray <int> 2)))
+  (test-eq "Element type of array"
+    <int> (typecode (multiarray <int> 2)))
+  (test-equal "Shape of multi-dimensional array"
+    '(2 3) (shape (make (multiarray <int> 2) #:shape '(2 3))))
+  (test-eqv "Size of multi-dimensional array"
+    24 (size-of (make (multiarray <int> 2) #:shape '(2 3))))
+  (test-eqv "Specify correct memory size to allocator"
+    24 (memory (make (multiarray <int> 2) #:shape '(2 3) #:allocator identity)))
+  (test-assert "Allocates memory"
+    (pointer? (memory (make (multiarray <int> 2) #:shape '(2 3)))))
+  (test-assert "Defines base memory"
+    (pointer? (memory-base (make (multiarray <int> 2) #:shape '(2 3))))))
 
 (test-end "aiscm basictype")
