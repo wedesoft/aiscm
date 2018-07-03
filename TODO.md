@@ -1,5 +1,6 @@
 ## Ready
 
+* multiarray: components or store
 * get nth element
 * set
 * for loop

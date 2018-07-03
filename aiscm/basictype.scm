@@ -184,8 +184,8 @@
   "Define multi-dimensional array"
   (template-class (multiarray type dim) <multiarray<>>
     (lambda (class metaclass)
-      (define-method (dimension metaclass) dim)
-      (define-method (typecode metaclass) type))))
+      (define-method (dimension (self metaclass)) dim)
+      (define-method (typecode  (self metaclass)) type))))
 
 (define-method (size-of (self <multiarray<>>))
   "Size of multi-dimensional array"
