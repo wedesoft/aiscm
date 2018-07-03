@@ -187,10 +187,6 @@
       (define-method (dimension (self metaclass)) dim)
       (define-method (typecode  (self metaclass)) type))))
 
-(define-method (size-of (self <multiarray<>>))
-  "Size of multi-dimensional array"
-  (apply * (size-of (typecode (class-of self))) (shape self)))
-
 (define-method (typecode (self <multiarray<>>))
   "Typecode of array object"
   (typecode (class-of self)))

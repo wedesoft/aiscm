@@ -376,7 +376,7 @@
   (test-equal "Shape of multi-dimensional array"
     '(3 2) (shape (make (multiarray <int> 2) #:shape '(3 2))))
   (test-eqv "Size of multi-dimensional array"
-    24 (size-of (make (multiarray <int> 2) #:shape '(3 2))))
+    (+ (* 2 8) (* 4 4)) (size-of (multiarray <int> 2)))
   (test-eqv "Specify correct memory size to allocator"
     24 (memory (make (multiarray <int> 2) #:shape '(3 2) #:allocator identity)))
   (test-assert "Allocate memory"
