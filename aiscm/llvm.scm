@@ -377,10 +377,10 @@
 (define-method (store ptr (value <void>))
   (let [(type (target (class-of ptr)))]
     (apply llvm-begin
-      (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) (component value)))
-           (components type)
+      (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) component))
+           (decompose-argument type value)
            (decompose-type type)
-           (integral (cons 0 (all-but-last (map size-of (base type)))))))))
+           (integral (cons 0 (all-but-last (map size-of (decompose-type type)))))))))
 
 (define-method (fetch (type <meta<scalar>>) ptr)
   (make type #:value (llvm-fetch (foreign-type type) (get ptr))))
