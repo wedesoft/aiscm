@@ -650,7 +650,11 @@
           (fetch i)))) 10)))
 
 (test-group "Multi-dimensional arrays"
-  (test-eqv "Get element from array"
-    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0)))
+  (test-eqv "Get first element from array"
+    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
+  (test-eqv "Get second element from array"
+    3 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 1))
+  (test-eqv "Get short integer from array"
+    (+ 5 (* 7 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))) 1)))
 
 (test-end "aiscm llvm")
