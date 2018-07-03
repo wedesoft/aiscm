@@ -649,4 +649,8 @@
             (store i (+ 1 (fetch i))))
           (fetch i)))) 10)))
 
+(test-group "Multi-dimensional arrays"
+  (test-eqv "Get element from array"
+    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0)))
+
 (test-end "aiscm llvm")

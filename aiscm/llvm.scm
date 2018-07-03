@@ -39,7 +39,7 @@
             ~ le lt ge gt llvm-if typed-alloca)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set
                    llvm-while)
-  #:re-export (destroy - + *))
+  #:re-export (get destroy - + *))
 
 
 ; TODO: move into test suite and integrate into library
@@ -476,3 +476,6 @@
       body ...
       (build-branch block-while)
       (position-builder-at-end block-end))))
+
+(define-method (get (self <multiarray<>>) . args)
+  ((llvm-typed (list (pointer (typecode (class-of self)))) fetch) (memory self)))

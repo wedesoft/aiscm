@@ -167,9 +167,9 @@
                (memory-base #:init-keyword #:memory-base #:getter memory-base))
 
 (define-method (initialize (self <multiarray<>>) initargs)
-  (let-keywords initargs #f (shape allocator)
+  (let-keywords initargs #f (shape allocator memory)
     (let* [(allocator (or allocator gc-malloc-pointerless))
-           (memory    (allocator (apply * (size-of (typecode self)) shape)))
+           (memory    (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))]
       (next-method self (list #:shape       shape
                               #:strides     strides
