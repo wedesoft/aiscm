@@ -160,21 +160,21 @@
     (lambda (class metaclass)
       (define-method (target (self metaclass)) tgt))))
 
-(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>
-               (shape       #:init-keyword #:shape       #:getter shape      )
-               (strides     #:init-keyword #:strides     #:getter strides    )
-               (memory      #:init-keyword #:memory      #:getter memory     )
-               (memory-base #:init-keyword #:memory-base #:getter memory-base))
+(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>)
 
 (define-method (initialize (self <multiarray<>>) initargs)
-  (let-keywords initargs #f (shape allocator memory)
-    (let* [(allocator (or allocator gc-malloc-pointerless))
-           (memory    (or memory (allocator (apply * (size-of (typecode self)) shape))))
-           (strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))]
-      (next-method self (list #:shape       shape
-                              #:strides     strides
-                              #:memory      memory
-                              #:memory-base memory)))))
+  (let-keywords initargs #f (shape allocator memory value)
+    (if value
+      (next-method self (list #:value value))
+      (let* [(allocator (or allocator gc-malloc-pointerless))
+             (memory    (or memory (allocator (apply * (size-of (typecode self)) shape))))
+             (strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))]
+        (next-method self (list #:value (append (list memory memory) shape strides)))))))
+
+(define (memory self) (car (slot-ref self 'value)))
+(define (memory-base self) (cadr (slot-ref self 'value)))
+(define (shape self) (take (drop (slot-ref self 'value) 2) (dimension self)))
+(define (strides self) (drop (slot-ref self 'value) (+ 2 (dimension self))))
 
 (define-generic dimension)
 
@@ -195,6 +195,10 @@
   "Typecode of array object"
   (typecode (class-of self)))
 
+(define-method (dimension (self <multiarray<>>))
+  "Dimension of array"
+  (dimension (class-of self)))
+
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
 
@@ -203,6 +207,9 @@
 
 (define-method (base (type <meta<scalar>>))
   (list type))
+
+(define-method (base (type <meta<multiarray<>>>))
+  (cons <long> (cons <long> (make-list (* 2 (dimension type)) <int>))))
 
 (define-method (components (type <meta<void>>))
   '())
@@ -347,11 +354,17 @@
 (define-method (decompose-argument (type <meta<pointer<>>>) value)
   (list (pointer-address value)))
 
+(define-method (decompose-argument (type <meta<multiarray<>>>) value)
+  (append (list (pointer-address (memory value))
+                (pointer-address (memory-base value)))
+          (shape value)
+          (strides value)))
+
 (define (compose-base base-types lst)
   (if (null? base-types)
     (cons (const '()) lst)
     (let* [(result (compose-content (car base-types) lst))
-           (rest   (compose-base (cdr base-types) (cdr result)))]
+           (rest   (compose-base    (cdr base-types) (cdr result)))]
       (cons (lambda (fun) (cons ((car result) fun) ((car rest) fun))) (cdr rest)))))
 
 (define-method (compose-content (type <meta<void>>) lst)

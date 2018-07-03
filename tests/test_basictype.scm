@@ -379,11 +379,13 @@
     24 (size-of (make (multiarray <int> 2) #:shape '(3 2))))
   (test-eqv "Specify correct memory size to allocator"
     24 (memory (make (multiarray <int> 2) #:shape '(3 2) #:allocator identity)))
-  (test-assert "Allocates memory"
+  (test-assert "Allocate memory"
     (pointer? (memory (make (multiarray <int> 2) #:shape '(3 2)))))
-  (test-assert "Defines base memory"
+  (test-assert "Define base memory"
     (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
-  (test-equal "Strides"
-    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5)))))
+  (test-equal "Strides of multi-dimensional array"
+    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
+  (test-equal "Decompose multi-dimensional array"
+    (list <long> <long> <int> <int> <int> <int> <int> <int>) (decompose-type (multiarray <int> 3))))
 
 (test-end "aiscm basictype")

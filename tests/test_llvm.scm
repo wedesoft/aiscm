@@ -655,6 +655,10 @@
   (test-eqv "Get second element from array"
     3 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 1))
   (test-eqv "Get short integer from array"
-    (+ 5 (* 7 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))) 1)))
+    (+ 5 (* 7 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))) 1))
+  (test-expect-fail 1)
+  (test-eq "Identity function for multi-dimensional array"
+    (multiarray <int> 2)
+    (class-of ((llvm-typed (list (multiarray <int> 2)) identity) (make (multiarray <int> 2) #:shape '(6 4))))))
 
 (test-end "aiscm llvm")
