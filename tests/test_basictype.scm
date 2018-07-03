@@ -374,14 +374,16 @@
   (test-eq "Element type of array"
     <int> (typecode (multiarray <int> 2)))
   (test-equal "Shape of multi-dimensional array"
-    '(2 3) (shape (make (multiarray <int> 2) #:shape '(2 3))))
+    '(3 2) (shape (make (multiarray <int> 2) #:shape '(3 2))))
   (test-eqv "Size of multi-dimensional array"
-    24 (size-of (make (multiarray <int> 2) #:shape '(2 3))))
+    24 (size-of (make (multiarray <int> 2) #:shape '(3 2))))
   (test-eqv "Specify correct memory size to allocator"
-    24 (memory (make (multiarray <int> 2) #:shape '(2 3) #:allocator identity)))
+    24 (memory (make (multiarray <int> 2) #:shape '(3 2) #:allocator identity)))
   (test-assert "Allocates memory"
-    (pointer? (memory (make (multiarray <int> 2) #:shape '(2 3)))))
+    (pointer? (memory (make (multiarray <int> 2) #:shape '(3 2)))))
   (test-assert "Defines base memory"
-    (pointer? (memory-base (make (multiarray <int> 2) #:shape '(2 3))))))
+    (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
+  (test-equal "Strides"
+    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5)))))
 
 (test-end "aiscm basictype")

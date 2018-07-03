@@ -1,10 +1,10 @@
 ## Ready
 
-* + -> add, - -> subtract, ...
 * array with memory and base (pointerless or with pointers)
 * multiarray, set, get
-* Scheme objects
 * for loop
+* + -> add, - -> subtract, ...
+* Scheme objects
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
 * cells?

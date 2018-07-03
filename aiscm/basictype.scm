@@ -26,7 +26,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
-            pointer target multiarray dimension typecode shape memory memory-base
+            pointer target multiarray dimension typecode shape strides memory memory-base
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <bool>  <meta<bool>>
@@ -159,6 +159,37 @@
   (template-class (pointer tgt) <pointer<>>
     (lambda (class metaclass)
       (define-method (target (self metaclass)) tgt))))
+
+(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>
+               (shape       #:init-keyword #:shape       #:getter shape      )
+               (strides     #:init-keyword #:strides     #:getter strides    )
+               (memory      #:init-keyword #:memory      #:getter memory     )
+               (memory-base #:init-keyword #:memory-base #:getter memory-base))
+
+(define-method (initialize (self <multiarray<>>) initargs)
+  (let-keywords initargs #f (shape allocator)
+    (let* [(allocator (or allocator gc-malloc-pointerless))
+           (memory    (allocator (apply * (size-of (typecode self)) shape)))
+           (strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))]
+      (next-method self (list #:shape       shape
+                              #:strides     strides
+                              #:memory      memory
+                              #:memory-base memory)))))
+
+(define-generic dimension)
+
+(define-generic typecode)
+
+(define (multiarray type dim)
+  "Define multi-dimensional array"
+  (template-class (multiarray type dim) <multiarray<>>
+    (lambda (class metaclass)
+      (define-method (dimension metaclass) dim)
+      (define-method (typecode metaclass) type))))
+
+(define-method (size-of (arr <multiarray<>>))
+  "Size of multi-dimensional array"
+  (apply * (size-of (typecode (class-of arr))) (shape arr)))
 
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
@@ -336,31 +367,3 @@
     '()
     (let [(result (compose-content (car types) lst))]
       (cons (make (car types) #:value (car result)) (compose-values (cdr types) (cdr result))))))
-
-(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>
-               (shape       #:init-keyword #:shape       #:getter shape      )
-               (memory      #:init-keyword #:memory      #:getter memory     )
-               (memory-base #:init-keyword #:memory-base #:getter memory-base))
-
-(define-method (initialize (self <multiarray<>>) initargs)
-  (let-keywords initargs #f (shape allocator)
-    (let* [(allocator (or allocator gc-malloc))
-           (memory    (allocator (apply * (size-of (typecode self)) shape)))]
-      (next-method self (list #:shape       shape
-                              #:memory      memory
-                              #:memory-base memory)))))
-
-(define-generic dimension)
-
-(define-generic typecode)
-
-(define (multiarray type dim)
-  "Define multi-dimensional array"
-  (template-class (multiarray type dim) <multiarray<>>
-    (lambda (class metaclass)
-      (define-method (dimension metaclass) dim)
-      (define-method (typecode metaclass) type))))
-
-(define-method (size-of (arr <multiarray<>>))
-  "Size of multi-dimensional array"
-  (apply * (size-of (typecode (class-of arr))) (shape arr)))
