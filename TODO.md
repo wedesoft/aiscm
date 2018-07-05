@@ -1,6 +1,6 @@
 ## Ready
 
-* static sized vector
+* static sized tuple, <tuple<int,2>> <-> list
 * decompose-argument: Scheme
 * prepare-return, store, decompose-argument (components), decompose-type: LLVM
 * finish-return, unpack-value, base, size-of: Scheme
@@ -10,6 +10,7 @@
       #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))
 ```
 
+* tuple of arbitrary element type
 * multiarray: components or store
 * get nth element
 * other base class than void

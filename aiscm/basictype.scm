@@ -27,6 +27,7 @@
             decompose-argument decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
             pointer target; multiarray dimension typecode shape strides memory memory-base
+            tuple typecode dimension
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <bool>  <meta<bool>>
@@ -69,6 +70,8 @@
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
+
+(define-class* <tuple<>> <void> <meta<tuple<>>> <meta<void>>)
 
 (define-syntax define-structure
   (lambda (x)
@@ -161,6 +164,31 @@
     (lambda (class metaclass)
       (define-method (target (self metaclass)) tgt))))
 
+(define-method (typecode (self <tuple<>>)) (typecode (class-of self)))
+
+(define-method (dimension (self <tuple<>>)) (dimension (class-of self)))
+
+(define (tuple type size)
+  (template-class (tuple type size) <tuple<>>
+    (lambda (class metaclass)
+      (define-method (typecode (self metaclass)) type)
+      (define-method (dimension (self metaclass)) size)
+      (define-method (base (self metaclass)) (make-list size type))
+      (define-method (components (self metaclass))
+        (map (lambda (index) (cut get <> index)) (iota size))))))
+
+(define-method (constructor (type <meta<tuple<>>>))
+  "Get constructor for static size list"
+  list)
+
+(define-method (get (self <list>) index)
+  "Get element of tuple"
+  (list-ref self index))
+
+(define-method (get (self <tuple<>>) index)
+  "Element access for static size list in compiled code"
+  (make (typecode self) #:value (lambda (fun) (list-ref ((get self) fun) index))))
+
 ;(define-class* <multiarray<>> <void> <meta<multiarray<>>> <meta<void>>)
 ;
 ;(define-method (initialize (self <multiarray<>>) initargs)
@@ -211,6 +239,8 @@
 (define-method (components (type <meta<void>>))
   '())
 
+;(define-method (components (type <meta<tuple<>>>)))
+
 (define-method (foreign-type (type <meta<void>>))
   void)
 
@@ -227,6 +257,10 @@
 
 (define-method (foreign-type (type <meta<pointer<>>>))
   "Get foreing type of pointer"
+  int64)
+
+(define-method (foreign-type (type <meta<tuple<>>>))
+  "Get foreign type of static size list"
   int64)
 
 (define-method (size-of (type <meta<bool>>))
@@ -268,6 +302,9 @@
 
 (define-method (native-type (value <complex>))
   <complex<double>>)
+
+(define-method (native-type (value <list>))
+  (tuple <int> (length value)))
 
 (define-method (unpack-value (self <meta<void>>) address)
   address)

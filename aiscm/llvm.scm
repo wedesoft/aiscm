@@ -395,7 +395,7 @@
 
 (define-method (prepare-return (result <void>) memory)
   "Generate return statement for composite value or void"
-  (if (eq? <void> (class-of result)); TODO: use different base class than <void>
+  (if (null? (components (class-of result)))
     (llvm-begin result (return))
     (llvm-begin (store (to-type (pointer (class-of result)) memory) result) (return memory))))
 

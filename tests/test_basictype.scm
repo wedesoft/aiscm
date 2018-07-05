@@ -368,6 +368,22 @@
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
 
+(test-group "static size lists"
+  (test-eq "Instantiate static size list"
+    '<tuple<int<32,signed>,3>> (class-name (tuple <int> 3)))
+  (test-equal"Base of static size list"
+    (list <int> <int> <int> <int> <int>) (base (tuple <int> 5)))
+  (test-eq "Native type of integer list"
+    (tuple <int> 4) (native-type '(2 3 5 7)))
+  (test-eqv "Get element of tuple"
+    5 (get '(2 3 5 7) 2))
+  (test-eqv "Dimension of tuple"
+    3 (dimension (tuple <int> 3)))
+  (test-eq "Typecode of tuple"
+    <int> (typecode (tuple <int> 3)))
+  (test-equal "Decompose argument"
+    '(2 3 5) (decompose-argument (tuple <int> 3) '(2 3 5))))
+
 ;(test-group "Multi-dimensional arrays"
 ;  (test-eqv "Dimension of multi array"
 ;    2 (dimension (multiarray <int> 2)))

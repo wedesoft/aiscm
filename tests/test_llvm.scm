@@ -649,6 +649,12 @@
             (store i (+ 1 (fetch i))))
           (fetch i)))) 10)))
 
+(test-group "Static size list"
+  (test-eqv "Access element of list"
+    5 ((llvm-typed (list (tuple <int> 4)) (cut get <> 2)) '(2 3 5 7)))
+  (test-equal "Identity function for list"
+    '(2 3 5) ((llvm-typed (list (tuple <int> 3)) identity) '(2 3 5))))
+
 ;(test-group "Multi-dimensional arrays"
 ;  (test-eqv "Get first element from array"
 ;    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
