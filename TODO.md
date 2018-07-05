@@ -1,7 +1,18 @@
 ## Ready
 
+* static sized vector
+* decompose-argument: Scheme
+* prepare-return, store, decompose-argument (components), decompose-type: LLVM
+* finish-return, unpack-value, base, size-of: Scheme
+* LLVM component:
+```
+(make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
+      #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))
+```
+
 * multiarray: components or store
 * get nth element
+* other base class than void
 * set
 * for loop
 * + -> add, - -> subtract, ...

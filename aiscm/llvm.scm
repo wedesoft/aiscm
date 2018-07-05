@@ -395,7 +395,7 @@
 
 (define-method (prepare-return (result <void>) memory)
   "Generate return statement for composite value or void"
-  (if (null? (components (class-of result)))
+  (if (eq? <void> (class-of result)); TODO: use different base class than <void>
     (llvm-begin result (return))
     (llvm-begin (store (to-type (pointer (class-of result)) memory) result) (return memory))))
 
@@ -477,14 +477,14 @@
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
-(define-method (fetch (self <multiarray<>>) index)
-  (let [(fun (llvm-typed (list (pointer (typecode self)) <int>)
-                         (lambda (ptr index) (fetch (+ ptr (* index (size-of (typecode self))))))))]
-    (add-method! fetch
-      (make <method>
-            #:specializers (cons (class-of self) (list <integer>))
-            #:procedure    (lambda (arr index) (fun (memory arr) index))))
-      (fetch self index)))
-
-(define-method (get (self <multiarray<>>) index)
-  (fetch self index))
+;(define-method (fetch (self <multiarray<>>) index)
+;  (let [(fun (llvm-typed (list (pointer (typecode self)) <int>)
+;                         (lambda (ptr index) (fetch (+ ptr (* index (size-of (typecode self))))))))]
+;    (add-method! fetch
+;      (make <method>
+;            #:specializers (cons (class-of self) (list <integer>))
+;            #:procedure    (lambda (arr index) (fun (memory arr) index))))
+;      (fetch self index)))
+;
+;(define-method (get (self <multiarray<>>) index)
+;  (fetch self index))
