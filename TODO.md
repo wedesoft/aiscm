@@ -1,15 +1,17 @@
 ## Ready
 
-* static sized tuple, <tuple<int,2>> <-> list
+* LLVM: <llvmarray<int,2>> (native-type), Scheme: <multiarray<int,2>>
 * decompose-argument: Scheme
 * prepare-return, store, decompose-argument (components), decompose-type: LLVM
 * finish-return, unpack-value, base, size-of: Scheme
 * LLVM component:
+
 ```
 (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
       #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))
 ```
 
+* compose static list
 * tuple of arbitrary element type
 * multiarray: components or store
 * get nth element

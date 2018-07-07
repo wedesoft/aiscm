@@ -42,8 +42,6 @@
   #:re-export (get destroy - + *))
 
 
-; TODO: move into test suite and integrate into library
-
 (load-extension "libguile-aiscm-llvm" "init_llvm")
 
 (define-class* <llvm> <object> <meta<llvm>> <class>

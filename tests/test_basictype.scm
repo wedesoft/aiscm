@@ -384,24 +384,21 @@
   (test-equal "Decompose argument"
     '(2 3 5) (decompose-argument (tuple <int> 3) '(2 3 5))))
 
-;(test-group "Multi-dimensional arrays"
-;  (test-eqv "Dimension of multi array"
-;    2 (dimension (multiarray <int> 2)))
-;  (test-eq "Element type of array"
-;    <int> (typecode (multiarray <int> 2)))
-;  (test-equal "Shape of multi-dimensional array"
-;    '(3 2) (shape (make (multiarray <int> 2) #:shape '(3 2))))
-;  (test-eqv "Size of multi-dimensional array"
-;    (+ (* 2 8) (* 4 4)) (size-of (multiarray <int> 2)))
-;  (test-eqv "Specify correct memory size to allocator"
-;    24 (memory (make (multiarray <int> 2) #:shape '(3 2) #:allocator identity)))
-;  (test-assert "Allocate memory"
-;    (pointer? (memory (make (multiarray <int> 2) #:shape '(3 2)))))
-;  (test-assert "Define base memory"
-;    (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
-;  (test-equal "Strides of multi-dimensional array"
-;    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
-;  (test-equal "Decompose multi-dimensional array"
-;    (list <long> <long> <int> <int> <int> <int> <int> <int>) (decompose-type (multiarray <int> 3))))
+(test-group "Multi-dimensional arrays"
+  (test-eqv "Dimension of array"
+    2 (dimensions (multiarray <int> 2)))
+  (test-eq "Element type of array"
+    <int> (typecode (multiarray <int> 2)))
+  (test-equal "Shape of multi-dimensional array"
+    '(3 2) (shape (make (multiarray <int> 2) #:shape '(3 2))))
+  (test-eqv "Specify correct memory size to allocator"
+    24 (memory (make (multiarray <int> 2) #:shape '(3 2) #:allocator identity)))
+  (test-assert "Allocate memory"
+    (pointer? (memory (make (multiarray <int> 2) #:shape '(3 2)))))
+  (test-assert "Define base memory"
+    (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
+  (test-equal "Strides of multi-dimensional array"
+    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5)))))
+
 
 (test-end "aiscm basictype")
