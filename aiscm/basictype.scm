@@ -81,12 +81,16 @@
 (define-syntax component-accessors
   (lambda (x)
     (syntax-case x ()
-      ((k type members ...)
+      ((k class metaclass members ...)
        "Define accessor methods for individual components of a composite type"
        (let [(n (length (syntax->datum #'(members ...))))]
-         #`(begin .
+         #`(begin
+             (define-method (components (self metaclass))
+               "List component accessor methods of composite type"
+               (list members ...))
+             .
              #,(map (lambda (member-name index)
-                      #`(component-accessor type
+                      #`(component-accessor class
                                             #,(datum->syntax #'k member-name)
                                             #,(datum->syntax #'k index)))
                     (syntax->datum #'(members ...))
@@ -127,11 +131,7 @@
                 "Foreign type of template class is pointer"
                 int64)
 
-              (define-method (components (type #,(datum->syntax #'k metaclass)))
-                "List component accessor methods of composite type"
-                (list members ...))
-
-              (component-accessors #,(datum->syntax #'k class) members ...)))))))
+              (component-accessors #,(datum->syntax #'k class) #,(datum->syntax #'k metaclass) members ...)))))))
 
 (define (integer nbits sgn)
   "Retrieve integer class with specified number of bits and sign"
@@ -244,9 +244,7 @@
                 #:shape shape
                 #:strides strides))))))
 
-(define-method (components (self <meta<llvmarray<>>>)) (list memory memory-base shape strides))
-
-(component-accessors <llvmarray<>> memory memory-base shape strides)
+(component-accessors <llvmarray<>> <meta<llvmarray<>>> memory memory-base shape strides)
 
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
