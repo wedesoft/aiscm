@@ -271,6 +271,10 @@
   "Convert integer to pointer"
   (make cls #:value (get (to-type <long> value))))
 
+(define-method (to-type (cls <meta<int<>>>) (value <pointer<>>))
+  "Convert pointer to integer"
+  (make cls #:value (get value)))
+
 (define-syntax-rule (define-unary-operation type operation delegate)
   (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
@@ -376,7 +380,7 @@
   (let [(type (target (class-of ptr)))]
     (apply llvm-begin
       (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) component))
-           (decompose-argument type value)
+           (decompose-result type value)
            (decompose-type type)
            (integral (cons 0 (all-but-last (map size-of (decompose-type type)))))))))
 

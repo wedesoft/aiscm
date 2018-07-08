@@ -1,8 +1,8 @@
 (use-modules (oop goops) (aiscm llvm) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm basictype) (srfi srfi-1) (srfi srfi-26))
 
-;(llvm-typed (list (multiarray <int> 2)) identity)
+(llvm-typed (list (llvmarray <int> 2)) identity)
 
-(define argument-types (list (multiarray <int> 2)))
+(define argument-types (list (llvmarray <int> 2)))
 
 (define function identity)
 
@@ -32,4 +32,5 @@
 
 (define type (target (class-of ptr)))
 
-(decompose-argument type value)
+(decompose-result type value)
+(decompose-type type)

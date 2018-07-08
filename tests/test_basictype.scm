@@ -184,7 +184,15 @@
   (test-equal "Decompose complex number"
      '(2.5 3.25) (decompose-argument <complex<float>> 2.5+3.25i))
   (test-equal "Decompose nested type"
-    '(2.5 0 3.25 0) (decompose-argument (complex (complex <float>)) 2.5+3.25i)))
+    '(2.5 0 3.25 0) (decompose-argument (complex (complex <float>)) 2.5+3.25i))
+  (test-equal "Decompose pointer"
+    '(1234) (decompose-argument (pointer <byte>) (make-pointer 1234))))
+
+(test-group "decompose result"
+  (test-equal "Decompose scalar"
+    '(42) (decompose-result <int> 42))
+  (test-equal "Decompose complex number"
+    '(2.5 3.25) (decompose-result <complex<float>> 2.5+3.25i)))
 
 (test-group "compose value"
   (test-eq "Composing integer creates correct type"
@@ -374,14 +382,18 @@
   (test-equal"Base of static size list"
     (list <int> <int> <int> <int> <int>) (base (tuple <int> 5)))
   (test-eq "Native type of integer list"
-    (tuple <int> 4) (native-type '(2 3 5 7)))
+    (tuple <ubyte> 4) (native-type '(2 3 5 7)))
+  (test-eq "Native type of floating-point list"
+    (tuple <double> 4) (native-type '(2 3.5 5 7)))
   (test-eqv "Get element of tuple"
     5 (get '(2 3 5 7) 2))
   (test-eqv "Dimension of tuple"
     3 (dimension (tuple <int> 3)))
   (test-eq "Typecode of tuple"
     <int> (typecode (tuple <int> 3)))
-  (test-equal "Decompose argument"
+  (test-equal "Decompose static list type"
+    (list <byte> <byte> <byte>) (decompose-type (tuple <byte> 3)))
+  (test-equal "Decompose static list argument"
     '(2 3 5) (decompose-argument (tuple <int> 3) '(2 3 5))))
 
 (test-group "Multi-dimensional arrays"
@@ -398,7 +410,10 @@
   (test-assert "Define base memory"
     (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
   (test-equal "Strides of multi-dimensional array"
-    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5)))))
-
+    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
+  (test-eq "Native type of multi-dimensional array"
+    (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
+  (test-equal "Decompose multi-dimensional array type"
+    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2))))
 
 (test-end "aiscm basictype")

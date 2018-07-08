@@ -24,10 +24,10 @@
   #:use-module (aiscm util)
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
-            decompose-argument decompose-type compose-value compose-values
+            decompose-argument decompose-result decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
             pointer target tuple typecode dimension
-            multiarray dimensions shape memory memory-base strides
+            multiarray dimensions shape memory memory-base strides llvmarray
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <bool>  <meta<bool>>
@@ -47,7 +47,7 @@
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
             <pointer<>> <meta<pointer<>>>
-            <multiarray<>> <meta<multiarray<>>>)
+            <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>)
   #:export-syntax (define-structure)
   #:re-export (real-part imag-part))
 
@@ -190,16 +190,17 @@
 
 (define-class* <multiarray<>> <object> <meta<multiarray<>>> <class>
                (shape       #:init-keyword #:shape       #:getter shape      )
-               (strides     #:init-keyword #:strides     #:getter strides      )
+               (strides     #:init-keyword #:strides     #:getter strides    )
                (memory      #:init-keyword #:memory      #:getter memory     )
                (memory-base #:init-keyword #:memory-base #:getter memory-base))
 
 (define-method (initialize (self <multiarray<>>) initargs)
-  (let-keywords initargs #f (shape allocator)
+  (let-keywords initargs #f (memory memory-base shape strides allocator)
     (let* [(allocator   (or allocator gc-malloc-pointerless))
-           (memory      (allocator (apply * (size-of (typecode self)) shape)))
-           (strides     (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))]
-      (next-method self (list #:memory memory #:shape shape #:strides strides #:memory-base memory)))))
+           (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
+           (memory-base (or memory-base memory))
+           (strides     (or strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape)))))]
+      (next-method self (list #:memory memory #:shape shape #:strides strides #:memory-base memory-base)))))
 
 (define-method (typecode (self <multiarray<>>)) (typecode (class-of self)))
 
@@ -211,6 +212,43 @@
     (lambda (class metaclass)
       (define-method (dimensions (self metaclass)) dim)
       (define-method (typecode  (self metaclass)) type))))
+
+(define-class* <llvmarray<>> <void> <meta<llvmarray<>>> <meta<void>>)
+
+(define (llvmarray type dim)
+  "Define compiled multi-dimensional array"
+  (template-class (llvmarray type dim) <llvmarray<>>
+    (lambda (class metaclass)
+      (define-method (dimensions (self metaclass)) dim)
+      (define-method (typecode (self metaclass)) type)
+      (define-method (base (self metaclass))
+        (list (pointer type) (pointer type) (tuple <int> dim) (tuple <int> dim)))
+      (define-method (constructor (self metaclass))
+        (lambda (memory memory-base shape strides)
+          (make (multiarray type dim)
+                #:memory memory
+                #:memory-base memory-base
+                #:shape shape
+                #:strides strides))))))
+
+(define-method (components (self <meta<llvmarray<>>>)) (list memory memory-base shape strides))
+
+; TODO: refactor this shit
+(define-method (memory (self <llvmarray<>>))
+  (make (list-ref (base (class-of self)) 0)
+        #:value (lambda (fun) (list-ref ((get self) fun) 0))))
+
+(define-method (memory-base (self <llvmarray<>>))
+  (make (list-ref (base (class-of self)) 1)
+        #:value (lambda (fun) (list-ref ((get self) fun) 1))))
+
+(define-method (shape (self <llvmarray<>>))
+  (make (list-ref (base (class-of self)) 2)
+        #:value (lambda (fun) (list-ref ((get self) fun) 2))))
+
+(define-method (strides (self <llvmarray<>>))
+  (make (list-ref (base (class-of self)) 3)
+        #:value (lambda (fun) (list-ref ((get self) fun) 3))))
 
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
@@ -244,6 +282,10 @@
 
 (define-method (foreign-type (type <meta<tuple<>>>))
   "Get foreign type of static size list"
+  int64)
+
+(define-method (foreign-type (type <meta<llvmarray<>>>))
+  "Get foreign type of multi-dimensional array"
   int64)
 
 (define-method (size-of (type <meta<bool>>))
@@ -287,7 +329,10 @@
   <complex<double>>)
 
 (define-method (native-type (value <list>))
-  (tuple <int> (length value)))
+  (tuple (reduce coerce #f (map native-type value)) (length value)))
+
+(define-method (native-type (value <multiarray<>>))
+  (llvmarray (typecode value) (dimensions value)))
 
 (define-method (unpack-value (self <meta<void>>) address)
   address)
@@ -306,6 +351,9 @@
     (let [(packed    (pointer->bytevector (make-pointer address) (size-of self)))
           (converter (if (double-precision? self) bytevector-ieee-double-native-ref bytevector-ieee-single-native-ref))]
       (converter packed 0)))
+
+(define-method (unpack-value (self <meta<pointer<>>>) address)
+  (make-pointer (car (bytevector->sint-list (pointer->bytevector (make-pointer address) 8) (native-endianness) 8))))
 
 (define-method (unpack-value (self <meta<void>>) (address <integer>))
   "Unpack composite value stored in a byte vector"
@@ -370,6 +418,13 @@
 
 (define-method (decompose-argument (type <meta<pointer<>>>) value)
   (list (pointer-address value)))
+
+(define-method (decompose-result (type <meta<scalar>>) value)
+  (list value))
+
+(define-method (decompose-result (type <meta<void>>) value)
+  "Recursively decompose composite value"
+  (append-map decompose-result (base type) (map (cut <> value) (components type))))
 
 (define (compose-base base-types lst)
   (if (null? base-types)

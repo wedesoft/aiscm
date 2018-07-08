@@ -655,6 +655,9 @@
   (test-equal "Identity function for list"
     '(2 3 5) ((llvm-typed (list (tuple <int> 3)) identity) '(2 3 5))))
 
+(test-group "Multi-dimensional array"
+  (test-equal "Identity function preserves shape"
+    '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5))))))
 ;(test-group "Multi-dimensional arrays"
 ;  (test-eqv "Get first element from array"
 ;    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
