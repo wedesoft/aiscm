@@ -72,6 +72,11 @@
 
 (define-class* <tuple<>> <void> <meta<tuple<>>> <meta<void>>)
 
+(define-syntax-rule (component-access type name index)
+  (define-method (name (self type))
+    (make (list-ref (base (class-of self)) index)
+          #:value (lambda (fun) (list-ref ((get self) fun) index)))))
+
 (define-syntax define-structure
   (lambda (x)
     (syntax-case x ()
@@ -113,10 +118,9 @@
 
               (begin .
                 #,(map (lambda (member-name index)
-                         #`(define-method (#,(datum->syntax #'k member-name) self)
-                             "Access a component of the composite type"
-                             (make (list-ref (base (class-of self)) #,(datum->syntax #'k index))
-                                   #:value (lambda (fun) (list-ref ((get self) fun) #,(datum->syntax #'k index))))))
+                         #`(component-access #,(datum->syntax #'k class)
+                                             #,(datum->syntax #'k member-name)
+                                             #,(datum->syntax #'k index)))
                        (syntax->datum #'(members ...))
                        (iota n)))))))))
 
@@ -233,22 +237,10 @@
 
 (define-method (components (self <meta<llvmarray<>>>)) (list memory memory-base shape strides))
 
-; TODO: refactor this shit
-(define-method (memory (self <llvmarray<>>))
-  (make (list-ref (base (class-of self)) 0)
-        #:value (lambda (fun) (list-ref ((get self) fun) 0))))
-
-(define-method (memory-base (self <llvmarray<>>))
-  (make (list-ref (base (class-of self)) 1)
-        #:value (lambda (fun) (list-ref ((get self) fun) 1))))
-
-(define-method (shape (self <llvmarray<>>))
-  (make (list-ref (base (class-of self)) 2)
-        #:value (lambda (fun) (list-ref ((get self) fun) 2))))
-
-(define-method (strides (self <llvmarray<>>))
-  (make (list-ref (base (class-of self)) 3)
-        #:value (lambda (fun) (list-ref ((get self) fun) 3))))
+(component-access <llvmarray<>> memory      0)
+(component-access <llvmarray<>> memory-base 1)
+(component-access <llvmarray<>> shape       2)
+(component-access <llvmarray<>> strides     3)
 
 (define-method (equal? (a <void>) (b <void>))
   (equal? (get a) (get b)))
