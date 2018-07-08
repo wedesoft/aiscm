@@ -651,9 +651,9 @@
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
-    5 ((llvm-typed (list (tuple <int> 4)) (cut get <> 2)) '(2 3 5 7)))
+    5 ((llvm-typed (list (llvmlist <int> 4)) (cut get <> 2)) '(2 3 5 7)))
   (test-equal "Identity function for list"
-    '(2 3 5) ((llvm-typed (list (tuple <int> 3)) identity) '(2 3 5))))
+    '(2 3 5) ((llvm-typed (list (llvmlist <int> 3)) identity) '(2 3 5))))
 
 (test-group "Multi-dimensional array"
   (test-equal "Identity function preserves shape"

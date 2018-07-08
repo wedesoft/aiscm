@@ -26,7 +26,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex base size-of unpack-value native-type components constructor build
-            pointer target tuple typecode dimension
+            pointer target llvmlist typecode dimension
             multiarray dimensions shape memory memory-base strides llvmarray
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -70,7 +70,7 @@
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
-(define-class* <tuple<>> <void> <meta<tuple<>>> <meta<void>>)
+(define-class* <llvmlist<>> <void> <meta<llvmlist<>>> <meta<void>>)
 
 (define-syntax-rule (component-accessor type name index)
   "Define accessor to access component of a composite type"
@@ -176,12 +176,12 @@
     (lambda (class metaclass)
       (define-method (target (self metaclass)) tgt))))
 
-(define-method (typecode (self <tuple<>>)) (typecode (class-of self)))
+(define-method (typecode (self <llvmlist<>>)) (typecode (class-of self)))
 
-(define-method (dimension (self <tuple<>>)) (dimension (class-of self)))
+(define-method (dimension (self <llvmlist<>>)) (dimension (class-of self)))
 
-(define (tuple type size)
-  (template-class (tuple type size) <tuple<>>
+(define (llvmlist type size)
+  (template-class (llvmlist type size) <llvmlist<>>
     (lambda (class metaclass)
       (define-method (typecode (self metaclass)) type)
       (define-method (dimension (self metaclass)) size)
@@ -189,15 +189,15 @@
       (define-method (components (self metaclass))
         (map (lambda (index) (cut get <> index)) (iota size))))))
 
-(define-method (constructor (type <meta<tuple<>>>))
+(define-method (constructor (type <meta<llvmlist<>>>))
   "Get constructor for static size list"
   list)
 
 (define-method (get (self <list>) index)
-  "Get element of tuple"
+  "Get element of llvmlist"
   (list-ref self index))
 
-(define-method (get (self <tuple<>>) index)
+(define-method (get (self <llvmlist<>>) index)
   "Element access for static size list in compiled code"
   (make (typecode self) #:value (lambda (fun) (list-ref ((get self) fun) index))))
 
@@ -235,7 +235,7 @@
       (define-method (dimensions (self metaclass)) dim)
       (define-method (typecode (self metaclass)) type)
       (define-method (base (self metaclass))
-        (list (pointer type) (pointer type) (tuple <int> dim) (tuple <int> dim)))
+        (list (pointer type) (pointer type) (llvmlist <int> dim) (llvmlist <int> dim)))
       (define-method (constructor (self metaclass))
         (lambda (memory memory-base shape strides)
           (make (multiarray type dim)
@@ -278,7 +278,7 @@
   "Get foreing type of pointer"
   int64)
 
-(define-method (foreign-type (type <meta<tuple<>>>))
+(define-method (foreign-type (type <meta<llvmlist<>>>))
   "Get foreign type of static size list"
   int64)
 
@@ -327,7 +327,7 @@
   <complex<double>>)
 
 (define-method (native-type (value <list>))
-  (tuple (reduce coerce #f (map native-type value)) (length value)))
+  (llvmlist (reduce coerce #f (map native-type value)) (length value)))
 
 (define-method (native-type (value <multiarray<>>))
   (llvmarray (typecode value) (dimensions value)))

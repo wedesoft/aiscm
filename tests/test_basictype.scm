@@ -378,23 +378,23 @@
 
 (test-group "static size lists"
   (test-eq "Instantiate static size list"
-    '<tuple<int<32,signed>,3>> (class-name (tuple <int> 3)))
+    '<llvmlist<int<32,signed>,3>> (class-name (llvmlist <int> 3)))
   (test-equal"Base of static size list"
-    (list <int> <int> <int> <int> <int>) (base (tuple <int> 5)))
+    (list <int> <int> <int> <int> <int>) (base (llvmlist <int> 5)))
   (test-eq "Native type of integer list"
-    (tuple <ubyte> 4) (native-type '(2 3 5 7)))
+    (llvmlist <ubyte> 4) (native-type '(2 3 5 7)))
   (test-eq "Native type of floating-point list"
-    (tuple <double> 4) (native-type '(2 3.5 5 7)))
-  (test-eqv "Get element of tuple"
+    (llvmlist <double> 4) (native-type '(2 3.5 5 7)))
+  (test-eqv "Get element of llvmlist"
     5 (get '(2 3 5 7) 2))
-  (test-eqv "Dimension of tuple"
-    3 (dimension (tuple <int> 3)))
-  (test-eq "Typecode of tuple"
-    <int> (typecode (tuple <int> 3)))
+  (test-eqv "Dimension of llvmlist"
+    3 (dimension (llvmlist <int> 3)))
+  (test-eq "Typecode of llvmlist"
+    <int> (typecode (llvmlist <int> 3)))
   (test-equal "Decompose static list type"
-    (list <byte> <byte> <byte>) (decompose-type (tuple <byte> 3)))
+    (list <byte> <byte> <byte>) (decompose-type (llvmlist <byte> 3)))
   (test-equal "Decompose static list argument"
-    '(2 3 5) (decompose-argument (tuple <int> 3) '(2 3 5))))
+    '(2 3 5) (decompose-argument (llvmlist <int> 3) '(2 3 5))))
 
 (test-group "Multi-dimensional arrays"
   (test-eqv "Dimension of array"
