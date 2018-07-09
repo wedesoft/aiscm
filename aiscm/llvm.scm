@@ -482,7 +482,7 @@
       (position-builder-at-end block-end))))
 
 (define-method (get (self <multiarray<>>) index)
-  (let [(fun (llvm-typed (list (llvmarray (typecode self) (dimensions self)) <int>)
+  (let [(fun (llvm-typed (list (native-type self) <int>)
                          (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))))]
     (add-method! get
                  (make <method>
