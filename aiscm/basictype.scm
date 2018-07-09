@@ -30,6 +30,7 @@
             multiarray dimensions shape memory memory-base strides llvmarray
             <void> <meta<void>>
             <scalar> <meta<scalar>>
+            <structure> <meta<structure>>
             <bool>  <meta<bool>>
             <int<>> <meta<int<>>>
             <ubyte> <meta<ubyte>> <int<8,unsigned>>  <meta<int<8,unsigned>>>
@@ -62,6 +63,8 @@
 
 (define-class* <scalar> <void> <meta<scalar>> <meta<void>>)
 
+(define-class* <structure> <void> <meta<structure>> <meta<void>>)
+
 (define-class* <bool> <scalar> <meta<bool>> <meta<scalar>>)
 
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
@@ -70,7 +73,7 @@
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
-(define-class* <llvmlist<>> <void> <meta<llvmlist<>>> <meta<void>>)
+(define-class* <llvmlist<>> <structure> <meta<llvmlist<>>> <meta<structure>>)
 
 (define-syntax-rule (component-accessor type name index)
   "Define accessor to access component of a composite type"
@@ -105,7 +108,7 @@
               (n           (length (syntax->datum #'(members ...))))
               (header      (map (cut list <> '<meta<void>>) (syntax->datum #'(members ...))))]
           #`(begin
-              (define-class* #,(datum->syntax #'k class) <void> #,(datum->syntax #'k metaclass) <meta<void>>)
+              (define-class* #,(datum->syntax #'k class) <structure> #,(datum->syntax #'k metaclass) <meta<structure>>)
 
               (define-method (constructor (type #,(datum->syntax #'k metaclass)))
                 "Get constructor for composite type"
@@ -226,7 +229,7 @@
       (define-method (dimensions (self metaclass)) dim)
       (define-method (typecode  (self metaclass)) type))))
 
-(define-class* <llvmarray<>> <void> <meta<llvmarray<>>> <meta<void>>)
+(define-class* <llvmarray<>> <structure> <meta<llvmarray<>>> <meta<structure>>)
 
 (define (llvmarray type dim)
   "Define compiled multi-dimensional array"
@@ -254,9 +257,6 @@
 
 (define-method (base (type <meta<scalar>>))
   (list type))
-
-(define-method (components (type <meta<void>>))
-  '())
 
 (define-method (foreign-type (type <meta<void>>))
   void)
@@ -351,7 +351,7 @@
 (define-method (unpack-value (self <meta<pointer<>>>) address)
   (make-pointer (car (bytevector->sint-list (pointer->bytevector (make-pointer address) 8) (native-endianness) 8))))
 
-(define-method (unpack-value (self <meta<void>>) (address <integer>))
+(define-method (unpack-value (self <meta<structure>>) (address <integer>))
   "Unpack composite value stored in a byte vector"
   (apply (constructor self) (map (lambda (type offset) (unpack-value type (+ address offset)))
                                  (base self)
@@ -393,7 +393,7 @@
   "Decompose scalar type"
   (base type))
 
-(define-method (decompose-type (type <meta<void>>))
+(define-method (decompose-type (type <meta<structure>>))
   "Decompose composite type"
   (append-map decompose-type (base type)))
 
@@ -408,7 +408,7 @@
   "Decompose boolean value"
   (list (if value 1 0)))
 
-(define-method (decompose-argument (type <meta<void>>) value)
+(define-method (decompose-argument (type <meta<structure>>) value)
   "Recursively decompose composite value"
   (append-map decompose-argument (base type) (map (cut <> value) (components type))))
 
@@ -418,7 +418,7 @@
 (define-method (decompose-result (type <meta<scalar>>) value)
   (list value))
 
-(define-method (decompose-result (type <meta<void>>) value)
+(define-method (decompose-result (type <meta<structure>>) value)
   "Recursively decompose composite value"
   (append-map decompose-result (base type) (map (cut <> value) (components type))))
 
@@ -429,7 +429,7 @@
            (rest   (compose-base    (cdr base-types) (cdr result)))]
       (cons (lambda (fun) (cons ((car result) fun) ((car rest) fun))) (cdr rest)))))
 
-(define-method (compose-content (type <meta<void>>) lst)
+(define-method (compose-content (type <meta<structure>>) lst)
   (compose-base (base type) lst))
 
 (define-method (compose-content (type <meta<scalar>>) lst)

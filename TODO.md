@@ -1,8 +1,7 @@
 ## Ready
 
 * get nth element
-* other base class than void
-* set
+* print multiarray
 * for loop
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment

@@ -376,7 +376,7 @@
   (let [(type (target (class-of ptr)))]
     (make <void> #:value (llvm-store (foreign-type type) (get (to-type type value)) (get ptr)))))
 
-(define-method (store ptr (value <void>))
+(define-method (store ptr (value <structure>))
   (let [(type (target (class-of ptr)))]
     (apply llvm-begin
       (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) component))
@@ -387,7 +387,7 @@
 (define-method (fetch (type <meta<scalar>>) ptr)
   (make type #:value (llvm-fetch (foreign-type type) (get ptr))))
 
-(define-method (fetch (type <meta<void>>) ptr)
+(define-method (fetch (type <meta<structure>>) ptr)
   (apply (build type) (map (lambda (type offset) (fetch type (+ ptr offset)))
                            (base type)
                            (integral (cons 0 (all-but-last (map size-of (base type))))))))
@@ -396,10 +396,12 @@
   (fetch (target (class-of ptr)) ptr))
 
 (define-method (prepare-return (result <void>) memory)
-  "Generate return statement for composite value or void"
-  (if (null? (components (class-of result)))
-    (llvm-begin result (return))
-    (llvm-begin (store (to-type (pointer (class-of result)) memory) result) (return memory))))
+  "Generate return statement for void"
+  (llvm-begin result (return)))
+
+(define-method (prepare-return (result <structure>) memory)
+  "Generate return statement for composite value"
+  (llvm-begin (store (to-type (pointer (class-of result)) memory) result) (return memory)))
 
 (define-method (prepare-return (result <scalar>) memory)
   "Generate return statement for boolean, integer, or floating-point number"
@@ -458,7 +460,7 @@
                        ((get (to-type target value-if  )) fun)
                        ((get (to-type target value-else)) fun)))))
 
-(define-method (llvm-if (target <meta<void>>) condition value-if value-else)
+(define-method (llvm-if (target <meta<structure>>) condition value-if value-else)
   (let [(args (map (lambda (component) (llvm-if condition (component value-if) (component value-else)))
                    (components target)))]
     (construct-object target args)))
