@@ -4,7 +4,6 @@
 * other base class than void
 * set
 * for loop
-* + -> add, - -> subtract, ...
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
