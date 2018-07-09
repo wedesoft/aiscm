@@ -1,6 +1,6 @@
 ## Ready
 
-* get nth element
+* multi-dimensional get
 * print multiarray
 * for loop
 * Scheme objects, memory with pointers
