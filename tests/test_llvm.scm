@@ -657,19 +657,14 @@
 
 (test-group "Multi-dimensional array"
   (test-equal "Identity function preserves shape"
-    '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5))))))
+    '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
   (test-equal "Shape can be queried in compiled code"
     '(6 4) ((llvm-typed (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
-;(test-group "Multi-dimensional arrays"
-;  (test-eqv "Get first element from array"
-;    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
-;  (test-eqv "Get second element from array"
-;    3 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 1))
-;  (test-eqv "Get short integer from array"
-;    (+ 5 (* 7 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))) 1))
-;  (test-expect-fail 1)
-;  (test-eq "Identity function for multi-dimensional array"
-;    (multiarray <int> 2)
-;    (class-of ((llvm-typed (list (multiarray <int> 2)) identity) (make (multiarray <int> 2) #:shape '(6 4))))))
+  (test-eqv "Get first element of 1D byte array"
+    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
+  (test-eqv "Get third element of 1D byte array"
+    5 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 2))
+  (test-eqv "Get third element of 1D short integer array"
+    (+ 2 (* 3 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))) 2)))
 
 (test-end "aiscm llvm")

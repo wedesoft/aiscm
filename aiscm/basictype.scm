@@ -231,6 +231,10 @@
 
 (define-class* <llvmarray<>> <structure> <meta<llvmarray<>>> <meta<structure>>)
 
+(define-method (typecode (self <llvmarray<>>)) (typecode (class-of self)))
+
+(define-method (dimension (self <llvmarray<>>)) (dimension (class-of self)))
+
 (define (llvmarray type dim)
   "Define compiled multi-dimensional array"
   (template-class (llvmarray type dim) <llvmarray<>>

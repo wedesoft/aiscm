@@ -481,6 +481,15 @@
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
+(define-method (get (self <multiarray<>>) index)
+  (let [(fun (llvm-typed (list (llvmarray (typecode self) (dimensions self)) <int>)
+                         (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))))]
+    (add-method! get
+                 (make <method>
+                       #:specializers (list (class-of self) <integer>)
+                       #:procedure    fun))
+    (get self index)))
+
 ;(define-method (fetch (self <multiarray<>>) index)
 ;  (let [(fun (llvm-typed (list (pointer (typecode self)) <int>)
 ;                         (lambda (ptr index) (fetch (+ ptr (* index (size-of (typecode self))))))))]
