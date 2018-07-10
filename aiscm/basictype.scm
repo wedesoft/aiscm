@@ -183,7 +183,7 @@
 
 (define-method (dimension (self <llvmlist<>>)) (dimension (class-of self)))
 
-(define (llvmlist type size)
+(define-method (llvmlist (type <meta<void>>) (size <integer>))
   (template-class (llvmlist type size) <llvmlist<>>
     (lambda (class metaclass)
       (define-method (typecode (self metaclass)) type)

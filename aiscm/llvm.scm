@@ -481,6 +481,11 @@
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
+(define-method (llvmlist (arg <void>) . args)
+  (let [(args (cons arg args))]
+    (make (llvmlist (reduce coerce #f (map class-of args)) (length args))
+          #:value (lambda (fun) (map (lambda (arg) ((get arg) fun)) args)))))
+
 (define-method (get (self <multiarray<>>) index)
   (let [(fun (llvm-typed (list (native-type self) <int>)
                          (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))))]

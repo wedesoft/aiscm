@@ -5,3 +5,7 @@
 
 ((llvm-typed (list (llvmarray <sint> 1)) (lambda (m) (fetch (memory m)))) m)
 
+((llvm-typed (list (llvmlist <int> 2)) (lambda (l) (llvmlist (get l 0)))) '(6 4))
+
+((llvm-typed (list <int> <int>) (lambda (x y) (llvmlist x y))) 2 3)
+
