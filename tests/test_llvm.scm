@@ -655,18 +655,28 @@
   (test-equal "Identity function for list"
     '(2 3 5) ((llvm-typed (list (llvmlist <int> 3)) identity) '(2 3 5)))
   (test-equal "Create static size list"
-    '(2 3 5) ((llvm-typed (list <int> <int> <int>) llvmlist) 2 3 5)))
+    '(2 3 5) ((llvm-typed (list <int> <int> <int>) llvmlist) 2 3 5))
+  (test-eqv "Last element of list"
+    5 ((llvm-typed (list (llvmlist <int> 3)) llvm-last) '(2 3 5)))
+  (test-equal "Get all but last element from a list"
+    '(2 3) ((llvm-typed (list (llvmlist <int> 3)) llvm-all-but-last) '(2 3 5))) )
 
 (test-group "Multi-dimensional array"
-  (test-equal "Identity function preserves shape"
-    '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
-  (test-equal "Shape can be queried in compiled code"
-    '(6 4) ((llvm-typed (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
-  (test-eqv "Get first element of 1D byte array"
-    2 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 0))
-  (test-eqv "Get third element of 1D byte array"
-    5 (get (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))) 2))
-  (test-eqv "Get third element of 1D short integer array"
-    (+ 2 (* 3 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))) 2)))
+  (let [(m1 (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))))
+        (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))]
+    (test-equal "Identity function preserves shape"
+      '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
+    (test-equal "Shape can be queried in compiled code"
+      '(6 4) ((llvm-typed (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
+    (test-eqv "Get first element of 1D byte array"
+      2 (get m1 0))
+    (test-eqv "Get third element of 1D byte array"
+      5 (get m1 2))
+    (test-eqv "Get third element of 1D short integer array"
+      (+ 2 (* 3 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))) 2))
+    (test-skip 1)
+    (test-eqv "Get slice of array"
+      '(3) (shape (get m2 0)))))
+
 
 (test-end "aiscm llvm")
