@@ -674,9 +674,11 @@
       5 (get m1 2))
     (test-eqv "Get third element of 1D short integer array"
       (+ 2 (* 3 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))) 2))
-    (test-skip 1)
-    (test-eqv "Get slice of array"
-      '(3) (shape (get m2 0)))))
+    (test-eq "Build multiarray"
+      (multiarray <byte> 2)
+      (class-of ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2))
+                             llvmarray)
+                 (memory m2) (memory-base m2) '(3 2)'(1 3))))))
 
 
 (test-end "aiscm llvm")

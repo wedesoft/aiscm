@@ -486,6 +486,13 @@
     (make (llvmlist (reduce coerce #f (map class-of args)) (length args))
           #:value (lambda (fun) (map (lambda (arg) ((get arg) fun)) args)))))
 
+(define-method (llvmarray memory memory-base shape strides)
+  (make (llvmarray (target memory) (dimension shape))
+        #:value (lambda (fun) (list ((get memory) fun)
+                                    ((get memory-base) fun)
+                                    ((get shape) fun)
+                                    ((get strides) fun)))))
+
 (define-method (get (self <multiarray<>>) index)
   (let [(fun (llvm-typed (list (native-type self) <int>)
                          (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))))]

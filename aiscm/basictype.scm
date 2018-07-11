@@ -171,7 +171,7 @@
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
 
-(define-generic target)
+(define-method (target (self <pointer<>>)) (target (class-of self)))
 
 (define (pointer tgt)
   "Create pointer class"
@@ -243,7 +243,7 @@
 
 (define-method (dimension (self <llvmarray<>>)) (dimension (class-of self)))
 
-(define (llvmarray type dim)
+(define-method (llvmarray type dim)
   "Define compiled multi-dimensional array"
   (template-class (llvmarray type dim) <llvmarray<>>
     (lambda (class metaclass)
