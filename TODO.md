@@ -3,12 +3,13 @@
 * multi-dimensional get
 * print multiarray
 * for loop
+* conversion to/from list
+* array operations
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment
 * type matching for uniform arrays
 * cells?
 * complex multiplication, division
-* dynamic array operations
 * tensor indices
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * cast to higher integer type when doing a tensor injection
