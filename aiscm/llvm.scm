@@ -494,10 +494,14 @@
                                     ((get strides) fun)))))
 
 (define-method (get (self <multiarray<>>) index)
-  (let [(fun (llvm-typed (list (native-type self) <int>)
-                         (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))))]
+  (let [(fun (if (<= (dimensions self) 1)
+                 (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))
+                 (lambda (self index) (llvmarray (+ (memory self) (* index (llvm-last (strides self)) (size-of (typecode self))))
+                                                 (memory-base self)
+                                                 (llvm-all-but-last (shape self))
+                                                 (llvm-all-but-last (strides self))))))]
     (add-method! get
                  (make <method>
                        #:specializers (list (class-of self) <integer>)
-                       #:procedure    fun))
+                       #:procedure    (llvm-typed (list (native-type self) <int>) fun)))
     (get self index)))

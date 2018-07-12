@@ -663,7 +663,9 @@
 
 (test-group "Multi-dimensional array"
   (let [(m1 (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))))
-        (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))]
+        (s1 (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))))
+        (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))
+        (s2 (make (multiarray <sint> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13 5 7 11 13 17 19))))]
     (test-equal "Identity function preserves shape"
       '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
     (test-equal "Shape can be queried in compiled code"
@@ -673,7 +675,7 @@
     (test-eqv "Get third element of 1D byte array"
       5 (get m1 2))
     (test-eqv "Get third element of 1D short integer array"
-      (+ 2 (* 3 256)) (get (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))) 2))
+      (+ 2 (* 3 256)) (get s1 2))
     (test-equal "Build multiarray with correct memory"
       (memory m2)
       (memory ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
@@ -689,7 +691,17 @@
     (test-equal "Build multiarray with correct strides"
       (strides m2)
       (strides ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
-                (memory m2) (memory-base m2) (shape m2) (strides m2))))))
+                (memory m2) (memory-base m2) (shape m2) (strides m2))))
+    (test-equal "Slice of array has adjusted memory pointer"
+      (make-pointer (+ (pointer-address (memory m2)) 3)) (memory (get m2 1)))
+    (test-equal "Memory pointer of slice is adjusted according to type size"
+      (make-pointer (+ (pointer-address (memory s2)) 6)) (memory (get s2 1)))
+    (test-equal "Slice keeps memory base pointer to prevent premature garbage collection"
+      (memory-base m2) (memory-base (get m2 1)))
+    (test-equal "Shape of slice"
+      '(3) (shape (get m2 1)))
+    (test-equal "Strides of slice"
+      '(1) (strides (get m2 1)))))
 
 
 (test-end "aiscm llvm")
