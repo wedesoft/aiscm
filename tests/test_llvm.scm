@@ -703,6 +703,10 @@
     (test-equal "Strides of slice"
       '(1) (strides (get m2 1)))
     (test-equal "2D element access"
-      13 (get m2 2 1))))
+      13 (get m2 2 1))
+    (test-equal "Convert 1D array to list"
+      '(2 3 5) (to-list m1))
+    (test-equal "Convert 2D array to list"
+      '((2 3 5) (7 11 13)) (to-list m2))))
 
 (test-end "aiscm llvm")

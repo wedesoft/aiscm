@@ -35,7 +35,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-call typed-constant typed-pointer store fetch llvm-begin
+            llvm-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt llvm-if typed-alloca)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set
                    llvm-while)
@@ -507,3 +507,9 @@
                          #:procedure    (llvm-typed (list (native-type self) <int>) fun)))
       (get self index))
     (apply get (get self (last indices)) (cons index (all-but-last indices)))))
+
+(define (to-list self)
+  (let [(indices (iota (last (shape self))))]
+    (if (> (dimensions self) 1)
+      (map (lambda (index) (to-list (get self index))) indices)
+      (map (cut get self <>) indices))))

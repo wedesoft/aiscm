@@ -2,7 +2,7 @@
 
 * print multiarray
 * for loop
-* conversion to/from list
+* conversion from list
 * array operations
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment
