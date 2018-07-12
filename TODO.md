@@ -1,6 +1,5 @@
 ## Ready
 
-* multi-dimensional get
 * print multiarray
 * for loop
 * conversion to/from list

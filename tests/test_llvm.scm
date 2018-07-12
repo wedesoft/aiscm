@@ -701,7 +701,8 @@
     (test-equal "Shape of slice"
       '(3) (shape (get m2 1)))
     (test-equal "Strides of slice"
-      '(1) (strides (get m2 1)))))
-
+      '(1) (strides (get m2 1)))
+    (test-equal "2D element access"
+      13 (get m2 2 1))))
 
 (test-end "aiscm llvm")
