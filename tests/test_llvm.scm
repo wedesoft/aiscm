@@ -707,6 +707,15 @@
     (test-equal "Convert 1D array to list"
       '(2 3 5) (to-list m1))
     (test-equal "Convert 2D array to list"
-      '((2 3 5) (7 11 13)) (to-list m2))))
+      '((2 3 5) (7 11 13)) (to-list m2))
+    (test-equal "Write empty array"
+      "#<multiarray<int<8,signed>,1>>:\n()"
+      (call-with-output-string (cut write (make (multiarray <byte> 1) #:shape '(0)) <>)))
+    (test-equal "Print 1D array"
+      "#<multiarray<int<8,signed>,1>>:\n(2 3 5)"
+      (call-with-output-string (cut write m1 <>)))
+    (test-equal "Print 2D array"
+      "#<multiarray<int<8,signed>,2>>:\n((2 3 5)\n (7 11 13))"
+      (call-with-output-string (cut write m2 <>)))))
 
 (test-end "aiscm llvm")

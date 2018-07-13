@@ -1,6 +1,6 @@
 ## Ready
 
-* print multiarray
+* print large multiarrays
 * for loop
 * conversion from list
 * array operations

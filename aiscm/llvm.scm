@@ -513,3 +513,21 @@
     (if (> (dimensions self) 1)
       (map (lambda (index) (to-list (get self index))) indices)
       (map (cut get self <>) indices))))
+
+(define (print-elements self port depth)
+  (let* [(indices   (iota (last (shape self))))
+         (dim       (dimensions self))
+         (separator (if (> dim 1) (apply string-append "\n" (make-list depth " ")) " "))]
+    (display "(" port)
+    (for-each
+      (lambda (index)
+        (if (not (zero? index)) (display separator port))
+        (if (> dim 1)
+          (print-elements (get self index) port (1+ depth))
+          (write (get self index) port)))
+      indices)
+    (display ")" port)))
+
+(define-method (write (self <multiarray<>>) port)
+  (format port "#~a:~%" (class-name (class-of self)))
+  (print-elements self port 1))
