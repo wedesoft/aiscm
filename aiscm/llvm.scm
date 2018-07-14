@@ -35,7 +35,7 @@
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-call typed-constant typed-pointer store fetch llvm-begin to-list
+            llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt llvm-if typed-alloca)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set
                    llvm-while)
@@ -448,6 +448,14 @@
                    function-name
                    argument-types
                    (map (lambda (arg) (arg fun)) args)))
+
+(define (typed-call return-type function-name argument-types args)
+  "Call a C function"
+  (make return-type
+        #:value (llvm-call (foreign-type return-type)
+                           function-name
+                           (map foreign-type argument-types)
+                           (map get args))))
 
 (define-method (llvm-if condition value-if value-else)
   (let [(target (coerce (class-of value-if) (class-of value-else)))]

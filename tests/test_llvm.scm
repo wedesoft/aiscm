@@ -424,16 +424,19 @@
     2.0+3.0i ((llvm-typed (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i)))
 
 (test-group "method calls"
-  (test-equal "call libc's fabsf method"
+  (test-eqv "call libc's fabsf method"
     1.25
     ((llvm-wrap (list llvm-float)
                 (lambda args (cons llvm-float (function-ret (llvm-call llvm-float "fabsf" (list llvm-float) args)))))
      -1.25))
-  (test-equal "call libc's atan2 method"
+  (test-eqv "call libc's atan2 method"
     0.0
     ((llvm-wrap (list llvm-double llvm-double)
                 (lambda args (cons llvm-double (function-ret (llvm-call llvm-double "atan2" (list llvm-double llvm-double) args)))))
-     0.0 1.0)))
+     0.0 1.0))
+  (test-eqv "typed call of fabsf method"
+    1.25
+    ((llvm-typed (list <float>) (lambda (arg) (typed-call <float> "fabsf" (list <float>) (list arg)))) -1.25)))
 
 (test-group "pointers"
   (test-equal "Pointer identity function"

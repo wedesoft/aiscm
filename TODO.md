@@ -1,7 +1,8 @@
 ## Ready
 
-* print large multiarrays
+* typed method call
 * for loop
+* print large multiarrays
 * conversion from list
 * array operations
 * Scheme objects, memory with pointers
