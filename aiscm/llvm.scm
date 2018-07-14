@@ -101,7 +101,7 @@
   (llvm-compile-module (slot-ref self 'llvm-module)))
 
 (define-syntax-rule (llvm-set value expression)
-  (begin
+  (let [(result expression)]
     (set! value expression)
     (make <void> #:value (lambda (fun) ((get value) fun)))))
 
@@ -439,14 +439,15 @@
             (cons (pointer-address (bytevector->pointer memory))
                   (append-map decompose-argument argument-types args))))))))
 
-(define ((llvm-call return-type function-name argument-types args) fun)
+(define (llvm-call return-type function-name argument-types args)
   "Call a C function"
-  (llvm-build-call (slot-ref fun 'llvm-function)
-                   (slot-ref (slot-ref fun 'module) 'llvm-module)
-                   return-type
-                   function-name
-                   argument-types
-                   (map (lambda (arg) (arg fun)) args)))
+  (memoize (fun)
+    (llvm-build-call (slot-ref fun 'llvm-function)
+                     (slot-ref (slot-ref fun 'module) 'llvm-module)
+                     return-type
+                     function-name
+                     argument-types
+                     (map (lambda (arg) (arg fun)) args))))
 
 (define (typed-call return-type function-name argument-types args)
   "Call a C function"
