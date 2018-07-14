@@ -37,8 +37,8 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt llvm-if typed-alloca)
-  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor with-llvm-values llvm-set
-                   llvm-while)
+  #:export-syntax (memoize define-uniform-constructor define-mixed-constructor llvm-set
+                   llvm-while typed-let)
   #:re-export (get destroy - + *))
 
 
@@ -100,19 +100,18 @@
   (llvm-verify-module (slot-ref self 'llvm-module))
   (llvm-compile-module (slot-ref self 'llvm-module)))
 
-(define-syntax with-llvm-values
-  (lambda (x)
-    (syntax-case x ()
-      ((k (variables ...) instructions ...)
-        (let [(preamble (map (cut list <> #f) (syntax->datum #'(variables ...))))]
-          #`(let #,(datum->syntax #'k preamble)
-              (let [(result (llvm-begin instructions ...))]
-                (make (class-of result) #:value (lambda (fun) ((get result) fun))))))))))
-
 (define-syntax-rule (llvm-set value expression)
-  (let [(result expression)]
+  (begin
     (set! value expression)
     (make <void> #:value (lambda (fun) ((get value) fun)))))
+
+(define-syntax typed-let
+  (lambda (x)
+    (syntax-case x ()
+      ((k [] instructions ...)
+       #'(llvm-begin instructions ...))
+      ((k [(name value) declarations ...] instructions ...)
+       #'(let [(name #f)] (typed-let [declarations ...] (llvm-set name value) instructions ...))))))
 
 (define (make-basic-block name)
   (memoize (fun) (make-llvm-basic-block (slot-ref fun 'llvm-function) name)))

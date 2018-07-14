@@ -598,16 +598,12 @@
     #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
 
 (test-group "local variables"
-  (test-eq "Empty variable list declaration"
-    <int> (class-of (with-llvm-values () (typed-constant <int> 42))))
-  (test-eqv "Return result of last instruction"
-    <sint> (class-of (with-llvm-values () (typed-constant <byte> 20) (typed-constant <sint> 42))))
-(let* [(data #vu8(0 0 0 0))
-       (ptr  (typed-pointer <int> (bytevector->pointer data)))]
-    (test-eqv "ensure both instructions are executed"
-      42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [] (store ptr value) (fetch ptr)))) 42)))
-  (test-eqv "define variable"
-    42 ((llvm-typed (list <int>) (lambda (value) (with-llvm-values [x] (llvm-set x value) x))) 42)))
+  (test-eqv "Typed let without any definitions"
+    42 ((llvm-typed (list <int>) (lambda (value) (typed-let [] value))) 42))
+  (test-eqv "Typed let with a definition"
+    42 ((llvm-typed '() (lambda () (typed-let [(a (typed-constant <int> 42))] a)))))
+  (test-eqv "Typed let with two definitions"
+    5 ((llvm-typed '() (lambda () (typed-let [(a (typed-constant <int> 2)) (b (typed-constant <int> 3))] (+ a b)))))))
 
 (test-group "basic blocks and branch instructions"
   (test-equal "branch instruction"
@@ -637,16 +633,14 @@
     42
     ((llvm-typed (list <int>)
                  (lambda (x)
-                   (with-llvm-values (ptr)
-                     (llvm-set ptr (typed-alloca <int>))
+                   (typed-let [(ptr (typed-alloca <int>))]
                      (store ptr x)
                      (fetch ptr)))) 42))
   (test-eqv "While loop"
     10
     ((llvm-typed (list <int>)
       (lambda (n)
-        (with-llvm-values (i)
-          (llvm-set i (typed-alloca <int>))
+        (typed-let [(i (typed-alloca <int>))]
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
             (store i (+ 1 (fetch i))))
