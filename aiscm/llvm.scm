@@ -103,7 +103,7 @@
 (define-syntax-rule (llvm-set value expression)
   (let [(result expression)]
     (set! value expression)
-    (make <void> #:value (lambda (fun) ((get value) fun)))))
+    (make <void> #:value (memoize (fun) ((get value) fun)))))
 
 (define-syntax typed-let
   (lambda (x)
@@ -153,9 +153,10 @@
   "Generate code for reading value from memory"
   (memoize (fun) (llvm-build-load (slot-ref fun 'llvm-function) type (address fun))))
 
-(define ((llvm-store type value address) fun)
+(define (llvm-store type value address)
   "Generate code for writing value to memory"
-  (llvm-build-store (slot-ref fun 'llvm-function) type (value fun) (address fun)))
+  (memoize (fun)
+    (llvm-build-store (slot-ref fun 'llvm-function) type (value fun) (address fun))))
 
 (define ((function-param index) fun)
   "Get value of INDEXth function parameter"
@@ -315,7 +316,7 @@
 (define-binary-delegation (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)) (const llvm-f-ge))
 
 (define (construct-object class args)
-  (make class #:value (lambda (fun) (map (lambda (component) ((get component) fun)) args))))
+  (make class #:value (memoize (fun) (map (lambda (component) ((get component) fun)) args))))
 
 (define-syntax-rule (define-mixed-constructor name)
   (define-method (name . args)
@@ -357,7 +358,7 @@
   (if (null? instructions)
     instruction
     (let [(result (apply llvm-begin instructions))]
-      (make (class-of result) #:value (lambda (fun) ((get instruction) fun) ((get result) fun))))))
+      (make (class-of result) #:value (memoize (fun) ((get instruction) fun) ((get result) fun))))))
 
 (define-method (typed-constant (type <meta<scalar>>) value)
   (make type #:value (make-constant (foreign-type type) value)))
@@ -492,14 +493,14 @@
 (define-method (llvmlist (arg <void>) . args)
   (let [(args (cons arg args))]
     (make (llvmlist (reduce coerce #f (map class-of args)) (length args))
-          #:value (lambda (fun) (map (lambda (arg) ((get arg) fun)) args)))))
+          #:value (memoize (fun) (map (lambda (arg) ((get arg) fun)) args)))))
 
 (define-method (llvmarray memory memory-base shape strides)
   (make (llvmarray (target memory) (dimension shape))
-        #:value (lambda (fun) (list ((get memory) fun)
-                                    ((get memory-base) fun)
-                                    ((get shape) fun)
-                                    ((get strides) fun)))))
+        #:value (memoize (fun) (list ((get memory) fun)
+                                     ((get memory-base) fun)
+                                     ((get shape) fun)
+                                     ((get strides) fun)))))
 
 (define-method (get (self <multiarray<>>) index . indices)
   (if (null? indices)
