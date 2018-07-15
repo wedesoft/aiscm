@@ -1,10 +1,11 @@
 ## Ready
 
-* typed method call
-* for loop
-* print large multiarrays
 * conversion from list
 * array operations
+* for loop
+* 0D array (<-> pointer with base)
+* print large multiarrays
+* array equality
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment
 * type matching for uniform arrays

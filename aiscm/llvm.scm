@@ -523,6 +523,14 @@
       (map (lambda (index) (to-list (get self index))) indices)
       (map (cut get self <>) indices))))
 
+(define-method (shape self)
+  "Shape of scalar"
+  '())
+
+(define-method (shape (self <list>))
+  "Shape of list"
+  (attach (shape (car self)) (length self)))
+
 (define (print-elements self port depth)
   (let* [(indices   (iota (last (shape self))))
          (dim       (dimensions self))

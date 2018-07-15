@@ -708,6 +708,10 @@
     (test-equal "Write empty array"
       "#<multiarray<int<8,signed>,1>>:\n()"
       (call-with-output-string (cut write (make (multiarray <byte> 1) #:shape '(0)) <>)))
+    (test-equal "Shape of 1D list"
+      '(3) (shape '(2 3 5)))
+    (test-equal "Shape of 2D list"
+      '(3 2) (shape '((2 3 5) (3 5 7))))
     (test-equal "Print 1D array"
       "#<multiarray<int<8,signed>,1>>:\n(2 3 5)"
       (call-with-output-string (cut write m1 <>)))
