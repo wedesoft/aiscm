@@ -1,9 +1,9 @@
 ## Ready
 
+* refactor 0D array code
 * conversion from list
 * array operations
 * for loop
-* 0D array (<-> pointer with base)
 * print large multiarrays
 * array equality
 * Scheme objects, memory with pointers
