@@ -659,7 +659,8 @@
     '(2 3) ((llvm-typed (list (llvmlist <int> 3)) llvm-all-but-last) '(2 3 5))) )
 
 (test-group "Multi-dimensional array"
-  (let [(m1 (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))))
+  (let [(m0 (make (multiarray <byte> 0) #:shape '() #:memory (bytevector->pointer #vu8(42))))
+        (m1 (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))))
         (s1 (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))))
         (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))
         (s2 (make (multiarray <sint> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13 5 7 11 13 17 19))))]
@@ -667,6 +668,8 @@
       '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
     (test-equal "Shape can be queried in compiled code"
       '(6 4) ((llvm-typed (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
+    (test-eqv "Get element of 0D byte array"
+      42 (get m0))
     (test-eqv "Get first element of 1D byte array"
       2 (get m1 0))
     (test-eqv "Get third element of 1D byte array"
@@ -705,13 +708,21 @@
       '(2 3 5) (to-list m1))
     (test-equal "Convert 2D array to list"
       '((2 3 5) (7 11 13)) (to-list m2))
-    (test-equal "Write empty array"
+    (test-equal "Write empty 1D array"
       "#<multiarray<int<8,signed>,1>>:\n()"
       (call-with-output-string (cut write (make (multiarray <byte> 1) #:shape '(0)) <>)))
+    (test-equal "Write 0D array"
+      "#<multiarray<int<8,signed>,0>>:\n42"
+      (call-with-output-string (cut write m0 <>)))
     (test-equal "Shape of 1D list"
       '(3) (shape '(2 3 5)))
     (test-equal "Shape of 2D list"
       '(3 2) (shape '((2 3 5) (3 5 7))))
+    (test-eq "Convert list to array"
+      (multiarray <ubyte> 1) (class-of (to-array '(2 3 5))))
+    (test-skip 1)
+    (test-equal "Array conversion round trip"
+      '(2 3 5) (to-list (to-array '(2 3 5))))
     (test-equal "Print 1D array"
       "#<multiarray<int<8,signed>,1>>:\n(2 3 5)"
       (call-with-output-string (cut write m1 <>)))

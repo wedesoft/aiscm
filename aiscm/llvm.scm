@@ -36,7 +36,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt llvm-if typed-alloca)
+            ~ le lt ge gt llvm-if typed-alloca to-array)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
   #:re-export (get destroy - + *))
@@ -502,6 +502,14 @@
                                      ((get shape) fun)
                                      ((get strides) fun)))))
 
+(define-method (get (self <multiarray<>>))
+  (let [(fun (lambda (self) (fetch (memory self))))]
+    (add-method! get
+                 (make <method>
+                       #:specializers (list (class-of self))
+                       #:procedure (llvm-typed (list (native-type self)) fun)))
+    (get self)))
+
 (define-method (get (self <multiarray<>>) index . indices)
   (if (null? indices)
     (let [(fun (if (<= (dimensions self) 1)
@@ -531,6 +539,11 @@
   "Shape of list"
   (attach (shape (car self)) (length self)))
 
+(define (to-array lst)
+  "Convert list to array"
+  (let [(shp (shape lst))]
+    (make (multiarray (reduce coerce #f (map native-type lst)) (length shp)) #:shape shp)))
+
 (define (print-elements self port depth)
   (let* [(indices   (iota (last (shape self))))
          (dim       (dimensions self))
@@ -547,4 +560,6 @@
 
 (define-method (write (self <multiarray<>>) port)
   (format port "#~a:~%" (class-name (class-of self)))
-  (print-elements self port 1))
+  (if (zero? (dimensions self))
+    (write (get self) port)
+    (print-elements self port 1)))
