@@ -315,29 +315,35 @@
   "Size of pointer"
   8)
 
-(define-method (native-type (value <boolean>))
-  <bool>)
+(define-method (native-type (value <boolean>) . args)
+  (if (every boolean? args) <bool> (next-method)))
 
-(define-method (native-type (value <integer>))
-  (if (>= value 0)
-    (cond ((< value (ash 1  8)) <ubyte>)
-          ((< value (ash 1 16)) <usint>)
-          ((< value (ash 1 32)) <uint> )
-          (else <ulong>))
-    (let [(nvalue (lognot value))]
-      (cond ((< nvalue (ash 1  7)) <byte>)
-            ((< nvalue (ash 1 15)) <sint>)
-            ((< nvalue (ash 1 31))  <int>)
-            (else <long>)))))
+(define-method (native-type (value <integer>) . args)
+  (if (every integer? args)
+    (let [(lower (apply min (cons value args)))
+          (upper (apply max (cons value args)))]
+      (if (>= lower 0)
+        (cond ((< upper (ash 1  8)) <ubyte>)
+              ((< upper (ash 1 16)) <usint>)
+              ((< upper (ash 1 32)) <uint> )
+              ((< upper (ash 1 64)) <ulong>)
+              (else (next-method)))
+        (let [(nlower (max (lognot lower) upper))]
+          (cond ((< nlower (ash 1  7)) <byte>)
+                ((< nlower (ash 1 15)) <sint>)
+                ((< nlower (ash 1 31)) <int> )
+                ((< nlower (ash 1 63)) <long>)
+                (else (next-method))))))
+    (next-method)))
 
-(define-method (native-type (value <real>))
-  <double>)
+(define-method (native-type (value <real>) . args)
+  (if (every real? args) <double> (next-method)))
 
-(define-method (native-type (value <complex>))
-  <complex<double>>)
+(define-method (native-type (value <complex>) . args)
+  (if (every complex? args) <complex<double>> (next-method)))
 
 (define-method (native-type (value <list>))
-  (llvmlist (reduce coerce #f (map native-type value)) (length value)))
+  (llvmlist (apply native-type value) (length value)))
 
 (define-method (native-type (value <multiarray<>>))
   (llvmarray (typecode value) (dimensions value)))

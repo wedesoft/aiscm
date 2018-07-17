@@ -559,7 +559,7 @@
 (define (to-array lst)
   "Convert list to array"
   (let* [(shp    (shape lst))
-         (result (make (multiarray (reduce coerce #f (map native-type (flatten lst))) (length shp)) #:shape shp))]
+         (result (make (multiarray (apply native-type (flatten lst)) (length shp)) #:shape shp))]
     (store result lst)
     result))
 

@@ -269,40 +269,54 @@
     1+2i (unpack-value <complex<double>> (pointer-address (bytevector->pointer #vu8(0 0 0 0 0 0 240 63 0 0 0 0 0 0 0 64))))))
 
 (test-group "type matching"
-  (test-equal "type matching for #t"
+  (test-eq "type matching for #t"
     <bool> (native-type #t))
-  (test-equal "type matching for 255"
+  (test-eq "type matching for #t and #f"
+    <bool> (native-type #t #f))
+  (test-error "No native type for #t and 0"
+    'misc-error (native-type #t 0))
+  (test-eq "type matching for 255"
     <ubyte> (native-type 255))
-  (test-equal "type matching for 256"
+  (test-eq "type matching for 256"
     <usint> (native-type 256))
-  (test-equal "type matching for 65535"
+  (test-eq "type matching for 65535"
     <usint> (native-type 65535))
-  (test-equal "type matching for 65536"
+  (test-eq "type matching for 65536"
     <uint> (native-type 65536))
-  (test-equal "type matching for 4294967295"
+  (test-eq "type matching for 4294967295"
     <uint> (native-type 4294967295))
-  (test-equal "type matching for 4294967296"
+  (test-eq "type matching for 4294967296"
     <ulong> (native-type 4294967296))
-  (test-equal "type matching for 18446744073709551615"
+  (test-eq "type matching for 18446744073709551615"
     <ulong> (native-type 18446744073709551615))
-  (test-equal "type matching for -128"
+  (test-eq "type matching for -128"
     <byte> (native-type -128))
-  (test-equal "type matching for -129"
+  (test-eq "type matching for 1 and -1"
+    <byte> (native-type 1 -1))
+  (test-eq "type matching for -129"
     <sint> (native-type -129))
-  (test-equal "type matching for -32768"
+  (test-eq "type matching for -32768"
     <sint> (native-type -32768))
-  (test-equal "type matching for -32769"
+  (test-eq "type matching for -32769"
     <int> (native-type -32769))
-  (test-equal "type matching for -2147483648"
+  (test-eq "type matching for -2147483648"
     <int> (native-type -2147483648))
-  (test-equal "type matching for -2147483649"
+  (test-eq "type matching for -2147483649"
     <long> (native-type -2147483649))
-  (test-equal "type matching for -9223372036854775808"
+  (test-eq "type matching for -9223372036854775808"
     <long> (native-type -9223372036854775808))
-  (test-equal "type matching for 1.5"
+  (test-eq "type matching for very large positive integer"
+    <double> (native-type (ash 1 64)))
+  (test-eq "type matching for very large negative integer"
+    <double> (native-type (- (ash 1 64))))
+  (test-eq "type matching for 1.5"
     <double> (native-type 1.5))
-  (test-equal "type matching for 2+3i"
-    <complex<double>> (native-type 2+3i)))
+  (test-eq "type matching for 1 and 1.5"
+    <double> (native-type 1 1.5))
+  (test-eq "type matching for 2+3i"
+    <complex<double>> (native-type 2+3i))
+  (test-eq "type matching for 1 and 2+3i"
+    <complex<double>> (native-type 1 2+3i)))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))

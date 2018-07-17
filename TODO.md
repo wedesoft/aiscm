@@ -1,6 +1,5 @@
 ## Ready
 
-* type matching for uniform arrays
 * array operations
 * for loop
 * print large multiarrays
