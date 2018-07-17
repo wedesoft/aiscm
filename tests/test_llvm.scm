@@ -595,7 +595,9 @@
   (test-eqv "floating-point greater-than or equal"
     #t ((llvm-typed (list <float> <float>) ge) 2.5 2.5))
   (test-eqv "not floating-point greater-than or equal"
-    #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5)))
+    #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5))
+  (test-eqv "pointer comparison"
+    #t ((llvm-typed (list (pointer <byte>) (pointer <byte>)) gt) (make-pointer 2) (make-pointer 1))))
 
 (test-group "local variables"
   (test-eqv "Typed let without any definitions"

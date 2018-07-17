@@ -146,6 +146,8 @@
 (define-method (bits (value <int<>>)) (bits (class-of value)))
 (define-method (signed? (value <int<>>)) (signed? (class-of value)))
 
+(define-method (signed? (cls <meta<pointer<>>>)) #f)
+
 (define <ubyte> (integer  8 unsigned)) (define <meta<ubyte>> (class-of <ubyte>))
 (define <byte>  (integer  8 signed  )) (define <meta<byte>>  (class-of <byte> ))
 (define <usint> (integer 16 unsigned)) (define <meta<usint>> (class-of <usint>))
@@ -406,6 +408,10 @@
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)
+
+(define-method (coerce (a <meta<pointer<>>>) (b <meta<pointer<>>>))
+  "Coerce two pointers"
+  (pointer (coerce (target a) (target b))))
 
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"

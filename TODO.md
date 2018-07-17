@@ -1,7 +1,10 @@
 ## Ready
 
-* array operations
+* equal, not equal (LLVMIntEQ, LLVMIntNE, LLVMRealOEQ, LLVMRealONE)
+* pointer comparison
 * for loop
+* unary array operations
+* binary array operations
 * print large multiarrays
 * array equality
 * Scheme objects, memory with pointers

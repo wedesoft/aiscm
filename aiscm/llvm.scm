@@ -304,6 +304,7 @@
     (define-binary-operation <int<>>     <float<>> type-map operation float-delegate)
     (define-binary-operation <float<>>   <float<>> type-map operation float-delegate)
     (define-binary-operation <pointer<>> <int<>>   type-map operation delegate )
+    (define-binary-operation <pointer<>> <pointer<>>   type-map operation delegate )
     (define-op-with-constant <void> operation)))
 
 (define-binary-delegation identity + (const llvm-add) (const llvm-fadd))
