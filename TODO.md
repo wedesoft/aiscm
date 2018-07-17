@@ -1,13 +1,13 @@
 ## Ready
 
 * conversion from list
+* type matching for uniform arrays
 * array operations
 * for loop
 * print large multiarrays
 * array equality
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment
-* type matching for uniform arrays
 * cells?
 * complex multiplication, division
 * tensor indices

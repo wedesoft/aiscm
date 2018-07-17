@@ -372,11 +372,11 @@
 (define (typed-pointer target value)
   (make (pointer target) #:value (make-constant-pointer value)))
 
-(define-method (store ptr (value <scalar>))
+(define-method (store (ptr <pointer<>>) (value <scalar>))
   (let [(type (target (class-of ptr)))]
     (make <void> #:value (llvm-store (foreign-type type) (get (to-type type value)) (get ptr)))))
 
-(define-method (store ptr (value <structure>))
+(define-method (store (ptr <pointer<>>) (value <structure>))
   (let [(type (target (class-of ptr)))]
     (apply llvm-begin
       (map (lambda (component type offset) (store (to-type (pointer type) (+ ptr offset)) component))
@@ -540,8 +540,10 @@
 
 (define (to-array lst)
   "Convert list to array"
-  (let [(shp (shape lst))]
-    (make (multiarray (reduce coerce #f (map native-type lst)) (length shp)) #:shape shp)))
+  (let* [(shp    (shape lst))
+         (result (make (multiarray (reduce coerce #f (map native-type lst)) (length shp)) #:shape shp))]
+
+    result))
 
 (define (print-elements self port depth)
   (let* [(indices   (iota (last (shape self))))
