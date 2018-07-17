@@ -36,7 +36,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt llvm-if typed-alloca to-array)
+            ~ le lt ge gt llvm-if typed-alloca to-array set)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
   #:re-export (get destroy - + *))
@@ -502,19 +502,20 @@
                                      ((get shape) fun)
                                      ((get strides) fun)))))
 
+(define (element self indices dim)
+  (reduce-right +
+                #f
+                (cons (memory self)
+                  (map (lambda (index i) (* index (get (strides self) i) (size-of (typecode self))))
+                       indices
+                       (iota (length indices) dim)))))
+
 (define-method (get (self <multiarray<>>) . indices)
   (let* [(dim (- (dimensions self) (length indices)))
-         (mem (lambda (self indices)
-           (reduce-right +
-                         #f
-                         (cons (memory self)
-                           (map (lambda (index i) (* index (get (strides self) i) (size-of (typecode self))))
-                           indices
-                           (iota (length indices) dim))))))
          (fun (if (zero? dim)
-                (lambda (self . indices) (fetch (mem self indices) ))
+                (lambda (self . indices) (fetch (element self indices dim) ))
                 (lambda (self . indices)
-                  (llvmarray (mem self indices)
+                  (llvmarray (element self indices dim)
                              (memory-base self)
                              (apply llvmlist (map (lambda (index) (get (shape self) index)) (iota dim)))
                              (apply llvmlist (map (lambda (index) (get (strides self) index)) (iota dim)))))))]
@@ -523,6 +524,18 @@
                        #:specializers (cons (class-of self) (make-list (length indices) <integer>))
                        #:procedure (llvm-typed (cons (native-type self) (make-list (length indices) <int>)) fun)))
     (apply get self indices)))
+
+(define-method (set (self <multiarray<>>) . args)
+  (let* [(indices (all-but-last args))
+         (value   (last args))
+         (dim     (- (dimensions self) (length indices)))
+         (fun (lambda (self . args)
+           (store (element self (all-but-last args) dim) (last args))))]
+    (add-method! set
+                 (make <method>
+                       #:specializers (attach (cons (class-of self) (make-list (length indices) <integer>)) <top>)
+                       #:procedure (llvm-typed (attach (cons (native-type self) (make-list (length indices) <int>)) (typecode self)) fun)))
+    (apply set self args)))
 
 (define (to-list self)
   (let [(indices (iota (last (shape self))))]
@@ -538,11 +551,14 @@
   "Shape of list"
   (attach (shape (car self)) (length self)))
 
+(define-method (store (self <multiarray<>>) (value <list>))
+  (for-each (lambda (index value) (set self index value)) (iota (length value)) value))
+
 (define (to-array lst)
   "Convert list to array"
   (let* [(shp    (shape lst))
          (result (make (multiarray (reduce coerce #f (map native-type lst)) (length shp)) #:shape shp))]
-
+    (store result lst)
     result))
 
 (define (print-elements self port depth)

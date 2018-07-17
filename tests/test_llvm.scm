@@ -720,7 +720,6 @@
       '(3 2) (shape '((2 3 5) (3 5 7))))
     (test-eq "Convert list to array"
       (multiarray <ubyte> 1) (class-of (to-array '(2 3 5))))
-    (test-skip 1)
     (test-equal "Array conversion round trip"
       '(2 3 5) (to-list (to-array '(2 3 5))))
     (test-equal "Print 1D array"
