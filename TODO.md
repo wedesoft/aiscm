@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor 0D array code
 * conversion from list
 * array operations
 * for loop

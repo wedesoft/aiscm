@@ -502,28 +502,27 @@
                                      ((get shape) fun)
                                      ((get strides) fun)))))
 
-(define-method (get (self <multiarray<>>))
-  (let [(fun (lambda (self) (fetch (memory self))))]
+(define-method (get (self <multiarray<>>) . indices)
+  (let* [(dim (- (dimensions self) (length indices)))
+         (mem (lambda (self indices)
+           (reduce-right +
+                         #f
+                         (cons (memory self)
+                           (map (lambda (index i) (* index (get (strides self) i) (size-of (typecode self))))
+                           indices
+                           (iota (length indices) dim))))))
+         (fun (if (zero? dim)
+                (lambda (self . indices) (fetch (mem self indices) ))
+                (lambda (self . indices)
+                  (llvmarray (mem self indices)
+                             (memory-base self)
+                             (apply llvmlist (map (lambda (index) (get (shape self) index)) (iota dim)))
+                             (apply llvmlist (map (lambda (index) (get (strides self) index)) (iota dim)))))))]
     (add-method! get
                  (make <method>
-                       #:specializers (list (class-of self))
-                       #:procedure (llvm-typed (list (native-type self)) fun)))
-    (get self)))
-
-(define-method (get (self <multiarray<>>) index . indices)
-  (if (null? indices)
-    (let [(fun (if (<= (dimensions self) 1)
-                   (lambda (self index) (fetch (+ (memory self) (* index (size-of (typecode self))))))
-                   (lambda (self index) (llvmarray (+ (memory self) (* index (llvm-last (strides self)) (size-of (typecode self))))
-                                                   (memory-base self)
-                                                   (llvm-all-but-last (shape self))
-                                                   (llvm-all-but-last (strides self))))))]
-      (add-method! get
-                   (make <method>
-                         #:specializers (list (class-of self) <integer>)
-                         #:procedure    (llvm-typed (list (native-type self) <int>) fun)))
-      (get self index))
-    (apply get (get self (last indices)) (cons index (all-but-last indices)))))
+                       #:specializers (cons (class-of self) (make-list (length indices) <integer>))
+                       #:procedure (llvm-typed (cons (native-type self) (make-list (length indices) <int>)) fun)))
+    (apply get self indices)))
 
 (define (to-list self)
   (let [(indices (iota (last (shape self))))]
