@@ -552,12 +552,14 @@
   (attach (shape (car self)) (length self)))
 
 (define-method (store (self <multiarray<>>) (value <list>))
-  (for-each (lambda (index value) (set self index value)) (iota (length value)) value))
+  (if (<= (dimensions self) 1)
+    (for-each (lambda (index value) (set self index value)) (iota (length value)) value)
+    (for-each (lambda (index value) (store (get self index) value)) (iota (length value)) value)))
 
 (define (to-array lst)
   "Convert list to array"
   (let* [(shp    (shape lst))
-         (result (make (multiarray (reduce coerce #f (map native-type lst)) (length shp)) #:shape shp))]
+         (result (make (multiarray (reduce coerce #f (map native-type (flatten lst))) (length shp)) #:shape shp))]
     (store result lst)
     result))
 

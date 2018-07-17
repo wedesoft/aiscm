@@ -1,6 +1,5 @@
 ## Ready
 
-* conversion from list to nD array
 * type matching for uniform arrays
 * array operations
 * for loop
