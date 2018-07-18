@@ -7,7 +7,7 @@
     (lambda (self)
       (typed-let [(ptr (typed-alloca (pointer <int>)))]
         (store ptr (memory self))
-        (llvm-while (lt (fetch ptr) (+ (memory self) (typed-constant <int> (* 10 (size-of <int>)))))
+        (llvm-while (ne (fetch ptr) (+ (memory self) (typed-constant <int> (* 10 (size-of <int>)))))
           (store (fetch ptr) (typed-constant <int> 1))
           (store ptr (+ (fetch ptr) (size-of <int>))))
         self)))

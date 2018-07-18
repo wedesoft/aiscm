@@ -1,7 +1,5 @@
 ## Ready
 
-* equal, not equal (LLVMIntEQ, LLVMIntNE, LLVMRealOEQ, LLVMRealONE)
-* pointer comparison
 * for loop
 * unary array operations
 * binary array operations

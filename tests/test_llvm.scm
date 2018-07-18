@@ -580,6 +580,10 @@
     #f ((llvm-typed (list <byte> <byte>) eq) 120 100))
   (test-eqv "equal integers"
     #t ((llvm-typed (list <byte> <byte>) eq) 100 100))
+  (test-eqv "unequal integers"
+    #t ((llvm-typed (list <byte> <byte>) ne) 120 100))
+  (test-eqv "not unequal integers"
+    #f ((llvm-typed (list <byte> <byte>) ne) 100 100))
   (test-eqv "floating-point less-than"
     #t ((llvm-typed (list <float> <float>) lt) 2.5 3.0))
   (test-eqv "floating-point not less-than"
@@ -604,6 +608,10 @@
     #f ((llvm-typed (list <float> <float>) eq) 1.0 1.5))
   (test-eqv "equal floating-point numbers"
     #t ((llvm-typed (list <float> <float>) eq) 1.5 1.5))
+  (test-eqv "unequal floating-point numbers"
+    #t ((llvm-typed (list <float> <float>) ne) 1.0 1.5))
+  (test-eqv "not unequal floating-point numbers"
+    #f ((llvm-typed (list <float> <float>) ne) 1.5 1.5))
   (test-eqv "pointer comparison"
     #t ((llvm-typed (list (pointer <byte>) (pointer <byte>)) gt) (make-pointer 2) (make-pointer 1))))
 
