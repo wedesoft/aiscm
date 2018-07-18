@@ -749,4 +749,8 @@
       "#<multiarray<int<8,signed>,2>>:\n((2 3 5)\n (7 11 13))"
       (call-with-output-string (cut write m2 <>)))))
 
+(test-group "array operations"
+  (test-equal "Unary minus"
+    '(-1 2 -3) (to-list (- (to-array '(1 -2 3))))))
+
 (test-end "aiscm llvm")

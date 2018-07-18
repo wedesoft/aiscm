@@ -1,8 +1,9 @@
 ## Ready
 
-* for loop
+* n-dimensional unary minus with strides
 * unary array operations
 * binary array operations
+* for loop
 * print large multiarrays
 * array equality
 * Scheme objects, memory with pointers
