@@ -36,7 +36,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt llvm-if typed-alloca to-array set)
+            ~ le lt ge gt eq llvm-if typed-alloca to-array set)
   #:export-syntax (memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
   #:re-export (get destroy - + *))
@@ -196,12 +196,14 @@
 (define-llvm-binary llvm-u-gt (build-integer-cmp llvm-int-ugt))
 (define-llvm-binary llvm-s-ge (build-integer-cmp llvm-int-sge))
 (define-llvm-binary llvm-u-ge (build-integer-cmp llvm-int-uge))
+(define-llvm-binary llvm-eq   (build-integer-cmp llvm-int-eq ))
 
 ; floating point comparisons
 (define-llvm-binary llvm-f-lt (build-float-cmp llvm-real-lt))
 (define-llvm-binary llvm-f-le (build-float-cmp llvm-real-le))
 (define-llvm-binary llvm-f-gt (build-float-cmp llvm-real-gt))
 (define-llvm-binary llvm-f-ge (build-float-cmp llvm-real-ge))
+(define-llvm-binary llvm-f-eq (build-float-cmp llvm-real-eq))
 
 (define-syntax-rule (define-llvm-cast function delegate)
   (define (function type value)
@@ -315,6 +317,7 @@
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
 (define-binary-delegation (const <bool>) gt (lambda (target) (if (signed? target) llvm-s-gt llvm-u-gt)) (const llvm-f-gt))
 (define-binary-delegation (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)) (const llvm-f-ge))
+(define-binary-delegation (const <bool>) eq (lambda (target) llvm-eq) (const llvm-f-eq))
 
 (define (construct-object class args)
   (make class #:value (memoize (fun) (map (lambda (component) ((get component) fun)) args))))
