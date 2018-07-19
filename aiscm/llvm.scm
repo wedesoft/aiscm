@@ -283,6 +283,8 @@
   (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
 
+(define-method (+ (self <scalar>)) self)
+(define-method (* (self <scalar>)) self)
 (define-unary-operation <int<>>   - llvm-neg )
 (define-unary-operation <float<>> - llvm-fneg)
 (define-unary-operation <int<>>   ~ llvm-not )
@@ -595,16 +597,23 @@
                (typed-let [(mem  (typed-call (pointer (typecode self))
                                              "scm_gc_malloc_pointerless"
                                              (list <int>)
-                                             (list (* (llvm-last (shape self)) (size-of (typecode self))))))
+                                             (list (* (size-of (typecode self)) (llvm-last (shape self))))))
                            (p    (typed-alloca (pointer (typecode self))))
-                           (q    (typed-alloca (pointer (typecode self))))]
+                           (q    (typed-alloca (pointer (typecode self))))
+                           (str  (apply llvmlist
+                                        (cons (typed-constant <int> 1)
+                                        (map (lambda (index)
+                                               (apply * (list-head (map (cut get (shape self) <>)
+                                                                        (iota (dimensions self)))
+                                                                   index)))
+                                             (iota (1- (dimensions self)) 1)))))]
                  (store p mem)
                  (store q (memory self))
-                 (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (size-of (typecode self)))))
+                 (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (llvm-last str) (size-of (typecode self)))))
                    (store (fetch p) (- (fetch (fetch q))))
-                   (store p (+ (fetch p) (size-of (typecode self)))); TODO: strides
+                   (store p (+ (fetch p) (* (llvm-last str) (size-of (typecode self)))))
                    (store q (+ (fetch q) (* (llvm-last (strides self)) (size-of (typecode self))))))
-                 (llvmarray mem mem (shape self) (llvmlist (typed-constant <int> 1))))))]; TODO: default strides
+                 (llvmarray mem mem (shape self) str))))]
     (add-method! -
                  (make <method>
                        #:specializers (list (class-of self))

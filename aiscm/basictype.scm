@@ -243,7 +243,7 @@
 
 (define-method (typecode (self <llvmarray<>>)) (typecode (class-of self)))
 
-(define-method (dimension (self <llvmarray<>>)) (dimension (class-of self)))
+(define-method (dimensions (self <llvmarray<>>)) (dimensions (class-of self)))
 
 (define-method (llvmarray type dim)
   "Define compiled multi-dimensional array"

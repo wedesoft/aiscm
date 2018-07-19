@@ -1,6 +1,6 @@
 ## Ready
 
-* n-dimensional unary minus with strides
+* n-dimensional unary minus
 * unary array operations
 * binary array operations
 * for loop
