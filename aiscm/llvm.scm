@@ -602,9 +602,9 @@
                  (store q (memory self))
                  (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (size-of (typecode self)))))
                    (store (fetch p) (- (fetch (fetch q))))
-                   (store p (+ (fetch p) (size-of (typecode self))))
-                   (store q (+ (fetch q) (size-of (typecode self)))))
-                 (llvmarray mem mem (shape self) (strides self)))))]
+                   (store p (+ (fetch p) (size-of (typecode self)))); TODO: strides
+                   (store q (+ (fetch q) (* (llvm-last (strides self)) (size-of (typecode self))))))
+                 (llvmarray mem mem (shape self) (llvmlist (typed-constant <int> 1))))))]; TODO: default strides
     (add-method! -
                  (make <method>
                        #:specializers (list (class-of self))
