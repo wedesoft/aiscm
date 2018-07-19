@@ -361,7 +361,7 @@ SCM llvm_build_select(SCM scm_function, SCM scm_condition, SCM scm_value_if, SCM
   struct llvm_value_t *condition = get_llvm_value(scm_condition);
   struct llvm_value_t *value_if   = get_llvm_value(scm_value_if  );
   struct llvm_value_t *value_else = get_llvm_value(scm_value_else);
-  self->value = LLVMBuildSelect(function->builder, condition->value, value_if->value, value_else->value, "select");
+  self->value = LLVMBuildSelect(function->builder, condition->value, value_if->value, value_else->value, "x");
   return retval;
 }
 
@@ -390,8 +390,8 @@ SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
   SCM_NEWSMOB(retval, llvm_value_tag, result);
   struct llvm_value_t *address = get_llvm_value(scm_address);
   int type = scm_to_int(scm_type);
-  LLVMValueRef pointer = LLVMBuildIntToPtr(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "pointer");
-  result->value = LLVMBuildLoad(function->builder, pointer, "load");
+  LLVMValueRef pointer = LLVMBuildIntToPtr(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "x");
+  result->value = LLVMBuildLoad(function->builder, pointer, "x");
   return retval;
 }
 
@@ -401,7 +401,7 @@ SCM llvm_build_store(SCM scm_function, SCM scm_type, SCM scm_value, SCM scm_addr
   struct llvm_value_t *value = get_llvm_value(scm_value);
   struct llvm_value_t *address = get_llvm_value(scm_address);
   int type = scm_to_int(scm_type);
-  LLVMValueRef pointer = LLVMBuildIntToPtr(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "pointer");
+  LLVMValueRef pointer = LLVMBuildIntToPtr(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "x");
   LLVMBuildStore(function->builder, value->value, pointer);
   return SCM_UNSPECIFIED;
 }
@@ -425,7 +425,7 @@ SCM llvm_build_unary(LLVMValueRef (*build_unary)(LLVMBuilderRef, LLVMValueRef, c
   struct llvm_value_t *value = get_llvm_value(scm_value);
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = (*build_unary)(function->builder, value->value, "binary operation");
+  result->value = (*build_unary)(function->builder, value->value, "x");
   return retval;
 }
 
@@ -453,7 +453,7 @@ SCM llvm_build_binary(LLVMValueRef (*build_binary)(LLVMBuilderRef, LLVMValueRef,
   struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = (*build_binary)(function->builder, value_a->value, value_b->value, "binary operation");
+  result->value = (*build_binary)(function->builder, value_a->value, value_b->value, "x");
   return retval;
 }
 
@@ -495,7 +495,7 @@ SCM llvm_build_integer_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a,
   struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = LLVMBuildICmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "comparison");
+  result->value = LLVMBuildICmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "x");
   return retval;
 }
 
@@ -507,7 +507,7 @@ SCM llvm_build_float_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, S
   struct llvm_value_t *value_b = get_llvm_value(scm_value_b);
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = LLVMBuildFCmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "comparison");
+  result->value = LLVMBuildFCmp(function->builder, scm_to_int(scm_predicate), value_a->value, value_b->value, "x");
   return retval;
 }
 
@@ -520,7 +520,7 @@ SCM llvm_build_cast(LLVMValueRef (*build_cast)(LLVMBuilderRef, LLVMValueRef, LLV
   LLVMTypeRef type = llvm_type(scm_to_int(scm_type));
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = (*build_cast)(function->builder, value->value, type, "typecast");
+  result->value = (*build_cast)(function->builder, value->value, type, "x");
   return retval;
 }
 
@@ -580,7 +580,7 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   };
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = LLVMBuildCall(function->builder, function_pointer, values, n_values, "llvm-build-call");
+  result->value = LLVMBuildCall(function->builder, function_pointer, values, n_values, "x");
   return retval;
 }
 
@@ -591,7 +591,7 @@ SCM llvm_build_alloca(SCM scm_function, SCM scm_type)
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
   int type = scm_to_int(scm_type);
-  result->value = LLVMBuildAlloca(function->builder, llvm_type(type), "alloca");
+  result->value = LLVMBuildAlloca(function->builder, llvm_type(type), "x");
   return retval;
 }
 
