@@ -591,18 +591,22 @@
     (print-elements self port 1)))
 
 (define-method (- (self <multiarray<>>))
-  ((llvm-typed (list (native-type self))
-    (lambda (self)
-      (typed-let [(mem  (typed-call (pointer (typecode self))
-                                    "scm_gc_malloc_pointerless"
-                                    (list <int>)
-                                    (list (* (llvm-last (shape self)) (size-of (typecode self))))))
-                  (p    (typed-alloca (pointer (typecode self))))
-                  (q    (typed-alloca (pointer (typecode self))))]
-        (store p mem)
-        (store q (memory self))
-        (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (size-of (typecode self)))))
-          (store (fetch p) (- (fetch (fetch q))))
-          (store p (+ (fetch p) (size-of (typecode self))))
-          (store q (+ (fetch q) (size-of (typecode self)))))
-        (llvmarray mem mem (shape self) (strides self))))) self))
+  (let [(fun (lambda (self)
+               (typed-let [(mem  (typed-call (pointer (typecode self))
+                                             "scm_gc_malloc_pointerless"
+                                             (list <int>)
+                                             (list (* (llvm-last (shape self)) (size-of (typecode self))))))
+                           (p    (typed-alloca (pointer (typecode self))))
+                           (q    (typed-alloca (pointer (typecode self))))]
+                 (store p mem)
+                 (store q (memory self))
+                 (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (size-of (typecode self)))))
+                   (store (fetch p) (- (fetch (fetch q))))
+                   (store p (+ (fetch p) (size-of (typecode self))))
+                   (store q (+ (fetch q) (size-of (typecode self)))))
+                 (llvmarray mem mem (shape self) (strides self)))))]
+    (add-method! -
+                 (make <method>
+                       #:specializers (list (class-of self))
+                       #:procedure (llvm-typed (list (native-type self)) fun)))
+    (- self)))
