@@ -592,26 +592,32 @@
     (write (get self) port)
     (print-elements self port 1)))
 
+(define (unary-loop p0 q0 shape pstrides qstrides)
+  (typed-let [(p (typed-alloca (pointer (target p0))))
+              (q (typed-alloca (pointer (target q0))))]
+    (store p p0)
+    (store q q0)
+    (llvm-while (ne (fetch p) (+ p0 (* (llvm-last shape) (llvm-last pstrides) (size-of (target p0)))))
+      (store (fetch p) (- (fetch (fetch q))))
+      (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
+      (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
+
 (define-method (- (self <multiarray<>>))
   (let [(fun (lambda (self)
-               (typed-let [(size (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
-                           (mem  (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                           (p    (typed-alloca (pointer (typecode self))))
-                           (q    (typed-alloca (pointer (typecode self))))
-                           (str  (apply llvmlist
-                                        (cons (typed-constant <int> 1)
-                                        (map (lambda (index)
-                                               (apply * (list-head (map (cut get (shape self) <>)
-                                                                        (iota (dimensions self)))
-                                                                   index)))
-                                             (iota (1- (dimensions self)) 1)))))]
-                 (store p mem)
-                 (store q (memory self))
-                 (llvm-while (ne (fetch p) (+ mem (* (llvm-last (shape self)) (llvm-last str) (size-of (typecode self)))))
-                   (store (fetch p) (- (fetch (fetch q))))
-                   (store p (+ (fetch p) (* (llvm-last str) (size-of (typecode self)))))
-                   (store q (+ (fetch q) (* (llvm-last (strides self)) (size-of (typecode self))))))
-                 (llvmarray mem mem (shape self) str))))]
+               (typed-let [(size      (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
+                           (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+                           (q0        (memory self))
+                           (p         (typed-alloca (pointer (target p0))))
+                           (q         (typed-alloca (pointer (target q0))))
+                           (pstrides  (apply llvmlist
+                                             (cons (typed-constant <int> 1)
+                                             (map (lambda (index)
+                                                    (apply * (list-head (map (cut get (shape self) <>)
+                                                                             (iota (dimensions self)))
+                                                                        index)))
+                                                  (iota (1- (dimensions self)) 1)))))]
+                 (unary-loop p0 q0 (shape self) pstrides (strides self))
+                 (llvmarray p0 p0 (shape self) pstrides))))]
     (add-method! -
                  (make <method>
                        #:specializers (list (class-of self))
