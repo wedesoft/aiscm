@@ -111,7 +111,7 @@
       ((k [] instructions ...)
        #'(llvm-begin instructions ...))
       ((k [(name value) declarations ...] instructions ...)
-       #'(let [(name #f)] (typed-let [declarations ...] (llvm-set name value) instructions ...))))))
+       #'(let [(name #f)] (llvm-begin (llvm-set name value) (typed-let [declarations ...] instructions ...)))))))
 
 (define (make-basic-block name)
   (memoize (fun) (make-llvm-basic-block (slot-ref fun 'llvm-function) name)))
@@ -594,10 +594,8 @@
 
 (define-method (- (self <multiarray<>>))
   (let [(fun (lambda (self)
-               (typed-let [(mem  (typed-call (pointer (typecode self))
-                                             "scm_gc_malloc_pointerless"
-                                             (list <int>)
-                                             (list (* (size-of (typecode self)) (llvm-last (shape self))))))
+               (typed-let [(size (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
+                           (mem  (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                            (p    (typed-alloca (pointer (typecode self))))
                            (q    (typed-alloca (pointer (typecode self))))
                            (str  (apply llvmlist
