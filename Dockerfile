@@ -5,7 +5,7 @@
 FROM debian:sid
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN echo "deb http://httpredir.debian.org/debian unstable main" > /etc/apt/sources.list
-RUN apt-get update
+RUN apt-get update # Fri 20 Jul 09:55:03 BST 2018
 RUN apt-get -q -y dist-upgrade
 RUN apt-get install -q -y apt-utils
 RUN apt-get install -q -y build-essential
