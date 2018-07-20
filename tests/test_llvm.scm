@@ -760,6 +760,8 @@
   (test-equal "Unary operation computes strides"
     '(1 3) (strides (- (to-array '((1 2 3) (4 5 6))))))
   (test-equal "Unary minus on 2D array"
-    '((-1 2 -3) (4 -5 6)) (to-list (- (to-array '((1 -2 3) (-4 5 -6)))))))
+    '((-1 2 -3) (4 -5 6)) (to-list (- (to-array '((1 -2 3) (-4 5 -6))))))
+  (test-equal "Unary negation on 1D array"
+    '(254 253 252) (to-list (~ (to-array '(1 2 3))))))
 
 (test-end "aiscm llvm")

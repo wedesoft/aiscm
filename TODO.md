@@ -1,7 +1,5 @@
 ## Ready
 
-* n-dimensional unary minus
-* unary array operations
 * binary array operations
 * (llvmlist 1)
 * for loop
