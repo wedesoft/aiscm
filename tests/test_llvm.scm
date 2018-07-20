@@ -750,7 +750,7 @@
       (call-with-output-string (cut write m2 <>)))))
 
 (test-group "array operations"
-  (test-equal "Unary minus"
+  (test-equal "Unary minus on 1D array"
     '(-1 2 -3) (to-list (- (to-array '(1 -2 3)))))
   (test-equal "Unary operation uses strides"
     '(-1 2 -3) (to-list (- (make (multiarray <byte> 1)
@@ -758,6 +758,8 @@
                                  #:strides '(2)
                                  #:memory (bytevector->pointer #vu8(1 0 254 0 3 0))))))
   (test-equal "Unary operation computes strides"
-    '(1 3) (strides (- (to-array '((1 2 3) (4 5 6)))))))
+    '(1 3) (strides (- (to-array '((1 2 3) (4 5 6))))))
+  (test-equal "Unary minus on 2D array"
+    '((-1 2 -3) (4 -5 6)) (to-list (- (to-array '((1 -2 3) (-4 5 -6)))))))
 
 (test-end "aiscm llvm")

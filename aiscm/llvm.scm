@@ -598,7 +598,9 @@
     (store p p0)
     (store q q0)
     (llvm-while (ne (fetch p) (+ p0 (* (llvm-last shape) (llvm-last pstrides) (size-of (target p0)))))
-      (store (fetch p) (- (fetch (fetch q))))
+      (if (> (dimension shape) 1)
+        (unary-loop (fetch p) (fetch q) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides))
+        (store (fetch p) (- (fetch (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
 
