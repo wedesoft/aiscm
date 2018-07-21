@@ -629,3 +629,35 @@
 
 (define-unary-array-op -)
 (define-unary-array-op ~)
+
+(define-method (+ (a <llvmarray<>>) (b <llvmarray<>>))
+  (let [(result-type (coerce (typecode a) (typecode b)))]
+  (typed-let [(pshape (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
+              (size   (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+              (p0     (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+              (q0     (memory a))
+              (r0     (memory b))
+              (pstrides  (apply llvmlist
+                                    (cons (typed-constant <int> 1)
+                                    (map (lambda (index)
+                                           (apply * (list-head (map (cut get pshape <>)
+                                                                    (iota (dimension pshape)))
+                                                               index)))
+                                         (iota (1- (dimension pshape)) 1)))))]
+    (typed-let [(p (typed-alloca (pointer (target p0))))
+                (q (typed-alloca (pointer (target q0))))
+                (r (typed-alloca (pointer (target r0))))]
+        (store p p0)
+        (store q q0)
+        (store r r0)
+        (llvm-while (ne (fetch p) (+ p0 (* (llvm-last pshape) (llvm-last pstrides) (size-of (target p0)))))
+          (store (fetch p) (+ (fetch (fetch q)) (fetch (fetch r))))
+          (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
+          (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (target q0)))))
+          (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (target r0)))))))
+    (llvmarray p0 p0 pshape pstrides))))
+(define-method (+ (a <multiarray<>>) (b <multiarray<>>))
+  (add-method! + (make <method>
+                       #:specializers (list (class-of a) (class-of b))
+                       #:procedure (llvm-typed (list (native-type a) (native-type b)) +)))
+  (+ a b))
