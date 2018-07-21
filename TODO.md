@@ -1,6 +1,7 @@
 ## Ready
 
-* binary array operations
+* array shape coercions
+* binary array operations, array-scalar and scalar-array operations
 * (llvmlist 1)
 * for loop
 * print large multiarrays

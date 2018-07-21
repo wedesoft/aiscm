@@ -605,26 +605,26 @@
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
 
 (define-syntax-rule (define-unary-array-op op)
-  (define-method (op (self <multiarray<>>))
-    (let [(fun (lambda (self)
-                 (typed-let [(size      (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
-                             (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                             (q0        (memory self))
-                             (p         (typed-alloca (pointer (target p0))))
-                             (q         (typed-alloca (pointer (target q0))))
-                             (pstrides  (apply llvmlist
-                                               (cons (typed-constant <int> 1)
-                                               (map (lambda (index)
-                                                      (apply * (list-head (map (cut get (shape self) <>)
-                                                                               (iota (dimensions self)))
-                                                                          index)))
-                                                    (iota (1- (dimensions self)) 1)))))]
-                   (unary-loop op p0 q0 (shape self) pstrides (strides self))
-                   (llvmarray p0 p0 (shape self) pstrides))))]
-      (add-method! op
-                   (make <method>
-                         #:specializers (list (class-of self))
-                         #:procedure (llvm-typed (list (native-type self)) fun)))
+  (begin
+    (define-method (op (self <llvmarray<>>))
+      (typed-let [(size      (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
+                  (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+                  (q0        (memory self))
+                  (p         (typed-alloca (pointer (target p0))))
+                  (q         (typed-alloca (pointer (target q0))))
+                  (pstrides  (apply llvmlist
+                                    (cons (typed-constant <int> 1)
+                                    (map (lambda (index)
+                                           (apply * (list-head (map (cut get (shape self) <>)
+                                                                    (iota (dimensions self)))
+                                                               index)))
+                                         (iota (1- (dimensions self)) 1)))))]
+                    (unary-loop op p0 q0 (shape self) pstrides (strides self))
+                    (llvmarray p0 p0 (shape self) pstrides)))
+    (define-method (op (self <multiarray<>>))
+      (add-method! op (make <method>
+                            #:specializers (list (class-of self))
+                            #:procedure (llvm-typed (list (native-type self)) op)))
       (op self))))
 
 (define-unary-array-op -)
