@@ -592,7 +592,15 @@
     (write (get self) port)
     (print-elements self port 1)))
 
+(define (compute-strides shp)
+  "Compile code for computing strides"
+  (apply llvmlist
+         (cons (typed-constant <int> 1)
+               (map (lambda (index) (apply * (list-head (map (cut get shp <>) (iota (dimension shp))) index)))
+                    (iota (1- (dimension shp)) 1)))))
+
 (define (unary-loop op p0 q0 shape pstrides qstrides)
+  "Compile loop for unary array operation"
   (typed-let [(p (typed-alloca (pointer (target p0))))
               (q (typed-alloca (pointer (target q0))))]
     (store p p0)
@@ -607,20 +615,15 @@
 (define-syntax-rule (define-unary-array-op op)
   (begin
     (define-method (op (self <llvmarray<>>))
-      (typed-let [(size      (apply * (size-of (typecode self)) (map (cut get (shape self) <>) (iota (dimensions self)))))
+      (typed-let [(pshape    (shape self))
+                  (size      (apply * (size-of (typecode self)) (map (cut get pshape <>) (iota (dimensions self)))))
                   (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory self))
                   (p         (typed-alloca (pointer (target p0))))
                   (q         (typed-alloca (pointer (target q0))))
-                  (pstrides  (apply llvmlist
-                                    (cons (typed-constant <int> 1)
-                                    (map (lambda (index)
-                                           (apply * (list-head (map (cut get (shape self) <>)
-                                                                    (iota (dimensions self)))
-                                                               index)))
-                                         (iota (1- (dimensions self)) 1)))))]
-                    (unary-loop op p0 q0 (shape self) pstrides (strides self))
-                    (llvmarray p0 p0 (shape self) pstrides)))
+                  (pstrides  (compute-strides pshape))]
+                    (unary-loop op p0 q0 pshape pstrides (strides self))
+                    (llvmarray p0 p0 pshape pstrides)))
     (define-method (op (self <multiarray<>>))
       (add-method! op (make <method>
                             #:specializers (list (class-of self))
@@ -632,18 +635,12 @@
 
 (define-method (+ (a <llvmarray<>>) (b <llvmarray<>>))
   (let [(result-type (coerce (typecode a) (typecode b)))]
-  (typed-let [(pshape (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
-              (size   (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-              (p0     (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-              (q0     (memory a))
-              (r0     (memory b))
-              (pstrides  (apply llvmlist
-                                    (cons (typed-constant <int> 1)
-                                    (map (lambda (index)
-                                           (apply * (list-head (map (cut get pshape <>)
-                                                                    (iota (dimension pshape)))
-                                                               index)))
-                                         (iota (1- (dimension pshape)) 1)))))]
+  (typed-let [(pshape    (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
+              (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+              (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+              (q0        (memory a))
+              (r0        (memory b))
+              (pstrides  (compute-strides pshape))]
     (typed-let [(p (typed-alloca (pointer (target p0))))
                 (q (typed-alloca (pointer (target q0))))
                 (r (typed-alloca (pointer (target r0))))]
