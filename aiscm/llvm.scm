@@ -592,12 +592,12 @@
     (write (get self) port)
     (print-elements self port 1)))
 
-(define (compute-strides shp)
+(define (compute-strides shape)
   "Compile code for computing strides"
   (apply llvmlist
          (cons (typed-constant <int> 1)
-               (map (lambda (index) (apply * (list-head (map (cut get shp <>) (iota (dimension shp))) index)))
-                    (iota (1- (dimension shp)) 1)))))
+               (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
+                    (iota (1- (dimension shape)) 1)))))
 
 (define (unary-loop op p0 q0 shape pstrides qstrides)
   "Compile loop for unary array operation"
@@ -612,6 +612,21 @@
       (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
 
+(define (binary-loop op p0 q0 r0 shape pstrides qstrides rstrides)
+  (typed-let [(p (typed-alloca (pointer (target p0))))
+              (q (typed-alloca (pointer (target q0))))
+              (r (typed-alloca (pointer (target r0))))]
+    (store p p0)
+    (store q q0)
+    (store r r0)
+    (llvm-while (ne (fetch p) (+ p0 (* (llvm-last shape) (llvm-last pstrides) (size-of (target p0)))))
+      (if (> (dimension shape) 1)
+        (binary-loop op (fetch p) (fetch q) (fetch r) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides) (llvm-all-but-last rstrides))
+        (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
+      (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
+      (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0)))))
+      (store r (+ (fetch r) (* (llvm-last rstrides) (size-of (target r0))))))))
+
 (define-syntax-rule (define-unary-array-op op)
   (begin
     (define-method (op (self <llvmarray<>>))
@@ -619,16 +634,14 @@
                   (size      (apply * (size-of (typecode self)) (map (cut get pshape <>) (iota (dimensions self)))))
                   (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory self))
-                  (p         (typed-alloca (pointer (target p0))))
-                  (q         (typed-alloca (pointer (target q0))))
                   (pstrides  (compute-strides pshape))]
                     (unary-loop op p0 q0 pshape pstrides (strides self))
                     (llvmarray p0 p0 pshape pstrides)))
-    (define-method (op (self <multiarray<>>))
-      (add-method! op (make <method>
-                            #:specializers (list (class-of self))
-                            #:procedure (llvm-typed (list (native-type self)) op)))
-      (op self))))
+    (define-method (op (self <meta<void>>))
+      (let [(fun (llvm-typed (list self) op))]
+        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (lambda args fun))))
+        (op self))
+    (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
 
 (define-unary-array-op -)
 (define-unary-array-op ~)
@@ -641,20 +654,29 @@
               (q0        (memory a))
               (r0        (memory b))
               (pstrides  (compute-strides pshape))]
-    (typed-let [(p (typed-alloca (pointer (target p0))))
-                (q (typed-alloca (pointer (target q0))))
-                (r (typed-alloca (pointer (target r0))))]
-        (store p p0)
-        (store q q0)
-        (store r r0)
-        (llvm-while (ne (fetch p) (+ p0 (* (llvm-last pshape) (llvm-last pstrides) (size-of (target p0)))))
-          (store (fetch p) (+ (fetch (fetch q)) (fetch (fetch r))))
-          (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
-          (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (target q0)))))
-          (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (target r0)))))))
+    (binary-loop + p0 q0 r0 pshape pstrides (strides a) (strides b))
     (llvmarray p0 p0 pshape pstrides))))
-(define-method (+ (a <multiarray<>>) (b <multiarray<>>))
-  (add-method! + (make <method>
-                       #:specializers (list (class-of a) (class-of b))
-                       #:procedure (llvm-typed (list (native-type a) (native-type b)) +)))
-  (+ a b))
+(define-method (+ (a <llvmarray<>>) (b <void>))
+  (let [(result-type (coerce (typecode a) (class-of b)))]
+  (typed-let [(pshape    (shape a))
+              (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+              (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+              (q0        (memory a))
+              (pstrides  (compute-strides pshape))]
+    (unary-loop (lambda (value) (+ value b)) p0 q0 pshape pstrides (strides a))
+    (llvmarray p0 p0 pshape pstrides))))
+(define-method (+ (a <void>) (b <llvmarray<>>))
+  (let [(result-type (coerce (class-of a) (typecode b)))]
+  (typed-let [(pshape    (shape b))
+              (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+              (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+              (q0        (memory b))
+              (pstrides  (compute-strides pshape))]
+    (unary-loop (lambda (value) (+ a value)) p0 q0 pshape pstrides (strides b))
+    (llvmarray p0 p0 pshape pstrides))))
+(define-method (+ (a <meta<void>>) (b <meta<void>>))
+  (let [(fun (llvm-typed (list a b) +))]
+    (add-method! + (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (lambda args fun)))
+    (+ a b)))
+(define-method (+ (a <multiarray<>>) b) ((+ (native-type a) (native-type b)) a b))
+(define-method (+ a (b <multiarray<>>)) ((+ (native-type a) (native-type b)) a b))

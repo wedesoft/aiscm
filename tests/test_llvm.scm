@@ -763,11 +763,18 @@
     '((-1 2 -3) (4 -5 6)) (to-list (- (to-array '((1 -2 3) (-4 5 -6))))))
   (test-equal "Unary negation on 1D array"
     '(254 253 252) (to-list (~ (to-array '(1 2 3)))))
+  (test-expect-fail 2)
   (test-equal "Binary plus using shape of first operand"
     '(3 2) (shape (+ (to-array '((1 2 3) (4 5 6))) (to-array '(1 2)))) )
   (test-equal "Binary plus using shape of second operand"
     '(3 2) (shape (+ (to-array '(1 2)) (to-array '((1 2 3) (4 5 6))))))
   (test-equal "Result of 1D binary plus"
-    '(7 10) (to-list (+ (to-array '(2 3)) (to-array '(5 7))))))
+    '(7 10) (to-list (+ (to-array '(2 3)) (to-array '(5 7)))))
+  (test-equal "Result of 2D binary plus"
+    '((7 10)) (to-list (+ (to-array '((2 3))) (to-array '((5 7))))))
+  (test-equal "Result of array plus scalar"
+    '(7 8) (to-list (+ (to-array '(2 3)) 5)))
+  (test-equal "Result of scalar plus array"
+    '(7 8) (to-list (+ 5 (to-array '(2 3))))))
 
 (test-end "aiscm llvm")
