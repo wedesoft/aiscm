@@ -1,9 +1,10 @@
 ## Ready
 
-* (llvmlist 1)
 * aiscm core
-* minimal shape
 * print large multiarrays
+* IO integration
+* comparison operation for arrays
+* minimal shape
 * array equality
 * Scheme objects, memory with pointers
 * C function calls in llvm-typed environment

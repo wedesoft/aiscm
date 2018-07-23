@@ -483,8 +483,7 @@
                    (components target)))]
     (construct-object target args)))
 
-(define-method (typed-alloca (type <meta<scalar>>))
-  (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
+(define-method (typed-alloca (type <meta<scalar>>)) (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
 
 (define-syntax-rule (llvm-while condition body ...)
   (let [(block-while (make-basic-block "while"))
@@ -503,6 +502,9 @@
   (let [(args (cons arg args))]
     (make (llvmlist (reduce coerce #f (map class-of args)) (length args))
           #:value (memoize (fun) (map (lambda (arg) ((get arg) fun)) args)))))
+
+(define-method (llvmlist (arg <integer>) . args)
+  (apply llvmlist (typed-constant <int> arg) args))
 
 (define-method (llvmarray memory memory-base shape strides)
   (make (llvmarray (target memory) (dimension shape))
@@ -595,9 +597,8 @@
 (define (compute-strides shape)
   "Compile code for computing strides"
   (apply llvmlist
-         (cons (typed-constant <int> 1)
-               (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
-                    (iota (1- (dimension shape)) 1)))))
+         (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
+              (iota (dimension shape)))))
 
 (define (unary-loop op p0 q0 shape pstrides qstrides)
   "Compile loop for unary array operation"
