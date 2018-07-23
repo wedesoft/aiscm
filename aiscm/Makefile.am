@@ -1,7 +1,7 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_DATA = basictype.scm jit.scm llvm.scm mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm \
+site_DATA = jit.scm core.scm mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm \
 						complex.scm float.scm sequence.scm asm.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm \
 						xorg.scm obj.scm composite.scm method.scm samples.scm tensor.scm variable.scm command.scm program.scm \
 						live-analysis.scm register-allocate.scm compile.scm expression.scm loop.scm operation.scm \
@@ -10,7 +10,7 @@ site_DATA = basictype.scm jit.scm llvm.scm mem.scm element.scm scalar.scm bool.s
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-llvm.la
+												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-core.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
@@ -77,10 +77,10 @@ libguile_aiscm_samples_la_CFLAGS = $(GUILE_CFLAGS) $(SWRESAMPLE_CFLAGS) $(AVRESA
 libguile_aiscm_samples_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_samples_la_LIBADD = $(GUILE_LIBS) $(SWRESAMPLE_LIBS) $(AVRESAMPLE_LIBS) $(AVUTIL_LIBS)
 
-libguile_aiscm_llvm_la_SOURCES = llvm.c
-libguile_aiscm_llvm_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
-libguile_aiscm_llvm_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
-libguile_aiscm_llvm_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
+libguile_aiscm_core_la_SOURCES = core.c
+libguile_aiscm_core_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
+libguile_aiscm_core_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
+libguile_aiscm_core_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

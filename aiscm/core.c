@@ -595,7 +595,7 @@ SCM llvm_build_alloca(SCM scm_function, SCM scm_type)
   return retval;
 }
 
-void init_llvm(void)
+void init_core(void)
 {
   LLVMLinkInMCJIT();
   LLVMInitializeNativeTarget();

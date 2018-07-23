@@ -1,7 +1,7 @@
 ## Ready
 
-* aiscm core
 * print large multiarrays
+* RGB
 * IO integration
 * comparison operation for arrays
 * minimal shape
