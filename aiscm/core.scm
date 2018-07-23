@@ -1031,8 +1031,7 @@
             (print-elements self port (1+ offset) (- remaining 1 (string-length text)))))))))
 
 (define (print-data self port depth)
-  (let* [(indices   (iota (last (shape self))))
-         (dim       (dimensions self))
+  (let* [(dim       (dimensions self))
          (separator (apply string-append "\n" (make-list depth " ")))]
     (display "(" port)
     (if (> dim 1)
@@ -1040,7 +1039,7 @@
         (lambda (index)
           (if (not (zero? index)) (display separator port))
           (print-data (get self index) port (1+ depth)))
-        indices)
+        (iota (last (shape self))))
       (print-elements self port 0 80))
     (display ")" port)))
 
