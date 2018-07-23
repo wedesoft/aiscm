@@ -1,6 +1,6 @@
 ## Ready
 
-* print large multiarrays
+* print large nd multiarrays
 * RGB
 * IO integration
 * comparison operation for arrays

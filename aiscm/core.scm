@@ -1018,25 +1018,37 @@
     (store result lst)
     result))
 
-(define (print-elements self port depth)
+(define (print-elements self port offset remaining)
+  (if (< offset (last (shape self)))
+    (begin
+      (if (not (zero? offset))
+        (display " " port))
+      (let [(text (call-with-output-string (lambda (port) (write (get self offset) port))))]
+        (if (>= (string-length text) remaining)
+          (display "..." port)
+          (begin
+            (display text port)
+            (print-elements self port (1+ offset) (- remaining 1 (string-length text)))))))))
+
+(define (print-data self port depth)
   (let* [(indices   (iota (last (shape self))))
          (dim       (dimensions self))
-         (separator (if (> dim 1) (apply string-append "\n" (make-list depth " ")) " "))]
+         (separator (apply string-append "\n" (make-list depth " ")))]
     (display "(" port)
-    (for-each
-      (lambda (index)
-        (if (not (zero? index)) (display separator port))
-        (if (> dim 1)
-          (print-elements (get self index) port (1+ depth))
-          (write (get self index) port)))
-      indices)
+    (if (> dim 1)
+      (for-each
+        (lambda (index)
+          (if (not (zero? index)) (display separator port))
+          (print-data (get self index) port (1+ depth)))
+        indices)
+      (print-elements self port 0 80))
     (display ")" port)))
 
 (define-method (write (self <multiarray<>>) port)
   (format port "#~a:~%" (class-name (class-of self)))
   (if (zero? (dimensions self))
     (write (get self) port)
-    (print-elements self port 1)))
+    (print-data self port 1)))
 
 (define (compute-strides shape)
   "Compile code for computing strides"
