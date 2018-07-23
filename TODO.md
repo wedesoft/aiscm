@@ -1,9 +1,8 @@
 ## Ready
 
-* array shape coercions
-* binary array operations, array-scalar and scalar-array operations
 * (llvmlist 1)
-* for loop
+* aiscm core
+* minimal shape
 * print large multiarrays
 * array equality
 * Scheme objects, memory with pointers

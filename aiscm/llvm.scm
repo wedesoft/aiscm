@@ -689,3 +689,4 @@
 
 (define-binary-array-op +)
 (define-binary-array-op -)
+(define-binary-array-op *)
