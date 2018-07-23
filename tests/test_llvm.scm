@@ -774,6 +774,8 @@
   (test-equal "Result of 2D plus 1D array"
     '((4 5 7) (10 14 16)) (to-list (+ (to-array '((2 3 5) (7 11 13))) (to-array '(2 3)))))
   (test-equal "Result of 1D plus 2D array"
-    '((4 5 7) (10 14 16)) (to-list (+ (to-array '(2 3)) (to-array '((2 3 5) (7 11 13)))))))
+    '((4 5 7) (10 14 16)) (to-list (+ (to-array '(2 3)) (to-array '((2 3 5) (7 11 13))))))
+  (test-equal "Subtract 1D array"
+    '(3 4) (to-list (- (to-array '(5 7)) (to-array '(2 3))))))
 
 (test-end "aiscm llvm")
