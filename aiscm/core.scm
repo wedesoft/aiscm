@@ -1030,24 +1030,31 @@
             (display text port)
             (print-elements self port (1+ offset) (- remaining 1 (string-length text)))))))))
 
-(define (print-data self port depth)
+(define (print-data self port depth line-counter cont)
   (let* [(dim       (dimensions self))
          (separator (apply string-append "\n" (make-list depth " ")))]
-    (display "(" port)
     (if (> dim 1)
-      (for-each
-        (lambda (index)
-          (if (not (zero? index)) (display separator port))
-          (print-data (get self index) port (1+ depth)))
-        (iota (last (shape self))))
-      (print-elements self port 0 80))
+      (begin
+        (display "(" port)
+        (for-each
+          (lambda (index)
+            (if (not (zero? index)) (display separator port))
+            (print-data (get self index) port (1+ depth) line-counter cont))
+          (iota (last (shape self)))))
+      (if (> (line-counter) 10)
+        (begin (display "..." port) (cont))
+        (begin (display "(" port) (print-elements self port 0 80))))
     (display ")" port)))
 
 (define-method (write (self <multiarray<>>) port)
-  (format port "#~a:~%" (class-name (class-of self)))
-  (if (zero? (dimensions self))
-    (write (get self) port)
-    (print-data self port 1)))
+  (let* [(lines         0)
+         (line-counter (lambda () (set! lines (1+ lines)) lines))]
+    (call/cc
+      (lambda (cont)
+        (format port "#~a:~%" (class-name (class-of self)))
+        (if (zero? (dimensions self))
+          (write (get self) port)
+          (print-data self port 1 line-counter cont))))))
 
 (define (compute-strides shape)
   "Compile code for computing strides"

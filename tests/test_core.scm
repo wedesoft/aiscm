@@ -1133,6 +1133,9 @@
     (test-equal "Write large 1D array"
       "#<multiarray<int<8,unsigned>,1>>:\n(1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ...)"
       (call-with-output-string (cut write (to-array (make-list 80 1)) <>)))
+    (test-equal "Write large 2D array"
+      "#<multiarray<int<8,unsigned>,2>>:\n((1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n (1)\n ..."
+      (call-with-output-string (cut write (to-array (make-list 80 '(1))) <>)))
     (test-equal "Shape of 1D list"
       '(3) (shape '(2 3 5)))
     (test-equal "Shape of 2D list"
