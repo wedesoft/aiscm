@@ -464,6 +464,15 @@
 (define-method (coerce (a <meta<complex<>>>) (b <meta<scalar>>))
   (complex (coerce (apply coerce (base a)) b)))
 
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<rgb<>>>))
+  (rgb (reduce coerce #f (append (base a) (base b)))))
+
+(define-method (coerce (a <meta<rgb<>>>) (b <meta<scalar>>))
+  (rgb (reduce coerce #f (cons b (base a)))))
+
+(define-method (coerce (a <meta<scalar>>) (b <meta<rgb<>>>))
+  (rgb (reduce coerce #f (cons a (base b)))))
+
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)

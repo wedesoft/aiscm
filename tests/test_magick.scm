@@ -57,6 +57,11 @@
 (test-error "Make sure image has two dimensions"
   'misc-error (write-image (make (multiarray <ubyte> 1) #:size 8) "fixtures/tmp.png"))
 (define rolled-file-name (string-append (tmpnam) ".png"))
+(define (roll self)
+  (make (class-of self)
+        #:shape (list (cadr (shape self)) (car (shape self)))
+        #:memory (memory self)
+        #:strides (list (cadr (strides self)) (car (strides self)))))
 (write-image (roll colour-img) rolled-file-name)
 (test-equal "Write image with non-default strides (pitches)"
   colour-values (to-list (roll (read-image rolled-file-name))))

@@ -1216,6 +1216,12 @@
   (test-eq "native type of integer RGB"
     (rgb <ubyte>) (native-type (rgb 2 3 5)))
   (test-eq "native type of integer RGB"
-    (rgb <double>) (native-type (rgb 2 3 5) 2.1)))
+    (rgb <double>) (native-type (rgb 2 3 5) 2.1))
+  (test-eq "coerce two RGB values"
+    (rgb <sint>) (coerce (rgb <ubyte>) (rgb <byte>)))
+  (test-eq "coerce RGB value and scalar"
+    (rgb <sint>) (coerce (rgb <ubyte>) <byte>))
+  (test-eq "coerce scalar and RGB value"
+    (rgb <sint>) (coerce <byte> (rgb <ubyte>))))
 
 (test-end "aiscm core")

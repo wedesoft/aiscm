@@ -1,8 +1,6 @@
 ## Ready
 
-* ensure-default-strides
 * IO integration
-  * magick
   * image
   * xorg
   * v4l2
