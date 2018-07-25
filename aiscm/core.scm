@@ -40,7 +40,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt eq ne llvm-if typed-alloca to-array set
+            ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -63,7 +63,8 @@
             <pointer<>> <meta<pointer<>>>
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
-            <llvm-function> <meta<llvm-function>>)
+            <llvm-function> <meta<llvm-function>>
+            <rgb>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
   #:re-export (destroy - + * real-part imag-part))
@@ -1153,3 +1154,16 @@
 (define-binary-array-op +)
 (define-binary-array-op -)
 (define-binary-array-op *)
+
+(define-class <rgb> ()
+  (red   #:init-keyword #:red   #:getter red)
+  (green #:init-keyword #:green #:getter green)
+  (blue  #:init-keyword #:blue  #:getter blue))
+
+(define-method (rgb r g b)
+  "Make RGB value"
+  (make <rgb> #:red r #:green g #:blue b))
+
+(define-method (write (self <rgb>) port)
+  "Display RGB value"
+  (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))

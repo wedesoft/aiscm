@@ -1184,4 +1184,14 @@
   (test-equal "Multiply 1D array"
     '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7))))))
 
+(test-group "RGB values"
+  (test-equal "display RGB value"
+    "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))
+  (test-eqv "extract red channel of RGB value"
+    2 (red (rgb 2 3 5)))
+  (test-eqv "extract green channel of RGB value"
+    3 (green (rgb 2 3 5)))
+  (test-eqv "extract blue channel of RGB value"
+    5 (blue (rgb 2 3 5))))
+
 (test-end "aiscm core")
