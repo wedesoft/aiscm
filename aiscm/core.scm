@@ -40,7 +40,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
+            ~ le lt ge gt eq ne llvm-if typed-alloca to-array set make-rgb rgb red green blue
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -777,9 +777,9 @@
     (construct-object (apply name (map class-of args)) args)))
 
 (define-syntax-rule (define-uniform-constructor name)
-  (define-method (name . args)
-    (let* [(target  (reduce coerce #f (map class-of args)))
-           (adapted (map (cut to-type target <>) args))]
+  (define-method (name (arg <void>) . args)
+    (let* [(target  (reduce coerce #f (map class-of (cons arg args))))
+           (adapted (map (cut to-type target <>) (cons arg args)))]
       (construct-object (name target) adapted))))
 
 (define-uniform-constructor complex)
@@ -1160,10 +1160,17 @@
   (green #:init-keyword #:green #:getter green)
   (blue  #:init-keyword #:blue  #:getter blue))
 
-(define-method (rgb r g b)
+(define-method (make-rgb r g b)
   "Make RGB value"
   (make <rgb> #:red r #:green g #:blue b))
 
 (define-method (write (self <rgb>) port)
   "Display RGB value"
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
+
+(define-method (equal? (a <rgb>) (b <rgb>))
+  (and  (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
+
+(define-structure rgb make-rgb (red green blue))
+
+(define-uniform-constructor rgb)

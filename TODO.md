@@ -1,7 +1,7 @@
 ## Ready
 
+* rgb equality
 * IO integration
-  * RGB
   * magick
   * image
   * xorg

@@ -1186,12 +1186,16 @@
 
 (test-group "RGB values"
   (test-equal "display RGB value"
-    "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))
+    "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (make-rgb 1 2 3) port))))
   (test-eqv "extract red channel of RGB value"
-    2 (red (rgb 2 3 5)))
+    2 (red (make-rgb 2 3 5)))
   (test-eqv "extract green channel of RGB value"
-    3 (green (rgb 2 3 5)))
+    3 (green (make-rgb 2 3 5)))
   (test-eqv "extract blue channel of RGB value"
-    5 (blue (rgb 2 3 5))))
+    5 (blue (make-rgb 2 3 5)))
+  (test-eqv "compiled RGB type"
+    3 ((llvm-typed (list (rgb <int>)) green) (make-rgb 2 3 5)))
+  (test-equal "compiled RGB constructor"
+    (make-rgb 2 3 5) ((llvm-typed (list <int> <int> <int>) rgb) 2 3 5)))
 
 (test-end "aiscm core")
