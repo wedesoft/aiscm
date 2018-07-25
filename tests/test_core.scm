@@ -1183,11 +1183,16 @@
     '(3 4) (to-list (- (to-array '(5 7)) (to-array '(2 3)))))
   (test-equal "Multiply 1D array"
     '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7)))))
-  (let [(m (to-array '(2 3 5)))]
+  (let [(m (to-array '(2 3 5)))
+        (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"
       '(2 3 5) (to-list (duplicate m)))
     (test-assert "Duplication creates new memory"
-      (not (eq? (memory m) (memory (duplicate m)))))))
+      (not (eq? (memory m) (memory (duplicate m)))))
+    (test-eq "Pass-through compact array"
+      (memory m) (memory (ensure-default-strides m)))
+    (test-assert "Copy array if not compact"
+      (not (eq? (memory n) (memory (ensure-default-strides n)))))))
 
 (test-group "RGB values"
   (test-equal "display RGB value"

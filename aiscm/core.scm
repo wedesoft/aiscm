@@ -41,6 +41,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
+            ensure-default-strides default-strides
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -241,12 +242,22 @@
                (memory      #:init-keyword #:memory      #:getter memory     )
                (memory-base #:init-keyword #:memory-base #:getter memory-base))
 
+(define (default-strides shape)
+  "Compute strides for compact array"
+  (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))
+
+(define (ensure-default-strides self)
+  "Create copy of array if it is not compact"
+  (if (equal? (strides self) (default-strides (shape self)))
+    self
+    (duplicate self)))
+
 (define-method (initialize (self <multiarray<>>) initargs)
   (let-keywords initargs #f (memory memory-base shape strides allocator)
     (let* [(allocator   (or allocator gc-malloc-pointerless))
            (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (memory-base (or memory-base memory))
-           (strides     (or strides (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape)))))]
+           (strides     (or strides (default-strides shape)))]
       (next-method self (list #:memory memory #:shape shape #:strides strides #:memory-base memory-base)))))
 
 (define-method (typecode (self <multiarray<>>)) (typecode (class-of self)))
