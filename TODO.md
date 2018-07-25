@@ -1,6 +1,6 @@
 ## Ready
 
-* rgb equality
+* ubytergb ...
 * IO integration
   * magick
   * image
@@ -8,6 +8,7 @@
   * v4l2
   * pulse
   * ffmpeg
+* real-part, red, ... of array
 * comparison operation for arrays
 * minimal shape
 * array equality (map reduce?)

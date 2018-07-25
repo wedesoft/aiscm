@@ -1196,6 +1196,12 @@
   (test-eqv "compiled RGB type"
     3 ((llvm-typed (list (rgb <int>)) green) (rgb 2 3 5)))
   (test-equal "compiled RGB constructor"
-    (rgb 2 3 5) ((llvm-typed (list <int> <int> <int>) rgb) 2 3 5)))
+    (rgb 2 3 5) ((llvm-typed (list <int> <int> <int>) rgb) 2 3 5))
+  (test-eq "unsigned byte RGB"
+    (rgb <ubyte>) <rgb<ubyte>>) 
+  (test-eq "floating-point RGB"
+    (rgb <float>) <rgb<float>>) 
+  (test-eq "double-precision floating-point RGB"
+    (rgb <double>) <rgb<double>>))
 
 (test-end "aiscm core")

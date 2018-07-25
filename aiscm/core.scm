@@ -64,7 +64,10 @@
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
-            <rgb>)
+            <rgb>
+            <rgb<ubyte>> <meta<rgb<ubyte>>> <rgb<int<8,unsigned>>> <meta<rgb<int<8,unsigned>>>>
+            <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
+            <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
   #:re-export (destroy - + * real-part imag-part))
@@ -1174,3 +1177,7 @@
 (define-structure rgb rgb (red green blue))
 
 (define-uniform-constructor rgb)
+
+(define <rgb<ubyte>>  (rgb <ubyte>)) (define <meta<rgb<ubyte>>> (class-of (rgb <ubyte>)))
+(define <rgb<float>>  (rgb <float>)) (define <meta<rgb<ubyte>>> (class-of (rgb <float>)))
+(define <rgb<double>>  (rgb <double>)) (define <meta<rgb<double>>> (class-of (rgb <double>)))
