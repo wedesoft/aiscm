@@ -195,6 +195,28 @@
 (define <complex<float>>  (complex <float> )) (define <meta<complex<float>>>  (class-of (complex <float> )))
 (define <complex<double>> (complex <double>)) (define <meta<complex<double>>> (class-of (complex <double>)))
 
+(define-class <rgb> ()
+  (red   #:init-keyword #:red   #:getter red)
+  (green #:init-keyword #:green #:getter green)
+  (blue  #:init-keyword #:blue  #:getter blue))
+
+(define-method (rgb r g b)
+  "Make RGB value"
+  (make <rgb> #:red r #:green g #:blue b))
+
+(define-method (write (self <rgb>) port)
+  "Display RGB value"
+  (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
+
+(define-method (equal? (a <rgb>) (b <rgb>))
+  (and  (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
+
+(define-structure rgb rgb (red green blue))
+
+(define <rgb<ubyte>>   (rgb <ubyte> )) (define <meta<rgb<ubyte>>>  (class-of (rgb <ubyte>)))
+(define <rgb<float>>   (rgb <float> )) (define <meta<rgb<ubyte>>>  (class-of (rgb <float>)))
+(define <rgb<double>>  (rgb <double>)) (define <meta<rgb<double>>> (class-of (rgb <double>)))
+
 (define-method (target (self <pointer<>>)) (target (class-of self)))
 
 (define (pointer tgt)
@@ -375,6 +397,11 @@
 
 (define-method (native-type (value <complex>) . args)
   (if (every complex? args) <complex<double>> (next-method)))
+
+(define-method (native-type (value <rgb>) . args)
+  (rgb (apply native-type
+              (append-map (lambda (x) (if (is-a? x <rgb>) (list (red x) (green x) (blue x)) (list x)))
+              (cons value args)))))
 
 (define-method (native-type (value <list>))
   (llvmlist (apply native-type value) (length value)))
@@ -798,6 +825,8 @@
 
 (define-uniform-constructor complex)
 
+(define-uniform-constructor rgb)
+
 (define-method (real-part (value <scalar>)) value)
 (define-method (imag-part (value <scalar>)) (typed-constant (class-of value) 0))
 
@@ -1169,27 +1198,3 @@
 (define-binary-array-op +)
 (define-binary-array-op -)
 (define-binary-array-op *)
-
-(define-class <rgb> ()
-  (red   #:init-keyword #:red   #:getter red)
-  (green #:init-keyword #:green #:getter green)
-  (blue  #:init-keyword #:blue  #:getter blue))
-
-(define-method (rgb r g b)
-  "Make RGB value"
-  (make <rgb> #:red r #:green g #:blue b))
-
-(define-method (write (self <rgb>) port)
-  "Display RGB value"
-  (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
-
-(define-method (equal? (a <rgb>) (b <rgb>))
-  (and  (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
-
-(define-structure rgb rgb (red green blue))
-
-(define-uniform-constructor rgb)
-
-(define <rgb<ubyte>>  (rgb <ubyte>)) (define <meta<rgb<ubyte>>> (class-of (rgb <ubyte>)))
-(define <rgb<float>>  (rgb <float>)) (define <meta<rgb<ubyte>>> (class-of (rgb <float>)))
-(define <rgb<double>>  (rgb <double>)) (define <meta<rgb<double>>> (class-of (rgb <double>)))
