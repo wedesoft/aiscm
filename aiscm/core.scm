@@ -37,7 +37,7 @@
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return
+            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
@@ -1066,7 +1066,7 @@
          (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
               (iota (dimension shape)))))
 
-(define (unary-loop op p0 q0 shape pstrides qstrides)
+(define (unary-loop delegate p0 q0 shape pstrides qstrides)
   "Compile loop for unary array operation"
   (typed-let [(p (typed-alloca (pointer (target p0))))
               (q (typed-alloca (pointer (target q0))))]
@@ -1074,8 +1074,8 @@
     (store q q0)
     (llvm-while (ne (fetch p) (+ p0 (* (llvm-last shape) (llvm-last pstrides) (size-of (target p0)))))
       (if (> (dimension shape) 1)
-        (unary-loop op (fetch p) (fetch q) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides))
-        (store (fetch p) (op (fetch (fetch q)))))
+        (unary-loop delegate (fetch p) (fetch q) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides))
+        (store (fetch p) (delegate (fetch (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
 
@@ -1098,7 +1098,7 @@
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0)))))
       (store r (+ (fetch r) (* (llvm-last rstrides) (size-of (target r0))))))))
 
-(define-syntax-rule (define-unary-array-op op)
+(define-syntax-rule (define-unary-array-op op delegate)
   (begin
     (define-method (op (self <llvmarray<>>))
       (typed-let [(pshape    (shape self))
@@ -1106,7 +1106,7 @@
                   (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory self))
                   (pstrides  (compute-strides pshape))]
-                    (unary-loop op p0 q0 pshape pstrides (strides self))
+                    (unary-loop delegate p0 q0 pshape pstrides (strides self))
                     (llvmarray p0 p0 pshape pstrides)))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
@@ -1114,8 +1114,9 @@
         (op self))
     (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
 
-(define-unary-array-op -)
-(define-unary-array-op ~)
+(define-unary-array-op -         -       )
+(define-unary-array-op ~         ~       )
+(define-unary-array-op duplicate identity)
 
 (define-syntax-rule (define-binary-array-op op)
   (begin

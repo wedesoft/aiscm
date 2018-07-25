@@ -60,7 +60,7 @@
 (test-error "Make sure image type is supported"
   'misc-error (write-image (make (multiarray <int> 2) #:shape '(6 4)) "fixtures/tmp.png"))
 (test-error "Make sure image has two dimensions"
-  'misc-error (write-image (make (sequence <int>) #:size 8) "fixtures/tmp.png"))
+  'misc-error (write-image (make (multiarray <ubyte> 1) #:size 8) "fixtures/tmp.png"))
 (define rolled-file-name (string-append (tmpnam) ".png"))
 (write-image (roll colour-img) rolled-file-name)
 (test-equal "Write image with non-default strides (pitches)"

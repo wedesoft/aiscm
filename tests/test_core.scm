@@ -1182,7 +1182,12 @@
   (test-equal "Subtract 1D arrays"
     '(3 4) (to-list (- (to-array '(5 7)) (to-array '(2 3)))))
   (test-equal "Multiply 1D array"
-    '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7))))))
+    '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7)))))
+  (let [(m (to-array '(2 3 5)))]
+    (test-equal "Duplication preserves content"
+      '(2 3 5) (to-list (duplicate m)))
+    (test-assert "Duplication creates new memory"
+      (not (eq? (memory m) (memory (duplicate m)))))))
 
 (test-group "RGB values"
   (test-equal "display RGB value"

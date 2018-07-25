@@ -1,6 +1,6 @@
 ## Ready
 
-* ubytergb ...
+* ensure-default-strides
 * IO integration
   * magick
   * image
