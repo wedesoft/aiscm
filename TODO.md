@@ -1,13 +1,20 @@
 ## Ready
 
-* RGB
 * IO integration
+  * RGB
+  * magick
+  * image
+  * xorg
+  * v4l2
+  * pulse
+  * ffmpeg
 * comparison operation for arrays
 * minimal shape
-* array equality
+* array equality (map reduce?)
 * Scheme objects, memory with pointers
-* C function calls in llvm-typed environment
-* cells?
+* panorama video viewer
+* Ghost in the Shell style animations
+* multiple C function calls in llvm-typed environment
 * complex multiplication, division
 * tensor indices
 * to-type in tensor expressions, implicit typecasting in tensor sum?
@@ -26,7 +33,6 @@
 * matrix vector operations
 * rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
-* typed let (trigger memoization)
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
 * unary =0, !=0, !, <<, >>
@@ -57,7 +63,6 @@
 * pixel selection example (take reference from center pixels)
 * lookup, pseudo colour, warp
 * argmax
-* Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
 * how to run test suite

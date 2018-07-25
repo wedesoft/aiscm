@@ -68,7 +68,7 @@
                    llvm-while typed-let)
   #:re-export (destroy - + * real-part imag-part))
 
-(load-extension "libguile-aiscm-llvm" "init_llvm")
+(load-extension "libguile-aiscm-core" "init_core")
 
 (define signed   'signed)
 (define unsigned 'unsigned)
