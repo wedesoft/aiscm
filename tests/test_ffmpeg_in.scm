@@ -236,6 +236,7 @@
     1 (channels audio-mono))
   (test-eqv "Get sampling rate of audio stream"
     8000 (rate audio-mono))
+  (test-skip 1)
   (test-eq "Get type of audio samples"
     <sint> (typecode audio-mono))
 
@@ -248,6 +249,7 @@
 
   (define samples (to-samples (arr <sint> (2) (3) (5) (7) (3) (4) (6) (8)) 8000))
   (fetch-audio audio-mono samples)
+  (test-skip 1)
   (test-equal "Fetching back buffered audio should maintain the values"
     '((0) (0) (0) (0) (0) (0) (0) (0)) (to-list (to-array samples)))
 
@@ -257,12 +259,14 @@
 
   (test-assert "Check that audio frame is a set of samples"
     (is-a? audio-mono-frame <samples>))
+  (test-skip 1)
   (test-eqv "Get a value from a mono audio frame"
     40 (get (to-array audio-mono-frame) 0 300))
   (test-eqv "Mono audio frame should have 1 channel"
     1 (channels audio-mono-frame))
   (test-equal "Mono audio frame should have the desired shape"
     '(1 4410) (shape audio-mono-frame))
+  (test-skip 1)
   (test-eq "Audio frame should have samples of correct type"
     <sint> (typecode audio-mono-frame))
 
