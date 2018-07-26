@@ -1,8 +1,15 @@
-aiscm (0.15.4-1+deb8u1) UNRELEASED; urgency=low
+aiscm (0.15.5-1+deb8u1) UNRELEASED; urgency=low
 
   * adjust dependencies for Debian Jessie
 
- -- Jan Wedekind <jan@wedesoft.de>  Sun,  3 Jun 2018 19:36:42 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jul 2018 10:17:00 +0100
+
+aiscm (0.15.5-1) unstable; urgency=low
+
+  - New upstream release.
+    - Disable some FFMpeg audio tests. Closes: #904104
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jul 2018 10:17:00 +0100
 
 aiscm (0.15.4-1) unstable; urgency=low
 
