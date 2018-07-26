@@ -1,11 +1,12 @@
 ## Ready
 
 * IO integration
-  * image
   * xorg
   * v4l2
   * pulse
   * ffmpeg
+* array macro
+* to-type (enable test in image)
 * real-part, red, ... of array
 * comparison operation for arrays
 * minimal shape

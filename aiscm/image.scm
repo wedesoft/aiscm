@@ -20,14 +20,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (aiscm util)
-  #:use-module (aiscm mem)
-  #:use-module (aiscm element)
-  #:use-module (aiscm pointer)
-  #:use-module (aiscm int)
-  #:use-module (aiscm rgb)
-  #:use-module (aiscm sequence)
-  #:use-module (aiscm asm)
-  #:use-module (aiscm jit)
+  #:use-module (aiscm core)
   #:export (<image> <meta<image>>
             get-format convert-image to-image symbol->format format->symbol convert-image-from!)
   #:re-export (to-array))
@@ -36,22 +29,24 @@
 (load-extension "libguile-aiscm-image" "init_image")
 
 (define-class* <image> <object> <meta<image>> <class>
-              (format  #:init-keyword #:format  #:getter get-format)
-              (shape   #:init-keyword #:shape   #:getter shape     )
-              (offsets #:init-keyword #:offsets #:getter offsets   )
-              (pitches #:init-keyword #:pitches #:getter pitches   )
-              (mem     #:init-keyword #:mem                        ))
+              (format       #:init-keyword #:format       #:getter get-format )
+              (shape        #:init-keyword #:shape        #:getter shape      )
+              (offsets      #:init-keyword #:offsets      #:getter offsets    )
+              (pitches      #:init-keyword #:pitches      #:getter pitches    )
+              (memory       #:init-keyword #:memory       #:getter memory     )
+              (memory-base  #:init-keyword #:memory-base  #:getter memory-base))
 
 (define-method (initialize (self <image>) initargs)
   "Constructor for images"
-  (let-keywords initargs #f (format shape offsets pitches mem)
+  (let-keywords initargs #f (format shape offsets pitches memory memory-base)
     (let* [(pitches (or pitches (default-pitches format (car shape))))
            (offsets (or offsets (default-offsets format pitches (cadr shape))))]
       (next-method self (list #:format format
                               #:shape shape
                               #:offsets offsets
                               #:pitches pitches
-                              #:mem mem)))))
+                              #:memory memory
+                              #:memory-base (or memory-base memory))))))
 
 (define formats
   (list (cons 'RGB  AV_PIX_FMT_RGB24)
@@ -124,14 +119,6 @@
               (offsets self)
               (pitches self)))
 
-(define (memalign size alignment)
-  (let* [(offset        (1- alignment))
-         (extended-size (+ size offset))
-         (mem           (make <mem> #:size extended-size #:pointerless #t))
-         (base          (get-memory mem))
-         (memory        (make-pointer (logand (+ (pointer-address base) offset) (lognot offset))))]
-    (make <mem> #:memory memory #:base base #:size size)))
-
 (define-method (convert-image-from! (self <image>) (source <image>))
   "Convert image and write it to the specified target location"
   (let [(dest-type   (descriptor self))
@@ -140,17 +127,19 @@
       (if (and (memv (get-format self) '(YV12 I420))
                (equal? (shape self) (shape source))
                (equal? (pitches self) (default-pitches 'YV12 (car (shape self)))))
-        (mjpeg-to-yuv420p (get-memory (slot-ref source 'mem)) (shape self) (get-memory (slot-ref self 'mem)) (offsets self))
+        (mjpeg-to-yuv420p (memory source) (shape self) (memory self) (offsets self))
         (convert-image-from! self (convert-image source 'YV12)))
-      (image-convert (get-memory (slot-ref source 'mem)) source-type (get-memory (slot-ref self 'mem)) dest-type))
+      (image-convert (memory source) source-type (memory self) dest-type))
     self))
 
 (define-method (convert-image (self <image>) (fmt <symbol>) (shape <list>) (offsets <list>) (pitches <list>))
   "Convert image using the specified attributes"
   (let* [(dest-size   (image-size fmt pitches (cadr shape)))
+         (mem         (gc-malloc-pointerless dest-size))
          (destination (make <image> #:format fmt
                                     #:shape shape
-                                    #:mem (memalign dest-size 16)
+                                    #:memory mem
+                                    #:memory-base mem
                                     #:offsets offsets
                                     #:pitches pitches))]
         (convert-image-from! destination self)))
@@ -173,34 +162,38 @@
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (pitches self))
                    (size    (image-size 'GRAY pitches (cadr shape)))
-                   (mem     (slot-ref self 'mem))]
-              (make (multiarray <ubyte> 2) #:value mem #:shape shape #:strides (cons 1 pitches))))
+                   (mem     (memory self))
+                   (base    (memory-base self))]
+              (make (multiarray <ubyte> 2) #:memory mem #:memory-base base #:shape shape #:strides (cons 1 pitches))))
     ((RGB)  (let* [(shape   (shape self))
                    (pitches (pitches self))
                    (size    (image-size 'BGR pitches (cadr shape)))
-                   (mem     (slot-ref self 'mem))]
-              (make (multiarray <ubytergb> 2) #:value mem #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
+                   (mem     (memory self))
+                   (base    (memory-base self))]
+              (make (multiarray <rgb<ubyte>> 2) #:memory mem #:memory-base base #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
     (else   (to-array (convert-image self 'RGB)))))
 
 (define-method (to-image (self <image>)) self)
 
-(define-method (to-image (self <sequence<>>))
+(define-method (to-image (self <multiarray<>>))
   (cond ((equal? <ubyte> (typecode self))
          (if (= (car (strides self)) 1)
-           (make <image> #:format  'GRAY
-                         #:shape   (shape self)
-                         #:mem     (value self)
-                         #:offsets '(0)
-                         #:pitches (list (cadr (strides self))))
+           (make <image> #:format       'GRAY
+                         #:shape        (shape self)
+                         #:memory       (memory self)
+                         #:memory-base  (memory-base self)
+                         #:offsets      '(0)
+                         #:pitches      (list (cadr (strides self))))
            (to-image (duplicate self))))
         ((is-a? (typecode self) <meta<int<>>>)
          (to-image (to-type <ubyte> self)))
-        ((equal? <ubytergb> (typecode self))
+        ((equal? <rgb<ubyte>> (typecode self))
          (if (= (car (strides self)) 1)
-           (make <image> #:format  'RGB
-                         #:shape   (shape self)
-                         #:mem     (value self)
-                         #:offsets '(0)
-                         #:pitches (list (* 3 (cadr (strides self)))))
+           (make <image> #:format      'RGB
+                         #:shape       (shape self)
+                         #:memory      (memory self)
+                         #:memory-base (memory-base self)
+                         #:offsets     '(0)
+                         #:pitches     (list (* 3 (cadr (strides self)))))
            (to-image (duplicate self))))
-        (else (to-image (to-type <ubytergb> self)))))
+        (else (to-image (to-type <rgb<ubyte>> self)))))

@@ -1151,7 +1151,11 @@
       (call-with-output-string (cut write m1 <>)))
     (test-equal "Print 2D array"
       "#<multiarray<int<8,signed>,2>>:\n((2 3 5)\n (7 11 13))"
-      (call-with-output-string (cut write m2 <>)))))
+      (call-with-output-string (cut write m2 <>)))
+    (test-equal "Shape of rolled array"
+      '(3 4 2) (shape (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+    (test-equal "Strides of rolled array"
+      '(2 6 1) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"
