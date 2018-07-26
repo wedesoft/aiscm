@@ -41,7 +41,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides
+            ensure-default-strides default-strides roll
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -292,6 +292,13 @@
     (lambda (class metaclass)
       (define-method (dimensions (self metaclass)) dim)
       (define-method (typecode  (self metaclass)) type))))
+
+(define (roll self)
+  (make (class-of self)
+        #:shape       (attach (cdr (shape self)) (car (shape self)))
+        #:strides     (attach (cdr (strides self)) (car (strides self)))
+        #:memory      (memory self)
+        #:memory-base (memory-base self)))
 
 (define-class* <llvmarray<>> <structure> <meta<llvmarray<>>> <meta<structure>>)
 
@@ -1064,7 +1071,7 @@
     (for-each (lambda (index value) (set self index value)) (iota (length value)) value)
     (for-each (lambda (index value) (store (get self index) value)) (iota (length value)) value)))
 
-(define (to-array lst)
+(define-method (to-array (lst <list>))
   "Convert list to array"
   (let* [(shp    (shape lst))
          (result (make (multiarray (apply native-type (flatten lst)) (length shp)) #:shape shp))]
