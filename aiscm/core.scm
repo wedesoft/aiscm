@@ -1071,12 +1071,16 @@
     (for-each (lambda (index value) (set self index value)) (iota (length value)) value)
     (for-each (lambda (index value) (store (get self index) value)) (iota (length value)) value)))
 
-(define-method (to-array (lst <list>))
-  "Convert list to array"
+(define-method (to-array (typecode <meta<void>>) (lst <list>))
+  "Convert list to array of specified type"
   (let* [(shp    (shape lst))
-         (result (make (multiarray (apply native-type (flatten lst)) (length shp)) #:shape shp))]
+         (result (make (multiarray typecode (length shp)) #:shape shp))]
     (store result lst)
     result))
+
+(define-method (to-array (lst <list>))
+  "Convert list to array"
+  (to-array (apply native-type (flatten lst)) lst))
 
 (define (print-elements self port offset remaining)
   (if (< offset (last (shape self)))

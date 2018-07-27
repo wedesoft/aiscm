@@ -1146,6 +1146,10 @@
       '(2 3 5) (to-list (to-array '(2 3 5))))
     (test-equal "2D array conversion round trip"
       '((2 3 5) (3 5 7)) (to-list (to-array '((2 3 5) (3 5 7)))))
+    (test-equal "Conversion round trip with specified type"
+      '(2 3 5) (to-list (to-array <int> '(2 3 5))))
+    (test-eq "Use specified type"
+      <int> (typecode (to-array <int> '(2 3 5))))
     (test-equal "Print 1D array"
       "#<multiarray<int<8,signed>,1>>:\n(2 3 5)"
       (call-with-output-string (cut write m1 <>)))
