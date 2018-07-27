@@ -70,7 +70,7 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while typed-let)
+                   llvm-while typed-let arr)
   #:re-export (- + * real-part imag-part))
 
 (load-extension "libguile-aiscm-core" "init_core")
@@ -1081,6 +1081,11 @@
 (define-method (to-array (lst <list>))
   "Convert list to array"
   (to-array (apply native-type (flatten lst)) lst))
+
+(define-syntax-rule (arr arg args ...)
+  (if (is-a? (quote arg) <symbol>)
+    (to-array arg '(args ...))
+    (to-array '(arg args ...))))
 
 (define (print-elements self port offset remaining)
   (if (< offset (last (shape self)))

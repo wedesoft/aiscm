@@ -1202,6 +1202,14 @@
     (test-assert "Copy array if not compact"
       (not (eq? (memory n) (memory (ensure-default-strides n)))))))
 
+(test-group "Array macro"
+  (test-equal "Define array using macro"
+    '((1 2) (3 4)) (to-list (arr (1 2) (3 4))))
+  (test-equal "Define typed array using macro"
+    '((1 2) (3 4)) (to-list (arr <int> (1 2) (3 4))))
+  (test-eq "Set typecode of array using macro"
+    <int> (typecode (arr <int> (1 2) (3 4)))))
+
 (test-group "RGB values"
   (test-equal "display RGB value"
     "(rgb 1 2 3)" (call-with-output-string (lambda (port) (write (rgb 1 2 3) port))))

@@ -1,8 +1,7 @@
 ## Ready
 
-* array macro
-* real-part, red, ... of array
 * rgb, complex, ... of arrays (n-ary element-wise)
+* byte-strides, real-part, red, ... of array
 * to-type (enable test in image)
 * comparison operation for arrays (map reduce?)
 * convolution
