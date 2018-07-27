@@ -1219,7 +1219,6 @@
 (define-binary-array-op -)
 (define-binary-array-op *)
 
-(define-generic destroy)
 (define-generic read-image)
 (define-generic write-image)
 (define-generic read-audio)

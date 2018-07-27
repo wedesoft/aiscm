@@ -1,9 +1,9 @@
 ## Ready
 
 * array macro
-* to-type (enable test in image)
 * real-part, red, ... of array
 * rgb, complex, ... of arrays (n-ary element-wise)
+* to-type (enable test in image)
 * comparison operation for arrays (map reduce?)
 * convolution
 * minimal shape
