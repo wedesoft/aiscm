@@ -1,11 +1,10 @@
 ## Ready
 
 * IO integration
-  * v4l2
   * pulse
   * ffmpeg
 * array macro
-* common module for read-image and write-image
+* common module for read-image, write-image, memory, memory-base
 * to-type (enable test in image)
 * real-part, red, ... of array
 * comparison operation for arrays
