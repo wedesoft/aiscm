@@ -1,16 +1,14 @@
 ## Ready
 
-* IO integration
-  * pulse
-  * ffmpeg
+* ffmpeg integration
 * array macro
-* common module for read-image, write-image, memory, memory-base, destroy, read-audio, write-audio, channels, rate
+* common module for read-image, write-image, memory, memory-base, destroy, read-audio, write-audio, channels, rate, typecode
 * to-type (enable test in image)
 * real-part, red, ... of array
-* comparison operation for arrays
+* rgb, complex, ... of arrays
+* comparison operation for arrays (map reduce?)
 * convolution
 * minimal shape
-* array equality (map reduce?)
 * Scheme objects, memory with pointers
 * panorama video viewer
 * Ghost in the Shell style animations

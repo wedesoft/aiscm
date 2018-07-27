@@ -18,9 +18,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm util)
   #:use-module (aiscm mem)
-  #:use-module (aiscm core)
-  #:export (read-image write-image)
-  #:re-export (<ubyte> <rgb<ubyte>>))
+  #:use-module (aiscm core))
 
 (load-extension "libguile-aiscm-magick" "init_magick")
 (define-method (read-image (file-name <string>))

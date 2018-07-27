@@ -19,13 +19,8 @@
              (oop goops)
              (aiscm ffmpeg)
              (aiscm samples)
-             (aiscm element)
-             (aiscm int)
-             (aiscm float)
-             (aiscm rgb)
              (aiscm image)
-             (aiscm pointer)
-             (aiscm sequence))
+             (aiscm core))
 
 
 (test-begin "aiscm ffmpeg")
@@ -247,7 +242,7 @@
   (test-assert "Buffering input audio should increase the buffer size"
     (not (zero? (audio-buffer-fill audio-mono))))
 
-  (define samples (to-samples (arr <sint> (2) (3) (5) (7) (3) (4) (6) (8)) 8000))
+  (define samples (to-samples (to-array <sint> '((2) (3) (5) (7) (3) (4) (6) (8))) 8000))
   (fetch-audio audio-mono samples)
   (test-skip 1)
   (test-equal "Fetching back buffered audio should maintain the values"

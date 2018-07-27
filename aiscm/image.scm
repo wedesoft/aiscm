@@ -22,8 +22,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm core)
   #:export (<image> <meta<image>>
-            get-format convert-image to-image symbol->format format->symbol convert-image-from!)
-  #:re-export (to-array))
+            get-format convert-image to-image symbol->format format->symbol convert-image-from!))
 
 
 (load-extension "libguile-aiscm-image" "init_image")

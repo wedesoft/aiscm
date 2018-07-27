@@ -23,8 +23,7 @@
   #:use-module (aiscm core)
   #:use-module (aiscm image)
   #:use-module (system foreign)
-  #:export (<v4l2> <meta<v4l2>> read-image)
-  #:re-export (destroy))
+  #:export (<v4l2> <meta<v4l2>>))
 
 (load-extension "libguile-aiscm-v4l2" "init_v4l2")
 

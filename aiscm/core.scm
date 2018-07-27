@@ -1,4 +1,3 @@
-
 ;; AIscm - Guile extension for numerical arrays and tensors.
 ;; Copyright (C) 2013, 2014, 2015, 2016, 2017 Jan Wedekind <jan@wedesoft.de>
 ;;
@@ -42,6 +41,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll
+            destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -71,7 +71,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let)
-  #:re-export (destroy - + * real-part imag-part))
+  #:re-export (- + * real-part imag-part))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1218,3 +1218,11 @@
 (define-binary-array-op +)
 (define-binary-array-op -)
 (define-binary-array-op *)
+
+(define-generic destroy)
+(define-generic read-image)
+(define-generic write-image)
+(define-generic read-audio)
+(define-generic write-audio)
+(define-generic rate)
+(define-generic channels)

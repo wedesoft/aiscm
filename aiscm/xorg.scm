@@ -24,8 +24,7 @@
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
-            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO write-image)
-  #:re-export (destroy))
+            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO))
 
 
 (load-extension "libguile-aiscm-xorg" "init_xorg")

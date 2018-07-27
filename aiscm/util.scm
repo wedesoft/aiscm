@@ -24,7 +24,7 @@
   #:use-module (ice-9 binary-ports)
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
-  #:export (toplevel-define! super gc-malloc gc-malloc-pointerless destroy xor attach index-of all-but-last
+  #:export (toplevel-define! super gc-malloc gc-malloc-pointerless xor attach index-of all-but-last
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
             assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
@@ -75,7 +75,6 @@
         class)
       (primitive-eval name))))
 
-(define-generic destroy)
 (define (xor a b) (not (eq? a b)))
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index-of a b)
