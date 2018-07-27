@@ -1,11 +1,9 @@
 ## Ready
 
-* ffmpeg integration
 * array macro
-* common module for read-image, write-image, memory, memory-base, destroy, read-audio, write-audio, channels, rate, typecode
 * to-type (enable test in image)
 * real-part, red, ... of array
-* rgb, complex, ... of arrays
+* rgb, complex, ... of arrays (n-ary element-wise)
 * comparison operation for arrays (map reduce?)
 * convolution
 * minimal shape
