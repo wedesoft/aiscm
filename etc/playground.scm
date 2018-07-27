@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm magick) (srfi srfi-1) (srfi srfi-26))
+(use-modules (oop goops) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm image) (aiscm magick) (aiscm xorg) (srfi srfi-1) (srfi srfi-26))
 
 (define m (make (multiarray <int> 1) #:shape '(32)))
 

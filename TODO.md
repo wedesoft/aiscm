@@ -6,6 +6,7 @@
   * pulse
   * ffmpeg
 * array macro
+* common module for read-image and write-image
 * to-type (enable test in image)
 * real-part, red, ... of array
 * comparison operation for arrays
