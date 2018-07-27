@@ -4,7 +4,7 @@
   * pulse
   * ffmpeg
 * array macro
-* common module for read-image, write-image, memory, memory-base
+* common module for read-image, write-image, memory, memory-base, destroy, read-audio, write-audio, channels, rate
 * to-type (enable test in image)
 * real-part, red, ... of array
 * comparison operation for arrays
