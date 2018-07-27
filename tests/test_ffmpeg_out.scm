@@ -18,14 +18,9 @@
              (srfi srfi-64)
              (oop goops)
              (aiscm ffmpeg)
-             (aiscm element)
-             (aiscm int)
-             (aiscm float)
-             (aiscm rgb)
              (aiscm image)
              (aiscm samples)
-             (aiscm pointer)
-             (aiscm sequence))
+             (aiscm core))
 
 
 (test-begin "aiscm ffmpeg")
@@ -195,10 +190,10 @@
     0 (audio-buffer-fill output-audio))
   (buffer-audio (to-samples data 44100) output-audio)
   (test-eqv "Audio buffer fill is size of samples after writing first array of samples"
-    (size-of data) (audio-buffer-fill output-audio))
+    (* 2 2 44100) (audio-buffer-fill output-audio))
   (fetch-audio output-audio (packed-audio-frame output-audio))
   (test-eqv "Fetching a frame from the output buffer reduces the buffer fill status"
-    (- (size-of data) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
+    (- (* 2 2 44100) (size-of (packed-audio-frame output-audio))) (audio-buffer-fill output-audio))
   (test-eq "Writing audio data returns data"
     data (write-audio data output-audio))
 
