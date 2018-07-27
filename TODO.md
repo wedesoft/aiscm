@@ -1,7 +1,6 @@
 ## Ready
 
 * IO integration
-  * xorg
   * v4l2
   * pulse
   * ffmpeg
@@ -10,6 +9,7 @@
 * to-type (enable test in image)
 * real-part, red, ... of array
 * comparison operation for arrays
+* convolution
 * minimal shape
 * array equality (map reduce?)
 * Scheme objects, memory with pointers
