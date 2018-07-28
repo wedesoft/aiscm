@@ -1146,28 +1146,34 @@
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
 
-(define (binary-loop op result q0 r0 qstrides rstrides)
+(define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
-              (q (typed-alloca (pointer (target q0))))
-              (r (typed-alloca (pointer (target r0))))]
+              (q (typed-alloca (pointer (typecode a))))
+              (r (typed-alloca (pointer (typecode b))))]
     (store p (memory result))
-    (store q q0)
-    (store r r0)
+    (store q (memory a))
+    (store r (memory b))
     (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
       (if (> (dimensions result) 1)
-        (if (> (dimension rstrides) 1)
-          (if (> (dimension qstrides) 1)
-            (binary-loop op (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result))) (fetch q) (fetch r) (llvm-all-but-last qstrides) (llvm-all-but-last rstrides))
-            (unary-loop (lambda (value) (op (fetch (fetch q)) value))
-                        (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-                        (llvmarray (fetch r) r0 (llvm-all-but-last (shape result)) (llvm-all-but-last rstrides))))
-          (unary-loop (lambda (value) (op value (fetch (fetch r))))
-                      (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-                      (llvmarray (fetch q) q0 (llvm-all-but-last (shape result)) (llvm-all-but-last qstrides))))
+        (if (> (dimensions b) 1)
+          (if (> (dimensions a) 1)
+            (binary-loop
+              op
+              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
+              (llvmarray (fetch q) (memory-base a) (llvm-all-but-last (shape a)) (llvm-all-but-last (strides a)))
+              (llvmarray (fetch r) (memory-base b) (llvm-all-but-last (shape b)) (llvm-all-but-last (strides b))))
+            (unary-loop
+              (lambda (value) (op (fetch (fetch q)) value))
+              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
+              (llvmarray (fetch r) (memory-base b) (llvm-all-but-last (shape b)) (llvm-all-but-last (strides b)))))
+          (unary-loop
+            (lambda (value) (op value (fetch (fetch r))))
+              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
+              (llvmarray (fetch q) (memory-base a) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides a)))))
         (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
-      (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0)))))
-      (store r (+ (fetch r) (* (llvm-last rstrides) (size-of (target r0))))))))
+      (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
+      (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
 
 (define-syntax-rule (define-unary-array-op op delegate)
   (begin
@@ -1195,11 +1201,9 @@
       (typed-let [(pshape    (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
                   (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
                   (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                  (q0        (memory a))
-                  (r0        (memory b))
                   (pstrides  (compute-strides pshape))]
-        (binary-loop op (llvmarray p0 p0 pshape pstrides) q0 r0 (strides a) (strides b))
-      (llvmarray p0 p0 pshape pstrides))))
+        (binary-loop op (llvmarray p0 p0 pshape pstrides) a b)
+        (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <llvmarray<>>) (b <void>))
     (let [(result-type (coerce (typecode a) (class-of b)))]
       (typed-let [(pshape    (shape a))
