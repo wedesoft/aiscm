@@ -2,13 +2,13 @@
 
 * coerce array types
 * rgb, complex, ... of arrays (n-ary element-wise)
+* Scheme objects, memory with pointers
 * byte-strides, real-part, red, ... of array
 * to-type (enable test in image)
 * rgb operations
 * convolution
 * comparison operation for arrays (map reduce?)
 * minimal shape
-* Scheme objects, memory with pointers
 * panorama video viewer
 * Ghost in the Shell style animations
 * multiple C function calls in llvm-typed environment

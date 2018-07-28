@@ -1125,11 +1125,13 @@
           (write (get self) port)
           (print-data self port 1 line-counter cont))))))
 
-(define (compute-strides shape)
-  "Compile code for computing strides"
-  (apply llvmlist
-         (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
-              (iota (dimension shape)))))
+(define (rebase self p)
+  "Use the specified pointer to rebase the array"
+  (llvmarray p (memory-base self) (shape self) (strides self)))
+
+(define (project self)
+  "Drop last dimension of array"
+  (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
 (define (unary-loop delegate result a)
   "Compile loop for unary array operation"
@@ -1146,14 +1148,6 @@
         (store (fetch p) (delegate (fetch (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
-
-(define (rebase self p)
-  "Use the specified pointer to rebase the array"
-  (llvmarray p (memory-base self) (shape self) (strides self)))
-
-(define (project self)
-  "Drop last dimension of array"
-  (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
 (define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
@@ -1185,6 +1179,12 @@
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
       (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
+
+(define (compute-strides shape)
+  "Compile code for computing strides"
+  (apply llvmlist
+         (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
+              (iota (dimension shape)))))
 
 (define (allocate-array typecode shape)
   (typed-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
