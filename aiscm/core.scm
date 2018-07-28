@@ -1186,15 +1186,18 @@
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
       (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
 
+(define (allocate-array typecode shape)
+  (typed-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
+              (ptr     (typed-call (pointer typecode) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+              (strides (compute-strides shape))]
+    (llvmarray ptr ptr shape strides)))
+
 (define-syntax-rule (define-unary-array-op op delegate)
   (begin
     (define-method (op (self <llvmarray<>>))
-      (typed-let [(pshape    (shape self))
-                  (size      (apply * (size-of (typecode self)) (map (cut get pshape <>) (iota (dimensions self)))))
-                  (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                  (pstrides  (compute-strides pshape))]
-                    (unary-loop delegate (llvmarray p0 p0 pshape pstrides) self)
-                    (llvmarray p0 p0 pshape pstrides)))
+      (typed-let [(result (allocate-array (typecode self) (shape self)))]
+        (unary-loop delegate result self)
+        result))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
         (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (lambda args fun))))
@@ -1208,35 +1211,24 @@
 (define-syntax-rule (define-binary-array-op op)
   (begin
     (define-method (op (a <llvmarray<>>) (b <llvmarray<>>))
-      (let [(result-type (coerce (typecode a) (typecode b)))]
-      (typed-let [(pshape    (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
-                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                  (pstrides  (compute-strides pshape))]
-        (binary-loop op (llvmarray p0 p0 pshape pstrides) a b)
-        (llvmarray p0 p0 pshape pstrides))))
-  (define-method (op (a <llvmarray<>>) (b <void>))
-    (let [(result-type (coerce (typecode a) (class-of b)))]
-      (typed-let [(pshape    (shape a))
-                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                  (pstrides  (compute-strides pshape))]
-        (unary-loop (lambda (value) (op value b)) (llvmarray p0 p0 pshape pstrides) a)
-        (llvmarray p0 p0 pshape pstrides))))
-  (define-method (op (a <void>) (b <llvmarray<>>))
-    (let [(result-type (coerce (class-of a) (typecode b)))]
-      (typed-let [(pshape    (shape b))
-                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                  (pstrides  (compute-strides pshape))]
-        (unary-loop (lambda (value) (op a value)) (llvmarray p0 p0 pshape pstrides) b)
-        (llvmarray p0 p0 pshape pstrides))))
-  (define-method (op (a <meta<void>>) (b <meta<void>>))
-    (let [(fun (llvm-typed (list a b) op))]
-      (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (lambda args fun)))
-      (op a b)))
-  (define-method (op (a <multiarray<>>) b) ((op (native-type a) (native-type b)) a b))
-  (define-method (op a (b <multiarray<>>)) ((op (native-type a) (native-type b)) a b))))
+      (typed-let [(result (allocate-array (coerce (typecode a) (typecode b))
+                          (if (>= (dimensions a) (dimensions b)) (shape a) (shape b))))]
+        (binary-loop op result a b)
+        result))
+    (define-method (op (a <llvmarray<>>) (b <void>))
+      (typed-let [(result (allocate-array (coerce (typecode a) (class-of b)) (shape a)))]
+        (unary-loop (lambda (value) (op value b)) result a)
+        result))
+    (define-method (op (a <void>) (b <llvmarray<>>))
+      (typed-let [(result (allocate-array (coerce (class-of a) (typecode b)) (shape b)))]
+        (unary-loop (lambda (value) (op a value)) result b)
+        result))
+    (define-method (op (a <meta<void>>) (b <meta<void>>))
+      (let [(fun (llvm-typed (list a b) op))]
+        (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (lambda args fun)))
+        (op a b)))
+    (define-method (op (a <multiarray<>>) b) ((op (native-type a) (native-type b)) a b))
+    (define-method (op a (b <multiarray<>>)) ((op (native-type a) (native-type b)) a b))))
 
 (define-binary-array-op +)
 (define-binary-array-op -)
