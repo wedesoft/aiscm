@@ -1131,17 +1131,17 @@
          (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
               (iota (dimension shape)))))
 
-(define (unary-loop delegate p0 q0 shape pstrides qstrides)
+(define (unary-loop delegate result q0 qstrides)
   "Compile loop for unary array operation"
-  (typed-let [(p (typed-alloca (pointer (target p0))))
+  (typed-let [(p (typed-alloca (pointer (typecode result))))
               (q (typed-alloca (pointer (target q0))))]
-    (store p p0)
+    (store p (memory result))
     (store q q0)
-    (llvm-while (ne (fetch p) (+ p0 (* (llvm-last shape) (llvm-last pstrides) (size-of (target p0)))))
-      (if (> (dimension shape) 1)
-        (unary-loop delegate (fetch p) (fetch q) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides))
+    (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
+      (if (> (dimension (shape result)) 1)
+        (unary-loop delegate (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result))) (fetch q)  (llvm-all-but-last qstrides))
         (store (fetch p) (delegate (fetch (fetch q)))))
-      (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
+      (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0))))))))
 
 (define (binary-loop op p0 q0 r0 shape pstrides qstrides rstrides)
@@ -1156,8 +1156,8 @@
         (if (> (dimension rstrides) 1)
           (if (> (dimension qstrides) 1)
             (binary-loop op (fetch p) (fetch q) (fetch r) (llvm-all-but-last shape) (llvm-all-but-last pstrides) (llvm-all-but-last qstrides) (llvm-all-but-last rstrides))
-            (unary-loop (lambda (value) (op (fetch (fetch q)) value)) (fetch p) (fetch r) shape pstrides rstrides))
-          (unary-loop (lambda (value) (op value (fetch (fetch r)))) (fetch p) (fetch q) shape pstrides qstrides))
+            (unary-loop (lambda (value) (op (fetch (fetch q)) value)) (llvmarray (fetch p) p0 shape pstrides) (fetch r) rstrides))
+          (unary-loop (lambda (value) (op value (fetch (fetch r)))) (llvmarray (fetch p) p0 shape pstrides) (fetch q) qstrides))
         (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last pstrides) (size-of (target p0)))))
       (store q (+ (fetch q) (* (llvm-last qstrides) (size-of (target q0)))))
@@ -1171,7 +1171,7 @@
                   (p0        (typed-call (pointer (typecode self)) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory self))
                   (pstrides  (compute-strides pshape))]
-                    (unary-loop delegate p0 q0 pshape pstrides (strides self))
+                    (unary-loop delegate (llvmarray p0 p0 pshape pstrides) q0 (strides self))
                     (llvmarray p0 p0 pshape pstrides)))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
@@ -1202,7 +1202,7 @@
                   (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory a))
                   (pstrides  (compute-strides pshape))]
-        (unary-loop (lambda (value) (op value b)) p0 q0 pshape pstrides (strides a))
+        (unary-loop (lambda (value) (op value b)) (llvmarray p0 p0 pshape pstrides) q0 (strides a))
         (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <void>) (b <llvmarray<>>))
     (let [(result-type (coerce (class-of a) (typecode b)))]
@@ -1211,7 +1211,7 @@
                   (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
                   (q0        (memory b))
                   (pstrides  (compute-strides pshape))]
-        (unary-loop (lambda (value) (op a value)) p0 q0 pshape pstrides (strides b))
+        (unary-loop (lambda (value) (op a value)) (llvmarray p0 p0 pshape pstrides) q0 (strides b))
         (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <meta<void>>) (b <meta<void>>))
     (let [(fun (llvm-typed (list a b) op))]
