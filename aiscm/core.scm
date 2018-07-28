@@ -1186,33 +1186,33 @@
 (define-syntax-rule (define-binary-array-op op)
   (begin
     (define-method (op (a <llvmarray<>>) (b <llvmarray<>>))
-    (let [(result-type (coerce (typecode a) (typecode b)))]
-    (typed-let [(pshape    (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
-                (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                (q0        (memory a))
-                (r0        (memory b))
-                (pstrides  (compute-strides pshape))]
-      (binary-loop op p0 q0 r0 pshape pstrides (strides a) (strides b))
+      (let [(result-type (coerce (typecode a) (typecode b)))]
+      (typed-let [(pshape    (if (>= (dimensions a) (dimensions b)) (shape a) (shape b)))
+                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+                  (q0        (memory a))
+                  (r0        (memory b))
+                  (pstrides  (compute-strides pshape))]
+        (binary-loop op p0 q0 r0 pshape pstrides (strides a) (strides b))
       (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <llvmarray<>>) (b <void>))
     (let [(result-type (coerce (typecode a) (class-of b)))]
-    (typed-let [(pshape    (shape a))
-                (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                (q0        (memory a))
-                (pstrides  (compute-strides pshape))]
-      (unary-loop (lambda (value) (op value b)) p0 q0 pshape pstrides (strides a))
-      (llvmarray p0 p0 pshape pstrides))))
+      (typed-let [(pshape    (shape a))
+                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+                  (q0        (memory a))
+                  (pstrides  (compute-strides pshape))]
+        (unary-loop (lambda (value) (op value b)) p0 q0 pshape pstrides (strides a))
+        (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <void>) (b <llvmarray<>>))
     (let [(result-type (coerce (class-of a) (typecode b)))]
-    (typed-let [(pshape    (shape b))
-                (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
-                (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-                (q0        (memory b))
-                (pstrides  (compute-strides pshape))]
-      (unary-loop (lambda (value) (op a value)) p0 q0 pshape pstrides (strides b))
-      (llvmarray p0 p0 pshape pstrides))))
+      (typed-let [(pshape    (shape b))
+                  (size      (apply * (size-of result-type) (map (cut get pshape <>) (iota (dimension pshape)))))
+                  (p0        (typed-call (pointer result-type) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+                  (q0        (memory b))
+                  (pstrides  (compute-strides pshape))]
+        (unary-loop (lambda (value) (op a value)) p0 q0 pshape pstrides (strides b))
+        (llvmarray p0 p0 pshape pstrides))))
   (define-method (op (a <meta<void>>) (b <meta<void>>))
     (let [(fun (llvm-typed (list a b) op))]
       (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (lambda args fun)))
