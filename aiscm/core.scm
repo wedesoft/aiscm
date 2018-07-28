@@ -1139,12 +1139,21 @@
     (store q (memory a))
     (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
       (if (> (dimension (shape result)) 1)
-        (unary-loop delegate
-                    (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-                    (llvmarray (fetch q) (memory-base a) (llvm-all-but-last (shape a)) (llvm-all-but-last (strides a))))
+        (unary-loop
+          delegate
+          (rebase (project result) (fetch p))
+          (rebase (project a) (fetch q)))
         (store (fetch p) (delegate (fetch (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
+
+(define (rebase self p)
+  "Use the specified pointer to rebase the array"
+  (llvmarray p (memory-base self) (shape self) (strides self)))
+
+(define (project self)
+  "Drop last dimension of array"
+  (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
 (define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
@@ -1159,17 +1168,19 @@
           (if (> (dimensions a) 1)
             (binary-loop
               op
-              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-              (llvmarray (fetch q) (memory-base a) (llvm-all-but-last (shape a)) (llvm-all-but-last (strides a)))
-              (llvmarray (fetch r) (memory-base b) (llvm-all-but-last (shape b)) (llvm-all-but-last (strides b))))
+              (rebase (project result) (fetch p))
+              (rebase (project a) (fetch q))
+              (rebase (project b) (fetch r)))
+            (let [(a (fetch (fetch q)))]
+              (unary-loop
+                (lambda (value) (op a value))
+                (rebase (project result) (fetch p))
+                (rebase (project b) (fetch r)))))
+          (let [(b  (fetch (fetch r)))]
             (unary-loop
-              (lambda (value) (op (fetch (fetch q)) value))
-              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-              (llvmarray (fetch r) (memory-base b) (llvm-all-but-last (shape b)) (llvm-all-but-last (strides b)))))
-          (unary-loop
-            (lambda (value) (op value (fetch (fetch r))))
-              (llvmarray (fetch p) (memory-base result) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides result)))
-              (llvmarray (fetch q) (memory-base a) (llvm-all-but-last (shape result)) (llvm-all-but-last (strides a)))))
+              (lambda (value) (op value b))
+              (rebase (project result) (fetch p))
+              (rebase (project a) (fetch q)))))
         (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
