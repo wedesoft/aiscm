@@ -1156,7 +1156,7 @@
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
 
-(define (binary-loop op result a b)
+(define (binary-loop delegate result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
               (q (typed-alloca (pointer (typecode a))))
               (r (typed-alloca (pointer (typecode b))))]
@@ -1168,21 +1168,21 @@
         (if (> (dimensions b) 1)
           (if (> (dimensions a) 1)
             (binary-loop
-              op
+              delegate
               (project (rebase result (fetch p)))
               (project (rebase a (fetch q)))
               (project (rebase b (fetch r))))
             (let [(a (fetch (fetch q)))]
               (unary-loop
-                (lambda (value) (op a value))
+                (lambda (value) (delegate a value))
                 (project (rebase result (fetch p)))
                 (project (rebase b (fetch r))))))
           (let [(b  (fetch (fetch r)))]
             (unary-loop
-              (lambda (value) (op value b))
+              (lambda (value) (delegate value b))
               (project (rebase result (fetch p)))
               (project (rebase a (fetch q))))))
-        (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
+        (store (fetch p) (delegate (fetch (fetch q)) (fetch (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
       (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
