@@ -1140,11 +1140,8 @@
     (store p (memory result))
     (store q (memory a))
     (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-      (if (> (dimension (shape result)) 1)
-        (unary-loop
-          delegate
-          (rebase (project result) (fetch p))
-          (rebase (project a) (fetch q)))
+      (if (> (dimensions result) 1)
+        (unary-loop delegate (rebase (project result) (fetch p)) (rebase (project a) (fetch q)))
         (store (fetch p) (delegate (fetch (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
