@@ -1002,12 +1002,18 @@
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
+(define-method (llvmlist)
+  "Empty compiled list defaults to integer list"
+  (make (llvmlist <int> 0) #:value (lambda (fun) #f)))
+
 (define-method (llvmlist (arg <void>) . args)
+  "Create uniform typed list of values"
   (let [(args (cons arg args))]
     (make (llvmlist (reduce coerce #f (map class-of args)) (length args))
           #:value (memoize (fun) (map (lambda (arg) ((get arg) fun)) args)))))
 
 (define-method (llvmlist (arg <integer>) . args)
+  "List starting with integer defaults to integer list"
   (apply llvmlist (typed-constant <int> arg) args))
 
 (define-method (llvmarray memory memory-base shape strides)
@@ -1135,16 +1141,16 @@
 
 (define (unary-loop delegate result a)
   "Compile loop for unary array operation"
-  (typed-let [(p (typed-alloca (pointer (typecode result))))
-              (q (typed-alloca (pointer (typecode a))))]
-    (store p (memory result))
-    (store q (memory a))
-    (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-      (if (> (dimensions result) 1)
-        (unary-loop delegate (rebase (project result) (fetch p)) (rebase (project a) (fetch q)))
-        (store (fetch p) (delegate (fetch (fetch q)))))
-      (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
-      (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
+  (if (>= (dimensions result) 1)
+    (typed-let [(p (typed-alloca (pointer (typecode result))))
+                (q (typed-alloca (pointer (typecode a))))]
+      (store p (memory result))
+      (store q (memory a))
+      (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
+        (unary-loop delegate (project (rebase result (fetch p))) (project (rebase a (fetch q))))
+        (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
+        (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))))
+    (store (memory result) (delegate (fetch (memory a))))))
 
 (define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
@@ -1159,19 +1165,19 @@
           (if (> (dimensions a) 1)
             (binary-loop
               op
-              (rebase (project result) (fetch p))
-              (rebase (project a) (fetch q))
-              (rebase (project b) (fetch r)))
+              (project (rebase result (fetch p)))
+              (project (rebase a (fetch q)))
+              (project (rebase b (fetch r))))
             (let [(a (fetch (fetch q)))]
               (unary-loop
                 (lambda (value) (op a value))
-                (rebase (project result) (fetch p))
-                (rebase (project b) (fetch r)))))
+                (project (rebase result (fetch p)))
+                (project (rebase b (fetch r))))))
           (let [(b  (fetch (fetch r)))]
             (unary-loop
               (lambda (value) (op value b))
-              (rebase (project result) (fetch p))
-              (rebase (project a) (fetch q)))))
+              (project (rebase result (fetch p)))
+              (project (rebase a (fetch q))))))
         (store (fetch p) (op (fetch (fetch q)) (fetch (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
