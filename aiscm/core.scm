@@ -83,6 +83,14 @@
 (define-class* <void> <object> <meta<void>> <class>
                (value #:init-keyword #:value #:getter get))
 
+(define-method (typecode (self <meta<void>>)) self)
+
+(define-method (typecode (self <void>)) (typecode (class-of self)))
+
+(define-method (dimensions (self <meta<void>>)) 0)
+
+(define-method (dimensions (self <void>)) (dimensions (class-of self)))
+
 (define-class* <scalar> <void> <meta<scalar>> <meta<void>>)
 
 (define-class* <structure> <void> <meta<structure>> <meta<void>>)
@@ -225,8 +233,6 @@
     (lambda (class metaclass)
       (define-method (target (self metaclass)) tgt))))
 
-(define-method (typecode (self <llvmlist<>>)) (typecode (class-of self)))
-
 (define-method (dimension (self <llvmlist<>>)) (dimension (class-of self)))
 
 (define-method (llvmlist (type <meta<void>>) (size <integer>))
@@ -303,8 +309,6 @@
 (define-class* <llvmarray<>> <structure> <meta<llvmarray<>>> <meta<structure>>)
 
 (define-method (typecode (self <llvmarray<>>)) (typecode (class-of self)))
-
-(define-method (dimensions (self <llvmarray<>>)) (dimensions (class-of self)))
 
 (define-method (llvmarray type dim)
   "Define compiled multi-dimensional array"
@@ -1147,45 +1151,43 @@
 
 (define-method (unary-loop delegate (result <llvmarray<>>) (a <llvmarray<>>))
   "Compile loop for unary array operation"
-  (typed-let [(p (typed-alloca (pointer (typecode result))))
-              (q (typed-alloca (pointer (typecode a))))]
+  (typed-let [(p    (typed-alloca (pointer (typecode result))))
+              (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
+              (q    (typed-alloca (pointer (typecode a))))]
     (store p (memory result))
     (store q (memory a))
-    (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-      (unary-loop delegate (project (rebase result (fetch p))) (fetch (project (rebase a (fetch q)))))
+    (llvm-while (ne (fetch p) pend)
+      (unary-loop delegate
+                  (project (rebase result (fetch p)))
+                  (fetch (project (rebase a (fetch q)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
 
-(define (binary-loop delegate result a b)
-  (typed-let [(p (typed-alloca (pointer (typecode result))))
-              (q (typed-alloca (pointer (typecode a))))
-              (r (typed-alloca (pointer (typecode b))))]
+(define-method (binary-loop delegate (result <llvmarray<>>) (a <llvmarray<>>) (b <llvmarray<>>))
+  (typed-let [(p    (typed-alloca (pointer (typecode result))))
+              (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
+              (q    (typed-alloca (pointer (typecode a))))
+              (r    (typed-alloca (pointer (typecode b))))]
     (store p (memory result))
     (store q (memory a))
     (store r (memory b))
-    (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-      (if (> (dimensions result) 1)
-        (if (> (dimensions b) 1)
-          (if (> (dimensions a) 1)
-            (binary-loop
-              delegate
-              (project (rebase result (fetch p)))
-              (project (rebase a (fetch q)))
-              (project (rebase b (fetch r))))
-            (let [(a (fetch (fetch q)))]
-              (unary-loop
-                (lambda (value) (delegate a value))
-                (project (rebase result (fetch p)))
-                (project (rebase b (fetch r))))))
-          (let [(b  (fetch (fetch r)))]
-            (unary-loop
-              (lambda (value) (delegate value b))
-              (project (rebase result (fetch p)))
-              (project (rebase a (fetch q))))))
-        (store (fetch p) (delegate (fetch (fetch q)) (fetch (fetch r)))))
+    (llvm-while (ne (fetch p) pend)
+      (binary-loop delegate
+                   (project (rebase result (fetch p)))
+                   (fetch (project (rebase a (fetch q))))
+                   (fetch (project (rebase b (fetch r)))))
       (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
       (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
       (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
+
+(define-method (binary-loop delegate (result <llvmarray<>>) (a <void>) (b <void>))
+  (store (memory result) (delegate a b)))
+
+(define-method (binary-loop delegate (result <llvmarray<>>) (a <llvmarray<>>) (b <void>))
+  (unary-loop (lambda (value) (delegate value b)) result a))
+
+(define-method (binary-loop delegate (result <llvmarray<>>) (a <void>) (b <llvmarray<>>))
+  (unary-loop (lambda (value) (delegate a value)) result b))
 
 (define (compute-strides shape)
   "Compile code for computing strides"
@@ -1201,13 +1203,13 @@
 
 (define-syntax-rule (define-unary-array-op op delegate)
   (begin
-    (define-method (op (self <llvmarray<>>))
+    (define-method (op (self <void>))
       (typed-let [(result (allocate-array (typecode self) (shape self)))]
         (unary-loop delegate result self)
         result))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
-        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (lambda args fun))))
+        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (const fun))))
         (op self))
     (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
 
@@ -1217,22 +1219,14 @@
 
 (define-syntax-rule (define-binary-array-op op)
   (begin
-    (define-method (op (a <llvmarray<>>) (b <llvmarray<>>))
+    (define-method (op (a <void>) (b <void>))
       (typed-let [(result (allocate-array (coerce (typecode a) (typecode b))
                           (if (>= (dimensions a) (dimensions b)) (shape a) (shape b))))]
         (binary-loop op result a b)
         result))
-    (define-method (op (a <llvmarray<>>) (b <void>))
-      (typed-let [(result (allocate-array (coerce (typecode a) (class-of b)) (shape a)))]
-        (unary-loop (lambda (value) (op value b)) result a)
-        result))
-    (define-method (op (a <void>) (b <llvmarray<>>))
-      (typed-let [(result (allocate-array (coerce (class-of a) (typecode b)) (shape b)))]
-        (unary-loop (lambda (value) (op a value)) result b)
-        result))
     (define-method (op (a <meta<void>>) (b <meta<void>>))
       (let [(fun (llvm-typed (list a b) op))]
-        (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (lambda args fun)))
+        (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (const fun)))
         (op a b)))
     (define-method (op (a <multiarray<>>) b) ((op (native-type a) (native-type b)) a b))
     (define-method (op a (b <multiarray<>>)) ((op (native-type a) (native-type b)) a b))))
