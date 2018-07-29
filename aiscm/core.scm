@@ -1139,6 +1139,10 @@
   "Drop last dimension of array"
   (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
+(define-method (fetch (self <llvmarray<>>))
+  "Fetch value if array has no dimensions"
+  (if (>= (dimensions self) 1) self (fetch (memory self))))
+
 (define (unary-loop delegate result a)
   "Compile loop for unary array operation"
   (if (>= (dimensions result) 1)
@@ -1147,10 +1151,10 @@
       (store p (memory result))
       (store q (memory a))
       (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-        (unary-loop delegate (project (rebase result (fetch p))) (project (rebase a (fetch q))))
+        (unary-loop delegate (project (rebase result (fetch p))) (fetch (project (rebase a (fetch q)))))
         (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
         (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))))
-    (store (memory result) (delegate (fetch (memory a))))))
+    (store (memory result) (delegate a))))
 
 (define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
@@ -1197,13 +1201,13 @@
 
 (define-syntax-rule (define-unary-array-op op delegate)
   (begin
-    (define-method (op (self <llvmarray<>>))
+    (define-method (op (self <void>))
       (typed-let [(result (allocate-array (typecode self) (shape self)))]
         (unary-loop delegate result self)
         result))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
-        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (lambda args fun))))
+        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (const fun))))
         (op self))
     (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
 
