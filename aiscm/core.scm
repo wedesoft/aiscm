@@ -1140,8 +1140,7 @@
   (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
 (define-method (fetch (self <llvmarray<>>))
-  "Fetch value if array has no dimensions"
-  (if (>= (dimensions self) 1) self (fetch (memory self))))
+  (if (zero? (dimensions self)) (fetch (memory self)) self))
 
 (define (unary-loop delegate result a)
   "Compile loop for unary array operation"
@@ -1201,13 +1200,13 @@
 
 (define-syntax-rule (define-unary-array-op op delegate)
   (begin
-    (define-method (op (self <void>))
+    (define-method (op (self <llvmarray<>>))
       (typed-let [(result (allocate-array (typecode self) (shape self)))]
         (unary-loop delegate result self)
         result))
     (define-method (op (self <meta<void>>))
       (let [(fun (llvm-typed (list self) op))]
-        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (const fun))))
+        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (lambda args fun))))
         (op self))
     (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
 
