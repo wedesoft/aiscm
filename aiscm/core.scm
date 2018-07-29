@@ -1142,18 +1142,19 @@
 (define-method (fetch (self <llvmarray<>>))
   (if (zero? (dimensions self)) (fetch (memory self)) self))
 
-(define (unary-loop delegate result a)
+(define-method (unary-loop delegate (result <llvmarray<>>) (a <void>))
+  (store (memory result) (delegate a)))
+
+(define-method (unary-loop delegate (result <llvmarray<>>) (a <llvmarray<>>))
   "Compile loop for unary array operation"
-  (if (>= (dimensions result) 1)
-    (typed-let [(p (typed-alloca (pointer (typecode result))))
-                (q (typed-alloca (pointer (typecode a))))]
-      (store p (memory result))
-      (store q (memory a))
-      (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-        (unary-loop delegate (project (rebase result (fetch p))) (fetch (project (rebase a (fetch q)))))
-        (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
-        (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))))
-    (store (memory result) (delegate a))))
+  (typed-let [(p (typed-alloca (pointer (typecode result))))
+              (q (typed-alloca (pointer (typecode a))))]
+    (store p (memory result))
+    (store q (memory a))
+    (llvm-while (ne (fetch p) (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
+      (unary-loop delegate (project (rebase result (fetch p))) (fetch (project (rebase a (fetch q)))))
+      (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
+      (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
 
 (define (binary-loop op result a b)
   (typed-let [(p (typed-alloca (pointer (typecode result))))
