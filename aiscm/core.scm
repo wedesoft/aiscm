@@ -1144,50 +1144,29 @@
   (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
 
 (define-method (fetch (self <llvmarray<>>))
+  "Return content if array has zero dimensions otherwise return array"
   (if (zero? (dimensions self)) (fetch (memory self)) self))
 
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <void>))
-  (store (memory result) (delegate a)))
-
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <llvmarray<>>))
-  "Compile loop for unary array operation"
-  (typed-let [(p    (typed-alloca (pointer (typecode result))))
-              (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-              (q    (typed-alloca (pointer (typecode a))))]
-    (store p (memory result))
-    (store q (memory a))
-    (llvm-while (ne (fetch p) pend)
-      (elementwise-loop delegate
-                  (project (rebase result (fetch p)))
-                  (fetch (project (rebase a (fetch q)))))
-      (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
-      (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a))))))))
-
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <llvmarray<>>) (b <llvmarray<>>))
-  (typed-let [(p    (typed-alloca (pointer (typecode result))))
-              (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))
-              (q    (typed-alloca (pointer (typecode a))))
-              (r    (typed-alloca (pointer (typecode b))))]
-    (store p (memory result))
-    (store q (memory a))
-    (store r (memory b))
-    (llvm-while (ne (fetch p) pend)
-      (elementwise-loop delegate
-                   (project (rebase result (fetch p)))
-                   (fetch (project (rebase a (fetch q))))
-                   (fetch (project (rebase b (fetch r)))))
-      (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
-      (store q (+ (fetch q) (* (llvm-last (strides a)) (size-of (typecode a)))))
-      (store r (+ (fetch r) (* (llvm-last (strides b)) (size-of (typecode b))))))))
-
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <void>) (b <void>))
-  (store (memory result) (delegate a b)))
-
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <llvmarray<>>) (b <void>))
-  (elementwise-loop (lambda (value) (delegate value b)) result a))
-
-(define-method (elementwise-loop delegate (result <llvmarray<>>) (a <void>) (b <llvmarray<>>))
-  (elementwise-loop (lambda (value) (delegate a value)) result b))
+(define (elementwise-loop delegate result . args)
+  "Elementwise array operation with arbitrary arity"
+  (if (zero? (dimensions result))
+    (store (memory result) (apply delegate args))
+    (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (typed-alloca (pointer (typecode arg))) #f)) args))]
+      (typed-let [(p    (typed-alloca (pointer (typecode result))))
+                  (pend (+ (memory result)
+                           (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))]
+        (store p (memory result))
+        (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (store ptr (memory arg))) '())) q args))
+        (llvm-while (ne (fetch p) pend)
+          (apply elementwise-loop delegate
+                                  (project (rebase result (fetch p)))
+                                  (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg (fetch ptr)))) arg)) q args))
+          (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
+          (apply llvm-begin
+            (append-map
+              (lambda (ptr arg)
+                (if ptr (list (store ptr (+ (fetch ptr) (* (llvm-last (strides arg)) (size-of (typecode arg)))))) '()))
+              q args)))))))
 
 (define (compute-strides shape)
   "Compile code for computing strides"
