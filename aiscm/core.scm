@@ -1180,39 +1180,33 @@
               (strides (compute-strides shape))]
     (llvmarray ptr ptr shape strides)))
 
-(define-syntax-rule (define-unary-array-op op delegate)
+(define-macro (define-cycle-method name arity target other fun); TODO: put under test
+  (let* [(types (cons target (make-list (1- arity) other)))]
+    `(begin ,@(map (lambda (i) `(define-typed-method ,name ,(cycle-times types i) ,fun)) (iota arity)))))
+
+(define-syntax-rule (define-nary-collect name arity)
+  "Dispatch for n-ary operation with Scheme numerical types"
+  (define-cycle-method name arity <multiarray<>> <top> (lambda args (apply (apply name (map native-type args)) args))))
+
+(define-syntax-rule (define-array-op op arity delegate)
   (begin
-    (define-method (op (self <void>))
-      (typed-let [(result (allocate-array (typecode self) (shape self)))]
-        (elementwise-loop delegate result self)
+    (define-method (op (arg <void>) . args)
+      (typed-let [(result (allocate-array (reduce coerce #f (map typecode (cons arg args)))
+                                          (shape (argmax dimensions (cons arg args)))))]
+        (apply elementwise-loop delegate result arg args)
         result))
-    (define-method (op (self <meta<void>>))
-      (let [(fun (llvm-typed (list self) op))]
-        (add-method! op (make <method> #:specializers (list (class-of self)) #:procedure (const fun))))
-        (op self))
-    (define-method (op (self <multiarray<>>)) ((op (native-type self)) self))))
+    (define-method (op (arg <meta<void>>) . args)
+      (let [(fun (llvm-typed (cons arg args) op))]
+        (add-method! op (make <method> #:specializers (map class-of (cons arg args)) #:procedure (const fun)))
+        (apply op arg args)))
+    (define-nary-collect op arity)))
 
-(define-unary-array-op -         -       )
-(define-unary-array-op ~         ~       )
-(define-unary-array-op duplicate identity)
-
-(define-syntax-rule (define-binary-array-op op)
-  (begin
-    (define-method (op (a <void>) (b <void>))
-      (typed-let [(result (allocate-array (coerce (typecode a) (typecode b))
-                          (if (>= (dimensions a) (dimensions b)) (shape a) (shape b))))]
-        (elementwise-loop op result a b)
-        result))
-    (define-method (op (a <meta<void>>) (b <meta<void>>))
-      (let [(fun (llvm-typed (list a b) op))]
-        (add-method! op (make <method> #:specializers (list (class-of a) (class-of b)) #:procedure (const fun)))
-        (op a b)))
-    (define-method (op (a <multiarray<>>) b) ((op (native-type a) (native-type b)) a b))
-    (define-method (op a (b <multiarray<>>)) ((op (native-type a) (native-type b)) a b))))
-
-(define-binary-array-op +)
-(define-binary-array-op -)
-(define-binary-array-op *)
+(define-array-op - 1 -)
+(define-array-op ~ 1 ~)
+(define-array-op duplicate 1 identity)
+(define-array-op + 2 +)
+(define-array-op - 2 -)
+(define-array-op * 2 *)
 
 (define-generic read-image)
 (define-generic write-image)
