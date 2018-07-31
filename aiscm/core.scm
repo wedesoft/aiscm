@@ -270,13 +270,13 @@
                (memory      #:init-keyword #:memory      #:getter memory     )
                (memory-base #:init-keyword #:memory-base #:getter memory-base))
 
-(define (default-strides shape)
+(define (default-strides typecode shape)
   "Compute strides for compact array"
-  (map (compose (cut apply * <>) (cut list-head shape <>)) (iota (length shape))))
+  (map (compose (cut apply * (size-of typecode) <>) (cut list-head shape <>)) (iota (length shape))))
 
 (define (ensure-default-strides self)
   "Create copy of array if it is not compact"
-  (if (equal? (strides self) (default-strides (shape self)))
+  (if (equal? (strides self) (default-strides (typecode self) (shape self)))
     self
     (duplicate self)))
 
@@ -285,7 +285,7 @@
     (let* [(allocator   (or allocator gc-malloc-pointerless))
            (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (memory-base (or memory-base memory))
-           (strides     (or strides (default-strides shape)))]
+           (strides     (or strides (default-strides (typecode self) shape)))]
       (next-method self (list #:memory memory #:shape shape #:strides strides #:memory-base memory-base)))))
 
 (define-method (typecode (self <multiarray<>>)) (typecode (class-of self)))
@@ -1031,7 +1031,7 @@
   (reduce-right +
                 #f
                 (cons (memory self)
-                  (map (lambda (index i) (* index (get (strides self) i) (size-of (typecode self))))
+                  (map (lambda (index i) (* index (get (strides self) i)))
                        indices
                        (iota (length indices) dim)))))
 
@@ -1153,31 +1153,30 @@
     (store (memory result) (apply delegate args))
     (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (typed-alloca (pointer (typecode arg))) #f)) args))]
       (typed-let [(p    (typed-alloca (pointer (typecode result))))
-                  (pend (+ (memory result)
-                           (* (llvm-last (shape result)) (llvm-last (strides result)) (size-of (typecode result)))))]
+                  (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
         (store p (memory result))
         (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (store ptr (memory arg))) '())) q args))
         (llvm-while (ne (fetch p) pend)
           (apply elementwise-loop delegate
                                   (project (rebase result (fetch p)))
                                   (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg (fetch ptr)))) arg)) q args))
-          (store p (+ (fetch p) (* (llvm-last (strides result)) (size-of (typecode result)))))
+          (store p (+ (fetch p) (* (llvm-last (strides result)))))
           (apply llvm-begin
             (append-map
               (lambda (ptr arg)
-                (if ptr (list (store ptr (+ (fetch ptr) (* (llvm-last (strides arg)) (size-of (typecode arg)))))) '()))
+                (if ptr (list (store ptr (+ (fetch ptr) (llvm-last (strides arg))))) '()))
               q args)))))))
 
-(define (compute-strides shape)
+(define (compute-strides typecode shape)
   "Compile code for computing strides"
   (apply llvmlist
-         (map (lambda (index) (apply * (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
+         (map (lambda (index) (apply * (size-of typecode) (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
               (iota (dimension shape)))))
 
 (define (allocate-array typecode shape)
   (typed-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
               (ptr     (typed-call (pointer typecode) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-              (strides (compute-strides shape))]
+              (strides (compute-strides typecode shape))]
     (llvmarray ptr ptr shape strides)))
 
 (define-macro (define-cycle-method name arity target other fun); TODO: put under test

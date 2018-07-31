@@ -424,7 +424,7 @@
   (test-assert "Define base memory"
     (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
   (test-equal "Strides of multi-dimensional array"
-    '(1 2 6) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
+    '(4 8 24) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
@@ -1159,7 +1159,7 @@
     (test-equal "Shape of rolled array"
       '(3 4 2) (shape (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Strides of rolled array"
-      '(2 6 1) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
+      '(8 24 4) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"

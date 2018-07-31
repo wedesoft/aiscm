@@ -1,6 +1,6 @@
 ## Ready
 
-* byte-strides, real-part, red, ... of array
+* real-part, red, ... of array
 * type conversions (e.g. complex, rgb)
 * coerce array types
 * Scheme objects, memory with pointers
