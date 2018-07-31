@@ -1,10 +1,9 @@
 ## Ready
 
+* byte-strides, real-part, red, ... of array
 * type conversions (e.g. complex, rgb)
 * coerce array types
-* rgb, complex, ... of arrays (n-ary element-wise)
 * Scheme objects, memory with pointers
-* byte-strides, real-part, red, ... of array
 * to-type (enable test in image)
 * rgb operations
 * convolution

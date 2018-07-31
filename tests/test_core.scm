@@ -1200,7 +1200,11 @@
     (test-eq "Pass-through compact array"
       (memory m) (memory (ensure-default-strides m)))
     (test-assert "Copy array if not compact"
-      (not (eq? (memory n) (memory (ensure-default-strides n)))))))
+      (not (eq? (memory n) (memory (ensure-default-strides n))))))
+  (test-equal "Compose complex array"
+    (list 2+5i 3+5i) (to-list (complex (to-array '(2 3)) 5)))
+  (test-equal "Compose RGB array"
+    (list (rgb 2 3 5) (rgb 2 3 7)) (to-list (rgb 2 3 (to-array '(5 7))))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"

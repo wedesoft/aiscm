@@ -1190,17 +1190,17 @@
 
 (define-syntax-rule (define-array-op op arity coercion delegate)
   (begin
-    (define-nary-typed-method op arity <void>
+    (define-cycle-method op arity <llvmarray<>> <void>
       (lambda args
         (typed-let [(result (allocate-array (apply coercion (map typecode args))
                                             (shape (argmax dimensions args))))]
           (apply elementwise-loop delegate result args)
           result)))
-    (define-nary-typed-method op arity <meta<void>>
-    (lambda args
-      (let [(fun (llvm-typed args op))]
-        (add-method! op (make <method> #:specializers (map class-of args) #:procedure (const fun)))
-        (apply op args))))
+    (define-cycle-method op arity <meta<llvmarray<>>> <meta<void>>
+      (lambda args
+        (let [(fun (llvm-typed args op))]
+          (add-method! op (make <method> #:specializers (map class-of args) #:procedure (const fun)))
+          (apply op args))))
     (define-nary-collect op arity)))
 
 (define-array-op -         1 identity -       )
@@ -1209,6 +1209,8 @@
 (define-array-op +         2 coerce   +       )
 (define-array-op -         2 coerce   -       )
 (define-array-op *         2 coerce   *       )
+(define-array-op complex   2 complex  complex )
+(define-array-op rgb       3 rgb      rgb     )
 
 (define-generic read-image)
 (define-generic write-image)
