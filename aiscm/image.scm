@@ -169,7 +169,7 @@
                    (size    (image-size 'BGR pitches (cadr shape)))
                    (mem     (memory self))
                    (base    (memory-base self))]
-              (make (multiarray <rgb<ubyte>> 2) #:memory mem #:memory-base base #:shape shape #:strides (list 1 (/ (car pitches) 3)))))
+              (make (multiarray <rgb<ubyte>> 2) #:memory mem #:memory-base base #:shape shape #:strides (list 3 (car pitches)))))
     (else   (to-array (convert-image self 'RGB)))))
 
 (define-method (to-image (self <image>)) self)
@@ -187,12 +187,12 @@
         ((is-a? (typecode self) <meta<int<>>>)
          (to-image (to-type <ubyte> self)))
         ((equal? <rgb<ubyte>> (typecode self))
-         (if (= (car (strides self)) 1)
+         (if (= (car (strides self)) 3)
            (make <image> #:format      'RGB
                          #:shape       (shape self)
                          #:memory      (memory self)
                          #:memory-base (memory-base self)
                          #:offsets     '(0)
-                         #:pitches     (list (* 3 (cadr (strides self)))))
+                         #:pitches     (list (cadr (strides self))))
            (to-image (duplicate self))))
         (else (to-image (to-type <rgb<ubyte>> self)))))
