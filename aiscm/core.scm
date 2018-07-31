@@ -70,7 +70,7 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while typed-let arr)
+                   llvm-while typed-let arr define-array-op)
   #:re-export (- + * real-part imag-part))
 
 (load-extension "libguile-aiscm-core" "init_core")
@@ -1188,25 +1188,27 @@
   "Dispatch for n-ary operation with Scheme numerical types"
   (define-cycle-method name arity <multiarray<>> <top> (lambda args (apply (apply name (map native-type args)) args))))
 
-(define-syntax-rule (define-array-op op arity delegate)
+(define-syntax-rule (define-array-op op arity coercion delegate)
   (begin
-    (define-method (op (arg <void>) . args)
-      (typed-let [(result (allocate-array (reduce coerce #f (map typecode (cons arg args)))
-                                          (shape (argmax dimensions (cons arg args)))))]
-        (apply elementwise-loop delegate result arg args)
-        result))
-    (define-method (op (arg <meta<void>>) . args)
-      (let [(fun (llvm-typed (cons arg args) op))]
-        (add-method! op (make <method> #:specializers (map class-of (cons arg args)) #:procedure (const fun)))
-        (apply op arg args)))
+    (define-nary-typed-method op arity <void>
+      (lambda args
+        (typed-let [(result (allocate-array (apply coercion (map typecode args))
+                                            (shape (argmax dimensions args))))]
+          (apply elementwise-loop delegate result args)
+          result)))
+    (define-nary-typed-method op arity <meta<void>>
+    (lambda args
+      (let [(fun (llvm-typed args op))]
+        (add-method! op (make <method> #:specializers (map class-of args) #:procedure (const fun)))
+        (apply op args))))
     (define-nary-collect op arity)))
 
-(define-array-op - 1 -)
-(define-array-op ~ 1 ~)
-(define-array-op duplicate 1 identity)
-(define-array-op + 2 +)
-(define-array-op - 2 -)
-(define-array-op * 2 *)
+(define-array-op -         1 identity -       )
+(define-array-op ~         1 identity ~       )
+(define-array-op duplicate 1 identity identity)
+(define-array-op +         2 coerce   +       )
+(define-array-op -         2 coerce   -       )
+(define-array-op *         2 coerce   *       )
 
 (define-generic read-image)
 (define-generic write-image)

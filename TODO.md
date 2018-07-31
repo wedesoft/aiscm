@@ -1,5 +1,6 @@
 ## Ready
 
+* type conversions (e.g. complex, rgb)
 * coerce array types
 * rgb, complex, ... of arrays (n-ary element-wise)
 * Scheme objects, memory with pointers
