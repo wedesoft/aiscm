@@ -1204,7 +1204,17 @@
   (test-equal "Compose complex array"
     (list 2+5i 3+5i) (to-list (complex (to-array '(2 3)) 5)))
   (test-equal "Compose RGB array"
-    (list (rgb 2 3 5) (rgb 2 3 7)) (to-list (rgb 2 3 (to-array '(5 7))))))
+    (list (rgb 2 3 5) (rgb 2 3 7)) (to-list (rgb 2 3 (to-array '(5 7)))))
+  (test-equal "Extract real-part of complex array"
+    '(2.0 5.0) (to-list (real-part (to-array '(2+3i 5+7i)))))
+  (test-equal "Extract imag-part of complex array"
+    '(3.0 7.0) (to-list (imag-part (to-array '(2+3i 5+7i)))))
+  (test-equal "Extract red part of of RGB array"
+    '(2 7) (to-list (red (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
+  (test-equal "Extract green part of RGB array"
+    '(3 11) (to-list (green (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
+  (test-equal "Extract blue part of RGB array"
+    '(5 13) (to-list (blue (to-array (list (rgb 2 3 5) (rgb 7 11 13)))))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"

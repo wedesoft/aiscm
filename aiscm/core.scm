@@ -65,7 +65,7 @@
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
             <llvm-function> <meta<llvm-function>>
-            <rgb>
+            <rgb> <rgb<>> <meta<rgb<>>>
             <rgb<ubyte>> <meta<rgb<ubyte>>> <rgb<int<8,unsigned>>> <meta<rgb<int<8,unsigned>>>>
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
@@ -1210,6 +1210,41 @@
 (define-array-op *         2 coerce   *       )
 (define-array-op complex   2 complex  complex )
 (define-array-op rgb       3 rgb      rgb     )
+
+(define-method (real-part (self <multiarray<>>))
+  (make (multiarray (car (base (typecode self))) (dimensions self))
+        #:shape       (shape self)
+        #:strides     (strides self)
+        #:memory      (memory self)
+        #:memory-base (memory-base self)))
+
+(define-method (imag-part (self <multiarray<>>))
+  (make (multiarray (cadr (base (typecode self))) (dimensions self))
+        #:shape       (shape self)
+        #:strides     (strides self)
+        #:memory      (make-pointer (+ (pointer-address (memory self)) (size-of (car (base (typecode self))))))
+        #:memory-base (memory-base self)))
+
+(define-method (red (self <multiarray<>>))
+  (make (multiarray (car (base (typecode self))) (dimensions self))
+        #:shape       (shape self)
+        #:strides     (strides self)
+        #:memory      (memory self)
+        #:memory-base (memory-base self)))
+
+(define-method (green (self <multiarray<>>))
+  (make (multiarray (cadr (base (typecode self))) (dimensions self))
+        #:shape       (shape self)
+        #:strides     (strides self)
+        #:memory      (make-pointer (+ (pointer-address (memory self)) (size-of (car (base (typecode self))))))
+        #:memory-base (memory-base self)))
+
+(define-method (blue (self <multiarray<>>))
+  (make (multiarray (caddr (base (typecode self))) (dimensions self))
+        #:shape       (shape self)
+        #:strides     (strides self)
+        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 2))))
+        #:memory-base (memory-base self)))
 
 (define-generic read-image)
 (define-generic write-image)
