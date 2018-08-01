@@ -1,16 +1,17 @@
 ## Ready
 
+* rgb/complex multiplication, division
+* multiple C function calls in llvm-typed environment
+* OpenGL vertex array object example
 * type conversions (e.g. complex, rgb)
-* Scheme objects, memory with pointers
 * to-type (enable test in image)
-* rgb operations
+* Scheme objects, memory with pointers
 * convolution
 * comparison operation for arrays (map reduce?)
 * minimal shape
-* panorama video viewer
+* lookup, pseudo colour, warp
 * Ghost in the Shell style animations
-* multiple C function calls in llvm-typed environment
-* complex multiplication, division
+* panorama video viewer
 * tensor indices
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * cast to higher integer type when doing a tensor injection
@@ -33,7 +34,6 @@
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * add Guile to dependencies
-* OpenGL vertex array object example
 * structs, jit methods with multiple return values, packed objects (e.g. quaternion)
 * Lucas-Kanade tracker
 * recognise Aruco marker cube, calibrated inverse kinematic
@@ -56,7 +56,6 @@
 * index arrays, show fill status of glass of milk
 * inject: equality, sum, mininum, maximum of frames
 * pixel selection example (take reference from center pixels)
-* lookup, pseudo colour, warp
 * argmax
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
@@ -77,7 +76,6 @@
 * check audio/video frame can be written
 * select video codec, select audio codec
 * video player with aspect ratio
-* integration tests for XVideo, OpenGL, and XImage
 * NArray-like reshaping, other narray stuff
 * record arrays, extendable type matching, map?, inject?
 * fractions, \*\*

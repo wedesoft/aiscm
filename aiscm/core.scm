@@ -858,23 +858,38 @@
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
 
-(define-method (+ (value-a <complex<>>) (value-b <complex<>>))
-  (complex (+ (real-part value-a) (real-part value-b)) (+ (imag-part value-a) (imag-part value-b))))
+(define-syntax-rule (define-complex-binary-op op)
+  (begin
+    (define-method (op (value-a <complex<>>) (value-b <complex<>>))
+      (complex (op (real-part value-a) (real-part value-b)) (op (imag-part value-a) (imag-part value-b))))
 
-(define-method (+ (value-a <complex<>>) (value-b <scalar>))
-  (complex (+ (real-part value-a) value-b) (imag-part value-a)))
+    (define-method (op (value-a <complex<>>) (value-b <scalar>))
+      (complex (op (real-part value-a) value-b) (imag-part value-a)))
 
-(define-method (+ (value-a <scalar>) (value-b <complex<>>))
-  (complex (+ value-a (real-part value-b)) (imag-part value-b)))
+    (define-method (op (value-a <scalar>) (value-b <complex<>>))
+      (complex (op value-a (real-part value-b)) (op (imag-part value-b))))))
 
-(define-method (- (value-a <complex<>>) (value-b <complex<>>))
-  (complex (- (real-part value-a) (real-part value-b)) (- (imag-part value-a) (imag-part value-b))))
+(define-complex-binary-op +)
+(define-complex-binary-op -)
 
-(define-method (- (value-a <complex<>>) (value-b <scalar>))
-  (complex (- (real-part value-a) value-b) (imag-part value-a)))
+(define-syntax-rule (define-rgb-unary-op op)
+  (define-method (op (value <rgb<>>))
+    (rgb (op (red value)) (op (green value)) (op (blue value)))))
 
-(define-method (- (value-a <scalar>) (value-b <complex<>>))
-  (complex (- value-a (real-part value-b)) (- (imag-part value-b))))
+(define-rgb-unary-op -)
+(define-rgb-unary-op ~)
+
+(define-syntax-rule (define-rgb-binary-op op)
+  (begin
+    (define-method (op (value-a <rgb<>>) (value-b <rgb<>>))
+      (rgb (op (red value-a) (red value-b)) (op (green value-a) (green value-b)) (op (blue value-a) (blue value-b))))
+    (define-method (op (value-a <rgb<>>) (value-b <scalar>))
+      (rgb (op (red value-a) value-b) (op (green value-a) value-b) (op (blue value-a) value-b)))
+    (define-method (op (value-a <scalar>) (value-b <rgb<>>))
+      (rgb (op value-a (red value-b)) (op value-a (green value-b)) (op value-a (blue value-b))))))
+
+(define-rgb-binary-op +)
+(define-rgb-binary-op -)
 
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)
