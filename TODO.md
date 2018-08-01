@@ -1,8 +1,6 @@
 ## Ready
 
 * refactor component access for arrays
-* rgb int <-> rgb int int int
-  (show (let [(img (to-array (read-image v)))] (rgb (blue img) (green img) (red img))))
 * type conversions (e.g. complex, rgb)
 * Scheme objects, memory with pointers
 * to-type (enable test in image)
