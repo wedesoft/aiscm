@@ -346,6 +346,8 @@
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
     (* 2 (size-of <int>)) (size-of (testtwo <int>)))
+  (test-eq "Two instantiation constructors"
+    (testtwo <int>) (testtwo <int> <int>))
   (test-equal "Get list of member accessors"
     (list testcontent) (components <testcontainer<>>))
   (test-assert "Create member accessor for container"

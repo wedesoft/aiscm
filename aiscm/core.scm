@@ -136,6 +136,7 @@
         (let [(class       (string->symbol (format #f "<~a<>>" (syntax->datum #'name))))
               (metaclass   (string->symbol (format #f "<meta<~a<>>>" (syntax->datum #'name))))
               (n           (length (syntax->datum #'(members ...))))
+              (first       (car (syntax->datum #'(members ...))))
               (header      (map (cut list <> '<meta<void>>) (syntax->datum #'(members ...))))]
           #`(begin
               (define-class* #,(datum->syntax #'k class) <structure> #,(datum->syntax #'k metaclass) <meta<structure>>)
@@ -150,9 +151,13 @@
 
               (define-method (name #,@(datum->syntax #'k header))
                 "Instantiate a composite type using the type template"
-                (template-class (name members ...) #,(datum->syntax #'k class)
-                  (lambda (class metaclass)
-                    (define-method (base (self metaclass)) (list members ...)))))
+                (if (eq? members ...)
+                  (template-class (name #,(datum->syntax #'k first)) #,(datum->syntax #'k class)
+                    (lambda (class metaclass)
+                      (define-method (base (self metaclass)) (list members ...))))
+                  (template-class (name members ...) #,(datum->syntax #'k class)
+                    (lambda (class metaclass)
+                      (define-method (base (self metaclass)) (list members ...))))))
 
               (define-method (name (base-type <meta<void>>))
                 "Instantiate a composite type using the type template"
