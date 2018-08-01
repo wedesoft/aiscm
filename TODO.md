@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor component access for arrays
 * type conversions (e.g. complex, rgb)
 * Scheme objects, memory with pointers
 * to-type (enable test in image)

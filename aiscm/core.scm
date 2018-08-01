@@ -1216,40 +1216,27 @@
 (define-array-op complex   2 complex  complex )
 (define-array-op rgb       3 rgb      rgb     )
 
-(define-method (real-part (self <multiarray<>>))
-  (make (multiarray (car (base (typecode self))) (dimensions self))
-        #:shape       (shape self)
-        #:strides     (strides self)
-        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 0))))
-        #:memory-base (memory-base self)))
+(define-syntax define-array-channels
+  (lambda (x)
+    (syntax-case x ()
+      ((k members ...)
+       "Define element-wise access to component of array with elements of composite type"
+       (let [(n (length (syntax->datum #'(members ...))))]
+         #`(begin .
+           #,(map (lambda (member-name index)
+                    #`(define-method (#,(datum->syntax #'k member-name) (self <multiarray<>>))
+                        (make (multiarray (list-ref (base (typecode self)) #,(datum->syntax #'k index)) (dimensions self))
+                              #:shape       (shape self)
+                              #:strides     (strides self)
+                              #:memory      (make-pointer
+                                              (apply + (pointer-address (memory self))
+                                                (map size-of (take (base (typecode self)) #,(datum->syntax #'k index)))))
+                              #:memory-base (memory-base self))))
+                  (syntax->datum #'(members ...))
+                  (iota n))))))))
 
-(define-method (imag-part (self <multiarray<>>))
-  (make (multiarray (cadr (base (typecode self))) (dimensions self))
-        #:shape       (shape self)
-        #:strides     (strides self)
-        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 1))))
-        #:memory-base (memory-base self)))
-
-(define-method (red (self <multiarray<>>))
-  (make (multiarray (car (base (typecode self))) (dimensions self))
-        #:shape       (shape self)
-        #:strides     (strides self)
-        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 0))))
-        #:memory-base (memory-base self)))
-
-(define-method (green (self <multiarray<>>))
-  (make (multiarray (cadr (base (typecode self))) (dimensions self))
-        #:shape       (shape self)
-        #:strides     (strides self)
-        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 1))))
-        #:memory-base (memory-base self)))
-
-(define-method (blue (self <multiarray<>>))
-  (make (multiarray (caddr (base (typecode self))) (dimensions self))
-        #:shape       (shape self)
-        #:strides     (strides self)
-        #:memory      (make-pointer (apply + (pointer-address (memory self)) (map size-of (take (base (typecode self)) 2))))
-        #:memory-base (memory-base self)))
+(define-array-channels real-part imag-part)
+(define-array-channels red green blue)
 
 (define-generic read-image)
 (define-generic write-image)
