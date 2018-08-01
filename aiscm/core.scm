@@ -872,6 +872,16 @@
 (define-complex-binary-op +)
 (define-complex-binary-op -)
 
+(define-method (* (value-a <complex<>>) (value-b <complex<>>))
+  (complex (- (* (real-part value-a) (real-part value-b)) (* (imag-part value-a) (imag-part value-b)))
+           (+ (* (real-part value-a) (imag-part value-b)) (* (imag-part value-a) (real-part value-b)))))
+
+(define-method (* (value-a <complex<>>) (value-b <scalar>))
+  (complex (* (real-part value-a) value-b) (* (imag-part value-a) value-b)))
+
+(define-method (* (value-a <scalar>) (value-b <complex<>>))
+  (complex (* value-a (real-part value-b)) (* value-a (imag-part value-b))))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -890,6 +900,7 @@
 
 (define-rgb-binary-op +)
 (define-rgb-binary-op -)
+(define-rgb-binary-op *)
 
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)

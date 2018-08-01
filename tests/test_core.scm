@@ -830,7 +830,13 @@
   (test-eqv "convert float to complex"
     5.0+0.0i ((llvm-typed (list <float>) (cut to-type <complex<float>> <>)) 5))
   (test-eqv "change precision of floating point number"
-    2.0+3.0i ((llvm-typed (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i)))
+    2.0+3.0i ((llvm-typed (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
+  (test-eqv "complex multiplication"
+    -11+29i ((llvm-typed (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
+  (test-eqv "complex-scalar multiplication"
+    10+15i ((llvm-typed (list (complex <float>) <float>) *) 2+3i 5))
+  (test-eqv "scalar-complex multiplication"
+    10+15i ((llvm-typed (list <float> (complex <float>)) *) 5 2+3i)))
 
 (test-group "method calls"
   (test-eqv "call libc's fabsf method"
@@ -1266,6 +1272,8 @@
   (test-equal "scalar-RGB binary plus"
     (rgb 9 10 12) ((llvm-typed (list (rgb <byte>) <byte>) +) (rgb 2 3 5) 7))
   (test-equal "RGB binary minus"
-    (rgb 5 8 8) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) -) (rgb 7 11 13) (rgb 2 3 5))))
+    (rgb 5 8 8) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) -) (rgb 7 11 13) (rgb 2 3 5)))
+  (test-equal "RGB binary multiplication"
+    (rgb 14 33 65) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13))))
 
 (test-end "aiscm core")
