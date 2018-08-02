@@ -1,8 +1,8 @@
 ## Ready
 
-* rgb and complex division
 * multiple C function calls in llvm-typed environment
 * standards version 4.1.5
+* 3ds loader
 * OpenGL vertex array object example
 * type conversions (e.g. complex, rgb)
 * to-type (enable test in image)

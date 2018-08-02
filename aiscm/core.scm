@@ -887,6 +887,25 @@
 (define-method (* (value-a <scalar>) (value-b <complex<>>))
   (complex (* value-a (real-part value-b)) (* value-a (imag-part value-b))))
 
+(define-method (/ (value-a <complex<>>) (value-b <complex<>>))
+  (typed-let [(den (+ (* (real-part value-b) (real-part value-b))
+                      (* (imag-part value-b) (imag-part value-b))))]
+    (complex (/ (+ (* (real-part value-a) (real-part value-b))
+                   (* (imag-part value-a) (imag-part value-b)))
+                den)
+             (/ (- (* (imag-part value-a) (real-part value-b))
+                   (* (real-part value-a) (imag-part value-b)))
+                den))))
+
+(define-method (/ (value-a <complex<>>) (value-b <scalar>))
+  (complex (/ (real-part value-a) value-b) (/ (imag-part value-a) value-b)))
+
+(define-method (/ (value-a <scalar>) (value-b <complex<>>))
+  (typed-let [(den (+ (* (real-part value-b) (real-part value-b))
+                      (* (imag-part value-b) (imag-part value-b))))]
+    (complex (/ (* (real-part value-a) (real-part value-b)) den)
+             (/ (- (* (real-part value-a) (imag-part value-b))) den))))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -906,6 +925,7 @@
 (define-rgb-binary-op +)
 (define-rgb-binary-op -)
 (define-rgb-binary-op *)
+(define-rgb-binary-op /)
 
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)
@@ -1244,6 +1264,7 @@
 (define-array-op +         2 coerce   +       )
 (define-array-op -         2 coerce   -       )
 (define-array-op *         2 coerce   *       )
+(define-array-op /         2 coerce   /       )
 (define-array-op complex   2 complex  complex )
 (define-array-op rgb       3 rgb      rgb     )
 

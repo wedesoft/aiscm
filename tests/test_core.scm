@@ -840,7 +840,13 @@
   (test-eqv "complex-scalar multiplication"
     10+15i ((llvm-typed (list (complex <float>) <float>) *) 2+3i 5))
   (test-eqv "scalar-complex multiplication"
-    10+15i ((llvm-typed (list <float> (complex <float>)) *) 5 2+3i)))
+    10+15i ((llvm-typed (list <float> (complex <float>)) *) 5 2+3i))
+  (test-eqv "complex division"
+    2+3i ((llvm-typed (list (complex <float>) (complex <float>)) /) -11+29i 5+7i))
+  (test-eqv "complex-scalar division"
+    1+2i ((llvm-typed (list (complex <float>) <float>) /) 5+10i 5))
+  (test-eqv "scalar-complex division"
+    4-6i ((llvm-typed (list <float> (complex <float>)) /) 26 2+3i)))
 
 (test-group "method calls"
   (test-eqv "call libc's fabsf method"
@@ -1203,6 +1209,8 @@
     '(3 4) (to-list (- (to-array '(5 7)) (to-array '(2 3)))))
   (test-equal "Multiply 1D array"
     '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7)))))
+  (test-equal "Divide 1D array"
+    '(2 3) (to-list (/ (to-array '(10 21)) (to-array '(5 7)))))
   (let [(m (to-array '(2 3 5)))
         (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"
@@ -1278,6 +1286,8 @@
   (test-equal "RGB binary minus"
     (rgb 5 8 8) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) -) (rgb 7 11 13) (rgb 2 3 5)))
   (test-equal "RGB binary multiplication"
-    (rgb 14 33 65) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13))))
+    (rgb 14 33 65) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13)))
+  (test-equal "RGB binary division"
+    (rgb 2 3 5) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13))))
 
 (test-end "aiscm core")
