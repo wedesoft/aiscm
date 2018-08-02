@@ -615,11 +615,11 @@
         ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
-    '(2 100 5 2.5 5.75 2.5)
-    '(3 30 7 3.25 3.25 3.25)
-    (list llvm-add llvm-sub llvm-mul llvm-fadd llvm-fsub llvm-fmul)
-    '(5 70 35 5.75 2.5 8.125)
-    (list llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double)))
+    '(2 100  5 6  6 2.5  5.75 2.5  2.6)
+    '(3  30  7 2 -2 3.25 3.25 3.25 0.4)
+    (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv)
+    '(5  70 35 3 -3 5.75 2.5  8.125 6.5)
+    (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
@@ -760,10 +760,14 @@
 
 (test-group "integer binary expressions"
   (for-each (lambda (op result)
-    (test-equal (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
+    (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((llvm-typed (list <int> <int>) op) 2 3)))
     (list + - *)
-    '(5 -1 6)))
+    '(5 -1 6))
+  (test-eqv "Unsigned integer division"
+    127 ((llvm-typed (list <ubyte> <ubyte>) /) 254 2))
+  (test-eqv "Signed integer division"
+    -64 ((llvm-typed (list <byte> <byte>) /) -128 2)))
 
 (test-group "floating-point binary expression"
   (for-each (lambda (value-a value-b op result)
@@ -771,10 +775,10 @@
       result ((llvm-typed (list (if (integer? value-a) <int> <float>)
                                 (if (integer? value-b) <int> <float>))
                           op) value-a value-b)))
-    '(2.5 2.5 2 3.75 2 2.5 1.5 2 1.25)
-    '(3.75 3 3.75 2.5 1.5 1 2.5 1.25 2)
-    (list + + + - - - * * *)
-    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5)))
+    '(2.5  2.5 2    3.75 2   2.5 1.5 2    1.25 2.25 2.5 3  )
+    '(3.75 3   3.75 2.5  1.5 1   2.5 1.25 2    0.5  2   1.5)
+    (list + + + - - - * * * / / /)
+    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5 4.5 1.25 2.0)))
 
 (test-group "constant conversions"
   (test-eqv "add integer constant to value"

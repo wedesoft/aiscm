@@ -36,6 +36,7 @@
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
+            llvm-udiv llvm-sdiv llvm-fdiv
             llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
@@ -71,7 +72,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let arr define-array-op)
-  #:re-export (- + * real-part imag-part))
+  #:re-export (- + * / real-part imag-part))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -691,6 +692,9 @@
 (define-llvm-binary llvm-fsub llvm-build-fsub)
 (define-llvm-binary llvm-mul  llvm-build-mul )
 (define-llvm-binary llvm-fmul llvm-build-fmul)
+(define-llvm-binary llvm-udiv llvm-build-udiv)
+(define-llvm-binary llvm-sdiv llvm-build-sdiv)
+(define-llvm-binary llvm-fdiv llvm-build-fdiv)
 
 (define ((build-integer-cmp predicate) fun value-a value-b)
   (llvm-build-integer-cmp fun predicate value-a value-b))
@@ -824,9 +828,10 @@
     (define-binary-operation <pointer<>> <pointer<>>   type-map operation delegate )
     (define-op-with-constant <void> operation)))
 
-(define-binary-delegation identity + (const llvm-add) (const llvm-fadd))
-(define-binary-delegation identity - (const llvm-sub) (const llvm-fsub))
-(define-binary-delegation identity * (const llvm-mul) (const llvm-fmul))
+(define-binary-delegation identity + (const llvm-add)                                            (const llvm-fadd))
+(define-binary-delegation identity - (const llvm-sub)                                            (const llvm-fsub))
+(define-binary-delegation identity * (const llvm-mul)                                            (const llvm-fmul))
+(define-binary-delegation identity / (lambda (target) (if (signed? target) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
