@@ -66,9 +66,8 @@
   l (to-list (to-array (to-image (to-array l)))))
 (test-equal "Convert RGB array to image"
   c (to-list (to-array (to-image (to-array c)))))
-(test-skip 1)
 (test-equal "Convert integer RGB array to image"
-  c (to-list (to-array (to-image (to-array <intrgb> c)))))
+  c (to-list (to-array (to-image (to-array (rgb <int>) c)))))
 (test-eq "Convert RGB symbol to format number and back"
   'RGB (format->symbol (symbol->format 'RGB)))
 (test-eq "Convert I420 symbol to format number and back"

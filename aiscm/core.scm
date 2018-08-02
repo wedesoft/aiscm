@@ -1268,6 +1268,16 @@
 (define-array-op complex   2 complex  complex )
 (define-array-op rgb       3 rgb      rgb     )
 
+(define-method (to-type (type <meta<void>>) (self <multiarray<>>))
+  (let [(fun (llvm-typed (list (native-type self))
+          (lambda (arg)
+            (typed-let [(result (allocate-array type (shape arg)))]
+              (elementwise-loop identity result arg)
+              result))))]
+    (add-method! to-type (make <method> #:specializers (list (class-of type) (class-of self))
+                                        #:procedure (lambda (type self) (fun self))))
+    (to-type type self)))
+
 (define-syntax define-array-channels
   (lambda (x)
     (syntax-case x ()

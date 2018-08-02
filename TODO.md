@@ -1,12 +1,11 @@
 ## Ready
 
+* type conversions (e.g. complex, rgb)
 * multiple C function calls in llvm-typed environment
 * runge kutta with state vector
 * use thumbnail images to illustrate examples
 * 3ds kinematic tree loader, lib3ds bindings
 * OpenGL vertex array object example
-* type conversions (e.g. complex, rgb)
-* to-type (enable test in image)
 * Scheme objects, memory with pointers
 * convolution
 * comparison operation for arrays (map reduce?)

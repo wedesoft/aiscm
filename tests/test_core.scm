@@ -1290,4 +1290,8 @@
   (test-equal "RGB binary division"
     (rgb 2 3 5) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13))))
 
+(test-group "type conversions"
+  (test-equal "convert to float"
+    '(2.0 3.0 5.0) (to-list (to-type <float> (arr 2 3 5)))))
+
 (test-end "aiscm core")
