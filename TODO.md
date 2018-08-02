@@ -1,9 +1,10 @@
 ## Ready
 
+* runge kutta with state vector
+* 3ds kinematic tree loader
+* OpenGL vertex array object example
 * multiple C function calls in llvm-typed environment
 * standards version 4.1.5
-* 3ds loader
-* OpenGL vertex array object example
 * type conversions (e.g. complex, rgb)
 * to-type (enable test in image)
 * Scheme objects, memory with pointers
@@ -26,7 +27,6 @@
   * avcodec\_encode\_audio2 deprecated
   * avcodec\_decode\_audio4 deprecated
   * codec deprecated (ffmpeg.c: 271, 377, 417)
-* runge kutta with state vector
 * matrix vector operations
 * rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
