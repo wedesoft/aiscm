@@ -1056,12 +1056,12 @@
 (test-group "conditional statement"
   (test-equal "implement absolute value"
     '(3 5)
-    (map (jit (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
+    (map (jit (list <int>) (lambda (x) (where (lt x 0) (- x) x))) '(3 -5)))
   (test-eqv "scalar coercion"
-    3.5 ((jit (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5))
+    3.5 ((jit (list <int> <float>) (lambda (x y) (where (lt x y) x y))) 5 3.5))
   (test-eqv "conditional with composite value"
     2.0+3.0i
-    ((jit (list (complex <float>) (complex <float>)) (lambda (x y) (llvm-if (lt (real-part x) (real-part y)) x y)))
+    ((jit (list (complex <float>) (complex <float>)) (lambda (x y) (where (lt (real-part x) (real-part y)) x y)))
      2+3i 5+7i)))
 
 (test-group "alloca for loop variables"

@@ -40,7 +40,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
+            ~ le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
@@ -1047,19 +1047,19 @@
                            (map foreign-type argument-types)
                            (map get args))))
 
-(define-method (llvm-if condition value-if value-else)
+(define-method (where condition value-if value-else)
   (let [(target (coerce (class-of value-if) (class-of value-else)))]
-    (llvm-if target condition value-if value-else)))
+    (where target condition value-if value-else)))
 
-(define-method (llvm-if (target <meta<scalar>>) condition value-if value-else)
+(define-method (where (target <meta<scalar>>) condition value-if value-else)
   (make target #:value (lambda (fun)
     (llvm-build-select (slot-ref fun 'llvm-function)
                        ((get condition) fun)
                        ((get (to-type target value-if  )) fun)
                        ((get (to-type target value-else)) fun)))))
 
-(define-method (llvm-if (target <meta<structure>>) condition value-if value-else)
-  (let [(args (map (lambda (component) (llvm-if condition (component value-if) (component value-else)))
+(define-method (where (target <meta<structure>>) condition value-if value-else)
+  (let [(args (map (lambda (component) (where condition (component value-if) (component value-else)))
                    (components target)))]
     (construct-object target args)))
 

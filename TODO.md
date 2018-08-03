@@ -5,7 +5,6 @@
 * binary /, %, <<, >>, &, |, ^, &&, ||
 * ternary where
 * select method (where)
-* major/minor
 * lookup, pseudo colour, warp
 * minimal shape
 * multiple C function calls in llvm-typed environment
