@@ -1,7 +1,5 @@
 ## Ready
 
-* size-of for arrays
-* rename llvm-typed
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * select method (where)

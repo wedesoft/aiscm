@@ -37,7 +37,7 @@
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-udiv llvm-sdiv llvm-fdiv
-            llvm-wrap llvm-trunc llvm-sext llvm-zext llvm-typed to-type return duplicate
+            llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ le lt ge gt eq ne llvm-if typed-alloca to-array set rgb red green blue
@@ -1008,7 +1008,7 @@
   "Provide pointer return value"
   (make-pointer result))
 
-(define (llvm-typed argument-types function)
+(define (jit argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
          (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
@@ -1115,7 +1115,7 @@
     (add-method! get
                  (make <method>
                        #:specializers (cons (class-of self) (make-list (length indices) <integer>))
-                       #:procedure (llvm-typed (cons (native-type self) (make-list (length indices) <int>)) fun)))
+                       #:procedure (jit (cons (native-type self) (make-list (length indices) <int>)) fun)))
     (apply get self indices)))
 
 (define-method (set (self <multiarray<>>) . args)
@@ -1127,7 +1127,7 @@
     (add-method! set
                  (make <method>
                        #:specializers (attach (cons (class-of self) (make-list (length indices) <integer>)) <top>)
-                       #:procedure (llvm-typed (attach (cons (native-type self) (make-list (length indices) <int>)) (typecode self)) fun)))
+                       #:procedure (jit (attach (cons (native-type self) (make-list (length indices) <int>)) (typecode self)) fun)))
     (apply set self args)))
 
 (define (to-list self)
@@ -1265,7 +1265,7 @@
           result)))
     (define-cycle-method op arity <meta<llvmarray<>>> <meta<void>>
       (lambda args
-        (let [(fun (llvm-typed args op))]
+        (let [(fun (jit args op))]
           (add-method! op (make <method> #:specializers (map class-of args) #:procedure (const fun)))
           (apply op args))))
     (define-nary-collect op arity)))
@@ -1281,7 +1281,7 @@
 (define-array-op rgb       3 rgb      rgb     )
 
 (define-method (to-type (type <meta<void>>) (self <multiarray<>>))
-  (let [(fun (llvm-typed (list (native-type self))
+  (let [(fun (jit (list (native-type self))
           (lambda (arg)
             (typed-let [(result (allocate-array type (shape arg)))]
               (elementwise-loop identity result arg)

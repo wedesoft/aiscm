@@ -689,29 +689,29 @@
 
 (test-group "integer type conversion"
   (test-equal "trivial conversion"
-    42 ((llvm-typed (list <int>) (cut to-type <int> <>)) 42))
+    42 ((jit (list <int>) (cut to-type <int> <>)) 42))
   (test-equal "truncating integer conversion"
-    #xcd ((llvm-typed (list <uint>) (cut to-type <ubyte> <>)) #xabcd))
+    #xcd ((jit (list <uint>) (cut to-type <ubyte> <>)) #xabcd))
   (test-equal "zero-extending integer conversion"
-    200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
+    200 ((jit (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "zero-extending integer conversion"
-    200 ((llvm-typed (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
+    200 ((jit (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "sign-extending integer conversion"
-    -42 ((llvm-typed (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42)))
+    -42 ((jit (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42)))
 
 (test-group "type inference"
   (test-equal "identity function with integer"
-    42 ((llvm-typed (list <int>) identity) 42))
+    42 ((jit (list <int>) identity) 42))
   (test-equal "identity function returning true"
-    #t ((llvm-typed (list <bool>) identity) #t))
+    #t ((jit (list <bool>) identity) #t))
   (test-equal "identity function returning false"
-    #f ((llvm-typed (list <bool>) identity) #f))
+    #f ((jit (list <bool>) identity) #f))
   (test-equal "compact integer negation"
-    -42 ((llvm-typed (list <int>) -) 42))
+    -42 ((jit (list <int>) -) 42))
   (test-equal "sum of two integers"
-    5 ((llvm-typed (list <int> <int>) +) 2 3))
+    5 ((jit (list <int> <int>) +) 2 3))
   (test-equal "sum of unsigned byte and byte"
-    382 ((llvm-typed (list <ubyte> <byte>) +) 255 127)))
+    382 ((jit (list <ubyte> <byte>) +) 255 127)))
 
 (test-group "floating-point type conversions"
   (test-equal "convert single-precision to double-precision float"
@@ -735,46 +735,46 @@
   (test-equal "returns requested type"
     <double> (class-of (to-type <double> (typed-constant <float> 42.5))))
   (test-equal "perform conversion"
-    42.5 ((llvm-typed (list <float>) (cut to-type <double> <>)) 42.5)))
+    42.5 ((jit (list <float>) (cut to-type <double> <>)) 42.5)))
 
 (test-group "convert between integer and floating-point"
   (test-equal "signed byte to float"
-    -42.0 ((llvm-typed (list <byte>) (cut to-type <float> <>)) -42))
+    -42.0 ((jit (list <byte>) (cut to-type <float> <>)) -42))
   (test-equal "unsigned byte to float"
-    200.0 ((llvm-typed (list <ubyte>) (cut to-type <float> <>)) 200))
+    200.0 ((jit (list <ubyte>) (cut to-type <float> <>)) 200))
   (test-equal "convert float to signed integer"
-    -42 ((llvm-typed (list <int>) (lambda (value) (to-type <int> (to-type <double> value)))) -42))
+    -42 ((jit (list <int>) (lambda (value) (to-type <int> (to-type <double> value)))) -42))
   (test-equal "convert float to unsigned int"
-    200 ((llvm-typed (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200)))
+    200 ((jit (list <uint>) (lambda (value) (to-type <uint> (to-type <double> value)))) 200)))
 
 (test-group "integer unary expressions"
   (for-each (lambda (op result)
     (test-equal (format #f "(~a 42) should be ~a" (procedure-name op) result)
-      result ((llvm-typed (list <int>) op) 42)))
+      result ((jit (list <int>) op) 42)))
     (list ~ -)
     '(-43 -42)))
 
 (test-group "floating-point unary expression"
   (test-equal "(- 42.5) single-precision should be -42.5"
-    -42.5 ((llvm-typed (list <float>) -) 42.5))
+    -42.5 ((jit (list <float>) -) 42.5))
   (test-equal "(- 42.5) double-precision should be -42.5"
-    -42.5 ((llvm-typed (list <double>) -) 42.5)))
+    -42.5 ((jit (list <double>) -) 42.5)))
 
 (test-group "integer binary expressions"
   (for-each (lambda (op result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
-      result ((llvm-typed (list <int> <int>) op) 2 3)))
+      result ((jit (list <int> <int>) op) 2 3)))
     (list + - *)
     '(5 -1 6))
   (test-eqv "Unsigned integer division"
-    127 ((llvm-typed (list <ubyte> <ubyte>) /) 254 2))
+    127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"
-    -64 ((llvm-typed (list <byte> <byte>) /) -128 2)))
+    -64 ((jit (list <byte> <byte>) /) -128 2)))
 
 (test-group "floating-point binary expression"
   (for-each (lambda (value-a value-b op result)
     (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
-      result ((llvm-typed (list (if (integer? value-a) <int> <float>)
+      result ((jit (list (if (integer? value-a) <int> <float>)
                                 (if (integer? value-b) <int> <float>))
                           op) value-a value-b)))
     '(2.5  2.5 2    3.75 2   2.5 1.5 2    1.25 2.25 2.5 3  )
@@ -784,71 +784,71 @@
 
 (test-group "constant conversions"
   (test-eqv "add integer constant to value"
-    5 ((llvm-typed (list <int>) (lambda (x) (+ x 3))) 2))
+    5 ((jit (list <int>) (lambda (x) (+ x 3))) 2))
   (test-eqv "add value to integer constant"
-    5 ((llvm-typed (list <int>) (lambda (x) (+ 2 x))) 3))
+    5 ((jit (list <int>) (lambda (x) (+ 2 x))) 3))
   (test-eqv "subtract integer constant from value"
-    2 ((llvm-typed (list <int>) (lambda (x) (- x 3))) 5))
+    2 ((jit (list <int>) (lambda (x) (- x 3))) 5))
   (test-eqv "subtract value from integer constant"
-    3 ((llvm-typed (list <int>) (lambda (x) (- 5 x))) 2))
+    3 ((jit (list <int>) (lambda (x) (- 5 x))) 2))
   (test-eqv "add floating-point constant to value"
-    5.5 ((llvm-typed (list <float>) (lambda (x) (+ x 3))) 2.5))
+    5.5 ((jit (list <float>) (lambda (x) (+ x 3))) 2.5))
   (test-eqv "add floating-point constant to integer value"
-    5.5 ((llvm-typed (list <int>) (lambda (x) (+ x 3.5))) 2))
+    5.5 ((jit (list <int>) (lambda (x) (+ x 3.5))) 2))
   (test-eqv "add complex number to integer value"
-    7+3i ((llvm-typed (list <int>) (lambda (x) (+ x 2+3i))) 5))
+    7+3i ((jit (list <int>) (lambda (x) (+ x 2+3i))) 5))
   (test-eqv "add complex number to complex value"
-    7+10i ((llvm-typed (list <complex<float>>) (lambda (x) (+ x 2+3i))) 5+7i)))
+    7+10i ((jit (list <complex<float>>) (lambda (x) (+ x 2+3i))) 5+7i)))
 
 (test-group "composite types"
   (test-eqv "return real part of complex number"
-    2.5 ((llvm-typed (list <complex<float>>) real-part) 2.5+3.25i))
+    2.5 ((jit (list <complex<float>>) real-part) 2.5+3.25i))
   (test-eqv "return imaginary part of complex number"
-    3.25 ((llvm-typed (list <complex<float>>) imag-part) 2.5+3.25i))
+    3.25 ((jit (list <complex<float>>) imag-part) 2.5+3.25i))
   (test-eqv "complex single-precision identity"
-    2+3i ((llvm-typed (list <complex<float>>) identity) 2+3i))
+    2+3i ((jit (list <complex<float>>) identity) 2+3i))
   (test-eqv "complex double-precision identity"
-    2+3i ((llvm-typed (list <complex<double>>) identity) 2+3i))
+    2+3i ((jit (list <complex<double>>) identity) 2+3i))
   (test-eqv "compose single-precision complex number"
-    2+3i ((llvm-typed (list <float> <float>) complex) 2 3))
+    2+3i ((jit (list <float> <float>) complex) 2 3))
   (test-eqv "compose double-precision complex number"
-    2+3i ((llvm-typed (list <double> <double>) complex) 2 3))
+    2+3i ((jit (list <double> <double>) complex) 2 3))
   (test-eqv "compose complex number from different precision numbers"
-    2+3i ((llvm-typed (list <float> <double>) complex) 2 3))
+    2+3i ((jit (list <float> <double>) complex) 2 3))
   (test-eqv "complex negation"
-    -2-3i ((llvm-typed (list <complex<double>>) -) 2+3i))
+    -2-3i ((jit (list <complex<double>>) -) 2+3i))
   (test-eqv "complex plus"
-    7+10i ((llvm-typed (list <complex<double>> <complex<double>>) +) 2+3i 5+7i))
+    7+10i ((jit (list <complex<double>> <complex<double>>) +) 2+3i 5+7i))
   (test-eqv "add scalar to complex value"
-    7+3i ((llvm-typed (list <complex<double>> <int>) +) 2+3i 5))
+    7+3i ((jit (list <complex<double>> <int>) +) 2+3i 5))
   (test-eqv "add complex value to scalar"
-    5+5i ((llvm-typed (list <float> <complex<float>>) +) 2 3+5i))
+    5+5i ((jit (list <float> <complex<float>>) +) 2 3+5i))
   (test-eqv "complex minus"
-    -3-4i ((llvm-typed (list <complex<double>> <complex<double>>) -) 2+3i 5+7i))
+    -3-4i ((jit (list <complex<double>> <complex<double>>) -) 2+3i 5+7i))
   (test-eqv "subtract scalar from complex value"
-    -3+3i ((llvm-typed (list <complex<double>> <int>) -) 2+3i 5))
+    -3+3i ((jit (list <complex<double>> <int>) -) 2+3i 5))
   (test-eqv "subtract complex value from scalar"
-    -1-5i ((llvm-typed (list <float> <complex<float>>) -) 2 3+5i))
+    -1-5i ((jit (list <float> <complex<float>>) -) 2 3+5i))
   (test-eqv "real part of real number"
-    5.5 ((llvm-typed (list <float>) real-part) 5.5))
+    5.5 ((jit (list <float>) real-part) 5.5))
   (test-eqv "imaginary part of real number"
-    0.0 ((llvm-typed (list <float>) imag-part) 5.5))
+    0.0 ((jit (list <float>) imag-part) 5.5))
   (test-eqv "convert float to complex"
-    5.0+0.0i ((llvm-typed (list <float>) (cut to-type <complex<float>> <>)) 5))
+    5.0+0.0i ((jit (list <float>) (cut to-type <complex<float>> <>)) 5))
   (test-eqv "change precision of floating point number"
-    2.0+3.0i ((llvm-typed (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
+    2.0+3.0i ((jit (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
   (test-eqv "complex multiplication"
-    -11+29i ((llvm-typed (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
+    -11+29i ((jit (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
   (test-eqv "complex-scalar multiplication"
-    10+15i ((llvm-typed (list (complex <float>) <float>) *) 2+3i 5))
+    10+15i ((jit (list (complex <float>) <float>) *) 2+3i 5))
   (test-eqv "scalar-complex multiplication"
-    10+15i ((llvm-typed (list <float> (complex <float>)) *) 5 2+3i))
+    10+15i ((jit (list <float> (complex <float>)) *) 5 2+3i))
   (test-eqv "complex division"
-    2+3i ((llvm-typed (list (complex <float>) (complex <float>)) /) -11+29i 5+7i))
+    2+3i ((jit (list (complex <float>) (complex <float>)) /) -11+29i 5+7i))
   (test-eqv "complex-scalar division"
-    1+2i ((llvm-typed (list (complex <float>) <float>) /) 5+10i 5))
+    1+2i ((jit (list (complex <float>) <float>) /) 5+10i 5))
   (test-eqv "scalar-complex division"
-    4-6i ((llvm-typed (list <float> (complex <float>)) /) 26 2+3i)))
+    4-6i ((jit (list <float> (complex <float>)) /) 26 2+3i)))
 
 (test-group "method calls"
   (test-eqv "call libc's fabsf method"
@@ -863,17 +863,17 @@
      0.0 1.0))
   (test-eqv "typed call of fabsf method"
     1.25
-    ((llvm-typed (list <float>) (lambda (arg) (typed-call <float> "fabsf" (list <float>) (list arg)))) -1.25)))
+    ((jit (list <float>) (lambda (arg) (typed-call <float> "fabsf" (list <float>) (list arg)))) -1.25)))
 
 (test-group "pointers"
   (test-equal "Pointer identity function"
-    (make-pointer 123) ((llvm-typed (list (pointer <int>)) identity) (make-pointer 123)))
+    (make-pointer 123) ((jit (list (pointer <int>)) identity) (make-pointer 123)))
   (test-eqv "Fetch pointer value"
-    42 ((llvm-typed (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63))))
+    42 ((jit (list (pointer <byte>)) fetch) (bytevector->pointer #vu8(42 63))))
   (test-equal "Typecast when writing to pointer target"
     #vu8(42 3 5 7)
     (let [(data #vu8(2 3 5 7))]
-      ((llvm-typed (list (pointer <byte>) <int>) (lambda (ptr value) (store ptr value)))
+      ((jit (list (pointer <byte>) <int>) (lambda (ptr value) (store ptr value)))
        (bytevector->pointer data) 42)
       data)))
 
@@ -887,56 +887,56 @@
   (test-equal "Pointer type"
     (pointer <int>) (class-of (typed-pointer <int> (make-pointer 1234))))
   (test-equal "boolean constant"
-    #t ((llvm-typed '() (const (typed-constant <bool> #t)))))
+    #t ((jit '() (const (typed-constant <bool> #t)))))
   (test-equal "integer constant"
-    42 ((llvm-typed '() (const (typed-constant <int> 42)))))
+    42 ((jit '() (const (typed-constant <int> 42)))))
   (test-equal "floating-point constant"
-    2.5 ((llvm-typed '() (const (typed-constant <double> 2.5)))))
+    2.5 ((jit '() (const (typed-constant <double> 2.5)))))
   (test-equal "complex constant"
-    2+3i ((llvm-typed '() (const (typed-constant <complex<float>> 2+3i))))))
+    2+3i ((jit '() (const (typed-constant <complex<float>> 2+3i))))))
 
 (test-group "typed store/fetch"
   (let* [(data #vu8(0 3 5 7))
          (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-equal "write byte to memory"
       #vu8(2 3 5 7)
-      (begin ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2) data)))
+      (begin ((jit (list <byte>) (lambda (value) (store ptr value))) 2) data)))
   (let* [(data #vu8(0 3 5 7))
          (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-assert "storing a value returns no value"
-      (unspecified? ((llvm-typed (list <byte>) (lambda (value) (store ptr value))) 2))))
+      (unspecified? ((jit (list <byte>) (lambda (value) (store ptr value))) 2))))
   (let* [(data #vu8(2 3 5 7))
          (ptr  (typed-pointer <byte> (bytevector->pointer data)))]
     (test-eqv "read byte from memory"
-      2 ((llvm-typed '() (lambda () (fetch ptr))))))
+      2 ((jit '() (lambda () (fetch ptr))))))
   (let* [(data #vu8(1 2 3 4 5 6 7 8 9 10))
          (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-equal "write complex number to memory"
       #vu8(0 0 0 64 0 0 64 64 9 10)
-      (begin ((llvm-typed (list <complex<float>>) (lambda (value) (store ptr value))) 2+3i) data)))
+      (begin ((jit (list <complex<float>>) (lambda (value) (store ptr value))) 2+3i) data)))
   (let* [(data #vu8(0 0 0 64 0 0 64 64))
          (ptr  (typed-pointer (complex <float>) (bytevector->pointer data)))]
     (test-eqv "read complex number from memory"
-      2+3i ((llvm-typed '() (lambda () (fetch ptr)))))))
+      2+3i ((jit '() (lambda () (fetch ptr)))))))
 
 (test-group "instruction sequence"
   (test-eqv "test single instruction"
-    42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value))) 42))
+    42 ((jit (list <int>) (lambda (value) (llvm-begin value))) 42))
   (test-eqv "test two instructions"
-    42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin value value))) 42))
+    42 ((jit (list <int>) (lambda (value) (llvm-begin value value))) 42))
   (let* [(data #vu8(0 0 0 0))
          (ptr  (typed-pointer <int> (bytevector->pointer data)))]
     (test-eqv "ensure both instructions are executed"
-      42 ((llvm-typed (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch ptr)))) 42))))
+      42 ((jit (list <int>) (lambda (value) (llvm-begin (store ptr value) (fetch ptr)))) 42))))
 
 (define-uniform-constructor testcontainer)
 (test-group "operations for custom composite type"
   (test-assert "compile identity operation for composite type"
-    (llvm-typed (list (testcontainer <int>)) identity))
+    (jit (list (testcontainer <int>)) identity))
   (test-eqv "run identity operation for composite type"
-    42 (testcontent ((llvm-typed (list (testcontainer <int>)) identity) (make-testcontainer 42))))
+    42 (testcontent ((jit (list (testcontainer <int>)) identity) (make-testcontainer 42))))
   (test-assert "compile constructor of test container"
-    (llvm-typed (list <int>) testcontainer))
+    (jit (list <int>) testcontainer))
   (test-equal "Uniform container performs type coercion"
     (complex <float>) (class-of (complex (typed-constant <int> 2) (typed-constant <float> 3)))))
 
@@ -945,15 +945,15 @@
   (let* [(data #vu8(3 5 7))
          (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
     (test-eqv "read first value of mixed variable"
-      1283 (test-a ((llvm-typed '() (lambda () (fetch ptr))))))
+      1283 (test-a ((jit '() (lambda () (fetch ptr))))))
     (test-eqv "read second value of mixed variable"
-      7 (test-b ((llvm-typed '() (lambda () (fetch ptr)))))))
+      7 (test-b ((jit '() (lambda () (fetch ptr)))))))
     (let* [(data #vu8(1 2 3 4))
            (ptr  (typed-pointer (testmixed <sint> <byte>) (bytevector->pointer data)))]
       (test-equal "write composite value to memory"
         #vu8(3 5 7 4)
         (begin
-          ((llvm-typed (list (testmixed <sint> <byte>)) (lambda (value) (store ptr value)))
+          ((jit (list (testmixed <sint> <byte>)) (lambda (value) (store ptr value)))
            (make-testmixed 1283 7))
           data)))
   (test-equal "Mixed constructor preserves types of components"
@@ -961,90 +961,90 @@
 
 (test-group "comparison"
   (test-eqv "unsigned less-than"
-    #t ((llvm-typed (list <ubyte> <ubyte>) lt) 120 140))
+    #t ((jit (list <ubyte> <ubyte>) lt) 120 140))
   (test-eqv "not unsigned less-than"
-    #f ((llvm-typed (list <ubyte> <ubyte>) lt) 120 120))
+    #f ((jit (list <ubyte> <ubyte>) lt) 120 120))
   (test-eqv "signed less-than"
-    #t ((llvm-typed (list <byte> <ubyte>) lt) -100 100))
+    #t ((jit (list <byte> <ubyte>) lt) -100 100))
   (test-eqv "not signed less-than"
-    #f ((llvm-typed (list <ubyte> <byte>) lt) 100 -100))
+    #f ((jit (list <ubyte> <byte>) lt) 100 -100))
   (test-eqv "type coercion for signed less-than"
-    #t ((llvm-typed (list <byte> <ubyte>) lt) -1 255))
+    #t ((jit (list <byte> <ubyte>) lt) -1 255))
   (test-eqv "unsigned less-than or equal"
-    #t ((llvm-typed (list <ubyte> <ubyte>) le) 120 120))
+    #t ((jit (list <ubyte> <ubyte>) le) 120 120))
   (test-eqv "not unsigned less-than or equal"
-    #f ((llvm-typed (list <ubyte> <ubyte>) le) 120 119))
+    #f ((jit (list <ubyte> <ubyte>) le) 120 119))
   (test-eqv "signed less-than or equal"
-    #t ((llvm-typed (list <byte> <ubyte>) le) -100 100))
+    #t ((jit (list <byte> <ubyte>) le) -100 100))
   (test-eqv "not signed less-than or equal"
-    #f ((llvm-typed (list <ubyte> <byte>) le) 100 -100))
+    #f ((jit (list <ubyte> <byte>) le) 100 -100))
   (test-eqv "unsigned greater-than"
-    #t ((llvm-typed (list <ubyte> <ubyte>) gt) 140 120))
+    #t ((jit (list <ubyte> <ubyte>) gt) 140 120))
   (test-eqv "not unsigned greater-than"
-    #f ((llvm-typed (list <ubyte> <ubyte>) gt) 120 120))
+    #f ((jit (list <ubyte> <ubyte>) gt) 120 120))
   (test-eqv "signed greater-than"
-    #t ((llvm-typed (list <ubyte> <byte>) gt) 100 -100))
+    #t ((jit (list <ubyte> <byte>) gt) 100 -100))
   (test-eqv "not signed greater-than"
-    #f ((llvm-typed (list <byte> <ubyte>) gt) -100 100))
+    #f ((jit (list <byte> <ubyte>) gt) -100 100))
   (test-eqv "unsigned greater-than or equal"
-    #t ((llvm-typed (list <ubyte> <ubyte>) ge) 120 120))
+    #t ((jit (list <ubyte> <ubyte>) ge) 120 120))
   (test-eqv "not unsigned greater-than or equal"
-    #f ((llvm-typed (list <ubyte> <ubyte>) ge) 119 120))
+    #f ((jit (list <ubyte> <ubyte>) ge) 119 120))
   (test-eqv "signed greater-than or equal"
-    #t ((llvm-typed (list <ubyte> <byte>) ge) 100 -100))
+    #t ((jit (list <ubyte> <byte>) ge) 100 -100))
   (test-eqv "not signed greater-than or equal"
-    #f ((llvm-typed (list <byte> <ubyte>) ge) -100 100))
+    #f ((jit (list <byte> <ubyte>) ge) -100 100))
   (test-eqv "not equal integers"
-    #f ((llvm-typed (list <byte> <byte>) eq) 120 100))
+    #f ((jit (list <byte> <byte>) eq) 120 100))
   (test-eqv "equal integers"
-    #t ((llvm-typed (list <byte> <byte>) eq) 100 100))
+    #t ((jit (list <byte> <byte>) eq) 100 100))
   (test-eqv "unequal integers"
-    #t ((llvm-typed (list <byte> <byte>) ne) 120 100))
+    #t ((jit (list <byte> <byte>) ne) 120 100))
   (test-eqv "not unequal integers"
-    #f ((llvm-typed (list <byte> <byte>) ne) 100 100))
+    #f ((jit (list <byte> <byte>) ne) 100 100))
   (test-eqv "floating-point less-than"
-    #t ((llvm-typed (list <float> <float>) lt) 2.5 3.0))
+    #t ((jit (list <float> <float>) lt) 2.5 3.0))
   (test-eqv "floating-point not less-than"
-    #f ((llvm-typed (list <float> <float>) lt) 3.0 3.0))
+    #f ((jit (list <float> <float>) lt) 3.0 3.0))
   (test-eqv "compare floating-point and integer"
-    #t ((llvm-typed (list <float> <int>) lt) 2.5 3))
+    #t ((jit (list <float> <int>) lt) 2.5 3))
   (test-eqv "compare integer and floating-point"
-    #t ((llvm-typed (list <int> <float>) lt) 2 3))
+    #t ((jit (list <int> <float>) lt) 2 3))
   (test-eqv "floating-point less-than or equal"
-    #t ((llvm-typed (list <float> <float>) le) 3.0 3.0))
+    #t ((jit (list <float> <float>) le) 3.0 3.0))
   (test-eqv "floating-point not less-than or equal"
-    #f ((llvm-typed (list <float> <float>) le) 3.5 3.0))
+    #f ((jit (list <float> <float>) le) 3.5 3.0))
   (test-eqv "floating-point greater-than"
-    #t ((llvm-typed (list <float> <float>) gt) 2.5 2.0))
+    #t ((jit (list <float> <float>) gt) 2.5 2.0))
   (test-eqv "not floating-point greater-than"
-    #f ((llvm-typed (list <float> <float>) gt) 3.5 3.5))
+    #f ((jit (list <float> <float>) gt) 3.5 3.5))
   (test-eqv "floating-point greater-than or equal"
-    #t ((llvm-typed (list <float> <float>) ge) 2.5 2.5))
+    #t ((jit (list <float> <float>) ge) 2.5 2.5))
   (test-eqv "not floating-point greater-than or equal"
-    #f ((llvm-typed (list <float> <float>) ge) 1.0 1.5))
+    #f ((jit (list <float> <float>) ge) 1.0 1.5))
   (test-eqv "not equal floating-point numbers"
-    #f ((llvm-typed (list <float> <float>) eq) 1.0 1.5))
+    #f ((jit (list <float> <float>) eq) 1.0 1.5))
   (test-eqv "equal floating-point numbers"
-    #t ((llvm-typed (list <float> <float>) eq) 1.5 1.5))
+    #t ((jit (list <float> <float>) eq) 1.5 1.5))
   (test-eqv "unequal floating-point numbers"
-    #t ((llvm-typed (list <float> <float>) ne) 1.0 1.5))
+    #t ((jit (list <float> <float>) ne) 1.0 1.5))
   (test-eqv "not unequal floating-point numbers"
-    #f ((llvm-typed (list <float> <float>) ne) 1.5 1.5))
+    #f ((jit (list <float> <float>) ne) 1.5 1.5))
   (test-eqv "pointer comparison"
-    #t ((llvm-typed (list (pointer <byte>) (pointer <byte>)) gt) (make-pointer 2) (make-pointer 1))))
+    #t ((jit (list (pointer <byte>) (pointer <byte>)) gt) (make-pointer 2) (make-pointer 1))))
 
 (test-group "local variables"
   (test-eqv "Typed let without any definitions"
-    42 ((llvm-typed (list <int>) (lambda (value) (typed-let [] value))) 42))
+    42 ((jit (list <int>) (lambda (value) (typed-let [] value))) 42))
   (test-eqv "Typed let with a definition"
-    42 ((llvm-typed '() (lambda () (typed-let [(a (typed-constant <int> 42))] a)))))
+    42 ((jit '() (lambda () (typed-let [(a (typed-constant <int> 42))] a)))))
   (test-eqv "Typed let with two definitions"
-    5 ((llvm-typed '() (lambda () (typed-let [(a (typed-constant <int> 2)) (b (typed-constant <int> 3))] (+ a b)))))))
+    5 ((jit '() (lambda () (typed-let [(a (typed-constant <int> 2)) (b (typed-constant <int> 3))] (+ a b)))))))
 
 (test-group "basic blocks and branch instructions"
   (test-equal "branch instruction"
     42
-    ((llvm-typed (list <int>)
+    ((jit (list <int>)
                  (lambda (x)
                    (let [(block (make-basic-block "block"))]
                      (llvm-begin
@@ -1056,25 +1056,25 @@
 (test-group "conditional statement"
   (test-equal "implement absolute value"
     '(3 5)
-    (map (llvm-typed (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
+    (map (jit (list <int>) (lambda (x) (llvm-if (lt x 0) (- x) x))) '(3 -5)))
   (test-eqv "scalar coercion"
-    3.5 ((llvm-typed (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5))
+    3.5 ((jit (list <int> <float>) (lambda (x y) (llvm-if (lt x y) x y))) 5 3.5))
   (test-eqv "conditional with composite value"
     2.0+3.0i
-    ((llvm-typed (list (complex <float>) (complex <float>)) (lambda (x y) (llvm-if (lt (real-part x) (real-part y)) x y)))
+    ((jit (list (complex <float>) (complex <float>)) (lambda (x y) (llvm-if (lt (real-part x) (real-part y)) x y)))
      2+3i 5+7i)))
 
 (test-group "alloca for loop variables"
   (test-eqv "Allocate a variable on the stack"
     42
-    ((llvm-typed (list <int>)
+    ((jit (list <int>)
                  (lambda (x)
                    (typed-let [(ptr (typed-alloca <int>))]
                      (store ptr x)
                      (fetch ptr)))) 42))
   (test-eqv "While loop"
     10
-    ((llvm-typed (list <int>)
+    ((jit (list <int>)
       (lambda (n)
         (typed-let [(i (typed-alloca <int>))]
           (store i (typed-constant <int> 0))
@@ -1084,15 +1084,15 @@
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
-    5 ((llvm-typed (list (llvmlist <int> 4)) (cut get <> 2)) '(2 3 5 7)))
+    5 ((jit (list (llvmlist <int> 4)) (cut get <> 2)) '(2 3 5 7)))
   (test-equal "Identity function for list"
-    '(2 3 5) ((llvm-typed (list (llvmlist <int> 3)) identity) '(2 3 5)))
+    '(2 3 5) ((jit (list (llvmlist <int> 3)) identity) '(2 3 5)))
   (test-equal "Create static size list"
-    '(2 3 5) ((llvm-typed (list <int> <int> <int>) llvmlist) 2 3 5))
+    '(2 3 5) ((jit (list <int> <int> <int>) llvmlist) 2 3 5))
   (test-eqv "Last element of list"
-    5 ((llvm-typed (list (llvmlist <int> 3)) llvm-last) '(2 3 5)))
+    5 ((jit (list (llvmlist <int> 3)) llvm-last) '(2 3 5)))
   (test-equal "Get all but last element from a list"
-    '(2 3) ((llvm-typed (list (llvmlist <int> 3)) llvm-all-but-last) '(2 3 5))) )
+    '(2 3) ((jit (list (llvmlist <int> 3)) llvm-all-but-last) '(2 3 5))) )
 
 (test-group "Multi-dimensional array"
   (let [(m0 (make (multiarray <byte> 0) #:shape '() #:memory (bytevector->pointer #vu8(42))))
@@ -1101,9 +1101,9 @@
         (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))
         (s2 (make (multiarray <sint> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13 5 7 11 13 17 19))))]
     (test-equal "Identity function preserves shape"
-      '(2 3 5) (shape ((llvm-typed (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
+      '(2 3 5) (shape ((jit (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
     (test-equal "Shape can be queried in compiled code"
-      '(6 4) ((llvm-typed (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
+      '(6 4) ((jit (list (llvmarray <int> 2)) shape) (make (multiarray <int> 2) #:shape '(6 4))))
     (test-eqv "Get element of 0D byte array"
       42 (get m0))
     (test-eqv "Get first element of 1D byte array"
@@ -1114,19 +1114,19 @@
       (+ 2 (* 3 256)) (get s1 2))
     (test-equal "Build multiarray with correct memory"
       (memory m2)
-      (memory ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
+      (memory ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
                (memory m2) (memory-base m2) (shape m2) (strides m2))))
     (test-equal "Build multiarray with correct base memory"
       (memory-base m2)
-      (memory-base ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
+      (memory-base ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
                     (memory m2) (memory-base m2) (shape m2) (strides m2))))
     (test-equal "Build multiarray with correct shape"
       (shape m2)
-      (shape ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
+      (shape ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
               (memory m2) (memory-base m2) (shape m2) (strides m2))))
     (test-equal "Build multiarray with correct strides"
       (strides m2)
-      (strides ((llvm-typed (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
+      (strides ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
                 (memory m2) (memory-base m2) (shape m2) (strides m2))))
     (test-equal "Slice of array has adjusted memory pointer"
       (make-pointer (+ (pointer-address (memory m2)) 3)) (memory (get m2 1)))
@@ -1256,9 +1256,9 @@
   (test-eqv "extract blue channel of RGB value"
     5 (blue (rgb 2 3 5)))
   (test-eqv "compiled RGB type"
-    3 ((llvm-typed (list (rgb <int>)) green) (rgb 2 3 5)))
+    3 ((jit (list (rgb <int>)) green) (rgb 2 3 5)))
   (test-equal "compiled RGB constructor"
-    (rgb 2 3 5) ((llvm-typed (list <int> <int> <int>) rgb) 2 3 5))
+    (rgb 2 3 5) ((jit (list <int> <int> <int>) rgb) 2 3 5))
   (test-eq "unsigned byte RGB"
     (rgb <ubyte>) <rgb<ubyte>>)
   (test-eq "floating-point RGB"
@@ -1276,21 +1276,21 @@
   (test-eq "coerce scalar and RGB value"
     (rgb <sint>) (coerce <byte> (rgb <ubyte>)))
   (test-equal "RGB unary minus"
-    (rgb -2 3 -5) ((llvm-typed (list (rgb <byte>)) -) (rgb 2 -3 5)))
+    (rgb -2 3 -5) ((jit (list (rgb <byte>)) -) (rgb 2 -3 5)))
   (test-equal "RGB unary not"
-    (rgb 255 254 253) ((llvm-typed (list (rgb <ubyte>)) ~) (rgb 0 1 2)))
+    (rgb 255 254 253) ((jit (list (rgb <ubyte>)) ~) (rgb 0 1 2)))
   (test-equal "RGB binary plus"
-    (rgb 9 14 18) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) +) (rgb 2 3 5) (rgb 7 11 13)))
+    (rgb 9 14 18) ((jit (list (rgb <byte>) (rgb <byte>)) +) (rgb 2 3 5) (rgb 7 11 13)))
   (test-equal "RGB-scalar binary plus"
-    (rgb 9 10 12) ((llvm-typed (list <byte> (rgb <byte>)) +) 7 (rgb 2 3 5) 7))
+    (rgb 9 10 12) ((jit (list <byte> (rgb <byte>)) +) 7 (rgb 2 3 5) 7))
   (test-equal "scalar-RGB binary plus"
-    (rgb 9 10 12) ((llvm-typed (list (rgb <byte>) <byte>) +) (rgb 2 3 5) 7))
+    (rgb 9 10 12) ((jit (list (rgb <byte>) <byte>) +) (rgb 2 3 5) 7))
   (test-equal "RGB binary minus"
-    (rgb 5 8 8) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) -) (rgb 7 11 13) (rgb 2 3 5)))
+    (rgb 5 8 8) ((jit (list (rgb <byte>) (rgb <byte>)) -) (rgb 7 11 13) (rgb 2 3 5)))
   (test-equal "RGB binary multiplication"
-    (rgb 14 33 65) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13)))
+    (rgb 14 33 65) ((jit (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13)))
   (test-equal "RGB binary division"
-    (rgb 2 3 5) ((llvm-typed (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13))))
+    (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13))))
 
 (test-group "type conversions"
   (test-equal "convert to float"
