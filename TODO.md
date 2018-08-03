@@ -1,17 +1,25 @@
 ## Ready
 
-* convert bool to byte
-* type conversions (e.g. scalar to complex, scalar to rgb)
+* size-of for arrays
+* rename llvm-typed
+* unary =0, !=0, !, <<, >>
+* binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
+* select method (where)
+* major/minor
+* lookup, pseudo colour, warp
+* minimal shape
 * multiple C function calls in llvm-typed environment
-* runge kutta with state vector
-* use thumbnail images to illustrate examples
-* 3ds kinematic tree loader, lib3ds bindings
 * OpenGL vertex array object example
+* runge kutta with state vector
+* 3ds converter computing normals and tangentials and loading textures and maps
+* 2D GJK example
+* micro-collisions example
+* type conversions (e.g. scalar to complex, scalar to rgb)
+* comparison operation for arrays (map reduce / tensors?)
 * Scheme objects, memory with pointers
 * convolution
-* comparison operation for arrays (map reduce?)
-* minimal shape
-* lookup, pseudo colour, warp
+* use thumbnail images to illustrate examples
+* connected components analysis
 * Ghost in the Shell style animations
 * panorama video viewer
 * tensor indices
@@ -32,8 +40,6 @@
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
-* unary =0, !=0, !, <<, >>
-* binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
 * Lucas-Kanade tracker
 * recognise Aruco marker cube
 * colour swapped when converting MJPEG video to FFmpeg video

@@ -388,6 +388,10 @@
   "Size of pointer"
   8)
 
+(define-method (size-of (self <multiarray<>>))
+  "Size of multi-dimensional array"
+  (apply * (size-of (typecode self)) (shape self)))
+
 (define-method (native-type (value <boolean>) . args)
   (if (every boolean? args) <bool> (next-method)))
 

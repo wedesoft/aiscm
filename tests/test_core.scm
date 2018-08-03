@@ -430,7 +430,9 @@
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
-    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2))))
+    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
+  (test-equal "Size of array"
+    (* 4 32 20) (size-of (make (multiarray <int> 2) #:shape '(32 20)))))
 
 (test-group "module"
   (test-equal "Create LLVM instance"
