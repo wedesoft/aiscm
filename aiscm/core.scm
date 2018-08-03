@@ -756,6 +756,10 @@
     (set! module-list (cons mod module-list))
     (llvm-func mod fun)))
 
+(define-method (to-type (cls <meta<bool>>) (value <bool>))
+  "Convert boolean to boolean"
+  value)
+
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
