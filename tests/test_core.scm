@@ -1248,7 +1248,9 @@
   (test-equal "Lower-than comparison"
     '(#t #f #f) (to-list (lt (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Lower-equal comparison"
-    '(#t #t #f) (to-list (le (arr 2 3 5) (arr 5 3 2)))))
+    '(#t #t #f) (to-list (le (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Element-wise selection"
+    '(5 3) (to-list (where (arr #f #t) (arr 2 3) (arr 5 7)))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"

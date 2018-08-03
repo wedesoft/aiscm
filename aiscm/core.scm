@@ -510,6 +510,10 @@
   "Coerce to boolean"
   <bool>)
 
+(define (coerce-last-two a b c)
+  "Coerce last two elements"
+  (coerce b c))
+
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"
   (base type))
@@ -1274,21 +1278,22 @@
           (apply op args))))
     (define-nary-collect op arity)))
 
-(define-array-op -         1 identity -       )
-(define-array-op ~         1 identity ~       )
-(define-array-op duplicate 1 identity identity)
-(define-array-op +         2 coerce   +       )
-(define-array-op -         2 coerce   -       )
-(define-array-op *         2 coerce   *       )
-(define-array-op /         2 coerce   /       )
-(define-array-op eq        2 to-bool  eq      )
-(define-array-op ne        2 to-bool  ne      )
-(define-array-op gt        2 to-bool  gt      )
-(define-array-op ge        2 to-bool  ge      )
-(define-array-op lt        2 to-bool  lt      )
-(define-array-op le        2 to-bool  le      )
-(define-array-op complex   2 complex  complex )
-(define-array-op rgb       3 rgb      rgb     )
+(define-array-op -         1 identity        -       )
+(define-array-op ~         1 identity        ~       )
+(define-array-op duplicate 1 identity        identity)
+(define-array-op +         2 coerce          +       )
+(define-array-op -         2 coerce          -       )
+(define-array-op *         2 coerce          *       )
+(define-array-op /         2 coerce          /       )
+(define-array-op eq        2 to-bool         eq      )
+(define-array-op ne        2 to-bool         ne      )
+(define-array-op gt        2 to-bool         gt      )
+(define-array-op ge        2 to-bool         ge      )
+(define-array-op lt        2 to-bool         lt      )
+(define-array-op le        2 to-bool         le      )
+(define-array-op complex   2 complex         complex )
+(define-array-op where     3 coerce-last-two where)
+(define-array-op rgb       3 rgb             rgb     )
 
 (define-method (to-type (type <meta<void>>) (self <multiarray<>>))
   (let [(fun (jit (list (native-type self))

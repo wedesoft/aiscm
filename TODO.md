@@ -1,9 +1,9 @@
 ## Ready
 
 * binary minor, major
+* (where x rgb int)
 * unary =0, !=0, !, <<, >>
 * binary /, %, <<, >>, &, |, ^, &&, ||
-* ternary where
 * select method (where)
 * lookup, pseudo colour, warp
 * minimal shape
