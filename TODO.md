@@ -1,6 +1,6 @@
 ## Ready
 
-* type conversions (e.g. complex, rgb)
+* type conversions (e.g. scalar to complex, scalar to rgb)
 * multiple C function calls in llvm-typed environment
 * runge kutta with state vector
 * use thumbnail images to illustrate examples
