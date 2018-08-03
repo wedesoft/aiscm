@@ -506,6 +506,10 @@
   "Coerce two pointers"
   (pointer (coerce (target a) (target b))))
 
+(define (to-bool . args)
+  "Coerce to boolean"
+  <bool>)
+
 (define-method (decompose-type (type <meta<scalar>>))
   "Decompose scalar type"
   (base type))
@@ -1277,6 +1281,12 @@
 (define-array-op -         2 coerce   -       )
 (define-array-op *         2 coerce   *       )
 (define-array-op /         2 coerce   /       )
+(define-array-op eq        2 to-bool  eq      )
+(define-array-op ne        2 to-bool  ne      )
+(define-array-op gt        2 to-bool  gt      )
+(define-array-op ge        2 to-bool  ge      )
+(define-array-op lt        2 to-bool  lt      )
+(define-array-op le        2 to-bool  le      )
 (define-array-op complex   2 complex  complex )
 (define-array-op rgb       3 rgb      rgb     )
 

@@ -1,7 +1,9 @@
 ## Ready
 
+* binary minor, major
 * unary =0, !=0, !, <<, >>
-* binary /, %, <<, >>, &, |, ^, &&, ||, ==, !=, lt, ge, gt, ge, min, max, where
+* binary /, %, <<, >>, &, |, ^, &&, ||
+* ternary where
 * select method (where)
 * major/minor
 * lookup, pseudo colour, warp
@@ -14,6 +16,7 @@
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * comparison operation for arrays (map reduce / tensors?)
+* min/max
 * Scheme objects, memory with pointers
 * convolution
 * use thumbnail images to illustrate examples

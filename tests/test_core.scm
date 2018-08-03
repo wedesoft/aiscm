@@ -1236,7 +1236,19 @@
   (test-equal "Extract green part of RGB array"
     '(3 11) (to-list (green (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
   (test-equal "Extract blue part of RGB array"
-    '(5 13) (to-list (blue (to-array (list (rgb 2 3 5) (rgb 7 11 13)))))))
+    '(5 13) (to-list (blue (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
+  (test-equal "Equal comparison"
+    '(#f #t #f) (to-list (eq (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Not-equal comparison"
+    '(#t #f #t) (to-list (ne (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Greater-than comparison"
+    '(#f #f #t) (to-list (gt (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Greater-equal comparison"
+    '(#f #t #t) (to-list (ge (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Lower-than comparison"
+    '(#t #f #f) (to-list (lt (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Lower-equal comparison"
+    '(#t #t #f) (to-list (le (arr 2 3 5) (arr 5 3 2)))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"
