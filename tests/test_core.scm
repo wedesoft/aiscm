@@ -1292,6 +1292,8 @@
 
 (test-group "type conversions"
   (test-equal "convert to float"
-    '(2.0 3.0 5.0) (to-list (to-type <float> (arr 2 3 5)))))
+    '(2.0 3.0 5.0) (to-list (to-type <float> (arr 2 3 5))))
+  (test-equal "convert bool to bool"
+    '(#f #t) (to-list (to-type <bool> (arr #f #t)))))
 
 (test-end "aiscm core")

@@ -453,6 +453,10 @@
                                  (base self)
                                  (integral (cons 0 (all-but-last (map size-of (base self))))))))
 
+(define-method (coerce (a <meta<bool>>) (b <meta<bool>>))
+  "Type coercion for booleans"
+  <bool>)
+
 (define-method (coerce (a <meta<int<>>>) (b <meta<int<>>>))
   "Type coercion for integers"
   (let* [(is-signed? (or (signed? a) (signed? b)))

@@ -1,5 +1,6 @@
 ## Ready
 
+* convert bool to byte
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * multiple C function calls in llvm-typed environment
 * runge kutta with state vector
