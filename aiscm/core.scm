@@ -933,6 +933,10 @@
 (define-rgb-unary-op -)
 (define-rgb-unary-op ~)
 
+(define-method (red (self <scalar>)) self)
+(define-method (green (self <scalar>)) self)
+(define-method (blue (self <scalar>)) self)
+
 (define-syntax-rule (define-rgb-binary-op op)
   (begin
     (define-method (op (value-a <rgb<>>) (value-b <rgb<>>))

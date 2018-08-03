@@ -1250,7 +1250,11 @@
   (test-equal "Lower-equal comparison"
     '(#t #t #f) (to-list (le (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Element-wise selection"
-    '(5 3) (to-list (where (arr #f #t) (arr 2 3) (arr 5 7)))))
+    '(5 3) (to-list (where (arr #f #t) (arr 2 3) (arr 5 7))))
+  (test-equal "Element-wise selection with real and complex number"
+    '(2+3i 0.0+0.0i) (to-list (where (arr #t #f) (arr 2+3i 5+7i) 0)))
+  (test-equal "Element-wise selection with gray and RGB"
+    (list (rgb 2 3 5) (rgb 0 0 0)) (to-list (where (arr #t #f) (to-array (list (rgb 2 3 5) (rgb 3 5 7))) 0))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"
