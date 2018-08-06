@@ -1,6 +1,7 @@
 ## Ready
 
-* crop, dump
+* rgb minus array
+* crop, dump, unroll
 * binary %, &, |, ^, &&, ||
 * rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>
