@@ -617,13 +617,13 @@
         ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
-    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3)
-    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2)
+    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3 12 -12)
+    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2  2   2)
     (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv
-          llvm-shl)
-    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12)
+          llvm-shl llvm-lshr llvm-ashr)
+    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12 3 -3)
     (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double
-          llvm-int32)))
+          llvm-int32 llvm-int32 llvm-int32)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
@@ -767,13 +767,17 @@
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((jit (list <int> <int>) op) a b)))
     (list + - * <<)
-    '(2  2 2  2)
-    '(3  3 3  3)
-    '(5 -1 6 16))
+    '(2  2 2  2 12)
+    '(3  3 3  3  2)
+    '(5 -1 6 16  3))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"
-    -64 ((jit (list <byte> <byte>) /) -128 2)))
+    -64 ((jit (list <byte> <byte>) /) -128 2))
+  (test-eqv "Right shift unsigned integer"
+    127 ((jit (list <ubyte> <ubyte>) >>) 254 1))
+  (test-eqv "Right shift signed integer"
+    -1 ((jit (list <byte> <byte>) >>) -2 1)))
 
 (test-group "floating-point binary expression"
   (for-each (lambda (value-a value-b op result)
@@ -1219,6 +1223,8 @@
     '(2 3) (to-list (/ (to-array '(10 21)) (to-array '(5 7)))))
   (test-equal "Left-shift array"
     '(20 14) (to-list (<< (arr 5 7) (arr 2 1))))
+  (test-equal "Right-shift array"
+    '(5 7) (to-list (>> (arr 20 14) (arr 2 1))))
   (let [(m (to-array '(2 3 5)))
         (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"

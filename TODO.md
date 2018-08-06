@@ -1,6 +1,7 @@
 ## Ready
 
-* binary %, <<, >>, &, |, ^, &&, ||
+* binary %, &, |, ^, &&, ||
+* rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>
 * lookup, pseudo colour, warp
 * minimal shape
