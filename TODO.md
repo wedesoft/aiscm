@@ -1,5 +1,6 @@
 ## Ready
 
+* crop, dump
 * binary %, &, |, ^, &&, ||
 * rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>
