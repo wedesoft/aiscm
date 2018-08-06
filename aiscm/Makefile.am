@@ -1,14 +1,10 @@
 SUFFIXES = .c .scm .go
 
 sitedir = $(GUILE_SITE)/aiscm
-site_DATA = jit.scm core.scm mem.scm element.scm scalar.scm bool.scm int.scm pointer.scm rgb.scm \
-						complex.scm float.scm sequence.scm asm.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm \
-						xorg.scm obj.scm composite.scm method.scm samples.scm tensor.scm variable.scm command.scm program.scm \
-						live-analysis.scm register-allocate.scm compile.scm expression.scm loop.scm operation.scm \
-						convolution.scm
+site_DATA = core.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-jit.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
+extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
 												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-core.la
 
@@ -21,7 +17,7 @@ cache_DATA = $(site_DATA:.scm=.go)
 
 AISCM_LDFLAGS = -no-undefined -module -shared -avoid-version
 
-libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c jit-tests.c \
+libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c \
 																	util-helpers.c util-helpers-tests.c samples-helpers.c samples-helpers-tests.c
 libguile_aiscm_tests_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tests_la_LDFLAGS = -no-undefined -module -shared -avoid-version -rpath /tmp
@@ -31,11 +27,6 @@ libguile_aiscm_util_la_SOURCES = util.c
 libguile_aiscm_util_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_util_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_util_la_LIBADD = $(GUILE_LIBS) -lc
-
-libguile_aiscm_jit_la_SOURCES = jit.c
-libguile_aiscm_jit_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_aiscm_jit_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_jit_la_LIBADD = $(GUILE_LIBS)
 
 libguile_aiscm_obj_la_SOURCES = obj.c
 libguile_aiscm_obj_la_CFLAGS = $(GUILE_CFLAGS)

@@ -19,7 +19,6 @@
 
 void init_ringbuffer_tests(void);
 void init_ffmpeg_helpers_tests(void);
-void init_jit_tests(void);
 void init_util_helpers_tests(void);
 void init_samples_helpers_tests(void);
 
@@ -27,7 +26,6 @@ void init_tests(void)
 {
   init_ringbuffer_tests();
   init_ffmpeg_helpers_tests();
-  init_jit_tests();
   init_util_helpers_tests();
   init_samples_helpers_tests();
 }

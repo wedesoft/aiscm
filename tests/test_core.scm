@@ -617,11 +617,13 @@
         ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
-    '(2 100  5 6  6 2.5  5.75 2.5  2.6)
-    '(3  30  7 2 -2 3.25 3.25 3.25 0.4)
-    (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv)
-    '(5  70 35 3 -3 5.75 2.5  8.125 6.5)
-    (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double)))
+    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3)
+    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2)
+    (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv
+          llvm-shl)
+    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12)
+    (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double
+          llvm-int32)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
@@ -761,11 +763,13 @@
     -42.5 ((jit (list <double>) -) 42.5)))
 
 (test-group "integer binary expressions"
-  (for-each (lambda (op result)
+  (for-each (lambda (op a b result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
-      result ((jit (list <int> <int>) op) 2 3)))
-    (list + - *)
-    '(5 -1 6))
+      result ((jit (list <int> <int>) op) a b)))
+    (list + - * <<)
+    '(2  2 2  2)
+    '(3  3 3  3)
+    '(5 -1 6 16))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"
@@ -1213,6 +1217,8 @@
     '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7)))))
   (test-equal "Divide 1D array"
     '(2 3) (to-list (/ (to-array '(10 21)) (to-array '(5 7)))))
+  (test-equal "Left-shift array"
+    '(20 14) (to-list (<< (arr 5 7) (arr 2 1))))
   (let [(m (to-array '(2 3 5)))
         (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"
@@ -1254,7 +1260,11 @@
   (test-equal "Element-wise selection with real and complex number"
     '(2+3i 0.0+0.0i) (to-list (where (arr #t #f) (arr 2+3i 5+7i) 0)))
   (test-equal "Element-wise selection with gray and RGB"
-    (list (rgb 2 3 5) (rgb 0 0 0)) (to-list (where (arr #t #f) (to-array (list (rgb 2 3 5) (rgb 3 5 7))) 0))))
+    (list (rgb 2 3 5) (rgb 0 0 0)) (to-list (where (arr #t #f) (to-array (list (rgb 2 3 5) (rgb 3 5 7))) 0)))
+  (test-equal "Element-wise minor value"
+    '(2 3 2) (to-list (minor (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Element-wise major value"
+    '(5 3 5) (to-list (major (arr 2 3 5) (arr 5 3 2)))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"

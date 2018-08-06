@@ -36,12 +36,12 @@
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-udiv llvm-sdiv llvm-fdiv
+            llvm-udiv llvm-sdiv llvm-fdiv llvm-shl
             llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides roll
+            ~ << le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
+            ensure-default-strides default-strides roll minor major
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -711,6 +711,7 @@
 (define-llvm-binary llvm-udiv llvm-build-udiv)
 (define-llvm-binary llvm-sdiv llvm-build-sdiv)
 (define-llvm-binary llvm-fdiv llvm-build-fdiv)
+(define-llvm-binary llvm-shl  llvm-build-shl )
 
 (define ((build-integer-cmp predicate) fun value-a value-b)
   (llvm-build-integer-cmp fun predicate value-a value-b))
@@ -848,10 +849,11 @@
     (define-binary-operation <pointer<>> <pointer<>>   type-map operation delegate )
     (define-op-with-constant <void> operation)))
 
-(define-binary-delegation identity + (const llvm-add)                                            (const llvm-fadd))
-(define-binary-delegation identity - (const llvm-sub)                                            (const llvm-fsub))
-(define-binary-delegation identity * (const llvm-mul)                                            (const llvm-fmul))
-(define-binary-delegation identity / (lambda (target) (if (signed? target) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
+(define-binary-delegation identity +  (const llvm-add)                                            (const llvm-fadd))
+(define-binary-delegation identity -  (const llvm-sub)                                            (const llvm-fsub))
+(define-binary-delegation identity *  (const llvm-mul)                                            (const llvm-fmul))
+(define-binary-delegation identity /  (lambda (target) (if (signed? target) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
+(define-binary-delegation identity << (const llvm-shl)                                            (const llvm-shl ))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
@@ -859,6 +861,14 @@
 (define-binary-delegation (const <bool>) ge (lambda (target) (if (signed? target) llvm-s-ge llvm-u-ge)) (const llvm-f-ge))
 (define-binary-delegation (const <bool>) eq (lambda (target) llvm-eq) (const llvm-f-eq))
 (define-binary-delegation (const <bool>) ne (lambda (target) llvm-ne) (const llvm-f-ne))
+
+(define-method (minor (a <scalar>) (b <scalar>))
+  "Return minor value of two values"
+  (where (le a b) a b))
+
+(define-method (major (a <scalar>) (b <scalar>))
+  "Return major value of two values"
+  (where (gt a b) a b))
 
 (define (construct-object class args)
   (make class #:value (memoize (fun) (map (lambda (component) ((get component) fun)) args))))
@@ -1289,6 +1299,9 @@
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )
 (define-array-op /         2 coerce          /       )
+(define-array-op <<        2 coerce          <<      )
+(define-array-op minor     2 coerce          minor   )
+(define-array-op major     2 coerce          major   )
 (define-array-op eq        2 to-bool         eq      )
 (define-array-op ne        2 to-bool         ne      )
 (define-array-op gt        2 to-bool         gt      )

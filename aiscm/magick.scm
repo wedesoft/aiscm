@@ -17,7 +17,6 @@
 (define-module (aiscm magick)
   #:use-module (oop goops)
   #:use-module (aiscm util)
-  #:use-module (aiscm mem)
   #:use-module (aiscm core))
 
 (load-extension "libguile-aiscm-magick" "init_magick")

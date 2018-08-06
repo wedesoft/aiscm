@@ -1,17 +1,14 @@
 ## Ready
 
-* binary minor, major
-* (where x rgb int)
+* binary %, <<, >>, &, |, ^, &&, ||
 * unary =0, !=0, !, <<, >>
-* binary /, %, <<, >>, &, |, ^, &&, ||
-* select method (where)
 * lookup, pseudo colour, warp
 * minimal shape
 * multiple C function calls in llvm-typed environment
 * OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
-* 2D GJK example
+* 3D GJK algorithm
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * comparison operation for arrays (map reduce / tensors?)

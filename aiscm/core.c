@@ -502,6 +502,11 @@ SCM llvm_build_fdiv(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildFDiv, scm_function, scm_value_a, scm_value_b);
 }
 
+SCM llvm_build_shl(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
+{
+  return llvm_build_binary(LLVMBuildShl, scm_function, scm_value_a, scm_value_b);
+}
+
 SCM llvm_build_integer_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
 {
   SCM retval;
@@ -687,6 +692,7 @@ void init_core(void)
   scm_c_define_gsubr("llvm-build-udiv"             , 3, 0, 0, SCM_FUNC(llvm_build_udiv             ));
   scm_c_define_gsubr("llvm-build-sdiv"             , 3, 0, 0, SCM_FUNC(llvm_build_sdiv             ));
   scm_c_define_gsubr("llvm-build-fdiv"             , 3, 0, 0, SCM_FUNC(llvm_build_fdiv             ));
+  scm_c_define_gsubr("llvm-build-shl"              , 3, 0, 0, SCM_FUNC(llvm_build_shl              ));
   scm_c_define_gsubr("llvm-build-trunc"            , 3, 0, 0, SCM_FUNC(llvm_build_trunc            ));
   scm_c_define_gsubr("llvm-build-sext"             , 3, 0, 0, SCM_FUNC(llvm_build_sext             ));
   scm_c_define_gsubr("llvm-build-zext"             , 3, 0, 0, SCM_FUNC(llvm_build_zext             ));
