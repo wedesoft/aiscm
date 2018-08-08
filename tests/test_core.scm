@@ -1187,7 +1187,11 @@
     (test-equal "Shape of rolled array"
       '(3 4 2) (shape (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Strides of rolled array"
-      '(8 24 4) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
+      '(8 24 4) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+    (test-equal "Shape of unrolled array"
+      '(4 2 3) (shape (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+    (test-equal "Strides of unrolled array"
+      '(24 4 8) (strides (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"
