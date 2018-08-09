@@ -1191,7 +1191,13 @@
     (test-equal "Shape of unrolled array"
       '(4 2 3) (shape (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Strides of unrolled array"
-      '(24 4 8) (strides (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))))
+      '(24 4 8) (strides (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+    (test-equal "Crop 1D array"
+      '(1 2 3) (to-list (crop 3 (arr 1 2 3 4))))
+    (test-equal "Crop 2D array"
+      '((1 2)) (to-list (crop '(2 1) (arr  (1 2 3) (4 5 6)))))
+    (test-equal "Shape of cropped 3D array"
+      '(3 1 2) (shape (crop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"

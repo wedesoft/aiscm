@@ -41,7 +41,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides roll unroll minor major
+            ensure-default-strides default-strides roll unroll crop minor major
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -316,6 +316,18 @@
   (make (class-of self)
         #:shape       (cons (last (shape self)) (all-but-last (shape self)))
         #:strides     (cons (last (strides self)) (all-but-last (strides self)))
+        #:memory      (memory self)
+        #:memory-base (memory-base self)))
+
+(define-method (crop (n <null>) (self <multiarray<>>)) self)
+
+(define-method (crop (n <pair>) (self <multiarray<>>))
+  (crop (last n) (roll (crop (all-but-last n) (unroll self)))))
+
+(define-method (crop (n <integer>) (self <multiarray<>>))
+  (make (class-of self)
+        #:shape       (attach (all-but-last (shape self)) n)
+        #:strides     (strides self)
         #:memory      (memory self)
         #:memory-base (memory-base self)))
 
