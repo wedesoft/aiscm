@@ -23,6 +23,6 @@ a
 ;  (6)))
 (shape (unroll a))
 ;(1 3 2)
-(project (roll a))
+(get (roll a) 0)
 ;#<multiarray<int<8,unsigned>,2>>:
 ;((1 4))

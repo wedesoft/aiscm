@@ -1197,7 +1197,13 @@
     (test-equal "Crop 2D array"
       '((1 2)) (to-list (crop '(2 1) (arr  (1 2 3) (4 5 6)))))
     (test-equal "Shape of cropped 3D array"
-      '(3 1 2) (shape (crop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))))
+      '(3 1 2) (shape (crop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))
+    (test-equal "Dump elements from 1D array"
+      '(3 4 5) (to-list (dump 2 (arr 1 2 3 4 5))))
+    (test-equal "Dump elements from 2D array"
+      '((2 3) (5 6)) (to-list (dump '(1 0) (arr (1 2 3) (4 5 6)))))
+    (test-equal "Shape of 3D array after dumping elements"
+      '(3 3 3) (shape (dump '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"
