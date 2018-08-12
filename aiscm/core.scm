@@ -27,7 +27,7 @@
   #:export (get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
-            complex base size-of unpack-value native-type components constructor build
+            complex conj base size-of unpack-value native-type components constructor build
             pointer target llvmlist typecode dimension llvm-last llvm-all-but-last
             multiarray dimensions shape memory memory-base strides llvmarray
             llvm-void llvm-bool llvm-float llvm-double llvm-uint8 llvm-int8 llvm-uint16 llvm-int16
@@ -970,6 +970,9 @@
     (complex (/ (* (real-part value-a) (real-part value-b)) den)
              (/ (- (* (real-part value-a) (imag-part value-b))) den))))
 
+(define-method (conj (value <complex<>>))
+  (complex (real-part value) (- (imag-part value))))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -1328,6 +1331,7 @@
 
 (define-array-op -         1 identity        -       )
 (define-array-op ~         1 identity        ~       )
+(define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )

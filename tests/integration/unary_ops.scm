@@ -1,9 +1,9 @@
-(use-modules (aiscm sequence) (aiscm int) (aiscm jit) (aiscm rgb) (aiscm complex))
-(- (seq <int> 2 3 5))
-;#<sequence<int<32,signed>>>:
+(use-modules (aiscm core))
+(- (arr <int> 2 3 5))
+;#<multiarray<int<32,signed>,1>>:
 ;(-2 -3 -5)
-(~ (seq <byte> -128 -3 -2 -1 0 1 2 127))
-;#<sequence<int<8,signed>>>:
+(~ (arr <byte> -128 -3 -2 -1 0 1 2 127))
+;#<multiarray<int<8,signed>,1>>:
 ;(127 2 1 0 -1 -2 -3 -128)
 (=0 (seq -2 -1 0 1 2))
 ;#<sequence<bool>>:
