@@ -1,6 +1,8 @@
 ## Ready
 
 * binary %, &, |, ^, &&, ||
+* documentation: paredit, rainbow parentheses, guile colorize
+* complex conjugate
 * rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>
 * lookup, pseudo colour, warp
