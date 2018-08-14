@@ -1,7 +1,6 @@
 ## Ready
 
-* %: LLVMBuildURem,, LLVMBuildSRem, LLVMBuildFRem
-* binary %, &, |, ^, &&, ||
+* binary &, |, ^, &&, ||
 * documentation: paredit, rainbow parentheses, guile colorize
 * rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>

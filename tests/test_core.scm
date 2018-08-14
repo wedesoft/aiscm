@@ -770,9 +770,9 @@
   (for-each (lambda (op a b result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((jit (list <int> <int>) op) a b)))
-    (list + - * <<)
-    '(2  2 2  2 12)
-    '(3  3 3  3  2)
+    (list + - * <<  %)
+    '(2  2 2  2 13)
+    '(3  3 3  3  5)
     '(5 -1 6 16  3))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
@@ -781,18 +781,20 @@
   (test-eqv "Right shift unsigned integer"
     127 ((jit (list <ubyte> <ubyte>) >>) 254 1))
   (test-eqv "Right shift signed integer"
-    -1 ((jit (list <byte> <byte>) >>) -2 1)))
+    -1 ((jit (list <byte> <byte>) >>) -2 1))
+  (test-eqv "Unsigned integer remander"
+    4 ((jit (list <ubyte> <ubyte>) %) 254 50)))
 
 (test-group "floating-point binary expression"
   (for-each (lambda (value-a value-b op result)
     (test-equal (format #f "(~a ~a ~a) should be ~a" (procedure-name op) value-a value-b result)
       result ((jit (list (if (integer? value-a) <int> <float>)
-                                (if (integer? value-b) <int> <float>))
+                         (if (integer? value-b) <int> <float>))
                           op) value-a value-b)))
-    '(2.5  2.5 2    3.75 2   2.5 1.5 2    1.25 2.25 2.5 3  )
-    '(3.75 3   3.75 2.5  1.5 1   2.5 1.25 2    0.5  2   1.5)
-    (list + + + - - - * * * / / /)
-    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5 4.5 1.25 2.0)))
+    '(2.5  2.5 2    3.75 2   2.5 1.5 2    1.25 2.25 2.5 3   5.5)
+    '(3.75 3   3.75 2.5  1.5 1   2.5 1.25 2    0.5  2   1.5 2.5)
+    (list + + + - - - * * * / / / %)
+    '(6.25 5.5 5.75 1.25 0.5 1.5 3.75 2.5 2.5 4.5 1.25 2.0 0.5)))
 
 (test-group "constant conversions"
   (test-eqv "add integer constant to value"

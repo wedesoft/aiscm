@@ -40,7 +40,7 @@
             llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ << >> le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
+            ~ << >> % le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll unroll crop dump minor major
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
@@ -891,6 +891,7 @@
 (define-binary-delegation identity /  (lambda (target) (if (signed? target) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
 (define-binary-delegation identity << (const llvm-shl)                                            (const llvm-shl ))
 (define-binary-delegation identity >> (lambda (target) (if (signed? target) llvm-ashr llvm-lshr)) (const llvm-ashr))
+(define-binary-delegation identity %  (lambda (target) (if (signed? target) llvm-srem llvm-urem)) (const llvm-frem))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
