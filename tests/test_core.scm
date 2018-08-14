@@ -621,13 +621,13 @@
         ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
-    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3 12 -12)
-    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2  2   2)
+    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3 12 -12 13 -13 5.5)
+    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2  2   2  5   5   3)
     (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv
-          llvm-shl llvm-lshr llvm-ashr)
-    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12 3 -3)
+          llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem)
+    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12 3 -3  3  -3 2.5)
     (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double
-          llvm-int32 llvm-int32 llvm-int32)))
+          llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"

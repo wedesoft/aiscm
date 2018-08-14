@@ -36,7 +36,7 @@
             function-ret llvm-func get-type llvm-compile llvm-fetch llvm-store function-param
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
-            llvm-udiv llvm-sdiv llvm-fdiv llvm-shl llvm-lshr llvm-ashr
+            llvm-udiv llvm-sdiv llvm-fdiv llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem
             llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
@@ -745,6 +745,9 @@
 (define-llvm-binary llvm-shl  llvm-build-shl )
 (define-llvm-binary llvm-lshr llvm-build-lshr)
 (define-llvm-binary llvm-ashr llvm-build-ashr)
+(define-llvm-binary llvm-urem llvm-build-urem)
+(define-llvm-binary llvm-srem llvm-build-srem)
+(define-llvm-binary llvm-frem llvm-build-frem)
 
 (define ((build-integer-cmp predicate) fun value-a value-b)
   (llvm-build-integer-cmp fun predicate value-a value-b))
