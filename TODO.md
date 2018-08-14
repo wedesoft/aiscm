@@ -1,9 +1,13 @@
 ## Ready
 
-* binary &, |, ^, &&, ||
+* binary &&, ||
+* rgb %
+* comparison operation for arrays (map reduce)
+* unary =0, !=0, !
+* convolution: \*, +=, dilation: first/conditional, max, ...
+* integration tests, release
+* binary and rgb &, |, ^, <<, >>
 * documentation: paredit, rainbow parentheses, guile colorize
-* rgb %, <<, >>, &, |, ^
-* unary =0, !=0, !, <<, >>
 * lookup, pseudo colour, warp
 * minimal shape
 * multiple C function calls in llvm-typed environment
@@ -12,10 +16,8 @@
 * 3ds converter computing normals and tangentials and loading textures and maps
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
-* comparison operation for arrays (map reduce / tensors?)
 * min/max
 * Scheme objects, memory with pointers
-* convolution
 * use thumbnail images to illustrate examples
 * connected components analysis
 * Ghost in the Shell style animations
@@ -51,7 +53,6 @@
 * linear algebra bindings (blas, lapack, gsl, mkl)
 * separable convolution
 * convolve with set of sobel filters
-* convolution: \*, +=, dilation: first/conditional, max, ...
 * diagonal injection, convolution, median, dilation, ...
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
