@@ -5,12 +5,6 @@
 (~ (arr <byte> -128 -3 -2 -1 0 1 2 127))
 ;#<multiarray<int<8,signed>,1>>:
 ;(127 2 1 0 -1 -2 -3 -128)
-(=0 (seq -2 -1 0 1 2))
-;#<sequence<bool>>:
-;(#f #f #t #f #f)
-(!=0 (seq -2 -1 0 1 2))
-;#<sequence<bool>>:
-;(#t #t #f #t #t)
 (red (seq (rgb 2 3 5) (rgb 3 5 7)))
 ;#<sequence<int<8,unsigned>>>:
 ;(2 3)

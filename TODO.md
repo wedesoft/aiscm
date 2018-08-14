@@ -3,9 +3,9 @@
 * binary &&, ||
 * rgb %
 * comparison operation for arrays (map reduce)
-* unary =0, !=0, !
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * integration tests, release
+* unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
 * documentation: paredit, rainbow parentheses, guile colorize
 * lookup, pseudo colour, warp
