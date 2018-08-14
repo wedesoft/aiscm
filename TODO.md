@@ -1,7 +1,12 @@
 ## Ready
 
+* OpenGL support, 3DS files
+* 2D, 3D physics
+* quaternionen, state vectors
+* GJK collisions
 * binary &&, ||
 * rgb %
+* imag-part and conj of real array
 * comparison operation for arrays (map reduce)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * integration tests, release
