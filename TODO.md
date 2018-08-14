@@ -1,8 +1,8 @@
 ## Ready
 
+* %: LLVMBuildURem,, LLVMBuildSRem, LLVMBuildFRem
 * binary %, &, |, ^, &&, ||
 * documentation: paredit, rainbow parentheses, guile colorize
-* complex conjugate
 * rgb %, <<, >>, &, |, ^
 * unary =0, !=0, !, <<, >>
 * lookup, pseudo colour, warp
@@ -11,7 +11,6 @@
 * OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
-* 3D GJK algorithm
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * comparison operation for arrays (map reduce / tensors?)

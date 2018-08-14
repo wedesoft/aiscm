@@ -152,7 +152,9 @@
     <double> (class-of (imag-part (make <complex<double>> #:value '(2.5 3.25)))))
   (test-eqv "Get imaginary component of complex number"
     3.25 ((get (imag-part (make <complex<float>> #:value (const '(2.5 3.25))))) #f))
-  (test-equal "Complex conjugate"
+  (test-eqv "Complex conjugate"
+    2-3i (conj 2+3i))
+  (test-equal "Complex conjugate of array"
     '(2-3i 5-7i) (to-list (conj (arr 2+3i 5+7i)))))
 
 (test-group "complex coercion"

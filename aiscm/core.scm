@@ -970,6 +970,9 @@
     (complex (/ (* (real-part value-a) (real-part value-b)) den)
              (/ (- (* (real-part value-a) (imag-part value-b))) den))))
 
+(define-method (conj (value <complex>))
+  (make-rectangular (real-part value) (-  (imag-part value))))
+
 (define-method (conj (value <complex<>>))
   (complex (real-part value) (- (imag-part value))))
 
