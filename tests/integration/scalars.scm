@@ -1,4 +1,4 @@
-(use-modules (aiscm int) (aiscm rgb) (aiscm complex))
+(use-modules (aiscm core))
 (<< 3 2)
 ;12
 (% 1234 100)
