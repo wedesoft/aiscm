@@ -1247,6 +1247,10 @@
     '(20 14) (to-list (<< (arr 5 7) (arr 2 1))))
   (test-equal "Right-shift array"
     '(5 7) (to-list (>> (arr 20 14) (arr 2 1))))
+  (test-equal "Elementwise and of array"
+    '(0 1) (to-list (& (arr 2 3) 5)))
+  (test-equal "Elementwise and of array"
+    '(7 7) (to-list (| (arr 2 3) 5)))
   (let [(m (to-array '(2 3 5)))
         (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"

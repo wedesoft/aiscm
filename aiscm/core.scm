@@ -1351,6 +1351,8 @@
 (define-array-op /         2 coerce          /       )
 (define-array-op <<        2 coerce          <<      )
 (define-array-op >>        2 coerce          >>      )
+(define-array-op &         2 coerce          &       )
+(define-array-op |         2 coerce          |       )
 (define-array-op minor     2 coerce          minor   )
 (define-array-op major     2 coerce          major   )
 (define-array-op eq        2 to-bool         eq      )
