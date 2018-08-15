@@ -621,13 +621,13 @@
         ((function-ret (op (function-param 0) (function-param 1))) fun)
         (llvm-compile mod)
         ((llvm-func mod fun) value-a value-b))))
-    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3 12 -12 13 -13 5.5)
-    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2  2   2  5   5   3)
+    '(2 100  5 6  6 2.5  5.75 2.5  2.6 3 12 -12 13 -13 5.5 3 3)
+    '(3  30  7 2 -2 3.25 3.25 3.25 0.4 2  2   2  5   5   3 5 5)
     (list llvm-add llvm-sub llvm-mul llvm-udiv llvm-sdiv llvm-fadd llvm-fsub llvm-fmul llvm-fdiv
-          llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem)
-    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12 3 -3  3  -3 2.5)
+          llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem llvm-and llvm-or)
+    '(5  70 35 3 -3 5.75 2.5  8.125 6.5 12 3 -3  3  -3 2.5 1 7)
     (list llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-double llvm-double llvm-double
-          llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double)))
+          llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-int32 llvm-double llvm-int32 llvm-int32)))
 
 (test-group "convenience wrapper"
   (test-assert "Define empty function using convenience wrapper"
@@ -770,10 +770,10 @@
   (for-each (lambda (op a b result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((jit (list <int> <int>) op) a b)))
-    (list + - * <<  %)
-    '(2  2 2  2 13)
-    '(3  3 3  3  5)
-    '(5 -1 6 16  3))
+    (list +  - * <<  % & |)
+    '(    2  2 2  2 13 3 3)
+    '(    3  3 3  3  5 5 5)
+    '(    5 -1 6 16  3 1 7))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"
@@ -1346,7 +1346,9 @@
   (test-equal "RGB binary multiplication"
     (rgb 14 33 65) ((jit (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13)))
   (test-equal "RGB binary division"
-    (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13))))
+    (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13)))
+  (test-equal "RGB modulo"
+    (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4)))
 
 (test-group "type conversions"
   (test-equal "convert to float"
