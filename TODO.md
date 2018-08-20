@@ -1,7 +1,7 @@
 ## Ready
 
-* boolean &&, ||
 * imag-part and conj of real array
+* green channel of real array
 * comparison operation for arrays (map reduce)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * integration tests, release

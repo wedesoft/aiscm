@@ -40,7 +40,7 @@
             llvm-and llvm-or llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ << >> % & | le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
+            ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll unroll crop dump minor major
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
@@ -862,6 +862,7 @@
 (define-unary-operation <int<>>   - llvm-neg )
 (define-unary-operation <float<>> - llvm-fneg)
 (define-unary-operation <int<>>   ~ llvm-not )
+(define-unary-operation <bool>    ! llvm-not )
 
 (define-syntax-rule (define-binary-operation type-a type-b type-map operation delegate)
   (define-method (operation (value-a type-a) (value-b type-b))
@@ -896,6 +897,9 @@
 (define-binary-delegation identity %  (lambda (target) (if (signed? target) llvm-srem llvm-urem)) (const llvm-frem))
 (define-binary-delegation identity &  (const llvm-and)                                            (const llvm-and ))
 (define-binary-delegation identity |  (const llvm-or )                                            (const llvm-or  ))
+
+(define-binary-operation <bool> <bool> identity && (const llvm-and))
+(define-binary-operation <bool> <bool> identity || (const llvm-or ))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
@@ -1343,6 +1347,7 @@
 
 (define-array-op -         1 identity        -       )
 (define-array-op ~         1 identity        ~       )
+(define-array-op !         1 identity        !       )
 (define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
 (define-array-op +         2 coerce          +       )
@@ -1353,6 +1358,8 @@
 (define-array-op >>        2 coerce          >>      )
 (define-array-op &         2 coerce          &       )
 (define-array-op |         2 coerce          |       )
+(define-array-op &&        2 coerce          &&      )
+(define-array-op ||        2 coerce          ||      )
 (define-array-op minor     2 coerce          minor   )
 (define-array-op major     2 coerce          major   )
 (define-array-op eq        2 to-bool         eq      )

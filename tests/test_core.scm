@@ -1360,4 +1360,12 @@
   (test-equal "convert bool to bool"
     '(#f #t) (to-list (to-type <bool> (arr #f #t)))))
 
+(test-group "boolean operations"
+  (test-equal "element-wise unary negation"
+    '(#t #f) (to-list (! (arr #f #t))))
+  (test-equal "element-wise boolean and"
+    '(#f #f #f #t) (to-list (&& (arr #f #t #f #t) (arr #f #f #t #t))))
+  (test-equal "element-wise boolean or"
+    '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t)))))
+
 (test-end "aiscm core")
