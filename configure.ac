@@ -1,4 +1,4 @@
-dnl Run `./bootstrap` to generate a configure script.
+dnl Run `./autogen.sh` to generate a configure script.
 dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])

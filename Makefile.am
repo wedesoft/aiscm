@@ -5,7 +5,7 @@ SUBDIRS = aiscm tests doc bench srfi
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = bootstrap configure.ac README README.md TODO.md COPYING NEWS NEWS.md ChangeLog AUTHORS
+EXTRA_DIST = autogen.sh configure.ac README README.md TODO.md COPYING NEWS NEWS.md ChangeLog AUTHORS
 
 repl:
 	$(ENVIRONMENT) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y DEBUG=YES $(RUN)

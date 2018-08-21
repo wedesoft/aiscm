@@ -38,7 +38,7 @@ sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 Finally you can install the software as follows
 
 ```Shell
-./bootstrap
+./autogen.sh
 ./configure
 make -j
 make check -j

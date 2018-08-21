@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install colorgcc
   - sudo sh doc/dependencies.sh
 install:
-  - ./bootstrap
+  - ./autogen.sh
   - ./configure CC=colorgcc CFLAGS=-Wpedantic
   - make -j
 script:
