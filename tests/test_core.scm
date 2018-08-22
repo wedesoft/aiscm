@@ -1243,6 +1243,8 @@
     '(10 21) (to-list (* (to-array '(2 3)) (to-array '(5 7)))))
   (test-equal "Divide 1D array"
     '(2 3) (to-list (/ (to-array '(10 21)) (to-array '(5 7)))))
+  (test-equal "Modulo 1D array"
+    '(2 1) (to-list (% (to-array '(10 21)) 4)))
   (test-equal "Left-shift array"
     '(20 14) (to-list (<< (arr 5 7) (arr 2 1))))
   (test-equal "Right-shift array"

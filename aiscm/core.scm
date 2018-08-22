@@ -1354,6 +1354,7 @@
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )
 (define-array-op /         2 coerce          /       )
+(define-array-op %         2 coerce          %       )
 (define-array-op <<        2 coerce          <<      )
 (define-array-op >>        2 coerce          >>      )
 (define-array-op &         2 coerce          &       )
