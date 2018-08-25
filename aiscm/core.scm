@@ -1345,6 +1345,12 @@
           (apply op args))))
     (define-nary-collect op arity)))
 
+(define-method (channel-type (self <meta<scalar>>))
+  self)
+
+(define-method (channel-type (self <meta<structure>>))
+  (reduce coerce #f (base self)))
+
 (define-array-op -         1 identity        -       )
 (define-array-op ~         1 identity        ~       )
 (define-array-op !         1 identity        !       )
@@ -1373,6 +1379,12 @@
 (define-array-op where     3 coerce-last-two where)
 (define-array-op rgb       3 rgb             rgb     )
 
+(define-array-op real-part 1 channel-type real-part)
+(define-array-op imag-part 1 channel-type imag-part)
+(define-array-op red       1 channel-type red      )
+(define-array-op green     1 channel-type green    )
+(define-array-op blue      1 channel-type blue     )
+
 (define-method (to-type (type <meta<void>>) (self <multiarray<>>))
   (let [(fun (jit (list (native-type self))
           (lambda (arg)
@@ -1382,28 +1394,6 @@
     (add-method! to-type (make <method> #:specializers (list (class-of type) (class-of self))
                                         #:procedure (lambda (type self) (fun self))))
     (to-type type self)))
-
-(define-syntax define-array-channels
-  (lambda (x)
-    (syntax-case x ()
-      ((k members ...)
-       "Define element-wise access to component of array with elements of composite type"
-       (let [(n (length (syntax->datum #'(members ...))))]
-         #`(begin .
-           #,(map (lambda (member-name index)
-                    #`(define-method (#,(datum->syntax #'k member-name) (self <multiarray<>>))
-                        (make (multiarray (list-ref (base (typecode self)) #,(datum->syntax #'k index)) (dimensions self))
-                              #:shape       (shape self)
-                              #:strides     (strides self)
-                              #:memory      (make-pointer
-                                              (apply + (pointer-address (memory self))
-                                                (map size-of (take (base (typecode self)) #,(datum->syntax #'k index)))))
-                              #:memory-base (memory-base self))))
-                  (syntax->datum #'(members ...))
-                  (iota n))))))))
-
-(define-array-channels real-part imag-part)
-(define-array-channels red green blue)
 
 (define-generic read-image)
 (define-generic write-image)
