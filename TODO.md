@@ -2,10 +2,10 @@
 
 * comparison operation for arrays (map reduce)
 * convolution: \*, +=, dilation: first/conditional, max, ...
+* Scheme objects, memory with pointers
 * integration tests, release
 * unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
-* documentation: paredit, rainbow parentheses, guile colorize
 * lookup, pseudo colour, warp
 * minimal shape
 * multiple C function calls in llvm-typed environment
@@ -15,7 +15,6 @@
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * min/max
-* Scheme objects, memory with pointers
 * use thumbnail images to illustrate examples
 * connected components analysis
 * Ghost in the Shell style animations
