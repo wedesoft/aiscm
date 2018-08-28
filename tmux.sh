@@ -7,7 +7,7 @@ tmux select-pane -t1
 tmux send-keys "cd tests" C-m
 tmux send-keys "./guard.sh test_core.log" C-m
 tmux select-pane -t2
-tmux send-keys "vim" C-m
+tmux send-keys "nvim" C-m
 sleep 1
 tmux send-keys C-O C-O
 tmux select-pane -t1

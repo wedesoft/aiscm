@@ -1,5 +1,7 @@
 ## Ready
 
+* sum of 2D array (reduce) and of RGB array, coerce to int
+* product min, max of array
 * comparison operation for arrays (map reduce)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * Scheme objects, memory with pointers

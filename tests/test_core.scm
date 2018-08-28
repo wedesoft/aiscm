@@ -1374,4 +1374,10 @@
   (test-equal "element-wise boolean or"
     '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t)))))
 
+(test-group "Reducing operations"
+  (test-eqv "sum of 1D array"
+    10 (sum (arr 2 3 5)))
+  (test-eqv "use correct strides when summing"
+    10 (sum (get (roll (arr (2 10) (3 20) (5 40))) 0))))
+
 (test-end "aiscm core")

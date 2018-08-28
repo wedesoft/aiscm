@@ -41,7 +41,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides roll unroll crop dump minor major
+            ensure-default-strides default-strides roll unroll crop dump minor major sum
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -1401,3 +1401,21 @@
 (define-generic write-audio)
 (define-generic rate)
 (define-generic channels)
+
+(define-method (sum (self <multiarray<>>))
+  (let [(fun (lambda (arg)
+               (typed-let [(result (typed-alloca (typecode arg)))
+                           (p      (typed-alloca (pointer (typecode arg))))
+                           (stride (llvm-last (strides arg)))
+                           (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+                 (store result (fetch (memory arg)))
+                 (store p (+ (memory arg) stride))
+                 (llvm-while (ne (fetch p) pend)
+                   (store result (+ (fetch result) (fetch (fetch p))))
+                   (store p (+ (fetch p) stride)))
+                  (fetch result))))]
+  (add-method! sum
+               (make <method>
+                     #:specializers (list (class-of self))
+                     #:procedure (jit (list (native-type self)) fun)))
+  (sum self)))
