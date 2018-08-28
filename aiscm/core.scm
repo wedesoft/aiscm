@@ -1402,20 +1402,20 @@
 (define-generic rate)
 (define-generic channels)
 
+(define (reduction result arg)
+  (typed-let [(p      (typed-alloca (pointer (typecode arg))))
+              (stride (llvm-last (strides arg)))
+              (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+    (store result (fetch (memory arg)))
+    (store p (+ (memory arg) stride))
+    (llvm-while (ne (fetch p) pend)
+      (store result (+ (fetch result) (fetch (fetch p))))
+      (store p (+ (fetch p) stride)))))
+
 (define-method (sum (self <multiarray<>>))
-  (let [(fun (lambda (arg)
-               (typed-let [(result (typed-alloca (typecode arg)))
-                           (p      (typed-alloca (pointer (typecode arg))))
-                           (stride (llvm-last (strides arg)))
-                           (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-                 (store result (fetch (memory arg)))
-                 (store p (+ (memory arg) stride))
-                 (llvm-while (ne (fetch p) pend)
-                   (store result (+ (fetch result) (fetch (fetch p))))
-                   (store p (+ (fetch p) stride)))
-                  (fetch result))))]
-  (add-method! sum
-               (make <method>
-                     #:specializers (list (class-of self))
-                     #:procedure (jit (list (native-type self)) fun)))
-  (sum self)))
+  (let [(fun (lambda (arg) (typed-let [(result (typed-alloca (typecode arg)))] (reduction result arg) (fetch result))))]
+    (add-method! sum
+                 (make <method>
+                       #:specializers (list (class-of self))
+                       #:procedure (jit (list (native-type self)) fun))))
+  (sum self))
