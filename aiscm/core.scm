@@ -1403,20 +1403,18 @@
 (define-generic channels)
 
 (define (reduction result arg)
-  (typed-let [(p      (typed-alloca (pointer (typecode arg))))
-              (stride (llvm-last (strides arg)))
-              (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-    (if (eq? (dimensions arg) 1)
-      (store result (fetch (memory arg)))
-      (reduction result (project arg)))
-    (store p (+ (memory arg) stride))
-    (llvm-while (ne (fetch p) pend)
-      (if (eq? (dimensions arg) 1)
-        (store result (+ (fetch result) (fetch (fetch p))))
+  (if (zero? (dimensions arg))
+    (store result (fetch (memory arg)))
+    (typed-let [(p      (typed-alloca (pointer (typecode arg))))
+                (stride (llvm-last (strides arg)))
+                (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+      (reduction result (project arg))
+      (store p (+ (memory arg) stride))
+      (llvm-while (ne (fetch p) pend)
         (typed-let [(sub-result (typed-alloca (typecode arg)))]
           (reduction sub-result (project (rebase arg (fetch p))))
-          (store result (+ (fetch result) (fetch sub-result)))))
-      (store p (+ (fetch p) stride)))))
+          (store result (+ (fetch result) (fetch sub-result))))
+        (store p (+ (fetch p) stride))))))
 
 (define-method (sum (self <multiarray<>>))
   (let [(fun (lambda (arg) (typed-let [(result (typed-alloca (typecode arg)))] (reduction result arg) (fetch result))))]
