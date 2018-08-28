@@ -1379,7 +1379,6 @@
     10 (sum (arr 2 3 5)))
   (test-eqv "use correct strides when summing"
     10 (sum (get (roll (arr (2 10) (3 20) (5 40))) 0)))
-  (test-expect-fail 1)
   (test-eqv "sum of 2D array"
     41 (sum (arr (2 3 5) (7 11 13)))))
 

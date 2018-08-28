@@ -1406,10 +1406,16 @@
   (typed-let [(p      (typed-alloca (pointer (typecode arg))))
               (stride (llvm-last (strides arg)))
               (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-    (store result (fetch (memory arg)))
+    (if (eq? (dimensions arg) 1)
+      (store result (fetch (memory arg)))
+      (reduction result (project arg)))
     (store p (+ (memory arg) stride))
     (llvm-while (ne (fetch p) pend)
-      (store result (+ (fetch result) (fetch (fetch p))))
+      (if (eq? (dimensions arg) 1)
+        (store result (+ (fetch result) (fetch (fetch p))))
+        (typed-let [(sub-result (typed-alloca (typecode arg)))]
+          (reduction sub-result (project (rebase arg (fetch p))))
+          (store result (+ (fetch result) (fetch sub-result)))))
       (store p (+ (fetch p) stride)))))
 
 (define-method (sum (self <multiarray<>>))
