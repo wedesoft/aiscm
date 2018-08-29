@@ -72,7 +72,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while typed-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part))
+  #:re-export (- + * / real-part imag-part min max))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1425,5 +1425,7 @@
                          #:procedure (jit (list (native-type self)) fun))))
     (name self)))
 
-(define-reducing-op sum  +)
-(define-reducing-op prod *)
+(define-reducing-op sum  +    )
+(define-reducing-op prod *    )
+(define-reducing-op min  minor)
+(define-reducing-op max  major)

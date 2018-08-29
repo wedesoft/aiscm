@@ -1382,6 +1382,10 @@
   (test-eqv "sum of 2D array"
     41 (sum (arr (2 3 5) (7 11 13))))
   (test-eqv "product of 1D array"
-    30 (prod (arr 2 3 5))))
+    30 (prod (arr 2 3 5)))
+  (test-eqv "Minimum of array"
+    2 (min (arr 2 3 5)))
+  (test-eqv "Maximum of array"
+    5 (max (arr 2 3 5))))
 
 (test-end "aiscm core")
