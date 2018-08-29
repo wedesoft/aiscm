@@ -41,7 +41,7 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides roll unroll crop dump minor major sum
+            ensure-default-strides default-strides roll unroll crop dump minor major sum prod
             destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
@@ -1402,24 +1402,28 @@
 (define-generic rate)
 (define-generic channels)
 
-(define (reduction result arg)
+(define (reduction result arg operation)
   (if (zero? (dimensions arg))
     (store result (fetch (memory arg)))
     (typed-let [(p      (typed-alloca (pointer (typecode arg))))
                 (stride (llvm-last (strides arg)))
                 (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-      (reduction result (project arg))
+      (reduction result (project arg) operation)
       (store p (+ (memory arg) stride))
       (llvm-while (ne (fetch p) pend)
         (typed-let [(sub-result (typed-alloca (typecode arg)))]
-          (reduction sub-result (project (rebase arg (fetch p))))
-          (store result (+ (fetch result) (fetch sub-result))))
+          (reduction sub-result (project (rebase arg (fetch p))) operation)
+          (store result (operation (fetch result) (fetch sub-result))))
         (store p (+ (fetch p) stride))))))
 
-(define-method (sum (self <multiarray<>>))
-  (let [(fun (lambda (arg) (typed-let [(result (typed-alloca (typecode arg)))] (reduction result arg) (fetch result))))]
-    (add-method! sum
-                 (make <method>
-                       #:specializers (list (class-of self))
-                       #:procedure (jit (list (native-type self)) fun))))
-  (sum self))
+(define-syntax-rule (define-reducing-op name operation)
+  (define-method (name (self <multiarray<>>))
+    (let [(fun (lambda (arg) (typed-let [(result (typed-alloca (typecode arg)))] (reduction result arg operation) (fetch result))))]
+      (add-method! name
+                   (make <method>
+                         #:specializers (list (class-of self))
+                         #:procedure (jit (list (native-type self)) fun))))
+    (name self)))
+
+(define-reducing-op sum  +)
+(define-reducing-op prod *)

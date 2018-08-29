@@ -1,7 +1,8 @@
 ## Ready
 
-* sum of RGB array, coerce to int
 * product min, max of array
+* sum of RGB array, coerce to int
+* Standards version 4.2.1
 * comparison operation for arrays (map reduce)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * Scheme objects, memory with pointers
