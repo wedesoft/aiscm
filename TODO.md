@@ -1,6 +1,7 @@
 ## Ready
 
-* product min, max of array
+* store structure
+* (store (rgb (pointer <int>)) (fetch (rgb (pointer <int>)))), typed-alloca (rgb <int>)
 * sum of RGB array, coerce to int
 * Standards version 4.2.1
 * comparison operation for arrays (map reduce)

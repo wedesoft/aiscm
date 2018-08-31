@@ -1386,6 +1386,10 @@
   (test-eqv "Minimum of array"
     2 (min (arr 2 3 5)))
   (test-eqv "Maximum of array"
-    5 (max (arr 2 3 5))))
+    5 (max (arr 2 3 5)))
+  (test-equal "Allocate RGB value on stack"
+    <rgb> (class-of ((jit '() (lambda () (fetch (typed-alloca (rgb <int>))))))))
+  (test-equal "Sum of RGB array"
+    (rgb 9 14 18) (sum (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
 
 (test-end "aiscm core")

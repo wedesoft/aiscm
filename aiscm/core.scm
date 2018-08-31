@@ -1055,6 +1055,9 @@
 (define-method (fetch (ptr <pointer<>>))
   (fetch (target (class-of ptr)) ptr))
 
+(define-method (fetch (self <structure>))
+  (apply (build (class-of self)) (map (lambda (component) (fetch (component self))) (components (class-of self)))))
+
 (define-method (prepare-return (result <void>) memory)
   "Generate return statement for void"
   (llvm-begin result (return)))
@@ -1134,7 +1137,11 @@
                    (components target)))]
     (construct-object target args)))
 
-(define-method (typed-alloca (type <meta<scalar>>)) (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
+(define-method (typed-alloca (type <meta<scalar>>))
+  (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
+
+(define-method (typed-alloca (type <meta<structure>>))
+  (apply (build type) (map typed-alloca (base type))))
 
 (define-syntax-rule (llvm-while condition body ...)
   (let [(block-while (make-basic-block "while"))
