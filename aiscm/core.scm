@@ -1044,6 +1044,9 @@
            (decompose-type type)
            (integral (cons 0 (all-but-last (map size-of (decompose-type type)))))))))
 
+(define-method (store (self <structure>) (value <structure>))
+  (apply llvm-begin (map (lambda (component) (store (component self) (component value))) (components (class-of self)))))
+
 (define-method (fetch (type <meta<scalar>>) ptr)
   (make type #:value (llvm-fetch (foreign-type type) (get ptr))))
 
