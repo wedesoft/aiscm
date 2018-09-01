@@ -1,10 +1,11 @@
 ## Ready
 
-* coerce sum to int
-* convolution: \*, +=, dilation: first/conditional, max, ...
+* convolution
 * integration tests
 * Standards version 4.2.1
 * release
+* upcast sum result to int32 or int64
+* convolution: \*, +=, dilation: first/conditional, max, ...
 * Scheme objects, memory with pointers
 * comparison operation for arrays (map reduce)
 * unary =0, !=0, !
