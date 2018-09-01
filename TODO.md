@@ -1,13 +1,12 @@
 ## Ready
 
-* store structure
-* (store (rgb (pointer <int>)) (fetch (rgb (pointer <int>)))), typed-alloca (rgb <int>)
-* sum of RGB array, coerce to int
-* Standards version 4.2.1
-* comparison operation for arrays (map reduce)
+* coerce sum to int
 * convolution: \*, +=, dilation: first/conditional, max, ...
+* integration tests
+* Standards version 4.2.1
+* release
 * Scheme objects, memory with pointers
-* integration tests, release
+* comparison operation for arrays (map reduce)
 * unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
 * lookup, pseudo colour, warp

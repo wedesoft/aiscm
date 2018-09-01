@@ -14,6 +14,6 @@ Description: Guile numerical arrays and tensor extension
  AIscm is a Guile extension providing multi-dimensional arrays and tensor
  operations. Array elements can be scalars or composite values such as complex
  numbers or RGB values. Array operations are provided as GOOPS generics. Real
- time performance is achieved using an AMD64 JIT compiler. Furthermore AIscm
+ time performance is achieved using the LLVM JIT compiler. Furthermore AIscm
  provides input/output bindings for ImageMagick, V4L2, FFmpeg, PulseAudio, and
  X.Org.
