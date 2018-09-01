@@ -1392,4 +1392,14 @@
   (test-equal "Sum of RGB array"
     (rgb 9 14 18) (sum (to-array (list (rgb 2 3 5) (rgb 7 11 13))))))
 
+(test-group "convolution"
+  (test-equal "trivial convolution"
+    '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 1))))
+  (test-equal "convolution multiplication using simple kernel"
+    '(4 6 10) (to-list (convolve (arr 2 3 5) (arr 2))))
+  (test-equal "convolution with impulse kernel"
+    '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 0 1 0))))
+  (test-equal "Test even sized filter"
+    '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 0 1)))))
+
 (test-end "aiscm core")

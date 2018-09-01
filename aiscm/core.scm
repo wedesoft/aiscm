@@ -43,6 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll unroll crop dump minor major sum prod
+            convolve
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1439,3 +1440,6 @@
 (define-reducing-op prod *    )
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
+
+(define (convolve self kernel)
+  (* self (get kernel (floor (/ (car (shape kernel)) 2)))))
