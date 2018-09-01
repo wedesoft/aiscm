@@ -24,7 +24,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
-  #:export (get integer signed unsigned bits signed? coerce foreign-type
+  #:export (destroy read-image write-image read-audio write-audio rate channels
+            get integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
@@ -42,7 +43,6 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll unroll crop dump minor major sum prod
-            destroy read-image write-image read-audio write-audio rate channels
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -75,6 +75,13 @@
   #:re-export (- + * / real-part imag-part min max))
 
 (load-extension "libguile-aiscm-core" "init_core")
+
+(define-generic read-image)
+(define-generic write-image)
+(define-generic read-audio)
+(define-generic write-audio)
+(define-generic rate)
+(define-generic channels)
 
 (define signed   'signed)
 (define unsigned 'unsigned)
@@ -1404,13 +1411,6 @@
     (add-method! to-type (make <method> #:specializers (list (class-of type) (class-of self))
                                         #:procedure (lambda (type self) (fun self))))
     (to-type type self)))
-
-(define-generic read-image)
-(define-generic write-image)
-(define-generic read-audio)
-(define-generic write-audio)
-(define-generic rate)
-(define-generic channels)
 
 (define (reduction result arg operation)
   (if (zero? (dimensions arg))
