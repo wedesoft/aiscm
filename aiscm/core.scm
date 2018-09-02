@@ -1444,7 +1444,7 @@
 (define (convolve self kernel)
   ((jit (list (native-type self) (native-type kernel))
         (lambda (self kernel)
-          (typed-let [(result (allocate-array (typecode self) (shape self)))
+          (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))
                       (p      (typed-alloca (pointer (typecode result))))
                       (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
                       (q      (typed-alloca (pointer (typecode self))))
