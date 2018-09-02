@@ -916,11 +916,11 @@
 (define-binary-delegation (const <bool>) eq (lambda (target) llvm-eq) (const llvm-f-eq))
 (define-binary-delegation (const <bool>) ne (lambda (target) llvm-ne) (const llvm-f-ne))
 
-(define-method (minor (a <scalar>) (b <scalar>))
+(define-method (minor a b)
   "Return minor value of two values"
   (where (le a b) a b))
 
-(define-method (major (a <scalar>) (b <scalar>))
+(define-method (major a b)
   "Return major value of two values"
   (where (gt a b) a b))
 
@@ -1455,10 +1455,12 @@
                       (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
                       (q      (typed-alloca (pointer (typecode self))))
                       (k      (typed-alloca (pointer (typecode kernel))))
+                      (klower (typed-alloca <int>))
                       (kupper (typed-alloca <int>))
                       (offset (>> (llvm-last (shape kernel)) 1))]
             (store p (memory result))
             (store q (memory self))
+            (store klower (- (+ offset 1) (llvm-last (shape self))))
             (store kupper (+ offset 1))
             (llvm-while (ne (fetch p) pend)
               (typed-let [(k       (typed-alloca (pointer (typecode kernel))))
@@ -1466,8 +1468,8 @@
                                                          (llvm-last (strides kernel)))))
                           (q2      (typed-alloca (pointer (typecode self))))
                           (element (typed-alloca (typecode result)))]
-                (store k (memory kernel))
-                (store q2 (+ (fetch q) (* offset (llvm-last (strides self)))))
+                (store k (+ (memory kernel) (* (major 0 (fetch klower)) (llvm-last (strides kernel)))))
+                (store q2 (+ (fetch q) (* (- offset (major 0 (fetch klower))) (llvm-last (strides self)))))
                 (store element (* (fetch (fetch q2)) (fetch (fetch k))))
                 (store k (+ (fetch k) (llvm-last (strides kernel))))
                 (store q2 (- (fetch q2) (llvm-last (strides self))))
@@ -1478,6 +1480,7 @@
                 (store (fetch p) (fetch element)))
               (store p (+ (fetch p) (llvm-last (strides result))))
               (store q (+ (fetch q) (llvm-last (strides self))))
+              (store klower (+ (fetch klower) 1))
               (store kupper (+ (fetch kupper) 1)))
             result)))
    self kernel))
