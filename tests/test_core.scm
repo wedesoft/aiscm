@@ -1406,6 +1406,11 @@
   (test-equal "coerce short integer and integer to integer"
     <int> (typecode (convolve (arr <sint> 2 3 5) (arr <int> 0 1 0))))
   (test-equal "RGB-scalar convolution"
-    (list (rgb 4 6 10)) (to-list (convolve (to-array (list (rgb 2 3 5))) (arr 2)))))
+    (list (rgb 4 6 10)) (to-list (convolve (to-array (list (rgb 2 3 5))) (arr 2))))
+  (test-equal "convolution with 3-element shift-left kernel"
+    '(2 3 0) (to-list (convolve (crop 3 (dump 1 (arr 0 1 2 3 0))) (arr 1 0 0))))
+  (test-skip 1)
+  (test-equal "do not read over array boundaries"
+    '(0 0 0) (to-list (convolve (crop 3 (dump 1 (arr 1 0 0 0 1))) (arr 1 2 4)))))
 
 (test-end "aiscm core")
