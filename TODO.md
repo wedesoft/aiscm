@@ -1,6 +1,7 @@
 ## Ready
 
 * convolution
+* typed-let -> jit-let
 * integration tests
 * Standards version 4.2.1
 * release

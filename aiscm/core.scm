@@ -1451,7 +1451,7 @@
                       (k      (typed-alloca (pointer (typecode kernel))))]
             (store p (memory result))
             (store q (memory self))
-            (store k (+ (memory kernel) (* (/ (llvm-last (shape kernel)) 2) (llvm-last (strides kernel)))))
+            (store k (+ (memory kernel) (* (>> (llvm-last (shape kernel)) 1) (llvm-last (strides kernel)))))
             (llvm-while (ne (fetch p) pend)
               (store (fetch p) (* (fetch (fetch q)) (fetch (fetch k))))
               (store p (+ (fetch p) (llvm-last (strides result))))
