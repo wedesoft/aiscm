@@ -1132,9 +1132,15 @@
                            (map foreign-type argument-types)
                            (map get args))))
 
-(define-method (where condition value-if value-else)
+(define-method (where condition (value-if <void>) (value-else <void>))
   (let [(target (coerce (class-of value-if) (class-of value-else)))]
     (where target condition value-if value-else)))
+
+(define-method (where condition value-if (value-else <void>))
+  (where condition (typed-constant (native-type value-if) value-if) value-else))
+
+(define-method (where condition (value-if <void>) value-else)
+  (where condition value-if (typed-constant (native-type value-else) value-else)))
 
 (define-method (where (target <meta<scalar>>) condition value-if value-else)
   (make target #:value (lambda (fun)

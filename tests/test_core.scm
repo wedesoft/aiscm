@@ -1076,7 +1076,11 @@
   (test-eqv "conditional with composite value"
     2.0+3.0i
     ((jit (list (complex <float>) (complex <float>)) (lambda (x y) (where (lt (real-part x) (real-part y)) x y)))
-     2+3i 5+7i)))
+     2+3i 5+7i))
+  (test-eqv "conditional with constant in second place"
+    3 ((jit (list <int>) (lambda (x) (where (gt x 3) 3 x))) 5))
+  (test-eqv "conditional with constant in third place"
+    3 ((jit (list <int>) (lambda (x) (where (gt x 3) x 3))) 1)))
 
 (test-group "alloca for loop variables"
   (test-eqv "Allocate a variable on the stack"
