@@ -1404,6 +1404,8 @@
   (test-equal "convolution of integer with short integer"
     '(2 3 5) (to-list (convolve (arr <int> 2 3 5) (arr <sint> 0 1 0))))
   (test-equal "coerce short integer and integer to integer"
-    <int> (typecode (convolve (arr <sint> 2 3 5) (arr <int> 0 1 0)))))
+    <int> (typecode (convolve (arr <sint> 2 3 5) (arr <int> 0 1 0))))
+  (test-equal "RGB-scalar convolution"
+    (list (rgb 4 6 10)) (to-list (convolve (to-array (list (rgb 2 3 5))) (arr 2)))))
 
 (test-end "aiscm core")
