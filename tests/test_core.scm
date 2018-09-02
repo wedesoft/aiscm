@@ -1400,6 +1400,6 @@
   (test-equal "convolution with impulse kernel"
     '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 0 1 0))))
   (test-equal "Test even sized filter"
-    '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 0 1)))))
-
-(test-end "aiscm core")
+    '(2 3 5) (to-list (convolve (arr 2 3 5) (arr 0 1))))
+  (test-equal "convolution with 32-bit integers"
+    '(2 3 5) (to-list (convolve (arr <int> 2 3 5) (arr <int> 0 1 0)))))
