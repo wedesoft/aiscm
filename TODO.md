@@ -1,6 +1,7 @@
 ## Ready
 
 * cache convolutions
+* absolute value for array
 * conjugate of real number (unary_ops.scm)
 * typecast boolean to unsigned byte (boolean_array.scm)
 * scalar operations (scalars.scm)
