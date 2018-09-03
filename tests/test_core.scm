@@ -1420,6 +1420,11 @@
   (test-equal "do not read over upper array boundary"
     '(0 0 0) (to-list (convolve (crop 3 (dump 1 (arr 0 0 0 0 1))) (arr 1 2 4))))
   (test-equal "trivial 2D convolution"
-    '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1))))))
+    '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1)))))
+  (test-equal "test impulse in first dimension"
+    '((2 3) (5 7) (11 13)) (to-list (convolve (arr (2 3) (5 7) (11 13)) (arr (0) (1) (0)))))
+  (test-skip 1)
+  (test-equal "test impulse in last dimension"
+    '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0))))))
 
 (test-end "aiscm core")
