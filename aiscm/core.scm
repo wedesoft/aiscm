@@ -1447,7 +1447,7 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel self kernel element)
+(define (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
   (store element (* (fetch (memory self)) (fetch (memory kernel))))
 )
 
@@ -1460,14 +1460,28 @@
               (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
     (store k kbegin)
     (store q qbegin)
-    (convolve-kernel (rebase self (fetch q)) (project (rebase kernel (fetch k))) element)
-    ;(store element (* (fetch (fetch q)) (fetch (fetch k))))
+    (convolve-kernel result
+                     (rebase self (fetch q))
+                     (project (rebase kernel (fetch k)))
+                     (llvm-all-but-last self-strides)
+                     element
+                     (all-but-last klower-bounds)
+                     (all-but-last kupper-bounds)
+                     (all-but-last offsets)
+                     )
     (store k (+ (fetch k) (llvm-last (strides kernel))))
     (store q (- (fetch q) (llvm-last self-strides)))
     (llvm-while (ne (fetch k) kend)
-      (typed-let [(tmp (typed-alloca (typecode result)))]
-        (convolve-kernel (rebase self (fetch q)) (project (rebase kernel (fetch k))) tmp)
-        (store element (+ (fetch element) (fetch tmp))))
+      (typed-let [(intermediate (typed-alloca (typecode result)))]
+        (convolve-kernel result
+                         (rebase self (fetch q))
+                         (project (rebase kernel (fetch k)))
+                         (llvm-all-but-last self-strides)
+                         intermediate
+                         (all-but-last klower-bounds)
+                         (all-but-last kupper-bounds)
+                         (all-but-last offsets))
+        (store element (+ (fetch element) (fetch intermediate))))
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides))))))
 
