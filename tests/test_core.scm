@@ -1423,7 +1423,6 @@
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (1)))))
   (test-equal "test impulse in first dimension"
     '((2 3) (5 7) (11 13)) (to-list (convolve (arr (2 3) (5 7) (11 13)) (arr (0) (1) (0)))))
-  (test-expect-fail 1)
   (test-equal "test impulse in last dimension"
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0))))))
 

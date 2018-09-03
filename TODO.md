@@ -1,13 +1,17 @@
 ## Ready
 
-* convolution
+* cache convolutions
+* conjugate of real number (unary_ops.scm)
+* typecast boolean to unsigned byte (boolean_array.scm)
+* scalar operations (scalars.scm)
+* Scheme objects, memory with pointers (callback.scm, object_array.scm)
+* tensors (tensors.scm)
 * typed-let -> jit-let
 * integration tests
 * Standards version 4.2.1
 * release
 * upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
-* Scheme objects, memory with pointers
 * comparison operation for arrays (map reduce)
 * unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
