@@ -1447,7 +1447,11 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel self kernel self-strides element klower-bounds kupper-bounds offsets)
+(define (convolve-kernel self kernel element)
+  (store element (* (fetch (memory self)) (fetch (memory kernel))))
+)
+
+(define (convolve-kernel2 result self kernel self-strides element klower-bounds kupper-bounds offsets)
   (typed-let [(k       (typed-alloca (pointer (typecode kernel))))
               (kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
               (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
@@ -1456,18 +1460,21 @@
               (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
     (store k kbegin)
     (store q qbegin)
-    (store element (* (fetch (fetch q)) (fetch (fetch k))))
+    (convolve-kernel (rebase self (fetch q)) (project (rebase kernel (fetch k))) element)
+    ;(store element (* (fetch (fetch q)) (fetch (fetch k))))
     (store k (+ (fetch k) (llvm-last (strides kernel))))
     (store q (- (fetch q) (llvm-last self-strides)))
     (llvm-while (ne (fetch k) kend)
-      (store element (+ (fetch element) (* (fetch (fetch q)) (fetch (fetch k)))))
+      (typed-let [(tmp (typed-alloca (typecode result)))]
+        (convolve-kernel (rebase self (fetch q)) (project (rebase kernel (fetch k))) tmp)
+        (store element (+ (fetch element) (fetch tmp))))
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides))))))
 
 (define (convolve-array result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
     (typed-let [(element (typed-alloca (typecode result)))]
-      (convolve-kernel self kernel self-strides element klower-bounds kupper-bounds offsets)
+      (convolve-kernel2 result self kernel self-strides element klower-bounds kupper-bounds offsets)
       (store (memory result) (fetch element)))
     (typed-let [(p      (typed-alloca (pointer (typecode result))))
                 (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
