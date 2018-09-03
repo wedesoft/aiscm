@@ -3,8 +3,10 @@
 * cache convolutions
 * absolute value for array
 * conjugate of real number (unary_ops.scm)
+* set/get ranges
 * typecast boolean to unsigned byte (boolean_array.scm)
-* scalar operations (scalars.scm)
+* scalar operations? (scalars.scm)
+* fill array
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
 * typed-let -> jit-let
