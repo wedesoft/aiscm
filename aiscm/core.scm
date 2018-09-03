@@ -1447,13 +1447,13 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel self kernel self-strides element klower kupper offset)
+(define (convolve-kernel self kernel self-strides element klower-bounds kupper-bounds offsets)
   (typed-let [(k       (typed-alloca (pointer (typecode kernel))))
-              (kbegin  (+ (memory kernel) (* (major 0 (last klower)) (llvm-last (strides kernel)))))
-              (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper))
+              (kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
+              (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
                                              (llvm-last (strides kernel)))))
               (q       (typed-alloca (pointer (typecode self))))
-              (qbegin  (+ (memory self) (* (- offset (major 0 (last klower))) (llvm-last self-strides))))]
+              (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
     (store k kbegin)
     (store q qbegin)
     (store element (* (fetch (fetch q)) (fetch (fetch k))))
@@ -1464,14 +1464,13 @@
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides))))))
 
-(define (convolve-array result self kernel self-strides klower kupper offset)
+(define (convolve-array result self kernel self-strides klower-bounds kupper-bounds offsets)
   (typed-let [(element (typed-alloca (typecode result)))]
-    (convolve-kernel self kernel self-strides element klower kupper offset)
+    (convolve-kernel self kernel self-strides element klower-bounds kupper-bounds offsets)
     (store (memory result) (fetch element))))
 
-(define (convolve-array2 self kernel)
-  (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))
-              (p      (typed-alloca (pointer (typecode result))))
+(define (convolve-array2 result self kernel self-strides klower-bounds kupper-bounds offsets)
+  (typed-let [(p      (typed-alloca (pointer (typecode result))))
               (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
               (q      (typed-alloca (pointer (typecode self))))
               (klower (typed-alloca <int>))
@@ -1485,10 +1484,10 @@
       (convolve-array (project (rebase result (fetch p)))
                       (project (rebase self (fetch q)))
                       kernel
-                      (strides self)
-                      (list (fetch klower))
-                      (list (fetch kupper))
-                      offset)
+                      self-strides
+                      (cons (fetch klower) klower-bounds)
+                      (cons (fetch kupper) kupper-bounds)
+                      (cons offset offsets))
       (store p (+ (fetch p) (llvm-last (strides result))))
       (store q (+ (fetch q) (llvm-last (strides self))))
       (store klower (+ (fetch klower) 1))
@@ -1498,6 +1497,6 @@
 (define (convolve self kernel)
   ((jit (list (native-type self) (native-type kernel))
         (lambda (self kernel)
-          (convolve-array2 self
-                           kernel)))
+          (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+            (convolve-array2 result self kernel (strides self) '() '() '()))))
    self kernel))
