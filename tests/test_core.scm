@@ -155,7 +155,9 @@
   (test-eqv "Complex conjugate"
     2-3i (conj 2+3i))
   (test-equal "Complex conjugate of array"
-    '(2-3i 5-7i) (to-list (conj (arr 2+3i 5+7i)))))
+    '(2-3i 5-7i) (to-list (conj (arr 2+3i 5+7i))))
+  (test-equal "Complex conjugate of real array"
+    '(2 3 5) (to-list (conj (arr 2 3 5)))))
 
 (test-group "complex coercion"
   (test-eq "Coerce two complex types"

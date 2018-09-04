@@ -996,6 +996,9 @@
 (define-method (conj (value <complex<>>))
   (complex (real-part value) (- (imag-part value))))
 
+(define-method (conj (value <scalar>))
+  value)
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))

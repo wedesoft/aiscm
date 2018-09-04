@@ -1,7 +1,6 @@
 ## Ready
 
 * absolute value for array
-* conjugate of real number (unary_ops.scm)
 * set/get ranges
 * typecast boolean to unsigned byte (boolean_array.scm)
 * scalar operations? (scalars.scm)
