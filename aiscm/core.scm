@@ -73,7 +73,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    llvm-while jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max))
+  #:re-export (- + * / real-part imag-part min max abs))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1007,6 +1007,15 @@
 (define-method (conj (value <scalar>))
   value)
 
+(define-method (abs (value <int<>>))
+  (typed-call <int> "abs" (list <int>) (list (to-type <int> value))))
+
+(define-method (abs (value <float>))
+  (typed-call <float> "fabsf" (list <float>) (list value)))
+
+(define-method (abs (value <double>))
+  (typed-call <double> "fabs" (list <double>) (list value)))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -1391,6 +1400,7 @@
 (define-array-op !         1 identity        !       )
 (define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
+(define-array-op abs       1 identity        abs     )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )

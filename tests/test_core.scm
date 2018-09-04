@@ -1440,4 +1440,16 @@
   (test-equal "Fill with value"
     '(42 42 42) (to-list (fill <sint> '(3) 42))))
 
+(test-group "absolute value"
+  (test-equal "Absolute value of integer"
+    '(3 3) (map (jit (list <int>) abs) '(3 -3)))
+  (test-equal "Absolute value of short integer"
+    '(3 3) (map (jit (list <sint>) abs) '(3 -3)))
+  (test-equal "Absolute value of single-precision floating point number"
+    '(3.5 3.5) (map (jit (list <float>) abs) '(3.5 -3.5)))
+  (test-equal "Absolute value of double-precision floating point number"
+    '(3.5 3.5) (map (jit (list <double>) abs) '(3.5 -3.5)))
+  (test-equal "Element-wise absolute value"
+    '(2 3 5) (to-list (abs (arr 2 -3 5)))))
+
 (test-end "aiscm core")
