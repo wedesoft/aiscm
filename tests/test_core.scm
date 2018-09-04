@@ -705,7 +705,11 @@
   (test-equal "zero-extending integer conversion"
     200 ((jit (list <ubyte>) (lambda (value) (to-type <int> (to-type <ubyte> value)))) 200))
   (test-equal "sign-extending integer conversion"
-    -42 ((jit (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42)))
+    -42 ((jit (list <byte>) (lambda (value) (to-type <int> (to-type <byte> value)))) -42))
+  (test-equal "convert boolean to unsigned byte"
+    '(0 1) (to-list (to-type <ubyte> (arr #f #t))))
+  (test-equal "convert unsigned byte to boolean"
+    '(#f #t #t) (to-list (to-type <bool> (arr 0 1 2)))))
 
 (test-group "type inference"
   (test-equal "identity function with integer"

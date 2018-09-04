@@ -2,7 +2,6 @@
 
 * absolute value for array
 * set/get ranges
-* typecast boolean to unsigned byte (boolean_array.scm)
 * scalar operations? (scalars.scm)
 * fill array
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)

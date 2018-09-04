@@ -823,6 +823,14 @@
   "Convert boolean to boolean"
   value)
 
+(define-method (to-type (cls <meta<scalar>>) (value <bool>))
+  "Convert boolean to unsigned byte"
+  (where value (typed-constant cls 1) (typed-constant cls 0)))
+
+(define-method (to-type (cls <meta<bool>>) (value <scalar>))
+  "Convert unsigned byte to boolean"
+  (ne value 0))
+
 (define-method (to-type (cls <meta<int<>>>) (value <int<>>))
   "Integer conversions"
   (let [(conversion (if (> (bits cls) (bits value)) (if (signed? value) llvm-sext llvm-zext) llvm-trunc))]
