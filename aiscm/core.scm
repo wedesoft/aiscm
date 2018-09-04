@@ -1534,7 +1534,12 @@
   (convolve self kernel))
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
-  ((jit (list (llvmlist <int> (length shp))) (cut allocate-array (typecode type) <>)) shp))
+  (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type)) (lambda (shp value) (allocate-array (typecode type) shp))))]
+    (add-method! fill-dispatch
+                 (make <method>
+                       #:specializers (list (class-of type) <list> <top>)
+                       #:procedure (lambda (type shp value) (fun shp value))))
+    (fill-dispatch type shp value)))
 
 (define (fill type shape value)
   (fill-dispatch (multiarray type (length shape)) shape value))
