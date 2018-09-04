@@ -2,7 +2,6 @@
 
 * absolute value for array
 * set/get ranges
-* fill array
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * integration tests
 * Standards version 4.2.1

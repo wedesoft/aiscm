@@ -1479,7 +1479,7 @@
                        (all-but-last offsets))
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides)))
-      (llvm-while (lt (fetch k) kend)
+      (llvm-while (ne (fetch k) kend)
         (jit-let [(intermediate (typed-alloca (typecode result)))]
           (convolve-kernel result
                            (rebase self (fetch q))
@@ -1533,8 +1533,22 @@
                        #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
   (convolve self kernel))
 
+(define (fill-array self value)
+  (if (zero? (dimensions self))
+    (store (memory self) value)
+    (jit-let [(p    (typed-alloca (pointer (typecode self))))
+              (pend (+ (memory self) (* (llvm-last (shape self)) (llvm-last (strides self)))))]
+      (store p (memory self))
+      (llvm-while (ne (fetch p) pend)
+        (fill-array (project (rebase self (fetch p))) value)
+        (store p (+ (fetch p) (llvm-last (strides self))))))))
+
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
-  (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type)) (lambda (shp value) (allocate-array (typecode type) shp))))]
+  (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
+               (lambda (shp value)
+                 (jit-let [(result (allocate-array (typecode type) shp))]
+                   (fill-array result value)
+                   result))))]
     (add-method! fill-dispatch
                  (make <method>
                        #:specializers (list (class-of type) <list> <top>)
