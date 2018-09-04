@@ -1512,9 +1512,12 @@
         (store kupper (+ (fetch kupper) 1)))
       result)))
 
-(define (convolve self kernel)
-  ((jit (list (native-type self) (native-type kernel))
-        (lambda (self kernel)
-          (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-            (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))
-   self kernel))
+(define-method (convolve self kernel)
+  (let [(fun (lambda (self kernel)
+               (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+                 (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))]
+    (add-method! convolve
+                 (make <method>
+                       #:specializers (list (class-of self) (class-of kernel))
+                       #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
+  (convolve self kernel))

@@ -1,6 +1,5 @@
 ## Ready
 
-* cache convolutions
 * absolute value for array
 * conjugate of real number (unary_ops.scm)
 * set/get ranges
