@@ -4,10 +4,10 @@
 * set/get ranges
 * fill array
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
-* tensors (tensors.scm)
 * integration tests
 * Standards version 4.2.1
 * release
+* tensors (tensors.scm)
 * upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * comparison operation for arrays (map reduce)

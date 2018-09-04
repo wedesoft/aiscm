@@ -86,14 +86,3 @@ Also note that the arrays can have different number of dimensions as long as the
 ```Scheme
 @../tests/integration/binary.scm@
 ```
-
-## Tensor operations
-
-Tensor notation is a compact way to describe operations involving multi-dimensional arrays.
-The *tensor* macro is used to declare a tensor expression. *dim* and *get* can be used to create indices and access array elements.
-*sum*, *prod*, *largest*, and *smallest* can be used to perform a tensor sum, a cumulative product, or finding the largest/smallest element for a given tensor index.
-See examples below for the behaviour of tensors.
-
-```Scheme
-@../tests/integration/tensors.scm@
-```
