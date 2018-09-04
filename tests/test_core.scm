@@ -1432,4 +1432,12 @@
   (test-equal "test impulse in last dimension"
     '((2 3 5) (7 11 13)) (to-list (convolve (arr (2 3 5) (7 11 13)) (arr (0 1 0))))))
 
+(test-group "fill"
+  (test-eq "Specify typecode of result"
+    <sint> (typecode (fill <sint> '(3) 42)))
+  (test-eq "Dimensions of result"
+    3 (dimensions (fill <sint> '(2 3 5) 42)))
+  (test-equal "Fill with value"
+    '(42 42 42) (to-list (fill <sint> '(3) 42))))
+
 (test-end "aiscm core")

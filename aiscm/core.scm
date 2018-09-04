@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
             ensure-default-strides default-strides roll unroll crop dump minor major sum prod
-            convolve
+            convolve fill
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1532,3 +1532,9 @@
                        #:specializers (list (class-of self) (class-of kernel))
                        #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
   (convolve self kernel))
+
+(define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
+  ((jit (list (llvmlist <int> (length shp))) (cut allocate-array (typecode type) <>)) shp))
+
+(define (fill type shape value)
+  (fill-dispatch (multiarray type (length shape)) shape value))
