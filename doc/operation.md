@@ -64,10 +64,6 @@ Each binary operation can combine arrays and/or scalars.
 Most scalar-scalar operations are already part of the Scheme programming language.
 *AIscm* mostly needs to provide a few numerical operations and some support for RGB and complex values.
 
-```Scheme
-@../tests/integration/scalars.scm@
-```
-
 One can use an array-scalar operation to divide each colour channels of an image by a number.
 
 ![divided.jpg](divided.jpg "Divided image")

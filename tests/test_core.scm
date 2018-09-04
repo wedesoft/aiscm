@@ -1055,11 +1055,11 @@
 
 (test-group "local variables"
   (test-eqv "Typed let without any definitions"
-    42 ((jit (list <int>) (lambda (value) (typed-let [] value))) 42))
+    42 ((jit (list <int>) (lambda (value) (jit-let [] value))) 42))
   (test-eqv "Typed let with a definition"
-    42 ((jit '() (lambda () (typed-let [(a (typed-constant <int> 42))] a)))))
+    42 ((jit '() (lambda () (jit-let [(a (typed-constant <int> 42))] a)))))
   (test-eqv "Typed let with two definitions"
-    5 ((jit '() (lambda () (typed-let [(a (typed-constant <int> 2)) (b (typed-constant <int> 3))] (+ a b)))))))
+    5 ((jit '() (lambda () (jit-let [(a (typed-constant <int> 2)) (b (typed-constant <int> 3))] (+ a b)))))))
 
 (test-group "basic blocks and branch instructions"
   (test-equal "branch instruction"
@@ -1093,14 +1093,14 @@
     42
     ((jit (list <int>)
                  (lambda (x)
-                   (typed-let [(ptr (typed-alloca <int>))]
+                   (jit-let [(ptr (typed-alloca <int>))]
                      (store ptr x)
                      (fetch ptr)))) 42))
   (test-eqv "While loop"
     10
     ((jit (list <int>)
       (lambda (n)
-        (typed-let [(i (typed-alloca <int>))]
+        (jit-let [(i (typed-alloca <int>))]
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
             (store i (+ 1 (fetch i))))

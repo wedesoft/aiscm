@@ -72,7 +72,7 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while typed-let arr define-array-op)
+                   llvm-while jit-let arr define-array-op)
   #:re-export (- + * / real-part imag-part min max))
 
 (load-extension "libguile-aiscm-core" "init_core")
@@ -672,13 +672,13 @@
     (set! value expression)
     (make <void> #:value (memoize (fun) ((get value) fun)))))
 
-(define-syntax typed-let
+(define-syntax jit-let
   (lambda (x)
     (syntax-case x ()
       ((k [] instructions ...)
        #'(llvm-begin instructions ...))
       ((k [(name value) declarations ...] instructions ...)
-       #'(let [(name #f)] (llvm-begin (llvm-set name value) (typed-let [declarations ...] instructions ...)))))))
+       #'(let [(name #f)] (llvm-begin (llvm-set name value) (jit-let [declarations ...] instructions ...)))))))
 
 (define (make-basic-block name)
   (memoize (fun) (make-llvm-basic-block (slot-ref fun 'llvm-function) name)))
@@ -980,8 +980,8 @@
   (complex (* value-a (real-part value-b)) (* value-a (imag-part value-b))))
 
 (define-method (/ (value-a <complex<>>) (value-b <complex<>>))
-  (typed-let [(den (+ (* (real-part value-b) (real-part value-b))
-                      (* (imag-part value-b) (imag-part value-b))))]
+  (jit-let [(den (+ (* (real-part value-b) (real-part value-b))
+                    (* (imag-part value-b) (imag-part value-b))))]
     (complex (/ (+ (* (real-part value-a) (real-part value-b))
                    (* (imag-part value-a) (imag-part value-b)))
                 den)
@@ -993,8 +993,8 @@
   (complex (/ (real-part value-a) value-b) (/ (imag-part value-a) value-b)))
 
 (define-method (/ (value-a <scalar>) (value-b <complex<>>))
-  (typed-let [(den (+ (* (real-part value-b) (real-part value-b))
-                      (* (imag-part value-b) (imag-part value-b))))]
+  (jit-let [(den (+ (* (real-part value-b) (real-part value-b))
+                    (* (imag-part value-b) (imag-part value-b))))]
     (complex (/ (* (real-part value-a) (real-part value-b)) den)
              (/ (- (* (real-part value-a) (imag-part value-b))) den))))
 
@@ -1330,8 +1330,8 @@
   (if (zero? (dimensions result))
     (store (memory result) (apply delegate args))
     (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (typed-alloca (pointer (typecode arg))) #f)) args))]
-      (typed-let [(p    (typed-alloca (pointer (typecode result))))
-                  (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+      (jit-let [(p    (typed-alloca (pointer (typecode result))))
+                (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
         (store p (memory result))
         (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (store ptr (memory arg))) '())) q args))
         (llvm-while (ne (fetch p) pend)
@@ -1352,9 +1352,9 @@
               (iota (dimension shape)))))
 
 (define (allocate-array typecode shape)
-  (typed-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
-              (ptr     (typed-call (pointer typecode) "scm_gc_malloc_pointerless" (list <int>) (list size)))
-              (strides (compute-strides typecode shape))]
+  (jit-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
+            (ptr     (typed-call (pointer typecode) "scm_gc_malloc_pointerless" (list <int>) (list size)))
+            (strides (compute-strides typecode shape))]
     (llvmarray ptr ptr shape strides)))
 
 (define-macro (define-cycle-method name arity target other fun); TODO: put under test
@@ -1369,8 +1369,8 @@
   (begin
     (define-cycle-method op arity <llvmarray<>> <void>
       (lambda args
-        (typed-let [(result (allocate-array (apply coercion (map typecode args))
-                                            (shape (argmax dimensions args))))]
+        (jit-let [(result (allocate-array (apply coercion (map typecode args))
+                                          (shape (argmax dimensions args))))]
           (apply elementwise-loop delegate result args)
           result)))
     (define-cycle-method op arity <meta<llvmarray<>>> <meta<void>>
@@ -1423,7 +1423,7 @@
 (define-method (to-type (type <meta<void>>) (self <multiarray<>>))
   (let [(fun (jit (list (native-type self))
           (lambda (arg)
-            (typed-let [(result (allocate-array type (shape arg)))]
+            (jit-let [(result (allocate-array type (shape arg)))]
               (elementwise-loop identity result arg)
               result))))]
     (add-method! to-type (make <method> #:specializers (list (class-of type) (class-of self))
@@ -1433,20 +1433,20 @@
 (define (reduction result arg operation)
   (if (zero? (dimensions arg))
     (store result (fetch (memory arg)))
-    (typed-let [(p      (typed-alloca (pointer (typecode arg))))
-                (stride (llvm-last (strides arg)))
-                (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+    (jit-let [(p      (typed-alloca (pointer (typecode arg))))
+              (stride (llvm-last (strides arg)))
+              (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
       (reduction result (project arg) operation)
       (store p (+ (memory arg) stride))
       (llvm-while (ne (fetch p) pend)
-        (typed-let [(sub-result (typed-alloca (typecode arg)))]
+        (jit-let [(sub-result (typed-alloca (typecode arg)))]
           (reduction sub-result (project (rebase arg (fetch p))) operation)
           (store result (operation (fetch result) (fetch sub-result))))
         (store p (+ (fetch p) stride))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (typed-let [(result (typed-alloca (typecode arg)))] (reduction result arg operation) (fetch result))))]
+    (let [(fun (lambda (arg) (jit-let [(result (typed-alloca (typecode arg)))] (reduction result arg operation) (fetch result))))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
@@ -1461,12 +1461,12 @@
 (define (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))
     (store element (* (fetch (memory self)) (fetch (memory kernel))))
-    (typed-let [(k       (typed-alloca (pointer (typecode kernel))))
-                (kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
-                (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
-                                               (llvm-last (strides kernel)))))
-                (q       (typed-alloca (pointer (typecode self))))
-                (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
+    (jit-let [(k       (typed-alloca (pointer (typecode kernel))))
+              (kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
+              (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
+                                             (llvm-last (strides kernel)))))
+              (q       (typed-alloca (pointer (typecode self))))
+              (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
       (store k kbegin)
       (store q qbegin)
       (convolve-kernel result
@@ -1480,7 +1480,7 @@
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides)))
       (llvm-while (lt (fetch k) kend)
-        (typed-let [(intermediate (typed-alloca (typecode result)))]
+        (jit-let [(intermediate (typed-alloca (typecode result)))]
           (convolve-kernel result
                            (rebase self (fetch q))
                            (project (rebase kernel (fetch k)))
@@ -1495,15 +1495,15 @@
 
 (define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
-    (typed-let [(element (typed-alloca (typecode result)))]
+    (jit-let [(element (typed-alloca (typecode result)))]
       (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
       (store (memory result) (fetch element)))
-    (typed-let [(p      (typed-alloca (pointer (typecode result))))
-                (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
-                (q      (typed-alloca (pointer (typecode self))))
-                (klower (typed-alloca <int>))
-                (kupper (typed-alloca <int>))
-                (offset (>> (llvm-last kernel-shape) 1))]
+    (jit-let [(p      (typed-alloca (pointer (typecode result))))
+              (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
+              (q      (typed-alloca (pointer (typecode self))))
+              (klower (typed-alloca <int>))
+              (kupper (typed-alloca <int>))
+              (offset (>> (llvm-last kernel-shape) 1))]
       (store p (memory result))
       (store q (memory self))
       (store klower (- (+ offset 1) (llvm-last (shape self))))
@@ -1525,7 +1525,7 @@
 
 (define-method (convolve self kernel)
   (let [(fun (lambda (self kernel)
-               (typed-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+               (jit-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
                  (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))]
     (add-method! convolve
                  (make <method>

@@ -10,7 +10,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										type_matching.scm virtual_arrays.scm virtual_registers.scm write_image.scm \
 										xorg_image_list.scm xorg_video_list.scm xorg_video.scm xorg_window.scm \
 										crop_dump.scm crop_2d.scm to_list.scm complex_array.scm unary_ops.scm \
-										boolean_array.scm invert.scm scalars.scm division.scm modulo.scm binary.scm \
+										boolean_array.scm invert.scm division.scm modulo.scm binary.scm \
 										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm ffwritevideo.scm \
 										ffwriteaudio.scm ffwrite.scm callback.scm object_array.scm tensors.scm \
 										convolution_1d.scm convolution_2d.scm roberts_cross.scm sobel.scm box_filter.scm \

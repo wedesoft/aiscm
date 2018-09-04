@@ -2,11 +2,9 @@
 
 * absolute value for array
 * set/get ranges
-* scalar operations? (scalars.scm)
 * fill array
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
-* typed-let -> jit-let
 * integration tests
 * Standards version 4.2.1
 * release
