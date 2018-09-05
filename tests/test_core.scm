@@ -1103,8 +1103,7 @@
         (jit-let [(i (typed-alloca <int>))]
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
-            (lambda (while body)
-              (store i (+ 1 (fetch i)))))
+            (store i (+ 1 (fetch i))))
           (fetch i)))) 10)))
 
 (test-group "Static size list"
@@ -1455,5 +1454,22 @@
     '(3.5 3.5) (map (jit (list <double>) abs) '(3.5 -3.5)))
   (test-equal "Element-wise absolute value"
     '(2 3 5) (to-list (abs (arr 2 -3 5)))))
+
+(test-group "phi values"
+  (test-eqv "Try phi function"
+    42
+    ((jit '()
+      (lambda ()
+        (let [(start (make-basic-block "block1"))
+              (block (make-basic-block "block2"))]
+        (llvm-begin
+          (build-branch start)
+          (position-builder-at-end start)
+          (jit-let [(x (typed-constant <int> 42))]
+            (build-branch block)
+            (position-builder-at-end block)
+            (jit-let [(phi (build-phi <int>))]
+              (add-incoming phi start x)
+              x)))))))))
 
 (test-end "aiscm core")

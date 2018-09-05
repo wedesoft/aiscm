@@ -41,9 +41,9 @@
             llvm-and llvm-or llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca to-array set rgb red green blue
-            ensure-default-strides default-strides roll unroll crop dump minor major sum prod
-            convolve fill
+            ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
+            to-array set rgb red green blue ensure-default-strides default-strides roll unroll
+            crop dump minor major sum prod convolve fill
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1180,7 +1180,13 @@
 (define-method (typed-alloca (type <meta<structure>>))
   (apply (build type) (map typed-alloca (base type))))
 
-(define (llvm-while condition body)
+(define-method (build-phi (type <meta<scalar>>))
+  (make type #:value (memoize (fun) (llvm-build-phi (slot-ref fun 'llvm-function) (foreign-type type)))))
+
+(define-method (add-incoming phi block value)
+  (make <void> #:value (memoize (fun) (llvm-add-incoming ((get phi) fun) ((get value) fun) (block fun)))))
+
+(define-syntax-rule (llvm-while condition body ...)
   (let [(block-while (make-basic-block "while"))
         (block-body  (make-basic-block "body"))
         (block-end   (make-basic-block "endwhile"))]
@@ -1189,7 +1195,7 @@
       (position-builder-at-end block-while)
       (build-cond-branch condition block-body block-end)
       (position-builder-at-end block-body)
-      (body block-while block-body)
+      body ...
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
@@ -1344,17 +1350,15 @@
         (store p (memory result))
         (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (store ptr (memory arg))) '())) q args))
         (llvm-while (ne (fetch p) pend)
-          (lambda (while body)
-            (llvm-begin
-              (apply elementwise-loop delegate
-                                      (project (rebase result (fetch p)))
-                                      (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg (fetch ptr)))) arg)) q args))
-              (store p (+ (fetch p) (* (llvm-last (strides result)))))
-              (apply llvm-begin
-                (append-map
-                  (lambda (ptr arg)
-                    (if ptr (list (store ptr (+ (fetch ptr) (llvm-last (strides arg))))) '()))
-                  q args)))))))))
+          (apply elementwise-loop delegate
+                                  (project (rebase result (fetch p)))
+                                  (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg (fetch ptr)))) arg)) q args))
+          (store p (+ (fetch p) (* (llvm-last (strides result)))))
+          (apply llvm-begin
+            (append-map
+              (lambda (ptr arg)
+                (if ptr (list (store ptr (+ (fetch ptr) (llvm-last (strides arg))))) '()))
+              q args)))))))
 
 (define (compute-strides typecode shape)
   "Compile code for computing strides"
@@ -1451,12 +1455,10 @@
       (reduction result (project arg) operation)
       (store p (+ (memory arg) stride))
       (llvm-while (ne (fetch p) pend)
-        (lambda (while body)
-          (llvm-begin
-            (jit-let [(sub-result (typed-alloca (typecode arg)))]
-              (reduction sub-result (project (rebase arg (fetch p))) operation)
-              (store result (operation (fetch result) (fetch sub-result))))
-            (store p (+ (fetch p) stride))))))))
+        (jit-let [(sub-result (typed-alloca (typecode arg)))]
+          (reduction sub-result (project (rebase arg (fetch p))) operation)
+          (store result (operation (fetch result) (fetch sub-result))))
+        (store p (+ (fetch p) stride))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
@@ -1494,20 +1496,18 @@
       (store k (+ (fetch k) (llvm-last (strides kernel))))
       (store q (- (fetch q) (llvm-last self-strides)))
       (llvm-while (ne (fetch k) kend)
-        (lambda (while body)
-          (llvm-begin
-          (jit-let [(intermediate (typed-alloca (typecode result)))]
-            (convolve-kernel result
-                             (rebase self (fetch q))
-                             (project (rebase kernel (fetch k)))
-                             (llvm-all-but-last self-strides)
-                             intermediate
-                             (all-but-last klower-bounds)
-                             (all-but-last kupper-bounds)
-                             (all-but-last offsets))
-            (store element (+ (fetch element) (fetch intermediate))))
-          (store k (+ (fetch k) (llvm-last (strides kernel))))
-          (store q (- (fetch q) (llvm-last self-strides)))))))))
+        (jit-let [(intermediate (typed-alloca (typecode result)))]
+          (convolve-kernel result
+                           (rebase self (fetch q))
+                           (project (rebase kernel (fetch k)))
+                           (llvm-all-but-last self-strides)
+                           intermediate
+                           (all-but-last klower-bounds)
+                           (all-but-last kupper-bounds)
+                           (all-but-last offsets))
+          (store element (+ (fetch element) (fetch intermediate))))
+        (store k (+ (fetch k) (llvm-last (strides kernel))))
+        (store q (- (fetch q) (llvm-last self-strides)))))))
 
 (define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
@@ -1525,20 +1525,18 @@
       (store klower (- (+ offset 1) (llvm-last (shape self))))
       (store kupper (+ offset 1))
       (llvm-while (ne (fetch p) pend)
-        (lambda (while body)
-          (llvm-begin
-            (convolve-array (project (rebase result (fetch p)))
-                            (project (rebase self (fetch q)))
-                            kernel
-                            self-strides
-                            (llvm-all-but-last kernel-shape)
-                            (cons (fetch klower) klower-bounds)
-                            (cons (fetch kupper) kupper-bounds)
-                            (cons offset offsets))
-            (store p (+ (fetch p) (llvm-last (strides result))))
-            (store q (+ (fetch q) (llvm-last (strides self))))
-            (store klower (+ (fetch klower) 1))
-            (store kupper (+ (fetch kupper) 1)))))
+        (convolve-array (project (rebase result (fetch p)))
+                        (project (rebase self (fetch q)))
+                        kernel
+                        self-strides
+                        (llvm-all-but-last kernel-shape)
+                        (cons (fetch klower) klower-bounds)
+                        (cons (fetch kupper) kupper-bounds)
+                        (cons offset offsets))
+        (store p (+ (fetch p) (llvm-last (strides result))))
+        (store q (+ (fetch q) (llvm-last (strides self))))
+        (store klower (+ (fetch klower) 1))
+        (store kupper (+ (fetch kupper) 1)))
       result)))
 
 (define-method (convolve self kernel)
@@ -1558,10 +1556,8 @@
               (pend (+ (memory self) (* (llvm-last (shape self)) (llvm-last (strides self)))))]
       (store p (memory self))
       (llvm-while (ne (fetch p) pend)
-        (lambda (while body)
-          (llvm-begin
-            (fill-array (project (rebase self (fetch p))) value)
-            (store p (+ (fetch p) (llvm-last (strides self))))))))))
+        (fill-array (project (rebase self (fetch p))) value)
+        (store p (+ (fetch p) (llvm-last (strides self))))))))
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))

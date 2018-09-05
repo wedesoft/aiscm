@@ -19,6 +19,7 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
+#include <llvm-c/Transforms/Scalar.h>
 #include "util-helpers.h"
 
 
@@ -661,6 +662,26 @@ SCM llvm_build_alloca(SCM scm_function, SCM scm_type)
   return retval;
 }
 
+SCM llvm_build_phi(SCM scm_function, SCM scm_type)
+{
+  SCM retval;
+  struct llvm_function_t *function = get_llvm_function(scm_function);
+  struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvm value");
+  SCM_NEWSMOB(retval, llvm_value_tag, result);
+  int type = scm_to_int(scm_type);
+  result->value = LLVMBuildPhi(function->builder, llvm_type(type), "x");
+  return retval;
+}
+
+SCM llvm_add_incoming(SCM scm_phi, SCM scm_value, SCM scm_block)
+{
+  struct llvm_value_t *phi = get_llvm_value(scm_phi);
+  struct llvm_value_t *value = get_llvm_value(scm_value);
+  struct llvm_basic_block_t *block = get_llvm_basic_block(scm_block);
+  LLVMAddIncoming(phi->value, &value->value, &block->basic_block, 1);
+  return SCM_UNSPECIFIED;
+}
+
 void init_core(void)
 {
   LLVMLinkInMCJIT();
@@ -758,4 +779,6 @@ void init_core(void)
   scm_c_define_gsubr("llvm-build-integer-cmp"      , 4, 0, 0, SCM_FUNC(llvm_build_integer_cmp      ));
   scm_c_define_gsubr("llvm-build-float-cmp"        , 4, 0, 0, SCM_FUNC(llvm_build_float_cmp        ));
   scm_c_define_gsubr("llvm-build-alloca"           , 2, 0, 0, SCM_FUNC(llvm_build_alloca           ));
+  scm_c_define_gsubr("llvm-build-phi"              , 2, 0, 0, SCM_FUNC(llvm_build_phi              ));
+  scm_c_define_gsubr("llvm-add-incoming"           , 3, 0, 0, SCM_FUNC(llvm_add_incoming           ));
 }
