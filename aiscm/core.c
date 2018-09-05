@@ -287,12 +287,23 @@ SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
   struct llvm_module_t *self = get_llvm(scm_llvm);
   if (self->engine != NULL)
     scm_misc_error("llvm-compile", "LLVM module already compiled", SCM_EOL);
+
   char *error = NULL;
   if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
     SCM scm_error = scm_from_locale_string(error);
     LLVMDisposeMessage(error);
     scm_misc_error("llvm-compile", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
   };
+
+  LLVMPassManagerRef pass_manager = LLVMCreatePassManager();
+  LLVMAddConstantPropagationPass(pass_manager);
+  LLVMAddInstructionCombiningPass(pass_manager);
+  LLVMAddPromoteMemoryToRegisterPass(pass_manager);
+  LLVMAddGVNPass(pass_manager);
+  LLVMAddCFGSimplificationPass(pass_manager);
+  LLVMRunPassManager(pass_manager, self->module);
+  LLVMDisposePassManager(pass_manager);
+
   return SCM_UNSPECIFIED;
 }
 
