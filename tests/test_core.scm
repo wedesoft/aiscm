@@ -1103,7 +1103,8 @@
         (jit-let [(i (typed-alloca <int>))]
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
-            (store i (+ 1 (fetch i))))
+            (lambda (while body)
+              (store i (+ 1 (fetch i)))))
           (fetch i)))) 10)))
 
 (test-group "Static size list"
