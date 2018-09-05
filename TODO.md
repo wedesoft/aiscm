@@ -1,5 +1,6 @@
 ## Ready
 
+* 2D convolution segmentation fault
 * set/get ranges
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * integration tests
