@@ -1460,8 +1460,8 @@
     42
     ((jit '()
       (lambda ()
-        (let [(start (make-basic-block "block1"))
-              (block (make-basic-block "block2"))]
+        (let [(start (make-basic-block "start"))
+              (block (make-basic-block "block"))]
         (llvm-begin
           (build-branch start)
           (position-builder-at-end start)
