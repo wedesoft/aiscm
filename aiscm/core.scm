@@ -1532,9 +1532,9 @@
         (store k (+ (fetch k) (llvm-last (strides kernel))))
         (store q (- (fetch q) (llvm-last self-strides)))))))
 
-(define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
+(define (convolve-array result element self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
-    (jit-let [(element (typed-alloca (typecode result)))]
+    (llvm-begin
       (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
       (store (memory result) (fetch element)))
     (jit-let [(p      (typed-alloca (pointer (typecode result))))
@@ -1549,6 +1549,7 @@
       (store kupper (+ offset 1))
       (llvm-while (ne (fetch p) pend)
         (convolve-array (project (rebase result (fetch p)))
+                        element
                         (project (rebase self (fetch q)))
                         kernel
                         self-strides
@@ -1564,8 +1565,9 @@
 
 (define-method (convolve self kernel)
   (let [(fun (lambda (self kernel)
-               (jit-let [(result (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))]
+               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))
+                         (element (typed-alloca (typecode result)))]
+                 (convolve-array result element self kernel (strides self) (shape kernel) '() '() '()))))]
     (add-method! convolve
                  (make <method>
                        #:specializers (list (class-of self) (class-of kernel))

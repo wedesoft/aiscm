@@ -1,11 +1,6 @@
 ## Ready
 
-(jit-let [(p0 (memory result))]
-  (llvm-while condition
-    (lambda (while body)
-      (jit-let [(p (jit-phi (rgb <int>))]
-        (phi-add p while p0)
-        (phi-add p body (+ p0 1))))))
+* for loop with multiple variables, accumulate with alloca?
 * how to create loop object on the llvm
 * 2D convolution segmentation fault
 * set/get ranges
