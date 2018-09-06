@@ -1051,7 +1051,7 @@
 (define-method (typed-constant (type <meta<scalar>>) value)
   (make type #:value (make-constant (foreign-type type) value)))
 
-(define-method (typed-constant (type <meta<void>>) value)
+(define-method (typed-constant (type <meta<structure>>) value)
   (apply (build type)
          (map (lambda (type component) (typed-constant type (component value)))
               (base type)
@@ -1183,8 +1183,14 @@
 (define-method (build-phi (type <meta<scalar>>))
   (make type #:value (memoize (fun) (llvm-build-phi (slot-ref fun 'llvm-function) (foreign-type type)))))
 
-(define-method (add-incoming phi block value)
+(define-method (build-phi (type <meta<structure>>))
+  (apply (build type) (map build-phi (base type))))
+
+(define-method (add-incoming (phi <scalar>) block value)
   (make <void> #:value (memoize (fun) (llvm-add-incoming ((get phi) fun) ((get value) fun) (block fun)))))
+
+(define-method (add-incoming (phi <structure>) block value)
+  (apply llvm-begin (map (lambda (component) (add-incoming (component phi) block (component value))) (components (class-of phi)))))
 
 (define-syntax-rule (llvm-while condition body ...)
   (let [(block-while (make-basic-block "while"))
@@ -1466,20 +1472,41 @@
                                         #:procedure (lambda (type self) (fun self))))
     (to-type type self)))
 
-(define (reduction result arg operation)
+(define (reduction arg operation)
   (if (zero? (dimensions arg))
-    (store result (fetch (memory arg)))
-    (jit-let [(stride (llvm-last (strides arg)))
-              (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-      (reduction result (project arg) operation)
-      (jit-for p (+ (memory arg) stride) pend stride
-        (jit-let [(sub-result (typed-alloca (typecode arg)))]
-          (reduction sub-result (project (rebase arg p)) operation)
-          (store result (operation (fetch result) (fetch sub-result))))))))
+    (fetch (memory arg))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (jit-let [(result0 (reduction (project arg) operation))]
+          (build-branch start)
+          (position-builder-at-end start)
+          (jit-let [(stride  (llvm-last (strides arg)))
+                    (p0      (+ (memory arg) stride))
+                    (pend    (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+            (build-branch for)
+            (position-builder-at-end for)
+            (jit-let [(result (build-phi (class-of result0)))
+                      (p      (build-phi (class-of p0)))]
+              (add-incoming result start result0)
+              (add-incoming p start p0)
+              (build-cond-branch (ne p pend) body end)
+              (position-builder-at-end body)
+              (jit-let [(result1 (reduction (project (rebase arg p)) operation))]
+                (build-branch finish)
+                (position-builder-at-end finish)
+                (add-incoming result finish (operation result result1))
+                (add-incoming p finish (+ p stride))
+                (build-branch for)
+                (position-builder-at-end end)
+                result))))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (jit-let [(result (typed-alloca (typecode arg)))] (reduction result arg operation) (fetch result))))]
+    (let [(fun (lambda (arg) (reduction arg operation)))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
