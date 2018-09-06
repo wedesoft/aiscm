@@ -1088,7 +1088,7 @@
   (test-eqv "conditional with constant in third place"
     3 ((jit (list <int>) (lambda (x) (where (gt x 3) x 3))) 1)))
 
-(test-group "alloca for loop variables"
+(test-group "alloca and phi values"
   (test-eqv "Allocate a variable on the stack"
     42
     ((jit (list <int>)
@@ -1104,7 +1104,16 @@
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
             (store i (+ 1 (fetch i))))
-          (fetch i)))) 10)))
+          (fetch i)))) 10))
+  (test-eqv "For loop"
+    45
+    ((jit (list <int>)
+       (lambda (n)
+         (jit-let [(r (typed-alloca <int>))]
+           (store r (typed-constant <int> 0))
+           (jit-for i (typed-constant <int> 0) n 1 (store r (+ (fetch r) i)))
+           (fetch r))))
+     10)))
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
