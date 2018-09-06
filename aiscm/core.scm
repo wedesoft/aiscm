@@ -72,7 +72,7 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while jit-let arr define-array-op)
+                   llvm-while jit-for jit-let arr define-array-op)
   #:re-export (- + * / real-part imag-part min max abs))
 
 (load-extension "libguile-aiscm-core" "init_core")
@@ -1199,6 +1199,29 @@
       (build-branch block-while)
       (position-builder-at-end block-end))))
 
+(define-syntax-rule (jit-for p pstart pend pstep instructions ...)
+  (let [(start  (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (finish (make-basic-block "finish"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (jit-let [(p0 pstart)]
+        (build-branch for)
+        (position-builder-at-end for)
+        (jit-let [(p (build-phi (class-of pend)))]
+          (add-incoming p start p0)
+          (build-cond-branch (ne p pend) body end)
+          (position-builder-at-end body)
+          instructions ...
+          (build-branch finish)
+          (position-builder-at-end finish)
+          (add-incoming p finish (+ p pstep))
+          (build-branch for)
+          (position-builder-at-end end))))))
+
 (define-method (llvmlist)
   "Empty compiled list defaults to integer list"
   (make (llvmlist <int> 0) #:value (lambda (fun) #f)))
@@ -1552,12 +1575,9 @@
 (define (fill-array self value)
   (if (zero? (dimensions self))
     (store (memory self) value)
-    (jit-let [(p    (typed-alloca (pointer (typecode self))))
-              (pend (+ (memory self) (* (llvm-last (shape self)) (llvm-last (strides self)))))]
-      (store p (memory self))
-      (llvm-while (ne (fetch p) pend)
-        (fill-array (project (rebase self (fetch p))) value)
-        (store p (+ (fetch p) (llvm-last (strides self))))))))
+    (jit-let [(pend (+ (memory self) (* (llvm-last (shape self)) (llvm-last (strides self)))))]
+      (jit-for p (memory self) pend (llvm-last (strides self))
+        (fill-array (project (rebase self p)) value)))))
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
