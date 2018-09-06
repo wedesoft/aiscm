@@ -11,7 +11,7 @@
           (build-branch start)
           (position-builder-at-end start)
           (jit-let [(i (typed-constant <int> 0))
-                    (s (typed-constant <int> 0))]
+                    (s i)]
             (build-branch for)
             (position-builder-at-end for)
             (jit-let [(i1 (build-phi (class-of i)))

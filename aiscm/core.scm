@@ -1211,7 +1211,7 @@
       (jit-let [(p0 pstart)]
         (build-branch for)
         (position-builder-at-end for)
-        (jit-let [(p (build-phi (class-of pend)))]
+        (jit-let [(p (build-phi (class-of pstart)))]
           (add-incoming p start p0)
           (build-cond-branch (ne p pend) body end)
           (position-builder-at-end body)
@@ -1472,16 +1472,13 @@
 (define (reduction result arg operation)
   (if (zero? (dimensions arg))
     (store result (fetch (memory arg)))
-    (jit-let [(p      (typed-alloca (pointer (typecode arg))))
-              (stride (llvm-last (strides arg)))
+    (jit-let [(stride (llvm-last (strides arg)))
               (pend   (+ (memory arg) (* stride (llvm-last (shape arg)))))]
       (reduction result (project arg) operation)
-      (store p (+ (memory arg) stride))
-      (llvm-while (ne (fetch p) pend)
+      (jit-for p (+ (memory arg) stride) pend stride
         (jit-let [(sub-result (typed-alloca (typecode arg)))]
-          (reduction sub-result (project (rebase arg (fetch p))) operation)
-          (store result (operation (fetch result) (fetch sub-result))))
-        (store p (+ (fetch p) stride))))))
+          (reduction sub-result (project (rebase arg p)) operation)
+          (store result (operation (fetch result) (fetch sub-result))))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
