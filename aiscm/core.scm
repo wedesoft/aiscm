@@ -1541,8 +1541,8 @@
       (store q (memory self))
       (store klower (- (+ offset 1) (llvm-last (shape self))))
       (store kupper (+ offset 1))
-      (llvm-while (ne (fetch p) pend)
-        (convolve-array (project (rebase result (fetch p)))
+      (jit-for p (memory result) pend (llvm-last (strides result))
+        (convolve-array (project (rebase result p))
                         element
                         (project (rebase self (fetch q)))
                         kernel
@@ -1551,7 +1551,6 @@
                         (cons (fetch klower) klower-bounds)
                         (cons (fetch kupper) kupper-bounds)
                         (cons offset offsets))
-        (store p (+ (fetch p) (llvm-last (strides result))))
         (store q (+ (fetch q) (llvm-last (strides self))))
         (store klower (+ (fetch klower) 1))
         (store kupper (+ (fetch kupper) 1)))
