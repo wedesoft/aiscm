@@ -1172,7 +1172,7 @@
 (define-method (where (target <meta<structure>>) condition value-if value-else)
   (let [(args (map (lambda (component) (where condition (component value-if) (component value-else)))
                    (components target)))]
-    (construct-object target args)))
+    (apply (build target) args)))
 
 (define-method (typed-alloca (type <meta<scalar>>))
   (make (pointer type) #:value (memoize (fun) (llvm-build-alloca (slot-ref fun 'llvm-function) (foreign-type type)))))
