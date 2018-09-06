@@ -1,10 +1,8 @@
 ## Ready
 
-* reduce without alloca?
-* phi of composite value
-* convolution without alloca?
 * for loop with multiple variables
 * jit-for for element-wise loop
+* convolution without alloca?
 * how to create loop object on the llvm
 * 2D convolution segmentation fault
 * set/get ranges
