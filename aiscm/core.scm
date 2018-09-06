@@ -1368,15 +1368,12 @@
   (if (zero? (dimensions result))
     (store (memory result) (apply delegate args))
     (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (typed-alloca (pointer (typecode arg))) #f)) args))]
-      (jit-let [(p    (typed-alloca (pointer (typecode result))))
-                (pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
-        (store p (memory result))
+      (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
         (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (store ptr (memory arg))) '())) q args))
-        (llvm-while (ne (fetch p) pend)
+        (jit-for p (memory result) pend (llvm-last (strides result))
           (apply elementwise-loop delegate
-                                  (project (rebase result (fetch p)))
+                                  (project (rebase result p))
                                   (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg (fetch ptr)))) arg)) q args))
-          (store p (+ (fetch p) (* (llvm-last (strides result)))))
           (apply llvm-begin
             (append-map
               (lambda (ptr arg)
