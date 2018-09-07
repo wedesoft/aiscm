@@ -1558,13 +1558,11 @@
     (llvm-begin
       (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
       (store (memory result) (fetch element)))
-    (jit-let [(p      (typed-alloca (pointer (typecode result))))
-              (pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
+    (jit-let [(pend   (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
               (q      (typed-alloca (pointer (typecode self))))
               (klower (typed-alloca <int>))
               (kupper (typed-alloca <int>))
               (offset (>> (llvm-last kernel-shape) 1))]
-      (store p (memory result))
       (store q (memory self))
       (store klower (- (+ offset 1) (llvm-last (shape self))))
       (store kupper (+ offset 1))
