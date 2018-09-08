@@ -20,11 +20,3 @@ The *jit* function also instantiates loops for array processing. For example:
 ```Scheme
 @../tests/integration/virtual_arrays.scm@
 ```
-
-## Interpreter callbacks
-
-Callbacks into the *GNU Guile* interpreter are defined as well. They can be used to generate machine code which handles Scheme objects:
-
-```
-@../tests/integration/callback.scm@
-```

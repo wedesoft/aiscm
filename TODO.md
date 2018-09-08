@@ -1,15 +1,11 @@
 ## Ready
 
-* for loop with multiple variables
-* jit-for for element-wise loop
-* convolution without alloca?
-* how to create loop object on the llvm
-* 2D convolution segmentation fault
+* convolution without alloca, 2D convolution segmentation fault
 * set/get ranges
-* Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * integration tests
 * Standards version 4.2.1
 * release
+* Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
 * upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
