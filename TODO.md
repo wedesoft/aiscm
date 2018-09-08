@@ -1,6 +1,5 @@
 ## Ready
 
-* convolution without alloca, 2D convolution segmentation fault
 * set/get ranges
 * integration tests
 * Standards version 4.2.1
