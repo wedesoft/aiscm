@@ -1477,29 +1477,28 @@
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (llvm-begin
-        (jit-let [(result0 (reduction (project arg) operation))]
-          (build-branch start)
-          (position-builder-at-end start)
-          (jit-let [(stride  (llvm-last (strides arg)))
-                    (p0      (+ (memory arg) stride))
-                    (pend    (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-            (build-branch for)
-            (position-builder-at-end for)
-            (jit-let [(result (build-phi (class-of result0)))
-                      (p      (build-phi (class-of p0)))]
-              (add-incoming result start result0)
-              (add-incoming p start p0)
-              (build-cond-branch (ne p pend) body end)
-              (position-builder-at-end body)
-              (jit-let [(result1 (reduction (project (rebase arg p)) operation))]
-                (build-branch finish)
-                (position-builder-at-end finish)
-                (add-incoming result finish (operation result result1))
-                (add-incoming p finish (+ p stride))
-                (build-branch for)
-                (position-builder-at-end end)
-                result))))))))
+      (jit-let [(result0 (reduction (project arg) operation))]
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(stride  (llvm-last (strides arg)))
+                  (p0      (+ (memory arg) stride))
+                  (pend    (+ (memory arg) (* stride (llvm-last (shape arg)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(result (build-phi (class-of result0)))
+                    (p      (build-phi (class-of p0)))]
+            (add-incoming result start result0)
+            (add-incoming p start p0)
+            (build-cond-branch (ne p pend) body end)
+            (position-builder-at-end body)
+            (jit-let [(result1 (reduction (project (rebase arg p)) operation))]
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming result finish (operation result result1))
+              (add-incoming p finish (+ p stride))
+              (build-branch for)
+              (position-builder-at-end end)
+              result)))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
@@ -1515,46 +1514,59 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
+(define (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))
-    (store element (* (fetch (memory self)) (fetch (memory kernel))))
-    (jit-let [(k       (typed-alloca (pointer (typecode kernel))))
-              (kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
-              (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
-                                             (llvm-last (strides kernel)))))
-              (q       (typed-alloca (pointer (typecode self))))
-              (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))]
-      (store k kbegin)
-      (store q qbegin)
-      (convolve-kernel result
-                       (rebase self (fetch q))
-                       (project (rebase kernel (fetch k)))
-                       (llvm-all-but-last self-strides)
-                       element
-                       (all-but-last klower-bounds)
-                       (all-but-last kupper-bounds)
-                       (all-but-last offsets))
-      (store k (+ (fetch k) (llvm-last (strides kernel))))
-      (store q (- (fetch q) (llvm-last self-strides)))
-      (llvm-while (ne (fetch k) kend)
-        (jit-let [(intermediate (typed-alloca (typecode result)))]
-          (convolve-kernel result
-                           (rebase self (fetch q))
-                           (project (rebase kernel (fetch k)))
-                           (llvm-all-but-last self-strides)
-                           intermediate
-                           (all-but-last klower-bounds)
-                           (all-but-last kupper-bounds)
-                           (all-but-last offsets))
-          (store element (+ (fetch element) (fetch intermediate))))
-        (store k (+ (fetch k) (llvm-last (strides kernel))))
-        (store q (- (fetch q) (llvm-last self-strides)))))))
+    (* (fetch (memory self)) (fetch (memory kernel)))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (jit-let [(kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
+                (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))
+                (element0 (convolve-kernel result
+                                           (rebase self qbegin)
+                                           (project (rebase kernel kbegin))
+                                           (llvm-all-but-last self-strides)
+                                           (all-but-last klower-bounds)
+                                           (all-but-last kupper-bounds)
+                                           (all-but-last offsets)))]
+        (llvm-begin
+          (build-branch start)
+          (position-builder-at-end start)
+          (jit-let [(kbegin2 (+ kbegin (llvm-last (strides kernel))))
+                    (qbegin2 (- qbegin (llvm-last self-strides)))
+                    (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
+                                                   (llvm-last (strides kernel)))))]
+            (build-branch for)
+            (position-builder-at-end for)
+            (jit-let [(element (build-phi (typecode result)))
+                      (k       (build-phi (pointer (typecode kernel))))
+                      (q       (build-phi (pointer (typecode self))))]
+              (add-incoming element start element0)
+              (add-incoming k start kbegin2)
+              (add-incoming q start qbegin2)
+              (build-cond-branch (ne k kend) body end)
+              (position-builder-at-end body)
+              (jit-let [(intermediate (convolve-kernel result
+                                                       (rebase self q)
+                                                       (project (rebase kernel k))
+                                                       (llvm-all-but-last self-strides)
+                                                       (all-but-last klower-bounds)
+                                                       (all-but-last kupper-bounds)
+                                                       (all-but-last offsets)))]
+                (build-branch finish)
+                (position-builder-at-end finish)
+                (add-incoming element finish (+ element intermediate))
+                (add-incoming k finish (+ k (llvm-last (strides kernel))))
+                (add-incoming q finish (- q (llvm-last self-strides)))
+                (build-branch for)
+                (position-builder-at-end end)
+                element))))))))
 
 (define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
-    (jit-let [(element (typed-alloca (typecode result)))]
-      (convolve-kernel result self kernel self-strides element klower-bounds kupper-bounds offsets)
-      (store (memory result) (fetch element)))
+    (store (memory result) (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets))
     (let [(start (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
