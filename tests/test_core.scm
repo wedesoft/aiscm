@@ -1104,16 +1104,7 @@
           (store i (typed-constant <int> 0))
           (llvm-while (lt (fetch i) n)
             (store i (+ 1 (fetch i))))
-          (fetch i)))) 10))
-  (test-eqv "For loop"
-    45
-    ((jit (list <int>)
-       (lambda (n)
-         (jit-let [(r (typed-alloca <int>))]
-           (store r (typed-constant <int> 0))
-           (jit-for i (typed-constant <int> 0) n 1 (store r (+ (fetch r) i)))
-           (fetch r))))
-     10)))
+          (fetch i)))) 10)))
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
