@@ -1136,6 +1136,12 @@
       5 (get m1 2))
     (test-eqv "Get third element of 1D short integer array"
       (+ 2 (* 3 256)) (get s1 2))
+    (test-equal "Get slice of array"
+      '(7 11 13) (to-list (get m2 1)))
+    (test-equal "Set element of 1D array"
+      '(2 7 5) (let [(m  (arr 2 3 5))] (set m 1 7) (to-list m)))
+    (test-equal "Set element of 2D array"
+      '((1 7 3) (4 5 6)) (let [(m  (arr (1 2 3) (4 5 6)))] (set m 1 0 7) (to-list m)))
     (test-equal "Build multiarray with correct memory"
       (memory m2)
       (memory ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
