@@ -1,6 +1,5 @@
 ## Ready
 
-* 0-d array
 * set/get ranges
 * integration tests
 * Standards version 4.2.1

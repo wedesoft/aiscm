@@ -25,7 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (destroy read-image write-image read-audio write-audio rate channels
-            get integer signed unsigned bits signed? coerce foreign-type
+            integer signed unsigned bits signed? coerce foreign-type
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
@@ -42,8 +42,8 @@
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
-            to-array set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump minor major sum prod convolve fill
+            to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
+            crop dump project element minor major sum prod convolve fill
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1228,7 +1228,7 @@
                                      ((get shape) fun)
                                      ((get strides) fun)))))
 
-(define (element self indices dim)
+(define (element2 self indices dim)
   (reduce-right +
                 #f
                 (cons (memory self)
@@ -1236,27 +1236,22 @@
                        indices
                        (iota (length indices) dim)))))
 
+(define-method (element self) self)
+
+(define-method (element self first . rest)
+  (let* [(indices (cons first rest))
+         (index   (last indices))]
+    (apply element (project (dump index self)) (all-but-last indices))))
+
 (define-method (get (self <multiarray<>>) . indices)
-  (let* [(dim (- (dimensions self) (length indices)))
-         (fun (if (zero? dim)
-                (lambda (self . indices) (fetch (element self indices dim) ))
-                (lambda (self . indices)
-                  (llvmarray (element self indices dim)
-                             (memory-base self)
-                             (apply llvmlist (map (lambda (index) (get (shape self) index)) (iota dim)))
-                             (apply llvmlist (map (lambda (index) (get (strides self) index)) (iota dim)))))))]
-    (add-method! get
-                 (make <method>
-                       #:specializers (cons (class-of self) (make-list (length indices) <integer>))
-                       #:procedure (jit (cons (native-type self) (make-list (length indices) <int>)) fun)))
-    (apply get self indices)))
+  (fetch (apply element self indices)))
 
 (define-method (set (self <multiarray<>>) . args)
   (let* [(indices (all-but-last args))
          (value   (last args))
          (dim     (- (dimensions self) (length indices)))
          (fun (lambda (self . args)
-           (store (element self (all-but-last args) dim) (last args))))]
+           (store (element2 self (all-but-last args) dim) (last args))))]
     (add-method! set
                  (make <method>
                        #:specializers (attach (cons (class-of self) (make-list (length indices) <integer>)) <top>)
@@ -1340,13 +1335,25 @@
   "Use the specified pointer to rebase the array"
   (llvmarray p (memory-base self) (shape self) (strides self)))
 
-(define (project self)
+(define-method (project (self <llvmarray<>>))
   "Drop last dimension of array"
   (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
+
+(define-method (project (self <multiarray<>>))
+  (make (multiarray (typecode self) (1- (dimensions self)))
+        #:shape (all-but-last (shape self))
+        #:strides (all-but-last (strides self))
+        #:memory (memory self)
+        #:memory-base (memory-base self)))
 
 (define-method (fetch (self <llvmarray<>>))
   "Return content if array has zero dimensions otherwise return array"
   (if (zero? (dimensions self)) (fetch (memory self)) self))
+
+(define-method (fetch (self <multiarray<>>))
+  (let [(fun (jit (list (llvmarray (typecode self) (dimensions self))) fetch))]
+    (add-method! fetch (make <method> #:specializers (list (class-of self)) #:procedure fun))
+    (fetch self)))
 
 (define (elementwise-loop delegate result . args)
   "Elementwise array operation with arbitrary arity"

@@ -1142,6 +1142,8 @@
       '(2 7 5) (let [(m  (arr 2 3 5))] (set m 1 7) (to-list m)))
     (test-equal "Set element of 2D array"
       '((1 7 3) (4 5 6)) (let [(m  (arr (1 2 3) (4 5 6)))] (set m 1 0 7) (to-list m)))
+    (test-equal "Get range of elements from 1D array"
+      '(3 5) (to-list (get (arr 2 3 5 7) '(1 . 3))))
     (test-equal "Build multiarray with correct memory"
       (memory m2)
       (memory ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
