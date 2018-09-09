@@ -1041,6 +1041,8 @@
 (define-rgb-binary-op *)
 (define-rgb-binary-op /)
 (define-rgb-binary-op %)
+(define-rgb-binary-op minor)
+(define-rgb-binary-op major)
 
 (define (llvm-begin instruction . instructions)
   (if (null? instructions)

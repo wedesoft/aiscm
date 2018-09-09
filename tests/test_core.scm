@@ -1312,7 +1312,11 @@
   (test-equal "Element-wise minor value"
     '(2 3 2) (to-list (minor (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Element-wise major value"
-    '(5 3 5) (to-list (major (arr 2 3 5) (arr 5 3 2)))))
+    '(5 3 5) (to-list (major (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "minor value of RGB value"
+    (rgb 2 3 2) ((jit (list (rgb <int>) (rgb <int>)) minor) (rgb 2 3 5) (rgb 5 3 2)))
+  (test-equal "minor value of RGB values"
+    (rgb 5 3 5) ((jit (list (rgb <int>) (rgb <int>)) major) (rgb 2 3 5) (rgb 5 3 2))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"

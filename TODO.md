@@ -1,7 +1,7 @@
 ## Ready
 
+* 0-d array
 * set/get ranges
-* minor/major for RGB values
 * integration tests
 * Standards version 4.2.1
 * release
