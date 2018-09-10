@@ -1,6 +1,5 @@
 ## Ready
 
-* integration tests
 * Standards version 4.2.1
 * release
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
