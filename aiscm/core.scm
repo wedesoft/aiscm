@@ -1048,7 +1048,10 @@
 (define-rgb-binary-op minor)
 (define-rgb-binary-op major)
 
-(define (llvm-begin instruction . instructions)
+(define-method (llvm-begin)
+  (make <void> #:value (const #f)))
+
+(define-method (llvm-begin instruction . instructions)
   (if (null? instructions)
     instruction
     (let [(result (apply llvm-begin instructions))]
@@ -1416,8 +1419,7 @@
   (begin
     (define-cycle-method op arity <llvmarray<>> <void>
       (lambda args
-        (jit-let [(result (allocate-array (apply coercion (map typecode args))
-                                          (shape (argmax dimensions args))))]
+        (jit-let [(result (allocate-array (apply coercion (map typecode args)) (shape (argmax dimensions args))))]
           (apply elementwise-loop delegate result args)
           result)))
     (define-cycle-method op arity <meta<llvmarray<>>> <meta<void>>
@@ -1628,36 +1630,11 @@
                        #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
   (convolve self kernel))
 
-(define (fill-array self value)
-  (if (zero? (dimensions self))
-    (store (memory self) value)
-    (jit-let [(pend (+ (memory self) (* (llvm-last (shape self)) (llvm-last (strides self)))))]
-      (let [(start  (make-basic-block "start"))
-            (for    (make-basic-block "for"))
-            (body   (make-basic-block "body"))
-            (finish (make-basic-block "finish"))
-            (end    (make-basic-block "end"))]
-        (llvm-begin
-          (build-branch start)
-          (position-builder-at-end start)
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(p (build-phi (pointer (typecode self))))]
-            (add-incoming p start (memory self))
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (fill-array (project (rebase self p)) value)
-            (build-branch finish)
-            (position-builder-at-end finish)
-            (add-incoming p finish (+ p (llvm-last (strides self))))
-            (build-branch for)
-            (position-builder-at-end end)))))))
-
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
                (lambda (shp value)
                  (jit-let [(result (allocate-array (typecode type) shp))]
-                   (fill-array result value)
+                   (elementwise-loop identity result value)
                    result))))]
     (add-method! fill-dispatch
                  (make <method>

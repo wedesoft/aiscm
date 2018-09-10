@@ -1,6 +1,6 @@
 ## Ready
 
-* set ranges
+* set ranges based on elementwise-loop
 * integration tests
 * Standards version 4.2.1
 * release
