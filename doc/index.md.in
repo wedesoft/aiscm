@@ -1,6 +1,6 @@
 # AIscm Reference Manual
 
-[![GPLv3](gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](amd64.png)](https://en.wikipedia.org/wiki/X86-64) [![Travis CI](travis.png)](https://travis-ci.org/wedesoft/aiscm)
+[![GPLv3](gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](travis.png)](https://travis-ci.org/wedesoft/aiscm)
 
 This manual is for **AIscm** (version @VERSION@).
 
