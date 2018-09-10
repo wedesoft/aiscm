@@ -25,6 +25,7 @@ RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
 RUN apt-get install -q -y libavformat-dev
 RUN apt-get install -q -y libxpm-dev
+RUN apt-get install -q -y libllvm-3.9
 RUN apt-get install -q -y libllvm-3.9-dev
 RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
