@@ -1358,6 +1358,11 @@
     (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
     (store self value)))
 
+(define-method (store (self <multiarray<>>) (value <multiarray<>>))
+  (let [(fun (jit (list (native-type self) (native-type value)) (lambda (self value) (elementwise-loop identity self value))))]
+    (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
+    (store self value)))
+
 (define (elementwise-loop delegate result . args)
   "Elementwise array operation with arbitrary arity"
   (if (zero? (dimensions result))
