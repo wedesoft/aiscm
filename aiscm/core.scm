@@ -1228,20 +1228,14 @@
                                      ((get shape) fun)
                                      ((get strides) fun)))))
 
-(define (element2 self indices dim)
-  (reduce-right +
-                #f
-                (cons (memory self)
-                  (map (lambda (index i) (* index (get (strides self) i)))
-                       indices
-                       (iota (length indices) dim)))))
-
 (define-method (element self) self)
 
 (define-method (element self first . rest)
   (let* [(indices (cons first rest))
          (index   (last indices))]
-    (apply element (project (dump index self)) (all-but-last indices))))
+    (apply element
+      (if (is-a? index <pair>) (unroll (dump (car index) (crop (cdr index) self))) (project (dump index self)))
+      (all-but-last indices))))
 
 (define-method (get (self <multiarray<>>) . indices)
   (fetch (apply element self indices)))
