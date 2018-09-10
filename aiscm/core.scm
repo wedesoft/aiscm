@@ -1246,17 +1246,14 @@
 (define-method (get (self <multiarray<>>) . indices)
   (fetch (apply element self indices)))
 
-(define-method (set (self <multiarray<>>) . args)
-  (let* [(indices (all-but-last args))
-         (value   (last args))
-         (dim     (- (dimensions self) (length indices)))
-         (fun (lambda (self . args)
-           (store (element2 self (all-but-last args) dim) (last args))))]
-    (add-method! set
-                 (make <method>
-                       #:specializers (attach (cons (class-of self) (make-list (length indices) <integer>)) <top>)
-                       #:procedure (jit (attach (cons (native-type self) (make-list (length indices) <int>)) (typecode self)) fun)))
-    (apply set self args)))
+(define-method (set self value)
+  (store self value))
+
+(define-method (set self first second . rest)
+  (let* [(args    (cons first (cons second rest)))
+         (indices (all-but-last args))
+         (value   (last args))]
+    (store (apply element self indices) value)))
 
 (define (to-list self)
   (let [(indices (iota (last (shape self))))]
@@ -1351,9 +1348,14 @@
   (if (zero? (dimensions self)) (fetch (memory self)) self))
 
 (define-method (fetch (self <multiarray<>>))
-  (let [(fun (jit (list (llvmarray (typecode self) (dimensions self))) fetch))]
+  (let [(fun (jit (list (native-type self)) fetch))]
     (add-method! fetch (make <method> #:specializers (list (class-of self)) #:procedure fun))
     (fetch self)))
+
+(define-method (store (self <multiarray<>>) value)
+  (let [(fun (jit (list (native-type self) (typecode self)) (lambda (self value) (store (memory self) value))))]
+    (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
+    (store self value)))
 
 (define (elementwise-loop delegate result . args)
   "Elementwise array operation with arbitrary arity"
