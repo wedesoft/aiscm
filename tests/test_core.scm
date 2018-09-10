@@ -1345,6 +1345,12 @@
     3 (green (rgb 2 3 5)))
   (test-eqv "extract blue channel of RGB value"
     5 (blue (rgb 2 3 5)))
+  (test-eqv "extract red channel of gray value"
+    2 (red 2))
+  (test-eqv "extract green channel of gray value"
+    3 (green 3))
+  (test-eqv "extract blue channel of gray value"
+    5 (blue 5))
   (test-eqv "compiled RGB type"
     3 ((jit (list (rgb <int>)) green) (rgb 2 3 5)))
   (test-equal "compiled RGB constructor"

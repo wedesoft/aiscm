@@ -226,6 +226,10 @@
   "Make RGB value"
   (make <rgb> #:red r #:green g #:blue b))
 
+(define-method (red   (self <real>)) self)
+(define-method (green (self <real>)) self)
+(define-method (blue  (self <real>)) self)
+
 (define-method (write (self <rgb>) port)
   "Display RGB value"
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))

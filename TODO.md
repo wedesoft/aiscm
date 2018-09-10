@@ -1,7 +1,6 @@
 ## Ready
 
 * set ranges
-* store rgb value
 * integration tests
 * Standards version 4.2.1
 * release
