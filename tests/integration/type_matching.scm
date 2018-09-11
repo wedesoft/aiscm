@@ -1,4 +1,4 @@
-(use-modules (aiscm sequence))
-(seq -1 2 3 5)
-;#<sequence<int<8,signed>>>:
+(use-modules (aiscm core))
+(arr -1 2 3 5)
+;#<multiarray<int<8,signed>,1>>:
 ;(-1 2 3 5)

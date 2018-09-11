@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm ffmpeg) (aiscm pulse))
+(use-modules (oop goops) (aiscm ffmpeg) (aiscm pulse) (aiscm core))
 (define audio (open-ffmpeg-input "test.mp3"))
 (define output (make <pulse-play> #:rate (rate audio) #:channels (channels audio) #:typecode (typecode audio)))
 (write-audio (lambda _ (read-audio audio (rate audio))) output)

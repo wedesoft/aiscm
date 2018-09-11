@@ -1,13 +1,11 @@
 # AIscm Reference Manual
 
-[![GPLv3](gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](amd64.png)](https://en.wikipedia.org/wiki/X86-64) [![Travis CI](travis.png)](https://travis-ci.org/wedesoft/aiscm)
+[![GPLv3](gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](travis.png)](https://travis-ci.org/wedesoft/aiscm)
 
 This manual is for **AIscm** (version @VERSION@).
 
 [**AIscm**][1] is a **[Guile][2] extension for numerical arrays and tensors**.
-Performance is achieved by means of a JIT compiler.
-
-Control all data and machine code down to every single bit and byte.
+Performance is achieved by using the LLVM JIT compiler.
 
 <div class="figure">
 <p><a href="installation.html" title="Installation"><strong>Installation</strong> <img src="aiscm.gif" alt=""/> <strong>Installation</strong></a></p>
@@ -39,6 +37,7 @@ Control all data and machine code down to every single bit and byte.
 
 ## External links
 
+* [LLVM ORC JIT C API](https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/)
 * [Chainer: A Powerful, Flexible, and Intuitive Framework of Neural Networks](http://chainer.org/)
 * [DyNet: dynamic neural networks library](https://github.com/clab/dynet)
 * [Torch: Scientific computing for LuaJIT](http://torch.ch/)

@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm v4l2) (aiscm xorg))
+(use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))
 (define v (make <v4l2>))
 (show (lambda _ (read-image v)))
 (destroy v)

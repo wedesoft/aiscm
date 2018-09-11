@@ -129,11 +129,3 @@ At the moment only integer complex values are supported. Here is a small example
 
 Since native integers are used, numerical overflow can occur.
 Note that you can use *to-type* to convert an array to a more suitable type.
-
-## Object arrays
-
-It is also possible to use arrays of Scheme objects instead of using a native representation:
-
-```Scheme
-@../tests/integration/object_array.scm@
-```

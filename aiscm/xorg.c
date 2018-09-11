@@ -590,8 +590,7 @@ static SCM scm_int_list(int n, int *p)
 
 static char *image_data(SCM scm_image)
 {
-  return scm_to_pointer(scm_slot_ref(scm_slot_ref(scm_image, scm_from_locale_symbol("mem")),
-                                     scm_from_locale_symbol("memory")));
+  return scm_to_pointer(scm_slot_ref(scm_image, scm_from_locale_symbol("memory")));
 }
 
 void window_paint(struct window_t *self, int x11_event)

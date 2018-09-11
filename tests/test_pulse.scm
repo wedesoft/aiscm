@@ -16,8 +16,7 @@
 ;;
 (use-modules (srfi srfi-64)
              (oop goops)
-             (aiscm int)
-             (aiscm float)
+             (aiscm core)
              (aiscm pulse))
 
 
