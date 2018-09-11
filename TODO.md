@@ -1,6 +1,5 @@
 ## Ready
 
-* package for different distros
 * Scheme objects, memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
 * upcast sum result to int32 or int64
