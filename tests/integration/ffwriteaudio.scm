@@ -1,5 +1,5 @@
-(use-modules (oop goops) (aiscm ffmpeg) (aiscm int) (aiscm sequence))
-(define samples (to-array <sint> (map (lambda (t) (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000))) (iota 441))))
+(use-modules (oop goops) (aiscm ffmpeg) (aiscm core))
+(define samples (to-array <sint> (map (lambda (t) (inexact->exact (round (* (sin (/ (* t 1000 2 3.1415926) 44100)) 20000)))) (iota 441))))
 (define output (open-ffmpeg-output (string-append (tmpnam) ".mp3") #:rate 44100 #:typecode <sint> #:channels 1))
 (for-each (lambda _ (write-audio samples output)) (iota 300))
 (destroy output)

@@ -28,7 +28,7 @@ sign: package
 
 detach-sig: aiscm-$(VERSION).tar.xz.asc
 
-# "mentors" needs to be defined in ~/.dput.cf (see https://mentors.debian.net/intro-maintainers)
+# "mentors" needs to be defined in ~/.dput.cf (see https://mentors.debian.net/intro-maintainers and etc/dput.cf)
 dput: sign
 	cd pkg && dput -f mentors $(PACKAGE)_amd64.changes && cd ..
 

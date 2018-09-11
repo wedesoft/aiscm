@@ -1,8 +1,16 @@
-aiscm (0.15.5-1+xenial1) UNRELEASED; urgency=low
+aiscm (0.16.1-1+xenial1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Xenial
 
- -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jul 2018 10:17:00 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Mon, 10 Sep 2018 21:24:52 +0100
+
+aiscm (0.16.1-1) unstable; urgency=low
+
+  - New upstream release.
+  - Added LLVM to dependencies.
+  - Package now multi-arch
+
+ -- Jan Wedekind <jan@wedesoft.de>  Mon, 10 Sep 2018 21:24:52 +0100
 
 aiscm (0.15.5-1) unstable; urgency=low
 

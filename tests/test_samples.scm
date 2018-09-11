@@ -15,12 +15,10 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (system foreign)
              (oop goops)
-             (aiscm element)
-             (aiscm int)
-             (aiscm float)
-             (aiscm mem)
-             (aiscm sequence)
+             (aiscm core)
+             (aiscm util)
              (aiscm samples))
 
 
@@ -30,21 +28,21 @@
 
 (define stereo-values '((2 3) (5 7) (11 13) (17 19)))
 (define stereo-array (to-array <sint> stereo-values))
-(define stereo-mem (value stereo-array))
-(define stereo-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:mem stereo-mem))
+(define stereo-mem (memory stereo-array))
+(define stereo-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:memory stereo-mem))
 
 (define mono-values '(2 3 5 7))
 (define mono-array (to-array <sint> mono-values))
 
 (define planar-values '((2 5 11 17) (3 7 13 19)))
 (define planar-array (roll (to-array <sint> planar-values)))
-(define planar-mem (value planar-array))
-(define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:mem planar-mem))
+(define planar-mem (memory planar-array))
+(define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:memory planar-mem))
 
-(define surround-array (arr <sint> (1 2 3 4 5 6) (2 3 4 5 6 7)))
+(define surround-array (to-array <sint> '((1 2 3 4 5 6) (2 3 4 5 6 7))))
 (define surround-samples (to-samples surround-array 44100))
 
-(define custom-offsets (make <samples> #:typecode <sint> #:shape '(2 3) #:rate 22050 #:offsets '(0 8) #:planar #t #:mem planar-mem))
+(define custom-offsets (make <samples> #:typecode <sint> #:shape '(2 3) #:rate 22050 #:offsets '(0 8) #:planar #t #:memory planar-mem))
 
 (test-begin "convert offsets to pointers")
   (test-assert "Test first pointer"
@@ -64,7 +62,7 @@
 (test-assert "query whether samples are planar"
   (not (planar? stereo-samples)))
 (test-eq "check data is memorized"
-  stereo-mem (slot-ref stereo-samples 'mem))
+  stereo-mem (memory stereo-samples))
 (test-equal "'to-array' should convert the audio samples to a 2D array"
   stereo-values (to-list (to-array stereo-samples)))
 (test-eq "check sample type when converting array to samples"
@@ -74,7 +72,7 @@
 (test-equal "check samples converted from array have the right shape"
   '(2 4) (shape (to-samples stereo-array 22050)))
 (test-eq "check sample memory is initialised when converting from array"
-  (slot-ref stereo-array 'value) (slot-ref (to-samples stereo-array 22050) 'mem))
+  (memory stereo-array) (memory (to-samples stereo-array 22050)))
 (test-eqv "use specified sampling rate when converting from array to samples"
   22050 (rate (to-samples stereo-array 22050)))
 (test-equal "packed audio has one offset which is zero"
@@ -118,7 +116,7 @@
 (test-eq "convert samples to integer"
   <int> (typecode (convert-samples stereo-samples <int> #f)))
 (test-eqv "size of converted sample data"
-  32 (slot-ref (slot-ref (convert-samples stereo-samples <int> #f) 'mem) 'size))
+  32 (size-of (convert-samples stereo-samples <int> #f)))
 (test-equal "content of converted array"
   (map (cut map (cut ash <> 16) <>) stereo-values) (to-list (to-array (convert-samples stereo-samples <int> #f))))
 (test-eq "trivial conversion from short integer to short integer"
@@ -142,10 +140,10 @@
 (test-equal "converting planar surround samples to array should recover all data"
   (to-list surround-array) (to-list (to-array (convert-samples surround-samples <sint> #t))))
 
-(define target (to-samples (arr (0 0 0 0 0 0 0 0)) 44100))
-(convert-samples-from! target (to-samples (arr (1 2 3 4 6 7 8 9)) 44100))
+(define target (to-samples (to-array '((0 0 0 0 0 0 0 0))) 44100))
+(convert-samples-from! target (to-samples (to-array '((1 2 3 4 6 7 8 9))) 44100))
 (test-equal "Write conversion result to a target sample set"
-  #vu8(1 2 3 4 6 7 8 9) (read-bytes (slot-ref target 'mem) 8))
+  #vu8(1 2 3 4 6 7 8 9) (pointer->bytevector (memory target) 8))
 
 (test-equal "create samples with custom offsets"
   '(0 8) (slot-ref custom-offsets 'offsets))
@@ -154,5 +152,5 @@
   16 (size-of stereo-samples))
 
 (test-eqv "Allocate memory of correct size if not specified"
-  35280 (slot-ref (slot-ref (make <samples> #:typecode <int> #:shape '(2 4410) #:rate 44100 #:planar #f) 'mem) 'size))
+  35280 (size-of (make <samples> #:typecode <int> #:shape '(2 4410) #:rate 44100 #:planar #f)))
 (test-end "aiscm samples")

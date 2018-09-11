@@ -1,27 +1,27 @@
-(use-modules (aiscm sequence) (aiscm element) (aiscm jit))
+(use-modules (aiscm core))
 (define a (arr (1 2 3) (4 5 6)))
 a
-;#<sequence<sequence<int<8,unsigned>>>>:
+;#<multiarray<int<8,unsigned>,2>>:
 ;((1 2 3)
 ; (4 5 6))
 (shape a)
 ;(3 2)
-(define b (seq -1 1))
+(define b (arr -1 1))
 b
-;#<sequence<int<8,signed>>>:
+;#<multiarray<int<8,signed>,1>>:
 ;(-1 1)
 (shape b)
 ;(2)
 (+ b 1)
-;#<sequence<int<16,signed>>>:
+;#<multiarray<int<16,signed>,1>>:
 ;(0 2)
 (+ b b)
-;#<sequence<int<8,signed>>>:
+;#<multiarray<int<8,signed>,1>>:
 ;(-2 2)
 (- 1 b)
-;#<sequence<int<16,signed>>>:
+;#<multiarray<int<16,signed>,1>>:
 ;(2 0)
 (* a b)
-;#<sequence<sequence<int<16,signed>>>>:
+;#<multiarray<int<16,signed>,2>>:
 ;((-1 -2 -3)
 ; (4 5 6))
