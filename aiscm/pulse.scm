@@ -17,20 +17,14 @@
 (define-module (aiscm pulse)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
-  #:use-module (aiscm mem)
-  #:use-module (aiscm element)
-  #:use-module (aiscm int)
-  #:use-module (aiscm float)
-  #:use-module (aiscm sequence)
+  #:use-module (aiscm core)
   #:use-module (aiscm samples)
-  #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<pulse> <meta<pulse>>
             <pulse-play> <meta<pulse-play>>
             <pulse-record> <meta<pulse-record>>
             PA_SAMPLE_U8 PA_SAMPLE_S16LE PA_SAMPLE_S32LE PA_SAMPLE_FLOAT32LE
-            type->pulse-type pulse-type->type flush drain latency)
-  #:re-export (destroy read-audio write-audio channels rate typecode))
+            type->pulse-type pulse-type->type flush drain latency))
 
 (load-extension "libguile-aiscm-pulse" "init_pulse")
 
@@ -70,8 +64,10 @@
 (define-method (destroy (self <pulse>))
   (pulsedev-destroy (slot-ref self 'pulsedev)))
 
-(define-method (write-audio (samples <sequence<>>) (self <pulse-play>)); TODO: check type
-  (pulsedev-write (slot-ref self 'pulsedev) (get-memory (value (ensure-default-strides samples))) (size-of samples))
+(define-method (write-audio (samples <multiarray<>>) (self <pulse-play>)); TODO: check type
+  (pulsedev-write (slot-ref self 'pulsedev)
+                  (memory  (ensure-default-strides samples))
+                  (apply * (size-of (typecode samples)) (shape samples)))
   samples)
 
 (define-method (write-audio (samples <samples>) (self <pulse-play>)); TODO: check type
@@ -83,11 +79,11 @@
     (while result
       (write-audio result self)
       (set! result (samples)))))
+
 (define-method (read-audio (self <pulse-record>) (count <integer>))
   (let* [(size    (* count (channels self) (size-of (typecode self))))
-         (samples (pulsedev-read (slot-ref self 'pulsedev) size))
-         (memory  (make <mem> #:base samples #:size size #:pointerless #t))]
-    (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:value memory)))
+         (memory (pulsedev-read (slot-ref self 'pulsedev) size))]
+    (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:memory memory)))
 
 (define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulsedev)))

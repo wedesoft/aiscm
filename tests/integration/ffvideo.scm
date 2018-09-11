@@ -1,4 +1,4 @@
-(use-modules (aiscm ffmpeg) (aiscm xorg) (aiscm util))
+(use-modules (ice-9 format) (aiscm ffmpeg) (aiscm xorg) (aiscm core) (aiscm util))
 ; Creative commons audio-video sync test video https://www.youtube.com/watch?v=GKBKa9Za-FQ
 (define video (open-ffmpeg-input "av-sync.mp4"))
 (define time (clock))

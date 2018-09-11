@@ -8,12 +8,10 @@ The _    ___
 
 # [AIscm][1]
 
-[![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![amd64](doc/amd64.png)](https://en.wikipedia.org/wiki/X86-64) [![Travis CI](doc/travis.png)](https://travis-ci.org/wedesoft/aiscm)
+[![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html) [![Travis CI](doc/travis.png)](https://travis-ci.org/wedesoft/aiscm)
 
 [**AIscm**][1] is a **[Guile][2] extension for numerical arrays and tensors**.
-Performance is achieved by means of a JIT compiler.
-
-Control all data and machine code down to every single bit and byte!
+Performance is achieved by using the LLVM JIT compiler.
 
 ![AIscm](doc/aiscm.gif "AIscm")
 
@@ -40,7 +38,7 @@ sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 Finally you can install the software as follows
 
 ```Shell
-./bootstrap
+./autogen.sh
 ./configure
 make -j
 make check -j
@@ -94,6 +92,7 @@ make reintegration
 * [Debian sbuild][3] (installed from jessie-backports because of [bug 827315][7])
 * [Docker][4]
 * [managing Debian packages][5]
+* [How to run test headlessly with Xvfb][9]
 
 [1]: http://wedesoft.github.io/aiscm/ "AIscm"
 [2]: http://www.gnu.org/software/guile/ "Guile programming language"
@@ -103,3 +102,4 @@ make reintegration
 [6]: http://wedesoft.github.io/aiscm/installation.html "AIscm installation"
 [7]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=827315
 [8]: https://tracker.debian.org/pkg/aiscm
+[9]: http://elementalselenium.com/tips/38-headless

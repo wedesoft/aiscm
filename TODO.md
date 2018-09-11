@@ -1,122 +1,99 @@
 ## Ready
 
-* avcodec\_encode\_video2 deprecated
-* avcodec\_decode\_video2 deprecated
-* avcodec\_encode\_audio2 deprecated
-* avcodec\_decode\_audio4 deprecated
-* codec deprecated (ffmpeg.c: 271, 377, 417)
-* LLVM ORC JIT C API: https://www.doof.me.uk/2017/05/11/using-orc-with-llvms-c-api/
-* xorg\_scale\_video has frame offset
-* floating: VEX prefix, vcvttss2si, vcvtsi2ss, vmovss, vxorps), floor, ceil, round
-* "let" for tensors
-* structs, jit methods with multiple return values, packed objects (e.g. quaternion)
-* use bytevectors instead of memory objects?
-* check against NumPy, Theano, Tensorflow for completeness
-* assign array, assign sub-arrays -> Conway glider cannon <-> fill; jit <-> fill
-* Lucas-Kanade tracker
-* recognise Aruco marker cube, calibrated inverse kinematic
-* colour swapped when converting MJPEG video to FFmpeg video
+* package for different distros
+* Scheme objects, memory with pointers (callback.scm, object_array.scm)
+* tensors (tensors.scm)
+* upcast sum result to int32 or int64
+* convolution: \*, +=, dilation: first/conditional, max, ...
+* comparison operation for arrays (map reduce)
+* unary =0, !=0, !
+* binary and rgb &, |, ^, <<, >>
+* lookup, pseudo colour, warp
+* minimal shape
+* multiple C function calls in llvm-typed environment
+* OpenGL vertex array object example
+* runge kutta with state vector
+* 3ds converter computing normals and tangentials and loading textures and maps
+* micro-collisions example
+* type conversions (e.g. scalar to complex, scalar to rgb)
+* min/max
+* use thumbnail images to illustrate examples
+* connected components analysis
+* Ghost in the Shell style animations
+* panorama video viewer
 * tensor indices
-* procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
+* to-type in tensor expressions, implicit typecasting in tensor sum?
+* cast to higher integer type when doing a tensor injection
+* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
+* parameter passing for sequences, map, tensor operations, replace fill and other?
+* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
+* dimension checks for array/tensor operations; array compatibility check
 * Debian sid FFmpeg API changes
-  deprecated: avcodec\_encode\_video2, avcodec\_encode\_audio2, av\_free\_packet, codec, pkt\_pts, avcodec\_decode\_audio4, avcodec\_decode\_video2
+  * avcodec\_encode\_video2 deprecated
+  * avcodec\_decode\_video2 deprecated
+  * avcodec\_encode\_audio2 deprecated
+  * avcodec\_decode\_audio4 deprecated
+  * codec deprecated (ffmpeg.c: 271, 377, 417)
+* matrix vector operations
+* rigid-body impulse-based dynamics example (and microcollisions)
+* function should return list, sequential computation of complex number
+* compile method calls to other (polymorphic) compiled methods (support modular JIT code)
+* polymorphic method calls (e.g. fabs, fabsf)
+* Lucas-Kanade tracker
+* recognise Aruco marker cube
+* colour swapped when converting MJPEG video to FFmpeg video
+* procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* camera calibration, robot inverse kinematics, robot speech processing
 * 1+, 1-
 * ==, != for complex numbers
 * galaxy simulation
-* to-type in tensor
 * floating point exception (SIGFPE)
 * floating point convolution: sharpening filter, corner filters
 * linear algebra bindings (blas, lapack, gsl, mkl)
 * separable convolution
 * convolve with set of sobel filters
-* convolution: \*, +=, dilation: first/conditional, max, ...
 * diagonal injection, convolution, median, dilation, ...
 * sum with multiple indices or no indices, standalone sum expression
 * index arrays, show fill status of glass of milk
-* inject: equality, sum, mininum, maximum of frames
+* inject: equality, sum, minimum, maximum of frames
 * pixel selection example (take reference from center pixels)
-* lookup, pseudo colour, warp
-* to-type in tensor expressions, implicit typecasting in tensor sum?
-* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
-* dimension checks for array/tensor operations; array compatibility check
 * argmax
-* Ghost in the Shell style animations
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
 * how to run test suite
 * documentation for objects and arrays of objects
-* cast to higher integer type when doing a tensor injection
-* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-* equality of arrays
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
-* ffmpeg-input, ffmpeg-output class (instead of "is-input?")
-* Docker integration tests
-* audio, video output timestamps
-* pulse audio: use samples for reading and writing
-* module libraries without version numbers
-* Kinect difference picture/surveillance
+* difference picture photo thunderstorm
 * virtual fighter
-* augmented reality sudoku solver https://github.com/jponttuset/sudoku
 * run integration tests in Docker container
-* open-video-output, open-audio-output, ...
-* check audio/video frame can be written
 * select video codec, select audio codec
 * video player with aspect ratio
-* integration tests for XVideo, OpenGL, and XImage
 * NArray-like reshaping, other narray stuff
-* record arrays, extendable type matching, map?, inject?
-* fractions, \*\*
-* separate function for defining operation for array?
-* separate module for register allocation
+* fractions
 * multi-threading, SIMD, memory access (cache)
-* add checks https://wiki.debian.org/HowToPackageForDebian, blhc, licensecheck
 * make project more self contained (remove web streaming integration test)
-* car, cadr, ... -> first, second, ...
 * index manipulation on function expressions
-* direct mapping instead of decompose-arg for rgb and complex?
 * document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
   Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
-* add docstrings, REPL docs: ,d ...
-  http://www.draketo.de/proj/guile-basics/
-* https://www.gnu.org/software/guile/manual/html\_node/Arrays.html#Arrays
-  http://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/
 * red, green, blue, real-part, imag-part for objects
 * convert rgb to object, convert complex to object
 * convert object to rgb, convert object to complex
-* 256 -> boolean conversion
-* 32 -> boolean conversion
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
-* ArUco markers robot control
 * hypercomplex numbers and quaternions
-* linalg bindings
 * Kinect bindings
 * OpenCV bindings
 * FFTW3 bindings
 * predator tracker
 * <-> Guile 6.7.5 Arrays
-* create relocatable code and use linker to insert calls with relative addresses
-* use (ice-9 match) to simplify and translate assembler code?
-  https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
 * reading and writing with Guile file decriptors or Guile network sockets?
-* command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing, SLAM (hash-bang?)
-* keywords: data structures,digital signal processing,tensors,input/output (check standard theosaurus)
-* deduct sample time from delay in ffplay.scm
+* command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * use ice-9 q? background decoder thread
-* synchronise with display to prevent video tearing
 * array stack/unstack/record arrays
-* https://github.com/antoniogarro/guile-matrix
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
-* use hash tables
-* use assp http://www.scheme.com/csug7/objects.html
-* conditional/select
 * upsampling (and documentation about up- and downsampling)
-* something like Ruby's Struct
 * complex abs (magnitude), complex arg (and real)
 * video -> panorama stitching (multiresolution)
 * web server
@@ -130,14 +107,6 @@
 * camera calibration
 * marker recognition
 * x11 display: error handling for 'show', timing
-* separate register allocation for better testing (<-> RSpec, Clojure Midje?),
-  copy blocked predefined variables instead of spilling them
-* duplicate image
-* types composed of Scheme objects
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
-* use thumbnail images to illustrate examples
 * red-cyan, 3d display (bino, libglewmx, libavdevice)
-* slimv, tcp/ip, attach
-  http://www.codeproject.com/Questions/744389/Trying-to-setup-MJPEG-encoder-in-ffmpeg-in-Cpluspl
-* wisp (srfi-119), curly infix (srfi-105), guile --language=wisp <file>
