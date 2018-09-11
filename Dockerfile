@@ -25,8 +25,8 @@ RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
 RUN apt-get install -q -y libavformat-dev
 RUN apt-get install -q -y libxpm-dev
-RUN apt-get install -q -y llvm-3.9
-RUN apt-get install -q -y llvm-3.9-dev
+RUN apt-get install -q -y llvm-6.0
+RUN apt-get install -q -y llvm-6.0-dev
 RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
