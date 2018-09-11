@@ -5,11 +5,7 @@
 <div class="figure"><img src="package.png" alt=""/></div>
 
 There are AMD64 binaries for
-[![Debian](debian.png "Debian")](https://www.debian.org/) Jessie (8),
-[![Debian](debian.png "Debian")](https://www.debian.org/) Stretch (9),
-[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10),
-[![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Trusty (14.04),
-[![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Xenial (16.04), and
+[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10) and
 [![Ubuntu](ubuntu.png "Ubuntu")](http://www.ubuntu.com/) Bionic (18.04).
 
 To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*. To do this, paste the following lines into your terminal:

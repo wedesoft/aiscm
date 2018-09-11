@@ -3,7 +3,7 @@ dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])
 AC_INIT([aiscm], [0.16.1], [jan@wedesoft.de])
-DATE=2018-06-03
+DATE=2018-09-11
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
@@ -148,7 +148,7 @@ AC_TRY_LINK([#include <X11/xpm.h>],
             [AC_MSG_ERROR([Could not locate Xpm library])])
 LIBS="$old_LIBS"
 
-GUILE_PKG([2.2 2.0])
+GUILE_PKG([2.2])
 GUILE_PROGS
 GUILE_FLAGS
 GUILE_SITE_DIR
