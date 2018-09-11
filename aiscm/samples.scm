@@ -2,41 +2,39 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
-  #:use-module (aiscm mem)
   #:use-module (aiscm util)
-  #:use-module (aiscm element)
-  #:use-module (aiscm int)
-  #:use-module (aiscm float)
-  #:use-module (aiscm sequence)
-  #:use-module (aiscm jit)
+  #:use-module (aiscm core)
   #:export (<samples> <meta<samples>>
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
             planar? to-samples convert-samples convert-samples-from! type+planar->sample-format
             sample-format->type sample-format->planar)
-  #:re-export (typecode shape channels rate to-array size-of))
+  #:re-export (typecode shape to-array size-of))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
 
 (define-class* <samples> <object> <meta<samples>> <class>
-              (typecode #:init-keyword #:typecode #:getter typecode)
-              (shape    #:init-keyword #:shape    #:getter shape   )
-              (rate     #:init-keyword #:rate     #:getter rate    )
-              (offsets  #:init-keyword #:offsets  #:getter offsets )
-              (planar   #:init-keyword #:planar   #:getter planar? )
-              (mem      #:init-keyword #:mem                       ))
+              (typecode    #:init-keyword #:typecode    #:getter typecode   )
+              (shape       #:init-keyword #:shape       #:getter shape      )
+              (rate        #:init-keyword #:rate        #:getter rate       )
+              (offsets     #:init-keyword #:offsets     #:getter offsets    )
+              (planar      #:init-keyword #:planar      #:getter planar?    )
+              (memory      #:init-keyword #:memory      #:getter memory     )
+              (memory-base #:init-keyword #:memory-base #:getter memory-base))
 
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
-  (let-keywords initargs #f (typecode shape rate offsets planar mem)
-    (let [(offsets (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))
-          (mem     (or mem (make <mem> #:size (apply * (size-of typecode) shape) #:pointerless #t)))]
-      (next-method self (list #:typecode typecode
-                              #:shape    shape
-                              #:rate     rate
-                              #:offsets  offsets
-                              #:planar   planar
-                              #:mem      mem)))))
+  (let-keywords initargs #f (typecode shape rate offsets planar memory memory-base)
+    (let* [(offsets     (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))
+           (memory      (or memory (gc-malloc-pointerless (apply * (size-of typecode) shape))))
+           (memory-base (or memory-base memory))]
+      (next-method self (list #:typecode    typecode
+                              #:shape       shape
+                              #:rate        rate
+                              #:offsets     offsets
+                              #:planar      planar
+                              #:memory      memory
+                              #:memory-base memory-base)))))
 
 (define-method (channels (self <samples>))
   "Get number of audio channels of audio samples"
@@ -50,13 +48,18 @@
   "Convert audio samples to a numerical array"
   (if (planar? self)
       (to-array (convert-samples self (typecode self) #f))
-      (make (multiarray (typecode self) 2) #:shape (shape self) #:value (slot-ref self 'mem))))
+      (make (multiarray (typecode self) 2) #:shape (shape self) #:memory (memory self) #:memory-base (memory-base self))))
 
 (define (to-samples self rate)
   "Convert numerical array to audio samples"
   (let [(shape     (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
         (compacted (ensure-default-strides self))]
-    (make <samples> #:typecode (typecode self) #:shape shape #:planar #f #:rate rate #:mem (slot-ref compacted 'value))))
+    (make <samples> #:typecode    (typecode self)
+                    #:shape       shape
+                    #:planar      #f
+                    #:rate        rate
+                    #:memory      (memory compacted)
+                    #:memory-base (memory-base compacted))))
 
 (define typemap-packed
   (list (cons <ubyte>  AV_SAMPLE_FMT_U8  )
@@ -95,16 +98,16 @@
   "Convert audio samples from source to destination format"
   (let [(source-type (descriptor source))
         (dest-type   (descriptor destination))]
-    (samples-convert (get-memory (slot-ref source 'mem)) source-type (get-memory (slot-ref  destination 'mem)) dest-type)))
+    (samples-convert (memory source) source-type (memory destination) dest-type)))
 
 (define (convert-samples self typecode planar)
   "Convert audio samples using the specified attributes"
   (let* [(size        (apply * (size-of typecode) (shape self)))
          (destination (make <samples>
                             #:typecode typecode
-                            #:shape (shape self)
-                            #:rate (rate self)
-                            #:planar planar
-                            #:mem (make <mem> #:size size #:pointerless #t)))]
+                            #:shape    (shape self)
+                            #:rate     (rate self)
+                            #:planar   planar
+                            #:memory   (gc-malloc-pointerless size)))]
     (convert-samples-from! destination self)
     destination))

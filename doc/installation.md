@@ -72,4 +72,8 @@ It is recommended to enable a REPL with history and colorized output.
 (activate-colorized)
 ```
 
+It is recommended to edit Scheme documents with Vim or Emacs.
+Both editors have plugins for parenthesis editing (ParEdit).
+The editors also have plugins for rainbow parentheses.
+
 [1]: https://github.com/NalaGinrut/guile-colorized

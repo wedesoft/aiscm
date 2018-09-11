@@ -1,3 +1,7 @@
+# aiscm (0.16.1)
+
+* Replaced JIT compiler with LLVM.
+
 # aiscm (0.15.4)
 
 * set Pandoc template to avoid Cloudflare URLs

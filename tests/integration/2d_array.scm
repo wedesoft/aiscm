@@ -1,6 +1,6 @@
-(use-modules (oop goops) (aiscm int) (aiscm sequence))
+(use-modules (oop goops) (aiscm core))
 (make (multiarray <int> 2) #:shape '(6 4))
-;#<sequence<int<32,signed>>>>:
+;#<multiarray<int<32,signed>,2>>:
 ;((21701840 0 0 0 0 0)
 ; (0 0 0 0 0 0)
 ; (0 0 0 0 0 0)

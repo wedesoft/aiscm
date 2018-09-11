@@ -20,14 +20,10 @@
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (aiscm util)
-  #:use-module (aiscm element)
-  #:use-module (aiscm mem)
-  #:use-module (aiscm int)
+  #:use-module (aiscm core)
   #:use-module (aiscm image)
-  #:use-module (aiscm sequence)
   #:use-module (system foreign)
-  #:export (<v4l2> <meta<v4l2>>)
-  #:re-export (destroy read-image))
+  #:export (<v4l2> <meta<v4l2>>))
 
 (load-extension "libguile-aiscm-v4l2" "init_v4l2")
 
@@ -72,11 +68,10 @@
 (define-method (shape (self <v4l2>)) (videodev2-shape (slot-ref self 'videodev2)))
 
 (define-method (read-image (self <v4l2>))
-  (let [(picture (videodev2-read-image (slot-ref self 'videodev2)))
-        (memory  (lambda (base size) (make <mem> #:base base #:size size)))]
-    (apply (lambda (format shape base size)
+  (let [(picture (videodev2-read-image (slot-ref self 'videodev2)))]
+    (apply (lambda (format shape mem size)
              (make <image>
                    #:format (v4l2-format->symbol format)
                    #:shape shape
-                   #:mem (memory base size)))
+                   #:memory mem))
            picture)))

@@ -21,7 +21,7 @@
 SCM gc_malloc(SCM scm_size)
 {
   size_t size = scm_to_int(scm_size);
-  void *ptr = scm_gc_malloc(size, "scm_gc_malloc");
+  void *ptr = scm_gc_malloc(size, "gc-malloc");
   SCM *p = ptr;
   int i;
   for (i=0; i<size; i+=8)
@@ -32,7 +32,7 @@ SCM gc_malloc(SCM scm_size)
 SCM gc_malloc_pointerless(SCM scm_size)
 {
   size_t size = scm_to_int(scm_size);
-  void *ptr = scm_gc_malloc_pointerless(size, "scm_gc_malloc_pointerless");
+  void *ptr = scm_gc_malloc_pointerless(size, "gc-malloc-pointerless");
   return scm_from_pointer(ptr, NULL);
 }
 

@@ -1,6 +1,15 @@
 #include <stdlib.h>
 
-int f(int a, int b, int c, int d, int e, int f)
+typedef struct {
+  long a;
+  long b;
+  long c;
+} test_t;
+
+test_t f();
+
+long g()
 {
-  return (int)((float)a + (float)b + (float)c + (float)d + (float)e + (float)f);
+  test_t x = f();
+  return x.a + x.b + x.c;
 }
