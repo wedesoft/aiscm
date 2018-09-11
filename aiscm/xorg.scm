@@ -19,16 +19,14 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm util)
-  #:use-module (aiscm element)
-  #:use-module (aiscm int)
-  #:use-module (aiscm sequence)
-  #:use-module (aiscm pointer)
+  #:use-module (aiscm core)
   #:use-module (aiscm image)
   #:export (<xdisplay> <meta<xdisplay>>
             <xwindow> <meta<xwindow>>
             process-events event-loop quit? quit= show show-fullscreen hide title= move resize move-resize window-size
-            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO)
-  #:re-export (destroy write-image))
+            fullscreen-flag xorg-io-type IO-XIMAGE IO-OPENGL IO-XVIDEO))
+
+
 (load-extension "libguile-aiscm-xorg" "init_xorg")
 (define-class* <xdisplay> <object> <meta<xdisplay>> <class>
   (display #:init-keyword #:display #:getter get-display))
@@ -76,7 +74,7 @@
 (define-method (show (self <xwindow>))
   (window-show (get-window self)))
 (define-method (show (self <image>) . args) (apply show (list self) args) self)
-(define-method (show (self <sequence<>>) . args) (apply show (list self) args) self)
+(define-method (show (self <multiarray<>>) . args) (apply show (list self) args) self)
 (define-method (show (self <list>) . args)
   (let* [(dsp         (make <xdisplay>))
          (io          (apply xorg-io-type #f self args))
@@ -134,4 +132,4 @@
   (window-move-resize (get-window self) x y w h))
 
 (define-method (write-image (image <image>) (self <xwindow>)) (window-write (get-window self) image))
-(define-method (write-image (arr <sequence<>>) (self <xwindow>)) (show self (to-image arr)) arr)
+(define-method (write-image (arr <multiarray<>>) (self <xwindow>)) (show self (to-image arr)) arr)

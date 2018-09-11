@@ -19,15 +19,9 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
-  #:use-module (aiscm mem)
-  #:use-module (aiscm element)
-  #:use-module (aiscm int)
-  #:use-module (aiscm sequence)
-  #:use-module (aiscm float)
-  #:use-module (aiscm mem)
+  #:use-module (aiscm core)
   #:use-module (aiscm samples)
   #:use-module (aiscm image)
-  #:use-module (aiscm jit)
   #:use-module (aiscm util)
   #:export (<ffmpeg>
             open-ffmpeg-input open-ffmpeg-output is-input? frame-rate video-pts audio-pts pts=
@@ -35,8 +29,7 @@
             select-sample-typecode typecodes-of-sample-formats best-sample-format select-sample-format
             target-audio-frame packed-audio-frame audio-buffer-fill video-buffer-fill have-audio? have-video?
             buffer-timestamped-video buffer-timestamped-audio buffer-audio fetch-audio decode-audio/video
-            crop-audio-frame-size)
-  #:re-export (destroy read-image write-image read-audio write-audio rate channels typecode))
+            crop-audio-frame-size))
 
 
 (load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
@@ -146,10 +139,6 @@
   (let [(ratio (ffmpeg-aspect-ratio (slot-ref self 'ffmpeg)))]
     (if (zero? ratio) 1 ratio)))
 
-(define (make-memory data size)
-  "Construct a pointerless memory object"
-  (make <mem> #:base data #:size size #:pointerless #t))
-
 (define (make-video-frame format shape offsets pitches data size)
   "Construct a video frame from the specified information"
   (make <image>
@@ -157,7 +146,7 @@
         #:shape   shape
         #:offsets offsets
         #:pitches pitches
-        #:mem     (make-memory data size)))
+        #:memory  data))
 
 (define (make-audio-frame sample-format shape rate offsets data size)
   "Construct an audio frame from the specified information"
@@ -166,7 +155,7 @@
                   #:rate     rate
                   #:offsets  offsets
                   #:planar   (sample-format->planar sample-format)
-                  #:mem      (make-memory data size)))
+                  #:memory   data))
 
 (define (video-buffer-push self pts-and-frame)
   "Store frame and time stamp in the specified buffer"
@@ -260,11 +249,11 @@
     (aiscm-error 'buffer-audio "Expected samples of type ~a but got samples of type ~a" (typecode self) (typecode samples)))
   (if (not (eqv? (rate self) (rate samples)))
     (aiscm-error 'buffer-audio "Samples need to have a rate of ~a Hz but had ~a Hz" (rate self) (rate samples)))
-  (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples)))
+  (ffmpeg-buffer-audio (slot-ref self 'ffmpeg) (memory samples) (size-of samples)))
 
 (define (fetch-audio self samples); TODO: fill target frame with desired number of packed samples
   "Fetch data from the audio buffer and put it into the samples"
-  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (get-memory (slot-ref samples 'mem)) (size-of samples))
+  (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (memory samples) (size-of samples))
   (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
 
 (define (encode-audio self)
@@ -282,7 +271,7 @@
   (encode-audio self)
   samples)
 
-(define-method (write-audio (samples <sequence<>>) (self <ffmpeg>))
+(define-method (write-audio (samples <multiarray<>>) (self <ffmpeg>))
   "Write audio data to output stream"
   (write-audio (to-samples samples (rate self)) self)
   samples)
@@ -297,7 +286,7 @@
   (ffmpeg-encode-video (slot-ref self 'ffmpeg))
   img)
 
-(define-method (write-image (img <sequence<>>) (self <ffmpeg>))
+(define-method (write-image (img <multiarray<>>) (self <ffmpeg>))
   "Write array representing video frame to output video"
   (write-image (to-image img) self)
   img)

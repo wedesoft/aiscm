@@ -196,7 +196,7 @@
 (test-equal "generate 5 symbols"
   (make-list 5 #t) (map symbol? (symbol-list 5)))
 (test-equal "Add type tags to method header"
-  '((a <t1>) (b <t2>) (c <t3>)) (typed-header2 '(a b c) '(<t1> <t2> <t3>)))
+  '((a <t1>) (b <t2>) (c <t3>)) (typed-header '(a b c) '(<t1> <t2> <t3>)))
 (test-assert "Clock starts with zero"
   (let [(t (clock))] (>= (elapsed t) 0)))
 (test-assert "Check clock has advanced after 1 second"
@@ -244,5 +244,4 @@
   (test-eqv "define a binary typed method"
     5 (typed-binary-method 8 3))
 (test-end "define n-ary typed method")
-
 (test-end "aiscm util")

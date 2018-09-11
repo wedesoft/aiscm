@@ -1,8 +1,8 @@
-dnl Run `./bootstrap` to generate a configure script.
+dnl Run `./autogen.sh` to generate a configure script.
 dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.15.5], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.16.1], [jan@wedesoft.de])
 DATE=2018-06-03
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])
@@ -33,7 +33,9 @@ AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([strcmp])
 
-AX_PTHREAD([AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Could not find pthread library])])
+AX_LLVMC([orcjit])
+
+AX_PTHREAD([],[AC_MSG_ERROR([Could not find pthread library])])
 AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
 

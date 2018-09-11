@@ -1,38 +1,28 @@
-(use-modules (srfi srfi-64))
-(use-modules (srfi srfi-26))
-(use-modules (srfi srfi-1))
-(use-modules (oop goops) (aiscm asm) (aiscm jit) (aiscm element) (aiscm int) (aiscm sequence) (aiscm pointer) (aiscm expression) (aiscm operation) (aiscm util) (aiscm program) (aiscm register-allocate) (aiscm compile) (aiscm live-analysis) (aiscm variable) (aiscm command) (aiscm bool))
+(use-modules (oop goops) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm image) (aiscm magick) (aiscm xorg) (aiscm v4l2) (srfi srfi-1) (srfi srfi-26))
 
-(define-method (bits3 (x <xmm>)) (bits3 (get-code x)))
-
-(define (VEX xmm reg)
-  (if (>= (get-code reg) 8)
-    (list #xc4 #xc1 (logior #x72 (ash (logxor #xf (get-code xmm)) 3)))
-    (list #xc5 (logior #x82 (ash (logxor #xf (get-code xmm)) 3)))))
-
-(define (VCVTSI2SS xmm ignore reg)
-  (append (VEX xmm reg) (list #x2a) (ModR/M 3 xmm reg)))
-; refactor
-; postfixes
-; XMM8
-
-(define ctx (make <context>))
-
-((asm ctx <int> (list <int>) (list (VCVTSI2SS XMM0 XMM0 EDI) (list #xc5 #xfa #x2c #xc0) (RET))) 42)
-
-; TODO: compiled-copy -> set3
-; TODO: set array using list
-; MOVD
-
-; VEX.NDS.LIG.F3.0F.W0 2A/r
-
-(test-begin "playground")
-(test-equal "Set XMM0 to EDI's integer value"
-  '(#xc5 #xfa #x2a #xc7) (VCVTSI2SS XMM0 XMM0 EDI))
-(test-equal "Set XMM1 to EDI's integer value"
-  '(#xc5 #xf2 #x2a #xcf) (VCVTSI2SS XMM1 XMM1 EDI))
-(test-equal "Set XMM0 to ESI's integer value"
-  '(#xc5 #xfa #x2a #xc6) (VCVTSI2SS XMM0 XMM0 ESI))
-(test-equal "Set XMM1 to R8D's integer value"
-  '(#xc4 #xc1 #x72 #x2a #xc9) (VCVTSI2SS XMM1 XMM1 R9D))
-(test-end "playground")
+(
+  (jit (list <int>)
+    (lambda (n)
+      (let [(start (make-basic-block "start"))
+            (for   (make-basic-block "for"))
+            (body  (make-basic-block "body"))
+            (end   (make-basic-block "end"))]
+        (llvm-begin
+          (build-branch start)
+          (position-builder-at-end start)
+          (jit-let [(i (typed-constant <int> 0))
+                    (s i)]
+            (build-branch for)
+            (position-builder-at-end for)
+            (jit-let [(i1 (build-phi (class-of i)))
+                      (s1 (build-phi (class-of s)))]
+              (add-incoming i1 start i)
+              (add-incoming s1 start s)
+              (build-cond-branch (lt i1 n) body end)
+              (position-builder-at-end body)
+              (add-incoming i1 body (+ i1 1))
+              (add-incoming s1 body (+ s1 i1))
+              (build-branch for)
+              (position-builder-at-end end)
+              s1))))))
+ 10)

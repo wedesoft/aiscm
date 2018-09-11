@@ -24,12 +24,12 @@
   #:use-module (ice-9 binary-ports)
   #:use-module (ice-9 curried-definitions)
   #:use-module (system foreign)
-  #:export (toplevel-define! super gc-malloc gc-malloc-pointerless destroy xor attach index-of all-but-last
+  #:export (toplevel-define! super gc-malloc gc-malloc-pointerless xor attach index-of all-but-last
             drop-up-to take-up-to flatten cycle uncycle cycle-times integral alist-invert
             assq-set assq-remove product sort-by sort-by-pred partial-sort argmin argmax gather
             pair->list nodes live-intervals overlap-interval overlap color-intervals union difference fixed-point
             first-index last-index compact
-            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header typed-header2
+            bytevector-sub bytevector-concat objdump map-if map-select aiscm-error symbol-list typed-header
             clock elapsed object-slots scm->address address->scm list-with)
   #:export-syntax (define-class* template-class synchronise define-typed-method define-nary-typed-method))
 
@@ -75,7 +75,6 @@
         class)
       (primitive-eval name))))
 
-(define-generic destroy)
 (define (xor a b) (not (eq? a b)))
 (define (attach lst x) (reverse (cons x (reverse lst))))
 (define (index-of a b)
@@ -202,8 +201,7 @@
 (define (map-if pred fun1 fun2 . lsts) (apply map (lambda args (apply (if (apply pred args) fun1 fun2) args)) lsts))
 (define (map-select select fun1 fun2 . lsts) (apply map (lambda (val . args) (apply (if val fun1 fun2) args)) select lsts))
 (define (symbol-list n) (map (lambda _ (gensym)) (iota n)))
-(define (typed-header lst tag) (map (cut list <> tag) lst))
-(define (typed-header2 lst tags) (map list lst tags))
+(define (typed-header lst tags) (map list lst tags))
 (define (delete-ref lst k) (if (zero? k) (cdr lst) (cons (car lst) (delete-ref (cdr lst) (1- k)))))
 (define (aiscm-error context msg . args) (scm-error 'misc-error context msg args #f)); also see source code of srfi-37
 
@@ -231,12 +229,18 @@
 (define (list-with lst idx val)
   (if (null? lst) lst (cons (if (zero? idx) val (car lst)) (list-with (cdr lst) (1- idx) val))))
 
-(define-macro (define-typed-method name types fun)
-  "Define a method for a combination of types"
-  (let* [(args   (symbol-list (length types)))
-         (header (map list args types))]
-    `(define-method (,name ,@header) (,fun ,@args))))
+(define-syntax define-typed-method
+  (lambda (x)
+    "Define a method for a combination of types"
+    (syntax-case x ()
+      ((k name types fun)
+       (let* [(args   (symbol-list (length (syntax->datum #'types))))
+              (header (map list args (syntax->datum #'types)))]
+         #`(define-method (name #,@(datum->syntax #'k header)) (fun #,@(datum->syntax #'k args))))))))
 
-(define-macro (define-nary-typed-method name arity type fun)
-  "Define an n-ary method with arguments of a specified type"
-  `(define-typed-method ,name ,(make-list arity type) ,fun))
+(define-syntax define-nary-typed-method
+  (lambda (x)
+    "Define an n-ary method with arguments of a specified type"
+    (syntax-case x ()
+      ((k name arity type fun)
+       #`(define-typed-method name #,(datum->syntax #'k (make-list (syntax->datum #'arity) (syntax->datum #'type))) fun)))))
