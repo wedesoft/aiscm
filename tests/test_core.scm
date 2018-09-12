@@ -1493,4 +1493,10 @@
               (add-incoming phi start x)
               x)))))))))
 
+(test-group "objects"
+  (test-eq "Size of object type"
+    8 (size-of <obj>))
+  (test-eq "Compile identity function for Scheme object"
+    'abc ((jit (list <obj>) identity) 'abc)))
+
 (test-end "aiscm core")

@@ -63,6 +63,7 @@
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
+            <obj> <meta<obj>>
             <pointer<>> <meta<pointer<>>>
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
@@ -109,6 +110,8 @@
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
+
+(define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
@@ -400,6 +403,10 @@
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
 
+(define-method (foreign-type (type <meta<obj>>))
+  "Get foreign type of Scheme object"
+  int64)
+
 (define-method (foreign-type (type <meta<pointer<>>>))
   "Get foreing type of pointer"
   int64)
@@ -426,6 +433,10 @@
 (define-method (size-of (type <meta<void>>))
   "Determine size of type"
   (apply + (map size-of (base type))))
+
+(define-method (size-of (type <meta<obj>>))
+  "Size of object"
+  8)
 
 (define-method (size-of (type <meta<pointer<>>>))
   "Size of pointer"
@@ -567,6 +578,9 @@
 
 (define-method (decompose-type (type <meta<pointer<>>>))
   (list <long>))
+
+(define-method (decompose-argument (type <meta<obj>>) value)
+  (list (pointer-address (scm->pointer value))))
 
 (define-method (decompose-argument (type <meta<scalar>>) value)
   "Decompose scalar value"
@@ -1121,6 +1135,10 @@
 (define-method (finish-return (type <meta<bool>>) result)
   "Provide boolean return value"
   (not (zero? result)))
+
+(define-method (finish-return (type <meta<obj>>) result)
+  "Provide Scheme object return value"
+  (pointer->scm (make-pointer result)))
 
 (define-method (finish-return (type <meta<pointer<>>>) result)
   "Provide pointer return value"
