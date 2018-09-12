@@ -1503,6 +1503,6 @@
   (test-equal "Array of objects contains false by default"
     '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
   (test-equal "Type matching for Scheme objects"
-    '(a b c) (to-list (to-array (list 'a 'b 'c)))))
+    '(a b c) (to-list (arr <obj> a b c))))
 
 (test-end "aiscm core")
