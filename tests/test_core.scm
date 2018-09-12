@@ -171,6 +171,12 @@
   (test-eq "Coerce complex and float"
     (complex <double>) (coerce (complex <float>) <double>)))
 
+(test-group "coerce objects"
+  (test-eq "Coerce object and integer"
+    <obj> (coerce <obj> <int>))
+  (test-eq "Coerce integer and objecgt"
+    <obj> (coerce <int> <obj>)))
+
 (test-group "coerce pointers"
   (test-eq "Coerce pointer and integer"
     (pointer <int>) (coerce (pointer <int>) <long>)))

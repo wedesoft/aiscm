@@ -555,6 +555,9 @@
 (define-method (coerce (a <meta<scalar>>) (b <meta<rgb<>>>))
   (rgb (reduce coerce #f (cons a (base b)))))
 
+(define-method (coerce (a <meta<void>>) (b <meta<void>>))
+  <obj>)
+
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)
