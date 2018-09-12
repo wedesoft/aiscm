@@ -303,7 +303,7 @@
 
 (define-method (initialize (self <multiarray<>>) initargs)
   (let-keywords initargs #f (memory memory-base shape strides allocator)
-    (let* [(allocator   (or allocator gc-malloc-pointerless))
+    (let* [(allocator   (or allocator (if (eq? (typecode self) <obj>) gc-malloc gc-malloc-pointerless)))
            (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (memory-base (or memory-base memory))
            (strides     (or strides (default-strides (typecode self) shape)))]
@@ -477,6 +477,9 @@
   (rgb (apply native-type
               (append-map (lambda (x) (if (is-a? x <rgb>) (list (red x) (green x) (blue x)) (list x)))
               (cons value args)))))
+
+(define-method (native-type value . args)
+  <obj>)
 
 (define-method (native-type (value <list>))
   (llvmlist (apply native-type value) (length value)))
@@ -874,6 +877,10 @@
 (define-method (to-type (cls <meta<complex<>>>) (value <complex<>>))
   (complex (to-type (car  (base cls)) (real-part value))
            (to-type (cadr (base cls)) (imag-part value))))
+
+(define-method (to-type (cls <meta<obj>>) (value <obj>))
+  "Convert object to object"
+  value)
 
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"

@@ -279,8 +279,8 @@
     <bool> (native-type #t))
   (test-eq "type matching for #t and #f"
     <bool> (native-type #t #f))
-  (test-error "No native type for #t and 0"
-    'misc-error (native-type #t 0))
+  (test-eq "Native type for #t and 0"
+    <obj> (native-type #t 0))
   (test-eq "type matching for 255"
     <ubyte> (native-type 255))
   (test-eq "type matching for 256"
@@ -322,7 +322,9 @@
   (test-eq "type matching for 2+3i"
     <complex<double>> (native-type 2+3i))
   (test-eq "type matching for 1 and 2+3i"
-    <complex<double>> (native-type 1 2+3i)))
+    <complex<double>> (native-type 1 2+3i))
+  (test-eq "Type matching for 'abc"
+    <obj> (native-type 'abc)))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
@@ -1494,9 +1496,13 @@
               x)))))))))
 
 (test-group "objects"
-  (test-eq "Size of object type"
+  (test-eqv "Size of object type"
     8 (size-of <obj>))
   (test-eq "Compile identity function for Scheme object"
-    'abc ((jit (list <obj>) identity) 'abc)))
+    'abc ((jit (list <obj>) identity) 'abc))
+  (test-equal "Array of objects contains false by default"
+    '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
+  (test-equal "Type matching for Scheme objects"
+    '(a b c) (to-list (to-array (list 'a 'b 'c)))))
 
 (test-end "aiscm core")
