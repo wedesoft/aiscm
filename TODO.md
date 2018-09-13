@@ -1,6 +1,6 @@
 ## Ready
 
-* For Scheme objects: binary +, -, \*, /, <<, >>, %, &, |, &&, ||, lt, le, gt, ge, eq, ne, minor, major
+* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * For Scheme objects: unary +, \*, -, ~, !
 * callback.scm, object\_array.scm
 * convert object to int, float, or boolean

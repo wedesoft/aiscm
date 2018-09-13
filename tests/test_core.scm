@@ -1516,6 +1516,27 @@
     '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
   (test-equal "Add integer and object array"
     '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
+  (test-equal "Subtract value from object array"
+    '(1 2 4) (to-list (- (arr <obj> 2 3 5) 1)))
+  (test-equal "Multiply object array with value"
+    '(4 6 10) (to-list (* (arr <obj> 2 3 5) 2)))
+  (test-equal "Divide object array by value"
+    '(2 3 5) (to-list (/ (arr <obj> 4 6 10) 2)))
+  (test-equal "Left-shift object array by value"
+    '(4) (to-list (<< (arr <obj> 2) 1)))
+  (test-skip 1)
+  (test-equal "Right-shift object array by value"
+    '(2) (to-list (>> (arr <obj> 4) 1)))
+  (test-equal "Modulo object array by value"
+    '(2 3 1) (to-list (% (arr <obj> 2 3 5) 4)))
+  (test-equal "Bitwise and for objects"
+    '(0 2 2) (to-list (& (arr <obj> 1 2 3) 2)))
+  (test-equal "Bitwise or for objects"
+    '(3 2 3) (to-list (| (arr <obj> 1 2 3) 2)))
+  (test-equal "Minor value of objects"
+    '(2 3 4) (to-list (minor (arr <obj> 2 3 5) 4)))
+  (test-equal "Major value of objects"
+    '(4 4 5) (to-list (major (arr <obj> 2 3 5) 4)))
   (for-each
     (lambda (type)
       (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
