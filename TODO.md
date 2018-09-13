@@ -1,8 +1,9 @@
 ## Ready
 
-* try build on Debian Stretch with LLVM-4.0 or 3.9
-* integer to object, float to object, bool to object
-* Subtract Scheme objects, ...
+* bool to object
+* Subtract Scheme objects, multiply, ...
+* convert object to int, float, or boolean
+* RGB to object, object to RGB
 * memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
 * upcast sum result to int32 or int64

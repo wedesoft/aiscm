@@ -1517,10 +1517,14 @@
   (test-equal "Add integer and object array"
     '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
   (for-each
-    (lambda (type value)
-      (test-eq (format #f "Convert ~a to object" (class-name type))
-        value ((jit (list type) (cut to-type <obj> <>)) value)))
-    (list <ubyte> <byte>)
-    (list     255   -128)))
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from ~a to object" value (class-name type))
+          value ((jit (list type) (cut to-type <obj> <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert double-precision float to object"
+    3.5 ((jit (list <double>) (cut to-type <obj> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5)))
 
 (test-end "aiscm core")

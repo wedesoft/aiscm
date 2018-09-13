@@ -885,11 +885,22 @@
   "Convert object to object"
   value)
 
-(define-method (to-type (cls <meta<obj>>) (value <ubyte>))
-  (typed-call <obj> "scm_from_uint8" (list <ubyte>) (list value)))
+(define-syntax-rule (define-to-object type method)
+  (define-method (to-type (cls <meta<obj>>) (value type))
+    (typed-call <obj> method (list type) (list value))))
 
-(define-method (to-type (cls <meta<obj>>) (value <byte>))
-  (typed-call <obj> "scm_from_int8" (list <byte>) (list value)))
+(define-to-object <ubyte>  "scm_from_uint8" )
+(define-to-object <byte>   "scm_from_int8"  )
+(define-to-object <usint>  "scm_from_uint16")
+(define-to-object <sint>   "scm_from_int16" )
+(define-to-object <uint>   "scm_from_uint32")
+(define-to-object <int>    "scm_from_int32" )
+(define-to-object <ulong>  "scm_from_uint64")
+(define-to-object <long>   "scm_from_int64" )
+(define-to-object <double> "scm_from_double")
+
+(define-method (to-type (cls <meta<obj>>) (value <float>))
+  (to-type <obj> (to-type <double> value)))
 
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
