@@ -1,10 +1,10 @@
 ## Ready
 
-* bool to object
-* Subtract Scheme objects, multiply, ...
+* For Scheme objects: binary +, -, \*, /, <<, >>, %, &, |, &&, ||, lt, le, gt, ge, eq, ne, minor, major
+* For Scheme objects: unary +, \*, -, ~, !
+* callback.scm, object\_array.scm
 * convert object to int, float, or boolean
 * RGB to object, object to RGB
-* memory with pointers (callback.scm, object_array.scm)
 * tensors (tensors.scm)
 * upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
