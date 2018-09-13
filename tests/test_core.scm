@@ -1516,9 +1516,11 @@
     '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
   (test-equal "Add integer and object array"
     '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
-  (test-eq "Convert unsigned byte to object"
-    255 ((jit (list <ubyte>) (cut to-type <obj> <>)) 255))
-  (test-eq "Convert signed byte to object"
-    -128 ((jit (list <byte>) (cut to-type <obj> <>)) -128)))
+  (for-each
+    (lambda (type value)
+      (test-eq (format #f "Convert ~a to object" (class-name type))
+        value ((jit (list type) (cut to-type <obj> <>)) value)))
+    (list <ubyte> <byte>)
+    (list     255   -128)))
 
 (test-end "aiscm core")
