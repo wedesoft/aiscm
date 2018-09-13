@@ -1506,9 +1506,15 @@
     8 (size-of <obj>))
   (test-eq "Compile identity function for Scheme object"
     'abc ((jit (list <obj>) identity) 'abc))
-  (test-equal "Array of objects contains false by default"
+  (test-equal "Array oF objects contains false by default"
     '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
   (test-equal "Type matching for Scheme objects"
-    '(a b c) (to-list (arr <obj> a b c))))
+    '(a b c) (to-list (arr <obj> a b c)))
+  (test-equal "Add two object arrays"
+    '(5 8 12) (to-list (+ (arr <obj> 2 3 5) (arr <obj> 3 5 7))))
+  (test-equal "Add object array and integer"
+    '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
+  (test-equal "Add integer and object array"
+    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5)))))
 
 (test-end "aiscm core")

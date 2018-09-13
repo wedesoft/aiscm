@@ -885,6 +885,9 @@
   "Convert object to object"
   value)
 
+(define-method (to-type (cls <meta<obj>>) (value <ubyte>))
+  (typed-call <obj> "scm_from_uint8" (list <ubyte>) (list value)))
+
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
   (make cls #:value (get value)))
@@ -959,6 +962,15 @@
 (define-method (major a b)
   "Return major value of two values"
   (where (gt a b) a b))
+
+(define-method (+ (value-a <obj>) (value-b <obj>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list value-a value-b)))
+
+(define-method (+ (value-a <obj>) (value-b <scalar>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list value-a (to-type <obj> value-b))))
+
+(define-method (+ (value-a <scalar>) (value-b <obj>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list (to-type <obj> value-a) value-b)))
 
 (define (construct-object class args)
   (make class #:value (memoize (fun) (map (lambda (component) ((get component) fun)) args))))
