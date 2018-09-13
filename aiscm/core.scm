@@ -179,7 +179,7 @@
 
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
-                int64)
+                uint64)
 
               (component-accessors #,(datum->syntax #'k class) #,(datum->syntax #'k metaclass) members ...)))))))
 
@@ -405,19 +405,19 @@
 
 (define-method (foreign-type (type <meta<obj>>))
   "Get foreign type of Scheme object"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<pointer<>>>))
   "Get foreing type of pointer"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmlist<>>>))
   "Get foreign type of static size list"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmarray<>>>))
   "Get foreign type of multi-dimensional array"
-  int64)
+  uint64)
 
 (define-method (size-of (type <meta<bool>>))
   1)
@@ -583,7 +583,7 @@
   (append-map decompose-type (base type)))
 
 (define-method (decompose-type (type <meta<pointer<>>>))
-  (list <long>))
+  (list <ulong>))
 
 (define-method (decompose-argument (type <meta<obj>>) value)
   (list (pointer-address (scm->pointer value))))
@@ -734,7 +734,7 @@
 
 (define (make-constant-pointer address)
   "Create pointer constant"
-  (make-constant llvm-int64 (pointer-address address)))
+  (make-constant llvm-uint64 (pointer-address address)))
 
 (define (get-type value)
   "Query type of LLVM value"
@@ -887,6 +887,9 @@
 
 (define-method (to-type (cls <meta<obj>>) (value <ubyte>))
   (typed-call <obj> "scm_from_uint8" (list <ubyte>) (list value)))
+
+(define-method (to-type (cls <meta<obj>>) (value <byte>))
+  (typed-call <obj> "scm_from_int8" (list <byte>) (list value)))
 
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
@@ -1169,7 +1172,7 @@
 (define (jit argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
-         (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
+         (fun (llvm-wrap (cons llvm-uint64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values (cons <pointer<>> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]

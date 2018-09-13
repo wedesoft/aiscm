@@ -182,7 +182,7 @@
     (pointer <int>) (coerce (pointer <int>) <long>)))
 
 (test-eqv "get foreign type of complex type"
-  int64 (foreign-type <complex<float>>))
+  uint64 (foreign-type <complex<float>>))
 
 (test-group "decompose arguments"
   (test-equal "Decompose false"
@@ -355,7 +355,7 @@
   (test-equal "'define-structure' defines method for querying base type"
     (list <int>) (base (testcontainer <int>)))
   (test-eqv "Foreign type of composite values is a pointer"
-    int64 (foreign-type (testcontainer <int>)))
+    uint64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
@@ -398,11 +398,11 @@
   (test-eq "Get target type of pointer"
     <int> (target (pointer <int>)))
   (test-eqv "Foreign type of pointer"
-    int64 (foreign-type (pointer <int>)))
+    uint64 (foreign-type (pointer <int>)))
   (test-eqv "Size of pointer"
     8 (size-of (pointer <int>)))
   (test-equal "Decompose pointer type"
-    (list <long>) (decompose-type (pointer <int>)))
+    (list <ulong>) (decompose-type (pointer <int>)))
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
 
@@ -444,7 +444,7 @@
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
-    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
+    (list <ulong> <ulong> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
   (test-equal "Size of array"
     (* 4 32 20) (size-of (make (multiarray <int> 2) #:shape '(32 20)))))
 
@@ -1515,6 +1515,10 @@
   (test-equal "Add object array and integer"
     '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
   (test-equal "Add integer and object array"
-    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5)))))
+    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
+  (test-eq "Convert unsigned byte to object"
+    255 ((jit (list <ubyte>) (cut to-type <obj> <>)) 255))
+  (test-eq "Convert signed byte to object"
+    -128 ((jit (list <byte>) (cut to-type <obj> <>)) -128)))
 
 (test-end "aiscm core")
