@@ -885,6 +885,11 @@
   "Convert object to object"
   value)
 
+(define-method (to-type (cls <meta<obj>>) (value <bool>))
+  (where value
+         (typed-constant <obj> (pointer-address (scm->pointer #t)))
+         (typed-constant <obj> (pointer-address (scm->pointer #f)))))
+
 (define-syntax-rule (define-to-object type method)
   (define-method (to-type (cls <meta<obj>>) (value type))
     (typed-call <obj> method (list type) (list value))))

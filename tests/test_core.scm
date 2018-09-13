@@ -1525,6 +1525,8 @@
   (test-eqv "Convert double-precision float to object"
     3.5 ((jit (list <double>) (cut to-type <obj> <>)) 3.5))
   (test-eqv "Convert single-precision float to object"
-    3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5)))
+    3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5))
+  (test-equal "Convert boolean to object"
+    '(#f #t) (map (jit (list <bool>) (cut to-type <obj> <>)) '(#f #t))))
 
 (test-end "aiscm core")
