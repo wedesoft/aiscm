@@ -171,12 +171,18 @@
   (test-eq "Coerce complex and float"
     (complex <double>) (coerce (complex <float>) <double>)))
 
+(test-group "coerce objects"
+  (test-eq "Coerce object and integer"
+    <obj> (coerce <obj> <int>))
+  (test-eq "Coerce integer and objecgt"
+    <obj> (coerce <int> <obj>)))
+
 (test-group "coerce pointers"
   (test-eq "Coerce pointer and integer"
     (pointer <int>) (coerce (pointer <int>) <long>)))
 
 (test-eqv "get foreign type of complex type"
-  int64 (foreign-type <complex<float>>))
+  uint64 (foreign-type <complex<float>>))
 
 (test-group "decompose arguments"
   (test-equal "Decompose false"
@@ -279,8 +285,8 @@
     <bool> (native-type #t))
   (test-eq "type matching for #t and #f"
     <bool> (native-type #t #f))
-  (test-error "No native type for #t and 0"
-    'misc-error (native-type #t 0))
+  (test-eq "Native type for #t and 0"
+    <obj> (native-type #t 0))
   (test-eq "type matching for 255"
     <ubyte> (native-type 255))
   (test-eq "type matching for 256"
@@ -322,7 +328,9 @@
   (test-eq "type matching for 2+3i"
     <complex<double>> (native-type 2+3i))
   (test-eq "type matching for 1 and 2+3i"
-    <complex<double>> (native-type 1 2+3i)))
+    <complex<double>> (native-type 1 2+3i))
+  (test-eq "Type matching for 'abc"
+    <obj> (native-type 'abc)))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
@@ -347,7 +355,7 @@
   (test-equal "'define-structure' defines method for querying base type"
     (list <int>) (base (testcontainer <int>)))
   (test-eqv "Foreign type of composite values is a pointer"
-    int64 (foreign-type (testcontainer <int>)))
+    uint64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
@@ -390,11 +398,11 @@
   (test-eq "Get target type of pointer"
     <int> (target (pointer <int>)))
   (test-eqv "Foreign type of pointer"
-    int64 (foreign-type (pointer <int>)))
+    uint64 (foreign-type (pointer <int>)))
   (test-eqv "Size of pointer"
     8 (size-of (pointer <int>)))
   (test-equal "Decompose pointer type"
-    (list <long>) (decompose-type (pointer <int>)))
+    (list <ulong>) (decompose-type (pointer <int>)))
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
 
@@ -436,7 +444,7 @@
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
-    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
+    (list <ulong> <ulong> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
   (test-equal "Size of array"
     (* 4 32 20) (size-of (make (multiarray <int> 2) #:shape '(32 20)))))
 
@@ -1492,5 +1500,25 @@
             (jit-let [(phi (build-phi <int>))]
               (add-incoming phi start x)
               x)))))))))
+
+(test-group "objects"
+  (test-eqv "Size of object type"
+    8 (size-of <obj>))
+  (test-eq "Compile identity function for Scheme object"
+    'abc ((jit (list <obj>) identity) 'abc))
+  (test-equal "Array oF objects contains false by default"
+    '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
+  (test-equal "Type matching for Scheme objects"
+    '(a b c) (to-list (arr <obj> a b c)))
+  (test-equal "Add two object arrays"
+    '(5 8 12) (to-list (+ (arr <obj> 2 3 5) (arr <obj> 3 5 7))))
+  (test-equal "Add object array and integer"
+    '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
+  (test-equal "Add integer and object array"
+    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
+  (test-eq "Convert unsigned byte to object"
+    255 ((jit (list <ubyte>) (cut to-type <obj> <>)) 255))
+  (test-eq "Convert signed byte to object"
+    -128 ((jit (list <byte>) (cut to-type <obj> <>)) -128)))
 
 (test-end "aiscm core")

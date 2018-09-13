@@ -147,7 +147,7 @@ static LLVMTypeRef llvm_type(int type)
 
 static int llvm_type_index(LLVMTypeRef type)
 {
-  LLVMDumpType(type);
+  // LLVMDumpType(type);
   switch (LLVMGetTypeKind(type)) {
     case LLVMFloatTypeKind:
       return SCM_FOREIGN_TYPE_FLOAT;
@@ -638,7 +638,7 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   struct llvm_module_t *llvm = get_llvm(scm_llvm);
   const char *function_name = scm_to_locale_string(scm_function_name);
   LLVMValueRef function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
-  LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
+  // LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
   int n_values = scm_ilength(scm_values);
   LLVMValueRef *values = scm_gc_malloc_pointerless(n_values * sizeof(LLVMValueRef), "llvm-build-call");
   for (int i=0; i<n_values; i++) {

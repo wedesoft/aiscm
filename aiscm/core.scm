@@ -63,6 +63,7 @@
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
+            <obj> <meta<obj>>
             <pointer<>> <meta<pointer<>>>
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
@@ -109,6 +110,8 @@
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
+
+(define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
@@ -176,7 +179,7 @@
 
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
-                int64)
+                uint64)
 
               (component-accessors #,(datum->syntax #'k class) #,(datum->syntax #'k metaclass) members ...)))))))
 
@@ -300,7 +303,7 @@
 
 (define-method (initialize (self <multiarray<>>) initargs)
   (let-keywords initargs #f (memory memory-base shape strides allocator)
-    (let* [(allocator   (or allocator gc-malloc-pointerless))
+    (let* [(allocator   (or allocator (if (eq? (typecode self) <obj>) gc-malloc gc-malloc-pointerless)))
            (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (memory-base (or memory-base memory))
            (strides     (or strides (default-strides (typecode self) shape)))]
@@ -400,17 +403,21 @@
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
 
+(define-method (foreign-type (type <meta<obj>>))
+  "Get foreign type of Scheme object"
+  uint64)
+
 (define-method (foreign-type (type <meta<pointer<>>>))
   "Get foreing type of pointer"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmlist<>>>))
   "Get foreign type of static size list"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmarray<>>>))
   "Get foreign type of multi-dimensional array"
-  int64)
+  uint64)
 
 (define-method (size-of (type <meta<bool>>))
   1)
@@ -426,6 +433,10 @@
 (define-method (size-of (type <meta<void>>))
   "Determine size of type"
   (apply + (map size-of (base type))))
+
+(define-method (size-of (type <meta<obj>>))
+  "Size of object"
+  8)
 
 (define-method (size-of (type <meta<pointer<>>>))
   "Size of pointer"
@@ -466,6 +477,9 @@
   (rgb (apply native-type
               (append-map (lambda (x) (if (is-a? x <rgb>) (list (red x) (green x) (blue x)) (list x)))
               (cons value args)))))
+
+(define-method (native-type value . args)
+  <obj>)
 
 (define-method (native-type (value <list>))
   (llvmlist (apply native-type value) (length value)))
@@ -541,6 +555,9 @@
 (define-method (coerce (a <meta<scalar>>) (b <meta<rgb<>>>))
   (rgb (reduce coerce #f (cons a (base b)))))
 
+(define-method (coerce (a <meta<void>>) (b <meta<void>>))
+  <obj>)
+
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)
@@ -566,7 +583,10 @@
   (append-map decompose-type (base type)))
 
 (define-method (decompose-type (type <meta<pointer<>>>))
-  (list <long>))
+  (list <ulong>))
+
+(define-method (decompose-argument (type <meta<obj>>) value)
+  (list (pointer-address (scm->pointer value))))
 
 (define-method (decompose-argument (type <meta<scalar>>) value)
   "Decompose scalar value"
@@ -714,7 +734,7 @@
 
 (define (make-constant-pointer address)
   "Create pointer constant"
-  (make-constant llvm-int64 (pointer-address address)))
+  (make-constant llvm-uint64 (pointer-address address)))
 
 (define (get-type value)
   "Query type of LLVM value"
@@ -861,6 +881,16 @@
   (complex (to-type (car  (base cls)) (real-part value))
            (to-type (cadr (base cls)) (imag-part value))))
 
+(define-method (to-type (cls <meta<obj>>) (value <obj>))
+  "Convert object to object"
+  value)
+
+(define-method (to-type (cls <meta<obj>>) (value <ubyte>))
+  (typed-call <obj> "scm_from_uint8" (list <ubyte>) (list value)))
+
+(define-method (to-type (cls <meta<obj>>) (value <byte>))
+  (typed-call <obj> "scm_from_int8" (list <byte>) (list value)))
+
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
   (make cls #:value (get value)))
@@ -935,6 +965,15 @@
 (define-method (major a b)
   "Return major value of two values"
   (where (gt a b) a b))
+
+(define-method (+ (value-a <obj>) (value-b <obj>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list value-a value-b)))
+
+(define-method (+ (value-a <obj>) (value-b <scalar>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list value-a (to-type <obj> value-b))))
+
+(define-method (+ (value-a <scalar>) (value-b <obj>))
+  (typed-call <obj> "scm_sum" (list <obj> <obj>) (list (to-type <obj> value-a) value-b)))
 
 (define (construct-object class args)
   (make class #:value (memoize (fun) (map (lambda (component) ((get component) fun)) args))))
@@ -1122,6 +1161,10 @@
   "Provide boolean return value"
   (not (zero? result)))
 
+(define-method (finish-return (type <meta<obj>>) result)
+  "Provide Scheme object return value"
+  (pointer->scm (make-pointer result)))
+
 (define-method (finish-return (type <meta<pointer<>>>) result)
   "Provide pointer return value"
   (make-pointer result))
@@ -1129,7 +1172,7 @@
 (define (jit argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
-         (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
+         (fun (llvm-wrap (cons llvm-uint64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values (cons <pointer<>> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]
