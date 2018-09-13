@@ -1,7 +1,7 @@
 ## Ready
 
-* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * For Scheme objects: unary +, \*, -, ~, !
+* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * callback.scm, object\_array.scm
 * convert object to int, float, or boolean
 * RGB to object, object to RGB

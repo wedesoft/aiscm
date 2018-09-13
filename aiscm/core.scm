@@ -919,18 +919,24 @@
   "Convert pointer to integer"
   (make cls #:value (get value)))
 
-(define-syntax-rule (define-unary-operation type operation delegate)
+(define-syntax-rule (define-scalar-unary type operation delegate)
   (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
 
 (define-method (+ (self <scalar>)) self)
 (define-method (* (self <scalar>)) self)
-(define-unary-operation <int<>>   - llvm-neg )
-(define-unary-operation <float<>> - llvm-fneg)
-(define-unary-operation <int<>>   ~ llvm-not )
-(define-unary-operation <bool>    ! llvm-not )
+(define-scalar-unary <int<>>   - llvm-neg )
+(define-scalar-unary <float<>> - llvm-fneg)
+(define-scalar-unary <int<>>   ~ llvm-not )
+(define-scalar-unary <bool>    ! llvm-not )
 
-(define-syntax-rule (define-binary-operation type-a type-b type-map operation delegate)
+(define-method (- (self <obj>)) (- (typed-constant <int> 0) self))
+(define-method (~ (self <obj>)) (typed-call <obj> "scm_lognot" (list <obj>) (list self)))
+
+(define-method (+ (self <multiarray<>>)) self)
+(define-method (* (self <multiarray<>>)) self)
+
+(define-syntax-rule (define-scalar-binary type-a type-b type-map operation delegate)
   (define-method (operation (value-a type-a) (value-b type-b))
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
@@ -966,12 +972,12 @@
 
 (define-syntax-rule (define-binary-delegation type-map operation int-delegate float-delegate)
   (begin
-    (define-binary-operation <int<>>     <int<>>     type-map operation int-delegate  )
-    (define-binary-operation <float<>>   <int<>>     type-map operation float-delegate)
-    (define-binary-operation <int<>>     <float<>>   type-map operation float-delegate)
-    (define-binary-operation <float<>>   <float<>>   type-map operation float-delegate)
-    (define-binary-operation <pointer<>> <int<>>     type-map operation int-delegate  )
-    (define-binary-operation <pointer<>> <pointer<>> type-map operation int-delegate  )
+    (define-scalar-binary <int<>>     <int<>>     type-map operation int-delegate  )
+    (define-scalar-binary <float<>>   <int<>>     type-map operation float-delegate)
+    (define-scalar-binary <int<>>     <float<>>   type-map operation float-delegate)
+    (define-scalar-binary <float<>>   <float<>>   type-map operation float-delegate)
+    (define-scalar-binary <pointer<>> <int<>>     type-map operation int-delegate  )
+    (define-scalar-binary <pointer<>> <pointer<>> type-map operation int-delegate  )
     (define-op-with-constant <void> operation)))
 
 (define-binary-delegation identity +  (const llvm-add)                                  (const llvm-fadd))
@@ -984,8 +990,8 @@
 (define-binary-delegation identity &  (const llvm-and)                                  (const llvm-and ))
 (define-binary-delegation identity |  (const llvm-or )                                  (const llvm-or  ))
 
-(define-binary-operation <bool> <bool> identity && (const llvm-and))
-(define-binary-operation <bool> <bool> identity || (const llvm-or ))
+(define-scalar-binary <bool> <bool> identity && (const llvm-and))
+(define-scalar-binary <bool> <bool> identity || (const llvm-or ))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))

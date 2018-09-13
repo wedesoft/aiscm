@@ -1510,6 +1510,14 @@
     '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
   (test-equal "Type matching for Scheme objects"
     '(a b c) (to-list (arr <obj> a b c)))
+  (test-equal "Unary plus for objects"
+    '(2 3 5) (to-list (+ (arr <obj> 2 3 5))))
+  (test-equal "Unary product for objects"
+    '(2 3 5) (to-list (* (arr <obj> 2 3 5))))
+  (test-equal "Unary minus for objects"
+    '(-2 3 -5) (to-list (- (arr <obj> 2 -3 5))))
+  (test-equal "Unary bitwise not for objects"
+    '(-3 -4 -6) (to-list (~ (arr <obj> 2 3 5))))
   (test-equal "Add two object arrays"
     '(5 8 12) (to-list (+ (arr <obj> 2 3 5) (arr <obj> 3 5 7))))
   (test-equal "Add object array and integer"
