@@ -1,6 +1,6 @@
 ## Ready
 
-* comparison operation for arrays (map reduce)
+* comparison operation for arrays (n-ary map reduce)
 * tensors (tensors.scm)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * binary and rgb &, |, ^, <<, >>
