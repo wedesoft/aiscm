@@ -1557,6 +1557,18 @@
   (test-eqv "Convert single-precision float to object"
     3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5))
   (test-equal "Convert boolean to object"
-    '(#f #t) (map (jit (list <bool>) (cut to-type <obj> <>)) '(#f #t))))
+    '(#f #t) (map (jit (list <bool>) (cut to-type <obj> <>)) '(#f #t)))
+  (for-each
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from object to ~a" value (class-name type))
+          value ((jit (list <obj>) (cut to-type type <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert object to double-precision float"
+    3.5 ((jit (list <obj>) (cut to-type <double> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <obj>) (cut to-type <float> <>)) 3.5))
+  (test-equal "Convert object to boolean"
+    '(#f #t) (map (jit (list <obj>) (cut to-type <bool> <>)) '(#f #t))))
 
 (test-end "aiscm core")

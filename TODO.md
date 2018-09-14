@@ -1,16 +1,15 @@
 ## Ready
 
-* convert object to int, float, or boolean
-* RGB to object, object to RGB
+* comparison operation for arrays (map reduce)
 * tensors (tensors.scm)
 * upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
-* comparison operation for arrays (map reduce)
 * unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
+* RGB to object, object to RGB
 * lookup, pseudo colour, warp
 * minimal shape
 * OpenGL vertex array object example
