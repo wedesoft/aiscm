@@ -1,6 +1,5 @@
 ## Ready
 
-* callback.scm, object\_array.scm
 * convert object to int, float, or boolean
 * RGB to object, object to RGB
 * tensors (tensors.scm)
