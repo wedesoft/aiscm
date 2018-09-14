@@ -877,9 +877,8 @@
 (define-method (to-type (cls <meta<complex<>>>) (value <scalar>))
   (complex value (typed-constant (class-of value) 0)))
 
-(define-method (to-type (cls <meta<complex<>>>) (value <complex<>>))
-  (complex (to-type (car  (base cls)) (real-part value))
-           (to-type (cadr (base cls)) (imag-part value))))
+(define-method (to-type (cls <meta<structure>>) (value <structure>)); TODO: generalise this
+  (apply (build cls) (map (lambda (type component) (to-type type (component value))) (base cls) (components cls))))
 
 (define-method (to-type (cls <meta<obj>>) (value <obj>))
   "Convert object to object"
@@ -1571,6 +1570,14 @@
                                         #:procedure (lambda (type self) (fun self))))
     (to-type type self)))
 
+(define-method (upcast-integer (type <meta<int<>>>))
+  (integer (if (< (bits type) 32) 32 64) (if (signed? type) signed unsigned)))
+
+(define-method (upcast-integer (type <meta<float<>>>)) type)
+
+(define-method (upcast-integer (type <meta<structure>>))
+  (apply (build type) (map upcast-integer (base type))))
+
 (define (reduction arg operation)
   (if (zero? (dimensions arg))
     (fetch (memory arg))
@@ -1579,7 +1586,8 @@
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(result0 (reduction (project arg) operation))]
+      (jit-let [(element (reduction (project arg) operation))
+                (result0 (to-type (upcast-integer (class-of element)) element))]
         (build-branch start)
         (position-builder-at-end start)
         (jit-let [(stride  (llvm-last (strides arg)))
@@ -1593,7 +1601,8 @@
             (add-incoming p start p0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(result1 (reduction (project (rebase arg p)) operation))]
+            (jit-let [(element (reduction (project (rebase arg p)) operation))
+                      (result1 (to-type (upcast-integer (class-of element)) element))]
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming result finish (operation result result1))

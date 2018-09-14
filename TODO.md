@@ -2,9 +2,7 @@
 
 * comparison operation for arrays (map reduce)
 * tensors (tensors.scm)
-* upcast sum result to int32 or int64
 * convolution: \*, +=, dilation: first/conditional, max, ...
-* unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM

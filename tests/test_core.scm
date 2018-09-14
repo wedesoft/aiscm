@@ -863,7 +863,7 @@
     0.0 ((jit (list <float>) imag-part) 5.5))
   (test-eqv "convert float to complex"
     5.0+0.0i ((jit (list <float>) (cut to-type <complex<float>> <>)) 5))
-  (test-eqv "change precision of floating point number"
+  (test-eqv "change precision of complex number"
     2.0+3.0i ((jit (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
   (test-eqv "complex multiplication"
     -11+29i ((jit (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
@@ -1421,6 +1421,14 @@
     10 (sum (get (roll (arr (2 10) (3 20) (5 40))) 0)))
   (test-eqv "sum of 2D array"
     41 (sum (arr (2 3 5) (7 11 13))))
+  (test-eqv "upcast result type for bytes"
+    256 (sum (arr 255 1)))
+  (test-eqv "upcast result type for integers"
+    (ash 1 32) (sum (to-array (list (ash 1 31) (ash 1 31)))))
+  (test-eqv "sum of floating point values"
+    3.75 (sum (arr 1.5 2.25)))
+  (test-equal "upcast result type for RGB values"
+    (rgb 256 256 256) (sum (to-array (list (rgb 255 255 255) (rgb 1 1 1)))))
   (test-eqv "product of 1D array"
     30 (prod (arr 2 3 5)))
   (test-eqv "Minimum of array"
