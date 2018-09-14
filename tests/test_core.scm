@@ -171,12 +171,18 @@
   (test-eq "Coerce complex and float"
     (complex <double>) (coerce (complex <float>) <double>)))
 
+(test-group "coerce objects"
+  (test-eq "Coerce object and integer"
+    <obj> (coerce <obj> <int>))
+  (test-eq "Coerce integer and objecgt"
+    <obj> (coerce <int> <obj>)))
+
 (test-group "coerce pointers"
   (test-eq "Coerce pointer and integer"
     (pointer <int>) (coerce (pointer <int>) <long>)))
 
 (test-eqv "get foreign type of complex type"
-  int64 (foreign-type <complex<float>>))
+  uint64 (foreign-type <complex<float>>))
 
 (test-group "decompose arguments"
   (test-equal "Decompose false"
@@ -279,8 +285,8 @@
     <bool> (native-type #t))
   (test-eq "type matching for #t and #f"
     <bool> (native-type #t #f))
-  (test-error "No native type for #t and 0"
-    'misc-error (native-type #t 0))
+  (test-eq "Native type for #t and 0"
+    <obj> (native-type #t 0))
   (test-eq "type matching for 255"
     <ubyte> (native-type 255))
   (test-eq "type matching for 256"
@@ -322,7 +328,9 @@
   (test-eq "type matching for 2+3i"
     <complex<double>> (native-type 2+3i))
   (test-eq "type matching for 1 and 2+3i"
-    <complex<double>> (native-type 1 2+3i)))
+    <complex<double>> (native-type 1 2+3i))
+  (test-eq "Type matching for 'abc"
+    <obj> (native-type 'abc)))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
@@ -347,7 +355,7 @@
   (test-equal "'define-structure' defines method for querying base type"
     (list <int>) (base (testcontainer <int>)))
   (test-eqv "Foreign type of composite values is a pointer"
-    int64 (foreign-type (testcontainer <int>)))
+    uint64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
@@ -390,11 +398,11 @@
   (test-eq "Get target type of pointer"
     <int> (target (pointer <int>)))
   (test-eqv "Foreign type of pointer"
-    int64 (foreign-type (pointer <int>)))
+    uint64 (foreign-type (pointer <int>)))
   (test-eqv "Size of pointer"
     8 (size-of (pointer <int>)))
   (test-equal "Decompose pointer type"
-    (list <long>) (decompose-type (pointer <int>)))
+    (list <ulong>) (decompose-type (pointer <int>)))
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
 
@@ -436,7 +444,7 @@
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
-    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
+    (list <ulong> <ulong> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
   (test-equal "Size of array"
     (* 4 32 20) (size-of (make (multiarray <int> 2) #:shape '(32 20)))))
 
@@ -855,7 +863,7 @@
     0.0 ((jit (list <float>) imag-part) 5.5))
   (test-eqv "convert float to complex"
     5.0+0.0i ((jit (list <float>) (cut to-type <complex<float>> <>)) 5))
-  (test-eqv "change precision of floating point number"
+  (test-eqv "change precision of complex number"
     2.0+3.0i ((jit (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
   (test-eqv "complex multiplication"
     -11+29i ((jit (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
@@ -1413,6 +1421,14 @@
     10 (sum (get (roll (arr (2 10) (3 20) (5 40))) 0)))
   (test-eqv "sum of 2D array"
     41 (sum (arr (2 3 5) (7 11 13))))
+  (test-eqv "upcast result type for bytes"
+    256 (sum (arr 255 1)))
+  (test-eqv "upcast result type for integers"
+    (ash 1 32) (sum (to-array (list (ash 1 31) (ash 1 31)))))
+  (test-eqv "sum of floating point values"
+    3.75 (sum (arr 1.5 2.25)))
+  (test-equal "upcast result type for RGB values"
+    (rgb 256 256 256) (sum (to-array (list (rgb 255 255 255) (rgb 1 1 1)))))
   (test-eqv "product of 1D array"
     30 (prod (arr 2 3 5)))
   (test-eqv "Minimum of array"
@@ -1492,5 +1508,75 @@
             (jit-let [(phi (build-phi <int>))]
               (add-incoming phi start x)
               x)))))))))
+
+(test-group "objects"
+  (test-eqv "Size of object type"
+    8 (size-of <obj>))
+  (test-eq "Compile identity function for Scheme object"
+    'abc ((jit (list <obj>) identity) 'abc))
+  (test-equal "Array oF objects contains false by default"
+    '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
+  (test-equal "Type matching for Scheme objects"
+    '(a b c) (to-list (arr <obj> a b c)))
+  (test-equal "Unary plus for objects"
+    '(2 3 5) (to-list (+ (arr <obj> 2 3 5))))
+  (test-equal "Unary product for objects"
+    '(2 3 5) (to-list (* (arr <obj> 2 3 5))))
+  (test-equal "Unary minus for objects"
+    '(-2 3 -5) (to-list (- (arr <obj> 2 -3 5))))
+  (test-equal "Unary bitwise not for objects"
+    '(-3 -4 -6) (to-list (~ (arr <obj> 2 3 5))))
+  (test-equal "Add two object arrays"
+    '(5 8 12) (to-list (+ (arr <obj> 2 3 5) (arr <obj> 3 5 7))))
+  (test-equal "Add object array and integer"
+    '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
+  (test-equal "Add integer and object array"
+    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
+  (test-equal "Subtract value from object array"
+    '(1 2 4) (to-list (- (arr <obj> 2 3 5) 1)))
+  (test-equal "Multiply object array with value"
+    '(4 6 10) (to-list (* (arr <obj> 2 3 5) 2)))
+  (test-equal "Divide object array by value"
+    '(2 3 5) (to-list (/ (arr <obj> 4 6 10) 2)))
+  (test-equal "Left-shift object array by value"
+    '(4) (to-list (<< (arr <obj> 2) 1)))
+  (test-equal "Right-shift object array by value"
+    '(2) (to-list (>> (arr <obj> 4) 1)))
+  (test-equal "Right-shift object array by different values"
+    '(8 4 2) (to-list (>> 16 (arr <obj> 1 2 3))))
+  (test-equal "Modulo object array by value"
+    '(2 3 1) (to-list (% (arr <obj> 2 3 5) 4)))
+  (test-equal "Bitwise and for objects"
+    '(0 2 2) (to-list (& (arr <obj> 1 2 3) 2)))
+  (test-equal "Bitwise or for objects"
+    '(3 2 3) (to-list (| (arr <obj> 1 2 3) 2)))
+  (test-equal "Minor value of objects"
+    '(2 3 4) (to-list (minor (arr <obj> 2 3 5) 4)))
+  (test-equal "Major value of objects"
+    '(4 4 5) (to-list (major (arr <obj> 2 3 5) 4)))
+  (for-each
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from ~a to object" value (class-name type))
+          value ((jit (list type) (cut to-type <obj> <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert double-precision float to object"
+    3.5 ((jit (list <double>) (cut to-type <obj> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5))
+  (test-equal "Convert boolean to object"
+    '(#f #t) (map (jit (list <bool>) (cut to-type <obj> <>)) '(#f #t)))
+  (for-each
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from object to ~a" value (class-name type))
+          value ((jit (list <obj>) (cut to-type type <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert object to double-precision float"
+    3.5 ((jit (list <obj>) (cut to-type <double> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <obj>) (cut to-type <float> <>)) 3.5))
+  (test-equal "Convert object to boolean"
+    '(#f #t) (map (jit (list <obj>) (cut to-type <bool> <>)) '(#f #t))))
 
 (test-end "aiscm core")

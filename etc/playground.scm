@@ -1,28 +1,14 @@
 (use-modules (oop goops) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm image) (aiscm magick) (aiscm xorg) (aiscm v4l2) (srfi srfi-1) (srfi srfi-26))
 
-(
-  (jit (list <int>)
-    (lambda (n)
-      (let [(start (make-basic-block "start"))
-            (for   (make-basic-block "for"))
-            (body  (make-basic-block "body"))
-            (end   (make-basic-block "end"))]
-        (llvm-begin
-          (build-branch start)
-          (position-builder-at-end start)
-          (jit-let [(i (typed-constant <int> 0))
-                    (s i)]
-            (build-branch for)
-            (position-builder-at-end for)
-            (jit-let [(i1 (build-phi (class-of i)))
-                      (s1 (build-phi (class-of s)))]
-              (add-incoming i1 start i)
-              (add-incoming s1 start s)
-              (build-cond-branch (lt i1 n) body end)
-              (position-builder-at-end body)
-              (add-incoming i1 body (+ i1 1))
-              (add-incoming s1 body (+ s1 i1))
-              (build-branch for)
-              (position-builder-at-end end)
-              s1))))))
- 10)
+(define argument-types (list <obj>))
+(define function identity)
+
+(define foreign-types (list 10 10))
+
+(define mod (make-llvm-module))
+(define arguments (map function-param (iota 2)))
+(define result (apply function arguments))
+
+(define arguments-typed (compose-values (cons <pointer<>> argument-types) arguments))
+(define expression (apply function (cdr arguments-typed)))
+(define result-type (class-of expression))

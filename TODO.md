@@ -1,15 +1,15 @@
 ## Ready
 
-* Scheme objects, memory with pointers (callback.scm, object_array.scm)
-* tensors (tensors.scm)
-* upcast sum result to int32 or int64
-* convolution: \*, +=, dilation: first/conditional, max, ...
 * comparison operation for arrays (map reduce)
-* unary =0, !=0, !
+* tensors (tensors.scm)
+* convolution: \*, +=, dilation: first/conditional, max, ...
 * binary and rgb &, |, ^, <<, >>
+* multiple C function calls in llvm-typed environment
+* how to link C functions in LLVM
+* For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
+* RGB to object, object to RGB
 * lookup, pseudo colour, warp
 * minimal shape
-* multiple C function calls in llvm-typed environment
 * OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
