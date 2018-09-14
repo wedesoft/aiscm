@@ -1532,9 +1532,10 @@
     '(2 3 5) (to-list (/ (arr <obj> 4 6 10) 2)))
   (test-equal "Left-shift object array by value"
     '(4) (to-list (<< (arr <obj> 2) 1)))
-  (test-skip 1)
   (test-equal "Right-shift object array by value"
     '(2) (to-list (>> (arr <obj> 4) 1)))
+  (test-equal "Right-shift object array by different values"
+    '(8 4 2) (to-list (>> 16 (arr <obj> 1 2 3))))
   (test-equal "Modulo object array by value"
     '(2 3 1) (to-list (% (arr <obj> 2 3 5) 4)))
   (test-equal "Bitwise and for objects"

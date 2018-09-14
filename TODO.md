@@ -1,7 +1,5 @@
 ## Ready
 
-* For Scheme objects: unary +, \*, -, ~, !
-* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * callback.scm, object\_array.scm
 * convert object to int, float, or boolean
 * RGB to object, object to RGB
@@ -11,9 +9,11 @@
 * comparison operation for arrays (map reduce)
 * unary =0, !=0, !
 * binary and rgb &, |, ^, <<, >>
+* multiple C function calls in llvm-typed environment
+* how to link C functions in LLVM
+* For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
 * lookup, pseudo colour, warp
 * minimal shape
-* multiple C function calls in llvm-typed environment
 * OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
