@@ -4,6 +4,7 @@
 * tensors (tensors.scm)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * binary and rgb &, |, ^, <<, >>
+* index arrays, show fill status of glass of milk
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
@@ -53,7 +54,6 @@
 * convolve with set of sobel filters
 * diagonal injection, convolution, median, dilation, ...
 * sum with multiple indices or no indices, standalone sum expression
-* index arrays, show fill status of glass of milk
 * inject: equality, sum, minimum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * argmax
