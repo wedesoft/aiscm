@@ -16,7 +16,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										convolution_1d.scm convolution_2d.scm roberts_cross.scm sobel.scm box_filter.scm \
 										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
-										xorg_fullscreen_test.scm anaglyph.scm
+										xorg_fullscreen_test.scm anaglyph.scm indicator.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
 
