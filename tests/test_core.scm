@@ -1503,7 +1503,31 @@
   (test-approximate "Cosinus of double-precision floating point number"
     -1.0 (car (to-list (cos (arr <double> 3.141)))) 0.001)
   (test-approximate "Cosinus of integer"
-    1.0 (car (to-list (cos (arr <int> 0)))) 0.001))
+    1.0 (car (to-list (cos (arr <int> 0)))) 0.001)
+  (test-approximate "Tangent of single-precision floating point number"
+    1.0 (car (to-list (tan (arr <float> 0.78525)))) 0.001)
+  (test-approximate "Tangent of double-precision floating point number"
+    1.0 (car (to-list (tan (arr <double> 0.78525)))) 0.001)
+  (test-approximate "Tangent of integer"
+    0.0 (car (to-list (tan (arr <int> 0)))) 0.001)
+  (test-approximate "Arc sinus of single-precision floating point number"
+    1.5705 (car (to-list (asin (arr <float> 1.0)))) 0.001)
+  (test-approximate "Arc sinus of double-precision floating point number"
+    1.5705 (car (to-list (asin (arr <double> 1.0)))) 0.001)
+  (test-approximate "Arc cosinus of single-precision floating point number"
+    3.141 (car (to-list (acos (arr <float> -1.0)))) 0.001)
+  (test-approximate "Arc cosinus of double-precision floating point number"
+    3.141 (car (to-list (acos (arr <double> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of single-precision floating point number"
+    0.78525 (car (to-list (atan (arr <float> 1.0)))) 0.001)
+  (test-approximate "Arc tangent of double-precision floating point number"
+    0.78525 (car (to-list (atan (arr <double> 1.0)))) 0.001)
+  (test-approximate "Arc tangent of two single-precision floating point numbers"
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <float> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of two double-precision floating point numbers"
+    2.356 (car (to-list (atan (arr <double> 1.0) (arr <double> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of single- and double-precision floating point number"
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001) )
 
 (test-group "phi values"
   (test-eqv "Try phi function"

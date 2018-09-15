@@ -74,7 +74,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos))
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -570,8 +570,8 @@
   "Coerce to boolean"
   <bool>)
 
-(define (to-float type)
-  (if (eq? type <float>) <float> <double>))
+(define (to-float . args)
+  (if (every (cut eq? <> <float>) args) <float> <double>))
 
 (define (coerce-last-two a b c)
   "Coerce last two elements"
@@ -1113,23 +1113,27 @@
 (define-method (sqrt (value <int<>>))
   (sqrt (to-type <double> value)))
 
-(define-method (sin (value <float>))
-  (typed-call <float> "sinf" (list <float>) (list value)))
+(define-syntax-rule (define-trigonometric name method methodf)
+  (begin
+    (define-method (name (value <float>))
+      (typed-call <float> methodf (list <float>) (list value)))
+    (define-method (name (value <double>))
+      (typed-call <double> method (list <double>) (list value)))
+    (define-method (name (value <int<>>))
+      (name (to-type <double> value)))))
 
-(define-method (sin (value <double>))
-  (typed-call <double> "sin" (list <double>) (list value)))
+(define-trigonometric sin  "sin"  "sinf" )
+(define-trigonometric cos  "cos"  "cosf" )
+(define-trigonometric tan  "tan"  "tanf" )
+(define-trigonometric asin "asin" "asinf")
+(define-trigonometric acos "acos" "acosf")
+(define-trigonometric atan "atan" "atanf")
 
-(define-method (sin (value <int<>>))
-  (sin (to-type <double> value)))
+(define-method (atan (value-a <float>) (value-b <float>))
+  (typed-call <float> "atan2f" (list <float> <float>) (list value-a value-b)))
 
-(define-method (cos (value <float>))
-  (typed-call <float> "cosf" (list <float>) (list value)))
-
-(define-method (cos (value <double>))
-  (typed-call <double> "cos" (list <double>) (list value)))
-
-(define-method (cos (value <int<>>))
-  (cos (to-type <double> value)))
+(define-method (atan (value-a <scalar>) (value-b <scalar>))
+  (typed-call <double> "atan2" (list <double> <double>) (list (to-type <double> value-a) (to-type <double> value-b))))
 
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
@@ -1551,6 +1555,11 @@
 (define-array-op sqrt      1 to-float        sqrt    )
 (define-array-op sin       1 to-float        sin     )
 (define-array-op cos       1 to-float        cos     )
+(define-array-op tan       1 to-float        tan     )
+(define-array-op asin      1 to-float        asin    )
+(define-array-op acos      1 to-float        acos    )
+(define-array-op atan      1 to-float        atan    )
+(define-array-op atan      2 to-float        atan    )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )

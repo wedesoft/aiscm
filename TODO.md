@@ -1,6 +1,5 @@
 ## Ready
 
-* cos, sin, tan, atan2, atan, acos, asin
 * pow
 * show fill status of glass of milk
 * document anaglyph with example video
