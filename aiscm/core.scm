@@ -74,7 +74,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt))
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1113,6 +1113,24 @@
 (define-method (sqrt (value <int<>>))
   (sqrt (to-type <double> value)))
 
+(define-method (sin (value <float>))
+  (typed-call <float> "sinf" (list <float>) (list value)))
+
+(define-method (sin (value <double>))
+  (typed-call <double> "sin" (list <double>) (list value)))
+
+(define-method (sin (value <int<>>))
+  (sin (to-type <double> value)))
+
+(define-method (cos (value <float>))
+  (typed-call <float> "cosf" (list <float>) (list value)))
+
+(define-method (cos (value <double>))
+  (typed-call <double> "cos" (list <double>) (list value)))
+
+(define-method (cos (value <int<>>))
+  (cos (to-type <double> value)))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -1531,6 +1549,8 @@
 (define-array-op duplicate 1 identity        identity)
 (define-array-op abs       1 identity        abs     )
 (define-array-op sqrt      1 to-float        sqrt    )
+(define-array-op sin       1 to-float        sin     )
+(define-array-op cos       1 to-float        cos     )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )

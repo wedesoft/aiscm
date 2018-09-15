@@ -1491,6 +1491,20 @@
   (test-equal "Square root of integer values"
     '(2.0 3.0) (to-list (sqrt (arr <int> 4 9)))))
 
+(test-group "trigonometric functions"
+  (test-approximate "Sinus of single-precision floating point number"
+    1.0 (car (to-list (sin (arr <float> 1.5705)))) 0.001)
+  (test-approximate "Sinus of double-precision floating point number"
+    1.0 (car (to-list (sin (arr <double> 1.5705)))) 0.001)
+  (test-approximate "Sinus of integer"
+    0.0 (car (to-list (sin (arr <int> 0)))) 0.001)
+  (test-approximate "Cosinus of single-precision floating point number"
+    -1.0 (car (to-list (cos (arr <float> 3.141)))) 0.001)
+  (test-approximate "Cosinus of double-precision floating point number"
+    -1.0 (car (to-list (cos (arr <double> 3.141)))) 0.001)
+  (test-approximate "Cosinus of integer"
+    1.0 (car (to-list (cos (arr <int> 0)))) 0.001))
+
 (test-group "phi values"
   (test-eqv "Try phi function"
     42
