@@ -74,7 +74,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs))
+  #:re-export (- + * / real-part imag-part min max abs sqrt))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -569,6 +569,9 @@
 (define (to-bool . args)
   "Coerce to boolean"
   <bool>)
+
+(define (to-float type)
+  (if (eq? type <float>) <float> <double>))
 
 (define (coerce-last-two a b c)
   "Coerce last two elements"
@@ -1101,6 +1104,15 @@
 (define-method (abs (value <double>))
   (typed-call <double> "fabs" (list <double>) (list value)))
 
+(define-method (sqrt (value <float>))
+  (typed-call <float> "sqrtf" (list <float>) (list value)))
+
+(define-method (sqrt (value <double>))
+  (typed-call <double> "sqrt" (list <double>) (list value)))
+
+(define-method (sqrt (value <int<>>))
+  (sqrt (to-type <double> value)))
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -1518,6 +1530,7 @@
 (define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
 (define-array-op abs       1 identity        abs     )
+(define-array-op sqrt      1 to-float        sqrt    )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )

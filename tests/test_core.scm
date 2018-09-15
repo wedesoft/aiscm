@@ -1483,6 +1483,14 @@
   (test-equal "Element-wise absolute value"
     '(2 3 5) (to-list (abs (arr 2 -3 5)))))
 
+(test-group "square root"
+  (test-equal "Square root of single-precision floating point numbers"
+    '(2.0 0.5) (to-list (sqrt (arr <float> 4.0 0.25))))
+  (test-equal "Square root of double-precision floating point numbers"
+    '(2.0 0.5) (to-list (sqrt (arr <double> 4.0 0.25))))
+  (test-equal "Square root of integer values"
+    '(2.0 3.0) (to-list (sqrt (arr <int> 4 9)))))
+
 (test-group "phi values"
   (test-eqv "Try phi function"
     42
