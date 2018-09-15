@@ -1574,6 +1574,8 @@
   (test-equal "shape of index array"
     '(2 3 5) (shape (index 2 3 5)))
   (test-equal "indices in 1D array"
-    '(0 1 2) (to-list (index 3))))
+    '(0 1 2) (to-list (index 3)))
+  (test-equal "2D index array"
+    '((0 1 2) (3 4 5)) (to-list (index 3 2))))
 
 (test-end "aiscm core")

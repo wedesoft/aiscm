@@ -1,7 +1,9 @@
 ## Ready
 
-* document fill, set, index
 * show fill status of glass of milk
+* document anaglyph with example video
+* document fill, set, index, anaglyph
+* mask
 * comparison operation for arrays (n-ary map reduce)
 * sin, cos, tan, ...
 * lookup, pseudo colour, warp
