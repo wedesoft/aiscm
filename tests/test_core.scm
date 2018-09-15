@@ -1103,16 +1103,7 @@
                  (lambda (x)
                    (jit-let [(ptr (typed-alloca <int>))]
                      (store ptr x)
-                     (fetch ptr)))) 42))
-  (test-eqv "While loop"
-    10
-    ((jit (list <int>)
-      (lambda (n)
-        (jit-let [(i (typed-alloca <int>))]
-          (store i (typed-constant <int> 0))
-          (llvm-while (lt (fetch i) n)
-            (store i (+ 1 (fetch i))))
-          (fetch i)))) 10)))
+                     (fetch ptr)))) 42)))
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
@@ -1578,5 +1569,11 @@
     3.5 ((jit (list <obj>) (cut to-type <float> <>)) 3.5))
   (test-equal "Convert object to boolean"
     '(#f #t) (map (jit (list <obj>) (cut to-type <bool> <>)) '(#f #t))))
+
+(test-group "index arrays"
+  (test-equal "shape of index array"
+    '(2 3 5) (shape (index 2 3 5)))
+  (test-equal "indices in 1D array"
+    '(0 1 2) (to-list (index 3))))
 
 (test-end "aiscm core")

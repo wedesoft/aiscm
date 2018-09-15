@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod convolve fill
+            crop dump project element minor major sum prod convolve fill index
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -73,7 +73,7 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while jit-let arr define-array-op)
+                   jit-let arr define-array-op)
   #:re-export (- + * / real-part imag-part min max abs))
 
 (load-extension "libguile-aiscm-core" "init_core")
@@ -1286,19 +1286,6 @@
 (define-method (add-incoming (phi <structure>) block value)
   (apply llvm-begin (map (lambda (component) (add-incoming (component phi) block (component value))) (components (class-of phi)))))
 
-(define-syntax-rule (llvm-while condition body ...)
-  (let [(block-while (make-basic-block "while"))
-        (block-body  (make-basic-block "body"))
-        (block-end   (make-basic-block "endwhile"))]
-    (llvm-begin
-      (build-branch block-while)
-      (position-builder-at-end block-while)
-      (build-cond-branch condition block-body block-end)
-      (position-builder-at-end block-body)
-      body ...
-      (build-branch block-while)
-      (position-builder-at-end block-end))))
-
 (define-method (llvmlist)
   "Empty compiled list defaults to integer list"
   (make (llvmlist <int> 0) #:value (lambda (fun) #f)))
@@ -1744,3 +1731,37 @@
 
 (define (fill type shape value)
   (fill-dispatch (multiarray type (length shape)) shape value))
+
+(define (do-index result)
+  (let [(start (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (jit-let [(size (apply * (map (cut get (shape result) <>) (iota (dimensions result)))))
+                (pend (+ (memory result) (* size (size-of <int>))))]
+        (build-branch for)
+        (position-builder-at-end for)
+        (jit-let [(p (build-phi (pointer <int>)))
+                  (i (build-phi <int>))]
+          (add-incoming p start (memory result))
+          (add-incoming i start (typed-constant <int> 0))
+          (build-cond-branch (ne p pend) body end)
+          (position-builder-at-end body)
+          (store p i)
+          (add-incoming p body (+ p (size-of <int>)))
+          (add-incoming i body (+ i 1))
+          (build-branch for)
+          (position-builder-at-end end)
+          result)))))
+
+(define-method (index . shp)
+  (let [(fun (jit (list (llvmlist <int> (length shp)))
+                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (do-index result)))))]
+    (add-method! index
+                 (make <method>
+                       #:specializers (make-list (length shp) <integer>)
+                       #:procedure (lambda shp (fun shp))))
+    (apply index shp)))

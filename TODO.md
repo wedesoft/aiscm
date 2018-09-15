@@ -1,15 +1,17 @@
 ## Ready
 
+* document fill, set, index
+* show fill status of glass of milk
 * comparison operation for arrays (n-ary map reduce)
+* sin, cos, tan, ...
+* lookup, pseudo colour, warp
 * tensors (tensors.scm)
 * convolution: \*, +=, dilation: first/conditional, max, ...
 * binary and rgb &, |, ^, <<, >>
-* index arrays, show fill status of glass of milk
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
 * RGB to object, object to RGB
-* lookup, pseudo colour, warp
 * minimal shape
 * OpenGL vertex array object example
 * runge kutta with state vector
