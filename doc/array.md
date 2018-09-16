@@ -119,6 +119,12 @@ The *rgb* method can be used to combine colour values and images. The following 
 @../tests/integration/swap_channels.scm@
 ```
 
+One can convert a stereoscopic image into a red-cyan anaglyph image for 3D viewing as shown below.
+
+```Scheme
+@../tests/integration/anaglyph.scm@
+```
+
 ## Complex values
 
 At the moment only integer complex values are supported. Here is a small example using complex arrays:

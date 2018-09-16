@@ -18,7 +18,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg mars-rover.jpg
 
 noinst_DATA = fubk.png av-sync.mp4 test.mp3
 
