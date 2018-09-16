@@ -121,6 +121,8 @@ The *rgb* method can be used to combine colour values and images. The following 
 
 One can convert a stereoscopic image into a red-cyan anaglyph image for 3D viewing as shown below.
 
+![shuttle.jpg](shuttle.jpg "Space shuttle stereoscopic image")
+
 ```Scheme
 @../tests/integration/anaglyph.scm@
 ```

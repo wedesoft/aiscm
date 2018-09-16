@@ -9,7 +9,7 @@ ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUI
 RUN = $(GUILE) -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
-					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
+					 fubk.png scaled-pattern.png pavillion.jpg shuttle.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
@@ -36,6 +36,9 @@ pavillion.jpg: ../tests/integration/pavillion.jpg
 	cp $< $@
 
 star-ferry.jpg: ../tests/integration/star-ferry.jpg
+	cp $< $@
+
+shuttle.jpg: ../tests/integration/shuttle.jpg
 	cp $< $@
 
 pattern.png: ../tests/integration/write_image.scm
