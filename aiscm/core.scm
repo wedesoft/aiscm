@@ -1104,16 +1104,7 @@
 (define-method (abs (value <double>))
   (typed-call <double> "fabs" (list <double>) (list value)))
 
-(define-method (sqrt (value <float>))
-  (typed-call <float> "sqrtf" (list <float>) (list value)))
-
-(define-method (sqrt (value <double>))
-  (typed-call <double> "sqrt" (list <double>) (list value)))
-
-(define-method (sqrt (value <int<>>))
-  (sqrt (to-type <double> value)))
-
-(define-syntax-rule (define-trigonometric name method methodf)
+(define-syntax-rule (define-unary-libc name method methodf)
   (begin
     (define-method (name (value <float>))
       (typed-call <float> methodf (list <float>) (list value)))
@@ -1122,12 +1113,13 @@
     (define-method (name (value <int<>>))
       (name (to-type <double> value)))))
 
-(define-trigonometric sin  "sin"  "sinf" )
-(define-trigonometric cos  "cos"  "cosf" )
-(define-trigonometric tan  "tan"  "tanf" )
-(define-trigonometric asin "asin" "asinf")
-(define-trigonometric acos "acos" "acosf")
-(define-trigonometric atan "atan" "atanf")
+(define-unary-libc sqrt "sqrt" "sqrtf")
+(define-unary-libc sin  "sin"  "sinf" )
+(define-unary-libc cos  "cos"  "cosf" )
+(define-unary-libc tan  "tan"  "tanf" )
+(define-unary-libc asin "asin" "asinf")
+(define-unary-libc acos "acos" "acosf")
+(define-unary-libc atan "atan" "atanf")
 
 (define-method (atan (value-a <float>) (value-b <float>))
   (typed-call <float> "atan2f" (list <float> <float>) (list value-a value-b)))
