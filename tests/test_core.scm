@@ -1483,13 +1483,17 @@
   (test-equal "Element-wise absolute value"
     '(2 3 5) (to-list (abs (arr 2 -3 5)))))
 
-(test-group "square root"
+(test-group "square root and exponentiation"
   (test-equal "Square root of single-precision floating point numbers"
     '(2.0 0.5) (to-list (sqrt (arr <float> 4.0 0.25))))
   (test-equal "Square root of double-precision floating point numbers"
     '(2.0 0.5) (to-list (sqrt (arr <double> 4.0 0.25))))
   (test-equal "Square root of integer values"
-    '(2.0 3.0) (to-list (sqrt (arr <int> 4 9)))))
+    '(2.0 3.0) (to-list (sqrt (arr <int> 4 9))))
+  (test-equal "Power function of single precision float"
+    '(2.0 9.0) (to-list (pow (arr <float> 2.0 3.0) (arr <float> 1.0 2.0))))
+  (test-equal "Power function of double precision float"
+    '(2.0 9.0) (to-list (pow (arr <double> 2.0 3.0) (arr <double> 1.0 2.0)))))
 
 (test-group "trigonometric functions"
   (test-approximate "Sinus of single-precision floating point number"

@@ -1,6 +1,5 @@
 ## Ready
 
-* pow
 * document fill, set, index
 * mask
 * comparison operation for arrays (n-ary map reduce)

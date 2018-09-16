@@ -25,7 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (destroy read-image write-image read-audio write-audio rate channels
-            integer signed unsigned bits signed? coerce foreign-type
+            integer signed unsigned bits signed? coerce foreign-type pow
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
@@ -1121,11 +1121,15 @@
 (define-unary-libc acos "acos" "acosf")
 (define-unary-libc atan "atan" "atanf")
 
-(define-method (atan (value-a <float>) (value-b <float>))
-  (typed-call <float> "atan2f" (list <float> <float>) (list value-a value-b)))
+(define-syntax-rule (define-binary-libc name method methodf)
+  (begin
+    (define-method (name (value-a <float>) (value-b <float>))
+      (typed-call <float> methodf (list <float> <float>) (list value-a value-b)))
+    (define-method (name (value-a <scalar>) (value-b <scalar>))
+      (typed-call <double> method (list <double> <double>) (list (to-type <double> value-a) (to-type <double> value-b))))))
 
-(define-method (atan (value-a <scalar>) (value-b <scalar>))
-  (typed-call <double> "atan2" (list <double> <double>) (list (to-type <double> value-a) (to-type <double> value-b))))
+(define-binary-libc pow  "pow"   "powf"  )
+(define-binary-libc atan "atan2" "atan2f")
 
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
@@ -1551,6 +1555,7 @@
 (define-array-op asin      1 to-float        asin    )
 (define-array-op acos      1 to-float        acos    )
 (define-array-op atan      1 to-float        atan    )
+(define-array-op pow       2 to-float        pow     )
 (define-array-op atan      2 to-float        atan    )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
