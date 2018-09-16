@@ -15,6 +15,3 @@ c
 (conj c)
 ;#<multiarray<complex<float<double>>,1>>:
 ;(2.0-3.0i 5.0-7.0i)
-(conj (to-type (complex <byte>) c))
-;#<multiarray<complex<int<8,signed>>,1>:
-;(2.0-3.0i 5.0-7.0i)

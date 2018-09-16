@@ -1,12 +1,9 @@
 ## Ready
 
 * pow
-* show fill status of glass of milk
-* document anaglyph with example video
-* document fill, set, index, anaglyph
+* document fill, set, index
 * mask
 * comparison operation for arrays (n-ary map reduce)
-* sin, cos, tan, ...
 * lookup, pseudo colour, warp
 * tensors (tensors.scm)
 * convolution: \*, +=, dilation: first/conditional, max, ...

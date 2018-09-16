@@ -129,7 +129,7 @@ One can convert a stereoscopic image into a red-cyan anaglyph image for 3D viewi
 
 ## Complex values
 
-At the moment only integer complex values are supported. Here is a small example using complex arrays:
+Here is a small example using complex arrays:
 
 ```Scheme
 @../tests/integration/complex_array.scm@
