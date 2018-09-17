@@ -1,6 +1,6 @@
 ## Ready
 
-* document fill, set, index
+* document set
 * mask
 * comparison operation for arrays (n-ary map reduce)
 * lookup, pseudo colour, warp

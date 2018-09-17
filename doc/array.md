@@ -13,6 +13,18 @@ Uniform arrays can also be created from values using type matching:
 @../tests/integration/type_matching.scm@
 ```
 
+The *fill* method can be used to create an array where the elements are initialised:
+
+```Scheme
+@../tests/integration/fill.scm@
+```
+
+Index arrays can be used to generate x- and y-ramp arrays:
+
+```Scheme
+@../tests/integration/index.scm@
+```
+
 ## Multi-dimensional arrays
 
 It is also possible to instantiate multi-dimensional arrays. Again elements are not guaranteed to be initialised:
