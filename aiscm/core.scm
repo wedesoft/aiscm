@@ -1750,35 +1750,20 @@
             (position-builder-at-end end)
             result))))))
 
-(define-method (convolve self kernel)
-  (let [(fun (lambda (self kernel)
-               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array + * result self kernel (strides self) (shape kernel) '() '() '()))))]
-    (add-method! convolve
-                 (make <method>
-                       #:specializers (list (class-of self) (class-of kernel))
-                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
-    (convolve self kernel)))
+(define-syntax-rule (define-convolution name reduction mapping)
+  (define-method (name self kernel)
+    (let [(fun (lambda (self kernel)
+                 (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+                   (convolve-array reduction mapping result self kernel (strides self) (shape kernel) '() '() '()))))]
+      (add-method! name
+                   (make <method>
+                         #:specializers (list (class-of self) (class-of kernel))
+                         #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
+      (name self kernel))))
 
-(define-method (dilate self kernel)
-  (let [(fun (lambda (self kernel)
-               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array major minor result self kernel (strides self) (shape kernel) '() '() '()))))]
-    (add-method! dilate
-                 (make <method>
-                       #:specializers (list (class-of self) (class-of kernel))
-                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
-    (dilate self kernel)))
-
-(define-method (erode self kernel)
-  (let [(fun (lambda (self kernel)
-               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array minor major result self kernel (strides self) (shape kernel) '() '() '()))))]
-    (add-method! erode
-                 (make <method>
-                       #:specializers (list (class-of self) (class-of kernel))
-                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
-    (erode self kernel)))
+(define-convolution convolve +     *    )
+(define-convolution dilate   major minor)
+(define-convolution erode    minor major)
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
