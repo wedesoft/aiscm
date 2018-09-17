@@ -1,7 +1,5 @@
 ## Ready
 
-* document set
-* set multiple elements to same value
 * mask
 * comparison operation for arrays (n-ary map reduce)
 * lookup, pseudo colour, warp
