@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod convolve fill index
+            crop dump project element minor major sum prod fill index convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1647,9 +1647,11 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets)
+(define (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))
-    (* (fetch (memory self)) (fetch (memory kernel)))
+    (jit-let [(a (fetch (memory self)))
+              (b (fetch (memory kernel)))]
+      (mapping a b))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1657,7 +1659,9 @@
           (end    (make-basic-block "end"))]
       (jit-let [(kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
                 (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))
-                (element0 (convolve-kernel result
+                (element0 (convolve-kernel reduction
+                                           mapping
+                                           result
                                            (rebase self qbegin)
                                            (project (rebase kernel kbegin))
                                            (llvm-all-but-last self-strides)
@@ -1681,7 +1685,9 @@
               (add-incoming q start qbegin2)
               (build-cond-branch (ne k kend) body end)
               (position-builder-at-end body)
-              (jit-let [(intermediate (convolve-kernel result
+              (jit-let [(intermediate (convolve-kernel reduction
+                                                       mapping
+                                                       result
                                                        (rebase self q)
                                                        (project (rebase kernel k))
                                                        (llvm-all-but-last self-strides)
@@ -1690,16 +1696,16 @@
                                                        (all-but-last offsets)))]
                 (build-branch finish)
                 (position-builder-at-end finish)
-                (add-incoming element finish (+ element intermediate))
+                (add-incoming element finish (reduction element intermediate))
                 (add-incoming k finish (+ k (llvm-last (strides kernel))))
                 (add-incoming q finish (- q (llvm-last self-strides)))
                 (build-branch for)
                 (position-builder-at-end end)
                 element))))))))
 
-(define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
+(define (convolve-array reduction mapping result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
-    (store (memory result) (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets))
+    (store (memory result) (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets))
     (let [(start (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1724,7 +1730,9 @@
             (add-incoming kupper start kupper0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (convolve-array (project (rebase result p))
+            (convolve-array reduction
+                            mapping
+                            (project (rebase result p))
                             (project (rebase self q))
                             kernel
                             self-strides
@@ -1745,12 +1753,32 @@
 (define-method (convolve self kernel)
   (let [(fun (lambda (self kernel)
                (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))]
+                 (convolve-array + * result self kernel (strides self) (shape kernel) '() '() '()))))]
     (add-method! convolve
                  (make <method>
                        #:specializers (list (class-of self) (class-of kernel))
-                       #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
-  (convolve self kernel))
+                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
+    (convolve self kernel)))
+
+(define-method (dilate self kernel)
+  (let [(fun (lambda (self kernel)
+               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+                 (convolve-array major minor result self kernel (strides self) (shape kernel) '() '() '()))))]
+    (add-method! dilate
+                 (make <method>
+                       #:specializers (list (class-of self) (class-of kernel))
+                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
+    (dilate self kernel)))
+
+(define-method (erode self kernel)
+  (let [(fun (lambda (self kernel)
+               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+                 (convolve-array minor major result self kernel (strides self) (shape kernel) '() '() '()))))]
+    (add-method! erode
+                 (make <method>
+                       #:specializers (list (class-of self) (class-of kernel))
+                       #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
+    (erode self kernel)))
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))

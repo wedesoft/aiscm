@@ -1,10 +1,9 @@
 ## Ready
 
-* mask
 * comparison operation for arrays (n-ary map reduce)
 * lookup, pseudo colour, warp
+* mask
 * tensors (tensors.scm)
-* convolution: \*, +=, dilation: first/conditional, max, ...
 * binary and rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
