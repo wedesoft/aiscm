@@ -1472,12 +1472,16 @@
     '(3 5 5) (to-list (dilate (arr 2 3 5) (arr 255 255 255))))
   (test-equal "structuring element of dilation"
     '(2 3 5) (to-list (dilate (arr 2 3 5) (arr 0 255 0))))
+  (test-equal "dilation with kernel size"
+    '(3 5 5) (to-list (dilate (arr 2 3 5) 3)))
   (test-equal "trivial erosion"
     '(2 3 5) (to-list (erode (arr 2 3 5) (arr 0))))
   (test-equal "non-trivial erosion"
     '(2 2 3) (to-list (erode (arr 2 3 5) (arr 0 0 0))))
   (test-equal "structuring element of erosion"
-    '(2 3 5) (to-list (erode (arr 2 3 5) (arr 255 0 255)))))
+    '(2 3 5) (to-list (erode (arr 2 3 5) (arr 255 0 255))))
+  (test-equal "erosion with kernel size"
+    '(2 2 3) (to-list (erode (arr 2 3 5) 3))))
 
 (test-group "fill"
   (test-eq "Specify typecode of result"

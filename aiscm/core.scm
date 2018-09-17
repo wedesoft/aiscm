@@ -1765,6 +1765,12 @@
 (define-convolution dilate   major minor)
 (define-convolution erode    minor major)
 
+(define-method (dilate self (size <integer>))
+  (dilate self (fill <ubyte> (make-list (dimensions self) size) 255)))
+
+(define-method (erode self (size <integer>))
+  (erode self (fill <ubyte> (make-list (dimensions self) size) 0)))
+
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
                (lambda (shp value)
