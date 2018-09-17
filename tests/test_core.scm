@@ -1648,4 +1648,12 @@
   (test-equal "2D index array"
     '((0 1 2) (3 4 5)) (to-list (index 3 2))))
 
+(test-group "Comparison"
+  (test-assert "equal arrays"
+    (equal? (arr 2 3 5) (arr 2 3 5)))
+  (test-assert "differing shape"
+    (not (equal? (arr 2 3) (arr 2 3 5))))
+  (test-assert "differemt elements"
+    (not (equal? (arr 2 3 5) (arr 2 4 5)))))
+
 (test-end "aiscm core")

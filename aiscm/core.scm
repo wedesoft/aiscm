@@ -74,7 +74,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan))
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal?))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1819,3 +1819,50 @@
                        #:specializers (make-list (length shp) <integer>)
                        #:procedure (lambda shp (fun shp))))
     (apply index shp)))
+
+(define-method (equal-arrays (a <llvmarray<>>) (b <llvmarray<>>))
+  (if  (zero? (dimensions a))
+    (eq (fetch a) (fetch b))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (jit-let [(result0 (equal-arrays (project a) (project b)))]
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pstride (llvm-last (strides a)))
+                  (qstride (llvm-last (strides b)))
+                  (p0      (+ (memory a) pstride))
+                  (q0      (+ (memory b) qstride))
+                  (pend    (+ (memory a) (* pstride (llvm-last (shape a)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(result (build-phi <bool>))
+                    (p      (build-phi (class-of p0)))
+                    (q      (build-phi (class-of q0)))]
+            (add-incoming result start result0)
+            (add-incoming p start p0)
+            (add-incoming q start q0)
+            (build-cond-branch (ne p pend) body end)
+            (position-builder-at-end body)
+            (jit-let [(result1 (equal-arrays (project (rebase a p)) (project (rebase b q))))]
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming result finish (&& result result1))
+              (add-incoming p finish (+ p pstride))
+              (add-incoming q finish (+ q qstride))
+              (build-branch for)
+              (position-builder-at-end end)
+              result)))))))
+
+(define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
+  (let [(fun (lambda (a b) (equal-arrays a b)))]
+    (add-method! equal-arrays
+                 (make <method>
+                       #:specializers (list (class-of a) (class-of b))
+                       #:procedure (jit (list (native-type a) (native-type b)) fun)))
+    (equal-arrays a b)))
+
+(define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
+  (and (equal? (shape a) (shape b)) (equal-arrays a b)))

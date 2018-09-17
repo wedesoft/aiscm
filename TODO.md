@@ -1,6 +1,6 @@
 ## Ready
 
-* comparison operation for arrays (n-ary map reduce)
+* comparison for RGB and complex arrays
 * lookup, pseudo colour, warp
 * mask
 * tensors (tensors.scm)
