@@ -1,6 +1,5 @@
 ## Ready
 
-* comparison for complex arrays
 * lookup, pseudo colour, warp
 * mask
 * tensors (tensors.scm)

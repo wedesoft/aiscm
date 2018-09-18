@@ -1046,19 +1046,20 @@
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
 
-(define-syntax-rule (define-complex-binary-op op)
+(define-syntax-rule (define-complex-binary-op mapping reduction)
   (begin
-    (define-method (op (value-a <complex<>>) (value-b <complex<>>))
-      (complex (op (real-part value-a) (real-part value-b)) (op (imag-part value-a) (imag-part value-b))))
+    (define-method (mapping (value-a <complex<>>) (value-b <complex<>>))
+      (reduction (mapping (real-part value-a) (real-part value-b)) (mapping (imag-part value-a) (imag-part value-b))))
 
-    (define-method (op (value-a <complex<>>) (value-b <scalar>))
-      (complex (op (real-part value-a) value-b) (imag-part value-a)))
+    (define-method (mapping (value-a <complex<>>) (value-b <scalar>))
+      (reduction (mapping (real-part value-a) value-b) (imag-part value-a)))
 
-    (define-method (op (value-a <scalar>) (value-b <complex<>>))
-      (complex (op value-a (real-part value-b)) (op (imag-part value-b))))))
+    (define-method (mapping (value-a <scalar>) (value-b <complex<>>))
+      (reduction (mapping value-a (real-part value-b)) (mapping (imag-part value-b))))))
 
-(define-complex-binary-op +)
-(define-complex-binary-op -)
+(define-complex-binary-op +  complex)
+(define-complex-binary-op -  complex)
+(define-complex-binary-op eq &&     )
 
 (define-method (* (value-a <complex<>>) (value-b <complex<>>))
   (complex (- (* (real-part value-a) (real-part value-b)) (* (imag-part value-a) (imag-part value-b)))

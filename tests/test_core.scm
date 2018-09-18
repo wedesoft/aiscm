@@ -157,7 +157,11 @@
   (test-equal "Complex conjugate of array"
     '(2-3i 5-7i) (to-list (conj (arr 2+3i 5+7i))))
   (test-equal "Complex conjugate of real array"
-    '(2 3 5) (to-list (conj (arr 2 3 5)))))
+    '(2 3 5) (to-list (conj (arr 2 3 5))))
+  (test-assert "Equal complex numbers"
+    ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+3i))
+  (test-assert "Unequal complex numbers"
+    (not ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+5i))))
 
 (test-group "complex coercion"
   (test-eq "Coerce two complex types"
