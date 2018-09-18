@@ -1,5 +1,6 @@
 ## Ready
 
+* refactor equal-arrays and reduction
 * lookup, pseudo colour, warp
 * mask
 * tensors (tensors.scm)
