@@ -1391,7 +1391,11 @@
   (test-equal "RGB binary division"
     (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13)))
   (test-equal "RGB modulo"
-    (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4)))
+    (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4))
+  (test-assert "RGB equal values"
+    ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 5)))
+  (test-assert "RGB unequal values"
+    (not ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 7)))))
 
 (test-group "type conversions"
   (test-equal "convert to float"
@@ -1405,7 +1409,11 @@
   (test-equal "element-wise boolean and"
     '(#f #f #f #t) (to-list (&& (arr #f #t #f #t) (arr #f #f #t #t))))
   (test-equal "element-wise boolean or"
-    '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t)))))
+    '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t))))
+  (test-assert "'and' for three operands"
+    ((jit (list <bool> <bool> <bool>) &&) #t #t #t))
+  (test-assert "'or' for three operands"
+    ((jit (list <bool> <bool> <bool>) ||) #f #f #t)))
 
 (test-group "Reducing operations"
   (test-eqv "sum of 1D array"
