@@ -1,16 +1,15 @@
 ## Ready
 
-* package for different distros
-* Scheme objects, memory with pointers (callback.scm, object_array.scm)
-* tensors (tensors.scm)
-* upcast sum result to int32 or int64
-* convolution: \*, +=, dilation: first/conditional, max, ...
-* comparison operation for arrays (map reduce)
-* unary =0, !=0, !
-* binary and rgb &, |, ^, <<, >>
+* refactor equal-arrays and reduction
 * lookup, pseudo colour, warp
-* minimal shape
+* mask
+* tensors (tensors.scm)
+* binary and rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
+* how to link C functions in LLVM
+* For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
+* RGB to object, object to RGB
+* minimal shape
 * OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
@@ -54,7 +53,6 @@
 * convolve with set of sobel filters
 * diagonal injection, convolution, median, dilation, ...
 * sum with multiple indices or no indices, standalone sum expression
-* index arrays, show fill status of glass of milk
 * inject: equality, sum, minimum, maximum of frames
 * pixel selection example (take reference from center pixels)
 * argmax

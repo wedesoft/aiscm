@@ -157,7 +157,11 @@
   (test-equal "Complex conjugate of array"
     '(2-3i 5-7i) (to-list (conj (arr 2+3i 5+7i))))
   (test-equal "Complex conjugate of real array"
-    '(2 3 5) (to-list (conj (arr 2 3 5)))))
+    '(2 3 5) (to-list (conj (arr 2 3 5))))
+  (test-assert "Equal complex numbers"
+    ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+3i))
+  (test-assert "Unequal complex numbers"
+    (not ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+5i))))
 
 (test-group "complex coercion"
   (test-eq "Coerce two complex types"
@@ -171,12 +175,18 @@
   (test-eq "Coerce complex and float"
     (complex <double>) (coerce (complex <float>) <double>)))
 
+(test-group "coerce objects"
+  (test-eq "Coerce object and integer"
+    <obj> (coerce <obj> <int>))
+  (test-eq "Coerce integer and objecgt"
+    <obj> (coerce <int> <obj>)))
+
 (test-group "coerce pointers"
   (test-eq "Coerce pointer and integer"
     (pointer <int>) (coerce (pointer <int>) <long>)))
 
 (test-eqv "get foreign type of complex type"
-  int64 (foreign-type <complex<float>>))
+  uint64 (foreign-type <complex<float>>))
 
 (test-group "decompose arguments"
   (test-equal "Decompose false"
@@ -279,8 +289,8 @@
     <bool> (native-type #t))
   (test-eq "type matching for #t and #f"
     <bool> (native-type #t #f))
-  (test-error "No native type for #t and 0"
-    'misc-error (native-type #t 0))
+  (test-eq "Native type for #t and 0"
+    <obj> (native-type #t 0))
   (test-eq "type matching for 255"
     <ubyte> (native-type 255))
   (test-eq "type matching for 256"
@@ -322,7 +332,9 @@
   (test-eq "type matching for 2+3i"
     <complex<double>> (native-type 2+3i))
   (test-eq "type matching for 1 and 2+3i"
-    <complex<double>> (native-type 1 2+3i)))
+    <complex<double>> (native-type 1 2+3i))
+  (test-eq "Type matching for 'abc"
+    <obj> (native-type 'abc)))
 
 (define-class <testcontainer> ()
               (testcontent #:init-keyword #:testcontent #:getter testcontent))
@@ -347,7 +359,7 @@
   (test-equal "'define-structure' defines method for querying base type"
     (list <int>) (base (testcontainer <int>)))
   (test-eqv "Foreign type of composite values is a pointer"
-    int64 (foreign-type (testcontainer <int>)))
+    uint64 (foreign-type (testcontainer <int>)))
   (test-eq "Define method to query size of type"
     (size-of <int>) (size-of (testcontainer <int>)))
   (test-eq "Query size of type with two elements"
@@ -390,11 +402,11 @@
   (test-eq "Get target type of pointer"
     <int> (target (pointer <int>)))
   (test-eqv "Foreign type of pointer"
-    int64 (foreign-type (pointer <int>)))
+    uint64 (foreign-type (pointer <int>)))
   (test-eqv "Size of pointer"
     8 (size-of (pointer <int>)))
   (test-equal "Decompose pointer type"
-    (list <long>) (decompose-type (pointer <int>)))
+    (list <ulong>) (decompose-type (pointer <int>)))
   (test-equal "Decompose pointer value"
     (list 123) (decompose-argument (pointer <int>) (make-pointer 123))))
 
@@ -436,7 +448,7 @@
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
-    (list <long> <long> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
+    (list <ulong> <ulong> <int> <int> <int> <int>) (decompose-type (llvmarray <ubyte> 2)))
   (test-equal "Size of array"
     (* 4 32 20) (size-of (make (multiarray <int> 2) #:shape '(32 20)))))
 
@@ -855,7 +867,7 @@
     0.0 ((jit (list <float>) imag-part) 5.5))
   (test-eqv "convert float to complex"
     5.0+0.0i ((jit (list <float>) (cut to-type <complex<float>> <>)) 5))
-  (test-eqv "change precision of floating point number"
+  (test-eqv "change precision of complex number"
     2.0+3.0i ((jit (list (complex <float>)) (cut to-type <complex<double>> <>)) 2+3i))
   (test-eqv "complex multiplication"
     -11+29i ((jit (list (complex <float>) (complex <float>)) *) 2+3i 5+7i))
@@ -1095,16 +1107,7 @@
                  (lambda (x)
                    (jit-let [(ptr (typed-alloca <int>))]
                      (store ptr x)
-                     (fetch ptr)))) 42))
-  (test-eqv "While loop"
-    10
-    ((jit (list <int>)
-      (lambda (n)
-        (jit-let [(i (typed-alloca <int>))]
-          (store i (typed-constant <int> 0))
-          (llvm-while (lt (fetch i) n)
-            (store i (+ 1 (fetch i))))
-          (fetch i)))) 10)))
+                     (fetch ptr)))) 42)))
 
 (test-group "Static size list"
   (test-eqv "Access element of list"
@@ -1146,6 +1149,8 @@
       '((1 7 3) (4 5 6)) (let [(m  (arr (1 2 3) (4 5 6)))] (set m 1 0 7) (to-list m)))
     (test-equal "Set range of elements of 1D array"
       '(2 11 13 7) (let [(m  (arr 2 3 5 7))] (set m '(1 . 3) (arr 11 13)) (to-list m)))
+    (test-equal "Set range of elements of 1D array to same value"
+      '(2 11 11 7) (let [(m  (arr 2 3 5 7))] (set m '(1 . 3) 11) (to-list m)))
     (test-equal "Getting range rolls dimensions of array"
       '(1 3 4) (shape (get (make (multiarray <int> 3) #:shape '(3 4 5)) '(0 . 1))))
     (test-equal "Build multiarray with correct memory"
@@ -1390,7 +1395,11 @@
   (test-equal "RGB binary division"
     (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13)))
   (test-equal "RGB modulo"
-    (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4)))
+    (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4))
+  (test-assert "RGB equal values"
+    ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 5)))
+  (test-assert "RGB unequal values"
+    (not ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 7)))))
 
 (test-group "type conversions"
   (test-equal "convert to float"
@@ -1404,7 +1413,11 @@
   (test-equal "element-wise boolean and"
     '(#f #f #f #t) (to-list (&& (arr #f #t #f #t) (arr #f #f #t #t))))
   (test-equal "element-wise boolean or"
-    '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t)))))
+    '(#f #t #t #t) (to-list (|| (arr #f #t #f #t) (arr #f #f #t #t))))
+  (test-assert "'and' for three operands"
+    ((jit (list <bool> <bool> <bool>) &&) #t #t #t))
+  (test-assert "'or' for three operands"
+    ((jit (list <bool> <bool> <bool>) ||) #f #f #t)))
 
 (test-group "Reducing operations"
   (test-eqv "sum of 1D array"
@@ -1413,6 +1426,14 @@
     10 (sum (get (roll (arr (2 10) (3 20) (5 40))) 0)))
   (test-eqv "sum of 2D array"
     41 (sum (arr (2 3 5) (7 11 13))))
+  (test-eqv "upcast result type for bytes"
+    256 (sum (arr 255 1)))
+  (test-eqv "upcast result type for integers"
+    (ash 1 32) (sum (to-array (list (ash 1 31) (ash 1 31)))))
+  (test-eqv "sum of floating point values"
+    3.75 (sum (arr 1.5 2.25)))
+  (test-equal "upcast result type for RGB values"
+    (rgb 256 256 256) (sum (to-array (list (rgb 255 255 255) (rgb 1 1 1)))))
   (test-eqv "product of 1D array"
     30 (prod (arr 2 3 5)))
   (test-eqv "Minimum of array"
@@ -1456,6 +1477,24 @@
   (test-assert "large convolution"
     (convolve (fill <int> '(1000000) 1) (arr 1))))
 
+(test-group "dilation/erosion"
+  (test-equal "trivial dilation"
+    '(2 3 5) (to-list (dilate (arr 2 3 5) (arr 255))))
+  (test-equal "non-trivial dilation"
+    '(3 5 5) (to-list (dilate (arr 2 3 5) (arr 255 255 255))))
+  (test-equal "structuring element of dilation"
+    '(2 3 5) (to-list (dilate (arr 2 3 5) (arr 0 255 0))))
+  (test-equal "dilation with kernel size"
+    '(3 5 5) (to-list (dilate (arr 2 3 5) 3)))
+  (test-equal "trivial erosion"
+    '(2 3 5) (to-list (erode (arr 2 3 5) (arr 0))))
+  (test-equal "non-trivial erosion"
+    '(2 2 3) (to-list (erode (arr 2 3 5) (arr 0 0 0))))
+  (test-equal "structuring element of erosion"
+    '(2 3 5) (to-list (erode (arr 2 3 5) (arr 255 0 255))))
+  (test-equal "erosion with kernel size"
+    '(2 2 3) (to-list (erode (arr 2 3 5) 3))))
+
 (test-group "fill"
   (test-eq "Specify typecode of result"
     <sint> (typecode (fill <sint> '(3) 42)))
@@ -1476,6 +1515,56 @@
   (test-equal "Element-wise absolute value"
     '(2 3 5) (to-list (abs (arr 2 -3 5)))))
 
+(test-group "square root and exponentiation"
+  (test-equal "Square root of single-precision floating point numbers"
+    '(2.0 0.5) (to-list (sqrt (arr <float> 4.0 0.25))))
+  (test-equal "Square root of double-precision floating point numbers"
+    '(2.0 0.5) (to-list (sqrt (arr <double> 4.0 0.25))))
+  (test-equal "Square root of integer values"
+    '(2.0 3.0) (to-list (sqrt (arr <int> 4 9))))
+  (test-equal "Power function of single precision float"
+    '(2.0 9.0) (to-list (pow (arr <float> 2.0 3.0) (arr <float> 1.0 2.0))))
+  (test-equal "Power function of double precision float"
+    '(2.0 9.0) (to-list (pow (arr <double> 2.0 3.0) (arr <double> 1.0 2.0)))))
+
+(test-group "trigonometric functions"
+  (test-approximate "Sinus of single-precision floating point number"
+    1.0 (car (to-list (sin (arr <float> 1.5705)))) 0.001)
+  (test-approximate "Sinus of double-precision floating point number"
+    1.0 (car (to-list (sin (arr <double> 1.5705)))) 0.001)
+  (test-approximate "Sinus of integer"
+    0.0 (car (to-list (sin (arr <int> 0)))) 0.001)
+  (test-approximate "Cosinus of single-precision floating point number"
+    -1.0 (car (to-list (cos (arr <float> 3.141)))) 0.001)
+  (test-approximate "Cosinus of double-precision floating point number"
+    -1.0 (car (to-list (cos (arr <double> 3.141)))) 0.001)
+  (test-approximate "Cosinus of integer"
+    1.0 (car (to-list (cos (arr <int> 0)))) 0.001)
+  (test-approximate "Tangent of single-precision floating point number"
+    1.0 (car (to-list (tan (arr <float> 0.78525)))) 0.001)
+  (test-approximate "Tangent of double-precision floating point number"
+    1.0 (car (to-list (tan (arr <double> 0.78525)))) 0.001)
+  (test-approximate "Tangent of integer"
+    0.0 (car (to-list (tan (arr <int> 0)))) 0.001)
+  (test-approximate "Arc sinus of single-precision floating point number"
+    1.5705 (car (to-list (asin (arr <float> 1.0)))) 0.001)
+  (test-approximate "Arc sinus of double-precision floating point number"
+    1.5705 (car (to-list (asin (arr <double> 1.0)))) 0.001)
+  (test-approximate "Arc cosinus of single-precision floating point number"
+    3.141 (car (to-list (acos (arr <float> -1.0)))) 0.001)
+  (test-approximate "Arc cosinus of double-precision floating point number"
+    3.141 (car (to-list (acos (arr <double> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of single-precision floating point number"
+    0.78525 (car (to-list (atan (arr <float> 1.0)))) 0.001)
+  (test-approximate "Arc tangent of double-precision floating point number"
+    0.78525 (car (to-list (atan (arr <double> 1.0)))) 0.001)
+  (test-approximate "Arc tangent of two single-precision floating point numbers"
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <float> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of two double-precision floating point numbers"
+    2.356 (car (to-list (atan (arr <double> 1.0) (arr <double> -1.0)))) 0.001)
+  (test-approximate "Arc tangent of single- and double-precision floating point number"
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001) )
+
 (test-group "phi values"
   (test-eqv "Try phi function"
     42
@@ -1492,5 +1581,91 @@
             (jit-let [(phi (build-phi <int>))]
               (add-incoming phi start x)
               x)))))))))
+
+(test-group "objects"
+  (test-eqv "Size of object type"
+    8 (size-of <obj>))
+  (test-eq "Compile identity function for Scheme object"
+    'abc ((jit (list <obj>) identity) 'abc))
+  (test-equal "Array oF objects contains false by default"
+    '(#f #f #f) (to-list (make (multiarray <obj> 1) #:shape '(3))))
+  (test-equal "Type matching for Scheme objects"
+    '(a b c) (to-list (arr <obj> a b c)))
+  (test-equal "Unary plus for objects"
+    '(2 3 5) (to-list (+ (arr <obj> 2 3 5))))
+  (test-equal "Unary product for objects"
+    '(2 3 5) (to-list (* (arr <obj> 2 3 5))))
+  (test-equal "Unary minus for objects"
+    '(-2 3 -5) (to-list (- (arr <obj> 2 -3 5))))
+  (test-equal "Unary bitwise not for objects"
+    '(-3 -4 -6) (to-list (~ (arr <obj> 2 3 5))))
+  (test-equal "Add two object arrays"
+    '(5 8 12) (to-list (+ (arr <obj> 2 3 5) (arr <obj> 3 5 7))))
+  (test-equal "Add object array and integer"
+    '(3 4 6) (to-list (+ (arr <obj> 2 3 5) 1)))
+  (test-equal "Add integer and object array"
+    '(3 4 6) (to-list (+ 1 (arr <obj> 2 3 5))))
+  (test-equal "Subtract value from object array"
+    '(1 2 4) (to-list (- (arr <obj> 2 3 5) 1)))
+  (test-equal "Multiply object array with value"
+    '(4 6 10) (to-list (* (arr <obj> 2 3 5) 2)))
+  (test-equal "Divide object array by value"
+    '(2 3 5) (to-list (/ (arr <obj> 4 6 10) 2)))
+  (test-equal "Left-shift object array by value"
+    '(4) (to-list (<< (arr <obj> 2) 1)))
+  (test-equal "Right-shift object array by value"
+    '(2) (to-list (>> (arr <obj> 4) 1)))
+  (test-equal "Right-shift object array by different values"
+    '(8 4 2) (to-list (>> 16 (arr <obj> 1 2 3))))
+  (test-equal "Modulo object array by value"
+    '(2 3 1) (to-list (% (arr <obj> 2 3 5) 4)))
+  (test-equal "Bitwise and for objects"
+    '(0 2 2) (to-list (& (arr <obj> 1 2 3) 2)))
+  (test-equal "Bitwise or for objects"
+    '(3 2 3) (to-list (| (arr <obj> 1 2 3) 2)))
+  (test-equal "Minor value of objects"
+    '(2 3 4) (to-list (minor (arr <obj> 2 3 5) 4)))
+  (test-equal "Major value of objects"
+    '(4 4 5) (to-list (major (arr <obj> 2 3 5) 4)))
+  (for-each
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from ~a to object" value (class-name type))
+          value ((jit (list type) (cut to-type <obj> <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert double-precision float to object"
+    3.5 ((jit (list <double>) (cut to-type <obj> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <float>) (cut to-type <obj> <>)) 3.5))
+  (test-equal "Convert boolean to object"
+    '(#f #t) (map (jit (list <bool>) (cut to-type <obj> <>)) '(#f #t)))
+  (for-each
+    (lambda (type)
+      (let [(value (ash (if  (signed? type) -1 1) (1- (bits type))))]
+        (test-eqv (format #f "Convert ~a from object to ~a" value (class-name type))
+          value ((jit (list <obj>) (cut to-type type <>)) value))))
+    (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
+  (test-eqv "Convert object to double-precision float"
+    3.5 ((jit (list <obj>) (cut to-type <double> <>)) 3.5))
+  (test-eqv "Convert single-precision float to object"
+    3.5 ((jit (list <obj>) (cut to-type <float> <>)) 3.5))
+  (test-equal "Convert object to boolean"
+    '(#f #t) (map (jit (list <obj>) (cut to-type <bool> <>)) '(#f #t))))
+
+(test-group "index arrays"
+  (test-equal "shape of index array"
+    '(2 3 5) (shape (index 2 3 5)))
+  (test-equal "indices in 1D array"
+    '(0 1 2) (to-list (index 3)))
+  (test-equal "2D index array"
+    '((0 1 2) (3 4 5)) (to-list (index 3 2))))
+
+(test-group "Comparison"
+  (test-assert "equal arrays"
+    (equal? (arr 2 3 5) (arr 2 3 5)))
+  (test-assert "differing shape"
+    (not (equal? (arr 2 3) (arr 2 3 5))))
+  (test-assert "differemt elements"
+    (not (equal? (arr 2 3 5) (arr 2 4 5)))))
 
 (test-end "aiscm core")

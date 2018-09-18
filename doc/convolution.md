@@ -69,3 +69,25 @@ Finally here is an implementation of Conway's Game of Life.
 ```Scheme
 @../tests/integration/conway.scm@
 ```
+
+## Erosion/Dilation
+
+### Erosion
+
+Erosion is a local operator taking the local minimum of an image:
+
+```Scheme
+@../tests/integration/erode.scm@
+```
+
+![eroded.jpg](eroded.jpg)
+
+### Dilation
+
+In a similar fashion dilation is the local maximum of an image:
+
+```Scheme
+@../tests/integration/dilate.scm@
+```
+
+![dilated.jpg](dilated.jpg)

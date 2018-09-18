@@ -25,7 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (destroy read-image write-image read-audio write-audio rate channels
-            integer signed unsigned bits signed? coerce foreign-type
+            integer signed unsigned bits signed? coerce foreign-type pow
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod convolve fill
+            crop dump project element minor major sum prod fill index convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -63,6 +63,7 @@
             <complex<>>       <meta<complex<>>>
             <complex<float>>  <meta<complex<float>>>  <complex<float<single>>> <meta<complex<float<single>>>>
             <complex<double>> <meta<complex<double>>> <complex<float<double>>> <meta<complex<float<double>>>>
+            <obj> <meta<obj>>
             <pointer<>> <meta<pointer<>>>
             <multiarray<>> <meta<multiarray<>>> <llvmarray<>> <meta<llvmarray<>>>
             <llvm> <meta<llvm>>
@@ -72,8 +73,8 @@
             <rgb<float>> <meta<rgb<float>>> <rgb<float<single>>> <meta<rgb<float<single>>>>
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
-                   llvm-while jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs))
+                   jit-let arr define-array-op)
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal?))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -109,6 +110,8 @@
 (define-class* <int<>> <scalar> <meta<int<>>> <meta<scalar>>)
 
 (define-class* <float<>> <scalar> <meta<float<>>> <meta<scalar>>)
+
+(define-class* <obj> <scalar> <meta<obj>> <meta<scalar>>)
 
 (define-class* <pointer<>> <scalar> <meta<pointer<>>> <meta<scalar>>)
 
@@ -176,7 +179,7 @@
 
               (define-method (foreign-type (type #,(datum->syntax #'k metaclass)))
                 "Foreign type of template class is pointer"
-                int64)
+                uint64)
 
               (component-accessors #,(datum->syntax #'k class) #,(datum->syntax #'k metaclass) members ...)))))))
 
@@ -300,7 +303,7 @@
 
 (define-method (initialize (self <multiarray<>>) initargs)
   (let-keywords initargs #f (memory memory-base shape strides allocator)
-    (let* [(allocator   (or allocator gc-malloc-pointerless))
+    (let* [(allocator   (or allocator (if (eq? (typecode self) <obj>) gc-malloc gc-malloc-pointerless)))
            (memory      (or memory (allocator (apply * (size-of (typecode self)) shape))))
            (memory-base (or memory-base memory))
            (strides     (or strides (default-strides (typecode self) shape)))]
@@ -400,17 +403,21 @@
   "Get foreign type for floating-point type"
   (if (double-precision? type) double float))
 
+(define-method (foreign-type (type <meta<obj>>))
+  "Get foreign type of Scheme object"
+  uint64)
+
 (define-method (foreign-type (type <meta<pointer<>>>))
   "Get foreing type of pointer"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmlist<>>>))
   "Get foreign type of static size list"
-  int64)
+  uint64)
 
 (define-method (foreign-type (type <meta<llvmarray<>>>))
   "Get foreign type of multi-dimensional array"
-  int64)
+  uint64)
 
 (define-method (size-of (type <meta<bool>>))
   1)
@@ -426,6 +433,10 @@
 (define-method (size-of (type <meta<void>>))
   "Determine size of type"
   (apply + (map size-of (base type))))
+
+(define-method (size-of (type <meta<obj>>))
+  "Size of object"
+  8)
 
 (define-method (size-of (type <meta<pointer<>>>))
   "Size of pointer"
@@ -466,6 +477,9 @@
   (rgb (apply native-type
               (append-map (lambda (x) (if (is-a? x <rgb>) (list (red x) (green x) (blue x)) (list x)))
               (cons value args)))))
+
+(define-method (native-type value . args)
+  <obj>)
 
 (define-method (native-type (value <list>))
   (llvmlist (apply native-type value) (length value)))
@@ -541,6 +555,9 @@
 (define-method (coerce (a <meta<scalar>>) (b <meta<rgb<>>>))
   (rgb (reduce coerce #f (cons a (base b)))))
 
+(define-method (coerce (a <meta<void>>) (b <meta<void>>))
+  <obj>)
+
 (define-method (coerce (a <meta<pointer<>>>) (b <meta<int<>>>))
   "Coerce pointers and integers"
   a)
@@ -552,6 +569,9 @@
 (define (to-bool . args)
   "Coerce to boolean"
   <bool>)
+
+(define (to-float . args)
+  (if (every (cut eq? <> <float>) args) <float> <double>))
 
 (define (coerce-last-two a b c)
   "Coerce last two elements"
@@ -566,7 +586,10 @@
   (append-map decompose-type (base type)))
 
 (define-method (decompose-type (type <meta<pointer<>>>))
-  (list <long>))
+  (list <ulong>))
+
+(define-method (decompose-argument (type <meta<obj>>) value)
+  (list (pointer-address (scm->pointer value))))
 
 (define-method (decompose-argument (type <meta<scalar>>) value)
   "Decompose scalar value"
@@ -714,7 +737,7 @@
 
 (define (make-constant-pointer address)
   "Create pointer constant"
-  (make-constant llvm-int64 (pointer-address address)))
+  (make-constant llvm-uint64 (pointer-address address)))
 
 (define (get-type value)
   "Query type of LLVM value"
@@ -857,9 +880,43 @@
 (define-method (to-type (cls <meta<complex<>>>) (value <scalar>))
   (complex value (typed-constant (class-of value) 0)))
 
-(define-method (to-type (cls <meta<complex<>>>) (value <complex<>>))
-  (complex (to-type (car  (base cls)) (real-part value))
-           (to-type (cadr (base cls)) (imag-part value))))
+(define-method (to-type (cls <meta<structure>>) (value <structure>)); TODO: generalise this
+  (apply (build cls) (map (lambda (type component) (to-type type (component value))) (base cls) (components cls))))
+
+(define-method (to-type (cls <meta<obj>>) (value <obj>))
+  "Convert object to object"
+  value)
+
+(define-method (to-type (cls <meta<obj>>) (value <bool>))
+  (where value
+         (typed-constant <obj> (pointer-address (scm->pointer #t)))
+         (typed-constant <obj> (pointer-address (scm->pointer #f)))))
+
+(define-syntax-rule (define-object-conversion type metatype from-method to-method)
+  (begin
+    (define-method (to-type (cls <meta<obj>>) (value type))
+      (typed-call <obj> from-method (list type) (list value)))
+    (define-method (to-type (cls metatype) (value <obj>))
+      (typed-call type to-method (list <obj>) (list value)))))
+
+(define-object-conversion <ubyte>  <meta<ubyte>> "scm_from_uint8"  "scm_to_uint8" )
+(define-object-conversion <byte>   <meta<byte>>  "scm_from_int8"   "scm_to_int8"  )
+(define-object-conversion <usint>  <meta<usint>> "scm_from_uint16" "scm_to_uint16")
+(define-object-conversion <sint>   <meta<sint>>  "scm_from_int16"  "scm_to_int16" )
+(define-object-conversion <uint>   <meta<uint>>  "scm_from_uint32" "scm_to_uint32")
+(define-object-conversion <int>    <meta<int>>   "scm_from_int32"  "scm_to_int32" )
+(define-object-conversion <ulong>  <meta<ulong>> "scm_from_uint64" "scm_to_uint64")
+(define-object-conversion <long>   <meta<long>>  "scm_from_int64"  "scm_to_int64" )
+(define-object-conversion <double> <meta<double>>"scm_from_double" "scm_to_double")
+
+(define-method (to-type (cls <meta<bool>>) (value <obj>))
+  (typed-call <bool> "scm_to_bool" (list <obj>) (list value)))
+
+(define-method (to-type (cls <meta<obj>>) (value <float>))
+  (to-type <obj> (to-type <double> value)))
+
+(define-method (to-type (cls <meta<float>>) (value <obj>))
+  (to-type <float> (to-type <double> value)))
 
 (define-method (to-type (cls <meta<pointer<>>>) (value <pointer<>>))
   "Typecast pointer"
@@ -873,18 +930,24 @@
   "Convert pointer to integer"
   (make cls #:value (get value)))
 
-(define-syntax-rule (define-unary-operation type operation delegate)
+(define-syntax-rule (define-scalar-unary type operation delegate)
   (define-method (operation (value type))
     (make (class-of value) #:value (delegate (get value)))))
 
 (define-method (+ (self <scalar>)) self)
 (define-method (* (self <scalar>)) self)
-(define-unary-operation <int<>>   - llvm-neg )
-(define-unary-operation <float<>> - llvm-fneg)
-(define-unary-operation <int<>>   ~ llvm-not )
-(define-unary-operation <bool>    ! llvm-not )
+(define-scalar-unary <int<>>   - llvm-neg )
+(define-scalar-unary <float<>> - llvm-fneg)
+(define-scalar-unary <int<>>   ~ llvm-not )
+(define-scalar-unary <bool>    ! llvm-not )
 
-(define-syntax-rule (define-binary-operation type-a type-b type-map operation delegate)
+(define-method (- (self <obj>)) (- (typed-constant <int> 0) self))
+(define-method (~ (self <obj>)) (typed-call <obj> "scm_lognot" (list <obj>) (list self)))
+
+(define-method (+ (self <multiarray<>>)) self)
+(define-method (* (self <multiarray<>>)) self)
+
+(define-syntax-rule (define-scalar-binary type-a type-b type-map operation delegate)
   (define-method (operation (value-a type-a) (value-b type-b))
     (let* [(target  (coerce (class-of value-a) (class-of value-b)))
            (adapt-a (to-type target value-a ))
@@ -898,28 +961,52 @@
     (define-method (operation (value-a <complex>) (value-b type))
       (operation (typed-constant (native-type value-a) value-a) value-b))))
 
-(define-syntax-rule (define-binary-delegation type-map operation delegate float-delegate)
+(define (object-method delegate)
+  (lambda (value-a value-b) (typed-call <obj> delegate (list <obj> <obj>) (list value-a value-b))))
+
+(define-syntax-rule (define-object-binary operation method)
   (begin
-    (define-binary-operation <int<>>     <int<>>   type-map operation delegate )
-    (define-binary-operation <float<>>   <int<>>   type-map operation float-delegate)
-    (define-binary-operation <int<>>     <float<>> type-map operation float-delegate)
-    (define-binary-operation <float<>>   <float<>> type-map operation float-delegate)
-    (define-binary-operation <pointer<>> <int<>>   type-map operation delegate )
-    (define-binary-operation <pointer<>> <pointer<>>   type-map operation delegate )
+    (define-method (operation (value-a <obj> ) (value-b <void>)) (method (to-type <obj> value-a) (to-type <obj> value-b)))
+    (define-method (operation (value-a <void>) (value-b <obj> )) (method (to-type <obj> value-a) (to-type <obj> value-b)))
+    (define-method (operation (value-a <obj> ) (value-b <obj> )) (method (to-type <obj> value-a) (to-type <obj> value-b)))))
+
+(define-object-binary +     (object-method "scm_sum"       ))
+(define-object-binary -     (object-method "scm_difference"))
+(define-object-binary *     (object-method "scm_product"   ))
+(define-object-binary /     (object-method "scm_divide"    ))
+(define-object-binary <<    (object-method "scm_ash"       ))
+(define-object-binary >>    (lambda (value-a value-b) (<< value-a (- value-b))))
+(define-object-binary %     (object-method "scm_modulo"    ))
+(define-object-binary &     (object-method "scm_logand"    ))
+(define-object-binary |     (object-method "scm_logior"    ))
+(define-object-binary minor (object-method "scm_min"       ))
+(define-object-binary major (object-method "scm_max"       ))
+
+(define-syntax-rule (define-binary-delegation type-map operation int-delegate float-delegate)
+  (begin
+    (define-scalar-binary <int<>>     <int<>>     type-map operation int-delegate  )
+    (define-scalar-binary <float<>>   <int<>>     type-map operation float-delegate)
+    (define-scalar-binary <int<>>     <float<>>   type-map operation float-delegate)
+    (define-scalar-binary <float<>>   <float<>>   type-map operation float-delegate)
+    (define-scalar-binary <pointer<>> <int<>>     type-map operation int-delegate  )
+    (define-scalar-binary <pointer<>> <pointer<>> type-map operation int-delegate  )
     (define-op-with-constant <void> operation)))
 
-(define-binary-delegation identity +  (const llvm-add)                                            (const llvm-fadd))
-(define-binary-delegation identity -  (const llvm-sub)                                            (const llvm-fsub))
-(define-binary-delegation identity *  (const llvm-mul)                                            (const llvm-fmul))
-(define-binary-delegation identity /  (lambda (target) (if (signed? target) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
-(define-binary-delegation identity << (const llvm-shl)                                            (const llvm-shl ))
-(define-binary-delegation identity >> (lambda (target) (if (signed? target) llvm-ashr llvm-lshr)) (const llvm-ashr))
-(define-binary-delegation identity %  (lambda (target) (if (signed? target) llvm-srem llvm-urem)) (const llvm-frem))
-(define-binary-delegation identity &  (const llvm-and)                                            (const llvm-and ))
-(define-binary-delegation identity |  (const llvm-or )                                            (const llvm-or  ))
+(define-binary-delegation identity +  (const llvm-add)                                  (const llvm-fadd))
+(define-binary-delegation identity -  (const llvm-sub)                                  (const llvm-fsub))
+(define-binary-delegation identity *  (const llvm-mul)                                  (const llvm-fmul))
+(define-binary-delegation identity /  (lambda (t) (if (signed? t) llvm-sdiv llvm-udiv)) (const llvm-fdiv))
+(define-binary-delegation identity << (const llvm-shl)                                  (const llvm-shl ))
+(define-binary-delegation identity >> (lambda (t) (if (signed? t) llvm-ashr llvm-lshr)) (const llvm-ashr))
+(define-binary-delegation identity %  (lambda (t) (if (signed? t) llvm-srem llvm-urem)) (const llvm-frem))
+(define-binary-delegation identity &  (const llvm-and)                                  (const llvm-and ))
+(define-binary-delegation identity |  (const llvm-or )                                  (const llvm-or  ))
 
-(define-binary-operation <bool> <bool> identity && (const llvm-and))
-(define-binary-operation <bool> <bool> identity || (const llvm-or ))
+(define-scalar-binary <bool> <bool> identity && (const llvm-and))
+(define-scalar-binary <bool> <bool> identity || (const llvm-or ))
+
+(define-method (&& . args) (reduce && #f args))
+(define-method (|| . args) (reduce || #f args))
 
 (define-binary-delegation (const <bool>) lt (lambda (target) (if (signed? target) llvm-s-lt llvm-u-lt)) (const llvm-f-lt))
 (define-binary-delegation (const <bool>) le (lambda (target) (if (signed? target) llvm-s-le llvm-u-le)) (const llvm-f-le))
@@ -959,19 +1046,20 @@
 (define-method (- (value <complex<>>))
   (complex (- (real-part value)) (- (imag-part value))))
 
-(define-syntax-rule (define-complex-binary-op op)
+(define-syntax-rule (define-complex-binary-op mapping reduction)
   (begin
-    (define-method (op (value-a <complex<>>) (value-b <complex<>>))
-      (complex (op (real-part value-a) (real-part value-b)) (op (imag-part value-a) (imag-part value-b))))
+    (define-method (mapping (value-a <complex<>>) (value-b <complex<>>))
+      (reduction (mapping (real-part value-a) (real-part value-b)) (mapping (imag-part value-a) (imag-part value-b))))
 
-    (define-method (op (value-a <complex<>>) (value-b <scalar>))
-      (complex (op (real-part value-a) value-b) (imag-part value-a)))
+    (define-method (mapping (value-a <complex<>>) (value-b <scalar>))
+      (reduction (mapping (real-part value-a) value-b) (imag-part value-a)))
 
-    (define-method (op (value-a <scalar>) (value-b <complex<>>))
-      (complex (op value-a (real-part value-b)) (op (imag-part value-b))))))
+    (define-method (mapping (value-a <scalar>) (value-b <complex<>>))
+      (reduction (mapping value-a (real-part value-b)) (mapping (imag-part value-b))))))
 
-(define-complex-binary-op +)
-(define-complex-binary-op -)
+(define-complex-binary-op +  complex)
+(define-complex-binary-op -  complex)
+(define-complex-binary-op eq &&     )
 
 (define-method (* (value-a <complex<>>) (value-b <complex<>>))
   (complex (- (* (real-part value-a) (real-part value-b)) (* (imag-part value-a) (imag-part value-b)))
@@ -1020,6 +1108,33 @@
 (define-method (abs (value <double>))
   (typed-call <double> "fabs" (list <double>) (list value)))
 
+(define-syntax-rule (define-unary-libc name method methodf)
+  (begin
+    (define-method (name (value <float>))
+      (typed-call <float> methodf (list <float>) (list value)))
+    (define-method (name (value <double>))
+      (typed-call <double> method (list <double>) (list value)))
+    (define-method (name (value <int<>>))
+      (name (to-type <double> value)))))
+
+(define-unary-libc sqrt "sqrt" "sqrtf")
+(define-unary-libc sin  "sin"  "sinf" )
+(define-unary-libc cos  "cos"  "cosf" )
+(define-unary-libc tan  "tan"  "tanf" )
+(define-unary-libc asin "asin" "asinf")
+(define-unary-libc acos "acos" "acosf")
+(define-unary-libc atan "atan" "atanf")
+
+(define-syntax-rule (define-binary-libc name method methodf)
+  (begin
+    (define-method (name (value-a <float>) (value-b <float>))
+      (typed-call <float> methodf (list <float> <float>) (list value-a value-b)))
+    (define-method (name (value-a <scalar>) (value-b <scalar>))
+      (typed-call <double> method (list <double> <double>) (list (to-type <double> value-a) (to-type <double> value-b))))))
+
+(define-binary-libc pow  "pow"   "powf"  )
+(define-binary-libc atan "atan2" "atan2f")
+
 (define-syntax-rule (define-rgb-unary-op op)
   (define-method (op (value <rgb<>>))
     (rgb (op (red value)) (op (green value)) (op (blue value)))))
@@ -1027,26 +1142,29 @@
 (define-rgb-unary-op -)
 (define-rgb-unary-op ~)
 
-(define-method (red (self <scalar>)) self)
+(define-method (red   (self <scalar>)) self)
 (define-method (green (self <scalar>)) self)
-(define-method (blue (self <scalar>)) self)
+(define-method (blue  (self <scalar>)) self)
 
-(define-syntax-rule (define-rgb-binary-op op)
+(define-syntax-rule (define-rgb-binary-op mapping reduction)
   (begin
-    (define-method (op (value-a <rgb<>>) (value-b <rgb<>>))
-      (rgb (op (red value-a) (red value-b)) (op (green value-a) (green value-b)) (op (blue value-a) (blue value-b))))
-    (define-method (op (value-a <rgb<>>) (value-b <scalar>))
-      (rgb (op (red value-a) value-b) (op (green value-a) value-b) (op (blue value-a) value-b)))
-    (define-method (op (value-a <scalar>) (value-b <rgb<>>))
-      (rgb (op value-a (red value-b)) (op value-a (green value-b)) (op value-a (blue value-b))))))
+    (define-method (mapping (value-a <rgb<>>) (value-b <rgb<>>))
+      (reduction (mapping (red value-a) (red value-b))
+                 (mapping (green value-a) (green value-b))
+                 (mapping (blue value-a) (blue value-b))))
+    (define-method (mapping (value-a <rgb<>>) (value-b <scalar>))
+      (reduction (mapping (red value-a) value-b) (mapping (green value-a) value-b) (mapping (blue value-a) value-b)))
+    (define-method (mapping (value-a <scalar>) (value-b <rgb<>>))
+      (reduction (mapping value-a (red value-b)) (mapping value-a (green value-b)) (mapping value-a (blue value-b))))))
 
-(define-rgb-binary-op +)
-(define-rgb-binary-op -)
-(define-rgb-binary-op *)
-(define-rgb-binary-op /)
-(define-rgb-binary-op %)
-(define-rgb-binary-op minor)
-(define-rgb-binary-op major)
+(define-rgb-binary-op +     rgb)
+(define-rgb-binary-op -     rgb)
+(define-rgb-binary-op *     rgb)
+(define-rgb-binary-op /     rgb)
+(define-rgb-binary-op %     rgb)
+(define-rgb-binary-op minor rgb)
+(define-rgb-binary-op major rgb)
+(define-rgb-binary-op eq    && )
 
 (define-method (llvm-begin)
   (make <void> #:value (const #f)))
@@ -1122,6 +1240,10 @@
   "Provide boolean return value"
   (not (zero? result)))
 
+(define-method (finish-return (type <meta<obj>>) result)
+  "Provide Scheme object return value"
+  (pointer->scm (make-pointer result)))
+
 (define-method (finish-return (type <meta<pointer<>>>) result)
   "Provide pointer return value"
   (make-pointer result))
@@ -1129,7 +1251,7 @@
 (define (jit argument-types function)
   "Infer types and compile function"
   (let* [(result-type #f)
-         (fun (llvm-wrap (cons llvm-int64 (map foreign-type (append-map decompose-type argument-types)))
+         (fun (llvm-wrap (cons llvm-uint64 (map foreign-type (append-map decompose-type argument-types)))
                (lambda arguments
                  (let* [(arguments-typed (compose-values (cons <pointer<>> argument-types) arguments))
                         (expression      (apply function (cdr arguments-typed)))]
@@ -1200,19 +1322,6 @@
 
 (define-method (add-incoming (phi <structure>) block value)
   (apply llvm-begin (map (lambda (component) (add-incoming (component phi) block (component value))) (components (class-of phi)))))
-
-(define-syntax-rule (llvm-while condition body ...)
-  (let [(block-while (make-basic-block "while"))
-        (block-body  (make-basic-block "body"))
-        (block-end   (make-basic-block "endwhile"))]
-    (llvm-begin
-      (build-branch block-while)
-      (position-builder-at-end block-while)
-      (build-cond-branch condition block-body block-end)
-      (position-builder-at-end block-body)
-      body ...
-      (build-branch block-while)
-      (position-builder-at-end block-end))))
 
 (define-method (llvmlist)
   "Empty compiled list defaults to integer list"
@@ -1354,14 +1463,10 @@
     (fetch self)))
 
 (define-method (store (self <multiarray<>>) value)
-  (let [(fun (jit (list (native-type self) (typecode self)) (lambda (self value) (store (memory self) value))))]
-    (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
-    (store self value)))
-
-(define-method (store (self <multiarray<>>) (value <multiarray<>>))
-  (let [(fun (jit (list (native-type self) (native-type value)) (lambda (self value) (elementwise-loop identity self value))))]
-    (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
-    (store self value)))
+  (let [(source-type (if (is-a? value <multiarray<>>) (native-type value) (typecode self)))]
+    (let [(fun (jit (list (native-type self) source-type) (lambda (self value) (elementwise-loop identity self value))))]
+      (add-method! store (make <method> #:specializers (list (class-of self) (class-of value)) #:procedure fun))
+      (store self value))))
 
 (define (elementwise-loop delegate result . args)
   "Elementwise array operation with arbitrary arity"
@@ -1446,6 +1551,15 @@
 (define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
 (define-array-op abs       1 identity        abs     )
+(define-array-op sqrt      1 to-float        sqrt    )
+(define-array-op sin       1 to-float        sin     )
+(define-array-op cos       1 to-float        cos     )
+(define-array-op tan       1 to-float        tan     )
+(define-array-op asin      1 to-float        asin    )
+(define-array-op acos      1 to-float        acos    )
+(define-array-op atan      1 to-float        atan    )
+(define-array-op pow       2 to-float        pow     )
+(define-array-op atan      2 to-float        atan    )
 (define-array-op +         2 coerce          +       )
 (define-array-op -         2 coerce          -       )
 (define-array-op *         2 coerce          *       )
@@ -1485,7 +1599,15 @@
                                         #:procedure (lambda (type self) (fun self))))
     (to-type type self)))
 
-(define (reduction arg operation)
+(define-method (upcast-integer (type <meta<int<>>>))
+  (integer (if (< (bits type) 32) 32 64) (if (signed? type) signed unsigned)))
+
+(define-method (upcast-integer (type <meta<float<>>>)) type)
+
+(define-method (upcast-integer (type <meta<structure>>))
+  (apply (build type) (map upcast-integer (base type))))
+
+(define (reduction operation arg)
   (if (zero? (dimensions arg))
     (fetch (memory arg))
     (let [(start  (make-basic-block "start"))
@@ -1493,7 +1615,8 @@
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(result0 (reduction (project arg) operation))]
+      (jit-let [(element (reduction operation (project arg)))
+                (result0 (to-type (upcast-integer (class-of element)) element))]
         (build-branch start)
         (position-builder-at-end start)
         (jit-let [(stride  (llvm-last (strides arg)))
@@ -1507,7 +1630,8 @@
             (add-incoming p start p0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(result1 (reduction (project (rebase arg p)) operation))]
+            (jit-let [(element (reduction operation (project (rebase arg p))))
+                      (result1 (to-type (upcast-integer (class-of element)) element))]
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming result finish (operation result result1))
@@ -1518,7 +1642,7 @@
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (reduction arg operation)))]
+    (let [(fun (lambda (arg) (reduction operation arg)))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
@@ -1530,9 +1654,11 @@
 (define-reducing-op min  minor)
 (define-reducing-op max  major)
 
-(define (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets)
+(define (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))
-    (* (fetch (memory self)) (fetch (memory kernel)))
+    (jit-let [(a (fetch (memory self)))
+              (b (fetch (memory kernel)))]
+      (mapping a b))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1540,7 +1666,9 @@
           (end    (make-basic-block "end"))]
       (jit-let [(kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
                 (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))
-                (element0 (convolve-kernel result
+                (element0 (convolve-kernel reduction
+                                           mapping
+                                           result
                                            (rebase self qbegin)
                                            (project (rebase kernel kbegin))
                                            (llvm-all-but-last self-strides)
@@ -1564,7 +1692,9 @@
               (add-incoming q start qbegin2)
               (build-cond-branch (ne k kend) body end)
               (position-builder-at-end body)
-              (jit-let [(intermediate (convolve-kernel result
+              (jit-let [(intermediate (convolve-kernel reduction
+                                                       mapping
+                                                       result
                                                        (rebase self q)
                                                        (project (rebase kernel k))
                                                        (llvm-all-but-last self-strides)
@@ -1573,16 +1703,16 @@
                                                        (all-but-last offsets)))]
                 (build-branch finish)
                 (position-builder-at-end finish)
-                (add-incoming element finish (+ element intermediate))
+                (add-incoming element finish (reduction element intermediate))
                 (add-incoming k finish (+ k (llvm-last (strides kernel))))
                 (add-incoming q finish (- q (llvm-last self-strides)))
                 (build-branch for)
                 (position-builder-at-end end)
                 element))))))))
 
-(define (convolve-array result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
+(define (convolve-array reduction mapping result self kernel self-strides kernel-shape klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions result))
-    (store (memory result) (convolve-kernel result self kernel self-strides klower-bounds kupper-bounds offsets))
+    (store (memory result) (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets))
     (let [(start (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1607,7 +1737,9 @@
             (add-incoming kupper start kupper0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (convolve-array (project (rebase result p))
+            (convolve-array reduction
+                            mapping
+                            (project (rebase result p))
                             (project (rebase self q))
                             kernel
                             self-strides
@@ -1625,15 +1757,26 @@
             (position-builder-at-end end)
             result))))))
 
-(define-method (convolve self kernel)
-  (let [(fun (lambda (self kernel)
-               (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
-                 (convolve-array result self kernel (strides self) (shape kernel) '() '() '()))))]
-    (add-method! convolve
-                 (make <method>
-                       #:specializers (list (class-of self) (class-of kernel))
-                       #:procedure (jit (list (native-type self) (native-type kernel)) fun))))
-  (convolve self kernel))
+(define-syntax-rule (define-convolution name reduction mapping)
+  (define-method (name self kernel)
+    (let [(fun (lambda (self kernel)
+                 (jit-let [(result  (allocate-array (coerce (typecode self) (typecode kernel)) (shape self)))]
+                   (convolve-array reduction mapping result self kernel (strides self) (shape kernel) '() '() '()))))]
+      (add-method! name
+                   (make <method>
+                         #:specializers (list (class-of self) (class-of kernel))
+                         #:procedure (jit (list (native-type self) (native-type kernel)) fun)))
+      (name self kernel))))
+
+(define-convolution convolve +     *    )
+(define-convolution dilate   major minor)
+(define-convolution erode    minor major)
+
+(define-method (dilate self (size <integer>))
+  (dilate self (fill <ubyte> (make-list (dimensions self) size) 255)))
+
+(define-method (erode self (size <integer>))
+  (erode self (fill <ubyte> (make-list (dimensions self) size) 0)))
 
 (define-method (fill-dispatch (type <meta<multiarray<>>>) shp value)
   (let [(fun (jit (list (llvmlist <int> (length shp)) (typecode type))
@@ -1649,3 +1792,84 @@
 
 (define (fill type shape value)
   (fill-dispatch (multiarray type (length shape)) shape value))
+
+(define (do-index result)
+  (let [(start (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (jit-let [(size (apply * (map (cut get (shape result) <>) (iota (dimensions result)))))
+                (pend (+ (memory result) (* size (size-of <int>))))]
+        (build-branch for)
+        (position-builder-at-end for)
+        (jit-let [(p (build-phi (pointer <int>)))
+                  (i (build-phi <int>))]
+          (add-incoming p start (memory result))
+          (add-incoming i start (typed-constant <int> 0))
+          (build-cond-branch (ne p pend) body end)
+          (position-builder-at-end body)
+          (store p i)
+          (add-incoming p body (+ p (size-of <int>)))
+          (add-incoming i body (+ i 1))
+          (build-branch for)
+          (position-builder-at-end end)
+          result)))))
+
+(define-method (index . shp)
+  (let [(fun (jit (list (llvmlist <int> (length shp)))
+                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (do-index result)))))]
+    (add-method! index
+                 (make <method>
+                       #:specializers (make-list (length shp) <integer>)
+                       #:procedure (lambda shp (fun shp))))
+    (apply index shp)))
+
+(define-method (equal-arrays (a <llvmarray<>>) (b <llvmarray<>>))
+  (if  (zero? (dimensions a))
+    (eq (fetch a) (fetch b))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (jit-let [(result0 (equal-arrays (project a) (project b)))]
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pstride (llvm-last (strides a)))
+                  (qstride (llvm-last (strides b)))
+                  (p0      (+ (memory a) pstride))
+                  (q0      (+ (memory b) qstride))
+                  (pend    (+ (memory a) (* pstride (llvm-last (shape a)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(result (build-phi <bool>))
+                    (p      (build-phi (class-of p0)))
+                    (q      (build-phi (class-of q0)))]
+            (add-incoming result start result0)
+            (add-incoming p start p0)
+            (add-incoming q start q0)
+            (build-cond-branch (ne p pend) body end)
+            (position-builder-at-end body)
+            (jit-let [(result1 (equal-arrays (project (rebase a p)) (project (rebase b q))))]
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming result finish (&& result result1))
+              (add-incoming p finish (+ p pstride))
+              (add-incoming q finish (+ q qstride))
+              (build-branch for)
+              (position-builder-at-end end)
+              result)))))))
+
+(define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
+  (let [(fun (lambda (a b) (equal-arrays a b)))]
+    (add-method! equal-arrays
+                 (make <method>
+                       #:specializers (list (class-of a) (class-of b))
+                       #:procedure (jit (list (native-type a) (native-type b)) fun)))
+    (equal-arrays a b)))
+
+(define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
+  (and (equal? (shape a) (shape b)) (equal-arrays a b)))

@@ -9,12 +9,12 @@ ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUI
 RUN = $(GUILE) -L $(top_builddir)
 
 doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
-					 fubk.png scaled-pattern.png pavillion.jpg swap-channels.jpg rolled.jpg \
+					 fubk.png scaled-pattern.png pavillion.jpg shuttle.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png \
-					 buttondown.css
+					 eroded.jpg dilated.jpg buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
 						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md \
@@ -36,6 +36,9 @@ pavillion.jpg: ../tests/integration/pavillion.jpg
 	cp $< $@
 
 star-ferry.jpg: ../tests/integration/star-ferry.jpg
+	cp $< $@
+
+shuttle.jpg: ../tests/integration/shuttle.jpg
 	cp $< $@
 
 pattern.png: ../tests/integration/write_image.scm
@@ -75,6 +78,12 @@ box-filter.jpg: ../tests/integration/box_filter.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 sharpen.jpg: ../tests/integration/sharpen.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+eroded.jpg: ../tests/integration/erode.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+dilated.jpg: ../tests/integration/dilate.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:

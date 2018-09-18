@@ -13,6 +13,18 @@ Uniform arrays can also be created from values using type matching:
 @../tests/integration/type_matching.scm@
 ```
 
+The *fill* method can be used to create an array where the elements are initialised:
+
+```Scheme
+@../tests/integration/fill.scm@
+```
+
+Index arrays can be used to generate x- and y-ramp arrays:
+
+```Scheme
+@../tests/integration/index.scm@
+```
+
 ## Multi-dimensional arrays
 
 It is also possible to instantiate multi-dimensional arrays. Again elements are not guaranteed to be initialised:
@@ -119,9 +131,17 @@ The *rgb* method can be used to combine colour values and images. The following 
 @../tests/integration/swap_channels.scm@
 ```
 
+One can convert a stereoscopic image into a red-cyan anaglyph image for 3D viewing as shown below.
+
+![shuttle.jpg](shuttle.jpg "Space shuttle stereoscopic image")
+
+```Scheme
+@../tests/integration/anaglyph.scm@
+```
+
 ## Complex values
 
-At the moment only integer complex values are supported. Here is a small example using complex arrays:
+Here is a small example using complex arrays:
 
 ```Scheme
 @../tests/integration/complex_array.scm@

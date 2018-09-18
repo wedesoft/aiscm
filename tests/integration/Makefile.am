@@ -12,13 +12,14 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										crop_dump.scm crop_2d.scm to_list.scm complex_array.scm unary_ops.scm \
 										boolean_array.scm invert.scm division.scm modulo.scm binary.scm \
 										ffvideo.scm ffaudio.scm ffplay.scm pts.scm ffstream.scm ffwritevideo.scm \
-										ffwriteaudio.scm ffwrite.scm \
+										ffwriteaudio.scm ffwrite.scm callback.scm object_array.scm \
 										convolution_1d.scm convolution_2d.scm roberts_cross.scm sobel.scm box_filter.scm \
 										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
-										xorg_fullscreen_test.scm
+										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
+										erode.scm dilate.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg
 
 noinst_DATA = fubk.png av-sync.mp4 test.mp3
 

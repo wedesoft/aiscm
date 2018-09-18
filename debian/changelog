@@ -7,8 +7,8 @@ aiscm (0.16.1-1+bionic1) UNRELEASED; urgency=low
 aiscm (0.16.1-1) unstable; urgency=low
 
   - New upstream release.
-  - Added LLVM to dependencies.
-  - Package now multi-arch
+  - Added LLVM to build dependencies.
+  - Package now arch:any instead of amd64 only
 
  -- Jan Wedekind <jan@wedesoft.de>  Mon, 10 Sep 2018 21:24:52 +0100
 
