@@ -1607,7 +1607,7 @@
 (define-method (upcast-integer (type <meta<structure>>))
   (apply (build type) (map upcast-integer (base type))))
 
-(define (reduction arg operation)
+(define (reduction operation arg)
   (if (zero? (dimensions arg))
     (fetch (memory arg))
     (let [(start  (make-basic-block "start"))
@@ -1615,7 +1615,7 @@
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(element (reduction (project arg) operation))
+      (jit-let [(element (reduction operation (project arg)))
                 (result0 (to-type (upcast-integer (class-of element)) element))]
         (build-branch start)
         (position-builder-at-end start)
@@ -1630,7 +1630,7 @@
             (add-incoming p start p0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(element (reduction (project (rebase arg p)) operation))
+            (jit-let [(element (reduction operation (project (rebase arg p))))
                       (result1 (to-type (upcast-integer (class-of element)) element))]
               (build-branch finish)
               (position-builder-at-end finish)
@@ -1642,7 +1642,7 @@
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (reduction arg operation)))]
+    (let [(fun (lambda (arg) (reduction operation arg)))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
