@@ -1609,15 +1609,15 @@
 
 (define (map-reduce upcast reduction mapping . args)
   (if (every (lambda (arg) (zero? (dimensions arg))) args)
-    (apply mapping args)
+    (jit-let [(element (apply mapping args))]
+      (to-type (upcast (class-of element)) element))
     (let [(start  (make-basic-block "start" ))
           (for    (make-basic-block "for"   ))
           (body   (make-basic-block "body"  ))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"   ))]
       (let [(sub-args (map (lambda (arg) (fetch (project arg))) args))]
-        (jit-let [(element (apply map-reduce upcast reduction mapping sub-args))
-                  (result0 (to-type (upcast (class-of element)) element))]
+        (jit-let [(result0 (apply map-reduce upcast reduction mapping sub-args))]
           (build-branch start)
           (position-builder-at-end start)
           (let* [(stride (map (lambda (arg) (llvm-last (strides arg))) args))
@@ -1633,9 +1633,8 @@
                   (apply llvm-begin (map (lambda (ptr ptr0) (add-incoming ptr start ptr0)) p p0))
                   (build-cond-branch (ne (car p) pend) body end)
                   (position-builder-at-end body)
-                  (jit-let [(element (apply map-reduce upcast reduction mapping
-                                       (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))
-                            (result1 (to-type (upcast (class-of element)) element))]
+                  (jit-let [(result1 (apply map-reduce upcast reduction mapping
+                                       (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))]
                     (build-branch finish)
                     (position-builder-at-end finish)
                     (add-incoming result finish (reduction result result1))
