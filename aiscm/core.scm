@@ -1609,13 +1609,13 @@
 
 (define (reduction operation arg)
   (if (zero? (dimensions arg))
-    (fetch (memory arg))
+    arg
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(element (reduction operation (project arg)))
+      (jit-let [(element (reduction operation (fetch (project arg))))
                 (result0 (to-type (upcast-integer (class-of element)) element))]
         (build-branch start)
         (position-builder-at-end start)
@@ -1630,7 +1630,7 @@
             (add-incoming p start p0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(element (reduction operation (project (rebase arg p))))
+            (jit-let [(element (reduction operation (fetch (project (rebase arg p)))))
                       (result1 (to-type (upcast-integer (class-of element)) element))]
               (build-branch finish)
               (position-builder-at-end finish)
@@ -1827,15 +1827,15 @@
                        #:procedure (lambda shp (fun shp))))
     (apply index shp)))
 
-(define-method (equal-arrays (a <llvmarray<>>) (b <llvmarray<>>))
+(define-method (equal-arrays (a <void>) (b <void>))
   (if  (zero? (dimensions a))
-    (eq (fetch a) (fetch b))
+    (eq a b)
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(result0 (equal-arrays (project a) (project b)))]
+      (jit-let [(result0 (equal-arrays (fetch (project a)) (fetch (project b))))]
         (build-branch start)
         (position-builder-at-end start)
         (jit-let [(pstride (llvm-last (strides a)))
@@ -1853,7 +1853,7 @@
             (add-incoming q start q0)
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(result1 (equal-arrays (project (rebase a p)) (project (rebase b q))))]
+            (jit-let [(result1 (equal-arrays (fetch (project (rebase a p))) (fetch (project (rebase b q)))))]
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming result finish (&& result result1))

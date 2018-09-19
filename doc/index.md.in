@@ -27,6 +27,7 @@ Performance is achieved by using the LLVM JIT compiler.
 * [Bitbucket page](https://bitbucket.org/wedesoft/aiscm)
 * [Initial package review email thread](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=837167)
 * [Debian package tracker](https://tracker.debian.org/pkg/aiscm)
+* [Debian build logs](https://buildd.debian.org/status/package.php?p=aiscm&suite=sid)
 * [Ubuntu Launchpad entry](https://launchpad.net/ubuntu/+source/aiscm/)
 
 ## Credits

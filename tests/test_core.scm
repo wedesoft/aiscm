@@ -1665,7 +1665,7 @@
     (equal? (arr 2 3 5) (arr 2 3 5)))
   (test-assert "differing shape"
     (not (equal? (arr 2 3) (arr 2 3 5))))
-  (test-assert "differemt elements"
+  (test-assert "different elements"
     (not (equal? (arr 2 3 5) (arr 2 4 5)))))
 
 (test-end "aiscm core")
