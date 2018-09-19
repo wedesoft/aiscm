@@ -1607,6 +1607,40 @@
 (define-method (upcast-integer (type <meta<structure>>))
   (apply (build type) (map upcast-integer (base type))))
 
+(define (map-reduce reduction mapping . args)
+  (if (every (lambda (arg) (zero? (dimensions arg))) args)
+    (apply mapping args)
+    (let [(start  (make-basic-block "start" ))
+          (for    (make-basic-block "for"   ))
+          (body   (make-basic-block "body"  ))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"   ))]
+      (let [(sub-args (map (lambda (arg) (fetch (project arg))) args))]
+        (jit-let [(result0 (apply map-reduce reduction mapping sub-args))]
+          (build-branch start)
+          (position-builder-at-end start)
+          (let* [(stride (map (lambda (arg) (llvm-last (strides arg))) args))
+                 (p0     (map (lambda (arg stride) (+ (memory arg) stride)) args stride))
+                 (pend   (+ (memory (car args)) (* (car stride) (llvm-last (shape (car args))))))]
+            (llvm-begin
+              (apply llvm-begin p0)
+              (build-branch for)
+              (position-builder-at-end for)
+              (let [(p (map (lambda (ptr) (build-phi (class-of ptr))) p0))]
+                (jit-let [(result (build-phi (class-of result0)))]
+                  (add-incoming result start result0)
+                  (apply llvm-begin (map (lambda (ptr ptr0) (add-incoming ptr start ptr0)) p p0))
+                  (build-cond-branch (ne (car p) pend) body end)
+                  (position-builder-at-end body)
+                  (jit-let [(result1 (apply map-reduce reduction mapping (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))]
+                    (build-branch finish)
+                    (position-builder-at-end finish)
+                    (add-incoming result finish (reduction result result1))
+                    (apply llvm-begin (map (lambda (ptr str) (add-incoming ptr finish (+ ptr str))) p stride))
+                    (build-branch for)
+                    (position-builder-at-end end)
+                    result))))))))))
+
 (define (reduction operation arg)
   (if (zero? (dimensions arg))
     arg
@@ -1827,44 +1861,8 @@
                        #:procedure (lambda shp (fun shp))))
     (apply index shp)))
 
-(define-method (equal-arrays (a <void>) (b <void>))
-  (if  (zero? (dimensions a))
-    (eq a b)
-    (let [(start  (make-basic-block "start"))
-          (for    (make-basic-block "for"))
-          (body   (make-basic-block "body"))
-          (finish (make-basic-block "finish"))
-          (end    (make-basic-block "end"))]
-      (jit-let [(result0 (equal-arrays (fetch (project a)) (fetch (project b))))]
-        (build-branch start)
-        (position-builder-at-end start)
-        (jit-let [(pstride (llvm-last (strides a)))
-                  (qstride (llvm-last (strides b)))
-                  (p0      (+ (memory a) pstride))
-                  (q0      (+ (memory b) qstride))
-                  (pend    (+ (memory a) (* pstride (llvm-last (shape a)))))]
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(result (build-phi <bool>))
-                    (p      (build-phi (class-of p0)))
-                    (q      (build-phi (class-of q0)))]
-            (add-incoming result start result0)
-            (add-incoming p start p0)
-            (add-incoming q start q0)
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (jit-let [(result1 (equal-arrays (fetch (project (rebase a p))) (fetch (project (rebase b q)))))]
-              (build-branch finish)
-              (position-builder-at-end finish)
-              (add-incoming result finish (&& result result1))
-              (add-incoming p finish (+ p pstride))
-              (add-incoming q finish (+ q qstride))
-              (build-branch for)
-              (position-builder-at-end end)
-              result)))))))
-
 (define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
-  (let [(fun (lambda (a b) (equal-arrays a b)))]
+  (let [(fun (lambda (a b) (map-reduce && eq a b)))]
     (add-method! equal-arrays
                  (make <method>
                        #:specializers (list (class-of a) (class-of b))
