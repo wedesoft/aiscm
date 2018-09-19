@@ -7,7 +7,7 @@ Standards-Version: 4.2.1
 Build-Depends: guile-2.2-dev, llvm-6.0-dev, llvm-6.0, linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswresample-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper (>= 11)
 
 Package: aiscm
-Architecture: any
+Architecture: amd64
 Depends: guile-2.2, ${shlibs:Depends}, ${misc:Depends}
 Pre-Depends: ${misc:Pre-Depends}
 Description: Guile numerical arrays and tensor extension
