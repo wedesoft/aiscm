@@ -1607,7 +1607,7 @@
 (define-method (upcast-integer (type <meta<structure>>))
   (apply (build type) (map upcast-integer (base type))))
 
-(define (map-reduce reduction mapping . args)
+(define (map-reduce upcast reduction mapping . args)
   (if (every (lambda (arg) (zero? (dimensions arg))) args)
     (apply mapping args)
     (let [(start  (make-basic-block "start" ))
@@ -1616,7 +1616,8 @@
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"   ))]
       (let [(sub-args (map (lambda (arg) (fetch (project arg))) args))]
-        (jit-let [(result0 (apply map-reduce reduction mapping sub-args))]
+        (jit-let [(element (apply map-reduce upcast reduction mapping sub-args))
+                  (result0 (to-type (upcast (class-of element)) element))]
           (build-branch start)
           (position-builder-at-end start)
           (let* [(stride (map (lambda (arg) (llvm-last (strides arg))) args))
@@ -1632,7 +1633,9 @@
                   (apply llvm-begin (map (lambda (ptr ptr0) (add-incoming ptr start ptr0)) p p0))
                   (build-cond-branch (ne (car p) pend) body end)
                   (position-builder-at-end body)
-                  (jit-let [(result1 (apply map-reduce reduction mapping (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))]
+                  (jit-let [(element (apply map-reduce upcast reduction mapping
+                                       (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))
+                            (result1 (to-type (upcast (class-of element)) element))]
                     (build-branch finish)
                     (position-builder-at-end finish)
                     (add-incoming result finish (reduction result result1))
@@ -1641,42 +1644,9 @@
                     (position-builder-at-end end)
                     result))))))))))
 
-(define (reduction operation arg)
-  (if (zero? (dimensions arg))
-    arg
-    (let [(start  (make-basic-block "start"))
-          (for    (make-basic-block "for"))
-          (body   (make-basic-block "body"))
-          (finish (make-basic-block "finish"))
-          (end    (make-basic-block "end"))]
-      (jit-let [(element (reduction operation (fetch (project arg))))
-                (result0 (to-type (upcast-integer (class-of element)) element))]
-        (build-branch start)
-        (position-builder-at-end start)
-        (jit-let [(stride  (llvm-last (strides arg)))
-                  (p0      (+ (memory arg) stride))
-                  (pend    (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(result (build-phi (class-of result0)))
-                    (p      (build-phi (class-of p0)))]
-            (add-incoming result start result0)
-            (add-incoming p start p0)
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (jit-let [(element (reduction operation (fetch (project (rebase arg p)))))
-                      (result1 (to-type (upcast-integer (class-of element)) element))]
-              (build-branch finish)
-              (position-builder-at-end finish)
-              (add-incoming result finish (operation result result1))
-              (add-incoming p finish (+ p stride))
-              (build-branch for)
-              (position-builder-at-end end)
-              result)))))))
-
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (reduction operation arg)))]
+    (let [(fun (lambda (arg) (map-reduce upcast-integer operation identity arg)))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
@@ -1862,7 +1832,7 @@
     (apply index shp)))
 
 (define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
-  (let [(fun (lambda (a b) (map-reduce && eq a b)))]
+  (let [(fun (lambda (a b) (map-reduce identity && eq a b)))]
     (add-method! equal-arrays
                  (make <method>
                        #:specializers (list (class-of a) (class-of b))
