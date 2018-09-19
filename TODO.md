@@ -1,9 +1,9 @@
 ## Ready
 
 * refactor equal-arrays and reduction
+* tensors (tensors.scm)
 * lookup, pseudo colour, warp
 * mask
-* tensors (tensors.scm)
 * binary and rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
