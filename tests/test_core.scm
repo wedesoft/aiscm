@@ -788,10 +788,10 @@
   (for-each (lambda (op a b result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((jit (list <int> <int>) op) a b)))
-    (list +  - * <<  % & |)
-    '(    2  2 2  2 13 3 3)
-    '(    3  3 3  3  5 5 5)
-    '(    5 -1 6 16  3 1 7))
+    (list +  - * <<  % & | ^)
+    '(    2  2 2  2 13 3 3 5)
+    '(    3  3 3  3  5 5 5 4)
+    '(    5 -1 6 16  3 1 7 1))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"

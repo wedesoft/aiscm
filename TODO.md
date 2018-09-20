@@ -3,7 +3,7 @@
 * tensors (tensors.scm)
 * lookup, pseudo colour, warp
 * mask
-* binary and rgb &, |, ^, <<, >>
+* rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
