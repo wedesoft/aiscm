@@ -1798,7 +1798,7 @@
 (define (fill type shape value)
   (fill-dispatch (multiarray type (length shape)) shape value))
 
-(define (do-index result)
+(define (index-array result)
   (let [(start (make-basic-block "start"))
         (for    (make-basic-block "for"))
         (body   (make-basic-block "body"))
@@ -1825,7 +1825,7 @@
 
 (define-method (index . shp)
   (let [(fun (jit (list (llvmlist <int> (length shp)))
-                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (do-index result)))))]
+                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (index-array result)))))]
     (add-method! index
                  (make <method>
                        #:specializers (make-list (length shp) <integer>)

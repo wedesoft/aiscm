@@ -1,6 +1,7 @@
 ## Ready
 
 * tensors (tensors.scm)
+* port using qemu
 * lookup, pseudo colour, warp
 * mask
 * rgb &, |, ^, <<, >>
