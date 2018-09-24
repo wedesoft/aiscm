@@ -16,24 +16,24 @@
 ;(define-tensor (test x) (+ x x))
 
 (define-class <index> ()
-  (sym #:init-keyword #:sym #:getter sym))
+  (sym #:init-keyword #:sym #:getter sym)
+  (size #:init-keyword #:size #:getter size))
 
 (define-method (write (self <index>) port)
-  (format port "(index ~a)" (sym self)))
+  (format port "(index ~a ~a)" (size self) (sym self)))
 
-(define (index)
-  (make <index> #:sym (gensym))); TODO: size?
+(define (index size)
+  (make <index> #:sym (gensym) #:size size))
 
 (define-class <lambda> ()
   (index #:init-keyword #:index #:getter index)
-  (term #:init-keyword #:term #:getter term)
-  (size #:init-keyword #:size #:getter size))
+  (term #:init-keyword #:term #:getter term))
 
 (define-method (write (self <lambda>) port)
-  (format port "(lamb ~a ~a ~a)" (index self) (term self) (size self)))
+  (format port "(lamb ~a ~a)" (index self) (term self)))
 
-(define-method (lamb index term size)
-  (make <lambda> #:index index #:size size #:term term))
+(define-method (lamb index term)
+  (make <lambda> #:index index #:term term))
 
 (define-class <lookup> ()
   (index #:init-keyword #:index #:getter index)
@@ -47,7 +47,7 @@
   (make <lookup> #:index index #:term term #:stride stride))
 
 (define-method (lookup idx (t <lambda>) stride)
-  (lamb (index t) (lookup idx (term t) stride) (size t)))
+  (lamb (index t) (lookup idx (term t) stride)))
 
 (define-method (fetch (p <foreign>))
   (bytevector-u8-ref (pointer->bytevector p 1) 0))
@@ -65,19 +65,12 @@
   (let [(args (cons i args))]
     (apply get (subst (term x) (index x) (last args)) (all-but-last args))))
 
-(define-syntax-rule (tensor i s expression)
-  (let* [(i (index))
-         (e expression)]
-    (lamb i e s)))
-
-(define-method (size-of (e <lambda>) (i <index>))
-  (size-of (term e) i))
-
-(define-method (size-of (e <lambda>) (i <index>))
-  (size-of (term e) i))
+(define-syntax-rule (tensor i expression)
+  (let [(i (index 0)) ]
+    (lamb i expression)))
 
 (define-method (subst (x <lambda>) (idx <index>) i)
-  (lamb (index x) (subst (term x) idx i) (size x)))
+  (lamb (index x) (subst (term x) idx i)))
 
 (define-method (subst (x <lookup>) (idx <index>) (i <integer>))
   (if (eq? idx (index x))
@@ -86,7 +79,9 @@
 
 (define-method (subst (x <lookup>) (idx <index>) (i <index>))
   (if (eq? idx (index x))
-    (lookup i (term x) (stride x))
+    (begin
+      (slot-set! i 'size (size idx))
+      (lookup i (term x) (stride x)))
     (lookup (index x) (subst (term x) idx i) (stride x))))
 
 (define-method (rebase (x <lookup>) offset)
@@ -98,13 +93,13 @@
 (define (arr->tensor a)
   (if (zero? (dimensions a))
     (memory a)
-    (let [(i (index))]
-      (lamb i (lookup i (arr->tensor (project a)) (last (strides a))) (last (shape a))))))
+    (let [(i (index (last (shape a))))]
+      (lamb i (lookup i (arr->tensor (project a)) (last (strides a)))))))
 
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
-(tensor i 3 (get t i))
+(define v (tensor i (get t i)))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
-(tensor i 3 (tensor j 2 (get u i j)))
+(define w (tensor i (tensor j (get u i j))))
