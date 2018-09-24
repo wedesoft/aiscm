@@ -57,6 +57,26 @@
 
 (define-method (get (x <foreign>)) (fetch x))
 
+(define-method (get (x <lambda>)) x)
+
+(define-method (get (x <lambda>) (i <integer>) . args)
+  (let [(args (cons i args))]
+    (apply get (subst (term x) (index x) (last args)) (all-but-last args))))
+
+(define-method (subst (x <lambda>) (idx <index>) (i <integer>))
+  (lamb (index x) (subst (term x) idx i) (size x)))
+
+(define-method (subst (x <lookup>) (idx <index>) (i <integer>))
+  (if (eq? idx (index x))
+    (rebase (term x) (* i (stride x)))
+    (lookup (index x) (subst (term x) idx i) (stride x))))
+
+(define-method (rebase (x <lookup>) offset)
+  (lookup (index x) (rebase (term x) offset) (stride x)))
+
+(define-method (rebase (x <foreign>) offset)
+  (+ x offset))
+
 (define (arr->tensor a)
   (if (zero? (dimensions a))
     (memory a)
