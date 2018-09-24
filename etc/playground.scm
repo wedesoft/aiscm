@@ -30,7 +30,7 @@
   (term #:init-keyword #:term #:getter term))
 
 (define-method (write (self <lambda>) port)
-  (format port "(lamb ~a ~a)" (index self) (term self)))
+  (format port "~a" (tensor->list self)))
 
 (define-method (lamb index term)
   (make <lambda> #:index index #:term term))
@@ -96,14 +96,12 @@
     (let [(i (index (last (shape a))))]
       (lamb i (lookup i (arr->tensor (project a)) (last (strides a)))))))
 
-(define-method (shape (x <lambda>))
-  (attach (shape (term x)) (size (index x))))
+(define-method (size (x <lambda>)) (size (index x)))
 
-(define-method (shape (x <lookup>))
-  (shape (term x)))
+(define-method (tensor->list t) t)
 
-(define-method (shape (x <foreign>))
-  '())
+(define-method (tensor->list (t <lambda>))
+  (map (lambda (i) (tensor->list (get t i))) (iota (size t))))
 
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
