@@ -96,6 +96,15 @@
     (let [(i (index (last (shape a))))]
       (lamb i (lookup i (arr->tensor (project a)) (last (strides a)))))))
 
+(define-method (shape (x <lambda>))
+  (attach (shape (term x)) (size (index x))))
+
+(define-method (shape (x <lookup>))
+  (shape (term x)))
+
+(define-method (shape (x <foreign>))
+  '())
+
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
 (define v (tensor i (get t i)))
