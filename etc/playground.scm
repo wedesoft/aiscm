@@ -43,6 +43,12 @@
 (define-method (write (self <lookup>) port)
   (format port "(lookup ~a ~a ~a)" (index self) (term self) (stride self)))
 
+(define-class <func> ()
+  (args #:init-keyword #:args #:getter args))
+
+(define-method (write (self <func>) port)
+  (format port "(func ~a)" (args self)))
+
 (define-method (lookup index term stride)
   (make <lookup> #:index index #:term term #:stride stride))
 
@@ -65,6 +71,9 @@
   (let [(args (cons i args))]
     (apply get (subst (term x) (index x) (last args)) (all-but-last args))))
 
+(define-method (get (x <func>) i . a)
+  (apply + (map (lambda (arg) (apply get arg i a)) (args x))))
+
 (define-syntax-rule (tensor i expression)
   (let [(i (index 0)) ]
     (lamb i expression)))
@@ -84,11 +93,17 @@
       (lookup i (term x) (stride x)))
     (lookup (index x) (subst (term x) idx i) (stride x))))
 
+(define-method (subst (x <func>) (idx <index>) i)
+  (make <func> #:args (map (lambda (arg) (subst arg idx i)) (args x))))
+
 (define-method (rebase (x <lookup>) offset)
   (lookup (index x) (rebase (term x) offset) (stride x)))
 
 (define-method (rebase (x <foreign>) offset)
   (+ x offset))
+
+(define-method (+ (a <lookup>) (b <lookup>))
+  (make <func> #:args (list a b)))
 
 (define (arr->tensor a)
   (if (zero? (dimensions a))
@@ -105,8 +120,9 @@
 
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
-(define v (tensor i (get t i)))
+(tensor i (get t i))
+(tensor i (+ (get t i) (get t i)))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
-(define w (tensor i (tensor j (get u i j))))
+(tensor i (tensor j (get u i j)))
