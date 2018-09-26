@@ -76,13 +76,11 @@
 (define-method (get (x <func>) . a)
   (apply + (map (lambda (arg) (apply get arg a)) (args x))))
 
-(define-syntax-rule (tensor i expression)
-  (let [(i (index 0))]
-    (lamb i expression)))
-
-(define-syntax-rule (tensorx (i s) expression)
-  (let [(i (index s))]
-    (lamb i expression)))
+(define-syntax tensor
+  (lambda (x)
+    (syntax-case x ()
+      ((k (i s) expression) #'(let [(i (index s))] (lamb i expression)))
+      ((k i expression) #'(let [(i (index 0))] (lamb i expression))))))
 
 (define-method (subst (x <lambda>) (idx <index>) i)
   (lamb (index x) (subst (term x) idx i)))
@@ -150,10 +148,10 @@
 (tensor i (+ (get t i) i))
 (tensor i (+ i (get t i)))
 
-(tensorx (i 5) i)
-(tensorx (j 3) (tensorx (i 5) i))
-(tensorx (j 3) (tensorx (i 5) j))
-(tensorx (j 3) (tensorx (i 5) (+ i j)))
+(tensor (i 5) i)
+(tensor (j 3) (tensor (i 5) i))
+(tensor (j 3) (tensor (i 5) j))
+(tensor (j 3) (tensor (i 5) (+ i j)))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
