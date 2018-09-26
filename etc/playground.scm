@@ -71,8 +71,8 @@
   (let [(args (cons i args))]
     (apply get (subst (term x) (index x) (last args)) (all-but-last args))))
 
-(define-method (get (x <func>) i . a)
-  (apply + (map (lambda (arg) (apply get arg i a)) (args x))))
+(define-method (get (x <func>) . a)
+  (apply + (map (lambda (arg) (apply get arg a)) (args x))))
 
 (define-syntax-rule (tensor i expression)
   (let [(i (index 0)) ]
@@ -80,6 +80,9 @@
 
 (define-method (subst (x <lambda>) (idx <index>) i)
   (lamb (index x) (subst (term x) idx i)))
+
+(define-method (subst (x <foreign>) (idx <index>) i)
+  x)
 
 (define-method (subst (x <lookup>) (idx <index>) (i <integer>))
   (if (eq? idx (index x))
@@ -122,6 +125,7 @@
 (define t (arr->tensor m))
 (tensor i (get t i))
 (tensor i (+ (get t i) (get t i)))
+(tensor i (tensor j (+ (get t i) (get t j))))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
