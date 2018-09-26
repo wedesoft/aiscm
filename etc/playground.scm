@@ -67,6 +67,8 @@
 
 (define-method (get (x <lookup>)) x)
 
+(define-method (get (x <integer>)) x)
+
 (define-method (get (x <lambda>) i . args)
   (let [(args (cons i args))]
     (apply get (subst (term x) (index x) (last args)) (all-but-last args))))
@@ -83,6 +85,9 @@
 
 (define-method (subst (x <foreign>) (idx <index>) i)
   x)
+
+(define-method (subst (x <index>) (idx <index>) i)
+  (if (eq? x idx) i x))
 
 (define-method (subst (x <lookup>) (idx <index>) (i <integer>))
   (if (eq? idx (index x))
@@ -108,6 +113,12 @@
 (define-method (+ (a <lookup>) (b <lookup>))
   (make <func> #:args (list a b)))
 
+(define-method (+ (a <lookup>) (b <index>))
+  (make <func> #:args (list a b)))
+
+(define-method (+ (a <index>) (b <lookup>))
+  (make <func> #:args (list a b)))
+
 (define (arr->tensor a)
   (if (zero? (dimensions a))
     (memory a)
@@ -126,7 +137,10 @@
 (tensor i (get t i))
 (tensor i (+ (get t i) (get t i)))
 (tensor i (tensor j (+ (get t i) (get t j))))
+(tensor i (+ (get t i) i))
+(tensor i (+ i (get t i)))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
 (tensor i (tensor j (get u i j)))
+(tensor i (tensor j (get (get u j) i)))
