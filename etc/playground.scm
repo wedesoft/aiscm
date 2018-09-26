@@ -77,7 +77,11 @@
   (apply + (map (lambda (arg) (apply get arg a)) (args x))))
 
 (define-syntax-rule (tensor i expression)
-  (let [(i (index 0)) ]
+  (let [(i (index 0))]
+    (lamb i expression)))
+
+(define-syntax-rule (tensorx (i s) expression)
+  (let [(i (index s))]
     (lamb i expression)))
 
 (define-method (subst (x <lambda>) (idx <index>) i)
@@ -88,6 +92,9 @@
 
 (define-method (subst (x <index>) (idx <index>) i)
   (if (eq? x idx) i x))
+
+(define-method (subst (x <integer>) (idx <index>) i)
+  x)
 
 (define-method (subst (x <lookup>) (idx <index>) (i <integer>))
   (if (eq? idx (index x))
@@ -119,6 +126,9 @@
 (define-method (+ (a <index>) (b <lookup>))
   (make <func> #:args (list a b)))
 
+(define-method (+ (a <index>) (b <index>))
+  (make <func> #:args (list a b)))
+
 (define (arr->tensor a)
   (if (zero? (dimensions a))
     (memory a)
@@ -139,6 +149,11 @@
 (tensor i (tensor j (+ (get t i) (get t j))))
 (tensor i (+ (get t i) i))
 (tensor i (+ i (get t i)))
+
+(tensorx (i 5) i)
+(tensorx (j 3) (tensorx (i 5) i))
+(tensorx (j 3) (tensorx (i 5) j))
+(tensorx (j 3) (tensorx (i 5) (+ i j)))
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
