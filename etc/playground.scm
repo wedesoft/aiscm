@@ -15,7 +15,9 @@
 
 ;(define-tensor (test x) (+ x x))
 
-(define-class <index> ()
+(define-class <tensor> ())
+
+(define-class <index> (<tensor>)
   (sym #:init-keyword #:sym #:getter sym)
   (size #:init-keyword #:size #:getter size))
 
@@ -25,7 +27,7 @@
 (define (index size)
   (make <index> #:sym (gensym) #:size size))
 
-(define-class <lambda> ()
+(define-class <lambda> (<tensor>)
   (index #:init-keyword #:index #:getter index)
   (term #:init-keyword #:term #:getter term))
 
@@ -35,7 +37,7 @@
 (define-method (lamb index term)
   (make <lambda> #:index index #:term term))
 
-(define-class <lookup> ()
+(define-class <lookup> (<tensor>)
   (index #:init-keyword #:index #:getter index)
   (term #:init-keyword #:term #:getter term)
   (stride #:init-keyword #:stride #:getter stride))
@@ -43,11 +45,27 @@
 (define-method (write (self <lookup>) port)
   (format port "(lookup ~a ~a ~a)" (index self) (term self) (stride self)))
 
-(define-class <func> ()
+(define-class <func> (<tensor>)
   (args #:init-keyword #:args #:getter args))
 
 (define-method (write (self <func>) port)
   (format port "(func ~a)" (args self)))
+
+(define-class <reduction> (<tensor>)
+  (index #:init-keyword #:index #:getter index)
+  (term #:init-keyword #:term #:getter term))
+
+(define-method (write (self <reduction>) port)
+  (format port "~a" (tensor->list self)))
+
+(define (reduction i expression)
+  (make <reduction> #:index i #:term expression))
+
+(define-syntax-rule (sum i expression)
+  (let [(i (index 0))] (reduction i expression)))
+
+(define-method (size (self <reduction>))
+  (size (term self)))
 
 (define-method (lookup index term stride)
   (make <lookup> #:index index #:term term #:stride stride))
@@ -115,16 +133,7 @@
 (define-method (rebase (x <foreign>) offset)
   (+ x offset))
 
-(define-method (+ (a <lookup>) (b <lookup>))
-  (make <func> #:args (list a b)))
-
-(define-method (+ (a <lookup>) (b <index>))
-  (make <func> #:args (list a b)))
-
-(define-method (+ (a <index>) (b <lookup>))
-  (make <func> #:args (list a b)))
-
-(define-method (+ (a <index>) (b <index>))
+(define-method (+ (a <tensor>) (b <tensor>))
   (make <func> #:args (list a b)))
 
 (define (arr->tensor a)
@@ -140,6 +149,9 @@
 (define-method (tensor->list (t <lambda>))
   (map (lambda (i) (tensor->list (get t i))) (iota (size t))))
 
+(define-method (tensor->list (t <reduction>))
+  (apply + (map (lambda (i) (get (subst (term t) (index t) i))) (iota (size (index t))))))
+
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
 (tensor i (get t i))
@@ -147,6 +159,7 @@
 (tensor i (tensor j (+ (get t i) (get t j))))
 (tensor i (+ (get t i) i))
 (tensor i (+ i (get t i)))
+(sum i (get t i))
 
 (tensor (i 5) i)
 (tensor (j 3) (tensor (i 5) i))
