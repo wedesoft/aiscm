@@ -58,8 +58,11 @@
 (define-method (write (self <reduction>) port)
   (format port "~a" (tensor->list self)))
 
-(define (reduction i expression)
+(define-method (reduction i expression)
   (make <reduction> #:index i #:term expression))
+
+(define-method (reduction i (expression <lambda>))
+  (lamb (index expression) (reduction i (term expression))))
 
 (define-syntax-rule (sum i expression)
   (let [(i (index 0))] (reduction i expression)))
@@ -80,6 +83,9 @@
   (make-pointer (+ (pointer-address a) b)))
 
 (define-method (get (x <foreign>)) (fetch x))
+
+(define-method (get (x <reduction>))
+  (apply + (map (lambda (i) (get (subst (term x) (index x) i))) (iota (size (index x))))))
 
 (define-method (get (x <lambda>)) x)
 
@@ -144,13 +150,10 @@
 
 (define-method (size (x <lambda>)) (size (index x)))
 
-(define-method (tensor->list t) t)
+(define-method (tensor->list t) (get t))
 
 (define-method (tensor->list (t <lambda>))
   (map (lambda (i) (tensor->list (get t i))) (iota (size t))))
-
-(define-method (tensor->list (t <reduction>))
-  (apply + (map (lambda (i) (get (subst (term t) (index t) i))) (iota (size (index t))))))
 
 (define m (arr 1 2 3))
 (define t (arr->tensor m))
@@ -170,3 +173,5 @@
 (define u (arr->tensor n))
 (tensor i (tensor j (get u i j)))
 (tensor i (tensor j (get (get u j) i)))
+
+(tensor i (sum j (get u i j)))
