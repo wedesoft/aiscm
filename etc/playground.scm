@@ -130,6 +130,9 @@
       (lookup i (term x) (stride x)))
     (lookup (index x) (subst (term x) idx i) (stride x))))
 
+(define-method (subst (x <reduction>) (idx <index>) i)
+  (reduction (index x) (subst (term x) idx i)))
+
 (define-method (subst (x <func>) (idx <index>) i)
   (make <func> #:args (map (lambda (arg) (subst arg idx i)) (args x))))
 
@@ -175,3 +178,4 @@
 (tensor i (tensor j (get (get u j) i)))
 
 (tensor i (sum j (get u i j)))
+(sum i (tensor j (get u i j)))
