@@ -56,7 +56,7 @@
   (term #:init-keyword #:term #:getter term))
 
 (define-method (write (self <reduction>) port)
-  (format port "(reduction ~a ~a)" (index self) (term self)))
+  (format port "~a" (tensor->list self)))
 
 (define-method (reduction i expression)
   (make <reduction> #:index i #:term expression))
