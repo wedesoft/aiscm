@@ -49,7 +49,7 @@
   (args #:init-keyword #:args #:getter args))
 
 (define-method (write (self <func>) port)
-  (format port "(func ~a)" (args self)))
+  (format port "~a" (tensor->list self)))
 
 (define-class <reduction> (<tensor>)
   (index #:init-keyword #:index #:getter index)
@@ -64,8 +64,11 @@
 (define-method (reduction i (expression <lambda>))
   (lamb (index expression) (reduction i (term expression))))
 
-(define-syntax-rule (sum i expression)
-  (let [(i (index 0))] (reduction i expression)))
+(define-syntax sum
+  (lambda (x)
+    (syntax-case x ()
+      ((k (i s) expression) #'(let [(i (index s))] (reduction i expression)))
+      ((k i expression) #'(let [(i (index 0))] (reduction i expression))))))
 
 (define-method (size (self <reduction>))
   (size (term self)))
@@ -170,6 +173,10 @@
 (tensor i (+ (get t i) i))
 (tensor i (+ i (get t i)))
 (sum i (get t i))
+(sum i (+ (get t i) (get t i)))
+(+ (sum i (get t i)) (sum j (get t j)))
+
+(sum (i 5) i)
 
 (tensor (i 5) i)
 (tensor (j 3) (tensor (i 5) i))
