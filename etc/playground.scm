@@ -145,6 +145,9 @@
 (define-method (+ (a <tensor>) (b <tensor>))
   (make <func> #:args (list a b)))
 
+(define-method (+ (a <lambda>) (b <lambda>))
+  (tensor i (+ (get a i) (get b i))))
+
 (define (arr->tensor a)
   (if (zero? (dimensions a))
     (memory a)
@@ -162,6 +165,7 @@
 (define t (arr->tensor m))
 (tensor i (get t i))
 (tensor i (+ (get t i) (get t i)))
+(+ t t)
 (tensor i (tensor j (+ (get t i) (get t j))))
 (tensor i (+ (get t i) i))
 (tensor i (+ i (get t i)))
@@ -174,6 +178,7 @@
 
 (define n (arr (1 2 3) (4 5 6)))
 (define u (arr->tensor n))
+(+ u u)
 (tensor i (tensor j (get u i j)))
 (tensor i (tensor j (get (get u j) i)))
 
