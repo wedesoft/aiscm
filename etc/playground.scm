@@ -148,6 +148,18 @@
 (define-method (+ (a <tensor>) (b <tensor>))
   (make <func> #:args (list a b)))
 
+(define-method (+ (a <tensor>) (b <integer>))
+  (make <func> #:args (list a b)))
+
+(define-method (+ (a <lambda>) (b <integer>))
+  (tensor i (+ (get a i) b)))
+
+(define-method (+ (a <integer>) (b <tensor>))
+  (make <func> #:args (list a b)))
+
+(define-method (+ (a <integer>) (b <lambda>))
+  (tensor i (+ a (get b i))))
+
 (define-method (+ (a <lambda>) (b <lambda>))
   (tensor i (+ (get a i) (get b i))))
 
@@ -191,3 +203,10 @@
 
 (tensor i (sum j (get u i j)))
 (sum i (tensor j (get u i j)))
+
+(define o (arr (1 2 3) (4 5 6) (7 8 9)))
+(define v (arr->tensor o))
+(+ v t)
+(+ t v)
+(tensor i (+ (get v i) (get t i)))
+(tensor i (+ (get v i) t))
