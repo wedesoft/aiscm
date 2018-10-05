@@ -20,4 +20,13 @@
 
 
 (test-begin "aiscm tensors")
+
+(define-tensor (trivial x) x)
+(define-tensor (second a b) b)
+(test-group "trivial tensors"
+  (test-equal "pass through integer"
+    5 (trivial 5))
+  (test-equal "pass through second argument"
+    3 (second 2 3)))
+
 (test-end "aiscm tensors")

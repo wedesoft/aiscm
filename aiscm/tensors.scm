@@ -14,4 +14,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (aiscm tensors))
+(define-module (aiscm tensors)
+  #:export-syntax (define-tensor))
+
+
+(define-syntax-rule (define-tensor (name args ...) body)
+  (define (name args ...) body))
