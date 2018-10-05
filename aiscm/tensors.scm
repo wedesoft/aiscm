@@ -15,8 +15,17 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm tensors)
+  #:use-module (oop goops)
+  #:use-module (aiscm core)
   #:export-syntax (define-tensor))
 
 
+(define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
+
 (define-syntax-rule (define-tensor (name args ...) body)
-  (define (name args ...) body))
+  (define-method (name args ...)
+    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) body)))]
+      (add-method! name
+                   (make <method> #:specializers (map class-of (list args ...))
+                                  #:procedure fun))
+      (name args ...))))

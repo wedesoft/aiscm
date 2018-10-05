@@ -16,6 +16,7 @@
 ;;
 (use-modules (srfi srfi-64)
              (oop goops)
+             (aiscm core)
              (aiscm tensors))
 
 
@@ -27,6 +28,8 @@
   (test-equal "pass through integer"
     5 (trivial 5))
   (test-equal "pass through second argument"
-    3 (second 2 3)))
+    3 (second 2 3))
+  (test-equal "map to 32 bit integers"
+    1234 (trivial 1234)))
 
 (test-end "aiscm tensors")

@@ -1,12 +1,7 @@
 (use-modules (oop goops) (aiscm util) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm image) (aiscm magick) (aiscm xorg) (aiscm v4l2) (srfi srfi-1) (srfi srfi-26))
 
 
-
-(define-tensor (name x) x)
-
-
 ;(define-tensor (name arr size) (tensor [size] i (get arr i)))
-
 ;(define-method (native-type2 value) (native-type value))
 ;(define-method (native-type2 (value <integer>)) <int>)
 ;
