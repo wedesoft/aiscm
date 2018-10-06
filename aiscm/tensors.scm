@@ -17,8 +17,21 @@
 (define-module (aiscm tensors)
   #:use-module (oop goops)
   #:use-module (aiscm core)
-  #:export-syntax (define-tensor))
+  #:export (<tensor> <index>)
+  #:export-syntax (define-tensor tensor)
+  #:re-export (get))
 
+(define-class <tensor> ())
+
+(define-class <index> (<tensor>))
+
+(define-method (get (self <llvmarray<>>) (idx <index>))
+  self)
+
+(define-syntax tensor
+  (lambda (x)
+    (syntax-case x ()
+      ((k i expression) #'(let [(i (make <index>))] expression)))))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 

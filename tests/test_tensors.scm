@@ -34,4 +34,9 @@
   (test-equal "pass through array"
     '(2 3 5) (to-list (trivial (arr 2 3 5)))))
 
+(define-tensor (rebuild x) (tensor i (get x i)))
+(test-group "array indexing"
+  (test-equal "rebuild array"
+    '(2 3 5) (to-list (rebuild (arr 2 3 5)))))
+
 (test-end "aiscm tensors")
