@@ -25,11 +25,13 @@
 (define-tensor (trivial x) x)
 (define-tensor (second a b) b)
 (test-group "trivial tensors"
-  (test-equal "pass through integer"
+  (test-eqv "pass through integer"
     5 (trivial 5))
-  (test-equal "pass through second argument"
+  (test-eqv "pass through second argument"
     3 (second 2 3))
-  (test-equal "map to 32 bit integers"
-    1234 (trivial 1234)))
+  (test-eqv "map to 32 bit integers"
+    1234 (trivial 1234))
+  (test-equal "pass through array"
+    '(2 3 5) (to-list (trivial (arr 2 3 5)))))
 
 (test-end "aiscm tensors")
