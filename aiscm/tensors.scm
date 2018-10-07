@@ -17,7 +17,8 @@
 (define-module (aiscm tensors)
   #:use-module (oop goops)
   #:use-module (aiscm core)
-  #:export (<tensor> <index>)
+  #:export (<tensor> <index>
+            expression->tensor)
   #:export-syntax (define-tensor tensor)
   #:re-export (get))
 
@@ -26,6 +27,10 @@
 (define-class <index> (<tensor>))
 
 (define-method (get (self <llvmarray<>>) (idx <index>))
+  self)
+
+(define-method (expression->tensor self)
+  "Pass-through value by default"
   self)
 
 (define-syntax tensor

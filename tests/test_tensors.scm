@@ -34,9 +34,22 @@
   (test-equal "pass through array"
     '(2 3 5) (to-list (trivial (arr 2 3 5)))))
 
+(define one (make <int> #:value (const 1)))
+(define three (make <int> #:value (const 3)))
+(define p (make (pointer <byte>) #:value (const 1234)))
+(define a (llvmarray p p (llvmlist three) (llvmlist one)))
+
+(test-group "convert array to tensor"
+  (test-eqv "pass-through integer"
+    42 (get (expression->tensor (make <int> #:value 42)))))
+
 (define-tensor (rebuild x) (tensor i (get x i)))
+;(define-tensor (index-array n) (tensor (i n) i))
 (test-group "array indexing"
   (test-equal "rebuild array"
-    '(2 3 5) (to-list (rebuild (arr 2 3 5)))))
+    '(2 3 5) (to-list (rebuild (arr 2 3 5))))
+  (test-skip 1)
+  (test-equal "index array"
+    '(0 1 2) (to-list (index-array 3))))
 
 (test-end "aiscm tensors")
