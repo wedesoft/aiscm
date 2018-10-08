@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod fill index convolve dilate erode
+            crop dump project element minor major sum prod fill indices convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1823,14 +1823,14 @@
           (position-builder-at-end end)
           result)))))
 
-(define-method (index . shp)
+(define-method (indices . shp)
   (let [(fun (jit (list (llvmlist <int> (length shp)))
                   (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (index-array result)))))]
-    (add-method! index
+    (add-method! indices
                  (make <method>
                        #:specializers (make-list (length shp) <integer>)
                        #:procedure (lambda shp (fun shp))))
-    (apply index shp)))
+    (apply indices shp)))
 
 (define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
   (let [(fun (lambda (a b) (map-reduce identity && eq a b)))]

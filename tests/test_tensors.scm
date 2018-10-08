@@ -41,7 +41,22 @@
 
 (test-group "convert array to tensor"
   (test-eqv "pass-through integer"
-    42 (get (expression->tensor (make <int> #:value 42)))))
+    42 (get (expression->tensor (make <int> #:value 42))))
+  (test-eq "convert array to function of index"
+    <functional> (class-of (expression->tensor a)))
+  (test-eq "use lookup object"
+    <lookup> (class-of (term (expression->tensor a))))
+  (test-eq "declare index"
+    <index> (class-of (index (expression->tensor a))))
+  (let [(t (expression->tensor a))]
+    (test-eq "use same index for function and lookup"
+      (index t) (index (term t))))
+  (test-eqv "lookup uses stride of array"
+    1 ((get (stride (term (expression->tensor a)))) #f))
+  (test-eqv "lookup contains array with same memory"
+    1234 ((get (memory (term (term (expression->tensor a))))) #f))
+  (test-eqv "lookup is based on projected array"
+    0 (dimensions (term (term (expression->tensor a))))))
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))
