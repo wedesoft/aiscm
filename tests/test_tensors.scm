@@ -35,9 +35,11 @@
     '(2 3 5) (to-list (trivial (arr 2 3 5)))))
 
 (define one (make <int> #:value (const 1)))
+(define two (make <int> #:value (const 2)))
 (define three (make <int> #:value (const 3)))
 (define p (make (pointer <byte>) #:value (const 1234)))
 (define a (llvmarray p p (llvmlist three) (llvmlist one)))
+(define b (llvmarray p p (llvmlist three two) (llvmlist one three )))
 
 (test-group "convert array to tensor"
   (test-eqv "pass-through integer"
@@ -53,10 +55,12 @@
       (index t) (index (term t))))
   (test-eqv "lookup uses stride of array"
     1 ((get (stride (term (expression->tensor a)))) #f))
-  (test-eqv "lookup contains array with same memory"
+  (test-eq "lookup contains element accessor"
+    <elementary> (class-of (term (term (expression->tensor a)))))
+  (test-eqv "lookup contains element accessor with same memory"
     1234 ((get (memory (term (term (expression->tensor a))))) #f))
-  (test-eqv "lookup is based on projected array"
-    0 (dimensions (term (term (expression->tensor a))))))
+  (test-eq "2D array contains function of index at second level"
+    <functional> (class-of (term (expression->tensor b)))))
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))

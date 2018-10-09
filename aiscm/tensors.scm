@@ -17,14 +17,17 @@
 (define-module (aiscm tensors)
   #:use-module (oop goops)
   #:use-module (aiscm core)
-  #:export (<tensor> <index> <functional> <lookup>
+  #:export (<tensor> <index> <functional> <lookup> <elementary>
             expression->tensor)
   #:export-syntax (define-tensor tensor term index stride)
-  #:re-export (get))
+  #:re-export (get memory))
 
 (define-class <tensor> ())
 
 (define-class <index> (<tensor>))
+
+(define-class <elementary> (<tensor>)
+  (memory #:init-keyword #:memory #:getter memory))
 
 (define-class <functional> (<tensor>)
   (index #:init-keyword #:index #:getter index)
@@ -42,10 +45,20 @@
   "Pass-through value by default"
   self)
 
+(define-method (lookup i s t)
+  (make <lookup> #:index i #:stride s #:term t))
+
+(define-method (lookup i s (t <functional>))
+  (make <functional> #:index (index t) #:term (lookup i s (term t))))
+
 (define-method (expression->tensor (self <llvmarray<>>))
   "Convert compiled array to function of index"
-  (let [(i (make <index>))]
-    (make <functional> #:term (make <lookup> #:index i #:stride (llvm-last (strides self)) #:term (project self)) #:index i)))
+  (if (zero? (dimensions self))
+    (make <elementary> #:memory (memory self))
+    (let [(i (make <index>))]
+      (make <functional>
+            #:term (lookup i (llvm-last (strides self)) (expression->tensor (project self)))
+            #:index i))))
 
 (define-syntax tensor
   (lambda (x)
