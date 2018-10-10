@@ -74,9 +74,9 @@
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 
-(define-syntax-rule (define-tensor (name args ...) body)
+(define-syntax-rule (define-tensor (name args ...) expression)
   (define-method (name args ...)
-    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) body)))]
+    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) expression)))]
       (add-method! name
                    (make <method> #:specializers (map class-of (list args ...))
                                   #:procedure fun))
