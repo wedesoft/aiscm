@@ -21,7 +21,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>>
             expression->tensor)
   #:export-syntax (define-tensor tensor term index stride elementary)
-  #:re-export (get memory shape))
+  #:re-export (get memory shape typecode))
 
 (define-class <tensor> ())
 
@@ -33,7 +33,8 @@
 
 (define (elementary type)
   (template-class (elementary type) <elementary<>>
-    (lambda (class metaclass) #f)))
+    (lambda (class metaclass)
+      (define-method (typecode (self class)) type))))
 
 (define-class <functional> (<tensor>)
   (index #:init-keyword #:index #:getter index)
@@ -42,10 +43,16 @@
 (define-method (shape (self <functional>))
   (attach (shape (term self)) (size (index self))))
 
+(define-method (typecode (self <functional>))
+  (typecode (term self)))
+
 (define-class <lookup> (<tensor>)
   (index  #:init-keyword #:index  #:getter index )
   (stride #:init-keyword #:stride #:getter stride)
   (term  #:init-keyword #:term  #:getter term ))
+
+(define-method (typecode (self <lookup>))
+  (typecode (term self)))
 
 (define-method (get (self <llvmarray<>>) (idx <index>))
   self)
@@ -81,7 +88,9 @@
 
 (define-syntax-rule (define-tensor (name args ...) expression)
   (define-method (name args ...)
-    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) expression)))]
+    (let [(fun (jit (map adapted-native-type (list args ...))
+                 (lambda (args ...)
+                   expression)))]
       (add-method! name
                    (make <method> #:specializers (map class-of (list args ...))
                                   #:procedure fun))

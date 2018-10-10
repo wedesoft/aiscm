@@ -64,7 +64,9 @@
   (test-equal "get shape of 1D tensor"
     '(3) (map (lambda (value) ((get value) #f)) (shape (expression->tensor a))))
   (test-equal "get shape of 2D tensor"
-    '(3 2) (map (lambda (value) ((get value) #f)) (shape (expression->tensor b)))))
+    '(3 2) (map (lambda (value) ((get value) #f)) (shape (expression->tensor b))))
+  (test-equal "get typecode of 1D tensor"
+    <byte> (typecode (expression->tensor a))))
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))
