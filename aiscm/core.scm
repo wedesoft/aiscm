@@ -40,7 +40,7 @@
             llvm-udiv llvm-sdiv llvm-fdiv llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem
             llvm-and llvm-or llvm-xor llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
+            llvm-call typed-call typed-constant typed-pointer store fetch allocate-array llvm-begin to-list
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump project element minor major sum prod fill indices convolve dilate erode

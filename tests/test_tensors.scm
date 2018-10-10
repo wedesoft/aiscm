@@ -60,7 +60,11 @@
   (test-eqv "lookup contains element accessor with same memory"
     1234 ((get (memory (term (term (expression->tensor a))))) #f))
   (test-eq "2D array contains function of index at second level"
-    <functional> (class-of (term (expression->tensor b)))))
+    <functional> (class-of (term (expression->tensor b))))
+  (test-equal "get shape of 1D tensor"
+    '(3) (map (lambda (value) ((get value) #f)) (shape (expression->tensor a))))
+  (test-equal "get shape of 2D tensor"
+    '(3 2) (map (lambda (value) ((get value) #f)) (shape (expression->tensor b)))))
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))

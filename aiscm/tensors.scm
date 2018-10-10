@@ -21,11 +21,12 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>>
             expression->tensor)
   #:export-syntax (define-tensor tensor term index stride elementary)
-  #:re-export (get memory))
+  #:re-export (get memory shape))
 
 (define-class <tensor> ())
 
-(define-class <index> (<tensor>))
+(define-class <index> (<tensor>)
+  (size #:init-keyword #:size #:getter size))
 
 (define-class <elementary<>> (<tensor>)
   (memory #:init-keyword #:memory #:getter memory))
@@ -37,6 +38,9 @@
 (define-class <functional> (<tensor>)
   (index #:init-keyword #:index #:getter index)
   (term  #:init-keyword #:term  #:getter term ))
+
+(define-method (shape (self <functional>))
+  (attach (shape (term self)) (size (index self))))
 
 (define-class <lookup> (<tensor>)
   (index  #:init-keyword #:index  #:getter index )
@@ -63,6 +67,7 @@
   (if (zero? (dimensions self))
     (make (elementary (typecode self)) #:memory (memory self))
     (let [(i (make <index>))]
+      (slot-set! i 'size (llvm-last (shape self)))
       (make <functional>
             #:term (lookup i (llvm-last (strides self)) (expression->tensor (project self)))
             #:index i))))
