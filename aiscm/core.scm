@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch allocate-array llvm-begin to-list
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod fill indices convolve dilate erode
+            crop dump rebase project element minor major sum prod fill indices convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1474,7 +1474,7 @@
   "Elementwise array operation with arbitrary arity"
   (if (zero? (dimensions result))
     (store (memory result) (apply delegate args))
-    (let [(start (make-basic-block "start"))
+    (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))

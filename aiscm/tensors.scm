@@ -84,13 +84,43 @@
     (syntax-case x ()
       ((k i expression) #'(let [(i (make <index>))] expression)))))
 
+(define (elementwise-tensor result expression)
+  (if (zero? (dimensions result))
+    (store (memory result) (typed-constant (typecode result) 0))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(p (build-phi (pointer (typecode result))))]
+            (add-incoming p start (memory result))
+            (build-cond-branch (ne p pend) body end)
+            (position-builder-at-end body)
+            (elementwise-tensor (project (rebase result p)) expression)
+            (build-branch finish)
+            (position-builder-at-end finish)
+            (add-incoming p finish (+ p (llvm-last (strides result))))
+            (build-branch for)
+            (position-builder-at-end end)))))))
+
+(define (evaluate-tensor expression)
+  (if (null? (shape expression))
+    expression
+    (jit-let [(result (allocate-array (typecode expression) (shape expression)))]
+      (elementwise-tensor result expression)
+      result)))
+
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 
 (define-syntax-rule (define-tensor (name args ...) expression)
   (define-method (name args ...)
-    (let [(fun (jit (map adapted-native-type (list args ...))
-                 (lambda (args ...)
-                   expression)))]
+    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) (evaluate-tensor expression))))]
       (add-method! name
                    (make <method> #:specializers (map class-of (list args ...))
                                   #:procedure fun))
