@@ -56,7 +56,7 @@
   (test-eqv "lookup uses stride of array"
     1 ((get (stride (term (expression->tensor a)))) #f))
   (test-eq "lookup contains element accessor"
-    <elementary> (class-of (term (term (expression->tensor a)))))
+    (elementary <byte>) (class-of (term (term (expression->tensor a)))))
   (test-eqv "lookup contains element accessor with same memory"
     1234 ((get (memory (term (term (expression->tensor a))))) #f))
   (test-eq "2D array contains function of index at second level"

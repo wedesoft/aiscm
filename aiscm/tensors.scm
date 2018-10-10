@@ -17,17 +17,22 @@
 (define-module (aiscm tensors)
   #:use-module (oop goops)
   #:use-module (aiscm core)
-  #:export (<tensor> <index> <functional> <lookup> <elementary>
+  #:use-module (aiscm util)
+  #:export (<tensor> <index> <functional> <lookup> <elementary<>>
             expression->tensor)
-  #:export-syntax (define-tensor tensor term index stride)
+  #:export-syntax (define-tensor tensor term index stride elementary)
   #:re-export (get memory))
 
 (define-class <tensor> ())
 
 (define-class <index> (<tensor>))
 
-(define-class <elementary> (<tensor>)
+(define-class <elementary<>> (<tensor>)
   (memory #:init-keyword #:memory #:getter memory))
+
+(define (elementary type)
+  (template-class (elementary type) <elementary<>>
+    (lambda (class metaclass) #f)))
 
 (define-class <functional> (<tensor>)
   (index #:init-keyword #:index #:getter index)
@@ -46,15 +51,17 @@
   self)
 
 (define-method (lookup i s t)
+  "Instantiate lookup object"
   (make <lookup> #:index i #:stride s #:term t))
 
 (define-method (lookup i s (t <functional>))
+  "Swap order so that functional objects are not inside lookup objects"
   (make <functional> #:index (index t) #:term (lookup i s (term t))))
 
 (define-method (expression->tensor (self <llvmarray<>>))
   "Convert compiled array to function of index"
   (if (zero? (dimensions self))
-    (make <elementary> #:memory (memory self))
+    (make (elementary (typecode self)) #:memory (memory self))
     (let [(i (make <index>))]
       (make <functional>
             #:term (lookup i (llvm-last (strides self)) (expression->tensor (project self)))
