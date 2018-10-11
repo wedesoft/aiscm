@@ -1,6 +1,6 @@
 ## Ready
 
-* tensors (tensors.scm)
+* tensors (rebase, project), get->fetch, triple: start pointer, pointer variable, substituted projected expression
 * port using qemu
 * lookup, pseudo colour, warp
 * mask

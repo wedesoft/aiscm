@@ -69,6 +69,12 @@
   (test-equal "get typecode of 1D tensor"
     <byte> (typecode (expression->tensor a))))
 
+(test-group "manipulate tensor arrays"
+  (test-eq "project 1D array"
+    (elementary <byte>) (class-of (project (expression->tensor a))))
+  (test-eq "project 2D array twice"
+    (elementary <byte>) (class-of (project (project (expression->tensor b))))))
+
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))
 (test-group "array indexing"

@@ -21,7 +21,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>>
             expression->tensor)
   #:export-syntax (define-tensor tensor term index stride elementary)
-  #:re-export (get memory shape typecode))
+  #:re-export (get memory shape typecode project))
 
 (define-class <tensor> ())
 
@@ -78,6 +78,17 @@
       (make <functional>
             #:term (lookup i (llvm-last (strides self)) (expression->tensor (project self)))
             #:index i))))
+
+(define-method (project (self <functional>))
+  (project (term self) (index self)))
+
+(define-method (project (self <functional>) (idx <index>))
+  (make <functional> #:term (project (term self) idx) #:index (index self)))
+
+(define-method (project (self <lookup>) (idx <index>))
+  (if (eq? idx (index self))
+    (term self)
+    (make <lookup> #:index (index self) #:stride (stride self) #:term (project (term self) idx))))
 
 (define-syntax tensor
   (lambda (x)
