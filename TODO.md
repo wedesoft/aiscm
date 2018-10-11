@@ -1,6 +1,6 @@
 ## Ready
 
-* tensors (rebase, project), get->fetch, triple: start pointer, pointer variable, substituted projected expression
+* tensors (rebase), get->fetch, triple: start pointer, pointer variable, substituted projected expression
 * port using qemu
 * lookup, pseudo colour, warp
 * mask

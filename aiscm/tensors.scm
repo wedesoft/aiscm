@@ -97,7 +97,7 @@
 
 (define (elementwise-tensor result expression)
   (if (zero? (dimensions result))
-    (store (memory result) (typed-constant (typecode result) 0))
+    (store (memory result) (fetch (typecode expression) (memory expression)))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -113,7 +113,7 @@
             (add-incoming p start (memory result))
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (elementwise-tensor (project (rebase result p)) expression)
+            (elementwise-tensor (project (rebase result p)) (project expression))
             (build-branch finish)
             (position-builder-at-end finish)
             (add-incoming p finish (+ p (llvm-last (strides result))))
