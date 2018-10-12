@@ -69,11 +69,24 @@
   (test-equal "get typecode of 1D tensor"
     <byte> (typecode (expression->tensor a))))
 
-(test-group "project tensor arrays"
+(define t (expression->tensor b))
+(define iter (tensor-iterate t))
+(test-group "tensor iteration"
   (test-eq "project 1D array"
     (elementary <byte>) (class-of (project (expression->tensor a))))
   (test-eq "project 2D array twice"
-    (elementary <byte>) (class-of (project (project (expression->tensor b))))))
+    (elementary <byte>) (class-of (project (project (expression->tensor b)))))
+  (test-eq "create pointer for iterating"
+    (pointer <byte>) (class-of (car iter)))
+  (test-eq "get pointer of tensor (start value)"
+    (memory t) (cadr iter))
+  (test-eqv "get stride of tensor (increment)"
+    3 ((get (caddr iter)) #f))
+  (test-eq "loop body has one dimension less"
+    1 (length (shape (cadddr iter))))
+  (test-eq "loop body uses rebased tensor"
+    (car iter) (memory (cadddr iter))))
+
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 ;(define-tensor (index-array n) (tensor (i n) i))

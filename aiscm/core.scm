@@ -1440,7 +1440,7 @@
           (write (get self) port)
           (print-data self port 1 line-counter cont))))))
 
-(define (rebase self p)
+(define-method (rebase (self <llvmarray<>>) p)
   "Use the specified pointer to rebase the array"
   (llvmarray p (memory-base self) (shape self) (strides self)))
 

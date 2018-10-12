@@ -20,8 +20,8 @@
   #:use-module (aiscm util)
   #:export (<tensor> <index> <functional> <lookup> <elementary<>>
             expression->tensor)
-  #:export-syntax (define-tensor tensor term index stride elementary)
-  #:re-export (get memory shape typecode project))
+  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate)
+  #:re-export (get memory shape typecode project rebase))
 
 (define-class <tensor> ())
 
@@ -46,6 +46,9 @@
 (define-method (typecode (self <functional>))
   (typecode (term self)))
 
+(define-method (memory (self <functional>))
+  (memory (term self)))
+
 (define-class <lookup> (<tensor>)
   (index  #:init-keyword #:index  #:getter index )
   (stride #:init-keyword #:stride #:getter stride)
@@ -53,6 +56,14 @@
 
 (define-method (typecode (self <lookup>))
   (typecode (term self)))
+
+(define-method (memory (self <lookup>))
+  (memory (term self)))
+
+(define-method (stride (self <lookup>) (idx <index>))
+  (if (eq? (index self) idx)
+    (stride self)
+    (stride (term self) idx)))
 
 (define-method (get (self <llvmarray<>>) (idx <index>))
   self)
@@ -89,6 +100,28 @@
   (if (eq? idx (index self))
     (term self)
     (make <lookup> #:index (index self) #:stride (stride self) #:term (project (term self) idx))))
+
+(define-method (rebase (self <functional>) p)
+  (make <functional> #:term (rebase (term self) p) #:index (index self)))
+
+(define-method (rebase (self <lookup>) p)
+  (make <lookup> #:index (index self) #:stride (stride self) #:term (rebase (term self) p)))
+
+(define-method (rebase (self <elementary<>>) p)
+  (make (class-of self) #:memory p))
+
+(define-method (stride (self <functional>))
+  (stride (term self) (index self)))
+
+(define-method (stride (self <functional>) (idx <index>))
+  (stride (term self) idx))
+
+(define (tensor-iterate self)
+  (let [(p (build-phi (pointer (typecode self))))]
+    (list p
+          (memory self)
+          (stride self)
+          (project (rebase self p)))))
 
 (define-syntax tensor
   (lambda (x)
