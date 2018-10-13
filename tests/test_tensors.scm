@@ -31,7 +31,6 @@
     3 (second 2 3))
   (test-eqv "map to 32 bit integers"
     1234 (trivial 1234))
-  (test-expect-fail 1)
   (test-equal "pass through array"
     '(2 3 5) (to-list (trivial (arr 2 3 5)))))
 

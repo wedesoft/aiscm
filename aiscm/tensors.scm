@@ -139,25 +139,28 @@
       (llvm-begin
         (build-branch start)
         (position-builder-at-end start)
-        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(p (build-phi (pointer (typecode result))))]
-            (add-incoming p start (memory result))
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (elementwise-tensor (project (rebase result p)) (project expression))
-            (build-branch finish)
-            (position-builder-at-end finish)
-            (add-incoming p finish (+ p (llvm-last (strides result))))
+        (let [(q (tensor-iterate expression))]
+          (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
             (build-branch for)
-            (position-builder-at-end end)))))))
+            (position-builder-at-end for)
+            (jit-let [(p (build-phi (pointer (typecode result))))]
+              (add-incoming p start (memory result))
+              (add-incoming (car q) start (cadr q))
+              (build-cond-branch (ne p pend) body end)
+              (position-builder-at-end body)
+              (elementwise-tensor (project (rebase result p)) (cadddr q))
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming p finish (+ p (llvm-last (strides result))))
+              (add-incoming (car q) finish (+ (car q) (caddr q)))
+              (build-branch for)
+              (position-builder-at-end end))))))))
 
 (define (evaluate-tensor expression)
   (if (null? (shape expression))
     expression
     (jit-let [(result (allocate-array (typecode expression) (shape expression)))]
-      (elementwise-tensor result expression)
+      (elementwise-tensor result (expression->tensor expression))
       result)))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
