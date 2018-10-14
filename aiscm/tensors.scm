@@ -65,8 +65,18 @@
     (stride self)
     (stride (term self) idx)))
 
-(define-method (get (self <llvmarray<>>) (idx <index>))
-  self)
+(define-method (subst (self <functional>) (before <index>) (after <index>))
+  (make <functional> #:term (subst (term self) before after) #:index (index self)))
+
+(define-method (subst (self <lookup>) (before <index>) (after <index>))
+  (if (eq? (index self) before)
+    (begin
+      (slot-set! after 'size (size before))
+      (make <lookup> #:index after #:stride (stride self) #:term (term self)))
+    (make <lookup> #:index (index self) #:stride (stride self) #:term (subst (term self) before after))))
+
+(define-method (get (self <functional>) (idx <index>))
+  (subst (term self) (index self) idx))
 
 (define-method (expression->tensor self)
   "Pass-through value by default"
@@ -126,7 +136,7 @@
 (define-syntax tensor
   (lambda (x)
     (syntax-case x ()
-      ((k i expression) #'(let [(i (make <index>))] expression)))))
+      ((k i expression) #'(let [(i (make <index>))] (make <functional> #:term expression #:index i))))))
 
 (define (elementwise-tensor result expression)
   (if (zero? (dimensions result))
@@ -159,15 +169,16 @@
 (define (evaluate-tensor expression)
   (if (null? (shape expression))
     expression
-    (jit-let [(result (allocate-array (typecode expression) (shape expression)))]
-      (elementwise-tensor result (expression->tensor expression))
+    (jit-let [(result (allocate-array (typecode expression) (apply llvmlist (shape expression))))]
+      (elementwise-tensor result expression)
       result)))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 
 (define-syntax-rule (define-tensor (name args ...) expression)
   (define-method (name args ...)
-    (let [(fun (jit (map adapted-native-type (list args ...)) (lambda (args ...) (evaluate-tensor expression))))]
+    (let [(fun (jit (map adapted-native-type (list args ...))
+                 (lambda arguments (apply (lambda (args ...) (evaluate-tensor expression)) (map expression->tensor arguments)))))]
       (add-method! name
                    (make <method> #:specializers (map class-of (list args ...))
                                   #:procedure fun))

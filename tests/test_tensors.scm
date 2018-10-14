@@ -88,11 +88,16 @@
 
 
 (define-tensor (rebuild x) (tensor i (get x i)))
+(define-tensor (rebuild-2d x) (tensor j (tensor i (get (get x j) i))))
+(define-tensor (transpose x) (tensor j (tensor i (get (get x i) j))))
 ;(define-tensor (index-array n) (tensor (i n) i))
 (test-group "array indexing"
-  (test-skip 1)
   (test-equal "rebuild array"
     '(2 3 5) (to-list (rebuild (arr 2 3 5))))
+  (test-equal "rebuild 2D array"
+    '((2 3 5) (3 5 7)) (to-list (rebuild (arr (2 3 5) (3 5 7)))))
+  (test-equal "transpose 2D array"
+    '((2 3) (3 5) (5 7)) (to-list (transpose (arr (2 3 5) (3 5 7)))))
   (test-skip 1)
   (test-equal "index array"
     '(0 1 2) (to-list (index-array 3))))
