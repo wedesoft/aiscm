@@ -28,6 +28,9 @@
 (define-class <index> (<tensor>)
   (size #:init-keyword #:size #:getter size))
 
+(define-method (typecode (self <index>))
+  <int>)
+
 (define-class <elementary<>> (<tensor>)
   (memory #:init-keyword #:memory #:getter memory))
 
@@ -78,6 +81,12 @@
 (define-method (get (self <functional>) (idx <index>))
   (subst (term self) (index self) idx))
 
+(define-method (fetch (self <elementary<>>))
+  (fetch (typecode self) (memory self)))
+
+(define-method (fetch (self <int>))
+  self)
+
 (define-method (expression->tensor self)
   "Pass-through value by default"
   self)
@@ -111,6 +120,9 @@
     (term self)
     (make <lookup> #:index (index self) #:stride (stride self) #:term (project (term self) idx))))
 
+(define-method (project (self <int>) (idx <index>))
+  self)
+
 (define-method (rebase (self <functional>) p)
   (make <functional> #:term (rebase (term self) p) #:index (index self)))
 
@@ -120,27 +132,42 @@
 (define-method (rebase (self <elementary<>>) p)
   (make (class-of self) #:memory p))
 
+(define-method (rebase (self <index>) i)
+  i)
+
 (define-method (stride (self <functional>))
   (stride (term self) (index self)))
 
 (define-method (stride (self <functional>) (idx <index>))
   (stride (term self) idx))
 
-(define (tensor-iterate self)
-  (let [(p (build-phi (pointer (typecode self))))]
-    (list p
+(define-method (tensor-iterate (self <functional>))
+  (tensor-iterate (term self) (index self)))
+
+(define-method (tensor-iterate (self <functional>) (idx <index>))
+  (tensor-iterate (term self) idx))
+
+(define-method (tensor-iterate (self <lookup>) (idx <index>))
+  (if (eq? (index self) idx)
+    (list (build-phi (pointer (typecode self)))
           (memory self)
-          (stride self)
-          (project (rebase self p)))))
+          (stride self))
+    (tensor-iterate (term self) idx)))
+
+(define-method (tensor-iterate (self <index>) (idx <index>))
+  (list (build-phi <int>)
+        (typed-constant <int> 0)
+        (typed-constant <int> 1)))
 
 (define-syntax tensor
   (lambda (x)
     (syntax-case x ()
-      ((k i expression) #'(let [(i (make <index>))] (make <functional> #:term expression #:index i))))))
+      ((k (i n) expression) #'(let [(i (make <index>))] (slot-set! i 'size n) (make <functional> #:term expression #:index i)))
+      ((k i expression)     #'(let [(i (make <index>))] (make <functional> #:term expression #:index i))))))
 
 (define (elementwise-tensor result expression)
   (if (zero? (dimensions result))
-    (store (memory result) (fetch (typecode expression) (memory expression)))
+    (store (memory result) (fetch expression))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -158,7 +185,7 @@
               (add-incoming (car q) start (cadr q))
               (build-cond-branch (ne p pend) body end)
               (position-builder-at-end body)
-              (elementwise-tensor (project (rebase result p)) (cadddr q))
+              (elementwise-tensor (project (rebase result p)) (project (rebase expression (car q))))
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming p finish (+ p (llvm-last (strides result))))

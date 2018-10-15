@@ -1,6 +1,6 @@
 ## Ready
 
-* tensors, get->fetch
+* tensor addition
 * port using qemu
 * lookup, pseudo colour, warp
 * mask
