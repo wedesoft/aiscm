@@ -76,11 +76,11 @@
   (test-eq "project 2D array twice"
     (elementary <byte>) (class-of (project (project (expression->tensor b)))))
   (test-eq "create pointer for iterating"
-    (pointer <byte>) (class-of (car iter)))
+    (pointer <byte>) (class-of (caar iter)))
   (test-eq "get pointer of tensor (start value)"
-    (memory t) (cadr iter))
+    (memory t) (caadr iter))
   (test-eqv "get stride of tensor (increment)"
-    3 ((get (caddr iter)) #f))
+    3 ((get (caaddr iter)) #f))
   (test-eq "return projected expression"
     (elementary <byte>) (class-of (project (cadddr iter)))))
 

@@ -15,6 +15,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm tensors)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
@@ -154,32 +156,18 @@
 (define-method (tensor-iterate (self <lookup>) (idx <index>))
   (if (eq? (index self) idx)
     (let [(p (build-phi (pointer (typecode self))))]
-      (list p
-            (memory self)
-            (stride self)
-            (rebase (term self) p)))
+      (list (list p) (list (memory self)) (list (stride self)) (rebase (term self) p)))
     (let [(iter (tensor-iterate (term self) idx))]
       (list (car iter) (cadr iter) (caddr iter) (make <lookup> #:term (cadddr iter) #:stride (stride self) #:index (index self))))))
 
 (define-method (tensor-iterate (self <index>) (idx <index>))
   (if (eq? self idx)
     (let [(i (build-phi <int>))]
-      (list i
-            (typed-constant <int> 0)
-            (typed-constant <int> 1)
-            i))
-    (let [(i  (build-phi <int>))]; TODO: use empty list of iterators
-      (list i
-            (typed-constant <int> 0)
-            (typed-constant <int> 1)
-            self))))
+      (list (list i) (list (typed-constant <int> 0)) (list (typed-constant <int> 1)) i))
+    (list '() '() '() self)))
 
-(define-method (tensor-iterate (self <int>) (idx <index>)); TODO: use empty list of iterators
-  (let [(i  (build-phi <int>))]
-    (list i
-          (typed-constant <int> 0)
-          (typed-constant <int> 1)
-          self)))
+(define-method (tensor-iterate (self <int>) (idx <index>))
+  (list '() '() '() self))
 
 (define-syntax tensor
   (lambda (x)
@@ -204,14 +192,14 @@
             (position-builder-at-end for)
             (jit-let [(p (build-phi (pointer (typecode result))))]
               (add-incoming p start (memory result))
-              (add-incoming (car q) start (cadr q))
+              (apply llvm-begin (map (cut add-incoming <> start <>) (car q) (cadr q)))
               (build-cond-branch (ne p pend) body end)
               (position-builder-at-end body)
               (elementwise-tensor (project (rebase result p)) (cadddr q))
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming p finish (+ p (llvm-last (strides result))))
-              (add-incoming (car q) finish (+ (car q) (caddr q)))
+              (apply llvm-begin (map (lambda (ptr stride) (add-incoming ptr finish (+ ptr stride))) (car q) (caddr q)))
               (build-branch for)
               (position-builder-at-end end))))))))
 
