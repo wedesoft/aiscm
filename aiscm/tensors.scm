@@ -135,6 +135,9 @@
 (define-method (rebase (self <index>) i)
   i)
 
+(define-method (rebase (self <int>) i)
+  self)
+
 (define-method (stride (self <functional>))
   (stride (term self) (index self)))
 
@@ -145,19 +148,38 @@
   (tensor-iterate (term self) (index self)))
 
 (define-method (tensor-iterate (self <functional>) (idx <index>))
-  (tensor-iterate (term self) idx))
+  (let [(iter (tensor-iterate (term self) idx))]
+    (list (car iter) (cadr iter) (caddr iter) (make <functional> #:term (cadddr iter) #:index (index self)))))
 
 (define-method (tensor-iterate (self <lookup>) (idx <index>))
   (if (eq? (index self) idx)
-    (list (build-phi (pointer (typecode self)))
-          (memory self)
-          (stride self))
-    (tensor-iterate (term self) idx)))
+    (let [(p (build-phi (pointer (typecode self))))]
+      (list p
+            (memory self)
+            (stride self)
+            (rebase (term self) p)))
+    (let [(iter (tensor-iterate (term self) idx))]
+      (list (car iter) (cadr iter) (caddr iter) (make <lookup> #:term (cadddr iter) #:stride (stride self) #:index (index self))))))
 
 (define-method (tensor-iterate (self <index>) (idx <index>))
-  (list (build-phi <int>)
-        (typed-constant <int> 0)
-        (typed-constant <int> 1)))
+  (if (eq? self idx)
+    (let [(i (build-phi <int>))]
+      (list i
+            (typed-constant <int> 0)
+            (typed-constant <int> 1)
+            i))
+    (let [(i  (build-phi <int>))]; TODO: use empty list of iterators
+      (list i
+            (typed-constant <int> 0)
+            (typed-constant <int> 1)
+            self))))
+
+(define-method (tensor-iterate (self <int>) (idx <index>)); TODO: use empty list of iterators
+  (let [(i  (build-phi <int>))]
+    (list i
+          (typed-constant <int> 0)
+          (typed-constant <int> 1)
+          self)))
 
 (define-syntax tensor
   (lambda (x)
@@ -185,7 +207,7 @@
               (add-incoming (car q) start (cadr q))
               (build-cond-branch (ne p pend) body end)
               (position-builder-at-end body)
-              (elementwise-tensor (project (rebase result p)) (project (rebase expression (car q))))
+              (elementwise-tensor (project (rebase result p)) (cadddr q))
               (build-branch finish)
               (position-builder-at-end finish)
               (add-incoming p finish (+ p (llvm-last (strides result))))

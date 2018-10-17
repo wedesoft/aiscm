@@ -80,13 +80,18 @@
   (test-eq "get pointer of tensor (start value)"
     (memory t) (cadr iter))
   (test-eqv "get stride of tensor (increment)"
-    3 ((get (caddr iter)) #f)))
+    3 ((get (caddr iter)) #f))
+  (test-eq "return projected expression"
+    (elementary <byte>) (class-of (project (cadddr iter)))))
 
 
 (define-tensor (rebuild x) (tensor i (get x i)))
 (define-tensor (rebuild-2d x) (tensor j (tensor i (get (get x j) i))))
 (define-tensor (transpose x) (tensor j (tensor i (get (get x i) j))))
 (define-tensor (index-array n) (tensor (i n) i))
+(define-tensor (index-y n m) (tensor (j m) (tensor (i n) j)))
+(define-tensor (index-x n m) (tensor (j m) (tensor (i n) i)))
+
 (test-group "array indexing"
   (test-equal "rebuild array"
     '(2 3 5) (to-list (rebuild (arr 2 3 5))))
@@ -95,6 +100,10 @@
   (test-equal "transpose 2D array"
     '((2 3) (3 5) (5 7)) (to-list (transpose (arr (2 3 5) (3 5 7)))))
   (test-equal "index array"
-    '(0 1 2) (to-list (index-array 3))))
+    '(0 1 2) (to-list (index-array 3)))
+  (test-equal "2D index array with row index"
+    '((0 0 0) (1 1 1)) (to-list (index-y 3 2)))
+  (test-equal "2D index array with column index"
+    '((0 1 2) (0 1 2)) (to-list (index-x 3 2))))
 
 (test-end "aiscm tensors")
