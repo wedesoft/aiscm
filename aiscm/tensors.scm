@@ -31,6 +31,7 @@
   (size #:init-keyword #:size #:getter size))
 
 (define-method (typecode (self <index>))
+  "Indices denote integer values"
   <int>)
 
 (define-class <elementary<>> (<tensor>)
@@ -46,12 +47,15 @@
   (term  #:init-keyword #:term  #:getter term ))
 
 (define-method (shape (self <functional>))
+  "Shape of function object adds one dimension to the contained term"
   (attach (shape (term self)) (size (index self))))
 
 (define-method (typecode (self <functional>))
+  "Element type of function object is type of contained term"
   (typecode (term self)))
 
 (define-method (memory (self <functional>))
+  "Memory of function object is memory of contained term"
   (memory (term self)))
 
 (define-class <lookup> (<tensor>)
@@ -60,20 +64,33 @@
   (term  #:init-keyword #:term  #:getter term ))
 
 (define-method (typecode (self <lookup>))
+  "Element type of lookup object is type of contained term"
   (typecode (term self)))
 
 (define-method (memory (self <lookup>))
+  "Memory of lookup object is memory of contained term"
   (memory (term self)))
 
+(define-method (stride (self <functional>))
+  "Stride of function object is stride for index bound by this object"
+  (stride (term self) (index self)))
+
+(define-method (stride (self <functional>) (idx <index>))
+  "Search for lookup object recursively when encountering another function object"
+  (stride (term self) idx))
+
 (define-method (stride (self <lookup>) (idx <index>))
+  "Return stride of lookup object if index matches"
   (if (eq? (index self) idx)
     (stride self)
     (stride (term self) idx)))
 
 (define-method (subst (self <functional>) (before <index>) (after <index>))
+  "Recursively substitute index in expression"
   (make <functional> #:term (subst (term self) before after) #:index (index self)))
 
 (define-method (subst (self <lookup>) (before <index>) (after <index>))
+  "Substitute matching index in lookup object"
   (if (eq? (index self) before)
     (begin
       (slot-set! after 'size (size before))
@@ -81,12 +98,15 @@
     (make <lookup> #:index (index self) #:stride (stride self) #:term (subst (term self) before after))))
 
 (define-method (get (self <functional>) (idx <index>))
+  "Indexing a function object removes function and substitutes index"
   (subst (term self) (index self) idx))
 
 (define-method (fetch (self <elementary<>>))
+  "Fetch value from memory"
   (fetch (typecode self) (memory self)))
 
 (define-method (fetch (self <int>))
+  "Fetch on integer has no effect"
   self)
 
 (define-method (expression->tensor self)
@@ -112,48 +132,46 @@
             #:index i))))
 
 (define-method (project (self <functional>))
+  "Remove functional object and corresponding lookup object with matching index"
   (project (term self) (index self)))
 
 (define-method (project (self <functional>) (idx <index>))
+  "Recursively search for lookup object to remove"
   (make <functional> #:term (project (term self) idx) #:index (index self)))
 
 (define-method (project (self <lookup>) (idx <index>))
+  "Remove lookup object if index matches"
   (if (eq? idx (index self))
     (term self)
     (make <lookup> #:index (index self) #:stride (stride self) #:term (project (term self) idx))))
 
-(define-method (project (self <int>) (idx <index>))
-  self)
-
-(define-method (rebase (self <functional>) p)
-  (make <functional> #:term (rebase (term self) p) #:index (index self)))
+;(define-method (rebase (self <functional>) p)
+;  "Rebase function object with given pointer or index"
+;  (make <functional> #:term (rebase (term self) p) #:index (index self)))
 
 (define-method (rebase (self <lookup>) p)
+  "Rebase lookup object with given pointer or index"
   (make <lookup> #:index (index self) #:stride (stride self) #:term (rebase (term self) p)))
 
 (define-method (rebase (self <elementary<>>) p)
+  "Change pointer of element-accessing object"
   (make (class-of self) #:memory p))
 
-(define-method (rebase (self <index>) i)
-  i)
-
-(define-method (rebase (self <int>) i)
-  self)
-
-(define-method (stride (self <functional>))
-  (stride (term self) (index self)))
-
-(define-method (stride (self <functional>) (idx <index>))
-  (stride (term self) idx))
+;(define-method (rebase (self <index>) i)
+;  "Change index object"
+;  i)
 
 (define-method (tensor-iterate (self <functional>))
+  "Get iterator information by using index of function object"
   (tensor-iterate (term self) (index self)))
 
 (define-method (tensor-iterate (self <functional>) (idx <index>))
+  "Recursively get iterator information"
   (let [(iter (tensor-iterate (term self) idx))]
     (list (car iter) (cadr iter) (caddr iter) (make <functional> #:term (cadddr iter) #:index (index self)))))
 
 (define-method (tensor-iterate (self <lookup>) (idx <index>))
+  "Return iterator information and rebased lookup object if index matches"
   (if (eq? (index self) idx)
     (let [(p (build-phi (pointer (typecode self))))]
       (list (list p) (list (memory self)) (list (stride self)) (rebase (term self) p)))
@@ -161,12 +179,14 @@
       (list (car iter) (cadr iter) (caddr iter) (make <lookup> #:term (cadddr iter) #:stride (stride self) #:index (index self))))))
 
 (define-method (tensor-iterate (self <index>) (idx <index>))
+  "Return iterator information and rebased index if index matches"
   (if (eq? self idx)
     (let [(i (build-phi <int>))]
       (list (list i) (list (typed-constant <int> 0)) (list (typed-constant <int> 1)) i))
     (list '() '() '() self)))
 
 (define-method (tensor-iterate (self <int>) (idx <index>))
+  "Return empty iterator information when encountering integer"
   (list '() '() '() self))
 
 (define-syntax tensor
@@ -176,6 +196,7 @@
       ((k i expression)     #'(let [(i (make <index>))] (make <functional> #:term expression #:index i))))))
 
 (define (elementwise-tensor result expression)
+  "Element-wise computation of tensor expression"
   (if (zero? (dimensions result))
     (store (memory result) (fetch expression))
     (let [(start  (make-basic-block "start"))
@@ -204,6 +225,7 @@
               (position-builder-at-end end))))))))
 
 (define (evaluate-tensor expression)
+  "Evaluate expression when scalar and element-wise evaluate otherwise"
   (if (null? (shape expression))
     expression
     (jit-let [(result (allocate-array (typecode expression) (apply llvmlist (shape expression))))]
@@ -213,6 +235,7 @@
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 
 (define-syntax-rule (define-tensor (name args ...) expression)
+  "Define jit-compilation for a tensor expression with given arguments"
   (define-method (name args ...)
     (let [(fun (jit (map adapted-native-type (list args ...))
                  (lambda arguments (apply (lambda (args ...) (evaluate-tensor expression)) (map expression->tensor arguments)))))]
