@@ -112,8 +112,8 @@
 (define-method (fetch (self <tensormap>))
   (apply (operation self) (map fetch (arguments self))))
 
-(define-method (fetch (self <int>))
-  "Fetch on integer has no effect"
+(define-method (fetch (self <void>))
+  "Fetch on scalar has no effect"
   self)
 
 (define-method (expression->tensor self)
@@ -171,6 +171,12 @@
 (define-method (+ (a <lookup>) (b <lookup>))
   (make <tensormap> #:operation + #:arguments (list a b)))
 
+(define-method (+ (a <lookup>) (b <void>))
+  (make <tensormap> #:operation + #:arguments (list a b)))
+
+(define-method (+ (a <void>) (b <lookup>))
+  (make <tensormap> #:operation + #:arguments (list a b)))
+
 (define-method (+ (a <functional>) (b <functional>))
   (let [(i  (make <index>))]
     (make <functional> #:index i #:term (+ (get a i) (get b i)))))
@@ -203,8 +209,12 @@
       (list (list i) (list (typed-constant <int> 0)) (list (typed-constant <int> 1)) i))
     (list '() '() '() self)))
 
-(define-method (tensor-iterate (self <int>) (idx <index>))
-  "Return empty iterator information when encountering integer"
+(define-method (tensor-iterate (self <void>) (idx <index>))
+  "Return empty iterator information when encountering instantiated index"
+  (list '() '() '() self))
+
+(define-method (tensor-iterate (self <elementary<>>) (idx <index>))
+  "Return empty iterator information when encountering lower-dimensional tensor"
   (list '() '() '() self))
 
 (define-method (tensor-iterate (self <tensormap>) (idx <index>))

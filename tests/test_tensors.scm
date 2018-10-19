@@ -108,12 +108,28 @@
 
 (define-tensor (plus a b) (+ a b))
 (define-tensor (plus-1d a b) (tensor i (+ (get a i) (get b i))))
+(define-tensor (plus-2d-1d a b) (tensor j (tensor i (+ (get (get a j) i) (get b j)))))
+(define-tensor (plus-1d-2d a b) (tensor j (tensor i (+ (get a j) (get (get b j) i)))))
+(define-tensor (plus-1d-scalar a b) (tensor i (+ (get a i) b)))
+(define-tensor (plus-scalar-1d a b) (tensor i (+ a (get b i))))
 (test-group "binary operations"
   (test-equal "scalar plus"
     5 (plus 2 3))
   (test-equal "plus for 1D array tensor"
     '(5 8 12) (to-list (plus-1d (arr 2 3 5) (arr 3 5 7))))
   (test-equal "simply add two arrays"
-    '(5 8 12) (to-list (plus (arr 2 3 5) (arr 3 5 7)))))
+    '(5 8 12) (to-list (plus (arr 2 3 5) (arr 3 5 7))))
+  (test-equal "add 2D and 1D tensor"
+    '((7 8)) (to-list (plus-2d-1d (arr (2 3)) (arr 5))))
+  (test-equal "add 1D and 2D tensor"
+    '((7 8)) (to-list (plus-1d-2d (arr 5) (arr (2 3)))))
+  (test-equal "add 1D and scalar tensor"
+    '(3 4 6) (to-list (plus-1d-scalar (arr 2 3 5) 1)))
+  (test-equal "add scalar and 1D tensor"
+    '(3 4 6) (to-list (plus-scalar-1d 1 (arr 2 3 5))))
+  (test-equal "add composite and 1D tensor"
+    (list (rgb 3 4 5) (rgb 4 5 6) (rgb 6 7 8)) (to-list (plus-scalar-1d (rgb 1 2 3) (arr 2 3 5))))
+  (test-equal "add 1D tensor and composite"
+    (list (rgb 3 4 5) (rgb 4 5 6) (rgb 6 7 8)) (to-list (plus-1d-scalar (arr 2 3 5) (rgb 1 2 3)))))
 
 (test-end "aiscm tensors")
