@@ -130,6 +130,9 @@
   (test-equal "add composite and 1D tensor"
     (list (rgb 3 4 5) (rgb 4 5 6) (rgb 6 7 8)) (to-list (plus-scalar-1d (rgb 1 2 3) (arr 2 3 5))))
   (test-equal "add 1D tensor and composite"
-    (list (rgb 3 4 5) (rgb 4 5 6) (rgb 6 7 8)) (to-list (plus-1d-scalar (arr 2 3 5) (rgb 1 2 3)))))
-
+    (list (rgb 3 4 5) (rgb 4 5 6) (rgb 6 7 8)) (to-list (plus-1d-scalar (arr 2 3 5) (rgb 1 2 3))))
+  (test-equal "simply add array and scalar"
+    '(3 4 6) (to-list (plus (arr 2 3 5) 1)))
+  (test-equal "simply add scalar and array"
+    '(3 4 6) (to-list (plus 1 (arr 2 3 5)))))
 (test-end "aiscm tensors")

@@ -181,6 +181,14 @@
   (let [(i  (make <index>))]
     (make <functional> #:index i #:term (+ (get a i) (get b i)))))
 
+(define-method (+ (a <functional>) (b <void>))
+  (let [(i  (make <index>))]
+    (make <functional> #:index i #:term (+ (get a i) b))))
+
+(define-method (+ (a <void>) (b <functional>))
+  (let [(i  (make <index>))]
+    (make <functional> #:index i #:term (+ a (get b i)))))
+
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
   (reduce coerce #f (map typecode (arguments self))))
