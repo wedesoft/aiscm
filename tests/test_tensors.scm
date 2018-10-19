@@ -106,4 +106,12 @@
   (test-equal "2D index array with column index"
     '((0 1 2) (0 1 2)) (to-list (index-x 3 2))))
 
+(define-tensor (plus a b) (+ a b))
+(define-tensor (plus-1d a b) (tensor i (+ (get a i) (get b i))))
+(test-group "binary operations"
+  (test-equal "scalar plus"
+    5 (plus 2 3))
+  (test-equal "plus for 1D array tensor"
+    '(5 8 12) (to-list (plus-1d (arr 2 3 5) (arr 3 5 7)))))
+
 (test-end "aiscm tensors")

@@ -20,10 +20,10 @@
   #:use-module (oop goops)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (<tensor> <index> <functional> <lookup> <elementary<>>
-            expression->tensor)
+  #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap>
+            expression->tensor operation arguments)
   #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate)
-  #:re-export (get memory shape typecode project rebase))
+  #:re-export (get memory shape typecode project rebase +))
 
 (define-class <tensor> ())
 
@@ -71,6 +71,10 @@
   "Memory of lookup object is memory of contained term"
   (memory (term self)))
 
+(define-class <tensormap> (<tensor>)
+  (operation #:init-keyword #:operation #:getter operation)
+  (arguments #:init-keyword #:arguments #:getter arguments))
+
 (define-method (stride (self <functional>))
   "Stride of function object is stride for index bound by this object"
   (stride (term self) (index self)))
@@ -104,6 +108,9 @@
 (define-method (fetch (self <elementary<>>))
   "Fetch value from memory"
   (fetch (typecode self) (memory self)))
+
+(define-method (fetch (self <tensormap>))
+  (apply (operation self) (map fetch (arguments self))))
 
 (define-method (fetch (self <int>))
   "Fetch on integer has no effect"
@@ -161,6 +168,13 @@
 ;  "Change index object"
 ;  i)
 
+(define-method (+ (a <lookup>) (b <lookup>))
+  (make <tensormap> #:operation + #:arguments (list a b)))
+
+(define-method (typecode (self <tensormap>))
+  "Get typecode of elementwise operation"
+  (reduce coerce #f (map typecode (arguments self))))
+
 (define-method (tensor-iterate (self <functional>))
   "Get iterator information by using index of function object"
   (tensor-iterate (term self) (index self)))
@@ -188,6 +202,13 @@
 (define-method (tensor-iterate (self <int>) (idx <index>))
   "Return empty iterator information when encountering integer"
   (list '() '() '() self))
+
+(define-method (tensor-iterate (self <tensormap>) (idx <index>))
+  (let [(args-iterate (map (cut tensor-iterate <> idx) (arguments self)))]
+    (list (append-map car   args-iterate)
+          (append-map cadr  args-iterate)
+          (append-map caddr args-iterate)
+          (make <tensormap> #:operation (operation self) #:arguments (map cadddr args-iterate)))))
 
 (define-syntax tensor
   (lambda (x)
