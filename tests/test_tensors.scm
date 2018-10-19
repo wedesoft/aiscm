@@ -112,6 +112,8 @@
   (test-equal "scalar plus"
     5 (plus 2 3))
   (test-equal "plus for 1D array tensor"
-    '(5 8 12) (to-list (plus-1d (arr 2 3 5) (arr 3 5 7)))))
+    '(5 8 12) (to-list (plus-1d (arr 2 3 5) (arr 3 5 7))))
+  (test-equal "simply add two arrays"
+    '(5 8 12) (to-list (plus (arr 2 3 5) (arr 3 5 7)))))
 
 (test-end "aiscm tensors")

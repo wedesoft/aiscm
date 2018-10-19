@@ -171,6 +171,10 @@
 (define-method (+ (a <lookup>) (b <lookup>))
   (make <tensormap> #:operation + #:arguments (list a b)))
 
+(define-method (+ (a <functional>) (b <functional>))
+  (let [(i  (make <index>))]
+    (make <functional> #:index i #:term (+ (get a i) (get b i)))))
+
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
   (reduce coerce #f (map typecode (arguments self))))
