@@ -160,34 +160,33 @@
   "Change pointer of element-accessing object"
   (make (class-of self) #:memory p))
 
-(define-method (+ (a <lookup>) (b <lookup>))
-  (make <tensormap> #:operation + #:arguments (list a b)))
+(define-syntax-rule (define-binary-tensor-op op)
+  "Define binary operation to use in tensor expressions"
+  (begin
+    (define-method (op (a <lookup>) (b <lookup>))
+      (make <tensormap> #:operation op #:arguments (list a b)))
+    (define-method (op (a <lookup>) (b <void>))
+      (make <tensormap> #:operation op #:arguments (list a b)))
+    (define-method (op (a <void>) (b <lookup>))
+      (make <tensormap> #:operation op #:arguments (list a b)))
+    (define-method (op (a <functional>) (b <functional>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op (get a i) (get b i)))))
+    (define-method (op (a <functional>) (b <void>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op (get a i) b))))
+    (define-method (op (a <functional>) (b <lookup>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op (get a i) b))))
+    (define-method (op (a <lookup>) (b <functional>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op a (get b i)))))
+    (define-method (op (a <void>) (b <functional>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op a (get b i)))))))
 
-(define-method (+ (a <lookup>) (b <void>))
-  (make <tensormap> #:operation + #:arguments (list a b)))
-
-(define-method (+ (a <void>) (b <lookup>))
-  (make <tensormap> #:operation + #:arguments (list a b)))
-
-(define-method (+ (a <functional>) (b <functional>))
-  (let [(i  (make <index>))]
-    (make <functional> #:index i #:term (+ (get a i) (get b i)))))
-
-(define-method (+ (a <functional>) (b <void>))
-  (let [(i  (make <index>))]
-    (make <functional> #:index i #:term (+ (get a i) b))))
-
-(define-method (+ (a <functional>) (b <lookup>))
-  (let [(i  (make <index>))]
-    (make <functional> #:index i #:term (+ (get a i) b))))
-
-(define-method (+ (a <lookup>) (b <functional>))
-  (let [(i  (make <index>))]
-    (make <functional> #:index i #:term (+ a (get b i)))))
-
-(define-method (+ (a <void>) (b <functional>))
-  (let [(i  (make <index>))]
-    (make <functional> #:index i #:term (+ a (get b i)))))
+(define-binary-tensor-op +)
+(define-binary-tensor-op -)
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
