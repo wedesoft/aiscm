@@ -113,6 +113,7 @@
 (define-tensor (plus-1d-scalar a b) (tensor i (+ (get a i) b)))
 (define-tensor (plus-scalar-1d a b) (tensor i (+ a (get b i))))
 (define-tensor (minus a b) (- a b))
+(define-tensor (product a b) (* a b))
 (test-group "binary operations"
   (test-equal "scalar plus"
     5 (plus 2 3))
@@ -141,6 +142,8 @@
   (test-equal "simply add 1D and 2D array"
     '((7 8)) (to-list (plus (arr 5) (arr (2 3)))))
   (test-equal "tensor minus"
-    '(2) (to-list (minus (arr 5) (arr 3)))))
+    '(2) (to-list (minus (arr 5) (arr 3))))
+  (test-equal "tensor product"
+    '(15) (to-list (product (arr 5) (arr 3)))))
 
 (test-end "aiscm tensors")

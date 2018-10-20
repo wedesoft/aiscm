@@ -23,7 +23,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap>
             expression->tensor operation arguments)
   #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate)
-  #:re-export (get memory shape typecode project rebase +))
+  #:re-export (get memory shape typecode project rebase + - *))
 
 (define-class <tensor> ())
 
@@ -187,6 +187,7 @@
 
 (define-binary-tensor-op +)
 (define-binary-tensor-op -)
+(define-binary-tensor-op *)
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
