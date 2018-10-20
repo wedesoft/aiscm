@@ -1,6 +1,5 @@
 ## Ready
 
-* tensor addition (plus (arr (1 2 3)) (arr 4))
 * port using qemu
 * lookup, pseudo colour, warp
 * mask

@@ -134,5 +134,10 @@
   (test-equal "simply add array and scalar"
     '(3 4 6) (to-list (plus (arr 2 3 5) 1)))
   (test-equal "simply add scalar and array"
-    '(3 4 6) (to-list (plus 1 (arr 2 3 5)))))
+    '(3 4 6) (to-list (plus 1 (arr 2 3 5))))
+  (test-equal "simply add 2D and 1D array"
+    '((7 8)) (to-list (plus (arr (2 3)) (arr 5))))
+  (test-equal "simply add 1D and 2D array"
+    '((7 8)) (to-list (plus (arr 5) (arr (2 3))))))
+
 (test-end "aiscm tensors")

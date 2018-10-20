@@ -152,10 +152,6 @@
     (term self)
     (make <lookup> #:index (index self) #:stride (stride self) #:term (project (term self) idx))))
 
-;(define-method (rebase (self <functional>) p)
-;  "Rebase function object with given pointer or index"
-;  (make <functional> #:term (rebase (term self) p) #:index (index self)))
-
 (define-method (rebase (self <lookup>) p)
   "Rebase lookup object with given pointer or index"
   (make <lookup> #:index (index self) #:stride (stride self) #:term (rebase (term self) p)))
@@ -163,10 +159,6 @@
 (define-method (rebase (self <elementary<>>) p)
   "Change pointer of element-accessing object"
   (make (class-of self) #:memory p))
-
-;(define-method (rebase (self <index>) i)
-;  "Change index object"
-;  i)
 
 (define-method (+ (a <lookup>) (b <lookup>))
   (make <tensormap> #:operation + #:arguments (list a b)))
@@ -184,6 +176,14 @@
 (define-method (+ (a <functional>) (b <void>))
   (let [(i  (make <index>))]
     (make <functional> #:index i #:term (+ (get a i) b))))
+
+(define-method (+ (a <functional>) (b <lookup>))
+  (let [(i  (make <index>))]
+    (make <functional> #:index i #:term (+ (get a i) b))))
+
+(define-method (+ (a <lookup>) (b <functional>))
+  (let [(i  (make <index>))]
+    (make <functional> #:index i #:term (+ a (get b i)))))
 
 (define-method (+ (a <void>) (b <functional>))
   (let [(i  (make <index>))]
