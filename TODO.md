@@ -1,7 +1,5 @@
 ## Ready
 
-* binary tensor operations
-* unary tensor operations
 * port using qemu
 * lookup, pseudo colour, warp
 * mask

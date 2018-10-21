@@ -114,6 +114,7 @@
 (define-tensor (plus-scalar-1d a b) (tensor i (+ a (get b i))))
 (define-tensor (minus a b) (- a b))
 (define-tensor (product a b) (* a b))
+(define-tensor (division a b) (/ a b))
 (test-group "binary operations"
   (test-equal "scalar plus"
     5 (plus 2 3))
@@ -144,6 +145,33 @@
   (test-equal "tensor minus"
     '(2) (to-list (minus (arr 5) (arr 3))))
   (test-equal "tensor product"
-    '(15) (to-list (product (arr 5) (arr 3)))))
+    '(15) (to-list (product (arr 5) (arr 3))))
+  (test-equal "tensor division"
+    '(2) (to-list (division (arr 6) (arr 3)))))
+
+(define-tensor (negative a) (- a))
+(define-tensor (negative-1d a) (tensor i (- (get a i))))
+(define-tensor (zero-minus a) (- 0 a))
+(define-tensor (zero-minus-1d a) (tensor i (- 0 (get a i))))
+(define-tensor (plus-one a) (+ a 1))
+(define-tensor (plus-one-1d a) (tensor i (+ (get a i) 1)))
+(define-tensor (negation a) (~ a))
+(test-group "unary operation"
+  (test-equal "scalar minus"
+    3 (negative -3))
+  (test-equal "minus for 1D array tensor"
+    '(-2 3 -5) (to-list (negative-1d (arr 2 -3 5))))
+  (test-equal "simply negate array"
+    '(-2 3 -5) (to-list (negative (arr 2 -3 5))))
+  (test-equal "compute zero minus array"
+    '(-2 3 -5) (to-list (zero-minus (arr 2 -3 5))))
+  (test-equal "compute zero minus tensor"
+    '(-2 3 -5) (to-list (zero-minus-1d (arr 2 -3 5))))
+  (test-equal "compute array plus one"
+    '(3 4 6) (to-list (plus-one (arr 2 3 5))))
+  (test-equal "compute tensor plus one"
+    '(3 4 6) (to-list (plus-one-1d (arr 2 3 5))))
+  (test-equal "bitwise negative of array"
+    '(253 252 250) (to-list (negation (arr 2 3 5)))))
 
 (test-end "aiscm tensors")

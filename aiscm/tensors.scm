@@ -23,7 +23,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap>
             expression->tensor operation arguments)
   #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate)
-  #:re-export (get memory shape typecode project rebase + - *))
+  #:re-export (get memory shape typecode project rebase + - * ~))
 
 (define-class <tensor> ())
 
@@ -160,6 +160,18 @@
   "Change pointer of element-accessing object"
   (make (class-of self) #:memory p))
 
+(define-syntax-rule (define-unary-tensor-op op)
+  "Define unary operation to use in tensor expressions"
+  (begin
+    (define-method (op (a <lookup>))
+      (make <tensormap> #:operation op #:arguments (list a)))
+    (define-method (op (a <functional>))
+      (let [(i  (make <index>))]
+        (make <functional> #:index i #:term (op (get a i)))))))
+
+(define-unary-tensor-op -)
+(define-unary-tensor-op ~)
+
 (define-syntax-rule (define-binary-tensor-op op)
   "Define binary operation to use in tensor expressions"
   (begin
@@ -169,6 +181,10 @@
       (make <tensormap> #:operation op #:arguments (list a b)))
     (define-method (op (a <void>) (b <lookup>))
       (make <tensormap> #:operation op #:arguments (list a b)))
+    (define-method (op a (b <lookup>))
+      (op (typed-constant (native-type a) a) b))
+    (define-method (op (a <lookup>) b)
+      (op a (typed-constant (native-type b) b)))
     (define-method (op (a <functional>) (b <functional>))
       (let [(i  (make <index>))]
         (make <functional> #:index i #:term (op (get a i) (get b i)))))
@@ -183,11 +199,16 @@
         (make <functional> #:index i #:term (op a (get b i)))))
     (define-method (op (a <void>) (b <functional>))
       (let [(i  (make <index>))]
-        (make <functional> #:index i #:term (op a (get b i)))))))
+        (make <functional> #:index i #:term (op a (get b i)))))
+    (define-method (op a (b <functional>))
+      (op (typed-constant (native-type a) a) b))
+    (define-method (op (a <functional>) b)
+      (op a (typed-constant (native-type b) b)))))
 
 (define-binary-tensor-op +)
 (define-binary-tensor-op -)
 (define-binary-tensor-op *)
+(define-binary-tensor-op /)
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
