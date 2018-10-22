@@ -43,7 +43,7 @@
             llvm-call typed-call typed-constant typed-pointer store fetch allocate-array llvm-begin to-list
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump rebase project element minor major sum prod fill indices convolve dilate erode
+            crop dump rebase project element minor major sum product fill indices convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1654,10 +1654,10 @@
                          #:procedure (jit (list (native-type self)) fun))))
     (name self)))
 
-(define-reducing-op sum  +    )
-(define-reducing-op prod *    )
-(define-reducing-op min  minor)
-(define-reducing-op max  major)
+(define-reducing-op sum     +    )
+(define-reducing-op product *    )
+(define-reducing-op min     minor)
+(define-reducing-op max     major)
 
 (define (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))

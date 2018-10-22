@@ -20,9 +20,9 @@
   #:use-module (oop goops)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap>
+  #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap> <reduction>
             expression->tensor operation arguments)
-  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate)
+  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over)
   #:re-export (get memory shape typecode project rebase + - * ~))
 
 (define-class <tensor> ())
@@ -61,7 +61,7 @@
 (define-class <lookup> (<tensor>)
   (index  #:init-keyword #:index  #:getter index )
   (stride #:init-keyword #:stride #:getter stride)
-  (term  #:init-keyword #:term  #:getter term ))
+  (term   #:init-keyword #:term   #:getter term  ))
 
 (define-method (typecode (self <lookup>))
   "Element type of lookup object is type of contained term"
@@ -74,6 +74,11 @@
 (define-class <tensormap> (<tensor>)
   (operation #:init-keyword #:operation #:getter operation)
   (arguments #:init-keyword #:arguments #:getter arguments))
+
+(define-class <reduction> (<tensor>)
+  (operation #:init-keyword #:operation #:getter operation)
+  (index     #:init-keyword #:index     #:getter index    )
+  (term      #:init-keyword #:term      #:getter term     ))
 
 (define-method (stride (self <functional>))
   "Stride of function object is stride for index bound by this object"
@@ -291,10 +296,14 @@
 (define (evaluate-tensor expression)
   "Evaluate expression when scalar and element-wise evaluate otherwise"
   (if (null? (shape expression))
-    expression
+    (fetch expression)
     (jit-let [(result (allocate-array (typecode expression) (apply llvmlist (shape expression))))]
       (elementwise-tensor result expression)
       result)))
+
+(define-syntax-rule (sum-over i expression)
+  (let [(i (make <index>))]
+    (make <reduction> #:term expression #:index i #:operator +)))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 

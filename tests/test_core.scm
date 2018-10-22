@@ -1435,7 +1435,7 @@
   (test-equal "upcast result type for RGB values"
     (rgb 256 256 256) (sum (to-array (list (rgb 255 255 255) (rgb 1 1 1)))))
   (test-eqv "product of 1D array"
-    30 (prod (arr 2 3 5)))
+    30 (product (arr 2 3 5)))
   (test-eqv "Minimum of array"
     2 (min (arr 2 3 5)))
   (test-eqv "Maximum of array"

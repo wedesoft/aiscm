@@ -1,6 +1,8 @@
 ## Ready
 
+* tensor reduction
 * port using qemu
+* prototype space game
 * lookup, pseudo colour, warp
 * mask
 * rgb &, |, ^, <<, >>
