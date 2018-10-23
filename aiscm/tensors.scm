@@ -80,6 +80,9 @@
   (index     #:init-keyword #:index     #:getter index    )
   (term      #:init-keyword #:term      #:getter term     ))
 
+(define-method (typecode (self <reduction>))
+  (typecode (term self)))
+
 (define-method (stride (self <functional>))
   "Stride of function object is stride for index bound by this object"
   (stride (term self) (index self)))
@@ -304,6 +307,30 @@
 (define-syntax-rule (sum-over i expression)
   (let [(i (make <index>))]
     (make <reduction> #:term expression #:index i #:operator +)))
+
+(define-method (fetch (self <reduction>))
+  (let [(q0     (tensor-iterate (term self) (index self)))
+        (q      (tensor-iterate (term self) (index self)))
+        (i      (build-phi <int>))
+        (entry  (make-basic-block "entry" ))
+        (init   (make-basic-block "init"  ))
+        (start  (make-basic-block "start" ))
+        (for    (make-basic-block "for"   ))
+        (body   (make-basic-block "body"  ))
+        (finish (make-basic-block "finish"))
+        (end    (make-basic-block "end"   ))]
+    (llvm-begin
+      (build-branch entry)
+      (position-builder-at-end entry)
+      (build-branch init)
+      (position-builder-at-end init)
+      (apply llvm-begin (map (cut add-incoming <> entry <>) (car q0) (cadr q0)))
+      (jit-let [(result0 (fetch (cadddr q0)))]
+        (build-branch start)
+        (position-builder-at-end start)
+        (build-branch for)
+        (position-builder-at-end for)
+        result0))))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 
