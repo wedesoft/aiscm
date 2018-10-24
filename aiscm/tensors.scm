@@ -325,12 +325,29 @@
       (build-branch init)
       (position-builder-at-end init)
       (apply llvm-begin (map (cut add-incoming <> entry <>) (car q0) (cadr q0)))
-      (jit-let [(result0 (fetch (cadddr q0)))]
-        (build-branch start)
-        (position-builder-at-end start)
-        (build-branch for)
-        (position-builder-at-end for)
-        result0))))
+      (let [(q1 (map + (cadr q) (caddr q)))]
+        (jit-let [(result0 (fetch (cadddr q0)))]
+          (apply llvm-begin q1)
+          (build-branch start)
+          (position-builder-at-end start)
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(result (build-phi (typecode self)))
+                    (i      (build-phi <int>))]
+            (add-incoming result start result0)
+            (add-incoming i start (typed-constant <int> 1))
+            (apply llvm-begin (map (lambda (ptr ptr1) (add-incoming ptr start ptr1)) (car q) q1))
+            (build-cond-branch (ne i (size (index self))) body end)
+            (position-builder-at-end body)
+            (jit-let [(result1 (fetch (cadddr q)))]
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming result finish (+ result result1))
+              (add-incoming i finish (+ i (typed-constant <int> 1)))
+              (apply llvm-begin (map (lambda (ptr str) (add-incoming ptr finish (+ ptr str))) (car q) (caddr q)))
+              (build-branch for)
+              (position-builder-at-end end)
+              result)))))))
 
 (define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
 

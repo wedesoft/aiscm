@@ -176,7 +176,6 @@
 
 (define-tensor (s a) (sum-over i (get a i)))
 (test-group "tensor reductions"
-  (test-expect-fail 1)
   (test-equal "Sum elements of array"
     10 (s (arr 2 3 5))))
 (test-end "aiscm tensors")
