@@ -174,8 +174,12 @@
   (test-equal "bitwise negative of array"
     '(253 252 250) (to-list (negation (arr 2 3 5)))))
 
-(define-tensor (s a) (sum-over i (get a i)))
+(define-tensor (sum-1d a) (sum-over i (get a i)))
+(define-tensor (sum-2d a) (sum-over i (sum-over j (get (get a j) i))))
+
 (test-group "tensor reductions"
-  (test-equal "Sum elements of array"
-    10 (s (arr 2 3 5))))
+  (test-equal "Sum elements of 1Darray"
+    10 (sum-1d (arr 2 3 5))))
+  (test-equal "Sum elements of 2D array"
+    25 (sum-2d (arr (2 3 5) (3 5 7))))
 (test-end "aiscm tensors")

@@ -231,6 +231,11 @@
   (let [(iter (tensor-iterate (term self) idx))]
     (list (car iter) (cadr iter) (caddr iter) (make <functional> #:term (cadddr iter) #:index (index self)))))
 
+(define-method (tensor-iterate (self <reduction>) (idx <index>))
+  (let [(iter (tensor-iterate (term self) idx))]
+    (list (car iter) (cadr iter) (caddr iter)
+          (make <reduction> #:operation (operation self) #:term (cadddr iter) #:index (index self)))))
+
 (define-method (tensor-iterate (self <lookup>) (idx <index>))
   "Return iterator information and rebased lookup object if index matches"
   (if (eq? (index self) idx)
@@ -306,7 +311,7 @@
 
 (define-syntax-rule (sum-over i expression)
   (let [(i (make <index>))]
-    (make <reduction> #:term expression #:index i #:operator +)))
+    (make <reduction> #:term expression #:index i #:operation +)))
 
 (define-method (fetch (self <reduction>))
   (let [(q0     (tensor-iterate (term self) (index self)))
