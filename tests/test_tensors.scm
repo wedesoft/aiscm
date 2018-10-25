@@ -192,6 +192,8 @@
   (test-equal "1D sum over 2D array"
     '(5 8 12) (to-list (sum-1d (arr (2 3 5) (3 5 7)))))
   (test-equal "Dot product"
-    '(38 56) (to-list (dot (arr (2 3 5) (3 5 7)) (arr 2 3 5)))))
+    '(38 56) (to-list (dot (arr (2 3 5) (3 5 7)) (arr 2 3 5))))
+  (test-equal "Dot product of arrays"
+    '((38) (56)) (to-list (dot (arr (2 3 5) (3 5 7)) (arr (2) (3) (5))))))
 
 (test-end "aiscm tensors")
