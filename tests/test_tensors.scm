@@ -176,10 +176,16 @@
 
 (define-tensor (sum-1d a) (sum-over i (get a i)))
 (define-tensor (sum-2d a) (sum-over i (sum-over j (get (get a j) i))))
+(define-tensor (sum-cols a) (tensor i (sum-over j (get (get a j) i))))
+(define-tensor (sum-rows a) (tensor i (sum-over j (get (get a i) j))))
 
 (test-group "tensor reductions"
   (test-equal "Sum elements of 1Darray"
-    10 (sum-1d (arr 2 3 5))))
+    10 (sum-1d (arr 2 3 5)))
   (test-equal "Sum elements of 2D array"
     25 (sum-2d (arr (2 3 5) (3 5 7))))
+  (test-equal "Sum each column"
+    '(5 8 12) (to-list (sum-cols (arr (2 3 5) (3 5 7)))))
+  (test-equal "Sum each row"
+    '(10 15) (to-list (sum-rows (arr (2 3 5) (3 5 7))))))
 (test-end "aiscm tensors")
