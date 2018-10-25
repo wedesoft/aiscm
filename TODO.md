@@ -1,5 +1,9 @@
 ## Ready
 
+* tensor-get with multiple indices
+* sum-over operation including indices
+* tensor multiplying index and array element
+* tensor documentation
 * OpenGL vertex array object example
 * 3DS files
 * prototype space game
