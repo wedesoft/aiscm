@@ -309,9 +309,16 @@
       (elementwise-tensor result expression)
       result)))
 
+(define-method (reduction expression idx op)
+  (make <reduction> #:term expression #:index idx #:operation op))
+
+(define-method (reduction (expression <functional>) idx op)
+  (make <functional> #:index (index expression) #:term (reduction (term expression) idx op)))
+
 (define-syntax-rule (sum-over i expression)
   (let [(i (make <index>))]
-    (make <reduction> #:term expression #:index i #:operation +)))
+    (reduction expression i +)
+    ))
 
 (define-method (fetch (self <reduction>))
   (let [(q0     (tensor-iterate (term self) (index self)))

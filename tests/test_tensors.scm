@@ -187,5 +187,8 @@
   (test-equal "Sum each column"
     '(5 8 12) (to-list (sum-cols (arr (2 3 5) (3 5 7)))))
   (test-equal "Sum each row"
-    '(10 15) (to-list (sum-rows (arr (2 3 5) (3 5 7))))))
+    '(10 15) (to-list (sum-rows (arr (2 3 5) (3 5 7)))))
+  (test-equal "1D sum over 2D array"
+    '(5 8 12) (to-list (sum-1d (arr (2 3 5) (3 5 7))))))
+
 (test-end "aiscm tensors")
