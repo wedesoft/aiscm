@@ -25,7 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (destroy read-image write-image read-audio write-audio rate channels
-            integer signed unsigned bits signed? coerce foreign-type pow
+            integer signed unsigned bits signed? coerce to-float to-bool foreign-type pow
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build

@@ -22,8 +22,8 @@
   #:use-module (aiscm util)
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap> <reduction>
             expression->tensor operation arguments)
-  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over)
-  #:re-export (get memory shape typecode project rebase + - * ~))
+  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over product-over)
+  #:re-export (get memory shape typecode project rebase + - * ~ sqrt))
 
 (define-class <tensor> ())
 
@@ -183,6 +183,13 @@
 
 (define-unary-tensor-op -)
 (define-unary-tensor-op ~)
+(define-unary-tensor-op sqrt)
+(define-unary-tensor-op sin)
+(define-unary-tensor-op cos)
+(define-unary-tensor-op tan)
+(define-unary-tensor-op asin)
+(define-unary-tensor-op acos)
+(define-unary-tensor-op atan)
 
 (define-syntax-rule (define-binary-tensor-op op)
   "Define binary operation to use in tensor expressions"
@@ -221,6 +228,8 @@
 (define-binary-tensor-op -)
 (define-binary-tensor-op *)
 (define-binary-tensor-op /)
+(define-binary-tensor-op pow)
+(define-binary-tensor-op atan)
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
@@ -320,9 +329,10 @@
   (make <functional> #:index (index expression) #:term (reduction (term expression) idx op)))
 
 (define-syntax-rule (sum-over i expression)
-  (let [(i (make <index>))]
-    (reduction expression i +)
-    ))
+  (let [(i (make <index>))] (reduction expression i +)))
+
+(define-syntax-rule (product-over i expression)
+  (let [(i (make <index>))] (reduction expression i *)))
 
 (define-method (fetch (self <reduction>))
   (let [(q0     (tensor-iterate (term self) (index self)))
@@ -358,7 +368,7 @@
             (jit-let [(result1 (fetch (cadddr q)))]
               (build-branch finish)
               (position-builder-at-end finish)
-              (add-incoming result finish (+ result result1))
+              (add-incoming result finish ((operation self) result result1))
               (add-incoming i finish (+ i (typed-constant <int> 1)))
               (apply llvm-begin (map (lambda (ptr str) (add-incoming ptr finish (+ ptr str))) (car q) (caddr q)))
               (build-branch for)

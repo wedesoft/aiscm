@@ -1,7 +1,9 @@
 ## Ready
 
+* tensor sqrt, sin, cos, tan, asin, acos, atan, pow, atan2 need to coerce to float
 * sum-over operation including indices
 * tensor multiplying index and array element
+* tensor with constant value?
 * tensor documentation
 * OpenGL vertex array object example
 * 3DS files

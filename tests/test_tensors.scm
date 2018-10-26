@@ -186,6 +186,7 @@
 (define-tensor (sum-rows a) (tensor i (sum-over j (get (get a i) j))))
 (define-tensor (dot a b) (tensor j (sum-over k (* (get (get a j) k) (get b k)))))
 (define-tensor (get-two a) (tensor j (tensor i (get a j i))))
+(define-tensor (prod-1d a) (product-over i (get a i)))
 
 (test-group "tensor reductions"
   (test-equal "Sum elements of 1Darray"
@@ -203,6 +204,38 @@
   (test-equal "Dot product of arrays"
     '((38) (56)) (to-list (dot (arr (2 3 5) (3 5 7)) (arr (2) (3) (5)))))
   (test-equal "Get with multiple indices"
-    '((2 5) (3 7)) (to-list (get-two (arr (2 3) (5 7))))))
+    '((2 5) (3 7)) (to-list (get-two (arr (2 3) (5 7)))))
+  (test-equal "Multiply elements of 1Darray"
+    30 (prod-1d (arr 2 3 5))))
+
+(define-tensor (tensor-sqrt a) (sqrt a))
+(define-tensor (tensor-sin a) (sin a))
+(define-tensor (tensor-cos a) (cos a))
+(define-tensor (tensor-tan a) (tan a))
+(define-tensor (tensor-asin a) (asin a))
+(define-tensor (tensor-acos a) (acos a))
+(define-tensor (tensor-atan a) (atan a))
+(define-tensor (tensor-pow a b) (pow a b))
+(define-tensor (tensor-atan a b) (atan a b))
+
+(test-group "various functions"
+  (test-assert "Tensor square root"
+    (tensor-sqrt (arr 2 3 5)))
+  (test-assert "Tensor sinus"
+    (tensor-sin (arr 2 3 5)))
+  (test-assert "Tensor cosinus"
+    (tensor-cos (arr 2 3 5)))
+  (test-assert "Tensor tangens"
+    (tensor-tan (arr 2 3 5)))
+  (test-assert "Tensor arcus sinus"
+    (tensor-asin (arr 0)))
+  (test-assert "Tensor arcus cosinus"
+    (tensor-acos (arr 0)))
+  (test-assert "Tensor arcus tangens"
+    (tensor-atan (arr 0)))
+  (test-assert "Tensor exponentiation"
+    (tensor-pow (arr 2) (arr 3)))
+  (test-assert "Tensor arcus tangens 2"
+    (tensor-atan (arr 0) (arr 1))))
 
 (test-end "aiscm tensors")
