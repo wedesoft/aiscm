@@ -91,6 +91,8 @@
 (define-tensor (index-array n) (tensor (i n) i))
 (define-tensor (index-y n m) (tensor (j m) (tensor (i n) j)))
 (define-tensor (index-x n m) (tensor (j m) (tensor (i n) i)))
+(define-tensor (two-times-index n) (tensor (i n) (* 2 i)))
+(define-tensor (index-times-two n) (tensor (i n) (* i 2)))
 
 (test-group "array indexing"
   (test-equal "rebuild array"
@@ -104,7 +106,11 @@
   (test-equal "2D index array with row index"
     '((0 0 0) (1 1 1)) (to-list (index-y 3 2)))
   (test-equal "2D index array with column index"
-    '((0 1 2) (0 1 2)) (to-list (index-x 3 2))))
+    '((0 1 2) (0 1 2)) (to-list (index-x 3 2)))
+  (test-equal "Multiply two with index"
+    '(0 2 4) (to-list (two-times-index 3)))
+  (test-equal "Multiply index with two"
+    '(0 2 4) (to-list (index-times-two 3))))
 
 (define-tensor (plus a b) (+ a b))
 (define-tensor (plus-1d a b) (tensor i (+ (get a i) (get b i))))

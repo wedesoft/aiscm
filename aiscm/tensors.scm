@@ -189,13 +189,13 @@
   (begin
     (define-method (op (a <lookup>) (b <lookup>))
       (make <tensormap> #:operation op #:arguments (list a b)))
-    (define-method (op (a <lookup>) (b <void>))
+    (define-method (op (a <tensor>) (b <void>))
       (make <tensormap> #:operation op #:arguments (list a b)))
-    (define-method (op (a <void>) (b <lookup>))
+    (define-method (op (a <void>) (b <tensor>))
       (make <tensormap> #:operation op #:arguments (list a b)))
-    (define-method (op a (b <lookup>))
+    (define-method (op a (b <tensor>))
       (op (typed-constant (native-type a) a) b))
-    (define-method (op (a <lookup>) b)
+    (define-method (op (a <tensor>) b)
       (op a (typed-constant (native-type b) b)))
     (define-method (op (a <functional>) (b <functional>))
       (let [(i  (make <index>))]
