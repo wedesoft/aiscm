@@ -179,6 +179,7 @@
 (define-tensor (sum-cols a) (tensor i (sum-over j (get (get a j) i))))
 (define-tensor (sum-rows a) (tensor i (sum-over j (get (get a i) j))))
 (define-tensor (dot a b) (tensor j (sum-over k (* (get (get a j) k) (get b k)))))
+(define-tensor (get-two a) (tensor j (tensor i (get a j i))))
 
 (test-group "tensor reductions"
   (test-equal "Sum elements of 1Darray"
@@ -194,6 +195,8 @@
   (test-equal "Dot product"
     '(38 56) (to-list (dot (arr (2 3 5) (3 5 7)) (arr 2 3 5))))
   (test-equal "Dot product of arrays"
-    '((38) (56)) (to-list (dot (arr (2 3 5) (3 5 7)) (arr (2) (3) (5))))))
+    '((38) (56)) (to-list (dot (arr (2 3 5) (3 5 7)) (arr (2) (3) (5)))))
+  (test-equal "Get with multiple indices"
+    '((2 5) (3 7)) (to-list (get-two (arr (2 3) (5 7))))))
 
 (test-end "aiscm tensors")

@@ -1348,7 +1348,7 @@
 
 (define-method (element self) self)
 
-(define-method (element self first . rest)
+(define-method (element (self <multiarray<>>) first . rest)
   (let* [(indices (cons first rest))
          (index   (last indices))]
     (apply element

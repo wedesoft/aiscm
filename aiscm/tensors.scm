@@ -109,9 +109,13 @@
       (make <lookup> #:index after #:stride (stride self) #:term (term self)))
     (make <lookup> #:index (index self) #:stride (stride self) #:term (subst (term self) before after))))
 
-(define-method (get (self <functional>) (idx <index>))
+(define-method (get (self <tensor>)) self)
+
+(define-method (get (self <tensor>) (first <index>) . rest)
   "Indexing a function object removes function and substitutes index"
-  (subst (term self) (index self) idx))
+  (let* [(indices (cons first rest))
+         (idx     (last indices))]
+    (apply get (subst (term self) (index self) idx) (all-but-last indices))))
 
 (define-method (fetch (self <elementary<>>))
   "Fetch value from memory"
