@@ -1,3 +1,9 @@
+aiscm (0.17.1-1) unstable; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 27 Oct 2018 21:20:00 +0100
+
 aiscm (0.16.2-1) unstable; urgency=low
 
   - New upstream release.
