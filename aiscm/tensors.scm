@@ -176,7 +176,7 @@
 (define-syntax-rule (define-unary-tensor-op coercion op)
   "Define unary operation to use in tensor expressions"
   (begin
-    (define-method (op (a <lookup>))
+    (define-method (op (a <tensor>))
       (make <tensormap> #:operation op #:arguments (list a) #:coercion coercion))
     (define-method (op (a <functional>))
       (let [(i  (make <index>))]
@@ -195,7 +195,7 @@
 (define-syntax-rule (define-binary-tensor-op coercion op)
   "Define binary operation to use in tensor expressions"
   (begin
-    (define-method (op (a <lookup>) (b <lookup>))
+    (define-method (op (a <tensor>) (b <tensor>))
       (make <tensormap> #:operation op #:arguments (list a b) #:coercion coercion))
     (define-method (op (a <tensor>) (b <void>))
       (make <tensormap> #:operation op #:arguments (list a b) #:coercion coercion))
@@ -329,11 +329,15 @@
 (define-method (reduction (expression <functional>) idx op)
   (make <functional> #:index (index expression) #:term (reduction (term expression) idx op)))
 
-(define-syntax-rule (sum-over i expression)
-  (let [(i (make <index>))] (reduction expression i +)))
+(define-syntax-rule (define-reduction name op)
+  (define-syntax name
+    (lambda (x)
+      (syntax-case x ()
+        ((k (i n) expression) #'(let [(i (make <index>))] (slot-set! i 'size n) (reduction expression i op)))
+        ((k i expression)     #'(let [(i (make <index>))] (reduction expression i op)))))))
 
-(define-syntax-rule (product-over i expression)
-  (let [(i (make <index>))] (reduction expression i *)))
+(define-reduction sum-over     +)
+(define-reduction product-over *)
 
 (define-method (fetch (self <reduction>))
   (let [(q0     (tensor-iterate (term self) (index self)))

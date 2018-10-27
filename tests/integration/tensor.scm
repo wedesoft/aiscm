@@ -32,3 +32,7 @@
 (define-tensor (prod a) (product-over i (get a i)))
 (prod (arr 2 3 5))
 ;30
+(define-tensor (s n) (tensor (i n) (sqrt i)))
+(s 3)
+;#<multiarray<float<double>,1>>:
+;(0.0 1.0 1.4142135623730951)

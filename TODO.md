@@ -1,11 +1,9 @@
 ## Ready
 
-* sum-over operation including indices
-* tensor multiplying index and array element
-* tensor with constant value?
-* tensor documentation
+* show floating point image
 * OpenGL vertex array object example
 * 3DS files
+* latex about rigid body dynamics
 * prototype space game
 * lookup, pseudo colour, warp
 * mask

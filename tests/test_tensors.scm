@@ -240,4 +240,18 @@
   (test-assert "Tensor arcus tangens 2"
     (tensor-atan (arr 0) (arr 1))))
 
+(define-tensor (negative-i n) (tensor (i n) (- i)))
+(define-tensor (plus-i n) (tensor (i n) (+ i i)))
+(define-tensor (arr-plus-i a) (tensor i (+ (get a i) i)))
+(define-tensor (sum-i n) (sum-over (i n) i))
+(test-group "operations with indices"
+  (test-equal "negative index"
+    '(0 -1 -2) (to-list (negative-i 3)))
+  (test-equal "add indices"
+    '(0 2 4) (to-list (plus-i 3)))
+  (test-equal "add array element and index"
+    '(2 4 7) (to-list (arr-plus-i (arr 2 3 5))))
+  (test-eqv "sum over range of indices"
+    3 (sum-i 3)))
+
 (test-end "aiscm tensors")
