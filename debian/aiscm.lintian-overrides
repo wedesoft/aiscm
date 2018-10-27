@@ -11,3 +11,6 @@ shared-lib-without-dependency-information
 
 # Guile-2.2 object files mistakenly (*.go) identified as binaries from another architecture.
 binary-from-other-architecture
+
+# libguile-aiscm-obj.so and libguile-aiscm-util.so do not use libc
+library-not-linked-against-libc
