@@ -1,6 +1,7 @@
 aiscm (0.17.1-1) unstable; urgency=low
 
   - New upstream release
+  - Lintian override for library-not-linked-against-libc
 
  -- Jan Wedekind <jan@wedesoft.de>  Sat, 27 Oct 2018 21:20:00 +0100
 
