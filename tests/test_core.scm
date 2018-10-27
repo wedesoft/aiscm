@@ -788,10 +788,10 @@
   (for-each (lambda (op a b result)
     (test-eqv (format #f "(~a 2 3) should be ~a" (procedure-name op) result)
       result ((jit (list <int> <int>) op) a b)))
-    (list +  - * <<  % & |)
-    '(    2  2 2  2 13 3 3)
-    '(    3  3 3  3  5 5 5)
-    '(    5 -1 6 16  3 1 7))
+    (list +  - * <<  % & | ^)
+    '(    2  2 2  2 13 3 3 5)
+    '(    3  3 3  3  5 5 5 4)
+    '(    5 -1 6 16  3 1 7 1))
   (test-eqv "Unsigned integer division"
     127 ((jit (list <ubyte> <ubyte>) /) 254 2))
   (test-eqv "Signed integer division"
@@ -1435,7 +1435,7 @@
   (test-equal "upcast result type for RGB values"
     (rgb 256 256 256) (sum (to-array (list (rgb 255 255 255) (rgb 1 1 1)))))
   (test-eqv "product of 1D array"
-    30 (prod (arr 2 3 5)))
+    30 (product (arr 2 3 5)))
   (test-eqv "Minimum of array"
     2 (min (arr 2 3 5)))
   (test-eqv "Maximum of array"
@@ -1654,11 +1654,11 @@
 
 (test-group "index arrays"
   (test-equal "shape of index array"
-    '(2 3 5) (shape (index 2 3 5)))
+    '(2 3 5) (shape (indices 2 3 5)))
   (test-equal "indices in 1D array"
-    '(0 1 2) (to-list (index 3)))
+    '(0 1 2) (to-list (indices 3)))
   (test-equal "2D index array"
-    '((0 1 2) (3 4 5)) (to-list (index 3 2))))
+    '((0 1 2) (3 4 5)) (to-list (indices 3 2))))
 
 (test-group "Comparison"
   (test-assert "equal arrays"

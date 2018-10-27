@@ -554,6 +554,11 @@ SCM llvm_build_or(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
   return llvm_build_binary(LLVMBuildOr, scm_function, scm_value_a, scm_value_b);
 }
 
+SCM llvm_build_xor(SCM scm_function, SCM scm_value_a, SCM scm_value_b)
+{
+  return llvm_build_binary(LLVMBuildXor, scm_function, scm_value_a, scm_value_b);
+}
+
 SCM llvm_build_integer_cmp(SCM scm_function, SCM scm_predicate, SCM scm_value_a, SCM scm_value_b)
 {
   SCM retval;
@@ -767,6 +772,7 @@ void init_core(void)
   scm_c_define_gsubr("llvm-build-frem"             , 3, 0, 0, SCM_FUNC(llvm_build_frem             ));
   scm_c_define_gsubr("llvm-build-and"              , 3, 0, 0, SCM_FUNC(llvm_build_and              ));
   scm_c_define_gsubr("llvm-build-or"               , 3, 0, 0, SCM_FUNC(llvm_build_or               ));
+  scm_c_define_gsubr("llvm-build-xor"              , 3, 0, 0, SCM_FUNC(llvm_build_xor              ));
   scm_c_define_gsubr("llvm-build-trunc"            , 3, 0, 0, SCM_FUNC(llvm_build_trunc            ));
   scm_c_define_gsubr("llvm-build-sext"             , 3, 0, 0, SCM_FUNC(llvm_build_sext             ));
   scm_c_define_gsubr("llvm-build-zext"             , 3, 0, 0, SCM_FUNC(llvm_build_zext             ));

@@ -25,7 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (aiscm util)
   #:export (destroy read-image write-image read-audio write-audio rate channels
-            integer signed unsigned bits signed? coerce foreign-type pow
+            integer signed unsigned bits signed? coerce to-float to-bool foreign-type pow
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
@@ -38,12 +38,12 @@
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-udiv llvm-sdiv llvm-fdiv llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem
-            llvm-and llvm-or llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
+            llvm-and llvm-or llvm-xor llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
             llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
-            llvm-call typed-call typed-constant typed-pointer store fetch llvm-begin to-list
-            ~ << >> % & | ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
+            llvm-call typed-call typed-constant typed-pointer store fetch allocate-array llvm-begin to-list
+            ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
-            crop dump project element minor major sum prod fill index convolve dilate erode
+            crop dump rebase project element minor major sum product fill indices convolve dilate erode
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -785,6 +785,7 @@
 (define-llvm-binary llvm-frem llvm-build-frem)
 (define-llvm-binary llvm-and  llvm-build-and )
 (define-llvm-binary llvm-or   llvm-build-or  )
+(define-llvm-binary llvm-xor  llvm-build-xor )
 
 (define ((build-integer-cmp predicate) fun value-a value-b)
   (llvm-build-integer-cmp fun predicate value-a value-b))
@@ -1001,6 +1002,7 @@
 (define-binary-delegation identity %  (lambda (t) (if (signed? t) llvm-srem llvm-urem)) (const llvm-frem))
 (define-binary-delegation identity &  (const llvm-and)                                  (const llvm-and ))
 (define-binary-delegation identity |  (const llvm-or )                                  (const llvm-or  ))
+(define-binary-delegation identity ^  (const llvm-xor)                                  (const llvm-xor ))
 
 (define-scalar-binary <bool> <bool> identity && (const llvm-and))
 (define-scalar-binary <bool> <bool> identity || (const llvm-or ))
@@ -1346,7 +1348,7 @@
 
 (define-method (element self) self)
 
-(define-method (element self first . rest)
+(define-method (element (self <multiarray<>>) first . rest)
   (let* [(indices (cons first rest))
          (index   (last indices))]
     (apply element
@@ -1438,7 +1440,7 @@
           (write (get self) port)
           (print-data self port 1 line-counter cont))))))
 
-(define (rebase self p)
+(define-method (rebase (self <llvmarray<>>) p)
   "Use the specified pointer to rebase the array"
   (llvmarray p (memory-base self) (shape self) (strides self)))
 
@@ -1472,7 +1474,7 @@
   "Elementwise array operation with arbitrary arity"
   (if (zero? (dimensions result))
     (store (memory result) (apply delegate args))
-    (let [(start (make-basic-block "start"))
+    (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
@@ -1607,52 +1609,55 @@
 (define-method (upcast-integer (type <meta<structure>>))
   (apply (build type) (map upcast-integer (base type))))
 
-(define (reduction operation arg)
-  (if (zero? (dimensions arg))
-    arg
-    (let [(start  (make-basic-block "start"))
-          (for    (make-basic-block "for"))
-          (body   (make-basic-block "body"))
+(define (map-reduce upcast reduction mapping . args)
+  (if (every (lambda (arg) (zero? (dimensions arg))) args)
+    (jit-let [(element (apply mapping args))]
+      (to-type (upcast (class-of element)) element))
+    (let [(start  (make-basic-block "start" ))
+          (for    (make-basic-block "for"   ))
+          (body   (make-basic-block "body"  ))
           (finish (make-basic-block "finish"))
-          (end    (make-basic-block "end"))]
-      (jit-let [(element (reduction operation (fetch (project arg))))
-                (result0 (to-type (upcast-integer (class-of element)) element))]
-        (build-branch start)
-        (position-builder-at-end start)
-        (jit-let [(stride  (llvm-last (strides arg)))
-                  (p0      (+ (memory arg) stride))
-                  (pend    (+ (memory arg) (* stride (llvm-last (shape arg)))))]
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(result (build-phi (class-of result0)))
-                    (p      (build-phi (class-of p0)))]
-            (add-incoming result start result0)
-            (add-incoming p start p0)
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (jit-let [(element (reduction operation (fetch (project (rebase arg p)))))
-                      (result1 (to-type (upcast-integer (class-of element)) element))]
-              (build-branch finish)
-              (position-builder-at-end finish)
-              (add-incoming result finish (operation result result1))
-              (add-incoming p finish (+ p stride))
+          (end    (make-basic-block "end"   ))]
+      (let [(sub-args (map (lambda (arg) (fetch (project arg))) args))]
+        (jit-let [(result0 (apply map-reduce upcast reduction mapping sub-args))]
+          (build-branch start)
+          (position-builder-at-end start)
+          (let* [(stride (map (lambda (arg) (llvm-last (strides arg))) args))
+                 (p0     (map (lambda (arg stride) (+ (memory arg) stride)) args stride))
+                 (pend   (+ (memory (car args)) (* (car stride) (llvm-last (shape (car args))))))]
+            (llvm-begin
+              (apply llvm-begin p0)
               (build-branch for)
-              (position-builder-at-end end)
-              result)))))))
+              (position-builder-at-end for)
+              (let [(p (map (lambda (ptr) (build-phi (class-of ptr))) p0))]
+                (jit-let [(result (build-phi (class-of result0)))]
+                  (add-incoming result start result0)
+                  (apply llvm-begin (map (lambda (ptr ptr0) (add-incoming ptr start ptr0)) p p0))
+                  (build-cond-branch (ne (car p) pend) body end)
+                  (position-builder-at-end body)
+                  (jit-let [(result1 (apply map-reduce upcast reduction mapping
+                                       (map (lambda (arg ptr) (fetch (project (rebase arg ptr)))) args p)))]
+                    (build-branch finish)
+                    (position-builder-at-end finish)
+                    (add-incoming result finish (reduction result result1))
+                    (apply llvm-begin (map (lambda (ptr str) (add-incoming ptr finish (+ ptr str))) p stride))
+                    (build-branch for)
+                    (position-builder-at-end end)
+                    result))))))))))
 
 (define-syntax-rule (define-reducing-op name operation)
   (define-method (name (self <multiarray<>>))
-    (let [(fun (lambda (arg) (reduction operation arg)))]
+    (let [(fun (lambda (arg) (map-reduce upcast-integer operation identity arg)))]
       (add-method! name
                    (make <method>
                          #:specializers (list (class-of self))
                          #:procedure (jit (list (native-type self)) fun))))
     (name self)))
 
-(define-reducing-op sum  +    )
-(define-reducing-op prod *    )
-(define-reducing-op min  minor)
-(define-reducing-op max  major)
+(define-reducing-op sum     +    )
+(define-reducing-op product *    )
+(define-reducing-op min     minor)
+(define-reducing-op max     major)
 
 (define (convolve-kernel reduction mapping result self kernel self-strides klower-bounds kupper-bounds offsets)
   (if (zero? (dimensions kernel))
@@ -1793,7 +1798,7 @@
 (define (fill type shape value)
   (fill-dispatch (multiarray type (length shape)) shape value))
 
-(define (do-index result)
+(define (index-array result)
   (let [(start (make-basic-block "start"))
         (for    (make-basic-block "for"))
         (body   (make-basic-block "body"))
@@ -1818,53 +1823,17 @@
           (position-builder-at-end end)
           result)))))
 
-(define-method (index . shp)
+(define-method (indices . shp)
   (let [(fun (jit (list (llvmlist <int> (length shp)))
-                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (do-index result)))))]
-    (add-method! index
+                  (lambda (shp) (jit-let [(result (allocate-array <int> shp))] (index-array result)))))]
+    (add-method! indices
                  (make <method>
                        #:specializers (make-list (length shp) <integer>)
                        #:procedure (lambda shp (fun shp))))
-    (apply index shp)))
-
-(define-method (equal-arrays (a <void>) (b <void>))
-  (if  (zero? (dimensions a))
-    (eq a b)
-    (let [(start  (make-basic-block "start"))
-          (for    (make-basic-block "for"))
-          (body   (make-basic-block "body"))
-          (finish (make-basic-block "finish"))
-          (end    (make-basic-block "end"))]
-      (jit-let [(result0 (equal-arrays (fetch (project a)) (fetch (project b))))]
-        (build-branch start)
-        (position-builder-at-end start)
-        (jit-let [(pstride (llvm-last (strides a)))
-                  (qstride (llvm-last (strides b)))
-                  (p0      (+ (memory a) pstride))
-                  (q0      (+ (memory b) qstride))
-                  (pend    (+ (memory a) (* pstride (llvm-last (shape a)))))]
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(result (build-phi <bool>))
-                    (p      (build-phi (class-of p0)))
-                    (q      (build-phi (class-of q0)))]
-            (add-incoming result start result0)
-            (add-incoming p start p0)
-            (add-incoming q start q0)
-            (build-cond-branch (ne p pend) body end)
-            (position-builder-at-end body)
-            (jit-let [(result1 (equal-arrays (fetch (project (rebase a p))) (fetch (project (rebase b q)))))]
-              (build-branch finish)
-              (position-builder-at-end finish)
-              (add-incoming result finish (&& result result1))
-              (add-incoming p finish (+ p pstride))
-              (add-incoming q finish (+ q qstride))
-              (build-branch for)
-              (position-builder-at-end end)
-              result)))))))
+    (apply indices shp)))
 
 (define-method (equal-arrays (a <multiarray<>>) (b <multiarray<>>))
-  (let [(fun (lambda (a b) (equal-arrays a b)))]
+  (let [(fun (lambda (a b) (map-reduce identity && eq a b)))]
     (add-method! equal-arrays
                  (make <method>
                        #:specializers (list (class-of a) (class-of b))

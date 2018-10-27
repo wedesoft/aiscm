@@ -149,3 +149,11 @@ Here is a small example using complex arrays:
 
 Since native integers are used, numerical overflow can occur.
 Note that you can use *to-type* to convert an array to a more suitable type.
+
+## Tensor operations
+
+*AIscm* has a tensor implementation with flexible indexing.
+
+```Scheme
+@../tests/integration/tensor.scm@
+```

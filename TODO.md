@@ -1,23 +1,26 @@
 ## Ready
 
-* refactor equal-arrays and reduction
-* tensors (tensors.scm)
+* show floating point image
+* OpenGL vertex array object example
+* 3DS files
+* technical report about rigid body dynamics
+* prototype space game
 * lookup, pseudo colour, warp
 * mask
-* binary and rgb &, |, ^, <<, >>
+* argmin, argmax
+* connected components analysis
+* port using qemu
+* rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
 * RGB to object, object to RGB
-* minimal shape
-* OpenGL vertex array object example
 * runge kutta with state vector
 * 3ds converter computing normals and tangentials and loading textures and maps
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * min/max
 * use thumbnail images to illustrate examples
-* connected components analysis
 * Ghost in the Shell style animations
 * panorama video viewer
 * tensor indices
@@ -55,7 +58,6 @@
 * sum with multiple indices or no indices, standalone sum expression
 * inject: equality, sum, minimum, maximum of frames
 * pixel selection example (take reference from center pixels)
-* argmax
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
 * how to run test suite
