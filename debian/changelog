@@ -1,8 +1,14 @@
-aiscm (0.16.2-1+bionic1) UNRELEASED; urgency=low
+aiscm (0.17.1-1+bionic1) UNRELEASED; urgency=low
 
   * adapt dependencies for Ubuntu Bionic
 
- -- Jan Wedekind <jan@wedesoft.de>  Mon, 10 Sep 2018 21:24:52 +0100
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 27 Oct 2018 21:20:00 +0100
+
+aiscm (0.17.1-1) unstable; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Wed, 27 Oct 2018 21:20:00 +0100
 
 aiscm (0.16.2-1) unstable; urgency=low
 
