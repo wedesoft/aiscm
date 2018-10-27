@@ -221,6 +221,8 @@
 (test-group "various functions"
   (test-assert "Tensor square root"
     (tensor-sqrt (arr 2 3 5)))
+  (test-eqv "Square root maps to float"
+    2.0 (get (tensor-sqrt (arr 4)) 0))
   (test-assert "Tensor sinus"
     (tensor-sin (arr 2 3 5)))
   (test-assert "Tensor cosinus"

@@ -23,7 +23,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap> <reduction>
             expression->tensor operation arguments)
   #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over product-over)
-  #:re-export (get memory shape typecode project rebase + - * ~ sqrt))
+  #:re-export (get memory shape typecode project rebase + - * ~ sqrt sin cos tan asin acos atan))
 
 (define-class <tensor> ())
 
@@ -73,7 +73,8 @@
 
 (define-class <tensormap> (<tensor>)
   (operation #:init-keyword #:operation #:getter operation)
-  (arguments #:init-keyword #:arguments #:getter arguments))
+  (arguments #:init-keyword #:arguments #:getter arguments)
+  (coercion  #:init-keyword #:coercion  #:getter coercion ))
 
 (define-class <reduction> (<tensor>)
   (operation #:init-keyword #:operation #:getter operation)
@@ -172,34 +173,34 @@
   "Change pointer of element-accessing object"
   (make (class-of self) #:memory p))
 
-(define-syntax-rule (define-unary-tensor-op op)
+(define-syntax-rule (define-unary-tensor-op coercion op)
   "Define unary operation to use in tensor expressions"
   (begin
     (define-method (op (a <lookup>))
-      (make <tensormap> #:operation op #:arguments (list a)))
+      (make <tensormap> #:operation op #:arguments (list a) #:coercion coercion))
     (define-method (op (a <functional>))
       (let [(i  (make <index>))]
         (make <functional> #:index i #:term (op (get a i)))))))
 
-(define-unary-tensor-op -)
-(define-unary-tensor-op ~)
-(define-unary-tensor-op sqrt)
-(define-unary-tensor-op sin)
-(define-unary-tensor-op cos)
-(define-unary-tensor-op tan)
-(define-unary-tensor-op asin)
-(define-unary-tensor-op acos)
-(define-unary-tensor-op atan)
+(define-unary-tensor-op identity -   )
+(define-unary-tensor-op identity ~   )
+(define-unary-tensor-op to-float sqrt)
+(define-unary-tensor-op to-float sin )
+(define-unary-tensor-op to-float cos )
+(define-unary-tensor-op to-float tan )
+(define-unary-tensor-op to-float asin)
+(define-unary-tensor-op to-float acos)
+(define-unary-tensor-op to-float atan)
 
-(define-syntax-rule (define-binary-tensor-op op)
+(define-syntax-rule (define-binary-tensor-op coercion op)
   "Define binary operation to use in tensor expressions"
   (begin
     (define-method (op (a <lookup>) (b <lookup>))
-      (make <tensormap> #:operation op #:arguments (list a b)))
+      (make <tensormap> #:operation op #:arguments (list a b) #:coercion coercion))
     (define-method (op (a <tensor>) (b <void>))
-      (make <tensormap> #:operation op #:arguments (list a b)))
+      (make <tensormap> #:operation op #:arguments (list a b) #:coercion coercion))
     (define-method (op (a <void>) (b <tensor>))
-      (make <tensormap> #:operation op #:arguments (list a b)))
+      (make <tensormap> #:operation op #:arguments (list a b) #:coercion coercion))
     (define-method (op a (b <tensor>))
       (op (typed-constant (native-type a) a) b))
     (define-method (op (a <tensor>) b)
@@ -224,16 +225,16 @@
     (define-method (op (a <functional>) b)
       (op a (typed-constant (native-type b) b)))))
 
-(define-binary-tensor-op +)
-(define-binary-tensor-op -)
-(define-binary-tensor-op *)
-(define-binary-tensor-op /)
-(define-binary-tensor-op pow)
-(define-binary-tensor-op atan)
+(define-binary-tensor-op coerce   +   )
+(define-binary-tensor-op coerce   -   )
+(define-binary-tensor-op coerce   *   )
+(define-binary-tensor-op coerce   /   )
+(define-binary-tensor-op coerce   pow )
+(define-binary-tensor-op to-float atan)
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
-  (reduce coerce #f (map typecode (arguments self))))
+  (apply (coercion self) (map typecode (arguments self))))
 
 (define-method (tensor-iterate (self <functional>))
   "Get iterator information by using index of function object"
@@ -277,7 +278,7 @@
     (list (append-map car   args-iterate)
           (append-map cadr  args-iterate)
           (append-map caddr args-iterate)
-          (make <tensormap> #:operation (operation self) #:arguments (map cadddr args-iterate)))))
+          (make <tensormap> #:operation (operation self) #:arguments (map cadddr args-iterate) #:coercion (coercion self)))))
 
 (define-syntax tensor
   (lambda (x)

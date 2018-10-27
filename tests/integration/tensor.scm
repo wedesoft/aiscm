@@ -29,3 +29,6 @@
 (dot a b)
 ;#<multiarray<int<8,unsigned>,1>>:
 ;(38 56)
+(define-tensor (prod a) (product-over i (get a i)))
+(prod (arr 2 3 5))
+;30
