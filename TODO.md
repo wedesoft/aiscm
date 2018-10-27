@@ -3,7 +3,7 @@
 * show floating point image
 * OpenGL vertex array object example
 * 3DS files
-* latex about rigid body dynamics
+* technical report about rigid body dynamics
 * prototype space game
 * lookup, pseudo colour, warp
 * mask
