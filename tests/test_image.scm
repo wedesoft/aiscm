@@ -28,6 +28,7 @@
 (test-begin "aiscm image")
 
 (define l '((2 3 5 7) (11 13 17 19)))
+(define f '((2.0 3.0 5.0 7.0) (11.0 13.0 17.0 19.0)))
 (define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
 (define m (to-array l))
 (define mem (memory m))
@@ -64,6 +65,8 @@
   #vu8(1 3 2 4) (pointer->bytevector (memory (to-image (roll (to-array '((1 2) (3 4)))))) 4))
 (test-equal "Converting from integer multiarray to image and back converts to byte data"
   l (to-list (to-array (to-image (to-array l)))))
+(test-equal "Converting from floating-point multiarray to image and back converts to byte data"
+  l (to-list (to-array (to-image (to-array f)))))
 (test-equal "Convert RGB array to image"
   c (to-list (to-array (to-image (to-array c)))))
 (test-equal "Convert integer RGB array to image"

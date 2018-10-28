@@ -184,7 +184,7 @@
                          #:offsets      '(0)
                          #:pitches      (list (cadr (strides self))))
            (to-image (duplicate self))))
-        ((is-a? (typecode self) <meta<int<>>>)
+        ((or (is-a? (typecode self) <meta<int<>>>) (is-a? (typecode self) <meta<float<>>>))
          (to-image (to-type <ubyte> self)))
         ((equal? <rgb<ubyte>> (typecode self))
          (if (= (car (strides self)) 3)
