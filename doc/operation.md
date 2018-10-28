@@ -86,3 +86,11 @@ Also note that the arrays can have different number of dimensions as long as the
 ```Scheme
 @../tests/integration/binary.scm@
 ```
+
+## Tensor operations
+
+*AIscm* has a tensor implementation with flexible indexing.
+
+```Scheme
+@../tests/integration/tensor.scm@
+```
