@@ -408,7 +408,7 @@
   uint64)
 
 (define-method (foreign-type (type <meta<pointer<>>>))
-  "Get foreing type of pointer"
+  "Get foreign type of pointer"
   uint64)
 
 (define-method (foreign-type (type <meta<llvmlist<>>>))

@@ -1,3 +1,7 @@
+# aiscm (0.17.1)
+
+* Tensor implementation
+
 # aiscm (0.16.1)
 
 * Replaced JIT compiler with LLVM.
