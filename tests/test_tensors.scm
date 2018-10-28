@@ -215,6 +215,8 @@
 (define-tensor (tensor-asin a) (asin a))
 (define-tensor (tensor-acos a) (acos a))
 (define-tensor (tensor-atan a) (atan a))
+(define-tensor (tensor-minor a b) (minor a b))
+(define-tensor (tensor-major a b) (major a b))
 (define-tensor (tensor-pow a b) (pow a b))
 (define-tensor (tensor-atan a b) (atan a b))
 
@@ -235,6 +237,10 @@
     (tensor-acos (arr 0)))
   (test-assert "Tensor arcus tangens"
     (tensor-atan (arr 0)))
+  (test-assert "Tensor minor"
+    (tensor-minor (arr 2) (arr 3)))
+  (test-assert "Tensor major"
+    (tensor-major (arr 2) (arr 3)))
   (test-assert "Tensor exponentiation"
     (tensor-pow (arr 2) (arr 3)))
   (test-assert "Tensor arcus tangens 2"
@@ -244,6 +250,8 @@
 (define-tensor (plus-i n) (tensor (i n) (+ i i)))
 (define-tensor (arr-plus-i a) (tensor i (+ (get a i) i)))
 (define-tensor (sum-i n) (sum-over (i n) i))
+(define-tensor (min-i a) (min-over i (get a i)))
+(define-tensor (max-i a) (max-over i (get a i)))
 (test-group "operations with indices"
   (test-equal "negative index"
     '(0 -1 -2) (to-list (negative-i 3)))
@@ -252,6 +260,10 @@
   (test-equal "add array element and index"
     '(2 4 7) (to-list (arr-plus-i (arr 2 3 5))))
   (test-eqv "sum over range of indices"
-    3 (sum-i 3)))
+    3 (sum-i 3))
+  (test-eqv "minimum of array"
+    2 (min-i (arr 2 3 5)))
+  (test-eqv "maximum of array"
+    5 (max-i (arr 2 3 5))))
 
 (test-end "aiscm tensors")

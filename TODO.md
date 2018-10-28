@@ -4,12 +4,12 @@
 * 3DS files
 * technical report about rigid body dynamics
 * prototype space game
-* lookup, pseudo colour, warp
-* mask
+* pseudo colour, lookup/warp, pseudo color
+* mask, unmask
 * argmin, argmax
+* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * connected components analysis
 * port using qemu
-* rgb &, |, ^, <<, >>
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
@@ -22,20 +22,14 @@
 * use thumbnail images to illustrate examples
 * Ghost in the Shell style animations
 * panorama video viewer
-* tensor indices
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * cast to higher integer type when doing a tensor injection
-* multiple use of one indexer (get s i i) -> merge lookups (tensor contraction)
-* parameter passing for sequences, map, tensor operations, replace fill and other?
-* (tensor [i] (get m i 1)) (tensor i (project (get m i))) (tensor i (roll (get m i)))
-* dimension checks for array/tensor operations; array compatibility check
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated
   * avcodec\_decode\_video2 deprecated
   * avcodec\_encode\_audio2 deprecated
   * avcodec\_decode\_audio4 deprecated
   * codec deprecated (ffmpeg.c: 271, 377, 417)
-* matrix vector operations
 * rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
@@ -61,7 +55,6 @@
 * GNOME video widget and player, Python/Qt/PyQt integration
 * how to run test suite
 * documentation for objects and arrays of objects
-* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * difference picture photo thunderstorm
 * virtual fighter
 * run integration tests in Docker container
@@ -72,8 +65,6 @@
 * multi-threading, SIMD, memory access (cache)
 * make project more self contained (remove web streaming integration test)
 * index manipulation on function expressions
-* document motivation/rationale: vector instructions, compose array functions and calls, see tensor paper
-  Alan Kay, Ian Piumarta: mini-languages which step out of the way (instead of compiler black-box)
 * red, green, blue, real-part, imag-part for objects
 * convert rgb to object, convert complex to object
 * convert object to rgb, convert object to complex
@@ -108,4 +99,3 @@
 * x11 display: error handling for 'show', timing
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
-* red-cyan, 3d display (bino, libglewmx, libavdevice)
