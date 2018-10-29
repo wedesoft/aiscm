@@ -1672,6 +1672,10 @@
   (test-equal "trivial 1D warp"
     '(2 3 5) (to-list (warp (arr 2 3 5) (arr 0 1 2))))
   (test-equal "mirroring 1D warp"
-    '(5 3 2) (to-list (warp (arr 2 3 5) (arr 2 1 0)))))
+    '(5 3 2) (to-list (warp (arr 2 3 5) (arr 2 1 0))))
+  (test-equal "use strides of source array"
+    '(2 3 5) (to-list (warp (arr <int> 2 3 5) (arr 0 1 2))))
+  (test-equal "use strides of index array"
+    '(2 3 5) (to-list (warp (arr 2 3 5) (arr <int> 0 1 2)))))
 
 (test-end "aiscm core")

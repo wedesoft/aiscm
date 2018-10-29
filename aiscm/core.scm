@@ -1853,7 +1853,7 @@
     (llvm-begin
       (build-branch start)
       (position-builder-at-end start)
-      (jit-let [(pend (+ (memory result) (llvm-last (shape result))))]; TODO: multiply with stride
+      (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
         (build-branch for)
         (position-builder-at-end for)
         (jit-let [(p (build-phi (pointer (typecode result))))
@@ -1862,11 +1862,11 @@
           (add-incoming q start (memory x))
           (build-cond-branch (ne p pend) body end)
           (position-builder-at-end body)
-          (store p (fetch (+ (memory self) (fetch q))))
+          (store p (fetch (+ (memory self) (* (fetch q) (llvm-last (strides self))))))
           (build-branch finish)
           (position-builder-at-end finish)
-          (add-incoming p finish (+ p 1)); TODO: stride
-          (add-incoming q finish (+ q 1)); TODO: stride
+          (add-incoming p finish (+ p (llvm-last (strides result))))
+          (add-incoming q finish (+ q (llvm-last (strides x))))
           (build-branch for)
           (position-builder-at-end end)
           result)))))
