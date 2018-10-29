@@ -1660,12 +1660,18 @@
   (test-equal "2D index array"
     '((0 1 2) (3 4 5)) (to-list (indices 3 2))))
 
-(test-group "Comparison"
+(test-group "comparison"
   (test-assert "equal arrays"
     (equal? (arr 2 3 5) (arr 2 3 5)))
   (test-assert "differing shape"
     (not (equal? (arr 2 3) (arr 2 3 5))))
   (test-assert "different elements"
     (not (equal? (arr 2 3 5) (arr 2 4 5)))))
+
+(test-group "warps"
+  (test-equal "trivial 1D warp"
+    '(2 3 5) (to-list (warp (arr 2 3 5) (arr 0 1 2))))
+  (test-equal "mirroring 1D warp"
+    '(5 3 2) (to-list (warp (arr 2 3 5) (arr 2 1 0)))))
 
 (test-end "aiscm core")

@@ -1,12 +1,12 @@
 ## Ready
 
-* OpenGL vertex array object example
-* 3DS files
-* technical report about rigid body dynamics
-* prototype space game
-* pseudo colour, lookup/warp, pseudo color
-* mask, unmask
+* warp, lut
 * argmin, argmax
+* technical report and software about rigid body dynamics
+* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
+* 3DS files
+* prototype space game
+* mask, unmask
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * connected components analysis
 * port using qemu

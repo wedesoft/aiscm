@@ -44,6 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
+            warp
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1842,3 +1843,40 @@
 
 (define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
+
+(define (warp-array result self x)
+  (let [(start  (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (finish (make-basic-block "finish"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (jit-let [(pend (+ (memory result) (llvm-last (shape result))))]; TODO: multiply with stride
+        (build-branch for)
+        (position-builder-at-end for)
+        (jit-let [(p (build-phi (pointer (typecode result))))
+                  (q (build-phi (pointer (typecode x))))]
+          (add-incoming p start (memory result))
+          (add-incoming q start (memory x))
+          (build-cond-branch (ne p pend) body end)
+          (position-builder-at-end body)
+          (store p (fetch (+ (memory self) (fetch q))))
+          (build-branch finish)
+          (position-builder-at-end finish)
+          (add-incoming p finish (+ p 1)); TODO: stride
+          (add-incoming q finish (+ q 1)); TODO: stride
+          (build-branch for)
+          (position-builder-at-end end)
+          result)))))
+
+(define-method (warp self x)
+  (let [(fun (lambda (self x)
+               (jit-let [(result (allocate-array (typecode self) (shape self)))]; TODO: shape of x
+                 (warp-array result self x))))]
+    (add-method! warp
+                 (make <method>
+                       #:specializers (list (class-of self) (class-of x))
+                       #:procedure (jit (list (native-type self) (native-type x)) fun)))
+    (warp self x)))
