@@ -1676,6 +1676,9 @@
   (test-equal "use strides of source array"
     '(2 3 5) (to-list (warp (arr <int> 2 3 5) (arr 0 1 2))))
   (test-equal "use strides of index array"
-    '(2 3 5) (to-list (warp (arr 2 3 5) (arr <int> 0 1 2)))))
+    '(2 3 5) (to-list (warp (arr 2 3 5) (arr <int> 0 1 2))))
+  (test-expect-fail 1)
+  (test-equal "trivial 2D warp"
+    '((2 3 5) (7 11 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr (0 1 2) (0 1 2)) (arr (0 0 0) (1 1 1))))))
 
 (test-end "aiscm core")
