@@ -1871,12 +1871,12 @@
           (position-builder-at-end end)
           result)))))
 
-(define-method (warp self x)
-  (let [(fun (lambda (self x)
-               (jit-let [(result (allocate-array (typecode self) (shape self)))]; TODO: shape of x
-                 (warp-array result self x))))]
+(define-method (warp self . args)
+  (let [(fun (lambda (self . args)
+               (jit-let [(result (allocate-array (typecode self) (shape (car args))))]
+                 (apply warp-array result self args))))]
     (add-method! warp
                  (make <method>
-                       #:specializers (list (class-of self) (class-of x))
-                       #:procedure (jit (list (native-type self) (native-type x)) fun)))
-    (warp self x)))
+                       #:specializers (cons (class-of self) (map class-of args))
+                       #:procedure (jit (cons (native-type self) (map native-type args)) fun)))
+    (apply warp self args)))
