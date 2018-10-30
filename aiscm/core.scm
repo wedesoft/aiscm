@@ -1856,20 +1856,23 @@
       (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
         (build-branch for)
         (position-builder-at-end for)
-        (jit-let [(p (build-phi (pointer (typecode result))))
-                  (q (build-phi (pointer (typecode (car args)))))]
-          (add-incoming p start (memory result))
-          (add-incoming q start (memory (car args)))
-          (build-cond-branch (ne p pend) body end)
-          (position-builder-at-end body)
-          (store p (fetch (+ (memory self) (* (fetch q) (llvm-last (strides self))))))
-          (build-branch finish)
-          (position-builder-at-end finish)
-          (add-incoming p finish (+ p (llvm-last (strides result))))
-          (add-incoming q finish (+ q (llvm-last (strides (car args)))))
-          (build-branch for)
-          (position-builder-at-end end)
-          result)))))
+        (jit-let [(p (build-phi (pointer (typecode result))))]
+          (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
+            (llvm-begin
+              (add-incoming p start (memory result))
+              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
+              (build-cond-branch (ne p pend) body end)
+              (position-builder-at-end body)
+              (store p
+                (fetch (apply + (memory self)
+                         (map (lambda (ptr i) (* (fetch ptr) (get (strides self) i))) q (iota (length q))))))
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming p finish (+ p (llvm-last (strides result))))
+              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) q args))
+              (build-branch for)
+              (position-builder-at-end end)
+              result)))))))
 
 (define-method (warp self . args)
   (let [(fun (lambda (self . args)

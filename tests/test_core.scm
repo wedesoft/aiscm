@@ -1679,8 +1679,7 @@
     '(2 3 5) (to-list (warp (arr 2 3 5) (arr <int> 0 1 2))))
   (test-equal "use shape of index array"
     '(2 3) (to-list (warp (arr 2 3 5) (arr 0 1))))
-  (test-expect-fail 1)
-  (test-equal "trivial 2D warp"
-    '((2 3 5) (7 11 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr (0 1 2) (0 1 2)) (arr (0 0 0) (1 1 1))))))
+  (test-equal "warp with two index arrays"
+    '(2 3 13) (to-list (warp (arr (2 3 5) (7 11 13)) (arr 0 1 2) (arr 0 0 1)))))
 
 (test-end "aiscm core")
