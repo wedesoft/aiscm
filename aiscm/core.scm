@@ -1844,7 +1844,7 @@
 (define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
 
-(define (warp-array result self x)
+(define (warp-array result self . args)
   (let [(start  (make-basic-block "start"))
         (for    (make-basic-block "for"))
         (body   (make-basic-block "body"))
@@ -1857,16 +1857,16 @@
         (build-branch for)
         (position-builder-at-end for)
         (jit-let [(p (build-phi (pointer (typecode result))))
-                  (q (build-phi (pointer (typecode x))))]
+                  (q (build-phi (pointer (typecode (car args)))))]
           (add-incoming p start (memory result))
-          (add-incoming q start (memory x))
+          (add-incoming q start (memory (car args)))
           (build-cond-branch (ne p pend) body end)
           (position-builder-at-end body)
           (store p (fetch (+ (memory self) (* (fetch q) (llvm-last (strides self))))))
           (build-branch finish)
           (position-builder-at-end finish)
           (add-incoming p finish (+ p (llvm-last (strides result))))
-          (add-incoming q finish (+ q (llvm-last (strides x))))
+          (add-incoming q finish (+ q (llvm-last (strides (car args)))))
           (build-branch for)
           (position-builder-at-end end)
           result)))))
