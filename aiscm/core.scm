@@ -1845,34 +1845,36 @@
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
 
 (define (warp-array result self . args)
-  (let [(start  (make-basic-block "start"))
-        (for    (make-basic-block "for"))
-        (body   (make-basic-block "body"))
-        (finish (make-basic-block "finish"))
-        (end    (make-basic-block "end"))]
-    (llvm-begin
-      (build-branch start)
-      (position-builder-at-end start)
-      (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
-        (build-branch for)
-        (position-builder-at-end for)
-        (jit-let [(p (build-phi (pointer (typecode result))))]
-          (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
-            (llvm-begin
-              (add-incoming p start (memory result))
-              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
-              (build-cond-branch (ne p pend) body end)
-              (position-builder-at-end body)
-              (store p
-                (fetch (apply + (memory self)
-                         (map (lambda (ptr i) (* (fetch ptr) (get (strides self) i))) q (iota (length q))))))
-              (build-branch finish)
-              (position-builder-at-end finish)
-              (add-incoming p finish (+ p (llvm-last (strides result))))
-              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) q args))
-              (build-branch for)
-              (position-builder-at-end end)
-              result)))))))
+  (if  (zero? (dimensions result))
+    (store (memory result)
+           (fetch (apply + (memory self)
+                    (map (lambda (arg i) (* (fetch (memory arg)) (get (strides self) i))) args (iota (length args))))))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(p (build-phi (pointer (typecode result))))]
+            (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
+              (llvm-begin
+                (add-incoming p start (memory result))
+                (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
+                (build-cond-branch (ne p pend) body end)
+                (position-builder-at-end body)
+                (apply warp-array (project (rebase result p)) self (map (lambda (ptr arg) (project (rebase arg ptr))) q args))
+                (build-branch finish)
+                (position-builder-at-end finish)
+                (add-incoming p finish (+ p (llvm-last (strides result))))
+                (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) q args))
+                (build-branch for)
+                (position-builder-at-end end)
+                result))))))))
 
 (define-method (warp self . args)
   (let [(fun (lambda (self . args)
