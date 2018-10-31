@@ -1,7 +1,7 @@
 ## Ready
 
-* warp with index arrays of different dimension
 * warp with arrays as elements
+* warp documentation (+ pseudo colours)
 * argmin, argmax
 * technical report and software about rigid body dynamics
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images

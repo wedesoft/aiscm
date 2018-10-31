@@ -1848,7 +1848,7 @@
   (if  (zero? (dimensions result))
     (store (memory result)
            (fetch (apply + (memory self)
-                    (map (lambda (arg i) (* (fetch (memory arg)) (get (strides self) i))) args (iota (length args))))))
+                    (map (lambda (arg i) (* arg (get (strides self) i))) args (iota (length args))))))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1861,24 +1861,27 @@
           (build-branch for)
           (position-builder-at-end for)
           (jit-let [(p (build-phi (pointer (typecode result))))]
-            (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
+            (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))]
               (llvm-begin
                 (add-incoming p start (memory result))
-                (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
+                (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
                 (build-cond-branch (ne p pend) body end)
                 (position-builder-at-end body)
-                (apply warp-array (project (rebase result p)) self (map (lambda (ptr arg) (project (rebase arg ptr))) q args))
+                (apply warp-array (project (rebase result p)) self
+                  (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
                 (build-branch finish)
                 (position-builder-at-end finish)
                 (add-incoming p finish (+ p (llvm-last (strides result))))
-                (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) q args))
+                (apply llvm-begin
+                  (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) '()))
+                              q args))
                 (build-branch for)
                 (position-builder-at-end end)
                 result))))))))
 
 (define-method (warp self . args)
   (let [(fun (lambda (self . args)
-               (jit-let [(result (allocate-array (typecode self) (shape (car args))))]
+               (jit-let [(result (allocate-array (typecode self) (shape (argmax dimensions args))))]
                  (apply warp-array result self args))))]
     (add-method! warp
                  (make <method>
