@@ -1844,10 +1844,9 @@
 (define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
 
-(define (warp-array result self . args)
-  (if  (zero? (dimensions result))
-    (store (memory result)
-           (fetch (memory (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr))))))) self (reverse args)))))
+(define (warp-array result element-dimension self . args)
+  (if  (eqv? (dimensions result) element-dimension)
+    (elementwise-loop identity result (fetch (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr))))))) self (reverse args))))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1866,7 +1865,7 @@
                 (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
                 (build-cond-branch (ne p pend) body end)
                 (position-builder-at-end body)
-                (apply warp-array (project (rebase result p)) self
+                (apply warp-array (project (rebase result p)) element-dimension self
                   (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
                 (build-branch finish)
                 (position-builder-at-end finish)
@@ -1880,8 +1879,12 @@
 
 (define-method (warp self . args)
   (let [(fun (lambda (self . args)
-               (jit-let [(result (allocate-array (typecode self) (shape (argmax dimensions args))))]
-                 (apply warp-array result self args))))]
+               (let* [(shape-warp      (shape (argmax dimensions args)))
+                      (element-indices (iota (- (dimensions self) (length args))))
+                      (result-shape    (apply llvmlist (append (map (cut get (shape self) <>) element-indices)
+                                                               (map (cut get shape-warp <>) (iota (dimension shape-warp))))))]
+                 (jit-let [(result (allocate-array (typecode self) result-shape))]
+                   (apply warp-array result (length element-indices) self args)))))]
     (add-method! warp
                  (make <method>
                        #:specializers (cons (class-of self) (map class-of args))
