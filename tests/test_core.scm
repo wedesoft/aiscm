@@ -1687,7 +1687,6 @@
     '((13 13 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr 2) (arr (1 1 1)))))
   (test-equal "warp with 1D and 2D index array"
     '((13 13 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr (2 2 2)) (arr 1))))
-  (test-expect-fail 1)
   (test-equal "warp with arrays as elements"
     '((11 13) (2 3) (5 7)) (to-list (warp (arr (2 3) (5 7) (11 13)) (arr 2 0 1)))))
 

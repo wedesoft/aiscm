@@ -1846,7 +1846,10 @@
 
 (define (warp-array result element-dimension self . args)
   (if  (eqv? (dimensions result) element-dimension)
-    (elementwise-loop identity result (fetch (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr))))))) self (reverse args))))
+    (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr)))))))
+                         self (reverse args)))]
+      (jit-let [(dummy (memory element))]; Force computation of array pointer here to avoid problems with phi statements
+        (elementwise-loop identity result (fetch element))))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1878,6 +1881,7 @@
                 result))))))))
 
 (define-method (warp self . args)
+  "Warp contents of SELF using the index array(s) ARGS for looking up elements"
   (let [(fun (lambda (self . args)
                (let* [(shape-warp      (shape (argmax dimensions args)))
                       (element-indices (iota (- (dimensions self) (length args))))

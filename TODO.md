@@ -1,6 +1,5 @@
 ## Ready
 
-* warp with arrays as elements
 * warp documentation (+ pseudo colours)
 * argmin, argmax
 * technical report and software about rigid body dynamics
