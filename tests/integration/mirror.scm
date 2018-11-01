@@ -1,0 +1,8 @@
+(use-modules (oop goops) (aiscm magick) (aiscm core))
+(define img (read-image "star-ferry.jpg"))
+(define idx (apply indices (shape img)))
+(define width (car (shape img)))
+(define height (cadr (shape img)))
+(define x (% idx width))
+(define y (/ idx width))
+(write-image (warp img x (- height 1 y)) "mirror.jpg")
