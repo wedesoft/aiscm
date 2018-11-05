@@ -1563,7 +1563,9 @@
   (test-approximate "Arc tangent of two double-precision floating point numbers"
     2.356 (car (to-list (atan (arr <double> 1.0) (arr <double> -1.0)))) 0.001)
   (test-approximate "Arc tangent of single- and double-precision floating point number"
-    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001) )
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001)
+  (test-approximate "Exponentiation"
+    2.718 (car (to-list (exp (arr <float> 1.0)))) 0.001))
 
 (test-group "phi values"
   (test-eqv "Try phi function"

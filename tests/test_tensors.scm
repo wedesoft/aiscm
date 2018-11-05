@@ -215,6 +215,7 @@
 (define-tensor (tensor-asin a) (asin a))
 (define-tensor (tensor-acos a) (acos a))
 (define-tensor (tensor-atan a) (atan a))
+(define-tensor (tensor-exp a) (exp a))
 (define-tensor (tensor-minor a b) (minor a b))
 (define-tensor (tensor-major a b) (major a b))
 (define-tensor (tensor-pow a b) (pow a b))
@@ -237,6 +238,8 @@
     (tensor-acos (arr 0)))
   (test-assert "Tensor arcus tangens"
     (tensor-atan (arr 0)))
+  (test-assert "Tensor exponentiation"
+    (tensor-exp (arr 1)))
   (test-assert "Tensor minor"
     (tensor-minor (arr 2) (arr 3)))
   (test-assert "Tensor major"

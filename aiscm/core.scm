@@ -75,7 +75,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal?))
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal? exp))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -1127,6 +1127,7 @@
 (define-unary-libc asin "asin" "asinf")
 (define-unary-libc acos "acos" "acosf")
 (define-unary-libc atan "atan" "atanf")
+(define-unary-libc exp  "exp"  "expf" )
 
 (define-syntax-rule (define-binary-libc name method methodf)
   (begin
@@ -1561,6 +1562,7 @@
 (define-array-op asin      1 to-float        asin    )
 (define-array-op acos      1 to-float        acos    )
 (define-array-op atan      1 to-float        atan    )
+(define-array-op exp       1 to-float        exp     )
 (define-array-op pow       2 to-float        pow     )
 (define-array-op atan      2 to-float        atan    )
 (define-array-op +         2 coerce          +       )

@@ -1,12 +1,12 @@
 ## Ready
 
+* Harris Stephens corner detector
 * argmin, argmax
-* technical report and software about rigid body dynamics
-* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
-* 3DS files, Collada?
-* prototype space game
 * mask, unmask
+* argwhere (mask coordinates)
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
+* Lucas-Kanade tracker
+* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * connected components analysis
 * port using qemu
 * multiple C function calls in llvm-typed environment
@@ -33,7 +33,6 @@
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
-* Lucas-Kanade tracker
 * recognise Aruco marker cube
 * colour swapped when converting MJPEG video to FFmpeg video
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
@@ -42,7 +41,6 @@
 * ==, != for complex numbers
 * galaxy simulation
 * floating point exception (SIGFPE)
-* floating point convolution: sharpening filter, corner filters
 * linear algebra bindings (blas, lapack, gsl, mkl)
 * separable convolution
 * convolve with set of sobel filters
@@ -85,7 +83,6 @@
 * upsampling (and documentation about up- and downsampling)
 * complex abs (magnitude), complex arg (and real)
 * video -> panorama stitching (multiresolution)
-* web server
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
 * lexical sort

@@ -23,7 +23,7 @@
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap> <reduction>
             expression->tensor operation arguments)
   #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over product-over min-over max-over)
-  #:re-export (get memory shape typecode project rebase + - * ~ sqrt sin cos tan asin acos atan pow minor major))
+  #:re-export (get memory shape typecode project rebase + - * ~ sqrt sin cos tan asin acos atan exp pow minor major))
 
 (define-class <tensor> ())
 
@@ -191,6 +191,7 @@
 (define-unary-tensor-op to-float asin)
 (define-unary-tensor-op to-float acos)
 (define-unary-tensor-op to-float atan)
+(define-unary-tensor-op to-float exp )
 
 (define-syntax-rule (define-binary-tensor-op coercion op)
   "Define binary operation to use in tensor expressions"
