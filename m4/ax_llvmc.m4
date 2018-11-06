@@ -35,7 +35,7 @@ AC_ARG_WITH([llvm],
 		want_llvm="no"
     elif test "$withval" = "yes"; then
         want_llvm="yes"
-        ac_llvm_config_path=`which llvm-config-7.0`
+        ac_llvm_config_path=`which llvm-config-7`
     else
 	    want_llvm="yes"
         ac_llvm_config_path="$withval"
@@ -45,7 +45,7 @@ AC_ARG_WITH([llvm],
 
 	succeeded=no
 	if test -z "$ac_llvm_config_path"; then
-		ac_llvm_config_path=`which llvm-config-7.0`
+		ac_llvm_config_path=`which llvm-config-7`
 	fi
 
 	if test "x$want_llvm" = "xyes"; then
@@ -67,7 +67,7 @@ AC_ARG_WITH([llvm],
 			LIBS="$LIBS $LLVM_LIBS"
 			export LIBS
 
-			AC_CACHE_CHECK(can compile with and link with llvm-c 7.0 ([$1]),
+			AC_CACHE_CHECK(can compile with and link with llvm-c 7 ([$1]),
 						   ax_cv_llvm,
 		[AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <llvm-c/ExecutionEngine.h>
 													]],
@@ -88,7 +88,7 @@ AC_ARG_WITH([llvm],
 	fi
 
 		if test "$succeeded" != "yes" ; then
-			AC_MSG_ERROR([[We could not detect the llvm libraries make sure that llvm-config-7.0 is on your path or specified by --with-llvm.]])
+			AC_MSG_ERROR([[We could not detect the llvm libraries make sure that llvm-config-7 is on your path or specified by --with-llvm.]])
 		else
 			AC_SUBST(LLVM_CFLAGS)
 			AC_SUBST(LLVM_LDFLAGS)
