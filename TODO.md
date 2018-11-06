@@ -1,9 +1,14 @@
 ## Ready
 
+* gauss blur, gauss gradient
 * Harris Stephens corner detector
 * argmin, argmax
 * mask, unmask
 * argwhere (mask coordinates)
+* recognise Aruco marker cube (opencv?)
+* OpenCV bindings
+* Kinect bindings
+* FFTW3 bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Lucas-Kanade tracker
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
@@ -33,7 +38,6 @@
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
-* recognise Aruco marker cube
 * colour swapped when converting MJPEG video to FFmpeg video
 * procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
@@ -68,9 +72,6 @@
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
 * hypercomplex numbers and quaternions
-* Kinect bindings
-* OpenCV bindings
-* FFTW3 bindings
 * predator tracker
 * <-> Guile 6.7.5 Arrays
 * reading and writing with Guile file decriptors or Guile network sockets?
