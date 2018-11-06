@@ -44,6 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
+            warp
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -74,7 +75,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal?))
+  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal? exp))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -408,7 +409,7 @@
   uint64)
 
 (define-method (foreign-type (type <meta<pointer<>>>))
-  "Get foreing type of pointer"
+  "Get foreign type of pointer"
   uint64)
 
 (define-method (foreign-type (type <meta<llvmlist<>>>))
@@ -1126,6 +1127,7 @@
 (define-unary-libc asin "asin" "asinf")
 (define-unary-libc acos "acos" "acosf")
 (define-unary-libc atan "atan" "atanf")
+(define-unary-libc exp  "exp"  "expf" )
 
 (define-syntax-rule (define-binary-libc name method methodf)
   (begin
@@ -1560,6 +1562,7 @@
 (define-array-op asin      1 to-float        asin    )
 (define-array-op acos      1 to-float        acos    )
 (define-array-op atan      1 to-float        atan    )
+(define-array-op exp       1 to-float        exp     )
 (define-array-op pow       2 to-float        pow     )
 (define-array-op atan      2 to-float        atan    )
 (define-array-op +         2 coerce          +       )
@@ -1842,3 +1845,54 @@
 
 (define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
+
+(define (warp-array result element-dimension self . args)
+  (if  (eqv? (dimensions result) element-dimension)
+    (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr)))))))
+                         self (reverse args)))]
+      (jit-let [(dummy (memory element))]; Force computation of array pointer here to avoid problems with phi statements
+        (elementwise-loop identity result (fetch element))))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(p (build-phi (pointer (typecode result))))]
+            (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))]
+              (llvm-begin
+                (add-incoming p start (memory result))
+                (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
+                (build-cond-branch (ne p pend) body end)
+                (position-builder-at-end body)
+                (apply warp-array (project (rebase result p)) element-dimension self
+                  (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
+                (build-branch finish)
+                (position-builder-at-end finish)
+                (add-incoming p finish (+ p (llvm-last (strides result))))
+                (apply llvm-begin
+                  (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) '()))
+                              q args))
+                (build-branch for)
+                (position-builder-at-end end)
+                result))))))))
+
+(define-method (warp self . args)
+  "Warp contents of SELF using the index array(s) ARGS for looking up elements"
+  (let [(fun (lambda (self . args)
+               (let* [(shape-warp      (shape (argmax dimensions args)))
+                      (element-indices (iota (- (dimensions self) (length args))))
+                      (result-shape    (apply llvmlist (append (map (cut get (shape self) <>) element-indices)
+                                                               (map (cut get shape-warp <>) (iota (dimension shape-warp))))))]
+                 (jit-let [(result (allocate-array (typecode self) result-shape))]
+                   (apply warp-array result (length element-indices) self args)))))]
+    (add-method! warp
+                 (make <method>
+                       #:specializers (cons (class-of self) (map class-of args))
+                       #:procedure (jit (cons (native-type self) (map native-type args)) fun)))
+    (apply warp self args)))

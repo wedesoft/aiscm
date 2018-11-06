@@ -22,8 +22,8 @@
   #:use-module (aiscm util)
   #:export (<tensor> <index> <functional> <lookup> <elementary<>> <tensormap> <reduction>
             expression->tensor operation arguments)
-  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over product-over)
-  #:re-export (get memory shape typecode project rebase + - * ~ sqrt sin cos tan asin acos atan))
+  #:export-syntax (define-tensor tensor term index stride elementary tensor-iterate sum-over product-over min-over max-over)
+  #:re-export (get memory shape typecode project rebase + - * ~ sqrt sin cos tan asin acos atan exp pow minor major))
 
 (define-class <tensor> ())
 
@@ -191,6 +191,7 @@
 (define-unary-tensor-op to-float asin)
 (define-unary-tensor-op to-float acos)
 (define-unary-tensor-op to-float atan)
+(define-unary-tensor-op to-float exp )
 
 (define-syntax-rule (define-binary-tensor-op coercion op)
   "Define binary operation to use in tensor expressions"
@@ -225,12 +226,14 @@
     (define-method (op (a <functional>) b)
       (op a (typed-constant (native-type b) b)))))
 
-(define-binary-tensor-op coerce   +   )
-(define-binary-tensor-op coerce   -   )
-(define-binary-tensor-op coerce   *   )
-(define-binary-tensor-op coerce   /   )
-(define-binary-tensor-op coerce   pow )
-(define-binary-tensor-op to-float atan)
+(define-binary-tensor-op coerce   +    )
+(define-binary-tensor-op coerce   -    )
+(define-binary-tensor-op coerce   *    )
+(define-binary-tensor-op coerce   /    )
+(define-binary-tensor-op coerce   minor)
+(define-binary-tensor-op coerce   major)
+(define-binary-tensor-op coerce   pow  )
+(define-binary-tensor-op to-float atan )
 
 (define-method (typecode (self <tensormap>))
   "Get typecode of elementwise operation"
@@ -336,8 +339,10 @@
         ((k (i n) expression) #'(let [(i (make <index>))] (slot-set! i 'size n) (reduction expression i op)))
         ((k i expression)     #'(let [(i (make <index>))] (reduction expression i op)))))))
 
-(define-reduction sum-over     +)
-(define-reduction product-over *)
+(define-reduction sum-over     +    )
+(define-reduction product-over *    )
+(define-reduction min-over     minor)
+(define-reduction max-over     major)
 
 (define-method (fetch (self <reduction>))
   (let [(q0     (tensor-iterate (term self) (index self)))

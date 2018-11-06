@@ -1563,7 +1563,9 @@
   (test-approximate "Arc tangent of two double-precision floating point numbers"
     2.356 (car (to-list (atan (arr <double> 1.0) (arr <double> -1.0)))) 0.001)
   (test-approximate "Arc tangent of single- and double-precision floating point number"
-    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001) )
+    2.356 (car (to-list (atan (arr <float> 1.0) (arr <double> -1.0)))) 0.001)
+  (test-approximate "Exponentiation"
+    2.718 (car (to-list (exp (arr <float> 1.0)))) 0.001))
 
 (test-group "phi values"
   (test-eqv "Try phi function"
@@ -1660,12 +1662,34 @@
   (test-equal "2D index array"
     '((0 1 2) (3 4 5)) (to-list (indices 3 2))))
 
-(test-group "Comparison"
+(test-group "comparison"
   (test-assert "equal arrays"
     (equal? (arr 2 3 5) (arr 2 3 5)))
   (test-assert "differing shape"
     (not (equal? (arr 2 3) (arr 2 3 5))))
   (test-assert "different elements"
     (not (equal? (arr 2 3 5) (arr 2 4 5)))))
+
+(test-group "warps"
+  (test-equal "trivial 1D warp"
+    '(2 3 5) (to-list (warp (arr 2 3 5) (arr 0 1 2))))
+  (test-equal "mirroring 1D warp"
+    '(5 3 2) (to-list (warp (arr 2 3 5) (arr 2 1 0))))
+  (test-equal "use strides of source array"
+    '(2 3 5) (to-list (warp (arr <int> 2 3 5) (arr 0 1 2))))
+  (test-equal "use strides of index array"
+    '(2 3 5) (to-list (warp (arr 2 3 5) (arr <int> 0 1 2))))
+  (test-equal "use shape of index array"
+    '(2 3) (to-list (warp (arr 2 3 5) (arr 0 1))))
+  (test-equal "warp with two index arrays"
+    '(2 3 13) (to-list (warp (arr (2 3 5) (7 11 13)) (arr 0 1 2) (arr 0 0 1))))
+  (test-equal "warp with 2D result"
+    '((2 3 5) (13 11 7)) (to-list (warp (arr 2 3 5 7 11 13) (arr (0 1 2) (5 4 3)))))
+  (test-equal "warp with 2D and 1D index array"
+    '((13 13 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr 2) (arr (1 1 1)))))
+  (test-equal "warp with 1D and 2D index array"
+    '((13 13 13)) (to-list (warp (arr (2 3 5) (7 11 13)) (arr (2 2 2)) (arr 1))))
+  (test-equal "warp with arrays as elements"
+    '((11 13) (2 3) (5 7)) (to-list (warp (arr (2 3) (5 7) (11 13)) (arr 2 0 1)))))
 
 (test-end "aiscm core")

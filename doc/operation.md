@@ -86,3 +86,31 @@ Also note that the arrays can have different number of dimensions as long as the
 ```Scheme
 @../tests/integration/binary.scm@
 ```
+
+## Tensor operations
+
+*AIscm* has a tensor implementation with flexible indexing.
+
+```Scheme
+@../tests/integration/tensor.scm@
+```
+
+## Warps
+
+Using the warp operation one can perform multi-dimensional warps.
+Here is a simple example performing a lookup in a pseudo-color table.
+
+![pseudo.jpg](pseudo.jpg "Pseudo-color lookup")
+
+```Scheme
+@../tests/integration/pseudo.scm@
+```
+
+A warp can also be used to mirror an array.
+In this case index arrays are used to define a warp field.
+
+![mirror.jpg](mirror.jpg "Mirroring an array")
+
+```Scheme
+@../tests/integration/mirror.scm@
+```

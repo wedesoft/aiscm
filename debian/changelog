@@ -1,3 +1,12 @@
+aiscm (0.18.1-1) unstable; urgency=low
+
+  - New upstream release
+  - Update LLVM dependency to 7.0. Closes: #912798
+
+ -- Jan Wedekind <jan@wedesoft.de>  Tue,  6 Nov 2018 20:57:33 +0000
+
+Di 6. Nov 20:57:33 GMT 2018
+
 aiscm (0.17.1-1) unstable; urgency=low
 
   - New upstream release
@@ -23,7 +32,7 @@ aiscm (0.16.1-1) unstable; urgency=low
 aiscm (0.15.5-1) unstable; urgency=low
 
   - New upstream release.
-    - Disable some FFMpeg audio tests. Closes: #904104
+  - Disable some FFMpeg audio tests. Closes: #904104
 
  -- Jan Wedekind <jan@wedesoft.de>  Fri, 20 Jul 2018 10:17:00 +0100
 
