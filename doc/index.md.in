@@ -45,6 +45,7 @@ Performance is achieved by using the LLVM JIT compiler.
 * [Theano: Python library for JIT compiled array operations](http://deeplearning.net/software/theano/)
 * [PyTorch: Tensors and dynamic neural networks in Python with strong GPU acceleration](http://pytorch.org/)
 * [Tensorflow: numerical computing with dataflow graphs](https://www.tensorflow.org/)
+* [tensorflow.rb](https://github.com/somaticio/tensorflow.rb)
 * [Numpy: Python library implementing n-dimensional arrays](http://www.numpy.org/)
 * [Bergstra et al.: Theano: A CPU and GPU math compiler in Python](http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf)
 * [Lush: large-scale numerical computing](http://lush.sourceforge.net/)
