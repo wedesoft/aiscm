@@ -7,7 +7,8 @@ site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-core.la
+												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-core.la \
+												libguile-aiscm-tensorflow.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
@@ -73,6 +74,11 @@ libguile_aiscm_core_la_SOURCES = core.c
 libguile_aiscm_core_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
 libguile_aiscm_core_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
 libguile_aiscm_core_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
+
+libguile_aiscm_tensorflow_la_SOURCES = tensorflow.c
+libguile_aiscm_tensorflow_la_CFLAGS = $(GUILE_CFLAGS)
+libguile_aiscm_tensorflow_la_LDFLAGS = $(AISCM_LDFLAGS)
+libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS)
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

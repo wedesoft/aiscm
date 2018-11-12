@@ -15,3 +15,5 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (define-module (aiscm tensorflow))
+
+(load-extension "libguile-aiscm-tensorflow" "init_tensorflow")

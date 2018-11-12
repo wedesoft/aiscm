@@ -15,3 +15,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (aiscm tensorflow))
+
+(test-begin "aiscm tensorflow")
+
+
+(test-end "aiscm tensorflow")
