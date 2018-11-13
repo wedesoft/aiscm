@@ -7,7 +7,7 @@ site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-obj.la libguile-aiscm-samples.la libguile-aiscm-core.la \
+												libguile-aiscm-samples.la libguile-aiscm-core.la \
 												libguile-aiscm-tensorflow.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
@@ -29,11 +29,6 @@ libguile_aiscm_util_la_SOURCES = util.c
 libguile_aiscm_util_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_util_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_util_la_LIBADD = $(GUILE_LIBS)
-
-libguile_aiscm_obj_la_SOURCES = obj.c
-libguile_aiscm_obj_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_aiscm_obj_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_obj_la_LIBADD = $(GUILE_LIBS)
 
 libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c ffmpeg-helpers.c ringbuffer.c util-helpers.c
 libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)
@@ -78,7 +73,7 @@ libguile_aiscm_core_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
 libguile_aiscm_tensorflow_la_SOURCES = tensorflow.c
 libguile_aiscm_tensorflow_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tensorflow_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS)
+libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS) -ltensorflow
 
 install-data-hook:
 	$(TOUCH) $(addprefix $(DESTDIR)$(cachedir)/,$(cache_DATA))

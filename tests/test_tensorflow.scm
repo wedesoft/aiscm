@@ -14,9 +14,19 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(use-modules (aiscm tensorflow))
+(use-modules (srfi srfi-64)
+             (oop goops)
+             (aiscm tensorflow)
+             (aiscm core))
 
 (test-begin "aiscm tensorflow")
 
+(test-group "tensor type"
+  (test-assert "conversion to tensor creates something"
+    (to-tensor (arr 2 3 5)))
+  (for-each (lambda (type)
+    (test-equal (format #f "round trip of tensor type ~a" (class-name type))
+      type (typecode (from-tensor (to-tensor (make (multiarray type 1) #:shape '(3)))))))
+      (list <sint> <int>)))
 
 (test-end "aiscm tensorflow")

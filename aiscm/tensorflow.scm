@@ -14,6 +14,24 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (aiscm tensorflow))
+(define-module (aiscm tensorflow)
+  #:use-module (oop goops)
+  #:use-module (aiscm core)
+  #:use-module (aiscm util)
+  #:export (to-tensor from-tensor))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
+
+(define typemap
+  (list (cons <ubyte>  TF_UINT8)
+        (cons <sint>   TF_INT16)
+        (cons <int>    TF_INT32)))
+
+(define inverse-typemap (alist-invert typemap))
+
+(define (to-tensor arr)
+  (make-tensor (assq-ref typemap (typecode arr))))
+
+(define (from-tensor tensor)
+  (let [(info (tf-from-tensor tensor))]
+    (make (multiarray (assq-ref inverse-typemap info) 1) #:shape '(3))))
