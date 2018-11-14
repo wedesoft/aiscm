@@ -1,6 +1,7 @@
 ## Ready
 
 * gauss blur, gauss gradient
+* to-array -> from-image
 * Harris Stephens corner detector
 * argmin, argmax
 * mask, unmask
