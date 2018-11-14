@@ -28,8 +28,9 @@
     (test-equal (format #f "round trip of tensor type ~a" (class-name type))
       type (typecode (from-tensor (to-tensor (make (multiarray type 1) #:shape '(3)))))))
       (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>))
-  (test-expect-fail 1)
   (test-equal "round trip of tensor shape"
-    '(2 3 5) (shape (from-tensor (to-tensor (make (multiarray <int> 3) #:shape '(2 3 5)))))))
+    '(2 3 5) (shape (from-tensor (to-tensor (make (multiarray <int> 3) #:shape '(2 3 5))))))
+  (test-equal "round trip of tensor data"
+    '(2 3 5) (to-list (from-tensor (to-tensor (arr <int> 2 3 5))))))
 
 (test-end "aiscm tensorflow")
