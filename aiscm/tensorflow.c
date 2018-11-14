@@ -22,11 +22,15 @@
 
 static scm_t_bits tf_tensor_tag;
 
+static scm_t_bits tf_graph_tag;
 
 struct tf_tensor_t {
   TF_Tensor *tensor;
 };
 
+struct tf_graph_t {
+  TF_Graph *graph;
+};
 
 static struct tf_tensor_t *get_tf_tensor_no_check(SCM scm_self)
 {
@@ -44,6 +48,25 @@ size_t free_tensor(SCM scm_self)
   struct tf_tensor_t *self = get_tf_tensor_no_check(scm_self);
   TF_DeleteTensor(self->tensor);
   scm_gc_free(self, sizeof(struct tf_tensor_t), "tensor");
+  return 0;
+}
+
+static struct tf_graph_t *get_tf_graph_no_check(SCM scm_self)
+{
+  return (struct tf_graph_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct tf_graph_t *get_tf_graph(SCM scm_self)
+{
+  scm_assert_smob_type(tf_graph_tag, scm_self);
+  return get_tf_graph_no_check(scm_self);
+}
+
+size_t free_graph(SCM scm_self)
+{
+  struct tf_graph_t *self = get_tf_graph_no_check(scm_self);
+  TF_DeleteGraph(self->graph);
+  scm_gc_free(self, sizeof(struct tf_graph_t), "graph");
   return 0;
 }
 
@@ -78,10 +101,22 @@ SCM tf_from_tensor(SCM scm_self)
                     scm_from_pointer(data, NULL));
 }
 
+SCM make_graph(void)
+{
+  SCM retval;
+  struct tf_graph_t *self = (struct tf_graph_t *)scm_gc_calloc(sizeof(struct tf_graph_t), "make-graph");
+  SCM_NEWSMOB(retval, tf_graph_tag, self);
+  self->graph = TF_NewGraph();
+  return retval;
+}
+
 void init_tensorflow(void)
 {
-  tf_tensor_tag = scm_make_smob_type("tensor", sizeof(TF_Tensor *));
+  tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
   scm_set_smob_free(tf_tensor_tag, free_tensor);
+
+  tf_graph_tag = scm_make_smob_type("graph", sizeof(struct tf_graph_t));
+  scm_set_smob_free(tf_graph_tag, free_graph);
 
   scm_c_define("TF_UINT8" , scm_from_int(TF_UINT8 ));
   scm_c_define("TF_INT8"  , scm_from_int(TF_INT8  ));
@@ -91,6 +126,9 @@ void init_tensorflow(void)
   scm_c_define("TF_INT32" , scm_from_int(TF_INT32 ));
   scm_c_define("TF_UINT64", scm_from_int(TF_UINT64));
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
+  scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
+  scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
   scm_c_define_gsubr("make-tensor"   , 4, 0, 0, SCM_FUNC(make_tensor));
   scm_c_define_gsubr("tf-from-tensor", 1, 0, 0, SCM_FUNC(tf_from_tensor));
+  scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph));
 }

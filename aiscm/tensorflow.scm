@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor))
+  #:export (to-tensor from-tensor make-graph))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 
@@ -30,7 +30,9 @@
         (cons <uint>   TF_UINT32)
         (cons <int>    TF_INT32 )
         (cons <ulong>  TF_UINT64)
-        (cons <long>   TF_INT64 )))
+        (cons <long>   TF_INT64 )
+        (cons <float>  TF_FLOAT )
+        (cons <double> TF_DOUBLE)))
 
 (define inverse-typemap (alist-invert typemap))
 
