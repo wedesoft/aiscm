@@ -52,7 +52,7 @@ SCM make_tensor(SCM scm_type)
   struct tf_tensor_t *self = (struct tf_tensor_t *)scm_gc_calloc(sizeof(struct tf_tensor_t), "tensor");
   SCM_NEWSMOB(retval, tf_tensor_tag, self);
   void *data = malloc(1);
-  self->tensor = TF_AllocateTensor(scm_to_int(scm_type), NULL, 0, 4);
+  self->tensor = TF_AllocateTensor(scm_to_int(scm_type), NULL, 0, 8);
   return retval;
 }
 
@@ -67,9 +67,14 @@ void init_tensorflow(void)
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(TF_Tensor *));
   scm_set_smob_free(tf_tensor_tag, free_tensor);
 
-  scm_c_define("TF_UINT8", scm_from_int(TF_UINT8));
-  scm_c_define("TF_INT16", scm_from_int(TF_INT16));
-  scm_c_define("TF_INT32", scm_from_int(TF_INT32));
+  scm_c_define("TF_UINT8" , scm_from_int(TF_UINT8 ));
+  scm_c_define("TF_INT8"  , scm_from_int(TF_INT8  ));
+  scm_c_define("TF_UINT16", scm_from_int(TF_UINT16));
+  scm_c_define("TF_INT16" , scm_from_int(TF_INT16 ));
+  scm_c_define("TF_UINT32", scm_from_int(TF_UINT32));
+  scm_c_define("TF_INT32" , scm_from_int(TF_INT32 ));
+  scm_c_define("TF_UINT64", scm_from_int(TF_UINT64));
+  scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define_gsubr("make-tensor"   , 1, 0, 0, SCM_FUNC(make_tensor));
   scm_c_define_gsubr("tf-from-tensor", 1, 0, 0, SCM_FUNC(tf_from_tensor));
 }

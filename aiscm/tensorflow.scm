@@ -23,9 +23,14 @@
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 
 (define typemap
-  (list (cons <ubyte>  TF_UINT8)
-        (cons <sint>   TF_INT16)
-        (cons <int>    TF_INT32)))
+  (list (cons <ubyte>  TF_UINT8 )
+        (cons <byte>   TF_INT8  )
+        (cons <usint>  TF_UINT16)
+        (cons <sint>   TF_INT16 )
+        (cons <uint>   TF_UINT32)
+        (cons <int>    TF_INT32 )
+        (cons <ulong>  TF_UINT64)
+        (cons <long>   TF_INT64 )))
 
 (define inverse-typemap (alist-invert typemap))
 

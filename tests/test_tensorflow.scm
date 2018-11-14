@@ -27,6 +27,6 @@
   (for-each (lambda (type)
     (test-equal (format #f "round trip of tensor type ~a" (class-name type))
       type (typecode (from-tensor (to-tensor (make (multiarray type 1) #:shape '(3)))))))
-      (list <sint> <int>)))
+      (list <ubyte> <byte> <usint> <sint> <uint> <int> <ulong> <long>)))
 
 (test-end "aiscm tensorflow")
