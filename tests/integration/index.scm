@@ -1,5 +1,5 @@
 (use-modules (oop goops) (aiscm core))
-(define idx (index 3 2))
+(define idx (indices 3 2))
 idx
 ;#<multiarray<int<32,signed>,2>>:
 ;((0 1 2
