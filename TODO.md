@@ -1,5 +1,7 @@
 ## Ready
 
+* identity function
+* scalar tensors
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector

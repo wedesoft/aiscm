@@ -16,9 +16,10 @@
 ;;
 (define-module (aiscm tensorflow)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-graph))
+  #:export (to-tensor from-tensor make-graph placeholder))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 
@@ -42,3 +43,7 @@
 (define (from-tensor tensor)
   (let [(info (tf-from-tensor tensor))]
     (make (multiarray (assq-ref inverse-typemap (car info)) 1) #:shape (cadr info) #:memory (caddr info))))
+
+(define (placeholder graph . args)
+  (let-keywords args #f (dtype)
+    (tf-placeholder graph (gensym "x") (assq-ref typemap dtype))))

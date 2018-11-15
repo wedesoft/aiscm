@@ -33,7 +33,10 @@
   (test-equal "round trip of tensor data"
     '(2 3 5) (to-list (from-tensor (to-tensor (arr <int> 2 3 5))))))
 
-(test-assert "create graph"
-  (make-graph))
+(test-group "build graph"
+  (test-assert "create graph"
+    (make-graph))
+  (test-assert "create operation"
+    (placeholder (make-graph) #:dtype <float>)))
 
 (test-end "aiscm tensorflow")
