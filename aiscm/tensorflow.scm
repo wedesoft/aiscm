@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-graph placeholder identity_ make-session))
+  #:export (to-tensor from-tensor make-graph placeholder identity_ make-session run))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 

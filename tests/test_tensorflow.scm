@@ -52,9 +52,8 @@
 (test-group "run session"
   (test-assert "create session"
     (make-session (make-graph)))
-  (test-expect-fail 1)
   (test-equal "run session"
-    42
+    42.0
     (let* [(g (make-graph))
            (s (make-session g))
            (p (placeholder g #:dtype <double>))]

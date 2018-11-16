@@ -209,6 +209,27 @@ SCM make_session(SCM scm_graph)
   return retval;
 }
 
+SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
+{
+  SCM retval;
+  struct tf_session_t *session = get_tf_session(scm_session);
+  int ninputs = scm_ilength(scm_input);
+  TF_Output *inputs = scm_gc_malloc(sizeof(TF_Output) * ninputs, "run");
+  TF_Tensor **input_values = scm_gc_malloc(sizeof(TF_Tensor *) * ninputs, "run");
+  for (int i=0; i<ninputs; i++) {
+    memcpy(&inputs[i], &get_tf_output(scm_caar(scm_input))->output, sizeof(TF_Output));
+    input_values[i] = get_tf_tensor(scm_cdar(scm_input))->tensor;
+    scm_input = scm_cdr(scm_input);
+  };
+  struct tf_output_t *output = get_tf_output(scm_output);
+  TF_Tensor *output_values;
+  TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, &output->output, &output_values, 1, NULL, 0, NULL, status);
+  struct tf_tensor_t *result = (struct tf_tensor_t *)scm_gc_calloc(sizeof(struct tf_tensor_t), "make-tensor");
+  SCM_NEWSMOB(retval, tf_tensor_tag, result);
+  result->tensor = output_values;
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -241,4 +262,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-placeholder", 3, 0, 0, SCM_FUNC(tf_placeholder));
   scm_c_define_gsubr("tf-identity"   , 4, 0, 0, SCM_FUNC(tf_identity   ));
   scm_c_define_gsubr("make-session"  , 1, 0, 0, SCM_FUNC(make_session  ));
+  scm_c_define_gsubr("run"           , 3, 0, 0, SCM_FUNC(run           ));
 }
