@@ -1,7 +1,6 @@
 ## Ready
 
-* identity function
-* scalar tensors
+* test basic Tensorflow session
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
