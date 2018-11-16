@@ -26,6 +26,8 @@ static scm_t_bits tf_graph_tag;
 
 static scm_t_bits tf_output_tag;
 
+static scm_t_bits tf_session_tag;
+
 struct tf_tensor_t {
   TF_Tensor *tensor;
 };
@@ -36,6 +38,11 @@ struct tf_graph_t {
 
 struct tf_output_t {
   TF_Output output;
+};
+
+struct tf_session_t {
+  TF_Session *session;
+  struct tf_graph_t *graph;// keep graph alive
 };
 
 static TF_Status *status;
@@ -93,6 +100,25 @@ size_t free_output(SCM scm_self)
 {
   struct tf_output_t *self = get_tf_output_no_check(scm_self);
   scm_gc_free(self, sizeof(struct tf_output_t), "output");
+  return 0;
+}
+
+static struct tf_session_t *get_tf_session_no_check(SCM scm_self)
+{
+  return (struct tf_session_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct tf_session_t *get_tf_session(SCM scm_self)
+{
+  scm_assert_smob_type(tf_session_tag, scm_self);
+  return get_tf_session_no_check(scm_self);
+}
+
+size_t free_session(SCM scm_self)
+{
+  struct tf_session_t *self = get_tf_session_no_check(scm_self);
+  TF_DeleteSession(self->session, status);
+  scm_gc_free(self, sizeof(struct tf_session_t), "session");
   return 0;
 }
 
@@ -154,7 +180,7 @@ SCM tf_placeholder(SCM scm_graph, SCM scm_name, SCM scm_dtype)
 SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
 {
   SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-placeholder");
+  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-identity");
   SCM_NEWSMOB(retval, tf_output_tag, self);
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Identity", scm_to_locale_string(scm_symbol_to_string(scm_name)));
@@ -165,7 +191,21 @@ SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
   self->output.oper = TF_FinishOperation(desc, status);
   self->output.index = 0;
   if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-placeholder", TF_Message(status), SCM_EOL);
+    scm_misc_error("tf-identity", TF_Message(status), SCM_EOL);
+  return retval;
+}
+
+SCM make_session(SCM scm_graph)
+{
+  SCM retval;
+  struct tf_session_t *self = (struct tf_session_t *)scm_gc_calloc(sizeof(struct tf_session_t), "make-session");
+  SCM_NEWSMOB(retval, tf_session_tag, self);
+  self->graph = get_tf_graph(scm_graph);
+  TF_SessionOptions *options = TF_NewSessionOptions();
+  self->session = TF_NewSession(self->graph->graph, options, status);
+  TF_DeleteSessionOptions(options);
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("make-session", TF_Message(status), SCM_EOL);
   return retval;
 }
 
@@ -179,6 +219,9 @@ void init_tensorflow(void)
 
   tf_output_tag = scm_make_smob_type("output", sizeof(struct tf_output_t));
   scm_set_smob_free(tf_output_tag, free_output);
+
+  tf_session_tag = scm_make_smob_type("session", sizeof(struct tf_session_t));
+  scm_set_smob_free(tf_session_tag, free_session);
 
   status = TF_NewStatus();
 
@@ -197,4 +240,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph    ));
   scm_c_define_gsubr("tf-placeholder", 3, 0, 0, SCM_FUNC(tf_placeholder));
   scm_c_define_gsubr("tf-identity"   , 4, 0, 0, SCM_FUNC(tf_identity   ));
+  scm_c_define_gsubr("make-session"  , 1, 0, 0, SCM_FUNC(make_session  ));
 }

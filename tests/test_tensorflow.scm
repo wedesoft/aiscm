@@ -49,4 +49,8 @@
   (test-error "error if type mismatch is encountered"
     'misc-error (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>) #:T <double>))))
 
+(test-group "run session"
+  (test-assert "create session"
+    (make-session (make-graph))))
+
 (test-end "aiscm tensorflow")
