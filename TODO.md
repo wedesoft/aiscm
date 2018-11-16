@@ -1,6 +1,6 @@
 ## Ready
 
-* test basic Tensorflow session
+* Tensorflow session with multiple outputs
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector

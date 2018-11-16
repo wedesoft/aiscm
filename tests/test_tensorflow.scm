@@ -52,11 +52,18 @@
 (test-group "run session"
   (test-assert "create session"
     (make-session (make-graph)))
-  (test-equal "run session"
+  (test-eqv "run trivial session"
     42.0
     (let* [(g (make-graph))
            (s (make-session g))
            (p (placeholder g #:dtype <double>))]
-      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ g p))))))
+      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ g p)))))
+  (test-expect-fail 1)
+  (test-equal "run trivial session with list of outputs"
+    (list 42.0 42.0)
+    (let* [(g (make-graph))
+           (s (make-session g))
+           (p (placeholder g #:dtype <double>))]
+      (from-tensor (run s (list (cons p (to-tensor 42.0))) (list (identity_ g p) (identity_ g p)))))))
 
 (test-end "aiscm tensorflow")
