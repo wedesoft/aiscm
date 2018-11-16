@@ -37,12 +37,17 @@
 
 (define inverse-typemap (alist-invert typemap))
 
-(define (to-tensor arr)
+(define-method (to-tensor (arr <multiarray<>>))
   (make-tensor (assq-ref typemap (typecode arr)) (shape arr) (size-of arr) (memory arr)))
+
+(define-method (to-tensor value)
+  (let [(arr (make (multiarray (native-type value) 0) #:shape '()))]
+    (set arr value)
+    (to-tensor arr)))
 
 (define (from-tensor tensor)
   (let [(info (tf-from-tensor tensor))]
-    (make (multiarray (assq-ref inverse-typemap (car info)) 1) #:shape (cadr info) #:memory (caddr info))))
+    (get (make (multiarray (assq-ref inverse-typemap (car info)) (length (cadr info))) #:shape (cadr info) #:memory (caddr info)))))
 
 (define (placeholder graph . args)
   (let-keywords args #f (dtype)
