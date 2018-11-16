@@ -41,6 +41,10 @@
   (test-error "error creating placeholder without type argument"
     'misc-error (placeholder (make-graph)))
   (test-assert "create identity"
-    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>)))))
+    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>))))
+  (test-assert "create identity with type argument"
+    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>) #:T <float>)))
+  (test-error "error if type mismatch is encountered"
+    'misc-error (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>) #:T <double>))))
 
 (test-end "aiscm tensorflow")

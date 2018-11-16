@@ -48,5 +48,6 @@
   (let-keywords args #f (dtype)
     (tf-placeholder graph (gensym "x") (assq-ref typemap dtype))))
 
-(define (identity_ graph input)
-  (tf-identity graph (gensym "x") input))
+(define (identity_ graph input . args)
+  (let-keywords args #f (T)
+    (tf-identity graph (gensym "x") input (assq-ref typemap T))))

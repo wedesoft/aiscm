@@ -151,7 +151,7 @@ SCM tf_placeholder(SCM scm_graph, SCM scm_name, SCM scm_dtype)
   return retval;
 }
 
-SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input)
+SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
 {
   SCM retval;
   struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-placeholder");
@@ -160,6 +160,8 @@ SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input)
   TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Identity", scm_to_locale_string(scm_symbol_to_string(scm_name)));
   struct tf_output_t *input = get_tf_output(scm_input);
   TF_AddInput(desc, input->output);
+  if (!scm_is_false(scm_T))
+    TF_SetAttrType(desc, "T", scm_to_int(scm_T));
   self->output.oper = TF_FinishOperation(desc, status);
   self->output.index = 0;
   if (TF_GetCode(status) != TF_OK)
@@ -194,5 +196,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-from-tensor", 1, 0, 0, SCM_FUNC(tf_from_tensor));
   scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph    ));
   scm_c_define_gsubr("tf-placeholder", 3, 0, 0, SCM_FUNC(tf_placeholder));
-  scm_c_define_gsubr("tf-identity"   , 3, 0, 0, SCM_FUNC(tf_identity   ));
+  scm_c_define_gsubr("tf-identity"   , 4, 0, 0, SCM_FUNC(tf_identity   ));
 }
