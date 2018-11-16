@@ -51,6 +51,13 @@
 
 (test-group "run session"
   (test-assert "create session"
-    (make-session (make-graph))))
+    (make-session (make-graph)))
+  (test-expect-fail 1)
+  (test-equal "run session"
+    42
+    (let* [(g (make-graph))
+           (s (make-session g))
+           (p (placeholder g #:dtype <double>))]
+      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ g p))))))
 
 (test-end "aiscm tensorflow")
