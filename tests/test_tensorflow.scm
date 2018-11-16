@@ -36,7 +36,11 @@
 (test-group "build graph"
   (test-assert "create graph"
     (make-graph))
-  (test-assert "create operation"
-    (placeholder (make-graph) #:dtype <float>)))
+  (test-assert "create placeholder"
+    (placeholder (make-graph) #:dtype <float>))
+  (test-error "error creating placeholder without type argument"
+    'misc-error (placeholder (make-graph)))
+  (test-assert "create identity"
+    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>)))))
 
 (test-end "aiscm tensorflow")

@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-graph placeholder))
+  #:export (to-tensor from-tensor make-graph placeholder identity_))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 
@@ -47,3 +47,6 @@
 (define (placeholder graph . args)
   (let-keywords args #f (dtype)
     (tf-placeholder graph (gensym "x") (assq-ref typemap dtype))))
+
+(define (identity_ graph input)
+  (tf-identity graph (gensym "x") input))

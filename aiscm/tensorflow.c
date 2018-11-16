@@ -151,6 +151,22 @@ SCM tf_placeholder(SCM scm_graph, SCM scm_name, SCM scm_dtype)
   return retval;
 }
 
+SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input)
+{
+  SCM retval;
+  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-placeholder");
+  SCM_NEWSMOB(retval, tf_output_tag, self);
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Identity", scm_to_locale_string(scm_symbol_to_string(scm_name)));
+  struct tf_output_t *input = get_tf_output(scm_input);
+  TF_AddInput(desc, input->output);
+  self->output.oper = TF_FinishOperation(desc, status);
+  self->output.index = 0;
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-placeholder", TF_Message(status), SCM_EOL);
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -174,8 +190,9 @@ void init_tensorflow(void)
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
   scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
-  scm_c_define_gsubr("make-tensor"   , 4, 0, 0, SCM_FUNC(make_tensor));
+  scm_c_define_gsubr("make-tensor"   , 4, 0, 0, SCM_FUNC(make_tensor   ));
   scm_c_define_gsubr("tf-from-tensor", 1, 0, 0, SCM_FUNC(tf_from_tensor));
-  scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph));
+  scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph    ));
   scm_c_define_gsubr("tf-placeholder", 3, 0, 0, SCM_FUNC(tf_placeholder));
+  scm_c_define_gsubr("tf-identity"   , 3, 0, 0, SCM_FUNC(tf_identity   ));
 }
