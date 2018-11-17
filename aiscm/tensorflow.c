@@ -230,6 +230,8 @@ SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
       scm_output = scm_cdr(scm_output);
     };
     TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status);
+    if (TF_GetCode(status) != TF_OK)
+      scm_misc_error("run", TF_Message(status), SCM_EOL);
     retval = SCM_EOL;
     for (int i=noutputs-1; i>=0; i--) {
       SCM element;
@@ -240,6 +242,28 @@ SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
     };
   } else
     retval = scm_car(run(scm_session, scm_input, scm_list_1(scm_output)));
+  return retval;
+}
+
+SCM tf_variable(SCM scm_graph, SCM scm_name, SCM scm_dtype, SCM scm_shape)
+{
+  SCM retval;
+  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-identity");
+  SCM_NEWSMOB(retval, tf_output_tag, self);
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Variable", scm_to_locale_string(scm_symbol_to_string(scm_name)));
+  TF_SetAttrType(desc, "dtype", scm_to_int(scm_dtype));
+  int num_dims = scm_ilength(scm_shape);
+  int64_t *dims = scm_gc_malloc(sizeof(int64_t) * num_dims, "tf-variable");
+  for (int i=0; i<num_dims; i++) {
+    dims[i] = scm_to_int(scm_car(scm_shape));
+    scm_shape = scm_cdr(scm_shape);
+  };
+  TF_SetAttrShape(desc, "shape", dims, num_dims);
+  self->output.oper = TF_FinishOperation(desc, status);
+  self->output.index = 0;
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-identity", TF_Message(status), SCM_EOL);
   return retval;
 }
 
@@ -276,4 +300,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-identity"   , 4, 0, 0, SCM_FUNC(tf_identity   ));
   scm_c_define_gsubr("make-session"  , 1, 0, 0, SCM_FUNC(make_session  ));
   scm_c_define_gsubr("run"           , 3, 0, 0, SCM_FUNC(run           ));
+  scm_c_define_gsubr("tf-variable"   , 4, 0, 0, SCM_FUNC(tf_variable   ));
 }

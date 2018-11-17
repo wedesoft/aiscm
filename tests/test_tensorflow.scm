@@ -65,4 +65,14 @@
            (p (placeholder g #:dtype <double>))]
       (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (identity_ g p) (identity_ g p)))))))
 
+(test-group "variables"
+  (test-assert "create variable"
+    (variable (make-graph) #:dtype <float> #:shape '(3 2)))
+  (test-error "error using uninitialised variable"
+    'misc-error
+    (let* [(g (make-graph))
+           (s (make-session g))
+           (v (variable g #:dtype <float> #:shape '(3 2)))]
+      (run s '() v))))
+
 (test-end "aiscm tensorflow")
