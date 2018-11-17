@@ -212,37 +212,34 @@ SCM make_session(SCM scm_graph)
 SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
 {
   SCM retval;
-  struct tf_session_t *session = get_tf_session(scm_session);
-  int ninputs = scm_ilength(scm_input);
-  TF_Output *inputs = scm_gc_malloc(sizeof(TF_Output) * ninputs, "run");
-  TF_Tensor **input_values = scm_gc_malloc(sizeof(TF_Tensor *) * ninputs, "run");
-  for (int i=0; i<ninputs; i++) {
-    memcpy(&inputs[i], &get_tf_output(scm_caar(scm_input))->output, sizeof(TF_Output));
-    input_values[i] = get_tf_tensor(scm_cdar(scm_input))->tensor;
-    scm_input = scm_cdr(scm_input);
-  };
-  char is_list = scm_is_true(scm_list_p(scm_output));
-  int noutputs = is_list ? scm_ilength(scm_output) : 1;
-  TF_Output *output = scm_gc_malloc(sizeof(TF_Output) * noutputs, "run");
-  TF_Tensor **output_values = scm_gc_malloc(sizeof(TF_Tensor *) * noutputs, "run");
-  if (is_list) {
+  if (scm_is_true(scm_list_p(scm_output))) {
+    struct tf_session_t *session = get_tf_session(scm_session);
+    int ninputs = scm_ilength(scm_input);
+    TF_Output *inputs = scm_gc_malloc(sizeof(TF_Output) * ninputs, "run");
+    TF_Tensor **input_values = scm_gc_malloc(sizeof(TF_Tensor *) * ninputs, "run");
+    for (int i=0; i<ninputs; i++) {
+      memcpy(&inputs[i], &get_tf_output(scm_caar(scm_input))->output, sizeof(TF_Output));
+      input_values[i] = get_tf_tensor(scm_cdar(scm_input))->tensor;
+      scm_input = scm_cdr(scm_input);
+    };
+    int noutputs = scm_ilength(scm_output);
+    TF_Output *output = scm_gc_malloc(sizeof(TF_Output) * noutputs, "run");
+    TF_Tensor **output_values = scm_gc_malloc(sizeof(TF_Tensor *) * noutputs, "run");
     for (int i=0; i<noutputs; i++) {
       output[i] = get_tf_output(scm_car(scm_output))->output;
       scm_output = scm_cdr(scm_output);
     };
+    TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status);
+    retval = SCM_EOL;
+    for (int i=noutputs-1; i>=0; i--) {
+      SCM element;
+      struct tf_tensor_t *result = (struct tf_tensor_t *)scm_gc_calloc(sizeof(struct tf_tensor_t), "make-tensor");
+      SCM_NEWSMOB(element, tf_tensor_tag, result);
+      result->tensor = output_values[i];
+      retval = scm_cons(element, retval);
+    };
   } else
-    output[0] = get_tf_output(scm_output)->output;
-  TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status);
-  retval = SCM_EOL;
-  for (int i=noutputs-1; i>=0; i--) {
-    SCM element;
-    struct tf_tensor_t *result = (struct tf_tensor_t *)scm_gc_calloc(sizeof(struct tf_tensor_t), "make-tensor");
-    SCM_NEWSMOB(element, tf_tensor_tag, result);
-    result->tensor = output_values[i];
-    retval = scm_cons(element, retval);
-  };
-  if (!is_list)
-    retval = scm_car(retval);
+    retval = scm_car(run(scm_session, scm_input, scm_list_1(scm_output)));
   return retval;
 }
 
