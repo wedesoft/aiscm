@@ -5,7 +5,7 @@ tmux select-pane -t0
 tmux send-keys "make repl -j 4" C-m
 tmux select-pane -t1
 tmux send-keys "cd tests" C-m
-tmux send-keys "./guard.sh test_tensors.log" C-m
+tmux send-keys "./guard.sh test_tensorflow.log" C-m
 tmux select-pane -t2
 tmux send-keys "nvim" C-m
 sleep 1
