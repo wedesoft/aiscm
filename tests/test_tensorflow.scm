@@ -79,6 +79,14 @@
     (let* [(g (make-graph))
            (s (make-session g))
            (c (const_ g #:value (to-tensor 42.0) #:dtype <double>))]
-      (from-tensor (run s '() c)))))
+      (from-tensor (run s '() c))))
+  (test-eqv "Variable assignment"
+    42.0
+    (let* [(g (make-graph))
+           (s (make-session g))
+           (v (variable g #:dtype <double> #:shape '()))
+           (c (const_ g #:value (to-tensor 42.0) #:dtype <double>))]
+      (run s '() (assign g v c))
+      (from-tensor (run s '() v)))))
 
 (test-end "aiscm tensorflow")

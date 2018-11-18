@@ -1,6 +1,6 @@
 ## Ready
 
-* Tensorflow variable assignment
+* protobuf content -> libctemplate
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
