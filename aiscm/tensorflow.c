@@ -267,6 +267,25 @@ SCM tf_variable(SCM scm_graph, SCM scm_name, SCM scm_dtype, SCM scm_shape)
   return retval;
 }
 
+SCM tf_const(SCM scm_graph, SCM scm_name, SCM scm_value, SCM scm_dtype)
+{
+  SCM retval;
+  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-identity");
+  SCM_NEWSMOB(retval, tf_output_tag, self);
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Const", scm_to_locale_string(scm_symbol_to_string(scm_name)));
+  TF_SetAttrType(desc, "dtype", scm_to_int(scm_dtype));
+  struct tf_tensor_t *value = get_tf_tensor(scm_value);
+  TF_SetAttrTensor(desc, "value", value->tensor, status);
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-const", TF_Message(status), SCM_EOL);
+  self->output.oper = TF_FinishOperation(desc, status);
+  self->output.index = 0;
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-cinst", TF_Message(status), SCM_EOL);
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -301,4 +320,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-session"  , 1, 0, 0, SCM_FUNC(make_session  ));
   scm_c_define_gsubr("run"           , 3, 0, 0, SCM_FUNC(run           ));
   scm_c_define_gsubr("tf-variable"   , 4, 0, 0, SCM_FUNC(tf_variable   ));
+  scm_c_define_gsubr("tf-const"      , 4, 0, 0, SCM_FUNC(tf_const      ));
 }

@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-graph placeholder identity_ make-session run variable))
+  #:export (to-tensor from-tensor make-graph placeholder identity_ make-session run variable const_))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 
@@ -60,3 +60,7 @@
 (define (variable graph . args)
   (let-keywords args #f (dtype shape)
     (tf-variable graph (gensym "x") (assq-ref typemap dtype) shape)))
+
+(define (const_ graph . args)
+  (let-keywords args #f (value dtype)
+    (tf-const graph (gensym "x") value (assq-ref typemap dtype))))

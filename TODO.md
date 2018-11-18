@@ -1,6 +1,6 @@
 ## Ready
 
-* Tensorflow variables and constants
+* Tensorflow variable assignment
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
