@@ -19,9 +19,11 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-graph placeholder identity_ make-session run variable const_ assign))
+  #:export (to-tensor from-tensor placeholder identity_ make-session run variable const_ assign))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
+
+(define graph (make-graph))
 
 (define typemap
   (list (cons <ubyte>  TF_UINT8 )
@@ -49,21 +51,24 @@
   (let [(info (tf-from-tensor tensor))]
     (get (make (multiarray (assq-ref inverse-typemap (car info)) (length (cadr info))) #:shape (cadr info) #:memory (caddr info)))))
 
-(define (placeholder graph . args)
+(define (make-session)
+  (make-tf-session graph))
+
+(define (placeholder . args)
   (let-keywords args #f (dtype)
     (tf-placeholder graph (gensym "x") (assq-ref typemap dtype))))
 
-(define (identity_ graph input . args)
+(define (identity_ input . args)
   (let-keywords args #f (T)
     (tf-identity graph (gensym "x") input (assq-ref typemap T))))
 
-(define (variable graph . args)
+(define (variable . args)
   (let-keywords args #f (dtype shape)
     (tf-variable graph (gensym "x") (assq-ref typemap dtype) shape)))
 
-(define (const_ graph . args)
+(define (const_ . args)
   (let-keywords args #f (value dtype)
     (tf-const graph (gensym "x") value (assq-ref typemap dtype))))
 
-(define (assign graph ref value)
+(define (assign ref value)
   (tf-assign graph (gensym "x") ref value))

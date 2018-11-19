@@ -36,57 +36,50 @@
     42.0 (from-tensor (to-tensor 42.0))))
 
 (test-group "build graph"
-  (test-assert "create graph"
-    (make-graph))
   (test-assert "create placeholder"
-    (placeholder (make-graph) #:dtype <float>))
+    (placeholder #:dtype <float>))
   (test-error "error creating placeholder without type argument"
-    'misc-error (placeholder (make-graph)))
+    'misc-error (placeholder))
   (test-assert "create identity"
-    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>))))
+    (identity_ (placeholder #:dtype <float>)))
   (test-assert "create identity with type argument"
-    (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>) #:T <float>)))
+    (identity_ (placeholder #:dtype <float>) #:T <float>))
   (test-error "error if type mismatch is encountered"
-    'misc-error (let [(g (make-graph))] (identity_ g (placeholder g #:dtype <float>) #:T <double>))))
+    'misc-error (identity_ (placeholder #:dtype <float>) #:T <double>)))
 
 (test-group "run session"
   (test-assert "create session"
-    (make-session (make-graph)))
+    (make-session))
   (test-eqv "run trivial session"
     42.0
-    (let* [(g (make-graph))
-           (s (make-session g))
-           (p (placeholder g #:dtype <double>))]
-      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ g p)))))
+    (let* [(s (make-session))
+           (p (placeholder #:dtype <double>))]
+      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ p)))))
   (test-equal "run trivial session with list of outputs"
     (list 42.0 42.0)
-    (let* [(g (make-graph))
-           (s (make-session g))
-           (p (placeholder g #:dtype <double>))]
-      (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (identity_ g p) (identity_ g p)))))))
+    (let* [(s (make-session))
+           (p (placeholder #:dtype <double>))]
+      (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (identity_ p) (identity_ p)))))))
 
 (test-group "variables and constants"
   (test-assert "create variable"
-    (variable (make-graph) #:dtype <float> #:shape '(3 2)))
+    (variable #:dtype <float> #:shape '(3 2)))
   (test-error "error using uninitialised variable"
     'misc-error
-    (let* [(g (make-graph))
-           (s (make-session g))
-           (v (variable g #:dtype <float> #:shape '(3 2)))]
+    (let* [(s (make-session))
+           (v (variable #:dtype <float> #:shape '(3 2)))]
       (run s '() v)))
   (test-eqv "Constant tensor"
     42.0
-    (let* [(g (make-graph))
-           (s (make-session g))
-           (c (const_ g #:value (to-tensor 42.0) #:dtype <double>))]
+    (let* [(s (make-session))
+           (c (const_ #:value (to-tensor 42.0) #:dtype <double>))]
       (from-tensor (run s '() c))))
   (test-eqv "Variable assignment"
     42.0
-    (let* [(g (make-graph))
-           (s (make-session g))
-           (v (variable g #:dtype <double> #:shape '()))
-           (c (const_ g #:value (to-tensor 42.0) #:dtype <double>))]
-      (run s '() (assign g v c))
+    (let* [(s (make-session))
+           (v (variable #:dtype <double> #:shape '()))
+           (c (const_ #:value (to-tensor 42.0) #:dtype <double>))]
+      (run s '() (assign v c))
       (from-tensor (run s '() v)))))
 
 (test-end "aiscm tensorflow")

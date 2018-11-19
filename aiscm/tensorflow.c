@@ -195,17 +195,17 @@ SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
   return retval;
 }
 
-SCM make_session(SCM scm_graph)
+SCM make_tf_session(SCM scm_graph)
 {
   SCM retval;
-  struct tf_session_t *self = (struct tf_session_t *)scm_gc_calloc(sizeof(struct tf_session_t), "make-session");
+  struct tf_session_t *self = (struct tf_session_t *)scm_gc_calloc(sizeof(struct tf_session_t), "make-tf-session");
   SCM_NEWSMOB(retval, tf_session_tag, self);
   self->graph = get_tf_graph(scm_graph);
   TF_SessionOptions *options = TF_NewSessionOptions();
   self->session = TF_NewSession(self->graph->graph, options, status);
   TF_DeleteSessionOptions(options);
   if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("make-session", TF_Message(status), SCM_EOL);
+    scm_misc_error("make-tf-session", TF_Message(status), SCM_EOL);
   return retval;
 }
 
@@ -330,14 +330,14 @@ void init_tensorflow(void)
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
   scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
-  scm_c_define_gsubr("make-tensor"   , 4, 0, 0, SCM_FUNC(make_tensor   ));
-  scm_c_define_gsubr("tf-from-tensor", 1, 0, 0, SCM_FUNC(tf_from_tensor));
-  scm_c_define_gsubr("make-graph"    , 0, 0, 0, SCM_FUNC(make_graph    ));
-  scm_c_define_gsubr("tf-placeholder", 3, 0, 0, SCM_FUNC(tf_placeholder));
-  scm_c_define_gsubr("tf-identity"   , 4, 0, 0, SCM_FUNC(tf_identity   ));
-  scm_c_define_gsubr("make-session"  , 1, 0, 0, SCM_FUNC(make_session  ));
-  scm_c_define_gsubr("run"           , 3, 0, 0, SCM_FUNC(run           ));
-  scm_c_define_gsubr("tf-variable"   , 4, 0, 0, SCM_FUNC(tf_variable   ));
-  scm_c_define_gsubr("tf-const"      , 4, 0, 0, SCM_FUNC(tf_const      ));
-  scm_c_define_gsubr("tf-assign"     , 4, 0, 0, SCM_FUNC(tf_assign     ));
+  scm_c_define_gsubr("make-tensor"    , 4, 0, 0, SCM_FUNC(make_tensor    ));
+  scm_c_define_gsubr("tf-from-tensor" , 1, 0, 0, SCM_FUNC(tf_from_tensor ));
+  scm_c_define_gsubr("make-graph"     , 0, 0, 0, SCM_FUNC(make_graph     ));
+  scm_c_define_gsubr("tf-placeholder" , 3, 0, 0, SCM_FUNC(tf_placeholder ));
+  scm_c_define_gsubr("tf-identity"    , 4, 0, 0, SCM_FUNC(tf_identity    ));
+  scm_c_define_gsubr("make-tf-session", 1, 0, 0, SCM_FUNC(make_tf_session));
+  scm_c_define_gsubr("run"            , 3, 0, 0, SCM_FUNC(run            ));
+  scm_c_define_gsubr("tf-variable"    , 4, 0, 0, SCM_FUNC(tf_variable    ));
+  scm_c_define_gsubr("tf-const"       , 4, 0, 0, SCM_FUNC(tf_const       ));
+  scm_c_define_gsubr("tf-assign"      , 4, 0, 0, SCM_FUNC(tf_assign      ));
 }

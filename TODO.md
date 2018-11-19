@@ -1,5 +1,8 @@
 ## Ready
 
+* simpler syntax
+* square, difference
+* add gradient
 * protobuf content -> libctemplate
 * gauss blur, gauss gradient
 * to-array -> from-image
