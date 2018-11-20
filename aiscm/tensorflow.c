@@ -210,29 +210,19 @@ SCM tf_finish_operation(SCM scm_description)
   return retval;
 }
 
+SCM tf_add_input(SCM scm_description, SCM scm_input)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  struct tf_output_t *input = get_tf_output(scm_input);
+  TF_AddInput(self->description, input->output);
+  return SCM_UNDEFINED;
+}
+
 SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
   TF_SetAttrType(self->description, scm_to_locale_string(scm_name), scm_to_int(scm_type));
   return SCM_UNDEFINED;
-}
-
-SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
-{
-  SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-identity");
-  SCM_NEWSMOB(retval, tf_output_tag, self);
-  struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Identity", scm_to_locale_string(scm_symbol_to_string(scm_name)));
-  struct tf_output_t *input = get_tf_output(scm_input);
-  TF_AddInput(desc, input->output);
-  if (!scm_is_false(scm_T))
-    TF_SetAttrType(desc, "T", scm_to_int(scm_T));
-  self->output.oper = TF_FinishOperation(desc, status);
-  self->output.index = 0;
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-identity", TF_Message(status), SCM_EOL);
-  return retval;
 }
 
 SCM make_tf_session(SCM scm_graph)
@@ -288,7 +278,7 @@ SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
 SCM tf_variable(SCM scm_graph, SCM scm_name, SCM scm_dtype, SCM scm_shape)
 {
   SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-identity");
+  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-variable");
   SCM_NEWSMOB(retval, tf_output_tag, self);
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Variable", scm_to_locale_string(scm_symbol_to_string(scm_name)));
@@ -303,7 +293,7 @@ SCM tf_variable(SCM scm_graph, SCM scm_name, SCM scm_dtype, SCM scm_shape)
   self->output.oper = TF_FinishOperation(desc, status);
   self->output.index = 0;
   if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-identity", TF_Message(status), SCM_EOL);
+    scm_misc_error("tf-variable", TF_Message(status), SCM_EOL);
   return retval;
 }
 
@@ -378,8 +368,8 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-graph"         , 0, 0, 0, SCM_FUNC(make_graph         ));
   scm_c_define_gsubr("make-description"   , 3, 0, 0, SCM_FUNC(make_description   ));
   scm_c_define_gsubr("tf-finish-operation", 1, 0, 0, SCM_FUNC(tf_finish_operation));
+  scm_c_define_gsubr("tf-add-input"       , 2, 0, 0, SCM_FUNC(tf_add_input       ));
   scm_c_define_gsubr("tf-set-attr-type"   , 3, 0, 0, SCM_FUNC(tf_set_attr_type   ));
-  scm_c_define_gsubr("tf-identity"        , 4, 0, 0, SCM_FUNC(tf_identity        ));
   scm_c_define_gsubr("make-tf-session"    , 1, 0, 0, SCM_FUNC(make_tf_session    ));
   scm_c_define_gsubr("run"                , 3, 0, 0, SCM_FUNC(run                ));
   scm_c_define_gsubr("tf-variable"        , 4, 0, 0, SCM_FUNC(tf_variable        ));

@@ -62,7 +62,10 @@
 
 (define (identity_ input . args)
   (let-keywords args #f (T)
-    (tf-identity graph (gensym "x") input (assq-ref typemap T))))
+    (let [(description (make-description graph "Identity" (gensym "x")))]
+      (tf-add-input description input)
+      (if T (tf-set-attr-type description "T" (assq-ref typemap T)))
+      (tf-finish-operation description))))
 
 (define (variable . args)
   (let-keywords args #f (dtype shape)
