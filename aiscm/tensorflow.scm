@@ -76,7 +76,10 @@
 
 (define (const_ . args)
   (let-keywords args #f (value dtype)
-    (tf-const graph (gensym "x") value (assq-ref typemap dtype))))
+    (let [(description (make-description graph "Const" (gensym "x")))]
+      (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
+      (tf-set-attr-tensor description "value" value)
+      (tf-finish-operation description))))
 
 (define (assign ref value)
   (let [(description (make-description graph "Assign" (gensym "x")))]
