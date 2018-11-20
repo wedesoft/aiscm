@@ -79,4 +79,7 @@
     (tf-const graph (gensym "x") value (assq-ref typemap dtype))))
 
 (define (assign ref value)
-  (tf-assign graph (gensym "x") ref value))
+  (let [(description (make-description graph "Assign" (gensym "x")))]
+    (tf-add-input description ref)
+    (tf-add-input description value)
+    (tf-finish-operation description)))

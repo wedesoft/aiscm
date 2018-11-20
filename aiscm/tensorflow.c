@@ -307,24 +307,6 @@ SCM tf_const(SCM scm_graph, SCM scm_name, SCM scm_value, SCM scm_dtype)
   return retval;
 }
 
-SCM tf_assign(SCM scm_graph, SCM scm_name, SCM scm_ref, SCM scm_value)
-{
-  SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-assign");
-  SCM_NEWSMOB(retval, tf_output_tag, self);
-  struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Assign", scm_to_locale_string(scm_symbol_to_string(scm_name)));
-  struct tf_output_t *ref = get_tf_output(scm_ref);
-  TF_AddInput(desc, ref->output);
-  struct tf_output_t *value = get_tf_output(scm_value);
-  TF_AddInput(desc, value->output);
-  self->output.oper = TF_FinishOperation(desc, status);
-  self->output.index = 0;
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-assign", TF_Message(status), SCM_EOL);
-  return retval;
-}
-
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -365,5 +347,4 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-tf-session"    , 1, 0, 0, SCM_FUNC(make_tf_session    ));
   scm_c_define_gsubr("run"                , 3, 0, 0, SCM_FUNC(run                ));
   scm_c_define_gsubr("tf-const"           , 4, 0, 0, SCM_FUNC(tf_const           ));
-  scm_c_define_gsubr("tf-assign"          , 4, 0, 0, SCM_FUNC(tf_assign          ));
 }
