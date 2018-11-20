@@ -1,6 +1,7 @@
 ## Ready
 
-* simpler syntax
+* wrap TF\_AddInput, TF\_SetAttr ... directly
+* generate Scheme code
 * square, difference
 * add gradient
 * protobuf content -> libctemplate

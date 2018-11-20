@@ -24,6 +24,8 @@ static scm_t_bits tf_tensor_tag;
 
 static scm_t_bits tf_graph_tag;
 
+static scm_t_bits tf_description_tag;
+
 static scm_t_bits tf_output_tag;
 
 static scm_t_bits tf_session_tag;
@@ -34,6 +36,10 @@ struct tf_tensor_t {
 
 struct tf_graph_t {
   TF_Graph *graph;
+};
+
+struct tf_description_t {
+  TF_OperationDescription *description;
 };
 
 struct tf_output_t {
@@ -82,6 +88,24 @@ size_t free_graph(SCM scm_self)
   struct tf_graph_t *self = get_tf_graph_no_check(scm_self);
   TF_DeleteGraph(self->graph);
   scm_gc_free(self, sizeof(struct tf_graph_t), "graph");
+  return 0;
+}
+
+static struct tf_description_t *get_tf_description_no_check(SCM scm_self)
+{
+  return (struct tf_description_t *)SCM_SMOB_DATA(scm_self);
+}
+
+static struct tf_description_t *get_tf_description(SCM scm_self)
+{
+  scm_assert_smob_type(tf_description_tag, scm_self);
+  return get_tf_description_no_check(scm_self);
+}
+
+size_t free_description(SCM scm_self)
+{
+  struct tf_description_t *self = get_tf_description_no_check(scm_self);
+  scm_gc_free(self, sizeof(struct tf_description_t), "description");
   return 0;
 }
 
@@ -162,19 +186,35 @@ SCM make_graph(void)
   return retval;
 }
 
-SCM tf_placeholder(SCM scm_graph, SCM scm_name, SCM scm_dtype)
+SCM make_description(SCM scm_graph, SCM scm_op, SCM scm_name)
 {
   SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-placeholder");
-  SCM_NEWSMOB(retval, tf_output_tag, self);
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Placeholder", scm_to_locale_string(scm_symbol_to_string(scm_name)));
-  TF_SetAttrType(desc, "dtype", scm_to_int(scm_dtype));
-  self->output.oper = TF_FinishOperation(desc, status);
-  self->output.index = 0;
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-placeholder", TF_Message(status), SCM_EOL);
+  struct tf_description_t *self = (struct tf_description_t *)scm_gc_calloc(sizeof(struct tf_description_t), "make-description");
+  SCM_NEWSMOB(retval, tf_description_tag, self);
+  self->description =
+    TF_NewOperation(graph->graph, scm_to_locale_string(scm_op), scm_to_locale_string(scm_symbol_to_string(scm_name)));
   return retval;
+}
+
+SCM tf_finish_operation(SCM scm_description)
+{
+  SCM retval;
+  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-finish-operation");
+  SCM_NEWSMOB(retval, tf_output_tag, output);
+  struct tf_description_t *self = get_tf_description(scm_description);
+  output->output.oper = TF_FinishOperation(self->description, status);
+  output->output.index = 0;
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-finish-operation", TF_Message(status), SCM_EOL);
+  return retval;
+}
+
+SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  TF_SetAttrType(self->description, scm_to_locale_string(scm_name), scm_to_int(scm_type));
+  return SCM_UNDEFINED;
 }
 
 SCM tf_identity(SCM scm_graph, SCM scm_name, SCM scm_input, SCM scm_T)
@@ -312,6 +352,9 @@ void init_tensorflow(void)
   tf_graph_tag = scm_make_smob_type("graph", sizeof(struct tf_graph_t));
   scm_set_smob_free(tf_graph_tag, free_graph);
 
+  tf_description_tag = scm_make_smob_type("description", sizeof(struct tf_description_t));
+  scm_set_smob_free(tf_description_tag, free_description);
+
   tf_output_tag = scm_make_smob_type("output", sizeof(struct tf_output_t));
   scm_set_smob_free(tf_output_tag, free_output);
 
@@ -330,14 +373,16 @@ void init_tensorflow(void)
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
   scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
-  scm_c_define_gsubr("make-tensor"    , 4, 0, 0, SCM_FUNC(make_tensor    ));
-  scm_c_define_gsubr("tf-from-tensor" , 1, 0, 0, SCM_FUNC(tf_from_tensor ));
-  scm_c_define_gsubr("make-graph"     , 0, 0, 0, SCM_FUNC(make_graph     ));
-  scm_c_define_gsubr("tf-placeholder" , 3, 0, 0, SCM_FUNC(tf_placeholder ));
-  scm_c_define_gsubr("tf-identity"    , 4, 0, 0, SCM_FUNC(tf_identity    ));
-  scm_c_define_gsubr("make-tf-session", 1, 0, 0, SCM_FUNC(make_tf_session));
-  scm_c_define_gsubr("run"            , 3, 0, 0, SCM_FUNC(run            ));
-  scm_c_define_gsubr("tf-variable"    , 4, 0, 0, SCM_FUNC(tf_variable    ));
-  scm_c_define_gsubr("tf-const"       , 4, 0, 0, SCM_FUNC(tf_const       ));
-  scm_c_define_gsubr("tf-assign"      , 4, 0, 0, SCM_FUNC(tf_assign      ));
+  scm_c_define_gsubr("make-tensor"        , 4, 0, 0, SCM_FUNC(make_tensor        ));
+  scm_c_define_gsubr("tf-from-tensor"     , 1, 0, 0, SCM_FUNC(tf_from_tensor     ));
+  scm_c_define_gsubr("make-graph"         , 0, 0, 0, SCM_FUNC(make_graph         ));
+  scm_c_define_gsubr("make-description"   , 3, 0, 0, SCM_FUNC(make_description   ));
+  scm_c_define_gsubr("tf-finish-operation", 1, 0, 0, SCM_FUNC(tf_finish_operation));
+  scm_c_define_gsubr("tf-set-attr-type"   , 3, 0, 0, SCM_FUNC(tf_set_attr_type   ));
+  scm_c_define_gsubr("tf-identity"        , 4, 0, 0, SCM_FUNC(tf_identity        ));
+  scm_c_define_gsubr("make-tf-session"    , 1, 0, 0, SCM_FUNC(make_tf_session    ));
+  scm_c_define_gsubr("run"                , 3, 0, 0, SCM_FUNC(run                ));
+  scm_c_define_gsubr("tf-variable"        , 4, 0, 0, SCM_FUNC(tf_variable        ));
+  scm_c_define_gsubr("tf-const"           , 4, 0, 0, SCM_FUNC(tf_const           ));
+  scm_c_define_gsubr("tf-assign"          , 4, 0, 0, SCM_FUNC(tf_assign          ));
 }

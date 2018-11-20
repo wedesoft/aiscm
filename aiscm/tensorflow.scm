@@ -56,7 +56,9 @@
 
 (define (placeholder . args)
   (let-keywords args #f (dtype)
-    (tf-placeholder graph (gensym "x") (assq-ref typemap dtype))))
+    (let [(description (make-description graph "Placeholder" (gensym "x")))]
+      (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
+      (tf-finish-operation description))))
 
 (define (identity_ input . args)
   (let-keywords args #f (T)
