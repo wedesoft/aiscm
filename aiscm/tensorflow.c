@@ -225,6 +225,19 @@ SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
   return SCM_UNDEFINED;
 }
 
+SCM tf_set_attr_shape(SCM scm_description, SCM scm_name, SCM scm_shape)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  int num_dims = scm_ilength(scm_shape);
+  int64_t *dims = scm_gc_malloc(sizeof(int64_t) * num_dims, "tf-set-attr-shape");
+  for (int i=0; i<num_dims; i++) {
+    dims[i] = scm_to_int(scm_car(scm_shape));
+    scm_shape = scm_cdr(scm_shape);
+  };
+  TF_SetAttrShape(self->description, scm_to_locale_string(scm_name), dims, num_dims);
+  return SCM_UNDEFINED;
+}
+
 SCM make_tf_session(SCM scm_graph)
 {
   SCM retval;
@@ -272,28 +285,6 @@ SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
     };
   } else
     retval = scm_car(run(scm_session, scm_input, scm_list_1(scm_output)));
-  return retval;
-}
-
-SCM tf_variable(SCM scm_graph, SCM scm_name, SCM scm_dtype, SCM scm_shape)
-{
-  SCM retval;
-  struct tf_output_t *self = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-variable");
-  SCM_NEWSMOB(retval, tf_output_tag, self);
-  struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  TF_OperationDescription *desc = TF_NewOperation(graph->graph, "Variable", scm_to_locale_string(scm_symbol_to_string(scm_name)));
-  TF_SetAttrType(desc, "dtype", scm_to_int(scm_dtype));
-  int num_dims = scm_ilength(scm_shape);
-  int64_t *dims = scm_gc_malloc(sizeof(int64_t) * num_dims, "tf-variable");
-  for (int i=0; i<num_dims; i++) {
-    dims[i] = scm_to_int(scm_car(scm_shape));
-    scm_shape = scm_cdr(scm_shape);
-  };
-  TF_SetAttrShape(desc, "shape", dims, num_dims);
-  self->output.oper = TF_FinishOperation(desc, status);
-  self->output.index = 0;
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-variable", TF_Message(status), SCM_EOL);
   return retval;
 }
 
@@ -370,9 +361,9 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-finish-operation", 1, 0, 0, SCM_FUNC(tf_finish_operation));
   scm_c_define_gsubr("tf-add-input"       , 2, 0, 0, SCM_FUNC(tf_add_input       ));
   scm_c_define_gsubr("tf-set-attr-type"   , 3, 0, 0, SCM_FUNC(tf_set_attr_type   ));
+  scm_c_define_gsubr("tf-set-attr-shape"  , 3, 0, 0, SCM_FUNC(tf_set_attr_shape  ));
   scm_c_define_gsubr("make-tf-session"    , 1, 0, 0, SCM_FUNC(make_tf_session    ));
   scm_c_define_gsubr("run"                , 3, 0, 0, SCM_FUNC(run                ));
-  scm_c_define_gsubr("tf-variable"        , 4, 0, 0, SCM_FUNC(tf_variable        ));
   scm_c_define_gsubr("tf-const"           , 4, 0, 0, SCM_FUNC(tf_const           ));
   scm_c_define_gsubr("tf-assign"          , 4, 0, 0, SCM_FUNC(tf_assign          ));
 }

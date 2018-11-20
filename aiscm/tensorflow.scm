@@ -69,7 +69,10 @@
 
 (define (variable . args)
   (let-keywords args #f (dtype shape)
-    (tf-variable graph (gensym "x") (assq-ref typemap dtype) shape)))
+    (let [(description (make-description graph "Variable" (gensym "x")))]
+      (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
+      (tf-set-attr-shape description "shape" shape)
+      (tf-finish-operation description))))
 
 (define (const_ . args)
   (let-keywords args #f (value dtype)
