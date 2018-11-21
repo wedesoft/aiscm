@@ -12,6 +12,11 @@ int main(void)
   HDF *hdf;
   hdf_init(&hdf);
 
+  hdf_set_value(hdf, "Op.Assign.name", "assign");
+  hdf_set_value(hdf, "Op.Assign.input_arg.x", "T");
+  hdf_set_value(hdf, "Op.Assign.input_arg.y", "T");
+  hdf_set_value(hdf, "Op.Assign.attr.T", "type");
+
   CSPARSE *parse;
   cs_init(&parse, hdf);
   cs_parse_file(parse, "tensorflow.scm.in");

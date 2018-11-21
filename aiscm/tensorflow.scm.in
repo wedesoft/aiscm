@@ -81,8 +81,9 @@
       (tf-set-attr-tensor description "value" value)
       (tf-finish-operation description))))
 
-(define (assign ref value)
-  (let [(description (make-description graph "Assign" (gensym "x")))]
-    (tf-add-input description ref)
-    (tf-add-input description value)
-    (tf-finish-operation description)))
+<?cs each:op = Op ?>
+(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?>)
+  (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
+<?cs each:in = op.input_arg ?>    (tf-add-input description <?cs name:in ?>)
+<?cs /each ?>    (tf-finish-operation description)))
+<?cs /each ?>
