@@ -149,6 +149,7 @@ AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
             [AC_MSG_ERROR([Could not locate Tensorflow C-API library])])
 LIBS="$old_LIBS"
 
+old_LIBS="$LIBS"
 LIBS="$LIBS -lXpm"
 AC_MSG_CHECKING([for XpmCreatePixmapFromData])
 AC_TRY_LINK([#include <X11/xpm.h>],
@@ -157,6 +158,19 @@ AC_TRY_LINK([#include <X11/xpm.h>],
             [AC_MSG_RESULT([no])]
             [AC_MSG_ERROR([Could not locate Xpm library])])
 LIBS="$old_LIBS"
+
+old_LIBS="$LIBS"
+old_CFLAGS="$CFLAGS"
+LIBS="$LIBS -lneo_utl"
+CFLAGS="$CFLAGS -I/usr/include/ClearSilver"
+AC_MSG_CHECKING([for ClearSilver library])
+AC_TRY_LINK([#include <ClearSilver.h>],
+            [hdf_init(NULL)],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate ClearSilver library])])
+LIBS="$old_LIBS"
+CFLAGS="$old_CFLAGS"
 
 GUILE_PKG([2.2])
 GUILE_PROGS
