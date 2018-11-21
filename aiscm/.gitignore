@@ -1,2 +1,4 @@
 Makefile.in
 Makefile
+tensorflow.scm
+tensorflow-generate

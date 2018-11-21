@@ -162,7 +162,7 @@ LIBS="$old_LIBS"
 old_LIBS="$LIBS"
 old_CFLAGS="$CFLAGS"
 LIBS="$LIBS -lneo_utl"
-CFLAGS="$CFLAGS -I/usr/include/ClearSilver"
+CFLAGS="$CFLAGS -I/usr/local/include/ClearSilver -I/usr/include/ClearSilver"
 AC_MSG_CHECKING([for ClearSilver library])
 AC_TRY_LINK([#include <ClearSilver.h>],
             [hdf_init(NULL)],
