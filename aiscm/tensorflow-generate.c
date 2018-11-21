@@ -12,6 +12,10 @@ int main(void)
   HDF *hdf;
   hdf_init(&hdf);
 
+  hdf_set_value(hdf, "Op.Identity.name", "identity_");
+  hdf_set_value(hdf, "Op.Identity.input_arg.input", "T");
+  hdf_set_value(hdf, "Op.Identity.attr.T", "type");
+
   hdf_set_value(hdf, "Op.Assign.name", "assign");
   hdf_set_value(hdf, "Op.Assign.input_arg.x", "T");
   hdf_set_value(hdf, "Op.Assign.input_arg.y", "T");

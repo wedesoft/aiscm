@@ -60,13 +60,6 @@
       (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
       (tf-finish-operation description))))
 
-(define (identity_ input . args)
-  (let-keywords args #f (T)
-    (let [(description (make-description graph "Identity" (gensym "x")))]
-      (tf-add-input description input)
-      (if T (tf-set-attr-type description "T" (assq-ref typemap T)))
-      (tf-finish-operation description))))
-
 (define (variable . args)
   (let-keywords args #f (dtype shape)
     (let [(description (make-description graph "Variable" (gensym "x")))]
@@ -82,8 +75,11 @@
       (tf-finish-operation description))))
 
 <?cs each:op = Op ?>
-(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?>)
-  (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
-<?cs each:in = op.input_arg ?>    (tf-add-input description <?cs name:in ?>)
-<?cs /each ?>    (tf-finish-operation description)))
+(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . args)
+  (let-keywords args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)
+    (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
+<?cs each:in = op.input_arg ?>      (tf-add-input description <?cs name:in ?>)
+<?cs /each ?><?cs each:attr = op.attr ?>      (if <?cs name:attr ?>
+        (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
+<?cs /each ?>      (tf-finish-operation description))))
 <?cs /each ?>
