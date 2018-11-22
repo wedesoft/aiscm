@@ -25,6 +25,9 @@ int main(void)
   hdf_set_value(hdf, "Op.Const.attr.value", "tensor");
   hdf_set_value(hdf, "Op.Const.attr.dtype", "type");
 
+  hdf_set_value(hdf, "Op.Placeholder.name", "placeholder");
+  hdf_set_value(hdf, "Op.Placeholder.attr.dtype", "type");
+
   CSPARSE *parse;
   cs_init(&parse, hdf);
   cs_parse_file(parse, "tensorflow.scm.in");
