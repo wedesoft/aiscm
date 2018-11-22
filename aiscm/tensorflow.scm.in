@@ -67,19 +67,14 @@
       (tf-set-attr-shape description "shape" shape)
       (tf-finish-operation description))))
 
-(define (const_ . args)
-  (let-keywords args #f (value dtype)
-    (let [(description (make-description graph "Const" (gensym "x")))]
-      (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
-      (tf-set-attr-tensor description "value" value)
-      (tf-finish-operation description))))
-
 <?cs each:op = Op ?>
 (define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . args)
   (let-keywords args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)
     (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
 <?cs each:in = op.input_arg ?>      (tf-add-input description <?cs name:in ?>)
-<?cs /each ?><?cs each:attr = op.attr ?>      (if <?cs name:attr ?>
+<?cs /each ?><?cs each:attr = op.attr ?><?cs if:attr == "type" ?>      (if <?cs name:attr ?>
         (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
-<?cs /each ?>      (tf-finish-operation description))))
+<?cs /if ?><?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
+        (tf-set-attr-tensor description "<?cs name:attr ?>" <?cs name:attr ?>))
+<?cs /if ?><?cs /each ?>      (tf-finish-operation description))))
 <?cs /each ?>

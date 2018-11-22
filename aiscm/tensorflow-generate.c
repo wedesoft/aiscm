@@ -21,6 +21,10 @@ int main(void)
   hdf_set_value(hdf, "Op.Assign.input_arg.y", "T");
   hdf_set_value(hdf, "Op.Assign.attr.T", "type");
 
+  hdf_set_value(hdf, "Op.Const.name", "const_");
+  hdf_set_value(hdf, "Op.Const.attr.value", "tensor");
+  hdf_set_value(hdf, "Op.Const.attr.dtype", "type");
+
   CSPARSE *parse;
   cs_init(&parse, hdf);
   cs_parse_file(parse, "tensorflow.scm.in");
