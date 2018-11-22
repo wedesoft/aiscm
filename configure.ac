@@ -232,8 +232,6 @@ AC_OUTPUT(Makefile
           tests/Makefile
           tests/integration/Makefile
           tests/fixtures/Makefile
-          srfi/Makefile
-          srfi/srfi-64/Makefile
           bench/Makefile
           doc/Makefile
           doc/index.md,
