@@ -176,6 +176,16 @@ AC_TRY_LINK([#include <ClearSilver.h>],
 LIBS="$old_LIBS"
 CFLAGS="$old_CFLAGS"
 
+old_LIBS="$LIBS"
+LIBS="$LIBS -ltensorflow"
+AC_MSG_CHECKING([for Tensorflow library])
+AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
+            [TF_GetAllOpList()],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate Tensorflow library])])
+LIBS="$old_LIBS"
+
 GUILE_PKG([2.2])
 GUILE_PROGS
 GUILE_FLAGS
