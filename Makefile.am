@@ -1,7 +1,7 @@
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 RUN = $(GUILE) -L $(top_builddir) -L $(top_builddir)/tests
 
-SUBDIRS = aiscm tests doc bench
+SUBDIRS = tensorflow aiscm tests doc bench
 
 ACLOCAL_AMFLAGS = -I m4
 
