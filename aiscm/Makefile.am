@@ -28,7 +28,7 @@ AISCM_LDFLAGS = -no-undefined -module -shared -avoid-version
 tensorflow_generate_SOURCES = tensorflow-generate.c
 tensorflow_generate_CFLAGS = -I/usr/local/include/ClearSilver -I/usr/include/ClearSilver
 tensorflow_generate_LDFLAGS =
-tensorflow_generate_LDADD = -lneo_cs -lneo_utl
+tensorflow_generate_LDADD = ../tensorflow/core/framework/libtensorflow-ops.la -lneo_cs -lneo_utl -ltensorflow
 
 libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c \
 																	util-helpers.c util-helpers-tests.c samples-helpers.c samples-helpers-tests.c

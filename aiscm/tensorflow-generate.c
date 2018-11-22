@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <ClearSilver.h>
+#include <tensorflow/c/c_api.h>
+#include "tensorflow/core/framework/op_def.pb-c.h"
+
 
 NEOERR *output(void *ctx, char *text)
 {
@@ -9,6 +12,9 @@ NEOERR *output(void *ctx, char *text)
 
 int main(void)
 {
+  TF_Buffer *buffer = TF_GetAllOpList();
+  Tensorflow__OpList *op_list = tensorflow__op_list__unpack(NULL, buffer->length, buffer->data);
+
   HDF *hdf;
   hdf_init(&hdf);
 
@@ -40,4 +46,7 @@ int main(void)
 
   cs_destroy(&parse);
   hdf_destroy(&hdf);
+
+  tensorflow__op_list__free_unpacked(op_list, NULL);
+  TF_DeleteBuffer(buffer);
 }

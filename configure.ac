@@ -177,6 +177,16 @@ LIBS="$old_LIBS"
 CFLAGS="$old_CFLAGS"
 
 old_LIBS="$LIBS"
+LIBS="$LIBS -lprotobuf-c"
+AC_MSG_CHECKING([for Protocol Buffer library])
+AC_TRY_LINK([#include <protobuf-c/protobuf-c.h>],
+            [protobuf_c_empty_string],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate Protocol Buffer library])])
+LIBS="$old_LIBS"
+
+old_LIBS="$LIBS"
 LIBS="$LIBS -ltensorflow"
 AC_MSG_CHECKING([for Tensorflow library])
 AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
