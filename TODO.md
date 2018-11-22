@@ -1,7 +1,6 @@
 ## Ready
 
 * generate Scheme code
-* shape of placeholder
 * square, difference
 * add gradient
 * protobuf content -> libctemplate

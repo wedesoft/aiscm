@@ -27,6 +27,11 @@ int main(void)
 
   hdf_set_value(hdf, "Op.Placeholder.name", "placeholder");
   hdf_set_value(hdf, "Op.Placeholder.attr.dtype", "type");
+  hdf_set_value(hdf, "Op.Placeholder.attr.shape", "shape");
+
+  hdf_set_value(hdf, "Op.Variable.name", "variable");
+  hdf_set_value(hdf, "Op.Variable.attr.dtype", "type");
+  hdf_set_value(hdf, "Op.Variable.attr.shape", "shape");
 
   CSPARSE *parse;
   cs_init(&parse, hdf);

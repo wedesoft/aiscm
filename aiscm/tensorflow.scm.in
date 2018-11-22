@@ -54,13 +54,6 @@
 (define (make-session)
   (make-tf-session graph))
 
-(define (variable . args)
-  (let-keywords args #f (dtype shape)
-    (let [(description (make-description graph "Variable" (gensym "x")))]
-      (tf-set-attr-type description "dtype" (assq-ref typemap dtype))
-      (tf-set-attr-shape description "shape" shape)
-      (tf-finish-operation description))))
-
 <?cs each:op = Op ?>
 (define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . args)
   (let-keywords args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)
@@ -70,5 +63,7 @@
         (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
         (tf-set-attr-tensor description "<?cs name:attr ?>" <?cs name:attr ?>))
+<?cs /if ?><?cs if:attr == "shape" ?>      (if <?cs name:attr ?>
+        (tf-set-attr-shape description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs /each ?>      (tf-finish-operation description))))
 <?cs /each ?>
