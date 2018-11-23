@@ -1,6 +1,6 @@
 ## Ready
 
-* check for gc.h
+* compact tensors when converting
 * generate Scheme code
 * square, difference
 * add gradient

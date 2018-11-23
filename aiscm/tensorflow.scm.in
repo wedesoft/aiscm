@@ -58,8 +58,7 @@
   (make-tf-session graph))
 
 ; Code generated using aiscm/tensorflow.scm.in
-<?cs each:op = Op ?>
-(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
+<?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
   (let-keywords keyword-args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)
     (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
 <?cs each:in = op.input_arg ?>      (tf-add-input description <?cs name:in ?>)
@@ -70,4 +69,5 @@
 <?cs /if ?><?cs if:attr == "shape" ?>      (if <?cs name:attr ?>
         (tf-set-attr-shape description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs /each ?>      (tf-finish-operation description))))
+
 <?cs /each ?>

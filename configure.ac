@@ -177,6 +177,16 @@ LIBS="$old_LIBS"
 CFLAGS="$old_CFLAGS"
 
 old_LIBS="$LIBS"
+LIBS="$LIBS -lgc"
+AC_MSG_CHECKING([for Boehm Garbage Collector library])
+AC_TRY_LINK([#include <gc.h>],
+            [GC_INIT()],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate Boehm Garbage Collector library])])
+LIBS="$old_LIBS"
+
+old_LIBS="$LIBS"
 LIBS="$LIBS -lprotobuf-c"
 AC_MSG_CHECKING([for Protocol Buffer library])
 AC_TRY_LINK([#include <protobuf-c/protobuf-c.h>],
