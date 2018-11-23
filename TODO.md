@@ -1,8 +1,16 @@
 ## Ready
 
 * compact tensors when converting
+* gradients
 * generate Scheme code
-* square, difference
+* difference
+* Tensorflow example
+* Debian sid FFmpeg API changes
+  * avcodec\_encode\_video2 deprecated
+  * avcodec\_decode\_video2 deprecated
+  * avcodec\_encode\_audio2 deprecated
+  * avcodec\_decode\_audio4 deprecated
+  * codec deprecated (ffmpeg.c: 271, 377, 417)
 * add gradient
 * protobuf content -> libctemplate
 * gauss blur, gauss gradient
@@ -34,12 +42,6 @@
 * panorama video viewer
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * cast to higher integer type when doing a tensor injection
-* Debian sid FFmpeg API changes
-  * avcodec\_encode\_video2 deprecated
-  * avcodec\_decode\_video2 deprecated
-  * avcodec\_encode\_audio2 deprecated
-  * avcodec\_decode\_audio4 deprecated
-  * codec deprecated (ffmpeg.c: 271, 377, 417)
 * rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
