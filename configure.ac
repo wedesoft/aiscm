@@ -180,7 +180,7 @@ old_LIBS="$LIBS"
 LIBS="$LIBS -lprotobuf-c"
 AC_MSG_CHECKING([for Protocol Buffer library])
 AC_TRY_LINK([#include <protobuf-c/protobuf-c.h>],
-            [protobuf_c_empty_string],
+            [protobuf_c_message_unpack(NULL, NULL, 0, NULL)],
             [AC_MSG_RESULT([yes])],
             [AC_MSG_RESULT([no])]
             [AC_MSG_ERROR([Could not locate Protocol Buffer library])])
