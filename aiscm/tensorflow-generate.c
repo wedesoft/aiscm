@@ -34,47 +34,72 @@ char *kebab_case(const char *camel_case)
   return result;
 }
 
+const char *resolve_name_clash(const char *name)
+{
+  const char *result;
+  if (strcmp(name, "identity") == 0)
+    result = "identity_";
+  else if (strcmp(name, "const") == 0)
+    result = "const_";
+  else
+    result = name;
+  return result;
+}
+
 int main(void)
 {
   GC_INIT();
   TF_Buffer *buffer = TF_GetAllOpList();
   Tensorflow__OpList *op_list = tensorflow__op_list__unpack(NULL, buffer->length, buffer->data);
 
-  for (int i=0; i<op_list->n_op; i++) {
-    struct _Tensorflow__OpDef *op = op_list->op[i];
-    fprintf(stderr, "Op.%s.name = %s\n", op->name, kebab_case(op->name));
-    for (int j=0; j<op->n_input_arg; j++) {
-      Tensorflow__OpDef__ArgDef *arg = op->input_arg[j];
-      const char *type = arg->type != TENSORFLOW__DATA_TYPE__DT_INVALID ? "scalar" : arg->type_attr;
-      fprintf(stderr, "Op.%s.input_arg.%s = %s\n", op->name, arg->name, type);
-    };
-    for (int j=0; j<op->n_attr; j++) {
-      Tensorflow__OpDef__AttrDef *attr = op->attr[j];
-      fprintf(stderr, "Op.%s.attr.%s = %s\n", op->name, attr->name, attr->type);
-    };
-  };
-
   HDF *hdf;
   hdf_init(&hdf);
 
-  hdf_set_value(hdf, "Op.Identity.name", "identity_");
+  for (int i=0; i<op_list->n_op; i++) {
+    struct _Tensorflow__OpDef *op = op_list->op[i];
+    char variable[256];
+    char value[256];
+    snprintf(variable, 256, "Op.%s.name", op->name);
+    snprintf(value, 256, "%s", resolve_name_clash(kebab_case(op->name)));
+    //hdf_set_value(hdf, variable, value);
+    fprintf(stderr, "%s = %s\n", variable, value);
+    for (int j=0; j<op->n_input_arg; j++) {
+      Tensorflow__OpDef__ArgDef *arg = op->input_arg[j];
+      snprintf(variable, 256, "Op.%s.input_arg.%s", op->name, arg->name);
+      const char *type = arg->type != TENSORFLOW__DATA_TYPE__DT_INVALID ? "undefined" : arg->type_attr;
+      snprintf(value, 256, "%s", type);
+      //hdf_set_value(hdf, variable, value);
+      fprintf(stderr, "%s = %s\n", variable, value);
+    };
+    for (int j=0; j<op->n_attr; j++) {
+      Tensorflow__OpDef__AttrDef *attr = op->attr[j];
+      snprintf(variable, 256, "Op.%s.attr.%s", op->name, attr->name);
+      snprintf(value, 256, "%s", attr->type);
+      //hdf_set_value(hdf, variable, value);
+      fprintf(stderr, "%s = %s\n", variable, value);
+    };
+  };
+
+  hdf_set_value(hdf, "Op.Identity.name", "tf-identity");
   hdf_set_value(hdf, "Op.Identity.input_arg.input", "T");
   hdf_set_value(hdf, "Op.Identity.attr.T", "type");
 
-  hdf_set_value(hdf, "Op.Assign.name", "assign");
+  hdf_set_value(hdf, "Op.Assign.name", "tf-assign");
   hdf_set_value(hdf, "Op.Assign.input_arg.x", "T");
   hdf_set_value(hdf, "Op.Assign.input_arg.y", "T");
   hdf_set_value(hdf, "Op.Assign.attr.T", "type");
+  hdf_set_value(hdf, "Op.Assign.attr.validate_shape", "bool");
+  hdf_set_value(hdf, "Op.Assign.attr.use_locking", "bool");
 
-  hdf_set_value(hdf, "Op.Const.name", "const_");
+  hdf_set_value(hdf, "Op.Const.name", "tf-const");
   hdf_set_value(hdf, "Op.Const.attr.value", "tensor");
   hdf_set_value(hdf, "Op.Const.attr.dtype", "type");
 
-  hdf_set_value(hdf, "Op.Placeholder.name", "placeholder");
+  hdf_set_value(hdf, "Op.Placeholder.name", "tf-placeholder");
   hdf_set_value(hdf, "Op.Placeholder.attr.dtype", "type");
   hdf_set_value(hdf, "Op.Placeholder.attr.shape", "shape");
 
-  hdf_set_value(hdf, "Op.Variable.name", "variable");
+  hdf_set_value(hdf, "Op.Variable.name", "tf-variable");
   hdf_set_value(hdf, "Op.Variable.attr.dtype", "type");
   hdf_set_value(hdf, "Op.Variable.attr.shape", "shape");
 

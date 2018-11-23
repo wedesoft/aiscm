@@ -37,15 +37,15 @@
 
 (test-group "build graph"
   (test-assert "create placeholder"
-    (placeholder #:dtype <float>))
+    (tf-placeholder #:dtype <float>))
   (test-error "error creating placeholder without type argument"
-    'misc-error (placeholder))
+    'misc-error (tf-placeholder))
   (test-assert "create identity"
-    (identity_ (placeholder #:dtype <float>)))
+    (tf-identity (tf-placeholder #:dtype <float>)))
   (test-assert "create identity with type argument"
-    (identity_ (placeholder #:dtype <float>) #:T <float>))
+    (tf-identity (tf-placeholder #:dtype <float>) #:T <float>))
   (test-error "error if type mismatch is encountered"
-    'misc-error (identity_ (placeholder #:dtype <float>) #:T <double>)))
+    'misc-error (tf-identity (placeholder #:dtype <float>) #:T <double>)))
 
 (test-group "run session"
   (test-assert "create session"
@@ -53,33 +53,33 @@
   (test-eqv "run trivial session"
     42.0
     (let* [(s (make-session))
-           (p (placeholder #:dtype <double>))]
-      (from-tensor (run s (list (cons p (to-tensor 42.0))) (identity_ p)))))
+           (p (tf-placeholder #:dtype <double>))]
+      (from-tensor (run s (list (cons p (to-tensor 42.0))) (tf-identity p)))))
   (test-equal "run trivial session with list of outputs"
     (list 42.0 42.0)
     (let* [(s (make-session))
-           (p (placeholder #:dtype <double>))]
-      (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (identity_ p) (identity_ p)))))))
+           (p (tf-placeholder #:dtype <double>))]
+      (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (tf-identity p) (tf-identity p)))))))
 
 (test-group "variables and constants"
   (test-assert "create variable"
-    (variable #:dtype <float> #:shape '(3 2)))
+    (tf-variable #:dtype <float> #:shape '(3 2)))
   (test-error "error using uninitialised variable"
     'misc-error
     (let* [(s (make-session))
-           (v (variable #:dtype <float> #:shape '(3 2)))]
+           (v (tf-variable #:dtype <float> #:shape '(3 2)))]
       (run s '() v)))
   (test-eqv "Constant tensor"
     42.0
     (let* [(s (make-session))
-           (c (const_ #:value (to-tensor 42.0) #:dtype <double>))]
+           (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
       (from-tensor (run s '() c))))
   (test-eqv "Variable assignment"
     42.0
     (let* [(s (make-session))
-           (v (variable #:dtype <double> #:shape '()))
-           (c (const_ #:value (to-tensor 42.0) #:dtype <double>))]
-      (run s '() (assign v c))
+           (v (tf-variable #:dtype <double> #:shape '()))
+           (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
+      (run s '() (tf-assign v c))
       (from-tensor (run s '() v)))))
 
 (test-end "aiscm tensorflow")
