@@ -19,7 +19,10 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor placeholder identity_ make-session run variable const_ assign))
+  #:export (to-tensor from-tensor make-session run
+            ; Code generated using aiscm/tensorflow.scm.in
+<?cs each:op = Op ?>            <?cs var:op.name ?>
+<?cs /each ?>            ))
 
 (load-extension "libguile-aiscm-tensorflow" "init_tensorflow")
 

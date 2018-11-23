@@ -1,5 +1,6 @@
 ## Ready
 
+* check for gc.h
 * generate Scheme code
 * square, difference
 * add gradient
