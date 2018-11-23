@@ -57,6 +57,11 @@
 (define (make-session)
   (make-tf-session graph))
 
+(define (run session alist expression)
+  (let* [(tensors (map (lambda (entry) (cons (car entry) (to-tensor (cdr entry)))) alist))
+         (result  (tf-run session tensors expression))]
+    (if (list? result) (map from-tensor result) (from-tensor result))))
+
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
   (let-keywords keyword-args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)

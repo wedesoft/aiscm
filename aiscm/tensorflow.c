@@ -262,29 +262,29 @@ SCM make_tf_session(SCM scm_graph)
   return retval;
 }
 
-SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
+SCM tf_run(SCM scm_session, SCM scm_input, SCM scm_output)
 {
   SCM retval;
   if (scm_is_true(scm_list_p(scm_output))) {
     struct tf_session_t *session = get_tf_session(scm_session);
     int ninputs = scm_ilength(scm_input);
-    TF_Output *inputs = scm_gc_malloc(sizeof(TF_Output) * ninputs, "run");
-    TF_Tensor **input_values = scm_gc_malloc(sizeof(TF_Tensor *) * ninputs, "run");
+    TF_Output *inputs = scm_gc_malloc(sizeof(TF_Output) * ninputs, "tf-run");
+    TF_Tensor **input_values = scm_gc_malloc(sizeof(TF_Tensor *) * ninputs, "tf-run");
     for (int i=0; i<ninputs; i++) {
       memcpy(&inputs[i], &get_tf_output(scm_caar(scm_input))->output, sizeof(TF_Output));
       input_values[i] = get_tf_tensor(scm_cdar(scm_input))->tensor;
       scm_input = scm_cdr(scm_input);
     };
     int noutputs = scm_ilength(scm_output);
-    TF_Output *output = scm_gc_malloc(sizeof(TF_Output) * noutputs, "run");
-    TF_Tensor **output_values = scm_gc_malloc(sizeof(TF_Tensor *) * noutputs, "run");
+    TF_Output *output = scm_gc_malloc(sizeof(TF_Output) * noutputs, "tf-run");
+    TF_Tensor **output_values = scm_gc_malloc(sizeof(TF_Tensor *) * noutputs, "tf-run");
     for (int i=0; i<noutputs; i++) {
       output[i] = get_tf_output(scm_car(scm_output))->output;
       scm_output = scm_cdr(scm_output);
     };
     TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status);
     if (TF_GetCode(status) != TF_OK)
-      scm_misc_error("run", TF_Message(status), SCM_EOL);
+      scm_misc_error("tf-run", TF_Message(status), SCM_EOL);
     retval = SCM_EOL;
     for (int i=noutputs-1; i>=0; i--) {
       SCM element;
@@ -294,7 +294,7 @@ SCM run(SCM scm_session, SCM scm_input, SCM scm_output)
       retval = scm_cons(element, retval);
     };
   } else
-    retval = scm_car(run(scm_session, scm_input, scm_list_1(scm_output)));
+    retval = scm_car(tf_run(scm_session, scm_input, scm_list_1(scm_output)));
   return retval;
 }
 
@@ -337,5 +337,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-set-attr-shape"  , 3, 0, 0, SCM_FUNC(tf_set_attr_shape  ));
   scm_c_define_gsubr("tf-set-attr-tensor" , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor ));
   scm_c_define_gsubr("make-tf-session"    , 1, 0, 0, SCM_FUNC(make_tf_session    ));
-  scm_c_define_gsubr("run"                , 3, 0, 0, SCM_FUNC(run                ));
+  scm_c_define_gsubr("tf-run"             , 3, 0, 0, SCM_FUNC(tf_run             ));
 }

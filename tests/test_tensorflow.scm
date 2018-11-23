@@ -54,12 +54,12 @@
     42.0
     (let* [(s (make-session))
            (p (tf-placeholder #:dtype <double>))]
-      (from-tensor (run s (list (cons p (to-tensor 42.0))) (tf-identity p)))))
+      (run s (list (cons p 42.0)) (tf-identity p))))
   (test-equal "run trivial session with list of outputs"
     (list 42.0 42.0)
     (let* [(s (make-session))
            (p (tf-placeholder #:dtype <double>))]
-      (map from-tensor (run s (list (cons p (to-tensor 42.0))) (list (tf-identity p) (tf-identity p)))))))
+      (run s (list (cons p 42.0)) (list (tf-identity p) (tf-identity p))))))
 
 (test-group "variables and constants"
   (test-assert "create variable"
@@ -73,13 +73,13 @@
     42.0
     (let* [(s (make-session))
            (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
-      (from-tensor (run s '() c))))
+      (run s '() c)))
   (test-eqv "Variable assignment"
     42.0
     (let* [(s (make-session))
            (v (tf-variable #:dtype <double> #:shape '()))
            (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
       (run s '() (tf-assign v c))
-      (from-tensor (run s '() v)))))
+      (run s '() v))))
 
 (test-end "aiscm tensorflow")
