@@ -43,7 +43,7 @@
 (define inverse-typemap (alist-invert typemap))
 
 (define-method (to-tensor (arr <multiarray<>>))
-  (make-tensor (assq-ref typemap (typecode arr)) (shape arr) (size-of arr) (memory arr)))
+  (make-tensor (assq-ref typemap (typecode arr)) (shape arr) (size-of arr) (memory (ensure-default-strides arr))))
 
 (define-method (to-tensor value)
   (let [(arr (make (multiarray (native-type value) 0) #:shape '()))]

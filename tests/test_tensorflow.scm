@@ -33,7 +33,9 @@
   (test-equal "round trip of tensor data"
     '(2 3 5) (to-list (from-tensor (to-tensor (arr <int> 2 3 5)))))
   (test-equal "round trip of scalar value"
-    42.0 (from-tensor (to-tensor 42.0))))
+    42.0 (from-tensor (to-tensor 42.0)))
+  (test-equal "ensure row-major representation"
+    '((1 3) (2 4)) (to-list (from-tensor (to-tensor (roll (arr (1 2) (3 4))))))))
 
 (test-group "build graph"
   (test-assert "create placeholder"
