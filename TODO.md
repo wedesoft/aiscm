@@ -1,8 +1,8 @@
 ## Ready
 
+* gradients
 * default to integer or double array
 * implicit constant declaration (e.g. reshape)
-* gradients
 * generate Scheme code
 * difference
 * Tensorflow example

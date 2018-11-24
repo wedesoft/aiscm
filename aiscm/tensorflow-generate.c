@@ -53,9 +53,8 @@ int main(void)
     for (int j=0; j<op->n_input_arg; j++) {
       Tensorflow__OpDef__ArgDef *arg = op->input_arg[j];
       snprintf(variable, 256, "Op.%s.input_arg.%s", op->name, arg->name);
-      const char *type = arg->type != TENSORFLOW__DATA_TYPE__DT_INVALID ? "undefined" : arg->type_attr;
-      snprintf(value, 256, "%s", type);
-      hdf_set_value(hdf, variable, value);
+      const char *multiple = *arg->number_attr ? "list" : "single";
+      hdf_set_value(hdf, variable, multiple);
     };
     for (int j=0; j<op->n_attr; j++) {
       Tensorflow__OpDef__AttrDef *attr = op->attr[j];
