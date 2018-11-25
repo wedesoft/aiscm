@@ -3,7 +3,6 @@
 * gradients
 * default to integer or double array
 * implicit constant declaration (e.g. reshape)
-* generate Scheme code
 * difference
 * Tensorflow example
 * Debian sid FFmpeg API changes
@@ -12,8 +11,7 @@
   * avcodec\_encode\_audio2 deprecated
   * avcodec\_decode\_audio4 deprecated
   * codec deprecated (ffmpeg.c: 271, 377, 417)
-* add gradient
-* protobuf content -> libctemplate
+* reshape
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
