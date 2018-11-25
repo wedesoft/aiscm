@@ -100,6 +100,9 @@
     2.0
     (let [(s (make-session))
           (x (tf-variable #:dtype <double> #:shape '()))]
-      (run s (list (cons x 2.0)) (tf-add-n (list x) #:N 1)))))
+      (run s (list (cons x 2.0)) (tf-add-n (list x) #:N 1))))
+  (test-assert "instantiate max-pooling"
+    (let [(x (tf-variable #:dtype <double> #:shape '(1 4 4 1)))]
+      (tf-max-pool x #:padding 'SAME #:strides '(1 2 2 1) #:ksize '(1 2 2 1)))))
 
 (test-end "aiscm tensorflow")

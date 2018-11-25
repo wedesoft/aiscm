@@ -68,13 +68,15 @@
     (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
 <?cs each:in = op.input_arg ?><?cs if:in == "list" ?>      (tf-add-input-list description <?cs name:in ?>)
 <?cs /if ?><?cs if:in == "single" ?>      (tf-add-input description <?cs name:in ?>)
-<?cs /if ?><?cs /each ?><?cs each:attr = op.attr ?><?cs if:attr == "int" ?>      (if <?cs name:attr ?>
+<?cs /if ?><?cs /each ?><?cs each:attr = op.attr ?><?cs if:attr == "string" ?>      (if <?cs name:attr ?>
+        (tf-set-attr-string description "<?cs name:attr ?>" (symbol->string <?cs name:attr ?>)))
+<?cs /if ?><?cs if:attr == "int" ?>      (if <?cs name:attr ?>
         (tf-set-attr-int description "<?cs name:attr ?>" <?cs name:attr ?>))
+<?cs /if ?><?cs if:attr == "list(int)" ?>      (if <?cs name:attr ?>
+        (tf-set-attr-int-list description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "type" ?>      (if <?cs name:attr ?>
         (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
-<?cs /if ?>
-
-<?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
+<?cs /if ?><?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
         (tf-set-attr-tensor description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "shape" ?>      (if <?cs name:attr ?>
         (tf-set-attr-shape description "<?cs name:attr ?>" <?cs name:attr ?>))
