@@ -87,9 +87,19 @@
 (test-group "further operations"
   (test-eqv "operation with list of inputs"
     5.0
-    (let* [(s (make-session))
-           (x (tf-variable #:dtype <double> #:shape '()))
-           (y (tf-variable #:dtype <double> #:shape '()))]
-      (run s (list (cons x 2.0) (cons y 3.0)) (tf-add-n (list x y))))))
+    (let [(s (make-session))
+          (x (tf-variable #:dtype <double> #:shape '()))
+          (y (tf-variable #:dtype <double> #:shape '()))]
+      (run s (list (cons x 2.0) (cons y 3.0)) (tf-add-n (list x y)))))
+  (test-error "test integer mismatch"
+    'misc-error
+    (let [(s (make-session))
+          (x (tf-variable #:dtype <double> #:shape '()))]
+      (run s (list (cons x 2.0)) (tf-add-n (list x) #:N 2))))
+  (test-eqv "test matching integer parameter"
+    2.0
+    (let [(s (make-session))
+          (x (tf-variable #:dtype <double> #:shape '()))]
+      (run s (list (cons x 2.0)) (tf-add-n (list x) #:N 1)))))
 
 (test-end "aiscm tensorflow")

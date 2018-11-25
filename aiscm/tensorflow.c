@@ -231,6 +231,13 @@ SCM tf_add_input_list(SCM scm_description, SCM scm_inputs)
   return SCM_UNDEFINED;
 }
 
+SCM tf_set_attr_int(SCM scm_description, SCM scm_name, SCM scm_value)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  TF_SetAttrInt(self->description, scm_to_locale_string(scm_name), scm_to_int(scm_value));
+  return SCM_UNDEFINED;
+}
+
 SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
@@ -347,6 +354,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-finish-operation", 1, 0, 0, SCM_FUNC(tf_finish_operation));
   scm_c_define_gsubr("tf-add-input"       , 2, 0, 0, SCM_FUNC(tf_add_input       ));
   scm_c_define_gsubr("tf-add-input-list"  , 2, 0, 0, SCM_FUNC(tf_add_input_list  ));
+  scm_c_define_gsubr("tf-set-attr-int"    , 3, 0, 0, SCM_FUNC(tf_set_attr_int    ));
   scm_c_define_gsubr("tf-set-attr-type"   , 3, 0, 0, SCM_FUNC(tf_set_attr_type   ));
   scm_c_define_gsubr("tf-set-attr-shape"  , 3, 0, 0, SCM_FUNC(tf_set_attr_shape  ));
   scm_c_define_gsubr("tf-set-attr-tensor" , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor ));
