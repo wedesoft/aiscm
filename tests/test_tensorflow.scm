@@ -113,6 +113,11 @@
     (let [(s (make-session))
           (x (tf-variable #:dtype <double> #:shape '()))
           (y (tf-variable #:dtype <double> #:shape '()))]
-      (run s (list (cons x 2.0) (cons y 2.1)) (tf-approximate-equal x y #:tolerance 0.2)))))
+      (run s (list (cons x 2.0) (cons y 2.1)) (tf-approximate-equal x y #:tolerance 0.2))))
+  (test-equal "test bucketizing with floating-point list attribute"
+    '(0 1 2)
+    (let [(s (make-session))
+          (x (tf-variable #:dtype <double> #:shape '(-1)))]
+      (to-list (run s (list (cons x (arr 2.0 3.0 5.0))) (tf-bucketize x #:boundaries '(2.5 4.5)))))))
 
 (test-end "aiscm tensorflow")

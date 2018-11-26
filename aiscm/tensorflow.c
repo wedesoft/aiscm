@@ -268,6 +268,19 @@ SCM tf_set_attr_float(SCM scm_description, SCM scm_name, SCM scm_value)
   return SCM_UNDEFINED;
 }
 
+SCM tf_set_attr_float_list(SCM scm_description, SCM scm_name, SCM scm_values)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  int num_values = scm_ilength(scm_values);
+  float *values = scm_gc_malloc(sizeof(float) * num_values, "tf-set-attr-float-list");
+  for (int i=0; i<num_values; i++) {
+    values[i] = (float)scm_to_double(scm_car(scm_values));
+    scm_values = scm_cdr(scm_values);
+  };
+  TF_SetAttrFloatList(self->description, scm_to_locale_string(scm_name), values, num_values);
+  return SCM_UNDEFINED;
+}
+
 SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
@@ -378,20 +391,21 @@ void init_tensorflow(void)
   scm_c_define("TF_UINT64", scm_from_int(TF_UINT64));
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define("TF_BOOL"  , scm_from_int(TF_BOOL  ));
-  scm_c_define_gsubr("make-tensor"         , 4, 0, 0, SCM_FUNC(make_tensor         ));
-  scm_c_define_gsubr("tf-from-tensor"      , 1, 0, 0, SCM_FUNC(tf_from_tensor      ));
-  scm_c_define_gsubr("make-graph"          , 0, 0, 0, SCM_FUNC(make_graph          ));
-  scm_c_define_gsubr("make-description"    , 3, 0, 0, SCM_FUNC(make_description    ));
-  scm_c_define_gsubr("tf-finish-operation" , 1, 0, 0, SCM_FUNC(tf_finish_operation ));
-  scm_c_define_gsubr("tf-add-input"        , 2, 0, 0, SCM_FUNC(tf_add_input        ));
-  scm_c_define_gsubr("tf-add-input-list"   , 2, 0, 0, SCM_FUNC(tf_add_input_list   ));
-  scm_c_define_gsubr("tf-set-attr-string"  , 3, 0, 0, SCM_FUNC(tf_set_attr_string  ));
-  scm_c_define_gsubr("tf-set-attr-int"     , 3, 0, 0, SCM_FUNC(tf_set_attr_int     ));
-  scm_c_define_gsubr("tf-set-attr-int-list", 3, 0, 0, SCM_FUNC(tf_set_attr_int_list));
-  scm_c_define_gsubr("tf-set-attr-float"   , 3, 0, 0, SCM_FUNC(tf_set_attr_float   ));
-  scm_c_define_gsubr("tf-set-attr-type"    , 3, 0, 0, SCM_FUNC(tf_set_attr_type    ));
-  scm_c_define_gsubr("tf-set-attr-shape"   , 3, 0, 0, SCM_FUNC(tf_set_attr_shape   ));
-  scm_c_define_gsubr("tf-set-attr-tensor"  , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor  ));
-  scm_c_define_gsubr("make-tf-session"     , 1, 0, 0, SCM_FUNC(make_tf_session     ));
-  scm_c_define_gsubr("tf-run"              , 3, 0, 0, SCM_FUNC(tf_run              ));
+  scm_c_define_gsubr("make-tensor"           , 4, 0, 0, SCM_FUNC(make_tensor           ));
+  scm_c_define_gsubr("tf-from-tensor"        , 1, 0, 0, SCM_FUNC(tf_from_tensor        ));
+  scm_c_define_gsubr("make-graph"            , 0, 0, 0, SCM_FUNC(make_graph            ));
+  scm_c_define_gsubr("make-description"      , 3, 0, 0, SCM_FUNC(make_description      ));
+  scm_c_define_gsubr("tf-finish-operation"   , 1, 0, 0, SCM_FUNC(tf_finish_operation   ));
+  scm_c_define_gsubr("tf-add-input"          , 2, 0, 0, SCM_FUNC(tf_add_input          ));
+  scm_c_define_gsubr("tf-add-input-list"     , 2, 0, 0, SCM_FUNC(tf_add_input_list     ));
+  scm_c_define_gsubr("tf-set-attr-string"    , 3, 0, 0, SCM_FUNC(tf_set_attr_string    ));
+  scm_c_define_gsubr("tf-set-attr-int"       , 3, 0, 0, SCM_FUNC(tf_set_attr_int       ));
+  scm_c_define_gsubr("tf-set-attr-int-list"  , 3, 0, 0, SCM_FUNC(tf_set_attr_int_list  ));
+  scm_c_define_gsubr("tf-set-attr-float"     , 3, 0, 0, SCM_FUNC(tf_set_attr_float     ));
+  scm_c_define_gsubr("tf-set-attr-float-list", 3, 0, 0, SCM_FUNC(tf_set_attr_float_list));
+  scm_c_define_gsubr("tf-set-attr-type"      , 3, 0, 0, SCM_FUNC(tf_set_attr_type      ));
+  scm_c_define_gsubr("tf-set-attr-shape"     , 3, 0, 0, SCM_FUNC(tf_set_attr_shape     ));
+  scm_c_define_gsubr("tf-set-attr-tensor"    , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor    ));
+  scm_c_define_gsubr("make-tf-session"       , 1, 0, 0, SCM_FUNC(make_tf_session       ));
+  scm_c_define_gsubr("tf-run"                , 3, 0, 0, SCM_FUNC(tf_run                ));
 }
