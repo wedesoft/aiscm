@@ -360,6 +360,8 @@ void init_tensorflow(void)
 
   status = TF_NewStatus();
 
+  scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
+  scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
   scm_c_define("TF_UINT8" , scm_from_int(TF_UINT8 ));
   scm_c_define("TF_INT8"  , scm_from_int(TF_INT8  ));
   scm_c_define("TF_UINT16", scm_from_int(TF_UINT16));
@@ -368,8 +370,7 @@ void init_tensorflow(void)
   scm_c_define("TF_INT32" , scm_from_int(TF_INT32 ));
   scm_c_define("TF_UINT64", scm_from_int(TF_UINT64));
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
-  scm_c_define("TF_FLOAT" , scm_from_int(TF_FLOAT ));
-  scm_c_define("TF_DOUBLE", scm_from_int(TF_DOUBLE));
+  scm_c_define("TF_BOOL"  , scm_from_int(TF_BOOL  ));
   scm_c_define_gsubr("make-tensor"         , 4, 0, 0, SCM_FUNC(make_tensor         ));
   scm_c_define_gsubr("tf-from-tensor"      , 1, 0, 0, SCM_FUNC(tf_from_tensor      ));
   scm_c_define_gsubr("make-graph"          , 0, 0, 0, SCM_FUNC(make_graph          ));

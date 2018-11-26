@@ -19,7 +19,8 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-session run
+  #:export (to-tensor from-tensor make-session run make-tensor tf-from-tensor
+            graph make-graph make-description tf-finish-operation tf-add-input tf-run
             ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>            <?cs var:op.name ?>
 <?cs /each ?>            ))
@@ -29,7 +30,8 @@
 (define graph (make-graph))
 
 (define typemap
-  (list (cons <ubyte>  TF_UINT8 )
+  (list (cons <bool>   TF_BOOL  )
+        (cons <ubyte>  TF_UINT8 )
         (cons <byte>   TF_INT8  )
         (cons <usint>  TF_UINT16)
         (cons <sint>   TF_INT16 )
