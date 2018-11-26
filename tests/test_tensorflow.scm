@@ -104,10 +104,15 @@
   (test-assert "instantiate max-pooling"
     (let [(x (tf-variable #:dtype <double> #:shape '(1 4 4 1)))]
       (tf-max-pool x #:padding 'SAME #:strides '(1 2 2 1) #:ksize '(1 2 2 1))))
-  (test-assert "unequal operator"
+  (test-assert "unequal operator returning boolean result"
     (let [(s (make-session))
           (x (tf-variable #:dtype <double> #:shape '()))
           (y (tf-variable #:dtype <double> #:shape '()))]
-      (run s (list (cons x 2.0) (cons y 3.0)) (tf-not-equal x y)))))
+      (run s (list (cons x 2.0) (cons y 3.0)) (tf-not-equal x y))))
+  (test-assert "approximate equal operator with floating-point attribute"
+    (let [(s (make-session))
+          (x (tf-variable #:dtype <double> #:shape '()))
+          (y (tf-variable #:dtype <double> #:shape '()))]
+      (run s (list (cons x 2.0) (cons y 2.1)) (tf-approximate-equal x y #:tolerance 0.2)))))
 
 (test-end "aiscm tensorflow")

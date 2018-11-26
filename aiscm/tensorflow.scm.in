@@ -76,6 +76,8 @@
         (tf-set-attr-int description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "list(int)" ?>      (if <?cs name:attr ?>
         (tf-set-attr-int-list description "<?cs name:attr ?>" <?cs name:attr ?>))
+<?cs /if ?><?cs if:attr == "float" ?>      (if <?cs name:attr ?>
+        (tf-set-attr-float description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "type" ?>      (if <?cs name:attr ?>
         (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
