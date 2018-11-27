@@ -444,7 +444,7 @@
   (test-assert "Define base memory"
     (pointer? (memory-base (make (multiarray <int> 2) #:shape '(3 2)))))
   (test-equal "Strides of multi-dimensional array"
-    '(4 8 24) (strides (make (multiarray <int> 3) #:shape '(2 3 5))))
+    '(24 8 4) (strides (make (multiarray <int> 3) #:shape '(5 3 2))))
   (test-eq "Native type of multi-dimensional array"
     (llvmarray <int> 2) (native-type (make (multiarray <int> 2) #:shape '(3 2))))
   (test-equal "Decompose multi-dimensional array type"
@@ -1125,8 +1125,8 @@
   (let [(m0 (make (multiarray <byte> 0) #:shape '() #:memory (bytevector->pointer #vu8(42))))
         (m1 (make (multiarray <byte> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(2 3 5))))
         (s1 (make (multiarray <sint> 1) #:shape '(3) #:memory (bytevector->pointer #vu8(0 0 0 0 2 3))))
-        (m2 (make (multiarray <byte> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))
-        (s2 (make (multiarray <sint> 2) #:shape '(3 2) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13 5 7 11 13 17 19))))]
+        (m2 (make (multiarray <byte> 2) #:shape '(2 3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13))))
+        (s2 (make (multiarray <sint> 2) #:shape '(2 3) #:memory (bytevector->pointer #vu8(2 3 5 7 11 13 5 7 11 13 17 19))))]
     (test-equal "Identity function preserves shape"
       '(2 3 5) (shape ((jit (list (llvmarray <int> 3)) identity) (make (multiarray <int> 3) #:shape '(2 3 5)))))
     (test-equal "Shape can be queried in compiled code"
@@ -1152,7 +1152,7 @@
     (test-equal "Set range of elements of 1D array to same value"
       '(2 11 11 7) (let [(m  (arr 2 3 5 7))] (set m '(1 . 3) 11) (to-list m)))
     (test-equal "Getting range rolls dimensions of array"
-      '(1 3 4) (shape (get (make (multiarray <int> 3) #:shape '(3 4 5)) '(0 . 1))))
+      '(4 3 1) (shape (get (make (multiarray <int> 3) #:shape '(5 4 3)) '(0 . 1))))
     (test-equal "Build multiarray with correct memory"
       (memory m2)
       (memory ((jit (list (pointer <byte>) (pointer <byte> ) (llvmlist <int> 2) (llvmlist <int> 2)) llvmarray)
@@ -1200,7 +1200,7 @@
     (test-equal "Shape of 1D list"
       '(3) (shape '(2 3 5)))
     (test-equal "Shape of 2D list"
-      '(3 2) (shape '((2 3 5) (3 5 7))))
+      '(2 3) (shape '((2 3 5) (3 5 7))))
     (test-eq "Convert list to array"
       (multiarray <ubyte> 1) (class-of (to-array '(2 3 5))))
     (test-equal "1D array conversion round trip"
@@ -1220,23 +1220,23 @@
     (test-equal "Shape of rolled array"
       '(3 4 2) (shape (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Strides of rolled array"
-      '(8 24 4) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+      '(16 4 48) (strides (roll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Shape of unrolled array"
       '(4 2 3) (shape (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Strides of unrolled array"
-      '(24 4 8) (strides (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
+      '(4 48 16) (strides (unroll (make (multiarray <int> 3) #:shape '(2 3 4)))))
     (test-equal "Crop 1D array"
       '(1 2 3) (to-list (crop 3 (arr 1 2 3 4))))
     (test-equal "Crop 2D array"
-      '((1 2)) (to-list (crop '(2 1) (arr  (1 2 3) (4 5 6)))))
+      '((1) (4)) (to-list (crop '(2 1) (arr (1 2 3) (4 5 6)))))
     (test-equal "Shape of cropped 3D array"
-      '(3 1 2) (shape (crop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))
+      '(1 2 5) (shape (crop '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))
     (test-equal "Dump elements from 1D array"
       '(3 4 5) (to-list (dump 2 (arr 1 2 3 4 5))))
     (test-equal "Dump elements from 2D array"
-      '((2 3) (5 6)) (to-list (dump '(1 0) (arr (1 2 3) (4 5 6)))))
+      '((2 3) (5 6)) (to-list (dump '(0 1) (arr (1 2 3) (4 5 6)))))
     (test-equal "Shape of 3D array after dumping elements"
-      '(3 3 3) (shape (dump '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))))
+      '(2 2 5) (shape (dump '(1 2) (make (multiarray <int> 3) #:shape '(3 4 5)))))))
 
 (test-group "array operations"
   (test-equal "Unary minus on 1D array"
@@ -1247,7 +1247,7 @@
                                  #:strides '(2)
                                  #:memory (bytevector->pointer #vu8(1 0 254 0 3 0))))))
   (test-equal "Unary operation computes strides"
-    '(1 3) (strides (- (to-array '((1 2 3) (4 5 6))))))
+    '(3 1) (strides (- (to-array '((1 2 3) (4 5 6))))))
   (test-equal "Unary minus on 2D array"
     '((-1 2 -3) (4 -5 6)) (to-list (- (to-array '((1 -2 3) (-4 5 -6))))))
   (test-equal "Unary negation on 1D array"
@@ -1280,6 +1280,8 @@
     '(0 1) (to-list (& (arr 2 3) 5)))
   (test-equal "Elementwise and of array"
     '(7 7) (to-list (| (arr 2 3) 5)))
+  (test-equal "Default strides"
+    '(24 8 4) (default-strides <int> '(5 3 2)))
   (let [(m (to-array '(2 3 5)))
         (n (make (multiarray <ubyte> 1) #:shape '(3) #:strides '(2) #:memory (bytevector->pointer #vu8(2 2 3 3 5 5))))]
     (test-equal "Duplication preserves content"
@@ -1660,7 +1662,7 @@
   (test-equal "indices in 1D array"
     '(0 1 2) (to-list (indices 3)))
   (test-equal "2D index array"
-    '((0 1 2) (3 4 5)) (to-list (indices 3 2))))
+    '((0 1 2) (3 4 5)) (to-list (indices 2 3))))
 
 (test-group "comparison"
   (test-assert "equal arrays"

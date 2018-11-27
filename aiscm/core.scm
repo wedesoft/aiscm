@@ -286,6 +286,14 @@
   "Get all but last element of a list"
   (apply llvmlist (map (lambda (index) (get self index)) (iota (1- (dimension self))))))
 
+(define (llvm-car self)
+  "Get first element of a list"
+  (get self 0))
+
+(define (llvm-cdr self)
+  "Get all but first element of a list"
+  (apply llvmlist (map (lambda (index) (get self index)) (iota (1- (dimension self)) 1))))
+
 (define-class* <multiarray<>> <object> <meta<multiarray<>>> <class>
                (shape       #:init-keyword #:shape       #:getter shape      )
                (strides     #:init-keyword #:strides     #:getter strides    )
@@ -294,7 +302,7 @@
 
 (define (default-strides typecode shape)
   "Compute strides for compact array"
-  (map (compose (cut apply * (size-of typecode) <>) (cut list-head shape <>)) (iota (length shape))))
+  (map (compose (cut apply * (size-of typecode) <>) (cut list-tail shape <>)) (iota (length shape) 1)))
 
 (define (ensure-default-strides self)
   "Create copy of array if it is not compact"
@@ -337,7 +345,7 @@
 
 (define-method (crop (n <integer>) (self <multiarray<>>))
   (make (class-of self)
-        #:shape       (attach (all-but-last (shape self)) n)
+        #:shape       (cons n (cdr (shape self)))
         #:strides     (strides self)
         #:memory      (memory self)
         #:memory-base (memory-base self)))
@@ -345,19 +353,19 @@
 (define-method (crop (n <null>) (self <multiarray<>>)) self)
 
 (define-method (crop (n <pair>) (self <multiarray<>>))
-  (crop (last n) (roll (crop (all-but-last n) (unroll self)))))
+  (crop (car n) (unroll (crop (cdr n) (roll self)))))
 
 (define-method (dump (n <integer>) (self <multiarray<>>))
   (make (class-of self)
-        #:shape       (attach (all-but-last (shape self)) (- (last (shape self)) n))
+        #:shape       (cons (- (car (shape self)) n) (cdr (shape self)))
         #:strides     (strides self)
-        #:memory      (make-pointer (+ (pointer-address (memory self)) (* n (last (strides self)))))
+        #:memory      (make-pointer (+ (pointer-address (memory self)) (* n (car (strides self)))))
         #:memory-base (memory-base self)))
 
 (define-method (dump (n <null>) (self <multiarray<>>)) self)
 
 (define-method (dump (n <pair>) (self <multiarray<>>))
-  (dump (last n) (roll (dump (all-but-last n) (unroll self)))))
+  (dump (car n) (unroll (dump (cdr n) (roll self)))))
 
 (define-class* <llvmarray<>> <structure> <meta<llvmarray<>>> <meta<structure>>)
 
@@ -1354,7 +1362,7 @@
   (let* [(indices (cons first rest))
          (index   (last indices))]
     (apply element
-      (if (is-a? index <pair>) (unroll (dump (car index) (crop (cdr index) self))) (project (dump index self)))
+      (if (is-a? index <pair>) (roll (dump (car index) (crop (cdr index) self))) (project (dump index self)))
       (all-but-last indices))))
 
 (define-method (get (self <multiarray<>>) . indices)
@@ -1370,7 +1378,7 @@
     (store (apply element self indices) value)))
 
 (define (to-list self)
-  (let [(indices (iota (last (shape self))))]
+  (let [(indices (iota (car (shape self))))]
     (if (> (dimensions self) 1)
       (map (lambda (index) (to-list (get self index))) indices)
       (map (cut get self <>) indices))))
@@ -1381,7 +1389,7 @@
 
 (define-method (shape (self <list>))
   "Shape of list"
-  (attach (shape (car self)) (length self)))
+  (cons (length self) (shape (car self))))
 
 (define-method (store (self <multiarray<>>) (value <list>))
   (if (<= (dimensions self) 1)
@@ -1426,7 +1434,7 @@
           (lambda (index)
             (if (not (zero? index)) (display separator port))
             (print-data (get self index) port (1+ depth) line-counter cont))
-          (iota (last (shape self)))))
+          (iota (car (shape self)))))
       (if (> (line-counter) 10)
         (begin (display "..." port) (cont))
         (begin (display "(" port) (print-elements self port 0 80))))
@@ -1448,12 +1456,12 @@
 
 (define-method (project (self <llvmarray<>>))
   "Drop last dimension of array"
-  (llvmarray (memory self) (memory-base self) (llvm-all-but-last (shape self)) (llvm-all-but-last (strides self))))
+  (llvmarray (memory self) (memory-base self) (llvm-cdr (shape self)) (llvm-cdr (strides self))))
 
 (define-method (project (self <multiarray<>>))
   (make (multiarray (typecode self) (1- (dimensions self)))
-        #:shape (all-but-last (shape self))
-        #:strides (all-but-last (strides self))
+        #:shape (cdr (shape self))
+        #:strides (cdr (strides self))
         #:memory (memory self)
         #:memory-base (memory-base self)))
 
@@ -1484,7 +1492,7 @@
       (llvm-begin
         (build-branch start)
         (position-builder-at-end start)
-        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+        (jit-let [(pend (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))]
           (build-branch for)
           (position-builder-at-end for)
           (jit-let [(p (build-phi (pointer (typecode result))))]
@@ -1500,10 +1508,10 @@
                        (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
                 (build-branch finish)
                 (position-builder-at-end finish)
-                (add-incoming p finish (+ p (llvm-last (strides result))))
+                (add-incoming p finish (+ p (llvm-car (strides result))))
                 (apply llvm-begin
                   (append-map
-                    (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) '()))
+                    (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) '()))
                     q
                     args))
                 (build-branch for)
@@ -1512,8 +1520,9 @@
 (define (compute-strides typecode shape)
   "Compile code for computing strides"
   (apply llvmlist
-         (map (lambda (index) (apply * (size-of typecode) (list-head (map (cut get shape <>) (iota (dimension shape))) index)))
-              (iota (dimension shape)))))
+         (map (lambda (index) (apply * (typed-constant <int> (size-of typecode))
+                                       (list-tail (map (cut get shape <>) (iota (dimension shape))) index)))
+              (iota (dimension shape) 1))))
 
 (define (allocate-array typecode shape)
   (jit-let [(size    (apply * (size-of typecode) (map (cut get shape <>) (iota (dimension shape)))))
@@ -1625,9 +1634,9 @@
         (jit-let [(result0 (apply map-reduce upcast reduction mapping sub-args))]
           (build-branch start)
           (position-builder-at-end start)
-          (let* [(stride (map (lambda (arg) (llvm-last (strides arg))) args))
+          (let* [(stride (map (lambda (arg) (llvm-car (strides arg))) args))
                  (p0     (map (lambda (arg stride) (+ (memory arg) stride)) args stride))
-                 (pend   (+ (memory (car args)) (* (car stride) (llvm-last (shape (car args))))))]
+                 (pend   (+ (memory (car args)) (* (car stride) (llvm-car (shape (car args))))))]
             (llvm-begin
               (apply llvm-begin p0)
               (build-branch for)
@@ -1672,24 +1681,24 @@
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
-      (jit-let [(kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-last (strides kernel)))))
-                (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-last self-strides))))
+      (jit-let [(kbegin  (+ (memory kernel) (* (major 0 (last klower-bounds)) (llvm-car (strides kernel)))))
+                (qbegin  (+ (memory self) (* (- (last offsets) (major 0 (last klower-bounds))) (llvm-car self-strides))))
                 (element0 (convolve-kernel reduction
                                            mapping
                                            result
                                            (rebase self qbegin)
                                            (project (rebase kernel kbegin))
-                                           (llvm-all-but-last self-strides)
+                                           (llvm-cdr self-strides)
                                            (all-but-last klower-bounds)
                                            (all-but-last kupper-bounds)
                                            (all-but-last offsets)))]
         (llvm-begin
           (build-branch start)
           (position-builder-at-end start)
-          (jit-let [(kbegin2 (+ kbegin (llvm-last (strides kernel))))
-                    (qbegin2 (- qbegin (llvm-last self-strides)))
-                    (kend    (+ (memory kernel) (* (minor (llvm-last (shape kernel)) (last kupper-bounds))
-                                                   (llvm-last (strides kernel)))))]
+          (jit-let [(kbegin2 (+ kbegin (llvm-car (strides kernel))))
+                    (qbegin2 (- qbegin (llvm-car self-strides)))
+                    (kend    (+ (memory kernel) (* (minor (llvm-car (shape kernel)) (last kupper-bounds))
+                                                   (llvm-car (strides kernel)))))]
             (build-branch for)
             (position-builder-at-end for)
             (jit-let [(element (build-phi (typecode result)))
@@ -1705,15 +1714,15 @@
                                                        result
                                                        (rebase self q)
                                                        (project (rebase kernel k))
-                                                       (llvm-all-but-last self-strides)
+                                                       (llvm-cdr self-strides)
                                                        (all-but-last klower-bounds)
                                                        (all-but-last kupper-bounds)
                                                        (all-but-last offsets)))]
                 (build-branch finish)
                 (position-builder-at-end finish)
                 (add-incoming element finish (reduction element intermediate))
-                (add-incoming k finish (+ k (llvm-last (strides kernel))))
-                (add-incoming q finish (- q (llvm-last self-strides)))
+                (add-incoming k finish (+ k (llvm-car (strides kernel))))
+                (add-incoming q finish (- q (llvm-car self-strides)))
                 (build-branch for)
                 (position-builder-at-end end)
                 element))))))))
@@ -1729,9 +1738,9 @@
       (llvm-begin
         (build-branch start)
         (position-builder-at-end start)
-        (jit-let [(pend    (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))
-                  (offset  (>> (llvm-last kernel-shape) 1))
-                  (klower0 (- (+ offset 1) (llvm-last (shape self))))
+        (jit-let [(pend    (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))
+                  (offset  (>> (llvm-car kernel-shape) 1))
+                  (klower0 (- (+ offset 1) (llvm-car (shape self))))
                   (kupper0 (+ offset 1))]
           (build-branch for)
           (position-builder-at-end for)
@@ -1751,14 +1760,14 @@
                             (project (rebase self q))
                             kernel
                             self-strides
-                            (llvm-all-but-last kernel-shape)
+                            (llvm-cdr kernel-shape)
                             (cons klower klower-bounds)
                             (cons kupper kupper-bounds)
                             (cons offset offsets))
             (build-branch finish)
             (position-builder-at-end finish)
-            (add-incoming p finish (+ p (llvm-last (strides result))))
-            (add-incoming q finish (+ q (llvm-last (strides self))))
+            (add-incoming p finish (+ p (llvm-car (strides result))))
+            (add-incoming q finish (+ q (llvm-car (strides self))))
             (add-incoming klower finish (+ klower 1))
             (add-incoming kupper finish (+ kupper 1))
             (build-branch for)
@@ -1803,9 +1812,9 @@
 
 (define (index-array result)
   (let [(start (make-basic-block "start"))
-        (for    (make-basic-block "for"))
-        (body   (make-basic-block "body"))
-        (end    (make-basic-block "end"))]
+        (for   (make-basic-block "for"))
+        (body  (make-basic-block "body"))
+        (end   (make-basic-block "end"))]
     (llvm-begin
       (build-branch start)
       (position-builder-at-end start)
@@ -1848,7 +1857,7 @@
 
 (define (warp-array result element-dimension self . args)
   (if  (eqv? (dimensions result) element-dimension)
-    (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-last (strides arr)))))))
+    (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-car (strides arr)))))))
                          self (reverse args)))]
       (jit-let [(dummy (memory element))]; Force computation of array pointer here to avoid problems with phi statements
         (elementwise-loop identity result (fetch element))))
@@ -1860,7 +1869,7 @@
       (llvm-begin
         (build-branch start)
         (position-builder-at-end start)
-        (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+        (jit-let [(pend (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))]
           (build-branch for)
           (position-builder-at-end for)
           (jit-let [(p (build-phi (pointer (typecode result))))]
@@ -1874,9 +1883,9 @@
                   (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
                 (build-branch finish)
                 (position-builder-at-end finish)
-                (add-incoming p finish (+ p (llvm-last (strides result))))
+                (add-incoming p finish (+ p (llvm-car (strides result))))
                 (apply llvm-begin
-                  (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-last (strides arg))))) '()))
+                  (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) '()))
                               q args))
                 (build-branch for)
                 (position-builder-at-end end)
@@ -1886,9 +1895,9 @@
   "Warp contents of SELF using the index array(s) ARGS for looking up elements"
   (let [(fun (lambda (self . args)
                (let* [(shape-warp      (shape (argmax dimensions args)))
-                      (element-indices (iota (- (dimensions self) (length args))))
-                      (result-shape    (apply llvmlist (append (map (cut get (shape self) <>) element-indices)
-                                                               (map (cut get shape-warp <>) (iota (dimension shape-warp))))))]
+                      (element-indices (iota (- (dimensions self) (length args)) (length args)))
+                      (result-shape    (apply llvmlist (append (map (cut get shape-warp <>) (iota (dimension shape-warp)))
+                                                               (map (cut get (shape self) <>) element-indices))))]
                  (jit-let [(result (allocate-array (typecode self) result-shape))]
                    (apply warp-array result (length element-indices) self args)))))]
     (add-method! warp

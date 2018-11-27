@@ -1,8 +1,6 @@
 ## Ready
 
-* tf-not-equal
-* tf-approximate-equal
-* Tensorflow attributes: float, float list, string list, bool, bool list, type list
+* Tensorflow attributes: string list, bool, bool list, type list
 * reverse order of shape to match Tensorflow
 * gradients
 * default to integer or double array
