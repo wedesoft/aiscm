@@ -1,7 +1,7 @@
 (use-modules (oop goops) (aiscm v4l2) (aiscm xorg) (aiscm core))
 (define v (make <v4l2>))
 (define d (make <xdisplay> #:name ":0.0"))
-(define w (make <xwindow> #:display d #:shape '(640 480) #:io IO-XVIDEO))
+(define w (make <xwindow> #:display d #:shape '(480 640) #:io IO-XVIDEO))
 (title= w "Test")
 (define (wait)
   (while (not (quit? d)) (write-image (read-image v) w) (process-events d))

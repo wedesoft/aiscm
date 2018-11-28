@@ -124,11 +124,11 @@
 (define-method (destroy (self <xwindow>)) (window-destroy (get-window self)))
 (define-method (title= (self <xwindow>) (title <string>)) (window-title= (get-window self) title))
 
-(define-method (move (self <xwindow>) (x <integer>) (y <integer>))
+(define-method (move (self <xwindow>) (y <integer>) (x <integer>))
   (window-move (get-window self) x y))
-(define-method (resize (self <xwindow>) (w <integer>) (h <integer>))
+(define-method (resize (self <xwindow>) (h <integer>) (w <integer>))
   (window-resize (get-window self) w h))
-(define-method (move-resize (self <xwindow>) (x <integer>) (y <integer>) (w <integer>) (h <integer>))
+(define-method (move-resize (self <xwindow>) (y <integer>) (x <integer>) (h <integer>) (w <integer>))
   (window-move-resize (get-window self) x y w h))
 
 (define-method (write-image (image <image>) (self <xwindow>)) (window-write (get-window self) image))

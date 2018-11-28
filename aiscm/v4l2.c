@@ -143,8 +143,8 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
       if (xioctl(self->fd, VIDIOC_ENUM_FRAMESIZES, &pix)) break;
       if (pix.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
         SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
-            scm_from_int(pix.discrete.width),
-            scm_from_int(pix.discrete.height));
+            scm_from_int(pix.discrete.height),
+            scm_from_int(pix.discrete.width));
         scm_selection = scm_cons(scm_fmt, scm_selection);
       } else if (pix.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
         unsigned int
@@ -152,16 +152,16 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
             h = pix.stepwise.min_height;
         while (w <= pix.stepwise.max_width && h <= pix.stepwise.max_height) {
           SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
-              scm_from_int(w),
-              scm_from_int(h));
+              scm_from_int(h),
+              scm_from_int(w));
           scm_selection = scm_cons(scm_fmt, scm_selection);
           w += pix.stepwise.step_width;
           h += pix.stepwise.step_height;
         };
       } else {
         SCM scm_fmt = scm_list_3(scm_from_int(format.pixelformat),
-            scm_from_int(pix.stepwise.max_width),
-            scm_from_int(pix.stepwise.max_height));
+            scm_from_int(pix.stepwise.max_height),
+            scm_from_int(pix.stepwise.max_width));
         scm_selection = scm_cons(scm_fmt, scm_selection);
       };
     };
@@ -170,8 +170,8 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
 
   self->format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   self->format.fmt.pix.pixelformat = scm_to_int(scm_car(scm_selected));
-  self->format.fmt.pix.width = scm_to_int(scm_cadr(scm_selected));
-  self->format.fmt.pix.height = scm_to_int(scm_caddr(scm_selected));
+  self->format.fmt.pix.width = scm_to_int(scm_caddr(scm_selected));
+  self->format.fmt.pix.height = scm_to_int(scm_cadr(scm_selected));
   self->format.fmt.pix.field = V4L2_FIELD_ANY;
   if (xioctl(self->fd, VIDIOC_S_FMT, &self->format)) {
     videodev2_destroy(retval);
@@ -287,7 +287,7 @@ static SCM read_image_io_read(struct videodev2_t *self, int width, int height)
     scm_misc_error("videodev2-read-image", "Error reading from device: ~a",
                    scm_list_1(scm_from_locale_string(strerror(errno))));
   return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                    scm_list_2(scm_from_int(width), scm_from_int(height)),
+                    scm_list_2(scm_from_int(height), scm_from_int(width)),
                     scm_from_pointer(buf, NULL),
                     scm_from_int(size));
 }
@@ -309,7 +309,7 @@ static SCM read_image_io_mmap_userptr(struct videodev2_t *self, int width, int h
   self->frame_used = 1;
   void *p = self->io == IO_MMAP ? self->map[self->frame.index] : self->user[self->frame.index];
   return scm_list_4(scm_from_int(self->format.fmt.pix.pixelformat),
-                    scm_list_2(scm_from_int(width), scm_from_int(height)),
+                    scm_list_2(scm_from_int(height), scm_from_int(width)),
                     scm_from_pointer(p, NULL),
                     scm_from_int(self->format.fmt.pix.sizeimage));
 }
