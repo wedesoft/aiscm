@@ -29,7 +29,7 @@
             floating-point single-precision double-precision double-precision?
             decompose-argument decompose-result decompose-type compose-value compose-values
             complex conj base size-of unpack-value native-type components constructor build
-            pointer target llvmlist typecode dimension llvm-last llvm-all-but-last
+            pointer target llvmlist typecode dimension llvm-car llvm-cdr
             multiarray dimensions shape memory memory-base strides llvmarray
             llvm-void llvm-bool llvm-float llvm-double llvm-uint8 llvm-int8 llvm-uint16 llvm-int16
             llvm-uint32 llvm-int32 llvm-uint64 llvm-int64
@@ -277,14 +277,6 @@
 (define-method (get (self <llvmlist<>>) index)
   "Element access for static size list in compiled code"
   (make (typecode self) #:value (lambda (fun) (list-ref ((get self) fun) index))))
-
-(define (llvm-last self)
-  "Get last element of list"
-  (get self (1- (dimension self))))
-
-(define (llvm-all-but-last self)
-  "Get all but last element of a list"
-  (apply llvmlist (map (lambda (index) (get self index)) (iota (1- (dimension self))))))
 
 (define (llvm-car self)
   "Get first element of a list"

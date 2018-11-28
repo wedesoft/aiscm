@@ -39,7 +39,7 @@
 (define three (make <int> #:value (const 3)))
 (define p (make (pointer <byte>) #:value (const 1234)))
 (define a (llvmarray p p (llvmlist three) (llvmlist one)))
-(define b (llvmarray p p (llvmlist three two) (llvmlist one three )))
+(define b (llvmarray p p (llvmlist two three) (llvmlist three one)))
 
 (test-group "convert array to tensor"
   (test-eqv "pass-through integer"
@@ -64,7 +64,7 @@
   (test-equal "get shape of 1D tensor"
     '(3) (map (lambda (value) ((get value) #f)) (shape (expression->tensor a))))
   (test-equal "get shape of 2D tensor"
-    '(3 2) (map (lambda (value) ((get value) #f)) (shape (expression->tensor b))))
+    '(2 3) (map (lambda (value) ((get value) #f)) (shape (expression->tensor b))))
   (test-equal "get typecode of 1D tensor"
     <byte> (typecode (expression->tensor a))))
 

@@ -48,7 +48,7 @@
 
 (define-method (shape (self <functional>))
   "Shape of function object adds one dimension to the contained term"
-  (attach (shape (term self)) (size (index self))))
+  (cons (size (index self)) (shape (term self))))
 
 (define-method (typecode (self <functional>))
   "Element type of function object is type of contained term"
@@ -146,9 +146,9 @@
   (if (zero? (dimensions self))
     (make (elementary (typecode self)) #:memory (memory self))
     (let [(i (make <index>))]
-      (slot-set! i 'size (llvm-last (shape self)))
+      (slot-set! i 'size (llvm-car (shape self)))
       (make <functional>
-            #:term (lookup i (llvm-last (strides self)) (expression->tensor (project self)))
+            #:term (lookup i (llvm-car (strides self)) (expression->tensor (project self)))
             #:index i))))
 
 (define-method (project (self <functional>))
@@ -302,7 +302,7 @@
         (build-branch start)
         (position-builder-at-end start)
         (let [(q (tensor-iterate expression))]
-          (jit-let [(pend (+ (memory result) (* (llvm-last (shape result)) (llvm-last (strides result)))))]
+          (jit-let [(pend (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))]
             (build-branch for)
             (position-builder-at-end for)
             (jit-let [(p (build-phi (pointer (typecode result))))]
@@ -313,7 +313,7 @@
               (elementwise-tensor (project (rebase result p)) (cadddr q))
               (build-branch finish)
               (position-builder-at-end finish)
-              (add-incoming p finish (+ p (llvm-last (strides result))))
+              (add-incoming p finish (+ p (llvm-car (strides result))))
               (apply llvm-begin (map (lambda (ptr stride) (add-incoming ptr finish (+ ptr stride))) (car q) (caddr q)))
               (build-branch for)
               (position-builder-at-end end))))))))

@@ -1116,10 +1116,10 @@
     '(2 3 5) ((jit (list (llvmlist <int> 3)) identity) '(2 3 5)))
   (test-equal "Create static size list"
     '(2 3 5) ((jit (list <int> <int> <int>) llvmlist) 2 3 5))
-  (test-eqv "Last element of list"
-    5 ((jit (list (llvmlist <int> 3)) llvm-last) '(2 3 5)))
-  (test-equal "Get all but last element from a list"
-    '(2 3) ((jit (list (llvmlist <int> 3)) llvm-all-but-last) '(2 3 5))) )
+  (test-eqv "First element of list"
+    2 ((jit (list (llvmlist <int> 3)) llvm-car) '(2 3 5)))
+  (test-equal "Get tail of list"
+    '(3 5) ((jit (list (llvmlist <int> 3)) llvm-cdr) '(2 3 5))) )
 
 (test-group "Multi-dimensional array"
   (let [(m0 (make (multiarray <byte> 0) #:shape '() #:memory (bytevector->pointer #vu8(42))))
