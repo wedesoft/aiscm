@@ -36,7 +36,7 @@
 
   (define output-video (open-ffmpeg-output (string-append (tmpnam) ".avi")
                                            #:format-name 'avi
-                                           #:shape '(16 2)
+                                           #:shape '(2 16)
                                            #:frame-rate 25
                                            #:video-bit-rate 100000
                                            #:aspect-ratio (/ 16 11)))
@@ -46,7 +46,7 @@
   (test-assert "'open-ffmpeg-output' creates an FFmpeg object"
     (is-a? output-video <ffmpeg>))
   (test-equal "Check frame size of output video"
-    '(16 2) (shape output-video))
+    '(2 16) (shape output-video))
   (test-eqv "Get video bit-rate of output video"
     100000 (video-bit-rate output-video))
   (test-equal "Get aspect ratio of output video"
@@ -55,7 +55,7 @@
     25 (frame-rate output-video))
 
   (test-equal "Get shape of target video frame"
-    '(16 2) (shape (target-video-frame output-video)))
+    '(2 16) (shape (target-video-frame output-video)))
   (test-eq "Get format of target video frame"
     'I420 (get-format (target-video-frame output-video)))
 
@@ -185,7 +185,7 @@
   (test-assert "Packed audio frame should be packed"
     (not (planar? (packed-audio-frame output-audio))))
 
-  (define data (make (multiarray <sint> 2) #:shape '(2 44100)))
+  (define data (make (multiarray <sint> 2) #:shape '(44100 2)))
   (test-eqv "Audio buffer fill is zero initially"
     0 (audio-buffer-fill output-audio))
   (buffer-audio (to-samples data 44100) output-audio)
@@ -202,23 +202,23 @@
     samples (write-audio samples output-audio))
 
   (test-error "Reject audio samples with wrong number of channels"
-    'misc-error (write-audio (make (multiarray <sint> 2) #:shape '(3 44100)) output-audio))
+    'misc-error (write-audio (make (multiarray <sint> 2) #:shape '(44100 3)) output-audio))
   (test-error "Reject audio samples with wrong type"
-    'misc-error (write-audio (make (multiarray <int> 2) #:shape '(2 44100)) output-audio))
+    'misc-error (write-audio (make (multiarray <int> 2) #:shape '(44100 2)) output-audio))
   (test-error "Reject audio samples with wrong sampling rate"
     'misc-error (write-audio (to-samples data 22050) output-audio))
 
   (crop-audio-frame-size output-audio 17)
   (test-eqv "Cropping audio frames to final frame size should resize the target frame"
-    17 (cadr (shape (target-audio-frame output-audio))))
+    17 (car (shape (target-audio-frame output-audio))))
   (test-eqv "Cropping audio frames to final frame size should resize the packed frame"
-    17 (cadr (shape (packed-audio-frame output-audio))))
+    17 (car (shape (packed-audio-frame output-audio))))
 
   (crop-audio-frame-size output-audio 0)
   (test-eqv "Do not crop target audio frame to zero"
-    17 (cadr (shape (target-audio-frame output-audio))))
+    17 (car (shape (target-audio-frame output-audio))))
   (test-eqv "Do not crop packed audio frame to zero"
-    17 (cadr (shape (packed-audio-frame output-audio))))
+    17 (car (shape (packed-audio-frame output-audio))))
 
   (destroy output-audio)
 

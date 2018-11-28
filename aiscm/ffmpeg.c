@@ -397,8 +397,8 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
   retval->bit_rate = scm_to_int(scm_video_bit_rate);
 
   // Set video frame width and height
-  retval->width = scm_to_int(scm_car(scm_shape));
-  retval->height = scm_to_int(scm_cadr(scm_shape));
+  retval->width = scm_to_int(scm_cadr(scm_shape));
+  retval->height = scm_to_int(scm_car(scm_shape));
 
   // Set video frame rate
   video_stream->avg_frame_rate.num = scm_to_int(scm_numerator(scm_frame_rate));
@@ -674,7 +674,7 @@ SCM ffmpeg_have_audio(SCM scm_self)
 SCM ffmpeg_shape(SCM scm_self)
 {
   AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
-  return scm_list_2(scm_from_int(ctx->width), scm_from_int(ctx->height));
+  return scm_list_2(scm_from_int(ctx->height), scm_from_int(ctx->width));
 }
 
 static SCM rational(int numerator, int denominator)
@@ -775,7 +775,7 @@ static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
     av_samples_get_buffer_size(NULL, channels, frame->nb_samples, frame->format, 1);
 
   return scm_list_n(scm_from_int(frame->format),
-                    scm_list_2(scm_from_int(channels), scm_from_int(frame->nb_samples)),
+                    scm_list_2(scm_from_int(frame->nb_samples), scm_from_int(channels)),
                     scm_from_int(self->audio_codec_ctx->sample_rate),
                     from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
                     scm_from_pointer(*frame->data, NULL),
@@ -816,7 +816,7 @@ static SCM list_video_frame_info(struct ffmpeg_t *self, AVFrame *frame)
 #endif
 
   return scm_list_n(scm_from_int(frame->format),
-                    scm_list_2(scm_from_int(frame->width), scm_from_int(frame->height)),
+                    scm_list_2(scm_from_int(frame->height), scm_from_int(frame->width)),
                     from_non_zero_array(offsets, AV_NUM_DATA_POINTERS, 1),
                     from_non_zero_array(linesize, AV_NUM_DATA_POINTERS, 1),
                     scm_from_pointer(*frame->data, NULL),

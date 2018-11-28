@@ -29,7 +29,7 @@
 (define stereo-values '((2 3) (5 7) (11 13) (17 19)))
 (define stereo-array (to-array <sint> stereo-values))
 (define stereo-mem (memory stereo-array))
-(define stereo-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #f #:memory stereo-mem))
+(define stereo-samples (make <samples> #:typecode <sint> #:shape '(4 2) #:rate 22050 #:planar #f #:memory stereo-mem))
 
 (define mono-values '(2 3 5 7))
 (define mono-array (to-array <sint> mono-values))
@@ -37,12 +37,12 @@
 (define planar-values '((2 5 11 17) (3 7 13 19)))
 (define planar-array (roll (to-array <sint> planar-values)))
 (define planar-mem (memory planar-array))
-(define planar-samples (make <samples> #:typecode <sint> #:shape '(2 4) #:rate 22050 #:planar #t #:memory planar-mem))
+(define planar-samples (make <samples> #:typecode <sint> #:shape '(4 2) #:rate 22050 #:planar #t #:memory planar-mem))
 
 (define surround-array (to-array <sint> '((1 2 3 4 5 6) (2 3 4 5 6 7))))
 (define surround-samples (to-samples surround-array 44100))
 
-(define custom-offsets (make <samples> #:typecode <sint> #:shape '(2 3) #:rate 22050 #:offsets '(0 8) #:planar #t #:memory planar-mem))
+(define custom-offsets (make <samples> #:typecode <sint> #:shape '(3 2) #:rate 22050 #:offsets '(0 8) #:planar #t #:memory planar-mem))
 
 (test-begin "convert offsets to pointers")
   (test-assert "Test first pointer"
@@ -54,7 +54,7 @@
 (test-eq "query typecode of samples"
   <sint> (typecode stereo-samples))
 (test-equal "query shape of samples"
-  '(2 4) (shape stereo-samples))
+  '(4 2) (shape stereo-samples))
 (test-eqv "query number of channels"
   2 (channels stereo-samples))
 (test-eqv "query sampling rate"
@@ -70,7 +70,7 @@
 (test-assert "check samples are not marked as planar"
   (not (planar? (to-samples stereo-array 22050))))
 (test-equal "check samples converted from array have the right shape"
-  '(2 4) (shape (to-samples stereo-array 22050)))
+  '(4 2) (shape (to-samples stereo-array 22050)))
 (test-eq "check sample memory is initialised when converting from array"
   (memory stereo-array) (memory (to-samples stereo-array 22050)))
 (test-eqv "use specified sampling rate when converting from array to samples"
@@ -124,7 +124,7 @@
 (test-equal "content of trivial conversion"
   stereo-values (to-list (to-array (convert-samples stereo-samples <sint> #f))))
 (test-equal "check shape of mono samples is two-dimensional"
-  '(1 4) (shape (to-samples mono-array 22050)))
+  '(4 1) (shape (to-samples mono-array 22050)))
 (test-equal "check samples get compacted"
   '((2) (5) (11) (17)) (to-list (to-array (to-samples (get (roll stereo-array) 0) 22050))))
 (test-assert "planar audio sample is marked as such"

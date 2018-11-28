@@ -25,7 +25,7 @@
 (define-method (initialize (self <samples>) initargs)
   "Convert for images"
   (let-keywords initargs #f (typecode shape rate offsets planar memory memory-base)
-    (let* [(offsets     (or offsets (if planar (iota (car shape) 0 (* (size-of typecode) (cadr shape))) '(0))))
+    (let* [(offsets     (or offsets (if planar (iota (cadr shape) 0 (* (size-of typecode) (car shape))) '(0))))
            (memory      (or memory (gc-malloc-pointerless (apply * (size-of typecode) shape))))
            (memory-base (or memory-base memory))]
       (next-method self (list #:typecode    typecode
@@ -38,7 +38,7 @@
 
 (define-method (channels (self <samples>))
   "Get number of audio channels of audio samples"
-  (car (shape self)))
+  (cadr (shape self)))
 
 (define-method (size-of (self <samples>))
   "Memory size of audio samples in bytes"
@@ -52,7 +52,7 @@
 
 (define (to-samples self rate)
   "Convert numerical array to audio samples"
-  (let [(shape     (if (eqv? (dimensions self) 1) (cons 1 (shape self)) (shape self)))
+  (let [(shape     (if (eqv? (dimensions self) 1) (attach (shape self) 1) (shape self)))
         (compacted (ensure-default-strides self))]
     (make <samples> #:typecode    (typecode self)
                     #:shape       shape

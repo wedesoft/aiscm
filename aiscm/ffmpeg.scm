@@ -96,7 +96,7 @@
                              channels rate typecode audio-bit-rate)
     (let* [(have-audio     (or rate channels audio-bit-rate))
            (have-video     (or (not have-audio) shape frame-rate video-bit-rate aspect-ratio))
-           (shape          (or shape '(384 288)))
+           (shape          (or shape '(288 384)))
            (frame-rate     (or frame-rate 25))
            (video-bit-rate (or video-bit-rate (apply * 3 shape)))
            (aspect-ratio   (or aspect-ratio 1))
@@ -197,7 +197,7 @@
       (and (not (zero? (audio-buffer-fill self)))
         (let* [(actual (min count (/ (audio-buffer-fill self) (sample-size self))))
                (result (make <samples> #:typecode (typecode self)
-                                       #:shape (list (channels self) actual)
+                                       #:shape (list actual (channels self))
                                        #:rate (rate self)
                                        #:planar #f))]
           (fetch-audio self result)
@@ -254,7 +254,7 @@
 (define (fetch-audio self samples); TODO: fill target frame with desired number of packed samples
   "Fetch data from the audio buffer and put it into the samples"
   (ffmpeg-fetch-audio (slot-ref self 'ffmpeg) (memory samples) (size-of samples))
-  (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (cadr (shape samples)) (rate self)))))
+  (slot-set! self 'audio-pts (+ (slot-ref self 'audio-pts) (/ (car (shape samples)) (rate self)))))
 
 (define (encode-audio self)
   "Encode buffered audio frames"

@@ -32,8 +32,8 @@ static void samples_setup(SCM scm_type, enum AVSampleFormat *format, int *rate, 
 {
   *format = scm_to_int(scm_car(scm_type));
   *rate = scm_to_int(scm_caddr(scm_type));
-  *layout = av_get_default_channel_layout(scm_to_int(scm_caadr(scm_type)));
-  *samples = scm_to_int(scm_cadadr(scm_type));
+  *layout = av_get_default_channel_layout(scm_to_int(scm_cadadr(scm_type)));
+  *samples = scm_to_int(scm_caadr(scm_type));
   scm_to_long_array(scm_cadddr(scm_type), offsets);
   pointers_from_offsets(ptr, offsets, data, AV_NUM_DATA_POINTERS);
 }

@@ -90,7 +90,7 @@
   (test-assert "'open-ffmpeg-input' creates an FFmpeg object"
     (is-a? input-video <ffmpeg>))
   (test-equal "Check frame size of input video"
-    '(640 360) (shape input-video))
+    '(360 640) (shape input-video))
   (test-eqv "Get frame rate of input video"
     25 (frame-rate input-video))
   (test-equal "Get aspect ratio of input video"
@@ -104,7 +104,7 @@
   (test-assert "Check that video frame is an image object"
     (is-a? video-frame <image>))
   (test-equal "Check shape of video frame"
-    '(640 360) (shape video-frame))
+    '(360 640) (shape video-frame))
   (test-equal "Check a pixel in the first video frame of the video"
     (rgb 154 154 154) (get (to-array video-frame) 10 270))
 
@@ -166,7 +166,7 @@
   (test-equal "Timestamp is stored in buffer"
     123 (caar (slot-ref image 'video-buffer)))
   (test-equal "Shape of buffered video frame is the same"
-    '(384 288) (shape (cdar (slot-ref image 'video-buffer))))
+    '(288 384) (shape (cdar (slot-ref image 'video-buffer))))
   (test-assert "Stored frame is a duplicate (i.e. not the same)"
     (not (eq? video-frame (cdar (slot-ref image 'video-buffer)))))
 
@@ -211,7 +211,7 @@
     0 (audio-buffer-fill audio-mono))
   (define audio-samples (read-audio audio-mono 4410))
   (test-equal "Retrieve specified number of audio samples"
-    '(1 4410) (shape audio-samples))
+    '(4410 1) (shape audio-samples))
   (test-eq "Typecode of samples is typecode of input"
     (typecode audio-mono) (typecode audio-samples))
   (test-eq "Rate of samples is rate of input"
@@ -260,7 +260,7 @@
   (test-eqv "Mono audio frame should have 1 channel"
     1 (channels audio-mono-frame))
   (test-equal "Mono audio frame should have the desired shape"
-    '(1 4410) (shape audio-mono-frame))
+    '(4410 1) (shape audio-mono-frame))
   (test-skip 1)
   (test-eq "Audio frame should have samples of correct type"
     <sint> (typecode audio-mono-frame))
