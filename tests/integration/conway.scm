@@ -1,5 +1,5 @@
 (use-modules (aiscm xorg) (aiscm core))
-(define img (fill <bool> '(100 60) #f))
+(define img (fill <bool> '(60 100) #f))
 (set img '(0 . 3) '(0 . 3) (arr (#f #t #f) (#f #f #t) (#t #t #t)))
 (set img '(4 . 7) '(50 . 53) (arr (#t #t #t) (#f #f #t) (#f #t #f)))
 (set img '(27 . 30) 25 #t)

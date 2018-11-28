@@ -1,7 +1,7 @@
 ## Ready
 
+* anaglyph failure
 * Tensorflow attributes: string list, bool, bool list, type list
-* reverse order of shape to match Tensorflow
 * gradients
 * default to integer or double array
 * implicit constant declaration (e.g. reshape)
