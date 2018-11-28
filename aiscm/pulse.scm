@@ -83,7 +83,7 @@
 (define-method (read-audio (self <pulse-record>) (count <integer>))
   (let* [(size    (* count (channels self) (size-of (typecode self))))
          (memory (pulsedev-read (slot-ref self 'pulsedev) size))]
-    (make (multiarray (typecode self) 2) #:shape (list (channels self) count) #:memory memory)))
+    (make (multiarray (typecode self) 2) #:shape (list count (channels self)) #:memory memory)))
 
 (define (flush self) (pulsedev-flush (slot-ref self 'pulsedev)))
 (define (drain self) (pulsedev-drain (slot-ref self 'pulsedev)))
