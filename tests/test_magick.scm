@@ -25,7 +25,7 @@
 (define ramp (read-image "fixtures/ramp.png"))
 (define index (read-image "fixtures/index.png"))
 (test-equal "Check size of loaded image"
-  '(6 4) (shape ramp))
+  '(4 6) (shape ramp))
 (test-equal "Check pixel of loaded RGB image"
   (rgb 2 1 128) (get ramp 2 1))
 (test-error "Throw exception if file not found"
@@ -52,7 +52,7 @@
 (test-equal "Check content of saved colour image"
   colour-values (to-list colour))
 (test-error "Make sure image type is supported"
-  'misc-error (write-image (make (multiarray <int> 2) #:shape '(6 4)) "fixtures/tmp.png"))
+  'misc-error (write-image (make (multiarray <int> 2) #:shape '(4 6)) "fixtures/tmp.png"))
 (test-error "Make sure image has two dimensions"
   'misc-error (write-image (make (multiarray <ubyte> 1) #:size 8) "fixtures/tmp.png"))
 (define rolled-file-name (string-append (tmpnam) ".png"))

@@ -276,7 +276,7 @@ SCM videodev2_shape(SCM scm_self)
     scm_misc_error("videodev2-read-image", "Device is not open. Did you call 'destroy' before?", SCM_EOL);
   int width = self->format.fmt.pix.width;
   int height = self->format.fmt.pix.height;
-  return scm_list_2(scm_from_int(width), scm_from_int(height));
+  return scm_list_2(scm_from_int(height), scm_from_int(width));
 }
 
 static SCM read_image_io_read(struct videodev2_t *self, int width, int height)

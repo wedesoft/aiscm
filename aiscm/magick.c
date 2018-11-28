@@ -47,7 +47,7 @@ SCM magick_read_image(SCM scm_file_name)
     if (exception_info->severity < ErrorException) {
       CatchException(exception_info);
       retval = scm_list_5(scm_from_locale_symbol(format),
-                          scm_list_2(scm_from_int(width), scm_from_int(height)),
+                          scm_list_2(scm_from_int(height), scm_from_int(width)),
                           scm_from_pointer(base, NULL),
                           scm_from_pointer(mem, NULL),
                           scm_from_int(size));
@@ -65,8 +65,8 @@ SCM magick_read_image(SCM scm_file_name)
 
 SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_mem, SCM scm_file_name)
 {
-  int width = scm_to_int(scm_car(scm_shape));
-  int height = scm_to_int(scm_cadr(scm_shape));
+  int width = scm_to_int(scm_cadr(scm_shape));
+  int height = scm_to_int(scm_car(scm_shape));
   void *mem = scm_to_pointer(scm_mem);
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();

@@ -141,7 +141,7 @@ SCM display_shape(SCM scm_self)
   struct display_t *self = get_display(scm_self);
   int width = DisplayWidth(self->display, DefaultScreen(self->display));
   int height = DisplayHeight(self->display, DefaultScreen(self->display));
-  return scm_list_2(scm_from_int(width), scm_from_int(height));
+  return scm_list_2(scm_from_int(height), scm_from_int(width));
 }
 
 static Bool always_true(Display *display, XEvent *event, XPointer pointer)
@@ -602,8 +602,8 @@ void window_paint(struct window_t *self, int x11_event)
           self->scm_converted = scm_call_3(scm_convert_image,
                                            self->scm_image,
                                            scm_from_locale_symbol("BGRA"),
-                                           scm_list_2(scm_from_int(self->width),
-                                                      scm_from_int(self->height)));
+                                           scm_list_2(scm_from_int(self->height),
+                                                      scm_from_int(self->width)));
         char *data = image_data(self->scm_converted);
         XImage *img = XCreateImage(self->display->display, self->visual_info->visual,
                                    24, ZPixmap, 0, data, self->width, self->height,
@@ -633,8 +633,8 @@ void window_paint(struct window_t *self, int x11_event)
         glRasterPos2i(0, 0);
         SCM shape = scm_slot_ref(self->scm_converted, scm_from_locale_symbol("shape"));
         int
-          width = scm_to_int(scm_car(shape)),
-          height = scm_to_int(scm_cadr(shape));
+          width = scm_to_int(scm_cadr(shape)),
+          height = scm_to_int(scm_car(shape));
         char *data = image_data(self->scm_converted);
         glPixelZoom((float)self->width / width, -(float)self->height / height);
         glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -655,8 +655,8 @@ void window_paint(struct window_t *self, int x11_event)
         int uid = scm_to_int(scm_cdr(scm_target));
         SCM scm_shape = scm_slot_ref(self->scm_image, scm_from_locale_symbol("shape"));
         int
-          width = scm_to_int(scm_car(scm_shape)),
-          height = scm_to_int(scm_cadr(scm_shape));
+          width = scm_to_int(scm_cadr(scm_shape)),
+          height = scm_to_int(scm_car(scm_shape));
         if (self->xv_image)
           if (self->xv_image->id != uid ||
               self->xv_image->width != width ||

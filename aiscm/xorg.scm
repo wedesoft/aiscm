@@ -46,17 +46,17 @@
 (define-method (initialize (self <xwindow>) initargs)
   (let-keywords initargs #f (display shape io)
     (let [(io     (or io IO-XIMAGE))]
-      (next-method self (list #:window (make-window (get-display display) (car shape) (cadr shape) io))))))
+      (next-method self (list #:window (make-window (get-display display) (cadr shape) (car shape) io))))))
 
 (define (window-size img . args)
   "Determine window size for an image and some optional keyword arguments"
   (let* [(shp (shape img))
-         (w   (car shp))
-         (h   (cadr shp))]
+         (w   (cadr shp))
+         (h   (car shp))]
     (or (let-keywords args #t (shape width height)
       (or shape
-          (and width  (list width (round (* (/ width w) h))))
-          (and height (list (round (* (/ height h) w)) height))))
+          (and width  (list (round (* (/ width w) h)) width))
+          (and height (list height (round (* (/ height h) w))))))
     shp)))
 
 (define-syntax-rule (flag? name args)
