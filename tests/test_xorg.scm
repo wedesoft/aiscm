@@ -21,28 +21,28 @@
 
 (test-begin "aiscm xorg")
 
-(define img (make <image> #:format 'GRAY #:shape '(320 240)))
+(define img (make <image> #:format 'GRAY #:shape '(240 320)))
 (test-begin "window-size")
   (test-equal "Use shape of image"
-    '(320 240) (window-size img))
+    '(240 320) (window-size img))
   (test-equal "Override window size"
-    '(640 480) (window-size img #:shape '(640 480)))
+    '(480 640) (window-size img #:shape '(480 640)))
   (test-equal "Infer height of scaled display"
-    '(640 480) (window-size img #:width 640))
+    '(480 640) (window-size img #:width 640))
   (test-equal "Infer height of non-scaled display"
-    '(320 240) (window-size img #:width 320))
+    '(240 320) (window-size img #:width 320))
   (test-equal "Round height to nearest integer"
-    '(30 22) (window-size img #:width 30))
+    '(22 30) (window-size img #:width 30))
   (test-equal "Infer height of scaled display"
-    '(640 480) (window-size img #:width 640))
+    '(480 640) (window-size img #:width 640))
   (test-equal "Infer width of scaled display"
-    '(640 480) (window-size img #:height 480))
+    '(480 640) (window-size img #:height 480))
   (test-equal "Infer width of non-scaled display"
-    '(320 240) (window-size img #:height 240))
+    '(240 320) (window-size img #:height 240))
   (test-equal "Round height to nearest integer"
-    '(29 22) (window-size img #:height 22))
+    '(22 29) (window-size img #:height 22))
   (test-equal "Ignore other keyword arguments"
-    '(320 240) (window-size img #:fullscreen #t))
+    '(240 320) (window-size img #:fullscreen #t))
 (test-end "window-size")
 
 (test-begin "fullscreen-flag")
