@@ -32,10 +32,10 @@
 (define c (list (list (rgb 2 3 5) (rgb 7 11 13)) (list (rgb 3 5 7) (rgb 5 7 11))))
 (define m (to-array l))
 (define mem (memory m))
-(define img (make <image> #:format 'GRAY #:shape '(8 1) #:memory mem))
+(define img (make <image> #:format 'GRAY #:shape '(1 8) #:memory mem))
 
 (define mjpeg-bytes (call-with-input-file "fixtures/leds.mjpeg" get-bytevector-all #:binary #t))
-(define mjpeg-frame (make <image> #:format 'MJPG #:shape '(320 240) #:memory (bytevector->pointer mjpeg-bytes)))
+(define mjpeg-frame (make <image> #:format 'MJPG #:shape '(240 320) #:memory (bytevector->pointer mjpeg-bytes)))
 
 (test-equal "conversion to BGR"
   #vu8(2 2 2 3 3 3) (pointer->bytevector (memory (convert-image img 'BGR)) 6))
@@ -44,21 +44,21 @@
 (test-assert "duplicated image should be different"
   (not (eq? img (duplicate img))))
 (test-equal "values of image with scaled height"
-  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (pointer->bytevector (memory (convert-image img 'GRAY '(8 2))) 16))
+  #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (pointer->bytevector (memory (convert-image img 'GRAY '(2 8))) 16))
 (test-equal "correct application of custom pitches"
-  2 (bytevector-u8-ref (pointer->bytevector (memory (convert-image img 'GRAY '(8 2) '(0) '(16))) 32) 16))
+  2 (bytevector-u8-ref (pointer->bytevector (memory (convert-image img 'GRAY '(2 8) '(0) '(16))) 32) 16))
 (test-equal "'to-array' should convert the image to a 2D array"
   '((2 3 5 7 11 13 17 19)) (to-list (to-array img)))
 (test-equal "'to-array' should convert the image to a colour image"
   (rgb 3 3 3) (get (to-array (convert-image img 'UYVY)) 2 0))
 (test-equal "'to-array' should take pitches (strides) into account"
-  2 (get (to-array (convert-image img 'GRAY '(8  2) '(0) '(16))) 0 1))
+  2 (get (to-array (convert-image img 'GRAY '(2 8) '(0) '(16))) 0 1))
 (test-equal "'to-image' converts to grayscale image"
   'GRAY (get-format (to-image m)))
 (test-assert "'to-image' for an image has no effect"
   (to-image img))
 (test-equal "'to-image' preserves shape of array"
-  '(4 2) (shape (to-image m)))
+  '(2 4) (shape (to-image m)))
 (test-equal "Converting from unsigned byte multiarray to image and back preserves data"
   l (to-list (to-array (to-image m))))
 (test-equal "Conversion to image ensures compacting of pixel lines"

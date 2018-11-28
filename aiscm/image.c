@@ -28,8 +28,8 @@ static void image_setup(SCM scm_type, enum AVPixelFormat *format, int *width, in
   int64_t offsets[8];
   memset(offsets, 0, sizeof(offsets));
   *format = scm_to_int(scm_car(scm_type));
-  *width = scm_to_int(scm_caadr(scm_type)),
-  *height = scm_to_int(scm_cadadr(scm_type));
+  *width = scm_to_int(scm_cadadr(scm_type));
+  *height = scm_to_int(scm_caadr(scm_type)),
   scm_to_long_array(scm_caddr(scm_type), offsets);
   scm_to_int_array(scm_cadddr(scm_type), pitches);
   for (i=0; i<8; i++) data[i] = (uint8_t *)ptr + offsets[i];
@@ -67,8 +67,8 @@ SCM mjpeg_to_yuv420p(SCM scm_source_ptr, SCM scm_shape, SCM scm_dest_ptr, SCM sc
 {
   unsigned char *source_ptr = scm_to_pointer(scm_source_ptr);
   unsigned char *dest_ptr = scm_to_pointer(scm_dest_ptr);
-  int width = scm_to_int(scm_car(scm_shape));
-  int height = scm_to_int(scm_cadr(scm_shape));
+  int width = scm_to_int(scm_cadr(scm_shape));
+  int height = scm_to_int(scm_car(scm_shape));
   int64_t offsets[3];
   memset(offsets, 0, sizeof(offsets));
   scm_to_long_array(scm_offsets, offsets);
