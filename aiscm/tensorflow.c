@@ -261,6 +261,13 @@ SCM tf_set_attr_int_list(SCM scm_description, SCM scm_name, SCM scm_values)
   return SCM_UNDEFINED;
 }
 
+SCM tf_set_attr_bool(SCM scm_description, SCM scm_name, SCM scm_value)
+{
+  struct tf_description_t *self = get_tf_description(scm_description);
+  TF_SetAttrBool(self->description, scm_to_locale_string(scm_name), scm_is_true(scm_value));
+  return SCM_UNDEFINED;
+}
+
 SCM tf_set_attr_float(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
@@ -401,6 +408,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-set-attr-string"    , 3, 0, 0, SCM_FUNC(tf_set_attr_string    ));
   scm_c_define_gsubr("tf-set-attr-int"       , 3, 0, 0, SCM_FUNC(tf_set_attr_int       ));
   scm_c_define_gsubr("tf-set-attr-int-list"  , 3, 0, 0, SCM_FUNC(tf_set_attr_int_list  ));
+  scm_c_define_gsubr("tf-set-attr-bool"      , 3, 0, 0, SCM_FUNC(tf_set_attr_bool      ));
   scm_c_define_gsubr("tf-set-attr-float"     , 3, 0, 0, SCM_FUNC(tf_set_attr_float     ));
   scm_c_define_gsubr("tf-set-attr-float-list", 3, 0, 0, SCM_FUNC(tf_set_attr_float_list));
   scm_c_define_gsubr("tf-set-attr-type"      , 3, 0, 0, SCM_FUNC(tf_set_attr_type      ));

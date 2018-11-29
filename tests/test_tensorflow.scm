@@ -118,6 +118,12 @@
     '(0 1 2)
     (let [(s (make-session))
           (x (tf-variable #:dtype <double> #:shape '(-1)))]
-      (to-list (run s (list (cons x (arr 2.0 3.0 5.0))) (tf-bucketize x #:boundaries '(2.5 4.5)))))))
+      (to-list (run s (list (cons x (arr 2.0 3.0 5.0))) (tf-bucketize x #:boundaries '(2.5 4.5))))))
+  (test-equal "Cummulative product"
+    '(30 15 5)
+    (let [(s (make-session))
+          (a (tf-const #:dtype <int> #:value (to-tensor (arr <int> 2 3 5))))
+          (n (tf-const #:dtype <int> #:value (to-tensor 0)))]
+      (to-list (run s '() (tf-cumprod a n #:reverse #t))))))
 
 (test-end "aiscm tensorflow")
