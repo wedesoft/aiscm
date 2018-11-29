@@ -1,7 +1,7 @@
 ## Ready
 
 * test false boolean
-* Tensorflow attributes: string list, bool, bool list, type list
+* Tensorflow attributes: string list, bool list, type list
 * gradients
 * default to integer or double array
 * implicit constant declaration (e.g. reshape)

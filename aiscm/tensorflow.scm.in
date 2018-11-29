@@ -48,7 +48,7 @@
   (make-tensor (assq-ref typemap (typecode arr)) (shape arr) (size-of arr) (memory (ensure-default-strides arr))))
 
 (define-method (to-tensor value)
-  (let [(arr (make (multiarray (native-type value) 0) #:shape '()))]
+  (let [(arr (make (multiarray (upcast-integer (native-type value)) 0) #:shape '()))]
     (set arr value)
     (to-tensor arr)))
 

@@ -119,11 +119,16 @@
     (let [(s (make-session))
           (x (tf-variable #:dtype <double> #:shape '(-1)))]
       (to-list (run s (list (cons x (arr 2.0 3.0 5.0))) (tf-bucketize x #:boundaries '(2.5 4.5))))))
-  (test-equal "Cummulative product"
+  (test-equal "Cummulative product with boolean true attribute"
     '(30 15 5)
     (let [(s (make-session))
           (a (tf-const #:dtype <int> #:value (to-tensor (arr <int> 2 3 5))))
           (n (tf-const #:dtype <int> #:value (to-tensor 0)))]
-      (to-list (run s '() (tf-cumprod a n #:reverse #t))))))
+      (to-list (run s '() (tf-cumprod a n #:reverse #t)))))
+  (test-eqv "Upcast integer when converting scalar to tensor"
+    42
+    (let [(s  (make-session))
+          (c (tf-const #:dtype <int> #:value (to-tensor 42)))]
+      (run s '() c))))
 
 (test-end "aiscm tensorflow")

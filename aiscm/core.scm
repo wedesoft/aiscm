@@ -38,8 +38,8 @@
             make-basic-block position-builder-at-end build-branch build-cond-branch
             llvm-neg llvm-fneg llvm-not llvm-add llvm-fadd llvm-sub llvm-fsub llvm-mul llvm-fmul
             llvm-udiv llvm-sdiv llvm-fdiv llvm-shl llvm-lshr llvm-ashr llvm-urem llvm-srem llvm-frem
-            llvm-and llvm-or llvm-xor llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type return duplicate
-            llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
+            llvm-and llvm-or llvm-xor llvm-wrap llvm-trunc llvm-sext llvm-zext jit to-type upcast-integer
+            return duplicate llvm-fp-cast llvm-fp-to-si llvm-fp-to-ui llvm-si-to-fp llvm-ui-to-fp
             llvm-call typed-call typed-constant typed-pointer store fetch allocate-array llvm-begin to-list
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
@@ -1606,7 +1606,7 @@
     (to-type type self)))
 
 (define-method (upcast-integer (type <meta<int<>>>))
-  (integer (if (< (bits type) 32) 32 64) (if (signed? type) signed unsigned)))
+  (integer (if (< (bits type) 32) 32 64) signed))
 
 (define-method (upcast-integer (type <meta<float<>>>)) type)
 
