@@ -1,11 +1,9 @@
 ## Ready
 
-* test false boolean
-* Tensorflow attributes: string list, bool list, type list
 * gradients
-* default to integer or double array
 * implicit constant declaration (e.g. reshape)
-* difference
+* Tensorflow strings
+* Tensorflow commands with multiple outputs
 * Tensorflow example
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated

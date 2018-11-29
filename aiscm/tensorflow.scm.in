@@ -66,7 +66,7 @@
 
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
-  (let-keywords keyword-args #f (<?cs each:attr = op.attr ?> <?cs name:attr ?><?cs /each ?>)
+  (let-keywords keyword-args #f (<?cs each:attr = op.attr ?> <?cs if:attr == "bool" ?>(<?cs name:attr ?> '())<?cs else ?><?cs name:attr ?><?cs /if ?><?cs /each ?>)
     (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
 <?cs each:in = op.input_arg ?><?cs if:in == "list" ?>      (tf-add-input-list description <?cs name:in ?>)
 <?cs /if ?><?cs if:in == "single" ?>      (tf-add-input description <?cs name:in ?>)
@@ -76,7 +76,7 @@
         (tf-set-attr-int description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "list(int)" ?>      (if <?cs name:attr ?>
         (tf-set-attr-int-list description "<?cs name:attr ?>" <?cs name:attr ?>))
-<?cs /if ?><?cs if:attr == "bool" ?>      (if <?cs name:attr ?>
+<?cs /if ?><?cs if:attr == "bool" ?>      (if (not (null? <?cs name:attr ?>))
         (tf-set-attr-bool description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs if:attr == "float" ?>      (if <?cs name:attr ?>
         (tf-set-attr-float description "<?cs name:attr ?>" <?cs name:attr ?>))
