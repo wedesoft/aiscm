@@ -368,6 +368,20 @@ SCM tf_run(SCM scm_session, SCM scm_input, SCM scm_output)
   return retval;
 }
 
+SCM tf_add_gradient_(SCM scm_graph, SCM scm_expression, SCM scm_variable)
+{
+  SCM retval;
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  struct tf_output_t *expression = get_tf_output(scm_expression);
+  struct tf_output_t *variable = get_tf_output(scm_variable);
+  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-add-gradient_");
+  SCM_NEWSMOB(retval, tf_output_tag, output);
+  TF_AddGradients(graph->graph, &expression->output, 1, &variable->output, 1, NULL, status, &output->output);
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-add-gradient_", TF_Message(status), SCM_EOL);
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -416,4 +430,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-set-attr-tensor"    , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor    ));
   scm_c_define_gsubr("make-tf-session"       , 1, 0, 0, SCM_FUNC(make_tf_session       ));
   scm_c_define_gsubr("tf-run"                , 3, 0, 0, SCM_FUNC(tf_run                ));
+  scm_c_define_gsubr("tf-add-gradient_"      , 3, 0, 0, SCM_FUNC(tf_add_gradient_      ));
 }

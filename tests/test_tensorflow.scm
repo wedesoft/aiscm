@@ -131,4 +131,12 @@
           (c (tf-const #:dtype <int> #:value (to-tensor 42)))]
       (run s '() c))))
 
+(test-group "Gradients"
+  (test-eqv "derivative of linear function"
+    1.0
+    (let* [(s (make-session))
+           (x (tf-variable #:dtype <double> #:shape '()))
+           (g (tf-add-gradient (tf-identity x) x))]
+      (run s (list (cons x 3.0)) g))))
+
 (test-end "aiscm tensorflow")

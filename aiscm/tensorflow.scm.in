@@ -21,6 +21,7 @@
   #:use-module (aiscm util)
   #:export (to-tensor from-tensor make-session run make-tensor tf-from-tensor
             graph make-graph make-description tf-finish-operation tf-add-input tf-run
+            tf-add-gradient
             ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>            <?cs var:op.name ?>
 <?cs /each ?>            ))
@@ -63,6 +64,9 @@
   (let* [(tensors (map (lambda (entry) (cons (car entry) (to-tensor (cdr entry)))) alist))
          (result  (tf-run session tensors expression))]
     (if (list? result) (map from-tensor result) (from-tensor result))))
+
+(define (tf-add-gradient expression variable)
+  (tf-add-gradient_ graph expression variable))
 
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
