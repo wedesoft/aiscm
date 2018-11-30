@@ -137,6 +137,15 @@
     (let* [(s (make-session))
            (x (tf-placeholder #:dtype <double>))
            (g (tf-add-gradient (tf-square x) x))]
+      (run s (list (cons x 3.0)) g)))
+  (test-eqv "derivative of variable"
+    -6.0
+    (let* [(s (make-session))
+           (w (tf-variable #:dtype <double> #:shape '()))
+           (c (tf-const #:dtype <double> #:value (to-tensor 0.0)))
+           (x (tf-placeholder #:dtype <double>))
+           (g (tf-add-gradient (tf-square (tf-sub x w)) w))]
+      (run s '() (tf-assign w c))
       (run s (list (cons x 3.0)) g))))
 
 (test-end "aiscm tensorflow")
