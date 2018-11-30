@@ -89,7 +89,7 @@
 <?cs /if ?><?cs if:attr == "type" ?>      (if <?cs name:attr ?>
         (tf-set-attr-type description "<?cs name:attr ?>" (assq-ref typemap <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "tensor" ?>      (if <?cs name:attr ?>
-        (tf-set-attr-tensor description "<?cs name:attr ?>" <?cs name:attr ?>))
+        (tf-set-attr-tensor description "<?cs name:attr ?>" (to-tensor <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "shape" ?>      (if <?cs name:attr ?>
         (tf-set-attr-shape description "<?cs name:attr ?>" <?cs name:attr ?>))
 <?cs /if ?><?cs /each ?>      (tf-finish-operation description))))

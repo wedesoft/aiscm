@@ -1,6 +1,6 @@
 ## Ready
 
-* gradients
+* convert tensor attributes from array
 * implicit constant declaration (e.g. reshape)
 * Tensorflow strings
 * Tensorflow commands with multiple outputs

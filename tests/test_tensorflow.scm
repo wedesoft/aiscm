@@ -74,13 +74,13 @@
   (test-eqv "Constant tensor"
     42.0
     (let* [(s (make-session))
-           (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
+           (c (tf-const #:value 42.0 #:dtype <double>))]
       (run s '() c)))
   (test-eqv "Variable assignment"
     42.0
     (let* [(s (make-session))
            (v (tf-variable #:dtype <double> #:shape '()))
-           (c (tf-const #:value (to-tensor 42.0) #:dtype <double>))]
+           (c (tf-const #:value 42.0 #:dtype <double>))]
       (run s '() (tf-assign v c))
       (run s '() v))))
 
@@ -122,13 +122,13 @@
   (test-equal "Cummulative product with boolean true attribute"
     '(30 15 5)
     (let [(s (make-session))
-          (a (tf-const #:dtype <int> #:value (to-tensor (arr <int> 2 3 5))))
-          (n (tf-const #:dtype <int> #:value (to-tensor 0)))]
+          (a (tf-const #:dtype <int> #:value (arr <int> 2 3 5)))
+          (n (tf-const #:dtype <int> #:value 0))]
       (to-list (run s '() (tf-cumprod a n #:reverse #t)))))
   (test-eqv "Upcast integer when converting scalar to tensor"
     42
     (let [(s  (make-session))
-          (c (tf-const #:dtype <int> #:value (to-tensor 42)))]
+          (c (tf-const #:dtype <int> #:value 42))]
       (run s '() c))))
 
 (test-group "Gradients"
@@ -142,7 +142,7 @@
     -6.0
     (let* [(s (make-session))
            (w (tf-variable #:dtype <double> #:shape '()))
-           (c (tf-const #:dtype <double> #:value (to-tensor 0.0)))
+           (c (tf-const #:dtype <double> #:value 0.0))
            (x (tf-placeholder #:dtype <double>))
            (g (tf-add-gradient (tf-square (tf-sub x w)) w))]
       (run s '() (tf-assign w c))
