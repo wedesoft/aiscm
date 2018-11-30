@@ -148,4 +148,15 @@
       (run s '() (tf-assign w c))
       (run s (list (cons x 3.0)) g))))
 
+(test-group "implicit constant"
+  (test-assert "detect Tensorflow output"
+    (tf-output? (tf-const #:dtype <double> #:value 0.0)))
+  (test-assert "detect type different"
+    (not (tf-output? 42)))
+  (test-equal "convert array to tensor constant"
+    '((1 2) (3 4))
+    (let [(s (make-session))
+          (a (tf-const #:dtype <int> #:value (arr <int> 1 2 3 4)))]
+      (to-list (run s '() (tf-reshape a (arr <int> 2 2)))))))
+
 (test-end "aiscm tensorflow")

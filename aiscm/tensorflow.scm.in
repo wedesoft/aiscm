@@ -21,7 +21,7 @@
   #:use-module (aiscm util)
   #:export (to-tensor from-tensor make-session run make-tensor tf-from-tensor
             graph make-graph make-description tf-finish-operation tf-add-input tf-run
-            tf-add-gradient
+            tf-add-gradient tf-output?
             ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>            <?cs var:op.name ?>
 <?cs /each ?>            ))
@@ -68,12 +68,15 @@
 (define (tf-add-gradient expression variable)
   (tf-add-gradient_ graph expression variable))
 
+(define (to-tf-output value)
+  (if (tf-output? value) value (tf-const #:dtype (typecode value) #:value value)))
+
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)
   (let-keywords keyword-args #f (<?cs each:attr = op.attr ?> <?cs if:attr == "bool" ?>(<?cs name:attr ?> '())<?cs else ?><?cs name:attr ?><?cs /if ?><?cs /each ?>)
     (let [(description (make-description graph "<?cs name:op ?>" (gensym "x")))]
 <?cs each:in = op.input_arg ?><?cs if:in == "list" ?>      (tf-add-input-list description <?cs name:in ?>)
-<?cs /if ?><?cs if:in == "single" ?>      (tf-add-input description <?cs name:in ?>)
+<?cs /if ?><?cs if:in == "single" ?>      (tf-add-input description (to-tf-output <?cs name:in ?>))
 <?cs /if ?><?cs /each ?><?cs each:attr = op.attr ?><?cs if:attr == "string" ?>      (if <?cs name:attr ?>
         (tf-set-attr-string description "<?cs name:attr ?>" (symbol->string <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "int" ?>      (if <?cs name:attr ?>

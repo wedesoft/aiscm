@@ -382,6 +382,11 @@ SCM tf_add_gradient_(SCM scm_graph, SCM scm_expression, SCM scm_variable)
   return retval;
 }
 
+SCM tf_outputq(SCM scm_value)
+{
+  return scm_from_bool(SCM_SMOB_PREDICATE(tf_output_tag, scm_value));
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -431,4 +436,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-tf-session"       , 1, 0, 0, SCM_FUNC(make_tf_session       ));
   scm_c_define_gsubr("tf-run"                , 3, 0, 0, SCM_FUNC(tf_run                ));
   scm_c_define_gsubr("tf-add-gradient_"      , 3, 0, 0, SCM_FUNC(tf_add_gradient_      ));
+  scm_c_define_gsubr("tf-output?"            , 1, 0, 0, SCM_FUNC(tf_outputq            ));
 }

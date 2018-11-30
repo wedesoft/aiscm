@@ -1,6 +1,7 @@
 ## Ready
 
-* convert tensor attributes from array
+* convert scalar to Tensorflow constant
+* convert array of scalars to array of Tensorflow constants
 * implicit constant declaration (e.g. reshape)
 * Tensorflow strings
 * Tensorflow commands with multiple outputs
