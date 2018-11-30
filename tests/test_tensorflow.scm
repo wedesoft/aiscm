@@ -132,11 +132,11 @@
       (run s '() c))))
 
 (test-group "Gradients"
-  (test-eqv "derivative of linear function"
-    1.0
+  (test-eqv "derivative of x squared at x=3"
+    6.0
     (let* [(s (make-session))
-           (x (tf-variable #:dtype <double> #:shape '()))
-           (g (tf-add-gradient (tf-identity x) x))]
+           (x (tf-placeholder #:dtype <double>))
+           (g (tf-add-gradient (tf-square x) x))]
       (run s (list (cons x 3.0)) g))))
 
 (test-end "aiscm tensorflow")
