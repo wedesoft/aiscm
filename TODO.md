@@ -1,7 +1,7 @@
 ## Ready
 
-* Tensorflow strings
 * Tensorflow commands with multiple outputs
+* Tensorflow strings
 * Tensorflow example
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated
