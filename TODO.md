@@ -1,6 +1,5 @@
 ## Ready
 
-* implicit constant declaration (e.g. reshape)
 * Tensorflow strings
 * Tensorflow commands with multiple outputs
 * Tensorflow example
