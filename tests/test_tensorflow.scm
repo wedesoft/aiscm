@@ -157,6 +157,8 @@
     '((1 2) (3 4))
     (let [(s (make-session))
           (a (tf-const #:dtype <int> #:value (arr <int> 1 2 3 4)))]
-      (to-list (run s '() (tf-reshape a (arr <int> 2 2)))))))
+      (to-list (run s '() (tf-reshape a (arr <int> 2 2))))))
+  (test-eqv "convert scalar to tensor constant"
+    5 (let [(s  (make-session))] (run s '() (tf-add 2 3)) )))
 
 (test-end "aiscm tensorflow")

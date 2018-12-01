@@ -45,13 +45,15 @@
 
 (define inverse-typemap (alist-invert typemap))
 
-(define-method (to-tensor (arr <multiarray<>>))
-  (make-tensor (assq-ref typemap (typecode arr)) (shape arr) (size-of arr) (memory (ensure-default-strides arr))))
-
-(define-method (to-tensor value)
+(define (to-zero-d-array value)
   (let [(arr (make (multiarray (upcast-integer (native-type value)) 0) #:shape '()))]
     (set arr value)
-    (to-tensor arr)))
+    arr))
+
+(define (to-tensor value)
+  (if (is-a? value <multiarray<>>)
+    (make-tensor (assq-ref typemap (typecode value)) (shape value) (size-of value) (memory (ensure-default-strides value)))
+    (to-tensor (to-zero-d-array value))))
 
 (define (from-tensor tensor)
   (let [(info (tf-from-tensor tensor))]
@@ -69,7 +71,11 @@
   (tf-add-gradient_ graph expression variable))
 
 (define (to-tf-output value)
-  (if (tf-output? value) value (tf-const #:dtype (typecode value) #:value value)))
+  (if (tf-output? value)
+    value
+    (if (is-a? value <multiarray<>>)
+      (tf-const #:dtype (typecode value) #:value value)
+      (to-tf-output (to-zero-d-array value)))))
 
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)

@@ -1,6 +1,5 @@
 ## Ready
 
-* convert scalar to Tensorflow constant
 * convert array of scalars to array of Tensorflow constants
 * implicit constant declaration (e.g. reshape)
 * Tensorflow strings
