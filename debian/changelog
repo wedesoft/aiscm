@@ -2,6 +2,7 @@ aiscm (0.18.1-1) unstable; urgency=low
 
   - New upstream release
   - Update LLVM dependency to 7.0. Closes: #912798
+  - Use clang-7 instead of gcc
 
  -- Jan Wedekind <jan@wedesoft.de>  Tue,  6 Nov 2018 20:57:33 +0000
 
