@@ -144,16 +144,6 @@ AC_TRY_LINK([#include <libavcodec/avcodec.h>],
 LIBS="$old_LIBS"
 
 old_LIBS="$LIBS"
-LIBS="$LIBS -ltensorflow"
-AC_MSG_CHECKING([for Tensorflow C-API library])
-AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
-            [TF_NewTensor(TF_INT8, NULL, 0, NULL, 4, NULL, NULL)],
-            [AC_MSG_RESULT([yes])],
-            [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate Tensorflow C-API library])])
-LIBS="$old_LIBS"
-
-old_LIBS="$LIBS"
 LIBS="$LIBS -lXpm"
 AC_MSG_CHECKING([for XpmCreatePixmapFromData])
 AC_TRY_LINK([#include <X11/xpm.h>],
@@ -203,7 +193,7 @@ AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
             [TF_GetAllOpList()],
             [AC_MSG_RESULT([yes])],
             [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate Tensorflow library])])
+            [AC_MSG_ERROR([Could not locate Tensorflow C library])])
 LIBS="$old_LIBS"
 
 GUILE_PKG([2.2])

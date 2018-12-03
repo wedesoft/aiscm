@@ -42,7 +42,9 @@ You need to install the dependencies:
 @dependencies.sh@
 ```
 
-You also need a recent version of Protobuf-C library and compiler.
+You also need
+* a recent version of Protobuf-C library and compiler.
+* the Tensorflow C library
 
 ### Build AIscm
 
