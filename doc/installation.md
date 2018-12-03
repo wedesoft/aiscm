@@ -42,6 +42,8 @@ You need to install the dependencies:
 @dependencies.sh@
 ```
 
+You also need a recent version of Protobuf-C library and compiler.
+
 ### Build AIscm
 
 The software then can be unpacked and installed as follows:
