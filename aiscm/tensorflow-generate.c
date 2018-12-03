@@ -62,6 +62,9 @@ int main(void)
       snprintf(value, 256, "%s", attr->type);
       hdf_set_value(hdf, variable, value);
     };
+    snprintf(variable, 256, "Op.%s.n_output", op->name);
+    snprintf(value, 256, "%d", op->n_output_arg);
+    hdf_set_value(hdf, variable, value);
   };
 
   CSPARSE *parse;

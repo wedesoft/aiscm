@@ -1,6 +1,5 @@
 ## Ready
 
-* Tensorflow commands with multiple outputs
 * loading/saving of Tensorflow models with names
 * Tensorflow strings
 * Tensorflow example

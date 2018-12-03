@@ -197,16 +197,24 @@ SCM make_description(SCM scm_graph, SCM scm_op, SCM scm_name)
   return retval;
 }
 
-SCM tf_finish_operation(SCM scm_description)
+SCM tf_finish_operation(SCM scm_description, SCM scm_n_outputs)
 {
-  SCM retval;
-  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-finish-operation");
-  SCM_NEWSMOB(retval, tf_output_tag, output);
+  SCM retval = SCM_EOL;
   struct tf_description_t *self = get_tf_description(scm_description);
-  output->output.oper = TF_FinishOperation(self->description, status);
-  output->output.index = 0;
+  int n_outputs = scm_to_int(scm_n_outputs);
+  TF_Operation *operation = TF_FinishOperation(self->description, status);
   if (TF_GetCode(status) != TF_OK)
     scm_misc_error("tf-finish-operation", TF_Message(status), SCM_EOL);
+  for (int i=n_outputs-1; i>=0; i--) {
+    SCM element;
+    struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-finish-operation");
+    SCM_NEWSMOB(element, tf_output_tag, output);
+    output->output.oper = operation;
+    output->output.index = i;
+    retval = scm_cons(element, retval);
+  };
+  if (n_outputs == 1)
+    retval = scm_car(retval);
   return retval;
 }
 
@@ -421,7 +429,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-from-tensor"        , 1, 0, 0, SCM_FUNC(tf_from_tensor        ));
   scm_c_define_gsubr("make-graph"            , 0, 0, 0, SCM_FUNC(make_graph            ));
   scm_c_define_gsubr("make-description"      , 3, 0, 0, SCM_FUNC(make_description      ));
-  scm_c_define_gsubr("tf-finish-operation"   , 1, 0, 0, SCM_FUNC(tf_finish_operation   ));
+  scm_c_define_gsubr("tf-finish-operation"   , 2, 0, 0, SCM_FUNC(tf_finish_operation   ));
   scm_c_define_gsubr("tf-add-input"          , 2, 0, 0, SCM_FUNC(tf_add_input          ));
   scm_c_define_gsubr("tf-add-input-list"     , 2, 0, 0, SCM_FUNC(tf_add_input_list     ));
   scm_c_define_gsubr("tf-set-attr-string"    , 3, 0, 0, SCM_FUNC(tf_set_attr_string    ));

@@ -101,6 +101,6 @@
         (tf-set-attr-tensor description "<?cs name:attr ?>" (to-tensor <?cs name:attr ?>)))
 <?cs /if ?><?cs if:attr == "shape" ?>      (if <?cs name:attr ?>
         (tf-set-attr-shape description "<?cs name:attr ?>" <?cs name:attr ?>))
-<?cs /if ?><?cs /each ?>      (tf-finish-operation description))))
+<?cs /if ?><?cs /each ?>      (tf-finish-operation description <?cs var:op.n_output ?>))))
 
 <?cs /each ?>

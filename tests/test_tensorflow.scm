@@ -163,4 +163,13 @@
   (test-eqv "convert list of scalars to list of constants"
     5 (let [(s  (make-session))] (run s '() (tf-add-n (list 2 3))))))
 
+(test-group "multiple outputs"
+  (test-assert "top-k returns two values"
+    (let [(s (make-session))]
+      (list? (run s '() (tf-top-kv2 (arr <int> 2 5 3) 2)))))
+  (test-equal "top-k returns two different values"
+    '((5 3) (1 2))
+    (let [(s  (make-session))]
+      (map to-list (run s '() (tf-top-kv2 (arr 2 5 3) 2 #:sorted #t))))))
+
 (test-end "aiscm tensorflow")
