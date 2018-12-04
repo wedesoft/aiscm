@@ -402,6 +402,8 @@ SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name, SCM scm_index)
   SCM_NEWSMOB(retval, tf_output_tag, output);
   output->output.oper = TF_GraphOperationByName(graph->graph, scm_to_locale_string(scm_name));
   output->output.index = scm_to_int(scm_index);
+  if (!output->output.oper)
+    scm_misc_error("tf-graph-operation-by-name_", "Operation '~a' not found", scm_list_1(scm_name));
   return retval;
 }
 

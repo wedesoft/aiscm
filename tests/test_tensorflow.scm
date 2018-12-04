@@ -172,10 +172,14 @@
     (let [(s  (make-session))]
       (map to-list (run s '() (tf-top-kv2 (arr 2 5 3) 2 #:sorted #t))))))
 
-(test-equal "get operation by name"
-  42
-  (let [(s (make-session))
-        (c (tf-const #:dtype <int> #:value 42 #:name "test-const"))]
-    (run s '() (tf-graph-operation-by-name "test-const" 0))))
+(test-group "get operation by name"
+  (test-equal "retrieve first output"
+    42
+    (let [(s (make-session))
+          (c (tf-const #:dtype <int> #:value 42 #:name "test-const"))]
+      (run s '() (tf-graph-operation-by-name "test-const" 0))))
+  (test-error "error if operation not found"
+    'misc-error
+    (tf-graph-operation-by-name "no-such-op" 0)))
 
 (test-end "aiscm tensorflow")
