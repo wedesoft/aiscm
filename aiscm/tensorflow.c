@@ -192,8 +192,7 @@ SCM make_description(SCM scm_graph, SCM scm_op, SCM scm_name)
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   struct tf_description_t *self = (struct tf_description_t *)scm_gc_calloc(sizeof(struct tf_description_t), "make-description");
   SCM_NEWSMOB(retval, tf_description_tag, self);
-  self->description =
-    TF_NewOperation(graph->graph, scm_to_locale_string(scm_op), scm_to_locale_string(scm_symbol_to_string(scm_name)));
+  self->description = TF_NewOperation(graph->graph, scm_to_locale_string(scm_op), scm_to_locale_string(scm_name));
   return retval;
 }
 
@@ -395,6 +394,17 @@ SCM tf_outputq(SCM scm_value)
   return scm_from_bool(SCM_SMOB_PREDICATE(tf_output_tag, scm_value));
 }
 
+SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name, SCM scm_index)
+{
+  SCM retval;
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-graph-operation-by-name_");
+  SCM_NEWSMOB(retval, tf_output_tag, output);
+  output->output.oper = TF_GraphOperationByName(graph->graph, scm_to_locale_string(scm_name));
+  output->output.index = scm_to_int(scm_index);
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -425,24 +435,25 @@ void init_tensorflow(void)
   scm_c_define("TF_UINT64", scm_from_int(TF_UINT64));
   scm_c_define("TF_INT64" , scm_from_int(TF_INT64 ));
   scm_c_define("TF_BOOL"  , scm_from_int(TF_BOOL  ));
-  scm_c_define_gsubr("make-tensor"           , 4, 0, 0, SCM_FUNC(make_tensor           ));
-  scm_c_define_gsubr("tf-from-tensor"        , 1, 0, 0, SCM_FUNC(tf_from_tensor        ));
-  scm_c_define_gsubr("make-graph"            , 0, 0, 0, SCM_FUNC(make_graph            ));
-  scm_c_define_gsubr("make-description"      , 3, 0, 0, SCM_FUNC(make_description      ));
-  scm_c_define_gsubr("tf-finish-operation"   , 2, 0, 0, SCM_FUNC(tf_finish_operation   ));
-  scm_c_define_gsubr("tf-add-input"          , 2, 0, 0, SCM_FUNC(tf_add_input          ));
-  scm_c_define_gsubr("tf-add-input-list"     , 2, 0, 0, SCM_FUNC(tf_add_input_list     ));
-  scm_c_define_gsubr("tf-set-attr-string"    , 3, 0, 0, SCM_FUNC(tf_set_attr_string    ));
-  scm_c_define_gsubr("tf-set-attr-int"       , 3, 0, 0, SCM_FUNC(tf_set_attr_int       ));
-  scm_c_define_gsubr("tf-set-attr-int-list"  , 3, 0, 0, SCM_FUNC(tf_set_attr_int_list  ));
-  scm_c_define_gsubr("tf-set-attr-bool"      , 3, 0, 0, SCM_FUNC(tf_set_attr_bool      ));
-  scm_c_define_gsubr("tf-set-attr-float"     , 3, 0, 0, SCM_FUNC(tf_set_attr_float     ));
-  scm_c_define_gsubr("tf-set-attr-float-list", 3, 0, 0, SCM_FUNC(tf_set_attr_float_list));
-  scm_c_define_gsubr("tf-set-attr-type"      , 3, 0, 0, SCM_FUNC(tf_set_attr_type      ));
-  scm_c_define_gsubr("tf-set-attr-shape"     , 3, 0, 0, SCM_FUNC(tf_set_attr_shape     ));
-  scm_c_define_gsubr("tf-set-attr-tensor"    , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor    ));
-  scm_c_define_gsubr("make-tf-session"       , 1, 0, 0, SCM_FUNC(make_tf_session       ));
-  scm_c_define_gsubr("tf-run"                , 3, 0, 0, SCM_FUNC(tf_run                ));
-  scm_c_define_gsubr("tf-add-gradient_"      , 3, 0, 0, SCM_FUNC(tf_add_gradient_      ));
-  scm_c_define_gsubr("tf-output?"            , 1, 0, 0, SCM_FUNC(tf_outputq            ));
+  scm_c_define_gsubr("make-tensor"                 , 4, 0, 0, SCM_FUNC(make_tensor                ));
+  scm_c_define_gsubr("tf-from-tensor"              , 1, 0, 0, SCM_FUNC(tf_from_tensor             ));
+  scm_c_define_gsubr("make-graph"                  , 0, 0, 0, SCM_FUNC(make_graph                 ));
+  scm_c_define_gsubr("make-description"            , 3, 0, 0, SCM_FUNC(make_description           ));
+  scm_c_define_gsubr("tf-finish-operation"         , 2, 0, 0, SCM_FUNC(tf_finish_operation        ));
+  scm_c_define_gsubr("tf-add-input"                , 2, 0, 0, SCM_FUNC(tf_add_input               ));
+  scm_c_define_gsubr("tf-add-input-list"           , 2, 0, 0, SCM_FUNC(tf_add_input_list          ));
+  scm_c_define_gsubr("tf-set-attr-string"          , 3, 0, 0, SCM_FUNC(tf_set_attr_string         ));
+  scm_c_define_gsubr("tf-set-attr-int"             , 3, 0, 0, SCM_FUNC(tf_set_attr_int            ));
+  scm_c_define_gsubr("tf-set-attr-int-list"        , 3, 0, 0, SCM_FUNC(tf_set_attr_int_list       ));
+  scm_c_define_gsubr("tf-set-attr-bool"            , 3, 0, 0, SCM_FUNC(tf_set_attr_bool           ));
+  scm_c_define_gsubr("tf-set-attr-float"           , 3, 0, 0, SCM_FUNC(tf_set_attr_float          ));
+  scm_c_define_gsubr("tf-set-attr-float-list"      , 3, 0, 0, SCM_FUNC(tf_set_attr_float_list     ));
+  scm_c_define_gsubr("tf-set-attr-type"            , 3, 0, 0, SCM_FUNC(tf_set_attr_type           ));
+  scm_c_define_gsubr("tf-set-attr-shape"           , 3, 0, 0, SCM_FUNC(tf_set_attr_shape          ));
+  scm_c_define_gsubr("tf-set-attr-tensor"          , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor         ));
+  scm_c_define_gsubr("make-tf-session"             , 1, 0, 0, SCM_FUNC(make_tf_session            ));
+  scm_c_define_gsubr("tf-run"                      , 3, 0, 0, SCM_FUNC(tf_run                     ));
+  scm_c_define_gsubr("tf-add-gradient_"            , 3, 0, 0, SCM_FUNC(tf_add_gradient_           ));
+  scm_c_define_gsubr("tf-output?"                  , 1, 0, 0, SCM_FUNC(tf_outputq                 ));
+  scm_c_define_gsubr("tf-graph-operation-by-name_" , 3, 0, 0, SCM_FUNC(tf_graph_operation_by_name_));
 }
