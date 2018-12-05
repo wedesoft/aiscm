@@ -172,8 +172,8 @@
     (let [(s  (make-session))]
       (map to-list (run s '() (tf-top-kv2 (arr 2 5 3) 2 #:sorted #t))))))
 
-(test-group "get operation by name"
-  (test-equal "retrieve first output"
+(test-group "saving and loading of graphs"
+  (test-equal "get first output of operation by name"
     42
     (let [(s (make-session))
           (c (tf-const #:dtype <int> #:value 42 #:name "test-const"))]
@@ -187,6 +187,14 @@
     'misc-error
     (let [(c (tf-const #:dtype <int> #:value 42 #:name "test-op"))]
       (tf-reset-graph)
-      (tf-graph-operation-by-name "test-op" 0))))
+      (tf-graph-operation-by-name "test-op" 0)))
+  (test-expect-fail 1)
+  (test-assert "save and load graph"
+    (let [(file-name (tmpnam))
+          (c (tf-const #:dtype <int> #:value 42 #:name "saved-op"))]
+      (tf-graph-export file-name)
+      (tf-reset-graph)
+      (tf-graph-import file-name)
+      (tf-graph-operation-by-name "saved-op" 0))))
 
 (test-end "aiscm tensorflow")

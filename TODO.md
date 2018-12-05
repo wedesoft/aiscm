@@ -3,6 +3,7 @@
 * loading/saving of Tensorflow models with names
   * TF\_GraphImportGraphDef
   * TF\_GraphToGraphDef
+* test file read/write errors
 * Tensorflow strings
 * Tensorflow example
 * Debian sid FFmpeg API changes

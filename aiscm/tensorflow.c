@@ -186,6 +186,22 @@ SCM make_graph(void)
   return retval;
 }
 
+SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
+{
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  TF_Buffer *buffer = TF_NewBuffer();
+  TF_GraphToGraphDef(graph->graph, buffer, status);
+  if (TF_GetCode(status) != TF_OK) {
+    TF_DeleteBuffer(buffer);
+    scm_misc_error("tf-graph-export_", TF_Message(status), SCM_EOL);
+  };
+  FILE *file = fopen(scm_to_locale_string(scm_file_name), "w");
+  fwrite(buffer->data, buffer->length, 1, file);
+  fclose(file);
+  TF_DeleteBuffer(buffer);
+  return SCM_UNDEFINED;
+}
+
 SCM make_description(SCM scm_graph, SCM scm_op, SCM scm_name)
 {
   SCM retval;
@@ -440,6 +456,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("make-tensor"                 , 4, 0, 0, SCM_FUNC(make_tensor                ));
   scm_c_define_gsubr("tf-from-tensor"              , 1, 0, 0, SCM_FUNC(tf_from_tensor             ));
   scm_c_define_gsubr("make-graph"                  , 0, 0, 0, SCM_FUNC(make_graph                 ));
+  scm_c_define_gsubr("tf-graph-export_"            , 2, 0, 0, SCM_FUNC(tf_graph_export_           ));
   scm_c_define_gsubr("make-description"            , 3, 0, 0, SCM_FUNC(make_description           ));
   scm_c_define_gsubr("tf-finish-operation"         , 2, 0, 0, SCM_FUNC(tf_finish_operation        ));
   scm_c_define_gsubr("tf-add-input"                , 2, 0, 0, SCM_FUNC(tf_add_input               ));
