@@ -180,6 +180,13 @@
       (run s '() (tf-graph-operation-by-name "test-const" 0))))
   (test-error "error if operation not found"
     'misc-error
-    (tf-graph-operation-by-name "no-such-op" 0)))
+    (tf-graph-operation-by-name "no-such-op" 0))
+  (test-assert "method to reset graph exists"
+    (defined? 'tf-reset-graph))
+  (test-error "test reset of graph"
+    'misc-error
+    (let [(c (tf-const #:dtype <int> #:value 42 #:name "test-op"))]
+      (tf-reset-graph)
+      (tf-graph-operation-by-name "test-op" 0))))
 
 (test-end "aiscm tensorflow")
