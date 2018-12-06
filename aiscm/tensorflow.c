@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <string.h>
+#include <sys/stat.h>
 #include <libguile.h>
 #include <tensorflow/c/c_api.h>
 #include "util-helpers.h"
@@ -199,6 +200,29 @@ SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
   fwrite(buffer->data, buffer->length, 1, file);
   fclose(file);
   TF_DeleteBuffer(buffer);
+  return SCM_UNDEFINED;
+}
+
+SCM tf_graph_import_(SCM scm_graph, SCM scm_file_name)
+{
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  FILE *file = fopen(scm_to_locale_string(scm_file_name), "r");
+  int fd = fileno(file);
+  struct stat st;
+  fstat(fd, &st);
+  size_t size = st.st_size;
+  TF_Buffer *buffer = TF_NewBuffer();
+  void *data = scm_gc_malloc(size, "tf-graph-import_");
+  fread(data, size, 1, file);
+  buffer->data = data;
+  buffer->length = size;
+  fclose(file);
+  TF_ImportGraphDefOptions* opts = TF_NewImportGraphDefOptions();
+  TF_GraphImportGraphDef(graph->graph, buffer, opts, status);
+  TF_DeleteImportGraphDefOptions(opts);
+  TF_DeleteBuffer(buffer);
+  if (TF_GetCode(status) != TF_OK)
+    scm_misc_error("tf-graph-import_", TF_Message(status), SCM_EOL);
   return SCM_UNDEFINED;
 }
 
@@ -457,6 +481,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-from-tensor"              , 1, 0, 0, SCM_FUNC(tf_from_tensor             ));
   scm_c_define_gsubr("make-graph"                  , 0, 0, 0, SCM_FUNC(make_graph                 ));
   scm_c_define_gsubr("tf-graph-export_"            , 2, 0, 0, SCM_FUNC(tf_graph_export_           ));
+  scm_c_define_gsubr("tf-graph-import_"            , 2, 0, 0, SCM_FUNC(tf_graph_import_           ));
   scm_c_define_gsubr("make-description"            , 3, 0, 0, SCM_FUNC(make_description           ));
   scm_c_define_gsubr("tf-finish-operation"         , 2, 0, 0, SCM_FUNC(tf_finish_operation        ));
   scm_c_define_gsubr("tf-add-input"                , 2, 0, 0, SCM_FUNC(tf_add_input               ));

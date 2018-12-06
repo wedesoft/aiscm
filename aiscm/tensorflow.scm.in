@@ -35,7 +35,7 @@
   (tf-graph-export_ graph file-name))
 
 (define (tf-graph-import file-name)
-  0)
+  (tf-graph-import_ graph file-name))
 
 (define (tf-reset-graph)
   (set! graph (make-graph)))
