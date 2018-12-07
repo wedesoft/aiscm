@@ -177,24 +177,29 @@
     42
     (let [(s (make-session))
           (c (tf-const #:dtype <int> #:value 42 #:name "test-const"))]
-      (run s '() (tf-graph-operation-by-name "test-const" 0))))
+      (run s '() (tf-graph-operation-by-name "test-const"))))
   (test-error "error if operation not found"
     'misc-error
-    (tf-graph-operation-by-name "no-such-op" 0))
+    (tf-graph-operation-by-name "no-such-op"))
   (test-assert "method to reset graph exists"
     (defined? 'tf-reset-graph))
   (test-error "test reset of graph"
     'misc-error
     (let [(c (tf-const #:dtype <int> #:value 42 #:name "test-op"))]
       (tf-reset-graph)
-      (tf-graph-operation-by-name "test-op" 0)))
+      (tf-graph-operation-by-name "test-op")))
   (test-assert "save and load graph"
     (let [(file-name (tmpnam))
           (c (tf-const #:dtype <int> #:value 42 #:name "saved-op"))]
       (tf-graph-export file-name)
       (tf-reset-graph)
       (tf-graph-import file-name)
-      (tf-graph-operation-by-name "saved-op" 0)))
+      (tf-graph-operation-by-name "saved-op")))
+  (test-equal "top-k returns two different values"
+    '((5 3) (1 2))
+    (let [(s  (make-session))]
+      (tf-top-kv2 (arr 2 5 3) 2 #:sorted #t #:name "top-k2")
+      (map to-list (run s '() (tf-graph-operation-by-name "top-k2")))))
   (test-equal "get operation names"
     (list "test-op")
     (begin

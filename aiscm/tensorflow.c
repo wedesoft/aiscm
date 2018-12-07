@@ -434,16 +434,24 @@ SCM tf_outputq(SCM scm_value)
   return scm_from_bool(SCM_SMOB_PREDICATE(tf_output_tag, scm_value));
 }
 
-SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name, SCM scm_index)
+SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name)
 {
-  SCM retval;
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-graph-operation-by-name_");
-  SCM_NEWSMOB(retval, tf_output_tag, output);
-  output->output.oper = TF_GraphOperationByName(graph->graph, scm_to_locale_string(scm_name));
-  output->output.index = scm_to_int(scm_index);
-  if (!output->output.oper)
+  TF_Operation *operation = TF_GraphOperationByName(graph->graph, scm_to_locale_string(scm_name));
+  if (!operation)
     scm_misc_error("tf-graph-operation-by-name_", "Operation '~a' not found", scm_list_1(scm_name));
+  SCM retval = SCM_EOL;
+  int noutputs = TF_OperationNumOutputs(operation);
+  for (int i=noutputs-1; i>=0; i--) {
+    SCM element;
+    struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-graph-operation-by-name_");
+    SCM_NEWSMOB(element, tf_output_tag, output);
+    output->output.oper = operation;
+    output->output.index = i;
+    retval = scm_cons(element, retval);
+  };
+  if (noutputs == 1)
+    retval = scm_car(retval);
   return retval;
 }
 
@@ -510,6 +518,6 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-run"                      , 3, 0, 0, SCM_FUNC(tf_run                     ));
   scm_c_define_gsubr("tf-add-gradient_"            , 3, 0, 0, SCM_FUNC(tf_add_gradient_           ));
   scm_c_define_gsubr("tf-output?"                  , 1, 0, 0, SCM_FUNC(tf_outputq                 ));
-  scm_c_define_gsubr("tf-graph-operation-by-name_" , 3, 0, 0, SCM_FUNC(tf_graph_operation_by_name_));
+  scm_c_define_gsubr("tf-graph-operation-by-name_" , 2, 0, 0, SCM_FUNC(tf_graph_operation_by_name_));
   scm_c_define_gsubr("tf-operation-names_"         , 1, 0, 0, SCM_FUNC(tf_operation_names_        ));
 }

@@ -1,6 +1,5 @@
 ## Ready
 
-* means to list operations of a graph
 * test file read/write errors when importing/exporting graph
 * Tensorflow strings
 * Tensorflow example

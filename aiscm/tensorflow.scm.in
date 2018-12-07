@@ -87,8 +87,8 @@
       (tf-const #:dtype (typecode value) #:value value)
       (to-tf-output (to-zero-d-array value)))))
 
-(define (tf-graph-operation-by-name name index)
-  (tf-graph-operation-by-name_ graph name index))
+(define (tf-graph-operation-by-name name)
+  (tf-graph-operation-by-name_ graph name))
 
 (define (tf-operation-names)
   (tf-operation-names_ graph))
