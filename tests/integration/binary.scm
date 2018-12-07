@@ -5,7 +5,7 @@ a
 ;((1 2 3)
 ; (4 5 6))
 (shape a)
-;(3 2)
+;(2 3)
 (define b (arr -1 1))
 b
 ;#<multiarray<int<8,signed>,1>>:

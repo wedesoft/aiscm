@@ -5,9 +5,9 @@
 (size-of a)
 ;24
 (shape a)
-;(3 2 1)
+;(1 2 3)
 (strides a)
-;(4 12 24)
+;(24 12 4)
 (get a 1 0 0)
 ;2
 (get a 0 0)
