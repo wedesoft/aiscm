@@ -1,6 +1,5 @@
 ## Ready
 
-* test file read/write errors when importing/exporting graph
 * Tensorflow strings
 * Tensorflow example
 * Debian sid FFmpeg API changes

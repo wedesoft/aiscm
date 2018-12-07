@@ -195,6 +195,12 @@
       (tf-reset-graph)
       (tf-graph-import file-name)
       (tf-graph-operation-by-name "saved-op")))
+  (test-error "error writing file"
+    'misc-error
+    (tf-graph-export "directory/does/not/exist"))
+  (test-error "error reading file"
+    'misc-error
+    (tf-graph-import "no/such/file"))
   (test-equal "top-k returns two different values"
     '((5 3) (1 2))
     (let [(s  (make-session))]

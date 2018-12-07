@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <libguile.h>
@@ -197,6 +198,8 @@ SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
     scm_misc_error("tf-graph-export_", TF_Message(status), SCM_EOL);
   };
   FILE *file = fopen(scm_to_locale_string(scm_file_name), "w");
+  if (!file)
+    scm_misc_error("tf-graph-export_", strerror(errno), SCM_EOL);
   fwrite(buffer->data, buffer->length, 1, file);
   fclose(file);
   TF_DeleteBuffer(buffer);
@@ -207,6 +210,8 @@ SCM tf_graph_import_(SCM scm_graph, SCM scm_file_name)
 {
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   FILE *file = fopen(scm_to_locale_string(scm_file_name), "r");
+  if (!file)
+    scm_misc_error("tf-graph-import_", strerror(errno), SCM_EOL);
   int fd = fileno(file);
   struct stat st;
   fstat(fd, &st);
