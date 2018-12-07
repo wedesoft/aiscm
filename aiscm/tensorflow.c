@@ -447,6 +447,17 @@ SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name, SCM scm_index)
   return retval;
 }
 
+SCM tf_operation_names_(SCM scm_graph)
+{
+  SCM retval = SCM_EOL;
+  struct tf_graph_t *graph = get_tf_graph(scm_graph);
+  size_t pos = 0;
+  TF_Operation *oper;
+  while(oper = TF_GraphNextOperation(graph->graph, &pos))
+    retval = scm_cons(scm_from_locale_string(TF_OperationName(oper)), retval);
+  return retval;
+}
+
 void init_tensorflow(void)
 {
   tf_tensor_tag = scm_make_smob_type("tensor", sizeof(struct tf_tensor_t));
@@ -500,4 +511,5 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-add-gradient_"            , 3, 0, 0, SCM_FUNC(tf_add_gradient_           ));
   scm_c_define_gsubr("tf-output?"                  , 1, 0, 0, SCM_FUNC(tf_outputq                 ));
   scm_c_define_gsubr("tf-graph-operation-by-name_" , 3, 0, 0, SCM_FUNC(tf_graph_operation_by_name_));
+  scm_c_define_gsubr("tf-operation-names_"         , 1, 0, 0, SCM_FUNC(tf_operation_names_        ));
 }

@@ -22,7 +22,7 @@
   #:export (to-tensor from-tensor make-session run make-tensor tf-from-tensor
             graph make-graph make-description tf-finish-operation tf-add-input tf-run
             tf-add-gradient tf-output? tf-graph-operation-by-name tf-reset-graph
-            tf-graph-export tf-graph-import
+            tf-graph-export tf-graph-import tf-operation-names
             ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>            <?cs var:op.name ?>
 <?cs /each ?>            ))
@@ -89,6 +89,9 @@
 
 (define (tf-graph-operation-by-name name index)
   (tf-graph-operation-by-name_ graph name index))
+
+(define (tf-operation-names)
+  (tf-operation-names_ graph))
 
 ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>(define (<?cs var:op.name ?><?cs each:in = op.input_arg ?> <?cs name:in ?><?cs /each ?> . keyword-args)

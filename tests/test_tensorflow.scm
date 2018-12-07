@@ -188,13 +188,18 @@
     (let [(c (tf-const #:dtype <int> #:value 42 #:name "test-op"))]
       (tf-reset-graph)
       (tf-graph-operation-by-name "test-op" 0)))
-  (test-expect-fail 1)
   (test-assert "save and load graph"
     (let [(file-name (tmpnam))
           (c (tf-const #:dtype <int> #:value 42 #:name "saved-op"))]
       (tf-graph-export file-name)
       (tf-reset-graph)
       (tf-graph-import file-name)
-      (tf-graph-operation-by-name "saved-op" 0))))
+      (tf-graph-operation-by-name "saved-op" 0)))
+  (test-equal "get operation names"
+    (list "test-op")
+    (begin
+      (tf-reset-graph)
+      (tf-const #:dtype <int> #:value 42 #:name "test-op")
+      (tf-operation-names))))
 
 (test-end "aiscm tensorflow")
