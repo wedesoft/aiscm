@@ -17,7 +17,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
-										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm
+										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm mnist.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg
 
@@ -50,3 +50,29 @@ CLEANFILES = *.tmp av-sync.mp4 fubk.png pattern.png swap-channels.jpg rolled.jpg
 						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg
 
 MAINTAINERCLEANFILES = Makefile.in
+
+mnist.tmp: train-labels-idx1-ubyte train-images-idx3-ubyte t10k-images-idx3-ubyte t10k-labels-idx1-ubyte
+
+train-images-idx3-ubyte: train-images-idx3-ubyte.gz
+	gunzip -k $<
+
+train-labels-idx1-ubyte: train-labels-idx1-ubyte.gz
+	gunzip -k $<
+
+t10k-images-idx3-ubyte: t10k-images-idx3-ubyte.gz
+	gunzip -k $<
+
+t10k-labels-idx1-ubyte: t10k-labels-idx1-ubyte.gz
+	gunzip -k $<
+
+train-images-idx3-ubyte.gz:
+	curl -o $@ http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
+
+train-labels-idx1-ubyte.gz:
+	curl -o $@ http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
+
+t10k-images-idx3-ubyte.gz:
+	curl -o $@ http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
+
+t10k-labels-idx1-ubyte.gz:
+	curl -o $@ http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
