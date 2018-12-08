@@ -9,6 +9,7 @@
   * avcodec\_decode\_audio4 deprecated
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * reshape
+* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
@@ -19,7 +20,6 @@
 * OpenCV bindings
 * Kinect bindings
 * FFTW3 bindings
-* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Lucas-Kanade tracker
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * connected components analysis
