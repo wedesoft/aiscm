@@ -1,4 +1,11 @@
-(use-modules (oop goops) (ice-9 binary-ports) (rnrs bytevectors) (aiscm core) (system foreign) (aiscm xorg) (ice-9 format))
+(use-modules (oop goops)
+             (ice-9 binary-ports)
+             (ice-9 format)
+             (rnrs bytevectors)
+             (system foreign)
+             (aiscm core)
+             (aiscm xorg)
+             (aiscm tensorflow))
 ; http://yann.lecun.com/exdb/mnist/
 (define f (open-file "train-images-idx3-ubyte" "rb"))
 (define magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
