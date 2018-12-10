@@ -28,5 +28,5 @@
 (define alpha (tf-cast 1.0 #:DstT <float>))
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
-(for-each (lambda _ (run s (list (cons x features) (cons y labels)) step)) (iota 1000))
+(for-each (lambda _ (run s (list (cons x features) (cons y labels)) step)) (iota 250))
 (format #t "~a~&" (run s (list (cons x features)) ys))
