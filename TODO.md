@@ -1,6 +1,7 @@
 ## Ready
 
 * put xor example into documentation
+* coerce to float: (+ (arr <float> 1.0) 1.0)
 * list of gradients
 * Tensorflow strings
 * Tensorflow example
