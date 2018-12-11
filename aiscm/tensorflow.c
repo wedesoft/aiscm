@@ -420,17 +420,32 @@ SCM tf_run(SCM scm_session, SCM scm_input, SCM scm_output)
   return retval;
 }
 
-SCM tf_add_gradient_(SCM scm_graph, SCM scm_expression, SCM scm_variable)
+SCM tf_add_gradient_(SCM scm_graph, SCM scm_expression, SCM scm_variables)
 {
   SCM retval;
-  struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  struct tf_output_t *expression = get_tf_output(scm_expression);
-  struct tf_output_t *variable = get_tf_output(scm_variable);
-  struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-add-gradient_");
-  SCM_NEWSMOB(retval, tf_output_tag, output);
-  TF_AddGradients(graph->graph, &expression->output, 1, &variable->output, 1, NULL, status, &output->output);
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-add-gradient_", TF_Message(status), SCM_EOL);
+  if (scm_is_true(scm_list_p(scm_variables))) {
+    struct tf_graph_t *graph = get_tf_graph(scm_graph);
+    struct tf_output_t *expression = get_tf_output(scm_expression);
+    int nvariables = scm_ilength(scm_variables);
+    TF_Output *variables = scm_gc_calloc(sizeof(TF_Output) * nvariables, "tf-add-gradient_");
+    for (int i=0; i<nvariables; i++) {
+      variables[i] = get_tf_output(scm_car(scm_variables))->output;
+      scm_variables = scm_cdr(scm_variables);
+    };
+    TF_Output *output = scm_gc_calloc(sizeof(TF_Output) * nvariables, "tf-add-gradient_");
+    TF_AddGradients(graph->graph, &expression->output, 1, variables, nvariables, NULL, status, output);
+    if (TF_GetCode(status) != TF_OK)
+      scm_misc_error("tf-add-gradient_", TF_Message(status), SCM_EOL);
+    retval = SCM_EOL;
+    for (int i=nvariables-1; i>=0; i--) {
+      SCM element;
+      struct tf_output_t *result = scm_gc_calloc(sizeof(struct tf_output_t), "tf-add-gradient_");
+      SCM_NEWSMOB(element, tf_output_tag, result);
+      result->output = output[i];
+      retval = scm_cons(element, retval);
+    };
+  } else
+    retval = scm_car(tf_add_gradient_(scm_graph, scm_expression, scm_list_1(scm_variables)));
   return retval;
 }
 

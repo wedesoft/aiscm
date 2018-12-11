@@ -146,6 +146,12 @@
            (x (tf-placeholder #:dtype <double>))
            (g (tf-add-gradient (tf-square (tf-sub x w)) w))]
       (run s '() (tf-assign w c))
+      (run s (list (cons x 3.0)) g)))
+  (test-equal "derivative for list of variables"
+    (list 6.0)
+    (let* [(s (make-session))
+           (x (tf-placeholder #:dtype <double>))
+           (g (tf-add-gradient (tf-square x) (list x)))]
       (run s (list (cons x 3.0)) g))))
 
 (test-group "implicit constant"

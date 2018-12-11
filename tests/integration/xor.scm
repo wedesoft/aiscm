@@ -1,4 +1,4 @@
-(use-modules (aiscm core) (aiscm tensorflow) (srfi srfi-26) (ice-9 format))
+(use-modules (aiscm core) (aiscm tensorflow) (ice-9 format))
 
 (define features (arr <float> (0 0) (0 1) (1 0) (1 1)))
 (define labels (arr <float> (0) (1) (1) (0)))
@@ -23,7 +23,7 @@
 (define cost (tf-neg (tf-mean (tf-add (tf-mul y (tf-log ys)) (tf-mul (tf-sub one y) (tf-log (tf-sub one ys)))) (arr <int> 0 1))))
 
 (define vars (list m1 b1 m2 b2))
-(define gradients (map (cut tf-add-gradient cost <>) vars))
+(define gradients (tf-add-gradient cost vars))
 
 (define alpha (tf-cast 1.0 #:DstT <float>))
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
