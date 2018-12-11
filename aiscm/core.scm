@@ -956,11 +956,11 @@
            (adapt-b (to-type target value-b))]
       (make (type-map target) #:value ((delegate target) (get adapt-a) (get adapt-b)))))); TODO: remove redundant code below
 
-(define-syntax-rule (define-op-with-constant type operation)
+(define-syntax-rule (define-op-with-constant operation)
   (begin
-    (define-method (operation (value-a type) (value-b <complex>))
+    (define-method (operation (value-a <void>) (value-b <complex>))
       (operation value-a (typed-constant (native-type value-b) value-b)))
-    (define-method (operation (value-a <complex>) (value-b type))
+    (define-method (operation (value-a <complex>) (value-b <void>))
       (operation (typed-constant (native-type value-a) value-a) value-b))))
 
 (define (object-method delegate)
@@ -992,7 +992,7 @@
     (define-scalar-binary <float<>>   <float<>>   type-map operation float-delegate)
     (define-scalar-binary <pointer<>> <int<>>     type-map operation int-delegate  )
     (define-scalar-binary <pointer<>> <pointer<>> type-map operation int-delegate  )
-    (define-op-with-constant <void> operation)))
+    (define-op-with-constant operation)))
 
 (define-binary-delegation identity +  (const llvm-add)                                  (const llvm-fadd))
 (define-binary-delegation identity -  (const llvm-sub)                                  (const llvm-fsub))

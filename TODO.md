@@ -1,9 +1,8 @@
 ## Ready
 
-* put xor example into documentation
 * coerce to float: (+ (arr <float> 1.0) 1.0)
+* MNIST example
 * Tensorflow strings
-* Tensorflow example
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated
   * avcodec\_decode\_video2 deprecated
