@@ -1,6 +1,5 @@
 ## Ready
 
-* coerce to float: (+ (arr <float> 1.0) 1.0)
 * MNIST example
 * Tensorflow strings
 * Debian sid FFmpeg API changes
@@ -10,7 +9,6 @@
   * avcodec\_decode\_audio4 deprecated
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
-* reshape
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * gauss blur, gauss gradient
 * to-array -> from-image

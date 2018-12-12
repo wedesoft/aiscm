@@ -44,7 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
-            warp
+            warp reshape
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1897,3 +1897,11 @@
                        #:specializers (cons (class-of self) (map class-of args))
                        #:procedure (jit (cons (native-type self) (map native-type args)) fun)))
     (apply warp self args)))
+
+(define (reshape arr shp)
+  (let [(arr (ensure-default-strides arr))]
+    (make (multiarray (typecode arr) (length shp))
+          #:shape shp
+          #:strides (default-strides (typecode arr) shp)
+          #:memory (memory arr)
+          #:memory-base (memory-base arr))))

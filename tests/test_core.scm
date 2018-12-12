@@ -1694,4 +1694,12 @@
   (test-equal "warp with arrays as elements"
     '((11 13) (2 3) (5 7)) (to-list (warp (arr (2 3) (5 7) (11 13)) (arr 2 0 1)))))
 
+(test-group "reshape"
+  (test-equal "trivial reshape operation"
+    '(2 3 5) (to-list (reshape (arr 2 3 5) '(3))))
+  (test-equal "reshape 2D array"
+    '((2 3) (5 7) (11 13)) (to-list (reshape (arr (2 3 5) (7 11 13)) '(3 2))))
+  (test-equal "ensure compact array before reshaping"
+    '((2 3 5) (7 11 13)) (to-list (reshape (roll (arr (2 5 11) (3 7 13))) '(2 3)))))
+
 (test-end "aiscm core")
