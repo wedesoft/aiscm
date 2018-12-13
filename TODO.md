@@ -1,6 +1,6 @@
 ## Ready
 
-* MNIST example
+* MNIST example: progress output, display cost function, testing, regularisation
 * Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated
