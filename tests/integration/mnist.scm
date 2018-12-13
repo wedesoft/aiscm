@@ -9,14 +9,24 @@
              (aiscm tensorflow))
 
 ; Get MNIST data at http://yann.lecun.com/exdb/mnist/
-(define f (open-file "train-images-idx3-ubyte" "rb"))
-(define magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(if (not (eqv? magic 2051)) (error "Images file has wrong magic number"))
-(define n (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(define h (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(define w (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(define bv (get-bytevector-n f (* n h w)))
-(define images (make (multiarray <ubyte> 3) #:memory (bytevector->pointer bv) #:shape (list n h w)))
+
+(define (read-images file-name)
+  (let* [(f     (open-file file-name "rb"))
+         (magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
+         (n     (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
+         (h     (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
+         (w     (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))]
+    (if (not (eqv? magic 2051)) (error "Images file has wrong magic number"))
+    (let [(bv (get-bytevector-n f (* n h w)))]
+      (make (multiarray <ubyte> 3) #:memory (bytevector->pointer bv) #:shape (list n h w)))))
+
+(define (read-labels file-name)
+  (let* [(f     (open-file file-name "rb"))
+         (magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
+         (n     (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))]
+    (if (not (eqv? magic 2049)) (error "Label file has wrong magic number"))
+    (let [(bv (get-bytevector-n f n))]
+      (make (multiarray <ubyte> 1) #:memory (bytevector->pointer bv) #:shape (list n)))))
 
 (define f (open-file "train-labels-idx1-ubyte" "rb"))
 (define magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
@@ -25,6 +35,10 @@
 (if (not (eqv? n n2)) (error "Number of labels does not match number of images"))
 (define bv (get-bytevector-n f n))
 (define labels (make (multiarray <ubyte> 1) #:memory (bytevector->pointer bv) #:shape (list n)))
+
+(define images (read-images "train-images-idx3-ubyte"))
+(define labels (read-labels "train-labels-idx1-ubyte"))
+(define n (car (shape images)))
 
 (define s (make-session))
 
@@ -40,9 +54,9 @@
 (define c2 (tf-conv2d p1 k2 #:strides '(1 1 1 1) #:padding 'VALID))
 (define p2 (tf-relu (tf-max-pool c2 #:strides '(1 2 2 1) #:ksize '(1 2 2 1) #:padding 'VALID)))
 
-(define n (* 5 5 16))
-(define r2 (tf-reshape p2 (to-array <int> (list -1 n))))
-(define m1 (tf-variable #:dtype <double> #:shape (list n 40)))
+(define d (* 5 5 16))
+(define r2 (tf-reshape p2 (to-array <int> (list -1 d))))
+(define m1 (tf-variable #:dtype <double> #:shape (list d 40)))
 (define b1 (tf-variable #:dtype <double> #:shape '(40)))
 (define l1 (tf-relu (tf-add (tf-mat-mul r2 m1) b1)))
 
@@ -54,7 +68,7 @@
 
 (run s '() (tf-assign k1 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 1 4) #:dtype <double>))))
 (run s '() (tf-assign k2 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 4 16) #:dtype <double>))))
-(run s '() (tf-assign m1 (tf-mul (/ 1 n) (tf-random-uniform (to-array <int> (list n 40)) #:dtype <double>))))
+(run s '() (tf-assign m1 (tf-mul (/ 1 n) (tf-random-uniform (to-array <int> (list d 40)) #:dtype <double>))))
 (run s '() (tf-assign b1 (fill <double> '(40) 0.0)))
 (run s '() (tf-assign m2 (tf-mul (/ 1 40) (tf-random-uniform (arr <int> 40 10) #:dtype <double>))))
 (run s '() (tf-assign b2 (fill <double> '(10) 0.0)))
@@ -67,25 +81,28 @@
 
 (define gradients (tf-add-gradient cost vars))
 
-(define alpha 0.1)
+(define alpha 0.4)
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
+
+(define j 0.0)
 
 (for-each
   (lambda (epoch)
     (for-each
       (lambda (i)
-        (let [(range (list i (+ i 50)))]
-        (run s (list (cons x (unroll (get images range))) (cons y (get labels range))) step)))
-      (iota (/ 60000 50) 0 50)))
+        (let* [(range (cons i (+ i 50)))
+               (batch (list (cons x (unroll (get images range))) (cons y (get labels range))))
+               (js    (run s batch cost))]
+          (set! j (+ (* 0.99 j) (* 0.01 js)))
+          (format #t "\r~2d, ~5d/~5d: ~6,4f" epoch i n j)
+          (run s batch step)))
+      (iota (/ n 50) 0 50)))
   (iota 3))
 
-(run s (list (cons x (get images '(0 . 20)))) prediction)
-(get labels '(0 . 20))
+(define test-images (read-images "t10k-images-idx3-ubyte"))
+(define test-labels (read-labels "t10k-labels-idx1-ubyte"))
+(define n-test (car (shape test-images)))
 
-;(define i -1)
-;(show
-;  (lambda _
-;    (set! i (modulo (1+ i) n))
-;    (format #t "~a~&" (get labels i))
-;    (- 255 (get images i)))
-;  #:io IO-OPENGL #:width 256)
+(define predicted (run s (list (cons x test-images)) prediction))
+(define n-correct (sum (where (eq predicted test-labels) 1 0)))
+(format #t "error rate: ~6,4f~&" (- 1.0 (/ n-correct n-test)))

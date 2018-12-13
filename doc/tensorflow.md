@@ -9,3 +9,12 @@ Finally the network is demonstrated using the input features.
 ```Scheme
 @../tests/integration/xor.scm@
 ```
+
+## MNIST example
+
+The MNIST dataset is a benchmark dataset for handwritten digit recognition.
+The following example is a convolutional neural network achieving an error rate below 3%.
+
+```Scheme
+@../tests/integration/mnist.scm@
+```
