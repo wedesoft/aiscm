@@ -6,6 +6,7 @@
              (system foreign)
              (aiscm core)
              (aiscm xorg)
+             (aiscm util)
              (aiscm tensorflow))
 
 ; Get MNIST data at http://yann.lecun.com/exdb/mnist/
@@ -69,7 +70,8 @@
 
 (define yh (tf-one-hot y 10 1.0 0.0))
 
-(define penalty (tf-neg (tf-mean (tf-add (tf-mul yh (tf-log l)) (tf-mul (tf-sub 1.0 yh) (tf-log (tf-sub 1.0 l)))) (arr <int> 0 1))))
+(define (safe-log x) (tf-log (tf-maximum x 1e-10)))
+(define penalty (tf-neg (tf-mean (tf-add (tf-mul yh (safe-log l)) (tf-mul (tf-sub 1.0 yh) (safe-log (tf-sub 1.0 l)))) (arr <int> 0 1))))
 
 (define regularization (tf-add (tf-mean (tf-square (tf-abs m1)) (arr <int> 0 1)) (tf-mean (tf-square (tf-abs m2)) (arr <int> 0 1))))
 
@@ -108,3 +110,15 @@
 (define predicted (run s (list (cons x test-images)) prediction))
 (define n-correct (sum (where (eq predicted test-labels) 1 0)))
 (format #t "error rate: ~6,4f~&" (- 1.0 (/ n-correct n-test)))
+
+(define time (clock))
+(define i -1)
+(show
+  (lambda (dsp)
+    (set! i (1+ i))
+    (let* [(image (get test-images (modulo i 10000)))
+           (pred (get (run s (list (cons x image)) prediction) 0))]
+      (synchronise image (- i (elapsed time)) (event-loop dsp))
+      (format #t "~a~&" pred)
+      image))
+  #:width 280)
