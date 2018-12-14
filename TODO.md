@@ -1,6 +1,5 @@
 ## Ready
 
-* initialiser list
 * Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated

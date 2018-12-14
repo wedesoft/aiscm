@@ -76,12 +76,14 @@
 (define prediction (tf-arg-max l 1 #:name "prediction"))
 
 ; Random initialization of network parameters
-(run s '() (tf-assign k1 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 1 4) #:dtype <double>))))
-(run s '() (tf-assign k2 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 4 16) #:dtype <double>))))
-(run s '() (tf-assign m1 (tf-mul (/ 1 n) (tf-random-uniform (to-array <int> (list d 40)) #:dtype <double>))))
-(run s '() (tf-assign b1 (fill <double> '(40) 0.0)))
-(run s '() (tf-assign m2 (tf-mul (/ 1 40) (tf-random-uniform (arr <int> 40 10) #:dtype <double>))))
-(run s '() (tf-assign b2 (fill <double> '(10) 0.0)))
+(define initializers
+  (list (tf-assign k1 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 1 4) #:dtype <double>)))
+        (tf-assign k2 (tf-mul (/ 1 9) (tf-random-uniform (arr <int> 3 3 4 16) #:dtype <double>)))
+        (tf-assign m1 (tf-mul (/ 1 n) (tf-random-uniform (to-array <int> (list d 40)) #:dtype <double>)))
+        (tf-assign b1 (fill <double> '(40) 0.0))
+        (tf-assign m2 (tf-mul (/ 1 40) (tf-random-uniform (arr <int> 40 10) #:dtype <double>)))
+        (tf-assign b2 (fill <double> '(10) 0.0))))
+(run s '() initializers)
 
 ; List of all network parameters
 (define vars (list k1 k2 m1 b1 m2 b2))
@@ -94,7 +96,7 @@
 ; Regularization term
 (define regularization (tf-add (tf-mean (tf-square (tf-abs m1)) (arr <int> 0 1)) (tf-mean (tf-square (tf-abs m2)) (arr <int> 0 1))))
 
-; Overall cost function
+; Overall cost
 (define la 0.02)
 (define cost (tf-add loss (tf-mul la regularization)))
 
@@ -145,4 +147,5 @@
       (synchronise image (- i (elapsed time)) (event-loop dsp))
       (format #t "~a~&" pred)
       image))
-  #:width 280)
+  #:width 280
+  #:io IO-OPENGL)
