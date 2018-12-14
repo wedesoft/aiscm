@@ -28,14 +28,6 @@
     (let [(bv (get-bytevector-n f n))]
       (make (multiarray <ubyte> 1) #:memory (bytevector->pointer bv) #:shape (list n)))))
 
-(define f (open-file "train-labels-idx1-ubyte" "rb"))
-(define magic (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(if (not (eqv? magic 2049)) (error "Label file has wrong magic number"))
-(define n2 (bytevector-u32-ref (get-bytevector-n f 4) 0 (endianness big)))
-(if (not (eqv? n n2)) (error "Number of labels does not match number of images"))
-(define bv (get-bytevector-n f n))
-(define labels (make (multiarray <ubyte> 1) #:memory (bytevector->pointer bv) #:shape (list n)))
-
 (define images (read-images "train-images-idx3-ubyte"))
 (define labels (read-labels "train-labels-idx1-ubyte"))
 (define n (car (shape images)))
@@ -77,7 +69,12 @@
 
 (define yh (tf-one-hot y 10 1.0 0.0))
 
-(define cost (tf-neg (tf-mean (tf-add (tf-mul yh (tf-log l)) (tf-mul (tf-sub 1.0 yh) (tf-log (tf-sub 1.0 l)))) (arr <int> 0 1))))
+(define penalty (tf-neg (tf-mean (tf-add (tf-mul yh (tf-log l)) (tf-mul (tf-sub 1.0 yh) (tf-log (tf-sub 1.0 l)))) (arr <int> 0 1))))
+
+(define regularization (tf-add (tf-mean (tf-square m1) (arr <int> 0 1)) (tf-mean (tf-square m2) (arr <int> 0 1))))
+
+(define la 0.0)
+(define cost (tf-add penalty (tf-mul la regularization)))
 
 (define gradients (tf-add-gradient cost vars))
 
@@ -98,10 +95,15 @@
           (run s batch step)))
       (iota (/ n 50) 0 50)))
   (iota 3))
+(format #t "~&")
 
 (define test-images (read-images "t10k-images-idx3-ubyte"))
 (define test-labels (read-labels "t10k-labels-idx1-ubyte"))
 (define n-test (car (shape test-images)))
+
+(define j (run s (list (cons x (unroll (get images '(0 . 10000)))) (cons y (get labels '(0 . 10000)))) penalty))
+(define jt (run s (list (cons x test-images) (cons y test-labels)) penalty))
+(format #t "train: ~6,4f; test: ~6,4f~&" j jt)
 
 (define predicted (run s (list (cons x test-images)) prediction))
 (define n-correct (sum (where (eq predicted test-labels) 1 0)))
