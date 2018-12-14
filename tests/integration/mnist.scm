@@ -71,9 +71,9 @@
 
 (define penalty (tf-neg (tf-mean (tf-add (tf-mul yh (tf-log l)) (tf-mul (tf-sub 1.0 yh) (tf-log (tf-sub 1.0 l)))) (arr <int> 0 1))))
 
-(define regularization (tf-add (tf-mean (tf-square m1) (arr <int> 0 1)) (tf-mean (tf-square m2) (arr <int> 0 1))))
+(define regularization (tf-add (tf-mean (tf-square (tf-abs m1)) (arr <int> 0 1)) (tf-mean (tf-square (tf-abs m2)) (arr <int> 0 1))))
 
-(define la 0.0)
+(define la 0.02)
 (define cost (tf-add penalty (tf-mul la regularization)))
 
 (define gradients (tf-add-gradient cost vars))
