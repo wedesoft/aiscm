@@ -149,5 +149,4 @@
       (synchronise image (- i (elapsed time)) (event-loop dsp))
       (format #t "~a~&" pred)
       image))
-  #:width 280
-  #:io IO-OPENGL)
+  #:width 280)

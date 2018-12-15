@@ -1,11 +1,16 @@
 ## Ready
 
+* TF\_COMPLEX
+* voice recognition
 * Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated
   * avcodec\_decode\_video2 deprecated
   * avcodec\_encode\_audio2 deprecated
   * avcodec\_decode\_audio4 deprecated
+  * https://github.com/pesintta/vdr-plugin-vaapidevice/issues/32
+    * avcodec\_receive\_frame
+    * avcodec\_send\_packet
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)

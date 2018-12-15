@@ -219,4 +219,10 @@
       (tf-const #:dtype <int> #:value 42 #:name "test-op")
       (tf-operation-names))))
 
+(test-group "complex values"
+  (test-assert "convert single-precision complex array to tensor"
+    (to-tensor (arr <complex<float>> 2+3i)))
+  (test-assert "convert double-precision complex array to tensor"
+    (to-tensor (arr <complex<double>> 2+3i))))
+
 (test-end "aiscm tensorflow")
