@@ -1,6 +1,5 @@
 ## Ready
 
-* TF\_COMPLEX
 * voice recognition
 * Tensorflow strings
 * Debian sid FFmpeg API changes
