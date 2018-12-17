@@ -116,7 +116,7 @@
                (batch (list (cons x (unroll (get images range))) (cons y (get labels range))))
                (js    (run s batch cost))]
           (set! j (+ (* 0.99 j) (* 0.01 js)))
-          (format #t "\r~2d, ~5d/~5d: ~6,4f" epoch i n j)
+          (format #t "\repoch ~2d, ~5d/~5d: ~6,4f" epoch i n j)
           (run s batch step)))
       (iota (/ n 50) 0 50)))
   (iota 3))
