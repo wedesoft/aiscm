@@ -30,19 +30,37 @@
 (define wy (tf-variable #:dtype <double> #:shape (list n-hidden 4)))
 (define by (tf-variable #:dtype <double> #:shape (list 1 4)))
 
+(define (zeros . shape) (fill <double> shape 0.0))
+
+(define initializers
+  (list (tf-assign wf (tf-mul (/ 1 257) (tf-random-uniform (to-array <int> (list 257 n-hidden)) #:dtype <double>)))
+        (tf-assign wi (tf-mul (/ 1 257) (tf-random-uniform (to-array <int> (list 257 n-hidden)) #:dtype <double>)))
+        (tf-assign wo (tf-mul (/ 1 257) (tf-random-uniform (to-array <int> (list 257 n-hidden)) #:dtype <double>)))
+        (tf-assign wc (tf-mul (/ 1 257) (tf-random-uniform (to-array <int> (list 257 n-hidden)) #:dtype <double>)))
+        (tf-assign uf (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
+        (tf-assign ui (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
+        (tf-assign uo (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
+        (tf-assign uc (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
+        (tf-assign bf (zeros 1 n-hidden))
+        (tf-assign bi (zeros 1 n-hidden))
+        (tf-assign bo (zeros 1 n-hidden))
+        (tf-assign bc (zeros 1 n-hidden))
+        (tf-assign wy (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden 4)) #:dtype <double>)))
+        (tf-assign by (fill <double> '(1 4) 0.0))))
+
 (define (fourier x)
   (tf-cast (tf-reshape (tf-rfft (tf-cast x #:DstT <float>) (arr <int> 512)) (arr <int> 1 257)) #:DstT <double>))
 
 (define (lstm fourier h c)
-  (let* [(f (tf-add-n (list (tf-mat-mul fourier wf) (tf-mat-mul h uf) bf)))
-         (i (tf-add-n (list (tf-mat-mul fourier wi) (tf-mat-mul h ui) bi)))
-         (o (tf-add-n (list (tf-mat-mul fourier wo) (tf-mat-mul h uo) bo)))
+  (let* [(f (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wf) (tf-mat-mul h uf) bf))))
+         (i (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wi) (tf-mat-mul h ui) bi))))
+         (o (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wo) (tf-mat-mul h uo) bo))))
          (g (tf-tanh (tf-add-n (list (tf-mat-mul fourier wc) (tf-mat-mul h uc) bc))))
          (c_ (tf-add (tf-mul f c) (tf-mul i g)))
          (h_ (tf-mul o (tf-tanh c_)))]
     (list h_ c_)))
 
-(define (output h) (tf-add (tf-mat-mul h wy) by))
+(define (output h) (tf-sigmoid (tf-add (tf-mat-mul h wy) by)))
 
 (define (nth x i) (tf-nth-element (tf-transpose x (arr <int> 1 0)) i))
 
@@ -61,7 +79,7 @@
       (set! c_ (cadr memory))
       (set! cost (tf-add cost (tf-mean (tf-add (tf-mul (tf-cast (nth y i) #:DstT <double>) (tf-log h))
                                                (tf-mul (invert (tf-cast (nth y i) #:DstT <double>)) (tf-log (invert h))))
-                                       (arr <int> 0))))))
+                                       (arr <int> 0 1))))))
   (iota m))
 
 (define s (make-session))
@@ -105,15 +123,11 @@
             (set! i (1+ i))
             (set! t (+ t (/ 512 (rate audio))))))))))
 
-(define-tensor (zeros h w) (tensor (j h) (tensor (i w) (typed-constant <double> 0))))
-
 (define session (make-session))
 
-; initialise variables
+(run session '() initializers)
 
 (define batch (list (cons h0 (zeros 1 n-hidden))
                     (cons c0 (zeros 1 n-hidden))
                     (cons x (unroll (get in (cons 0 m))))
                     (cons y (unroll (get out (cons 0 m))))))
-
-(run session batch cost)
