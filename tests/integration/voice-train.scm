@@ -61,14 +61,16 @@
 
 (define vars (list wf wi wo wc uf ui uo uc bf bi bo bc wy by))
 
+(define gradient (tf-add-gradient cost vars))
+
 (define t 0.0)
 (define word "stop")
 (define next-t 0.0)
 (define next-word "stop")
 
 (define audio (open-ffmpeg-input "voice-commands.mp3"))
-(define l -1)
-(while (read-audio audio 512) (set! l (1+ l)))
+(define l (- m))
+(while (read-audio audio (* m 512)) (set! l (+ l m)))
 
 (define in (make (multiarray <sint> 2) #:shape (list l 512)))
 (define out (make (multiarray <ubyte> 2) #:shape (list l 4)))
