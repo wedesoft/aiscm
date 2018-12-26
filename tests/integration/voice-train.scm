@@ -1,4 +1,11 @@
-(use-modules (oop goops) (ice-9 textual-ports) (ice-9 format) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util))
+(use-modules (oop goops)
+             (ice-9 textual-ports)
+             (ice-9 format)
+             (aiscm core)
+             (aiscm ffmpeg)
+             (aiscm tensorflow)
+             (aiscm util)
+             (aiscm tensors))
 
 (define words (list "stop" "go" "left" "right"))
 (define n-hidden 64)
@@ -97,3 +104,16 @@
             (set out (index-of word words) i 1)
             (set! i (1+ i))
             (set! t (+ t (/ 512 (rate audio))))))))))
+
+(define-tensor (zeros h w) (tensor (j h) (tensor (i w) (typed-constant <double> 0))))
+
+(define session (make-session))
+
+; initialise variables
+
+(define batch (list (cons h0 (zeros 1 n-hidden))
+                    (cons c0 (zeros 1 n-hidden))
+                    (cons x (unroll (get in (cons 0 m))))
+                    (cons y (unroll (get out (cons 0 m))))))
+
+(run session batch cost)
