@@ -81,6 +81,7 @@
                                                (tf-mul (invert (tf-cast (nth y i) #:DstT <double>)) (tf-log (invert h))))
                                        (arr <int> 0 1))))))
   (iota m))
+(set! cost (tf-mul (tf-neg cost) (/ 1 m)))
 
 (define s (make-session))
 
