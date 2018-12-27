@@ -1,6 +1,7 @@
 (use-modules (oop goops)
              (ice-9 textual-ports)
              (ice-9 format)
+             (srfi srfi-1)
              (aiscm core)
              (aiscm ffmpeg)
              (aiscm tensorflow)
@@ -69,7 +70,7 @@
 (define h_ h0)
 (define c_ c0)
 
-(define cost 0.0)
+(define loss 0.0)
 
 (for-each
   (lambda (i)
@@ -77,17 +78,19 @@
            (h      (output (car memory)))]
       (set! h_ (car memory))
       (set! c_ (cadr memory))
-      (set! cost (tf-add cost (tf-mean (tf-add (tf-mul (tf-cast (nth y i) #:DstT <double>) (tf-log h))
+      (set! loss (tf-add loss (tf-mean (tf-add (tf-mul (tf-cast (nth y i) #:DstT <double>) (tf-log h))
                                                (tf-mul (invert (tf-cast (nth y i) #:DstT <double>)) (tf-log (invert h))))
                                        (arr <int> 0 1))))))
   (iota m))
-(set! cost (tf-mul (tf-neg cost) (/ 1 m)))
+(set! loss (tf-mul (tf-neg loss) (/ 1 m)))
 
 (define s (make-session))
 
 (define vars (list wf wi wo wc uf ui uo uc bf bi bo bc wy by))
 
-(define gradient (tf-add-gradient cost vars))
+(define gradients (tf-add-gradient loss vars))
+(define alpha 0.4)
+(define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
 (define t 0.0)
 (define word "stop")
@@ -128,7 +131,23 @@
 
 (run session '() initializers)
 
-(define batch (list (cons h0 (zeros 1 n-hidden))
-                    (cons c0 (zeros 1 n-hidden))
-                    (cons x (unroll (get in (cons 0 m))))
-                    (cons y (unroll (get out (cons 0 m))))))
+(define h #f)
+(define c #f)
+(define j 0.0)
+(for-each
+  (lambda (epoch)
+    (set! h (zeros 1 n-hidden))
+    (set! c (zeros 1 n-hidden))
+    (for-each
+      (lambda (i)
+        (let* [(interval (cons i (+ i m)))
+               (batch (list (cons h0 h) (cons c0 c) (cons x (unroll (get in interval))) (cons y (unroll (get out interval)))))
+               (js (run session batch loss))]
+          (set! j (+ (* 0.99 j) (* 0.01 js)))
+          (format #t "\repoch ~2d, ~5d/~5d: ~6,4f" epoch i l j)
+          (run session batch step)
+          (set! h (run session batch h_))
+          (set! c (run session batch c_))))
+      (iota (/ l m) 0 m)))
+  (iota 500))
+(format #t "~&")
