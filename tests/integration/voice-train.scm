@@ -61,7 +61,7 @@
          (h_ (tf-mul o (tf-tanh c_)))]
     (list h_ c_)))
 
-(define (output h) (tf-sigmoid (tf-add (tf-mat-mul h wy) by)))
+(define (output h) (tf-softmax (tf-add (tf-mat-mul h wy) by)))
 
 (define (nth x i) (tf-nth-element (tf-transpose x (arr <int> 1 0)) i))
 
