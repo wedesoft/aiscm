@@ -10,7 +10,7 @@
 
 (define words (list "stop" "go" "left" "right"))
 (define n-hidden 64)
-(define m 20)
+(define m 50)
 
 (define x (tf-placeholder #:dtype <sint> #:shape '(-1 512) #:name "x"))
 (define y (tf-placeholder #:dtype <ubyte> #:shape '(-1 4) #:name "y"))
@@ -51,7 +51,7 @@
 
 (define (fourier x) (tf-reshape (tf-rfft (tf-cast x #:DstT <float>) (arr <int> 512)) (arr <int> 1 257)))
 
-(define (spectrum x) (let [(f (fourier x))] (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT <double>)))
+(define (spectrum x) (let [(f (fourier x))] (tf-log (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT <double>))))
 
 (define (lstm spectrum h c)
   (let* [(f (tf-sigmoid (tf-add-n (list (tf-mat-mul spectrum wf) (tf-mat-mul h uf) bf))))
@@ -90,7 +90,7 @@
 (define vars (list wf wi wo wc uf ui uo uc bf bi bo bc wy by))
 
 (define gradients (tf-add-gradient loss vars))
-(define alpha 0.4)
+(define alpha 0.5)
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
 (define t 0.0)
@@ -134,7 +134,7 @@
 
 (define h #f)
 (define c #f)
-(define j 0.0)
+(define j 0.5)
 (for-each
   (lambda (epoch)
     (set! h (zeros 1 n-hidden))
