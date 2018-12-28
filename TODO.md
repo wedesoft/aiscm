@@ -1,5 +1,6 @@
 ## Ready
 
+* simple LSTM example
 * voice recognition
 * methods for zeros and ones
 * Tensorflow strings

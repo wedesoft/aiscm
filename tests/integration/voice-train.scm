@@ -49,14 +49,15 @@
         (tf-assign wy (tf-mul (/ 1 n-hidden) (tf-random-uniform (to-array <int> (list n-hidden 4)) #:dtype <double>)))
         (tf-assign by (fill <double> '(1 4) 0.0))))
 
-(define (fourier x)
-  (tf-cast (tf-reshape (tf-rfft (tf-cast x #:DstT <float>) (arr <int> 512)) (arr <int> 1 257)) #:DstT <double>))
+(define (fourier x) (tf-reshape (tf-rfft (tf-cast x #:DstT <float>) (arr <int> 512)) (arr <int> 1 257)))
 
-(define (lstm fourier h c)
-  (let* [(f (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wf) (tf-mat-mul h uf) bf))))
-         (i (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wi) (tf-mat-mul h ui) bi))))
-         (o (tf-sigmoid (tf-add-n (list (tf-mat-mul fourier wo) (tf-mat-mul h uo) bo))))
-         (g (tf-tanh (tf-add-n (list (tf-mat-mul fourier wc) (tf-mat-mul h uc) bc))))
+(define (spectrum x) (let [(f (fourier x))] (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT <double>)))
+
+(define (lstm spectrum h c)
+  (let* [(f (tf-sigmoid (tf-add-n (list (tf-mat-mul spectrum wf) (tf-mat-mul h uf) bf))))
+         (i (tf-sigmoid (tf-add-n (list (tf-mat-mul spectrum wi) (tf-mat-mul h ui) bi))))
+         (o (tf-sigmoid (tf-add-n (list (tf-mat-mul spectrum wo) (tf-mat-mul h uo) bo))))
+         (g (tf-tanh (tf-add-n (list (tf-mat-mul spectrum wc) (tf-mat-mul h uc) bc))))
          (c_ (tf-add (tf-mul f c) (tf-mul i g)))
          (h_ (tf-mul o (tf-tanh c_)))]
     (list h_ c_)))
@@ -74,7 +75,7 @@
 
 (for-each
   (lambda (i)
-    (let* [(memory (lstm (fourier (nth x i)) h_ c_))
+    (let* [(memory (lstm (spectrum (nth x i)) h_ c_))
            (h      (output (car memory)))]
       (set! h_ (car memory))
       (set! c_ (cadr memory))
