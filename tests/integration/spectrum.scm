@@ -4,9 +4,12 @@
 (define vec (tf-reshape sample (arr <int> 512)))
 (define fourier (tf-rfft vec (arr <int> 512)))
 (define spectrum (tf-real (tf-mul fourier (tf-conj fourier))))
-(define y (* (% (indices 257 256) 256) (/ 16.0 256)))
 (define record (make <pulse-record> #:typecode <float> #:channels 1 #:rate 11025))
+(define x 0)
+(define img (fill <ubyte> '(257 512) 0))
 (show
   (lambda _
     (let [(spec (run s (list (cons sample (read-audio record 512))) spectrum))]
-      (where (gt spec y) 255 0))))
+      (set img x '(0 257) spec)
+      (set! x (modulo (1+ x) 512))
+      img)))
