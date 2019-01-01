@@ -66,6 +66,8 @@
 
 (define (nth x i) (tf-nth-element (tf-transpose x (arr <int> 1 0)) i))
 
+(define (safe-log x) (tf-log (tf-maximum x 1e-10)))
+
 (define (invert x) (tf-sub 1.0 x))
 
 (define h_ h0)
@@ -79,8 +81,8 @@
            (h      (output (car memory)))]
       (set! h_ (car memory))
       (set! c_ (cadr memory))
-      (set! loss (tf-add loss (tf-mean (tf-add (tf-mul (tf-cast (nth y i) #:DstT <double>) (tf-log h))
-                                               (tf-mul (invert (tf-cast (nth y i) #:DstT <double>)) (tf-log (invert h))))
+      (set! loss (tf-add loss (tf-mean (tf-add (tf-mul (tf-cast (nth y i) #:DstT <double>) (safe-log h))
+                                               (tf-mul (invert (tf-cast (nth y i) #:DstT <double>)) (safe-log (invert h))))
                                        (arr <int> 0 1))))))
   (iota m))
 (set! loss (tf-mul (tf-neg loss) (/ 1 m)))
