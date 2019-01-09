@@ -82,7 +82,7 @@
          (h_ (tf-mul o (tf-tanh c_)))]
     (cons h_ c_)))
 
-(define (output x) (tf-sigmoid (tf-add (tf-mat-mul x wy) by)))
+(define (output x) (tf-softmax (tf-add (tf-mat-mul x wy) by)))
 
 (define (safe-log x) (tf-log (tf-maximum x 1e-10)))
 
@@ -128,7 +128,7 @@
                (l     (car (shape feature)))
                (js    (run session batch (list-ref losses (1- l))))]
           (set! j (+ (* 0.999 j) (* 0.001 js)))
-          (format #t "epoch ~2d: ~6,4f (~6,4f)\r" epoch j js)
+          (format #t "epoch ~2d: ~6,4f (~6,4f)~&" epoch j js)
           (run session batch (list-ref steps (1- l)))))
       features labels))
   (iota 1000))
