@@ -91,7 +91,7 @@
 (define h_ h)
 (define c_ c)
 
-(define alpha 0.5)
+(define alpha 0.001)
 
 (define losses '())
 (define steps '())
@@ -118,30 +118,17 @@
 
 (run session '() initializers)
 
-(define batch (list (cons h h0) (cons c c0) (cons x (car features)) (cons y (car labels))))
+(define j 0.680)
 
-(define l (car (shape (car features))))
-
-(format #t "~a~&" (run session batch (list-ref losses (1- l))))
-(run session batch (list-ref steps (1- l)))
-(format #t "~a~&" (run session batch (list-ref losses (1- l))))
-
-;(define h #f)
-;(define c #f)
-;(define j 0.680)
-;(for-each
-;  (lambda (epoch)
-;    (set! h (zeros 1 n-hidden))
-;    (set! c (zeros 1 n-hidden))
-;    (for-each
-;      (lambda (i)
-;        (let* [(interval (cons i (+ i m)))
-;               (batch (list (cons h0 h) (cons c0 c) (cons x (unroll (get in interval))) (cons y (unroll (get out interval)))))
-;               (js (run session batch loss))]
-;          (set! j (+ (* 0.999 j) (* 0.001 js)))
-;          (format #t "epoch ~2d, ~5d/~5d: ~6,4f~&" epoch i l j)
-;          (run session batch step)
-;          (set! h (run session batch h_))
-;          (set! c (run session batch c_))))
-;      (iota (/ l m) 0 m)))
-;  (iota 10000))
+(for-each
+  (lambda (epoch)
+    (for-each
+      (lambda (feature label)
+        (let* [(batch (list (cons h h0) (cons c c0) (cons x feature) (cons y label)))
+               (l     (car (shape feature)))
+               (js    (run session batch (list-ref losses (1- l))))]
+          (set! j (+ (* 0.999 j) (* 0.001 js)))
+          (format #t "epoch ~2d: ~6,4f (~6,4f)\r" epoch j js)
+          (run session batch (list-ref steps (1- l)))))
+      features labels))
+  (iota 1000))
