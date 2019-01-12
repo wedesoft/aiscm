@@ -1,7 +1,6 @@
 ## Ready
 
-* voice recognition
-* methods for zeros and ones
+* save voice model
 * Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated

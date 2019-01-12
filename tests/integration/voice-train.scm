@@ -6,8 +6,7 @@
              (aiscm core)
              (aiscm ffmpeg)
              (aiscm tensorflow)
-             (aiscm util)
-             (aiscm tensors))
+             (aiscm util))
 
 (define words (list "stop" "go" "left" "right"))
 (define chunk 512)
@@ -38,20 +37,20 @@
 (define h (tf-placeholder #:dtype <double> #:shape (list 1 n-hidden) #:name "h"))
 (define c (tf-placeholder #:dtype <double> #:shape (list 1 n-hidden) #:name "c"))
 
-(define wf (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define wi (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define wo (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define wc (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define uf (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
-(define ui (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
-(define uo (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
-(define uc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
-(define bf (tf-variable #:dtype <double> #:shape (list 1 n-hidden)))
-(define bi (tf-variable #:dtype <double> #:shape (list 1 n-hidden)))
-(define bo (tf-variable #:dtype <double> #:shape (list 1 n-hidden)))
-(define bc (tf-variable #:dtype <double> #:shape (list 1 n-hidden)))
-(define wy (tf-variable #:dtype <double> #:shape (list n-hidden 4)))
-(define by (tf-variable #:dtype <double> #:shape (list 1 4)))
+(define wf (tf-variable #:dtype <double> #:shape (list   chunk2 n-hidden) #:name "wf"))
+(define wi (tf-variable #:dtype <double> #:shape (list   chunk2 n-hidden) #:name "wi"))
+(define wo (tf-variable #:dtype <double> #:shape (list   chunk2 n-hidden) #:name "wo"))
+(define wc (tf-variable #:dtype <double> #:shape (list   chunk2 n-hidden) #:name "wc"))
+(define uf (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden) #:name "uf"))
+(define ui (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden) #:name "ui"))
+(define uo (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden) #:name "uo"))
+(define uc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden) #:name "uc"))
+(define bf (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bf"))
+(define bi (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bi"))
+(define bo (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bo"))
+(define bc (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bc"))
+(define wy (tf-variable #:dtype <double> #:shape (list n-hidden        4) #:name "wy"))
+(define by (tf-variable #:dtype <double> #:shape (list        1        4) #:name "by"))
 
 (define (zeros . shape) (fill <double> shape 0.0))
 
@@ -83,6 +82,13 @@
     (cons h_ c_)))
 
 (define (output x) (tf-softmax (tf-add (tf-mat-mul x wy) by)))
+
+(define prediction
+  (let* [(memory (lstm (spectrum x) h c))
+         (hs     (tf-identity (car memory) #:name "hs"))
+         (cs     (tf-identity (cdr memory) #:name "cs"))
+         (ys     (tf-identity (output hs)))]
+    (tf-arg-max ys 1 #:name "prediction")))
 
 (define (safe-log x) (tf-log (tf-maximum x 1e-10)))
 
@@ -132,3 +138,20 @@
           (run session batch (list-ref steps (1- l)))))
       features labels))
   (iota 1000))
+
+(tf-assign wf (tf-const #:value (run session '() wf) #:dtype <double>) #:name "init-wf")
+(tf-assign wi (tf-const #:value (run session '() wi) #:dtype <double>) #:name "init-wi")
+(tf-assign wo (tf-const #:value (run session '() wo) #:dtype <double>) #:name "init-wo")
+(tf-assign wc (tf-const #:value (run session '() wc) #:dtype <double>) #:name "init-wc")
+(tf-assign uf (tf-const #:value (run session '() uf) #:dtype <double>) #:name "init-uf")
+(tf-assign ui (tf-const #:value (run session '() ui) #:dtype <double>) #:name "init-ui")
+(tf-assign uo (tf-const #:value (run session '() uo) #:dtype <double>) #:name "init-uo")
+(tf-assign uc (tf-const #:value (run session '() uc) #:dtype <double>) #:name "init-uc")
+(tf-assign bf (tf-const #:value (run session '() bf) #:dtype <double>) #:name "init-bf")
+(tf-assign bi (tf-const #:value (run session '() bi) #:dtype <double>) #:name "init-bi")
+(tf-assign bo (tf-const #:value (run session '() bo) #:dtype <double>) #:name "init-bo")
+(tf-assign bc (tf-const #:value (run session '() bc) #:dtype <double>) #:name "init-bc")
+(tf-assign wy (tf-const #:value (run session '() wy) #:dtype <double>) #:name "init-wy")
+(tf-assign by (tf-const #:value (run session '() by) #:dtype <double>) #:name "init-by")
+
+(tf-graph-export "voice-model.meta")

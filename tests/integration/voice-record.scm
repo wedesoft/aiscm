@@ -20,8 +20,8 @@
 (define n 50)
 (define l #f)
 (while #t
-  (let* [(samples (read-audio record chunk))
-        (loudness (sqrt (/ (sum (* (to-type <int> samples) samples)) chunk)))]
+  (let* [(samples  (read-audio record chunk))
+         (loudness (sqrt (/ (sum (* (to-type <int> samples) samples)) chunk)))]
     (if (and (eq? status 'off) (> loudness rising))
       (begin
         (set! status 'on)

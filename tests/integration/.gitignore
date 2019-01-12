@@ -1,4 +1,5 @@
 *.tmp
+voice-model.meta
 av-sync.mp4
 fubk.png
 pattern.png
