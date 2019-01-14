@@ -9,7 +9,7 @@
 (define chunk 512)
 (define rising 6000)
 (define falling 3000)
-(define n-hidden 64)
+(define n-hidden 16)
 (define rate 11025)
 (tf-graph-import "voice-model.meta")
 

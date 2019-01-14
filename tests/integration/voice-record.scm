@@ -17,7 +17,7 @@
 (format csv "chunks,word~&")
 (define choice #f)
 (define status 'on)
-(define n 50)
+(define n 256)
 (define l #f)
 (while #t
   (let* [(samples  (read-audio record chunk))
