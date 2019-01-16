@@ -135,11 +135,10 @@
                (l     (car (shape feature)))
                (js    (run session batch (list-ref losses (1- l))))]
           (set! j (+ (* 0.999 j) (* 0.001 js)))
-          (format #t "epoch ~4d/~4d: ~6,4f (~6,4f)\r" epoch e j js)
+          (format #t "epoch ~4d/~4d: ~6,4f (~6,4f)~&" epoch e j js)
           (run session batch (list-ref steps (1- l)))))
       features labels))
   (iota e))
-(format #t "~&~&")
 
 (tf-assign wf (tf-const #:value (run session '() wf) #:dtype <double>) #:name "init-wf")
 (tf-assign wi (tf-const #:value (run session '() wi) #:dtype <double>) #:name "init-wi")

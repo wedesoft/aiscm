@@ -13,8 +13,8 @@
 (define (select r) (find (lambda (i) (<= r (list-ref cumprobs i))) (iota 4)))
 (define rate 11025)
 (define chunk 512)
-(define rising 4000)
-(define falling 2000)
+(define rising 6000)
+(define falling 3000)
 (define output (open-ffmpeg-output "voice-commands.mp3" #:rate rate #:typecode <sint> #:channels 1 #:audio-bit-rate 80000))
 (define csv (open-file "voice-commands.csv" "wl"))
 (define record (make <pulse-record> #:typecode <sint> #:channels 1 #:rate rate))
@@ -22,21 +22,22 @@
 (define choice #f)
 (define status 'on)
 (define n 256)
+(define i 0)
 (define l #f)
 (while #t
-  (let* [(samples  (read-audio record chunk))
-         (loudness (sqrt (/ (sum (* (to-type <int> samples) samples)) chunk)))]
-    (if (and (eq? status 'off) (> loudness rising))
+  (let* [(samples   (read-audio record chunk))
+         (loudness2 (/ (sum (* (to-type <float> samples) samples)) chunk))]
+    (if (and (eq? status 'off) (> loudness2 (* rising rising)))
       (begin
         (set! status 'on)
         (set! l 0)))
-    (if (and (eq? status 'on) (or (not l) (< loudness falling)))
+    (if (and (eq? status 'on) (or (not l) (< loudness2 (* falling falling))))
       (begin
         (if l (format csv "~a,~a~&" l choice))
-        (set! n (1- n))
-        (if (zero? n) (break))
+        (if (eq? n i) (break))
         (set! status 'off)
         (set! choice (list-ref words (select (random 1.0))))
+        (set! i (1+ i))
         (format #t "Say \"~a\"~&" choice)))
     (if (eq? status 'on)
       (begin
