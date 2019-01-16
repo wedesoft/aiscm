@@ -3,7 +3,7 @@
 (define sample (tf-placeholder #:dtype <float> #:shape '(1 256)))
 (define vec (tf-reshape sample (arr <int> 256)))
 (define fourier (tf-rfft vec (arr <int> 256)))
-(define spectrum (tf-real (tf-mul fourier (tf-conj fourier))))
+(define spectrum (tf-mul (tf-log (tf-real (tf-mul fourier (tf-conj fourier)))) (tf-cast 32.0 #:DstT <float>)))
 (define record (make <pulse-record> #:typecode <float> #:channels 1 #:rate 11025))
 (define ramp (/ (indices 256) 128.0))
 (define window (to-type <float> (minor ramp (- 2.0 ramp))))
@@ -12,6 +12,6 @@
 (show
   (lambda _
     (let [(spec (run s (list (cons sample (* window (read-audio record 256)))) spectrum))]
-      (set img x '(0 129) (minor 255 spec))
+      (set img x '(0 129) (major (minor 255 spec) 0))
       (set! x (modulo (1+ x) 256))
       img)))
