@@ -222,7 +222,6 @@
 
 (test-begin "audio input")
   (define audio-mono (open-ffmpeg-input "fixtures/mono.mp3"))
-
   (test-error "Audio file does not have width and height"
     'misc-error (shape audio-mono))
   (test-error "Audio file does not have a frame rate"
@@ -241,6 +240,10 @@
     (buffer-timestamped-audio 123 audio-mono))
   (test-assert "Buffering input audio should increase the buffer size"
     (not (zero? (audio-buffer-fill audio-mono))))
+
+  (define wav (open-ffmpeg-input "fixtures/cat.wav"))
+  (test-assert "Query typecode of WAV file"
+    (typecode wav))
 
   (define samples (to-samples (to-array <sint> '((2) (3) (5) (7) (3) (4) (6) (8))) 8000))
   (fetch-audio audio-mono samples)

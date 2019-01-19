@@ -1,5 +1,7 @@
 ## Ready
 
+* decode WAV file (packed)
+* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * save voice model
 * Tensorflow strings
 * Debian sid FFmpeg API changes
@@ -12,7 +14,6 @@
     * avcodec\_send\_packet
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
-* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * gauss blur, gauss gradient
 * to-array -> from-image
 * Harris Stephens corner detector
@@ -46,7 +47,6 @@
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
 * colour swapped when converting MJPEG video to FFmpeg video
-* procedural terrain detail generator (repeatable hashed detail/seeding, wavelet pyramid)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * 1+, 1-
 * ==, != for complex numbers

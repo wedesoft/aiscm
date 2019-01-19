@@ -41,13 +41,17 @@
                (audio-pts #:init-value 0 #:getter audio-pts)
                (video-pts #:init-value 0 #:getter video-pts))
 
-(define typemap
-  (list (cons <ubyte>  AV_SAMPLE_FMT_U8P )
-        (cons <sint>   AV_SAMPLE_FMT_S16P)
-        (cons <int>    AV_SAMPLE_FMT_S32P)
-        (cons <float>  AV_SAMPLE_FMT_FLTP)
-        (cons <double> AV_SAMPLE_FMT_DBLP)))
-(define inverse-typemap (alist-invert typemap))
+(define inverse-typemap
+  (list (cons AV_SAMPLE_FMT_U8   <ubyte> )
+        (cons AV_SAMPLE_FMT_U8P  <ubyte> )
+        (cons AV_SAMPLE_FMT_S16  <sint>  )
+        (cons AV_SAMPLE_FMT_S16P <sint>  )
+        (cons AV_SAMPLE_FMT_S32  <int>   )
+        (cons AV_SAMPLE_FMT_S32P <int>   )
+        (cons AV_SAMPLE_FMT_FLT  <float> )
+        (cons AV_SAMPLE_FMT_FLTP <float> )
+        (cons AV_SAMPLE_FMT_DBL  <double>)
+        (cons AV_SAMPLE_FMT_DBLP <double>)))
 
 (define (open-ffmpeg-input file-name)
   "Open audio/video input file FILE-NAME using FFmpeg library"
