@@ -1,19 +1,57 @@
-(use-modules (oop goops) (aiscm util) (aiscm tensors ) (system foreign) (rnrs bytevectors) (aiscm core) (aiscm image) (aiscm magick) (aiscm xorg) (aiscm v4l2) (srfi srfi-1) (srfi srfi-26))
+(use-modules (oop goops) (aiscm core) (aiscm samples) (aiscm util))
 
-(define a (arr 2 3 5))
-(define-tensor (trivial x) x)
+(load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
 
-(trivial a)
+(define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
+               (ffmpeg #:init-keyword #:ffmpeg)
+               (video-buffer #:init-value '())
+               (is-input #:init-keyword #:is-input #:getter is-input?)
+               (audio-pts #:init-value 0 #:getter audio-pts)
+               (video-pts #:init-value 0 #:getter video-pts))
 
-(define (evaluate-tensor expression)
-    (let [(result (allocate-array (typecode expression) (apply llvmlist (shape expression))))]; TODO: have shape return <llvmlist>
-      result))
+(define (open-ffmpeg-input file-name)
+  "Open audio/video input file FILE-NAME using FFmpeg library"
+  (let [(debug (equal? "YES" (getenv "DEBUG")))]
+    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug) #:is-input #t)))
 
-(define (adapted-native-type value) (if (is-a? value <integer>) <int> (native-type value)))
+(define self (open-ffmpeg-input "tests/fixtures/cat.wav"))
+;(define self (open-ffmpeg-input "tests/fixtures/test.mp3"))
 
-(define (trivial2 x)
-    (let [(fun (jit (map adapted-native-type (list x))
-                 (lambda arguments (apply (lambda (x) (evaluate-tensor x)) (map expression->tensor arguments)))))]
-      (fun x)))
+(define (make-audio-frame sample-format shape rate offsets data size)
+  "Construct an audio frame from the specified information"
+  (make <samples> #:typecode (sample-format->type sample-format)
+                  #:shape    shape
+                  #:rate     rate
+                  #:offsets  offsets
+                  #:planar   (sample-format->planar sample-format)
+                  #:memory   data))
 
-(trivial2 a)
+(define (target-audio-frame self)
+  "Get target audio frame for audio encoding"
+  (apply make-audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
+
+(define inverse-typemap
+  (list (cons AV_SAMPLE_FMT_U8   <ubyte> )
+        (cons AV_SAMPLE_FMT_U8P  <ubyte> )
+        (cons AV_SAMPLE_FMT_S16  <sint>  )
+        (cons AV_SAMPLE_FMT_S16P <sint>  )
+        (cons AV_SAMPLE_FMT_S32  <int>   )
+        (cons AV_SAMPLE_FMT_S32P <int>   )
+        (cons AV_SAMPLE_FMT_FLT  <float> )
+        (cons AV_SAMPLE_FMT_FLTP <float> )
+        (cons AV_SAMPLE_FMT_DBL  <double>)
+        (cons AV_SAMPLE_FMT_DBLP <double>)))
+
+(define-method (typecode (self <ffmpeg>))
+  "Query audio type of file"
+  (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+
+(define-method (channels (self <ffmpeg>))
+  "Query number of audio channels"
+  (ffmpeg-channels (slot-ref self 'ffmpeg)))
+
+(ffmpeg-decode-audio/video (slot-ref self 'ffmpeg))
+
+(shape (target-audio-frame self))
+
+(convert-samples (target-audio-frame self) (typecode self) #f)

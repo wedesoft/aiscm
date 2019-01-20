@@ -244,6 +244,8 @@
   (define wav (open-ffmpeg-input "fixtures/cat.wav"))
   (test-assert "Query typecode of WAV file"
     (typecode wav))
+  (test-assert "Read from WAV file"
+    (read-audio wav 4410))
 
   (define samples (to-samples (to-array <sint> '((2) (3) (5) (7) (3) (4) (6) (8))) 8000))
   (fetch-audio audio-mono samples)

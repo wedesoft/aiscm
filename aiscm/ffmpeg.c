@@ -768,7 +768,7 @@ static int64_t frame_timestamp(AVFrame *frame)
 
 static SCM list_audio_frame_info(struct ffmpeg_t *self, AVFrame *frame)
 {
-  int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
+  int channels = audio_codec_ctx(self)->channels;
   int64_t offsets[AV_NUM_DATA_POINTERS];
   offsets_from_pointers(frame->data, offsets, AV_NUM_DATA_POINTERS);
   int frame_size =

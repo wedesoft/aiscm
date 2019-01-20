@@ -1,6 +1,5 @@
 ## Ready
 
-* decode WAV file (packed)
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * save voice model
 * Tensorflow strings
