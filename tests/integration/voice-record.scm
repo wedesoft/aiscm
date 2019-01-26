@@ -6,7 +6,7 @@
              (aiscm pulse)
              (aiscm util))
 
-(define words (list "stop" "go" "left" "right"))
+(define words (list "stop" "go" "left" "right" "?"))
 (define rate 11025)
 (define chunk 512)
 (define rising 6000)
@@ -17,16 +17,16 @@
 (format csv "chunks,word~&")
 (define choice #f)
 (define status 'on)
-(define n 256)
+(define n (* 5 64))
 (define l #f)
 (while #t
-  (let* [(samples  (read-audio record chunk))
-         (loudness (sqrt (/ (sum (* (to-type <int> samples) samples)) chunk)))]
-    (if (and (eq? status 'off) (> loudness rising))
+  (let* [(samples   (read-audio record chunk))
+         (loudness2 (/ (sum (* (to-type <int> samples) samples)) chunk))]
+    (if (and (eq? status 'off) (> loudness2 (* rising rising)))
       (begin
         (set! status 'on)
         (set! l 0)))
-    (if (and (eq? status 'on) (or (not l) (< loudness falling)))
+    (if (and (eq? status 'on) (or (not l) (< loudness2 (* falling falling))))
       (begin
         (if l (format csv "~a,~a~&" l choice))
         (set! n (1- n))

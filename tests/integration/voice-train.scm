@@ -8,11 +8,11 @@
              (aiscm tensorflow)
              (aiscm util))
 
-(define words (list "stop" "go" "left" "right"))
+(define words (list "stop" "go" "left" "right" "?"))
 (define chunk 512)
 (define chunk2 (1+ (/ chunk 2)))
 (define n-hidden 16)
-(define m 10)
+(define m 20)
 (define e 1000)
 (define input (open-ffmpeg-input "voice-commands.mp3"))
 (define csv (open-file "voice-commands.csv" "r"))
@@ -50,8 +50,8 @@
 (define bi (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bi"))
 (define bo (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bo"))
 (define bc (tf-variable #:dtype <double> #:shape (list        1 n-hidden) #:name "bc"))
-(define wy (tf-variable #:dtype <double> #:shape (list n-hidden        4) #:name "wy"))
-(define by (tf-variable #:dtype <double> #:shape (list        1        4) #:name "by"))
+(define wy (tf-variable #:dtype <double> #:shape (list n-hidden        5) #:name "wy"))
+(define by (tf-variable #:dtype <double> #:shape (list        1        5) #:name "by"))
 
 (define (zeros . shape) (fill <double> shape 0.0))
 
@@ -68,8 +68,8 @@
         (tf-assign bi (zeros 1 n-hidden))
         (tf-assign bo (zeros 1 n-hidden))
         (tf-assign bc (zeros 1 n-hidden))
-        (tf-assign wy (tf-mul (/ 1 n-hidden) (tf-truncated-normal (to-array <int> (list n-hidden 4)) #:dtype <double>)))
-        (tf-assign by (fill <double> '(1 4) 0.0))))
+        (tf-assign wy (tf-mul (/ 1 n-hidden) (tf-truncated-normal (to-array <int> (list n-hidden 5)) #:dtype <double>)))
+        (tf-assign by (fill <double> '(1 5) 0.0))))
 
 (define vars (list wf wi wo wc uf ui uo uc bf bi bo bc wy by))
 

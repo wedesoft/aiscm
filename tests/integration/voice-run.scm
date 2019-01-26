@@ -5,7 +5,7 @@
              (aiscm pulse))
 
 
-(define words (list "stop" "go" "left" "right"))
+(define words (list "stop" "go" "left" "right" "?"))
 (define chunk 512)
 (define rising 6000)
 (define falling 3000)
