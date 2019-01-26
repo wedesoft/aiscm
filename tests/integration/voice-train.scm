@@ -1,48 +1,40 @@
-(use-modules (ice-9 ftw)
+(use-modules (oop goops)
+             (ice-9 textual-ports)
+             (ice-9 readline)
              (ice-9 format)
-             (aiscm tensorflow)
+             (srfi srfi-1)
              (aiscm core)
              (aiscm ffmpeg)
+             (aiscm tensorflow)
              (aiscm util))
 
-
-(define samples '())
-(define words '(go stop left right))
+(define words (list "stop" "go" "left" "right"))
 (define chunk 512)
 (define chunk2 (1+ (/ chunk 2)))
-(define m 50)
-(define alpha 0.001)
 (define n-hidden 16)
+(define m 10)
+(define e 1000)
+(define input (open-ffmpeg-input "voice-commands.mp3"))
+(define csv (open-file "voice-commands.csv" "r"))
+(get-line csv)
+(define features '())
+(define labels '())
+(while #t
+  (let [(line (get-line csv))]
+    (if (eof-object? line) (break))
+    (let* [(row     (string-split line #\,))
+           (l       (string->number (car row)))
+           (word    (cadr row))
+           (samples (reshape (to-array (read-audio input (* chunk l))) (list l chunk)))]
+      (set! features (attach features samples))
+      (set! labels (attach labels (index-of word words))))))
 
-(for-each
-  (lambda (word)
-    (ftw (format #f "tests/integration/speech/~a" word)
-      (lambda (filename statinfo flag)
-        (format #t "~a\r"filename)
-        (if (eq? flag 'regular)
-          (let* [(file     (open-ffmpeg-input filename))
-                 (wav      (to-array (read-audio file 64000)))
-                 (l        (car (shape wav)))
-                 (chunked  (- l (modulo l chunk)))
-                 (n-chunks (/ chunked chunk))
-                 (cropped  (crop chunked wav))]
-            (set! samples (cons (cons (index-of word words) (reshape cropped (list n-chunks chunk))) samples))
-            (destroy file)))
-        #t)))
-  words)
-
-(define session (make-session))
 (define x (tf-placeholder #:dtype <sint> #:shape (list -1 chunk) #:name "x"))
-(define xf (tf-cast x #:DstT <float>))
 (define y (tf-placeholder #:dtype <int> #:shape '(-1) #:name "y"))
 (define yh (tf-one-hot (tf-cast y #:DstT <int>) (length words) 1.0 0.0))
 (define (nth x i) (tf-gather x i))
-(define (fourier x) (tf-reshape (tf-rfft x (to-array <int> (list chunk))) (arr <int> 1 -1)))
+(define (fourier x) (tf-reshape (tf-rfft (tf-cast x #:DstT <float>) (to-array <int> (list chunk))) (arr <int> 1 -1)))
 (define (spectrum x) (let [(f (fourier x))] (tf-log (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT <double>))))
-(define (safe-log x) (tf-log (tf-maximum x 1e-10)))
-(define (invert x) (tf-sub 1.0 x))
-(define (zeros . shape) (fill <double> shape 0.0))
-
 (define h (tf-placeholder #:dtype <double> #:shape (list 1 n-hidden) #:name "h"))
 (define c (tf-placeholder #:dtype <double> #:shape (list 1 n-hidden) #:name "c"))
 
@@ -61,6 +53,8 @@
 (define wy (tf-variable #:dtype <double> #:shape (list n-hidden        4) #:name "wy"))
 (define by (tf-variable #:dtype <double> #:shape (list        1        4) #:name "by"))
 
+(define (zeros . shape) (fill <double> shape 0.0))
+
 (define initializers
   (list (tf-assign wf (tf-mul (/ 1 chunk2) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
         (tf-assign wi (tf-mul (/ 1 chunk2) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
@@ -75,7 +69,7 @@
         (tf-assign bo (zeros 1 n-hidden))
         (tf-assign bc (zeros 1 n-hidden))
         (tf-assign wy (tf-mul (/ 1 n-hidden) (tf-truncated-normal (to-array <int> (list n-hidden 4)) #:dtype <double>)))
-        (tf-assign by (zeros 1 4))))
+        (tf-assign by (fill <double> '(1 4) 0.0))))
 
 (define vars (list wf wi wo wc uf ui uo uc bf bi bo bc wy by))
 
@@ -91,21 +85,27 @@
 (define (output x) (tf-softmax (tf-add (tf-mat-mul x wy) by)))
 
 (define prediction
-  (let* [(memory (lstm (spectrum xf) h c))
+  (let* [(memory (lstm (spectrum x) h c))
          (hs     (tf-identity (car memory) #:name "hs"))
          (cs     (tf-identity (cdr memory) #:name "cs"))
          (ys     (tf-identity (output hs)))]
     (tf-arg-max ys 1 #:name "prediction")))
 
+(define (safe-log x) (tf-log (tf-maximum x 1e-10)))
+
+(define (invert x) (tf-sub 1.0 x))
+
 (define h_ h)
 (define c_ c)
+
+(define alpha 0.001)
 
 (define losses '())
 (define steps '())
 
 (for-each
   (lambda (i)
-    (let* [(memory    (lstm (spectrum (nth xf i)) h_ c_))
+    (let* [(memory    (lstm (spectrum (nth x i)) h_ c_))
            (y_        (output (car memory)))
            (loss      (tf-neg (tf-mean (tf-add (tf-mul yh (safe-log y_))
                                                (tf-mul (invert yh) (safe-log (invert y_))))
@@ -127,10 +127,32 @@
 
 (define j 0.680)
 
-(define feature (cdar samples))
-(define label (caar samples))
+(for-each
+  (lambda (epoch)
+    (for-each
+      (lambda (feature label)
+        (let* [(batch (list (cons h h0) (cons c c0) (cons x feature) (cons y label)))
+               (l     (car (shape feature)))
+               (js    (run session batch (list-ref losses (1- l))))]
+          (set! j (+ (* 0.999 j) (* 0.001 js)))
+          (format #t "epoch ~4d/~4d: ~6,4f (~6,4f)~&" epoch e j js)
+          (run session batch (list-ref steps (1- l)))))
+      features labels))
+  (iota e))
 
-(define batch (list (cons h h0) (cons c c0) (cons x feature) (cons y label)))
-(define l (car  (shape feature)))
-(run session batch (list-ref losses (1- l)))
-(run session batch (list-ref steps (1- l)))
+(tf-assign wf (tf-const #:value (run session '() wf) #:dtype <double>) #:name "init-wf")
+(tf-assign wi (tf-const #:value (run session '() wi) #:dtype <double>) #:name "init-wi")
+(tf-assign wo (tf-const #:value (run session '() wo) #:dtype <double>) #:name "init-wo")
+(tf-assign wc (tf-const #:value (run session '() wc) #:dtype <double>) #:name "init-wc")
+(tf-assign uf (tf-const #:value (run session '() uf) #:dtype <double>) #:name "init-uf")
+(tf-assign ui (tf-const #:value (run session '() ui) #:dtype <double>) #:name "init-ui")
+(tf-assign uo (tf-const #:value (run session '() uo) #:dtype <double>) #:name "init-uo")
+(tf-assign uc (tf-const #:value (run session '() uc) #:dtype <double>) #:name "init-uc")
+(tf-assign bf (tf-const #:value (run session '() bf) #:dtype <double>) #:name "init-bf")
+(tf-assign bi (tf-const #:value (run session '() bi) #:dtype <double>) #:name "init-bi")
+(tf-assign bo (tf-const #:value (run session '() bo) #:dtype <double>) #:name "init-bo")
+(tf-assign bc (tf-const #:value (run session '() bc) #:dtype <double>) #:name "init-bc")
+(tf-assign wy (tf-const #:value (run session '() wy) #:dtype <double>) #:name "init-wy")
+(tf-assign by (tf-const #:value (run session '() by) #:dtype <double>) #:name "init-by")
+
+(tf-graph-export "voice-model.meta")
