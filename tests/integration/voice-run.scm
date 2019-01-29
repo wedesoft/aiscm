@@ -1,11 +1,16 @@
 (use-modules (oop goops)
              (ice-9 format)
+             (rnrs bytevectors)
              (aiscm tensorflow)
              (aiscm core)
              (aiscm pulse))
 
+;(define robot (socket PF_INET SOCK_DGRAM 0))
+
+;(connect robot AF_INET (car (hostent:addr-list (gethostbyname "raspberrypi.local"))) 2200)
 
 (define words (list "stop" "go" "left" "right" "?"))
+;(define commands (list "0,0,0" "-100,-100,0" "100,-100,0" "-100,100,0" "0,0,0"))
 (define chunk 512)
 (define rising 6000)
 (define falling 3000)
@@ -63,4 +68,5 @@
     (if (and (eq? status 'on) (< loudness2 (* falling falling)))
       (begin
         (set! status 'off)
+        ;(display (list-ref commands pred) robot)
         (format #t "~a~&" (list-ref words pred))))))
