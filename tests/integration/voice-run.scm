@@ -6,11 +6,9 @@
              (aiscm pulse))
 
 ;(define robot (socket PF_INET SOCK_DGRAM 0))
-
 ;(connect robot AF_INET (car (hostent:addr-list (gethostbyname "raspberrypi.local"))) 2200)
-
-(define words (list "stop" "go" "left" "right" "?"))
 ;(define commands (list "0,0,0" "-100,-100,0" "100,-100,0" "-100,100,0" "0,0,0"))
+(define words (list "stop" "go" "left" "right" "?"))
 (define chunk 512)
 (define rising 6000)
 (define falling 3000)
