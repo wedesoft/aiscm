@@ -15,24 +15,19 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
-             (oop goops)
              (aiscm core)
-             (aiscm pulse))
+             (aiscm filters))
 
+(test-begin "aiscm filters")
 
-(test-begin "aiscm pulse")
+(test-group "gauss-filter"
+  (test-equal "Trivial Gauss filter"
+    '(1.0) (to-list (gauss-filter 1.0 1)))
+  (test-equal "Filter with 3 elements"
+    '(3) (shape (gauss-filter 1.0 3)))
+  (test-approximate "Sum of elements is 1"
+    1.0 (sum (gauss-filter 1.0 3)) 1e-5)
+  (test-assert "Maximum is larger than neighbouring values"
+    (< 0.4 (max (gauss-filter 1.0 3)))))
 
-(test-eqv "convert unsigned byte to Pulse audio type"
-  PA_SAMPLE_U8 (type->pulse-type <ubyte>))
-(test-eqv "convert short integer to Pulse audio type"
-  PA_SAMPLE_S16LE (type->pulse-type <sint>))
-(test-eqv "convert integer to Pulse audio type"
-  PA_SAMPLE_S32LE (type->pulse-type <int>))
-(test-eqv "convert floating-point to Pulse audio type"
-  PA_SAMPLE_FLOAT32LE (type->pulse-type <float>))
-(test-error "throw error if type not supported by Pulse audio"
-  'misc-error (type->pulse-type <usint>))
-(test-eq "convert Pulse audio short integer to integer type"
-  <sint> (pulse-type->type PA_SAMPLE_S16LE))
-
-(test-end "aiscm pulse")
+(test-end "aiscm filters")
