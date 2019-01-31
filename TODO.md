@@ -1,10 +1,10 @@
 ## Ready
 
+* gauss blur, gauss gradient, Harris Stephens corner detector
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
-* save voice model
 * Tensorflow strings
 * Debian sid FFmpeg API changes
-  * avcodec\_encode\_video2 deprecated
+  * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
   * avcodec\_decode\_video2 deprecated
   * avcodec\_encode\_audio2 deprecated
   * avcodec\_decode\_audio4 deprecated
@@ -13,9 +13,7 @@
     * avcodec\_send\_packet
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
-* gauss blur, gauss gradient
 * to-array -> from-image
-* Harris Stephens corner detector
 * argmin, argmax
 * mask, unmask
 * argwhere (mask coordinates)
