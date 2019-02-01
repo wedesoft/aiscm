@@ -17,10 +17,10 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
-										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm \
-										voice-record.tmp voice-train.tmp voice-run.tmp
+										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg \
+						 voice-record.scm voice-train.scm voice-run.scm
 
 noinst_DATA = fubk.png av-sync.mp4 test.mp3
 
