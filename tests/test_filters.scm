@@ -30,4 +30,12 @@
   (test-assert "Maximum is larger than neighbouring values"
     (< 0.4 (max (gauss-filter 1.0 3)))))
 
+(test-group "gauss-gradient-filter"
+  (test-equal "Trivial Gauss gradient filter"
+    '(0.5 0.0 -0.5) (to-list (gauss-gradient-filter 1.0 3)))
+  (test-equal "Filter with 5 elements"
+    '(5) (shape (gauss-gradient-filter 1.0 5)))
+  (test-equal "Gauss gradient determines gradient of ramp"
+    1.0 (sum (* (gauss-gradient-filter 1.0 5) (arr 4 3 2 1 0)))))
+
 (test-end "aiscm filters")

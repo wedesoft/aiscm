@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (aiscm core)
-  #:export (gauss-filter))
+  #:export (gauss-filter gauss-gradient-filter))
 
 (define pi 3.141592653589793)
 
@@ -26,15 +26,29 @@
 
 (define erf (pointer->procedure double (dynamic-func "erf" (dynamic-link)) (list double)))
 
-(define (normalize f) (/ f (sum f)))
+(define (normalize-const f) (/ f (sum f)))
 
 (define (gauss-filter sigma size)
-  (let [(size2 (/ size 2))]
-    (normalize
-      (to-array
-        (map (lambda (x)
-               (let* [(a (- x size2))
-                      (b (+ a 1))
-                      (scale (/ 1 (* (sqrt 2) sigma)))]
-          (/ (- (erf (* scale b)) (erf (* scale a))) 2)))
-          (iota size))))))
+  "Compute Gauss blur filter"
+  (normalize-const
+    (to-array
+      (map (lambda (x)
+             (let* [(a (- x (/ size 2)))
+                    (b (+ a 1))
+                    (scale (/ 1 (* (sqrt 2) sigma)))]
+        (- (erf (* scale b)) (erf (* scale a)))))
+        (iota size)))))
+
+(define (gauss-like x sigma) (exp (- (/ (* x x) (* sigma sigma)))))
+
+(define (normalize-linear f) (let [(ramp (indices (car (shape f))))] (/ f (- (sum (* f ramp))))))
+
+(define (gauss-gradient-filter sigma size)
+  "Compute Gauss gradient filter"
+  (normalize-linear
+    (to-array
+      (map (lambda (x)
+             (let* [(a (- x (/ size 2)))
+                    (b (+ a 1))]
+                (- (gauss-like b sigma) (gauss-like a sigma))))
+        (iota size)))))
