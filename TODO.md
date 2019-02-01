@@ -1,6 +1,9 @@
 ## Ready
 
-* gauss blur, gauss gradient, examples, Harris Stephens corner detector
+* gauss blur and gauss gradient example
+* MNIST pictures and voice detection documentation
+* audio spectrum example in documentation
+* Harris Stephens corner detector
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
 * Debian sid FFmpeg API changes

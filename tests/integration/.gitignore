@@ -18,6 +18,7 @@ eroded.jpg
 dilated.jpg
 pseudo.jpg
 mirror.jpg
+gauss-blur.jpg
 t10k-images-idx3-ubyte
 t10k-labels-idx1-ubyte
 train-images-idx3-ubyte

@@ -42,6 +42,16 @@ Image sharpening increases the difference between neighbouring pixels.
 
 ![sharpen.jpg](sharpen.jpg "Sharpen")
 
+### Gaussian blur
+
+A Gaussian filter can be used to blur an image.
+
+```Scheme
+@../tests/integration/gauss_blur.scm@
+```
+
+![gauss-blur.jpg](gauss-blur.jpg "Gauss blur")
+
 ### Edge detection
 
 Convolutions can be used for edge detection.
