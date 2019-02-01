@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm filters)
   #:use-module (oop goops)
+  #:use-module (system foreign)
   #:use-module (aiscm core)
   #:export (gauss-filter))
 
@@ -23,12 +24,7 @@
 
 (define (sgn x) (if (positive? x) 1 -1))
 
-; Approximation see https://en.wikipedia.org/wiki/Error_function
-(define (erf x)
-  (let* [(x2  (* x x))
-         (ex2 (exp (- x2)))
-         (spi (sqrt pi))]
-    (* (/ 2 spi) (sgn x) (sqrt (- 1 ex2)) (+ (/ spi 2) (* (/ 31 200) ex2) (* (/ -341 8000) (exp (* -2 x2)))))))
+(define erf (pointer->procedure double (dynamic-func "erf" (dynamic-link)) (list double)))
 
 (define (normalize f) (/ f (sum f)))
 
@@ -39,6 +35,6 @@
         (map (lambda (x)
                (let* [(a (- x size2))
                       (b (+ a 1))
-                      (s (/ 1 (* (sqrt 2) sigma)))]
-          (/ (- (erf (* s b)) (erf (* s a))) 2)))
+                      (scale (/ 1 (* (sqrt 2) sigma)))]
+          (/ (- (erf (* scale b)) (erf (* scale a))) 2)))
           (iota size))))))
