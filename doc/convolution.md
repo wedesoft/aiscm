@@ -72,6 +72,14 @@ Another popular edge detector is the Sobel operator.
 
 ![sobel.jpg](sobel.jpg "Sobel edges")
 
+It is also possible to use a Gauss gradient filter to detect edges.
+
+```Scheme
+@../tests/integration/gauss_gradient.scm@
+```
+
+![gauss-gradient.jpg](gauss-gradient.jpg "Gauss gradient")
+
 ## Conway's Game of Life
 
 Finally here is an implementation of Conway's Game of Life.

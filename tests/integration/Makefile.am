@@ -18,7 +18,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
 										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm \
-										gauss_blur.scm
+										gauss_blur.scm gauss_gradient.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg \
 						 voice-record.scm voice-train.scm voice-run.scm
@@ -49,7 +49,8 @@ integration-local:
 reintegration-local: $(INTEGRATION_TEST_TARGETS)
 
 CLEANFILES = *.tmp av-sync.mp4 fubk.png pattern.png swap-channels.jpg rolled.jpg cropped.jpg crop2d.jpg inverted.jpg \
-						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg
+						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg \
+						 dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg
 
 MAINTAINERCLEANFILES = Makefile.in
 

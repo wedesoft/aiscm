@@ -1,6 +1,5 @@
 ## Ready
 
-* gauss blur and gauss gradient example
 * MNIST pictures and voice detection documentation
 * audio spectrum example in documentation
 * Harris Stephens corner detector
