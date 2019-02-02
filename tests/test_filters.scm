@@ -22,20 +22,28 @@
 
 (test-group "gauss-filter"
   (test-equal "Trivial Gauss filter"
-    '(1.0) (to-list (gauss-filter 1.0 1)))
+    '(1.0) (to-list (gauss-filter 1.0 #:size 1)))
   (test-equal "Filter with 3 elements"
-    '(3) (shape (gauss-filter 1.0 3)))
+    '(3) (shape (gauss-filter 1.0 #:size 3)))
   (test-approximate "Sum of elements is 1"
-    1.0 (sum (gauss-filter 1.0 3)) 1e-5)
+    1.0 (sum (gauss-filter 1.0 #:size 3)) 1e-5)
   (test-assert "Maximum is larger than neighbouring values"
-    (< 0.4 (max (gauss-filter 1.0 3)))))
+    (< 0.4 (max (gauss-filter 1.0 #:size 3))))
+  (test-equal "Default filter size for sigma 1.0"
+    '(5) (shape (gauss-filter 1.0)))
+  (test-equal "Default filter size for sigma 2.0"
+    '(9) (shape (gauss-filter 2.0))))
 
 (test-group "gauss-gradient-filter"
   (test-equal "Trivial Gauss gradient filter"
-    '(0.5 0.0 -0.5) (to-list (gauss-gradient-filter 1.0 3)))
+    '(0.5 0.0 -0.5) (to-list (gauss-gradient-filter 1.0 #:size 3)))
   (test-equal "Filter with 5 elements"
-    '(5) (shape (gauss-gradient-filter 1.0 5)))
+    '(5) (shape (gauss-gradient-filter 1.0 #:size 5)))
   (test-equal "Gauss gradient determines gradient of ramp"
-    1.0 (sum (* (gauss-gradient-filter 1.0 5) (arr 4 3 2 1 0)))))
+    1.0 (sum (* (gauss-gradient-filter 1.0 #:size 5) (arr 4 3 2 1 0))))
+  (test-equal "Default filter size for sigma 1.0"
+    '(5) (shape (gauss-gradient-filter 1.0)))
+  (test-equal "Default filter size for sigma 2.0"
+    '(9) (shape (gauss-gradient-filter 2.0))))
 
 (test-end "aiscm filters")

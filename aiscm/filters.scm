@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm filters)
   #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (aiscm core)
   #:export (gauss-filter gauss-gradient-filter))
@@ -28,7 +29,10 @@
 
 (define (normalize-const f) (/ f (sum f)))
 
-(define (gauss-filter sigma size)
+(define (default-filter-size sigma)
+  (1+ (* (inexact->exact (ceiling (* sigma 2))) 2)))
+
+(define* (gauss-filter sigma #:key (size (default-filter-size sigma)))
   "Compute Gauss blur filter"
   (normalize-const
     (to-array
@@ -43,7 +47,7 @@
 
 (define (normalize-linear f) (let [(ramp (indices (car (shape f))))] (/ f (- (sum (* f ramp))))))
 
-(define (gauss-gradient-filter sigma size)
+(define* (gauss-gradient-filter sigma #:key (size (default-filter-size sigma)))
   "Compute Gauss gradient filter"
   (normalize-linear
     (to-array
