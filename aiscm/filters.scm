@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (aiscm core)
-  #:export (gauss-filter gauss-gradient-filter))
+  #:export (gauss-filter gauss-gradient-filter gauss-blur))
 
 (define pi 3.141592653589793)
 
@@ -42,6 +42,11 @@
                     (scale (/ 1 (* (sqrt 2) sigma)))]
         (- (erf (* scale b)) (erf (* scale a)))))
         (iota size)))))
+
+(define (gauss-blur img sigma)
+  (let* [(f (gauss-filter sigma))
+         (s (car (shape f)))]
+    (convolve (convolve img (reshape f (list s 1))) (reshape f (list 1 s)))))
 
 (define (gauss-like x sigma) (exp (- (/ (* x x) (* sigma sigma)))))
 

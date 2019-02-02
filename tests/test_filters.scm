@@ -46,4 +46,7 @@
   (test-equal "Default filter size for sigma 2.0"
     '(9) (shape (gauss-gradient-filter 2.0))))
 
+(test-equal "Size of gauss-blur result"
+  '(240 320) (shape (gauss-blur (fill <ubyte> '(240 320) 0) 1.0)))
+
 (test-end "aiscm filters")

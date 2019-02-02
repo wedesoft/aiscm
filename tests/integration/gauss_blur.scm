@@ -1,5 +1,2 @@
 (use-modules (aiscm magick) (aiscm core) (aiscm filters))
-(define blur (gauss-filter 2.0 7))
-(define blur-x (reshape blur '(1 7)))
-(define blur-y (reshape blur '(7 1)))
-(write-image (to-type (rgb <ubyte>) (convolve (convolve (read-image "star-ferry.jpg") blur-y) blur-x)) "gauss-blur.jpg")
+(write-image (to-type (rgb <ubyte>) (gauss-blur (read-image "star-ferry.jpg") 2.0)) "gauss-blur.jpg")
