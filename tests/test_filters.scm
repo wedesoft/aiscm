@@ -49,4 +49,10 @@
 (test-equal "Size of gauss-blur result"
   '(240 320) (shape (gauss-blur (fill <ubyte> '(240 320) 0) 1.0)))
 
+(test-equal "Size of gauss-gradient-x result"
+  '(240 320) (shape (gauss-gradient-x (fill <ubyte> '(240 320) 0) 1.0)))
+
+(test-equal "Size of gauss-gradient-y result"
+  '(240 320) (shape (gauss-gradient-y (fill <ubyte> '(240 320) 0) 1.0)))
+
 (test-end "aiscm filters")
