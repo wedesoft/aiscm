@@ -80,6 +80,16 @@ It is also possible to use a Gauss gradient filter to detect edges.
 
 ![gauss-gradient.jpg](gauss-gradient.jpg "Gauss gradient")
 
+### Corner detection
+
+The following example shows the Harris-Stephens corner and edge detector.
+
+```Scheme
+@../tests/integration/harris_stephens.scm@
+```
+
+![harris-stephens.jpg](harris-stephens.jpg "Harris-Stephens corners")
+
 ## Conway's Game of Life
 
 Finally here is an implementation of Conway's Game of Life.

@@ -14,7 +14,7 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png \
-					 eroded.jpg dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg \
+					 eroded.jpg dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
@@ -26,7 +26,7 @@ EXTRA_DIST = includes.scm dependencies.sh \
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
 						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
 						 shuttle.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg dilated.jpg pseudo.jpg mirror.jpg \
-						 gauss-blur.jpg gauss-gradient.jpg \
+						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
 						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
@@ -98,6 +98,9 @@ gauss-blur.jpg: ../tests/integration/gauss_blur.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 gauss-gradient.jpg: ../tests/integration/gauss_gradient.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+harris-stephens.jpg: ../tests/integration/harris_stephens.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:
