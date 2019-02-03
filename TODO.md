@@ -1,8 +1,7 @@
 ## Ready
 
 * Harris Stephens corner detector
-* MNIST pictures and voice detection documentation
-* audio spectrum example in documentation
+* cache Gauss filters
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
 * Debian sid FFmpeg API changes
@@ -22,7 +21,7 @@
 * recognise Aruco marker cube (opencv?)
 * OpenCV bindings
 * Kinect bindings
-* FFTW3 bindings
+* FFTW3 bindings, replace FFT in audio spectrum example
 * Lucas-Kanade tracker
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * connected components analysis

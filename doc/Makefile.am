@@ -13,14 +13,14 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
-					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png \
+					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 					 eroded.jpg dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
 						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md tensorflow.md \
 						 aiscm.gif debian.png ubuntu.png source.png package.png \
-						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png \
+						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 						 buttondown.css aiscm.html5
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
