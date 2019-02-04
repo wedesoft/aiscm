@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (system foreign)
   #:use-module (aiscm core)
-  #:export (gauss-filter gauss-gradient-filter gauss-blur gauss-gradient-x gauss-gradient-y))
+  #:export (gauss-filter gauss-gradient-filter gauss-blur gauss-gradient-x gauss-gradient-y harris-stephens))
 
 (define pi 3.141592653589793)
 
@@ -73,3 +73,13 @@
          (g (gauss-filter sigma))
          (s (car (shape f)))]
     (convolve (convolve img (reshape f (list s 1))) (reshape g (list 1 s)))))
+
+(define (harris-stephens img sigma k)
+  (let* [(x           (gauss-gradient-x img sigma))
+         (y           (gauss-gradient-y img sigma))
+         (a           (gauss-blur (* x x) sigma))
+         (b           (gauss-blur (* y y) sigma))
+         (c           (gauss-blur (* x y) sigma))
+         (trace       (+ a b))
+         (determinant (- (* a b) (* c c)))]
+    (- determinant (* trace trace k))))

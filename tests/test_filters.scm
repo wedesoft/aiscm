@@ -55,4 +55,7 @@
 (test-equal "Size of gauss-gradient-y result"
   '(240 320) (shape (gauss-gradient-y (fill <ubyte> '(240 320) 0) 1.0)))
 
+(test-equal "Size of harris-stephens result"
+  '(240 320) (shape (harris-stephens (fill <ubyte> '(240 320) 0) 1.0 0.05)))
+
 (test-end "aiscm filters")

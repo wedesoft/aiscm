@@ -1,6 +1,5 @@
 ## Ready
 
-* Harris Stephens corner detector
 * cache Gauss filters
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
