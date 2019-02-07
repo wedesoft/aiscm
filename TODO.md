@@ -1,6 +1,9 @@
 ## Ready
 
-* cache Gauss filters
+* Aruco marker recognition (OpenCV)
+* Ghost in the Shell style animations
+* connected components analysis
+* OpenCV bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
 * Debian sid FFmpeg API changes
@@ -17,13 +20,10 @@
 * argmin, argmax
 * mask, unmask
 * argwhere (mask coordinates)
-* recognise Aruco marker cube (opencv?)
-* OpenCV bindings
 * Kinect bindings
 * FFTW3 bindings, replace FFT in audio spectrum example
 * Lucas-Kanade tracker
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
-* connected components analysis
 * port using qemu
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
@@ -33,9 +33,7 @@
 * 3ds converter computing normals and tangentials and loading textures and maps
 * micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
-* min/max
 * use thumbnail images to illustrate examples
-* Ghost in the Shell style animations
 * panorama video viewer
 * to-type in tensor expressions, implicit typecasting in tensor sum?
 * cast to higher integer type when doing a tensor injection
@@ -45,14 +43,11 @@
 * polymorphic method calls (e.g. fabs, fabsf)
 * colour swapped when converting MJPEG video to FFmpeg video
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* 1+, 1-
 * ==, != for complex numbers
 * galaxy simulation
 * floating point exception (SIGFPE)
 * linear algebra bindings (blas, lapack, gsl, mkl)
-* separable convolution
 * convolve with set of sobel filters
-* diagonal injection, convolution, median, dilation, ...
 * sum with multiple indices or no indices, standalone sum expression
 * inject: equality, sum, minimum, maximum of frames
 * pixel selection example (take reference from center pixels)
@@ -96,7 +91,6 @@
   http://www.gavrila.net/Research/Chamfer_System/chamfer_system.html
 * SLAM, inverse depth images
 * camera calibration
-* marker recognition
 * x11 display: error handling for 'show', timing
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
