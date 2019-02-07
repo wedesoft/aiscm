@@ -12,6 +12,7 @@ AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_EXTRA_RECURSIVE_TARGETS([bench recheck integration reintegration])
 LT_INIT
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_AWK
@@ -196,12 +197,20 @@ AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
             [AC_MSG_ERROR([Could not locate Tensorflow C library])])
 LIBS="$old_LIBS"
 
-GUILE_PKG([2.2])
-GUILE_PROGS
-GUILE_FLAGS
-GUILE_SITE_DIR
-GUILE_EXT_DIR
-GUILE_CACHE_DIR
+AC_LANG_PUSH(C++)
+old_LIBS="$LIBS"
+old_CXXFLAGS="$CXXFLAGS"
+LIBS="$LIBS -lopencv_highgui"
+CXXFLAGS="$CFLAGS -I/usr/local/include/opencv4"
+AC_MSG_CHECKING([for OpenCV library])
+AC_TRY_LINK([#include <opencv2/highgui.hpp>],
+            [cv::destroyAllWindows()],
+            [AC_MSG_RESULT([yes])],
+            [AC_MSG_RESULT([no])]
+            [AC_MSG_ERROR([Could not locate OpenCV library])])
+LIBS="$old_LIBS"
+CXXFLAGS="$old_CXXFLAGS"
+AC_LANG_POP(C++)
 
 AC_PATH_XTRA
 if test "x$no_x" = xyes; then
@@ -234,6 +243,13 @@ AC_TRY_LINK([#include <X11/extensions/Xv.h>],
    [AC_MSG_RESULT([no])]
    [AC_MSG_ERROR([Could not locate Xvideo extension])])
 old_LIBS="$LIBS"
+
+GUILE_PKG([2.2])
+GUILE_PROGS
+GUILE_FLAGS
+GUILE_SITE_DIR
+GUILE_EXT_DIR
+GUILE_CACHE_DIR
 
 dnl Switch for debug or release mode.
 AC_ARG_ENABLE(debug,

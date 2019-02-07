@@ -45,6 +45,7 @@ You need to install the dependencies:
 You also need
 * a recent version of Protobuf-C library and compiler.
 * the Tensorflow C library
+* the OpenCV library
 
 ### Build AIscm
 
