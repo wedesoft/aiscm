@@ -30,6 +30,8 @@
   (test-eq "return unsigned short int if requested"
     <usint> (typecode (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>))))
   (test-equal "connected components with unsigned short int result"
-    '((1 0 0) (0 0 2)) (to-list (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>)))))
+    '((1 0 0) (0 0 2)) (to-list (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>))))
+  (test-error "throw error if label type is unsupported"
+    'misc-error (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <byte>)))
 
 (test-end "aiscm opencv")

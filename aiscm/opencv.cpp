@@ -23,11 +23,16 @@
 extern "C" {
   SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_connectivity, SCM scm_label_type)
   {
-    int width = scm_to_int(scm_car(scm_shape));
-    int height = scm_to_int(scm_cadr(scm_shape));
-    cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_img));
-    cv::Mat result(height, width, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
-    int count = connectedComponents(img, result, scm_to_int(scm_connectivity), scm_to_int(scm_label_type));
+    int count;
+    try {
+      int width = scm_to_int(scm_car(scm_shape));
+      int height = scm_to_int(scm_cadr(scm_shape));
+      cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_img));
+      cv::Mat result(height, width, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
+      count = connectedComponents(img, result, scm_to_int(scm_connectivity), scm_to_int(scm_label_type));
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-connected-components", e.what(), SCM_EOL);
+    }
     return scm_from_int(count);
   }
 
