@@ -201,7 +201,7 @@ AC_LANG_PUSH(C++)
 old_LIBS="$LIBS"
 old_CXXFLAGS="$CXXFLAGS"
 LIBS="$LIBS -lopencv_highgui"
-CXXFLAGS="$CFLAGS -I/usr/local/include/opencv4"
+CXXFLAGS="$CFLAGS -I/usr/local/include/opencv4 -I/usr/include/opencv4"
 AC_MSG_CHECKING([for OpenCV library])
 AC_TRY_LINK([#include <opencv2/highgui.hpp>],
             [cv::destroyAllWindows()],

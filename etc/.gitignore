@@ -1,4 +1,5 @@
-muxing
+cc
 *.mp4
 *.txt
 *.s
+*.o
