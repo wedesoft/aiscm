@@ -14,7 +14,15 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (aiscm opencv))
+(define-module (aiscm opencv)
+  #:use-module (oop goops)
+  #:use-module (ice-9 optargs)
+  #:use-module (aiscm core)
+  #:export (connected-components))
 
 (load-extension "libguile-aiscm-opencv" "init_opencv")
 
+(define* (connected-components img connectivity #:key (label-type <int>))
+  (let* [(result (make (multiarray <int> 2) #:shape (shape img)))
+         (count  (opencv-connected-components (memory img) (memory result) (shape img) connectivity))]
+    (cons result count)))
