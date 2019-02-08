@@ -22,7 +22,14 @@
 
 (load-extension "libguile-aiscm-opencv" "init_opencv")
 
+(define typemap
+  (list (cons <ubyte> CV_8UC1 )
+        (cons <byte>  CV_8SC1 )
+        (cons <usint> CV_16UC1)
+        (cons <sint>  CV_16SC1)
+        (cons <int>   CV_32SC1)))
+
 (define* (connected-components img connectivity #:key (label-type <int>))
-  (let* [(result (make (multiarray <int> 2) #:shape (shape img)))
-         (count  (opencv-connected-components (memory img) (memory result) (shape img) connectivity))]
+  (let* [(result (make (multiarray label-type 2) #:shape (shape img)))
+         (count  (opencv-connected-components (memory img) (memory result) (shape img) connectivity (assq-ref typemap label-type)))]
     (cons result count)))

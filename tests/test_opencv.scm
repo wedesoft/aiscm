@@ -27,8 +27,9 @@
     3 (cdr (connected-components (arr (1 0 0) (0 0 1)) 8)))
   (test-eq "return integer array by default"
     <int> (typecode (car (connected-components (arr (1 0 0) (0 0 1)) 8))))
-  (test-expect-fail 1)
   (test-eq "return unsigned short int if requested"
-    <usint> (typecode (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>)))))
+    <usint> (typecode (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>))))
+  (test-equal "connected components with unsigned short int result"
+    '((1 0 0) (0 0 2)) (to-list (car (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <usint>)))))
 
 (test-end "aiscm opencv")

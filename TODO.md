@@ -1,5 +1,6 @@
 ## Ready
 
+* connected components exception handling
 * Aruco marker recognition (OpenCV)
 * Ghost in the Shell style animations
 * connected components analysis
