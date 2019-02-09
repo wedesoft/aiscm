@@ -27,8 +27,8 @@ extern "C" {
     try {
       int width = scm_to_int(scm_car(scm_shape));
       int height = scm_to_int(scm_cadr(scm_shape));
-      cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_img));
-      cv::Mat result(height, width, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
+      cv::Mat img(width, height, CV_8UC1, scm_to_pointer(scm_img));
+      cv::Mat result(width, height, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
       count = connectedComponents(img, result, scm_to_int(scm_connectivity), scm_to_int(scm_label_type));
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-connected-components", e.what(), SCM_EOL);

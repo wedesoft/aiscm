@@ -8,17 +8,18 @@ PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 RUN = $(GUILE) -L $(top_builddir)
 
-doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html tensorflow.html \
+doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html tensorflow.html opencv.html \
 					 fubk.png scaled-pattern.png pavillion.jpg shuttle.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 					 eroded.jpg dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
+					 components.png \
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
-						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md tensorflow.md \
+						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md tensorflow.md opencv.md \
 						 aiscm.gif debian.png ubuntu.png source.png package.png \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 						 buttondown.css aiscm.html5
@@ -26,7 +27,7 @@ EXTRA_DIST = includes.scm dependencies.sh \
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
 						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
 						 shuttle.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg dilated.jpg pseudo.jpg mirror.jpg \
-						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
+						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg components.png \
 						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
@@ -41,6 +42,9 @@ star-ferry.jpg: ../tests/integration/star-ferry.jpg
 	cp $< $@
 
 shuttle.jpg: ../tests/integration/shuttle.jpg
+	cp $< $@
+
+letters.png: ../tests/integration/letters.png
 	cp $< $@
 
 pattern.png: ../tests/integration/write_image.scm
@@ -101,6 +105,9 @@ gauss-gradient.jpg: ../tests/integration/gauss_gradient.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
 harris-stephens.jpg: ../tests/integration/harris_stephens.scm star-ferry.jpg
+	$(ENVIRONMENT) $(RUN) $<
+
+components.png: ../tests/integration/components.scm letters.png
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:

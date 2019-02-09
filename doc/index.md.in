@@ -20,6 +20,7 @@ Performance is achieved by using the LLVM JIT compiler.
 * [Array operations](operation.html "Array operations")
 * [Convolutions](convolution.html "Convolutions")
 * [Tensorflow bindings](tensorflow.html "Tensorflow bindings")
+* [OpenCV bindings](opencv.html "OpenCV bindings")
 
 ## See also
 
