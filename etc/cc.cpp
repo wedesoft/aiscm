@@ -1,24 +1,12 @@
-#include <cstdio>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-
+#include <opencv2/aruco/charuco.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 int main(void)
 {
-  char data[] = {1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1};
-  cv::Mat m(3, 4, CV_8UC1, &data[0]);
-  cv::Mat l(3, 4, CV_16UC1);
-  connectedComponents(m, l, 8, CV_16UC1);
-  for (int j=0; j<3; j++) {
-    for (int i=0; i<4; i++)
-      printf(" %1d", m.at<unsigned char>(j, i));
-    printf("\n");
-  };
-  printf("\n");
-  for (int j=0; j<3; j++) {
-    for (int i=0; i<4; i++)
-      printf(" %1d", l.at<unsigned short int>(j, i));
-    printf("\n");
-  };
+  cv::Mat m(700, 500, CV_8UC1);
+  cv::Ptr< cv::aruco::Dictionary > dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
+  cv::Ptr< cv::aruco::CharucoBoard > charuco = cv::aruco::CharucoBoard::create(7, 5, 0.04, 0.02, dict);
+  charuco->draw(cv::Size(700, 500), m, 0, 1);
+  cv::imwrite("board.png", m);
   return 0;
 }
