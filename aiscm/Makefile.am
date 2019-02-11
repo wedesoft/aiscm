@@ -88,7 +88,7 @@ libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS) -ltensorflow
 libguile_aiscm_opencv_la_SOURCES = opencv.cpp
 libguile_aiscm_opencv_la_CXXFLAGS = $(GUILE_CFLAGS) -I/usr/local/include/opencv4
 libguile_aiscm_opencv_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_opencv_la_LIBADD = $(GUILE_LIBS) -lopencv_imgproc -lopencv_core
+libguile_aiscm_opencv_la_LIBADD = $(GUILE_LIBS) -lopencv_aruco -lopencv_imgproc -lopencv_core
 
 CLEANFILES = *.tmp *.go*
 
