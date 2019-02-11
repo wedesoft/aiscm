@@ -39,4 +39,5 @@
 
 (define (charuco-board rows cols size marker-size dict)
   (let [(result (make (multiarray <ubyte> 2) #:shape (list (* rows size) (* cols size))))]
-    (opencv-charuco-board (memory result) rows cols size marker-size dict)))
+    (opencv-charuco-board (memory result) rows cols size marker-size dict)
+    result))

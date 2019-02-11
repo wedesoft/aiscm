@@ -1,5 +1,6 @@
 ## Ready
 
+* deep copy charuco data
 * Charuco board example
 * Aruco marker recognition (OpenCV)
 * Ghost in the Shell style animations

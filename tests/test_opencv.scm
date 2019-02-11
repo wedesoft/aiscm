@@ -36,7 +36,7 @@
 
 (test-group "Aruco markers"
   (test-equal "shape of Charuco board"
-    '(500 700) (charuco-board 5 7 100 50 DICT_4X4_50))
+    '(500 700) (shape (charuco-board 5 7 100 50 DICT_4X4_50)))
   (test-error "throw error if board has wrong parameters"
     'misc-error (charuco-board 5 7 100 150 DICT_4X4_50)))
 

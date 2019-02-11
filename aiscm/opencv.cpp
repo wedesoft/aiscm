@@ -26,10 +26,10 @@ extern "C" {
   {
     int count;
     try {
-      int width = scm_to_int(scm_car(scm_shape));
-      int height = scm_to_int(scm_cadr(scm_shape));
-      cv::Mat img(width, height, CV_8UC1, scm_to_pointer(scm_img));
-      cv::Mat result(width, height, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
+      int height = scm_to_int(scm_car(scm_shape));
+      int width = scm_to_int(scm_cadr(scm_shape));
+      cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_img));
+      cv::Mat result(height, width, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
       count = connectedComponents(img, result, scm_to_int(scm_connectivity), scm_to_int(scm_label_type));
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-connected-components", e.what(), SCM_EOL);
@@ -45,7 +45,7 @@ extern "C" {
       int size = scm_to_int(scm_size);
       int width = cols * size;
       int height = rows * size;
-      cv::Mat result(width, height, CV_8UC1);
+      cv::Mat result(height, width, CV_8UC1, scm_to_pointer(scm_result));
       cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
       cv::Ptr<cv::aruco::CharucoBoard> board(cv::aruco::CharucoBoard::create(cols, rows, size, scm_to_int(scm_marker_size), dict));
       board->draw(cv::Size(width, height), result, 0, 1);
