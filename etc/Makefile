@@ -3,16 +3,10 @@
 CFLAGS = -O
 CXXFLAGS = -I/usr/local/include/opencv4
 
-all: assembler cc
-
-assembler: t1.txt
-	cat t1.txt
+all: cc
 
 cc: cc.o
 	g++ -o $@ cc.o -lopencv_aruco -lopencv_imgcodecs -lopencv_core
-
-.o.txt:
-	objdump -d -M intel -S $< > $@
 
 .c.o:
 	gcc $(CFLAGS) -march=native -g -c $<
@@ -21,4 +15,4 @@ cc: cc.o
 	g++ -c $< -o $@ $(CXXFLAGS) 
 
 clean:
-	rm -f muxing muxing.mp4 *.txt *.o
+	rm -f cc *.o
