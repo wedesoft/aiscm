@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
-  #:export (connected-components charuco-board
+  #:export (connected-components charuco-board detect-markers
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -33,11 +33,18 @@
         (cons <int>   CV_32SC1)))
 
 (define* (connected-components img connectivity #:key (label-type <int>))
+  "Perform connected component analysis using 4- or 8-connectivity"
   (let* [(result (make (multiarray label-type 2) #:shape (shape img)))
          (count  (opencv-connected-components (memory img) (memory result) (shape img) connectivity (assq-ref typemap label-type)))]
     (cons result count)))
 
 (define (charuco-board rows cols size marker-size dict)
+  "Draw a Charuco board"
   (let [(result (make (multiarray <ubyte> 2) #:shape (list (* rows size) (* cols size))))]
     (opencv-charuco-board (memory result) rows cols size marker-size dict)
     result))
+
+(define (detect-markers img dict)
+  (let [(result (opencv-detect-markers (shape img) (memory img) dict))]
+    (cons (make (multiarray <int> 1) #:shape (list (car result)) #:memory (cadr result))
+          (make (multiarray <float> 3) #:shape (list (car result) 4 2) #:memory (caddr result)))))

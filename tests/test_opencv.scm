@@ -34,10 +34,16 @@
   (test-error "throw error if label type is unsupported"
     'misc-error (connected-components (arr (1 0 0) (0 0 1)) 8 #:label-type <byte>)))
 
-(test-group "Aruco markers"
+(test-group "Generate Charuco board"
   (test-equal "shape of Charuco board"
     '(500 700) (shape (charuco-board 5 7 100 50 DICT_4X4_50)))
   (test-error "throw error if board has wrong parameters"
     'misc-error (charuco-board 5 7 100 150 DICT_4X4_50)))
+
+(test-group "Detect Aruco markers"
+  (test-equal "shape of marker identity array"
+    '(17) (shape (car (detect-markers (charuco-board 5 7 100 50 DICT_4X4_50) DICT_4X4_50))))
+  (test-equal "shape of corner array"
+    '(17 4 2) (shape (cdr (detect-markers (charuco-board 5 7 100 50 DICT_4X4_50) DICT_4X4_50)))))
 
 (test-end "aiscm opencv")

@@ -55,6 +55,29 @@ extern "C" {
     return SCM_UNDEFINED;
   }
 
+  SCM opencv_detect_markers(SCM scm_shape, SCM scm_memory, SCM scm_dict)
+  {
+    int height = scm_to_int(scm_car(scm_shape));
+    int width = scm_to_int(scm_cadr(scm_shape));
+    cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_memory));
+    cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
+    std::vector<int> marker_ids;
+    std::vector<std::vector<cv::Point2f>> marker_corners;
+    cv::aruco::detectMarkers(img, dict, marker_corners, marker_ids);
+    int *ids = (int *)scm_gc_malloc_pointerless(marker_ids.size() * sizeof(int), "marker-ids");
+    float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
+    for (int i=0; i<marker_ids.size(); i++)
+      ids[i] = marker_ids[i];
+    for (int j=0; j<marker_corners.size(); j++)
+      for (int i=0; i<4; i++) {
+        markers[j * 8 + i    ] = marker_corners[j][i].x;
+        markers[j * 8 + i + 1] = marker_corners[j][i].y;
+      };
+    return scm_list_3(scm_from_int(marker_ids.size()),
+                      scm_from_pointer(ids, NULL),
+                      scm_from_pointer(markers, NULL));
+  }
+
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8SC1" , scm_from_int(CV_8SC1 ));
@@ -86,5 +109,6 @@ extern "C" {
 
     scm_c_define_gsubr("opencv-connected-components", 5, 0, 0, SCM_FUNC(opencv_connected_components));
     scm_c_define_gsubr("opencv-charuco-board"       , 6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
+    scm_c_define_gsubr("opencv-detect-markers"      , 3, 0, 0, SCM_FUNC(opencv_detect_markers      ));
   };
 }
