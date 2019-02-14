@@ -1,5 +1,6 @@
 ## Ready
 
+* detect markers in color image
 * deep copy charuco data
 * Charuco board example
 * Aruco marker recognition (OpenCV)

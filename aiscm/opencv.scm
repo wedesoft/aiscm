@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
-  #:export (connected-components charuco-board detect-markers
+  #:export (connected-components charuco-board detect-markers interpolate-corners
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -39,12 +39,19 @@
     (cons result count)))
 
 (define (charuco-board rows cols size marker-size dict)
-  "Draw a Charuco board"
+  "Draw a Charuco board image"
   (let [(result (make (multiarray <ubyte> 2) #:shape (list (* rows size) (* cols size))))]
     (opencv-charuco-board (memory result) rows cols size marker-size dict)
     result))
 
 (define (detect-markers img dict)
+  "Detect Aruco markers in image"
   (let [(result (opencv-detect-markers (shape img) (memory img) dict))]
     (cons (make (multiarray <int> 1) #:shape (list (car result)) #:memory (cadr result))
           (make (multiarray <float> 3) #:shape (list (car result) 4 2) #:memory (caddr result)))))
+
+(define (interpolate-corners markers img rows cols size marker-size)
+  (let [(result (opencv-interpolate-corners (car (shape (car markers))) (memory (car markers)) (memory (cdr markers))
+                                            (shape img) (memory img)
+                                            rows cols size marker-size))]
+    (cons 0 0)))

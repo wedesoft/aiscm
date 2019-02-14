@@ -70,12 +70,33 @@ extern "C" {
       ids[i] = marker_ids[i];
     for (int j=0; j<marker_corners.size(); j++)
       for (int i=0; i<4; i++) {
-        markers[j * 8 + i    ] = marker_corners[j][i].x;
-        markers[j * 8 + i + 1] = marker_corners[j][i].y;
+        markers[j * 8 + 2 * i    ] = marker_corners[j][i].x;
+        markers[j * 8 + 2 * i + 1] = marker_corners[j][i].y;
       };
     return scm_list_3(scm_from_int(marker_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
+  }
+
+  SCM opencv_interpolate_corners(SCM scm_count, SCM scm_ids, SCM scm_markers, SCM scm_image, SCM scm_shape,
+                                 SCM scm_rows, SCM scm_cols, SCM scm_size, SCM scm_marker_size)
+  {
+    int count = scm_to_int(scm_count);
+    std::vector<int> marker_ids;
+    int *ids = (int *)scm_to_pointer(scm_ids);
+    for (int i=0; i<count; i++)
+      marker_ids.push_back(ids[i]);
+    std::vector<std::vector<cv::Point2f>> marker_corners;
+    float *markers = (float *)scm_to_pointer(scm_markers);
+    for (int j=0; j<count; j++) {
+      std::vector<cv::Point2f> empty;
+      marker_corners.push_back(empty);
+      for (int i=0; i<4; i++) {
+        cv::Point2f point(markers[j * 8 + 2 * i], markers[j * 8 + 2 * i + 1]);
+        marker_corners[j].push_back(point);
+      };
+    };
+    return SCM_UNDEFINED;
   }
 
   void init_opencv(void) {
@@ -110,5 +131,6 @@ extern "C" {
     scm_c_define_gsubr("opencv-connected-components", 5, 0, 0, SCM_FUNC(opencv_connected_components));
     scm_c_define_gsubr("opencv-charuco-board"       , 6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
     scm_c_define_gsubr("opencv-detect-markers"      , 3, 0, 0, SCM_FUNC(opencv_detect_markers      ));
+    scm_c_define_gsubr("opencv-interpolate-corners" , 9, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
   };
 }

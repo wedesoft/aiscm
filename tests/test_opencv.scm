@@ -40,10 +40,15 @@
   (test-error "throw error if board has wrong parameters"
     'misc-error (charuco-board 5 7 100 150 DICT_4X4_50)))
 
+(define img (charuco-board 5 7 100 50 DICT_4X4_50))
+(define aruco (detect-markers img DICT_4X4_50))
 (test-group "Detect Aruco markers"
   (test-equal "shape of marker identity array"
-    '(17) (shape (car (detect-markers (charuco-board 5 7 100 50 DICT_4X4_50) DICT_4X4_50))))
+    '(17) (shape (car aruco)))
   (test-equal "shape of corner array"
-    '(17 4 2) (shape (cdr (detect-markers (charuco-board 5 7 100 50 DICT_4X4_50) DICT_4X4_50)))))
+    '(17 4 2) (shape (cdr aruco)))
+  (test-expect-fail 1)
+  (test-equal "shape of charuco corner identity array"
+    '(24) (shape (car (interpolate-corners aruco img 5 7 100 50)))))
 
 (test-end "aiscm opencv")
