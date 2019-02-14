@@ -43,11 +43,12 @@ extern "C" {
       int rows = scm_to_int(scm_rows);
       int cols = scm_to_int(scm_cols);
       int size = scm_to_int(scm_size);
+      int marker_size = scm_to_int(scm_marker_size);
       int width = cols * size;
       int height = rows * size;
       cv::Mat result(height, width, CV_8UC1, scm_to_pointer(scm_result));
       cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
-      cv::Ptr<cv::aruco::CharucoBoard> board(cv::aruco::CharucoBoard::create(cols, rows, size, scm_to_int(scm_marker_size), dict));
+      cv::Ptr<cv::aruco::CharucoBoard> board(cv::aruco::CharucoBoard::create(cols, rows, size, marker_size, dict));
       board->draw(cv::Size(width, height), result, 0, 1);
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-charuco-board", e.what(), SCM_EOL);
@@ -65,9 +66,9 @@ extern "C" {
     std::vector<std::vector<cv::Point2f>> marker_corners;
     cv::aruco::detectMarkers(img, dict, marker_corners, marker_ids);
     int *ids = (int *)scm_gc_malloc_pointerless(marker_ids.size() * sizeof(int), "marker-ids");
-    float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
     for (int i=0; i<marker_ids.size(); i++)
       ids[i] = marker_ids[i];
+    float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
     for (int j=0; j<marker_corners.size(); j++)
       for (int i=0; i<4; i++) {
         markers[j * 8 + 2 * i    ] = marker_corners[j][i].x;
@@ -78,9 +79,12 @@ extern "C" {
                       scm_from_pointer(markers, NULL));
   }
 
-  SCM opencv_interpolate_corners(SCM scm_count, SCM scm_ids, SCM scm_markers, SCM scm_image, SCM scm_shape,
+  SCM opencv_interpolate_corners(SCM scm_count, SCM scm_ids, SCM scm_markers, SCM scm_shape, SCM scm_image,
                                  SCM scm_rows, SCM scm_cols, SCM scm_size, SCM scm_marker_size)
   {
+    int height = scm_to_int(scm_car(scm_shape));
+    int width = scm_to_int(scm_cadr(scm_shape));
+    cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> marker_ids;
     int *ids = (int *)scm_to_pointer(scm_ids);
@@ -96,7 +100,26 @@ extern "C" {
         marker_corners[j].push_back(point);
       };
     };
-    return SCM_UNDEFINED;
+    cv::Ptr<cv::aruco::Dictionary> dummy(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL));
+    int rows = scm_to_int(scm_rows);
+    int cols = scm_to_int(scm_cols);
+    int size = scm_to_int(scm_size);
+    int marker_size = scm_to_int(scm_marker_size);
+    cv::Ptr<cv::aruco::CharucoBoard> board(cv::aruco::CharucoBoard::create(cols, rows, size, scm_to_int(scm_marker_size), dummy));
+    std::vector<cv::Point2f> charuco_corners;
+    std::vector<int> charuco_ids;
+    cv::aruco::interpolateCornersCharuco(marker_corners, marker_ids, img, board, charuco_corners, charuco_ids);
+    ids = (int *)scm_gc_malloc_pointerless(marker_ids.size() * sizeof(int), "marker-ids");
+    for (int i=0; i<charuco_ids.size(); i++)
+      ids[i] = charuco_ids[i];
+    markers = (float *)scm_gc_malloc_pointerless(charuco_corners.size() * 2 * sizeof(float), "marker-corners");
+    for (int j=0; j<charuco_corners.size(); j++) {
+      markers[j * 2    ] = charuco_corners[j].x;
+      markers[j * 2 + 1] = charuco_corners[j].y;
+    };
+    return scm_list_3(scm_from_int(charuco_ids.size()),
+                      scm_from_pointer(ids, NULL),
+                      scm_from_pointer(markers, NULL));
   }
 
   void init_opencv(void) {

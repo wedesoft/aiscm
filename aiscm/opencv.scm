@@ -54,4 +54,5 @@
   (let [(result (opencv-interpolate-corners (car (shape (car markers))) (memory (car markers)) (memory (cdr markers))
                                             (shape img) (memory img)
                                             rows cols size marker-size))]
-    (cons 0 0)))
+    (cons (make (multiarray <int> 1) #:shape (list (car result)) #:memory (cadr result))
+          (make (multiarray <float> 2) #:shape (list (car result) 2) #:memory (caddr result)))))

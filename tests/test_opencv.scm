@@ -47,8 +47,9 @@
     '(17) (shape (car aruco)))
   (test-equal "shape of corner array"
     '(17 4 2) (shape (cdr aruco)))
-  (test-expect-fail 1)
   (test-equal "shape of charuco corner identity array"
-    '(24) (shape (car (interpolate-corners aruco img 5 7 100 50)))))
+    '(24) (shape (car (interpolate-corners aruco img 5 7 100 50))))
+  (test-equal "shape of charuco corner array"
+    '(24 2) (shape (cdr (interpolate-corners aruco img 5 7 100 50)))))
 
 (test-end "aiscm opencv")

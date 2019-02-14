@@ -1,7 +1,7 @@
 ## Ready
 
 * detect markers in color image
-* deep copy charuco data
+* interpolate markers in color image
 * Charuco board example
 * Aruco marker recognition (OpenCV)
 * Ghost in the Shell style animations
