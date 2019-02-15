@@ -26,11 +26,12 @@
 (load-extension "libguile-aiscm-opencv" "init_opencv")
 
 (define typemap
-  (list (cons <ubyte> CV_8UC1 )
-        (cons <byte>  CV_8SC1 )
-        (cons <usint> CV_16UC1)
-        (cons <sint>  CV_16SC1)
-        (cons <int>   CV_32SC1)))
+  (list (cons <ubyte>       CV_8UC1 )
+        (cons (rgb <ubyte>) CV_8UC3 )
+        (cons <byte>        CV_8SC1 )
+        (cons <usint>       CV_16UC1)
+        (cons <sint>        CV_16SC1)
+        (cons <int>         CV_32SC1)))
 
 (define* (connected-components img connectivity #:key (label-type <int>))
   "Perform connected component analysis using 4- or 8-connectivity"
@@ -46,7 +47,7 @@
 
 (define (detect-markers img dict)
   "Detect Aruco markers in image"
-  (let [(result (opencv-detect-markers (shape img) (memory img) dict))]
+  (let [(result (opencv-detect-markers (shape img) (assq-ref typemap (typecode img)) (memory img) dict))]
     (cons (make (multiarray <int> 1) #:shape (list (car result)) #:memory (cadr result))
           (make (multiarray <float> 3) #:shape (list (car result) 4 2) #:memory (caddr result)))))
 

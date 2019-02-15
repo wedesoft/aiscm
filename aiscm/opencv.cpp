@@ -71,11 +71,11 @@ extern "C" {
     return SCM_UNDEFINED;
   }
 
-  SCM opencv_detect_markers(SCM scm_shape, SCM scm_memory, SCM scm_dict)
+  SCM opencv_detect_markers(SCM scm_shape, SCM scm_type, SCM scm_memory, SCM scm_dict)
   {
     int height = scm_to_int(scm_car(scm_shape));
     int width = scm_to_int(scm_cadr(scm_shape));
-    cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_memory));
+    cv::Mat img(height, width, scm_to_int(scm_type), scm_to_pointer(scm_memory));
     cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
     std::vector<int> marker_ids;
     std::vector<std::vector<cv::Point2f>> marker_corners;
@@ -132,6 +132,7 @@ extern "C" {
 
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
+    scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
     scm_c_define("CV_8SC1" , scm_from_int(CV_8SC1 ));
     scm_c_define("CV_16UC1", scm_from_int(CV_16UC1));
     scm_c_define("CV_16SC1", scm_from_int(CV_16SC1));
@@ -161,7 +162,7 @@ extern "C" {
 
     scm_c_define_gsubr("opencv-connected-components", 5, 0, 0, SCM_FUNC(opencv_connected_components));
     scm_c_define_gsubr("opencv-charuco-board"       , 6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
-    scm_c_define_gsubr("opencv-detect-markers"      , 3, 0, 0, SCM_FUNC(opencv_detect_markers      ));
+    scm_c_define_gsubr("opencv-detect-markers"      , 4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
     scm_c_define_gsubr("opencv-interpolate-corners" , 9, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
   };
 }
