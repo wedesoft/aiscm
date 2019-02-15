@@ -15,6 +15,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 (use-modules (srfi srfi-64)
+             (oop goops)
              (aiscm core)
              (aiscm image)
              (aiscm opencv))
@@ -55,6 +56,12 @@
   (test-equal "shape of charuco corner array"
     '(24 2) (shape (cdr (interpolate-corners aruco img 5 7 100 50))))
   (test-equal "detect markers in color image"
-    '(17) (shape (car caruco))))
+    '(17) (shape (car caruco)))
+  (test-equal "interpolate Charuco corners in color image"
+    '(24) (shape (car (interpolate-corners caruco cimg 5 7 100 50))))
+  (test-error "throw error if no markers defined"
+    'misc-error (interpolate-corners (cons (make (multiarray <int> 1) #:shape '(0))
+                                           (make (multiarray <float> 3) #:shape '(0 4 2)))
+                                     img 5 7 100 50)))
 
 (test-end "aiscm opencv")

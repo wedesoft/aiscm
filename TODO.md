@@ -1,8 +1,5 @@
 ## Ready
 
-* detect markers in color image
-* interpolate markers in color image
-* interpolate zero corners possible?
 * Charuco board example
 * draw single Aruco marker
 * Ghost in the Shell style animations
