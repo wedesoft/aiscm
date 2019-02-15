@@ -2,8 +2,9 @@
 
 * detect markers in color image
 * interpolate markers in color image
+* interpolate zero corners possible?
 * Charuco board example
-* Aruco marker recognition (OpenCV)
+* draw single Aruco marker
 * Ghost in the Shell style animations
 * connected components analysis
 * OpenCV bindings

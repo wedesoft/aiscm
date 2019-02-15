@@ -20,6 +20,21 @@
 #include <opencv2/imgproc.hpp>
 #include "util-helpers.h"
 
+int *from_int_vector(const std::vector<int> &vec)
+{
+  int *result = (int *)scm_gc_malloc_pointerless(vec.size() * sizeof(int), "int-vector");
+  for (int i=0; i<vec.size(); i++)
+    result[i] = vec[i];
+  return result;
+}
+
+std::vector<int> to_int_vector(void *mem, int count)
+{
+  std::vector<int> result;
+  for (int i=0; i<count; i++)
+    result.push_back(((int *)mem)[i]);
+  return result;
+}
 
 extern "C" {
   SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_connectivity, SCM scm_label_type)
@@ -65,9 +80,7 @@ extern "C" {
     std::vector<int> marker_ids;
     std::vector<std::vector<cv::Point2f>> marker_corners;
     cv::aruco::detectMarkers(img, dict, marker_corners, marker_ids);
-    int *ids = (int *)scm_gc_malloc_pointerless(marker_ids.size() * sizeof(int), "marker-ids");
-    for (int i=0; i<marker_ids.size(); i++)
-      ids[i] = marker_ids[i];
+    int *ids = from_int_vector(marker_ids);
     float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
     for (int j=0; j<marker_corners.size(); j++)
       for (int i=0; i<4; i++) {
@@ -86,10 +99,7 @@ extern "C" {
     int width = scm_to_int(scm_cadr(scm_shape));
     cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_image));
     int count = scm_to_int(scm_count);
-    std::vector<int> marker_ids;
-    int *ids = (int *)scm_to_pointer(scm_ids);
-    for (int i=0; i<count; i++)
-      marker_ids.push_back(ids[i]);
+    std::vector<int> marker_ids(to_int_vector(scm_to_pointer(scm_ids), count));
     std::vector<std::vector<cv::Point2f>> marker_corners;
     float *markers = (float *)scm_to_pointer(scm_markers);
     for (int j=0; j<count; j++) {
@@ -109,9 +119,7 @@ extern "C" {
     std::vector<cv::Point2f> charuco_corners;
     std::vector<int> charuco_ids;
     cv::aruco::interpolateCornersCharuco(marker_corners, marker_ids, img, board, charuco_corners, charuco_ids);
-    ids = (int *)scm_gc_malloc_pointerless(marker_ids.size() * sizeof(int), "marker-ids");
-    for (int i=0; i<charuco_ids.size(); i++)
-      ids[i] = charuco_ids[i];
+    int *ids = from_int_vector(marker_ids);
     markers = (float *)scm_gc_malloc_pointerless(charuco_corners.size() * 2 * sizeof(float), "marker-corners");
     for (int j=0; j<charuco_corners.size(); j++) {
       markers[j * 2    ] = charuco_corners[j].x;
