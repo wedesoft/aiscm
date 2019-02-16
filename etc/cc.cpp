@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 
 using namespace std;
 
@@ -16,6 +17,9 @@ int main(void)
   std::vector<cv::Point2f> charucoCorners;
   std::vector<int> charucoIds;
   cv::aruco::interpolateCornersCharuco(markerCorners, markerIds, m, board, charucoCorners, charucoIds);
+  cv::aruco::drawDetectedCornersCharuco(m, charucoCorners, charucoIds, cv::Scalar(0, 0, 255));
   cout << m.cols << "x" << m.rows << ": " << charucoIds.size() << endl;
+  cv::imshow("Charuco", m);
+  cv::waitKey(-1);
   return 0;
 }

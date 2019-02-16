@@ -43,25 +43,28 @@
     'misc-error (charuco-board 5 7 100 150 DICT_4X4_50)))
 
 (define img (charuco-board 5 7 100 50 DICT_4X4_50))
-(define cimg (to-array (convert-image (to-image img) 'RGB)))
+(define color-img (to-array (convert-image (to-image img) 'RGB)))
 (define aruco (detect-markers img DICT_4X4_50))
-(define caruco (detect-markers cimg DICT_4X4_50))
+(define color-aruco (detect-markers color-img DICT_4X4_50))
+(define corners (interpolate-corners aruco img 5 7 100 50))
 (test-group "Detect Aruco markers"
   (test-equal "shape of marker identity array"
     '(17) (shape (car aruco)))
   (test-equal "shape of corner array"
     '(17 4 2) (shape (cdr aruco)))
   (test-equal "shape of charuco corner identity array"
-    '(24) (shape (car (interpolate-corners aruco img 5 7 100 50))))
+    '(24) (shape (car corners)))
   (test-equal "shape of charuco corner array"
-    '(24 2) (shape (cdr (interpolate-corners aruco img 5 7 100 50))))
+    '(24 2) (shape (cdr corners)))
   (test-equal "detect markers in color image"
-    '(17) (shape (car caruco)))
+    '(17) (shape (car color-aruco)))
   (test-equal "interpolate Charuco corners in color image"
-    '(24) (shape (car (interpolate-corners caruco cimg 5 7 100 50))))
+    '(24) (shape (car (interpolate-corners color-aruco color-img 5 7 100 50))))
   (test-error "throw error if no markers defined"
     'misc-error (interpolate-corners (cons (make (multiarray <int> 1) #:shape '(0))
                                            (make (multiarray <float> 3) #:shape '(0 4 2)))
-                                     img 5 7 100 50)))
+                                     img 5 7 100 50))
+  (test-equal "shape of Charuco corner image"
+    '(500 700) (shape (draw-corners img corners))))
 
 (test-end "aiscm opencv")
