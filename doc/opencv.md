@@ -8,3 +8,17 @@ The following example performs connected component analysis.
 ```Scheme
 @../tests/integration/components.scm@
 ```
+
+## Charuco board
+
+The example below shows how to use OpenCV to detect a Charuco board.
+
+```Scheme
+@../tests/integration/charuco.scm@
+```
+
+A Charuco board image can be generated as follows.
+
+```Scheme
+@../tests/integration/charuco-board.scm@
+```
