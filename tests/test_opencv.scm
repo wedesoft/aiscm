@@ -40,7 +40,11 @@
   (test-equal "shape of Charuco board"
     '(500 700) (shape (charuco-board 5 7 100 50 DICT_4X4_50)))
   (test-error "throw error if board has wrong parameters"
-    'misc-error (charuco-board 5 7 100 150 DICT_4X4_50)))
+    'misc-error (charuco-board 5 7 100 150 DICT_4X4_50))
+  (test-equal "draw single Aruco marker"
+    '(128 128) (shape (draw-marker DICT_4X4_50 0 128)))
+  (test-error "throw exception if Aruco marker is too small"
+    'misc-error (draw-marker DICT_4X4_50 0 0)))
 
 (define img (charuco-board 5 7 100 50 DICT_4X4_50))
 (define color-img (to-array (convert-image (to-image img) 'RGB)))
@@ -65,6 +69,8 @@
                                            (make (multiarray <float> 3) #:shape '(0 4 2)))
                                      img 5 7 100 50))
   (test-equal "shape of Charuco corner image"
-    '(500 700) (shape (draw-corners img corners))))
+    '(500 700) (shape (draw-corners img corners)))
+  (test-error "throw exception when drawing Charuco corners does not work"
+    'misc-error (draw-corners (make (multiarray <ubyte> 2) #:shape '(0 0)) corners)))
 
 (test-end "aiscm opencv")

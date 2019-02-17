@@ -71,6 +71,20 @@ extern "C" {
     return SCM_UNDEFINED;
   }
 
+  SCM opencv_draw_marker(SCM scm_memory, SCM scm_size, SCM scm_id, SCM scm_dict)
+  {
+    int size = scm_to_int(scm_size);
+    int id = scm_to_int(scm_id);
+    try {
+      cv::Mat result(size, size, CV_8UC1, scm_to_pointer(scm_memory));
+      cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
+      cv::aruco::drawMarker(dict, id, size, result);
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-draw-marker", e.what(), SCM_EOL);
+    }
+    return SCM_UNDEFINED;
+  }
+
   SCM opencv_detect_markers(SCM scm_shape, SCM scm_type, SCM scm_memory, SCM scm_dict)
   {
     int height = scm_to_int(scm_car(scm_shape));
@@ -147,7 +161,11 @@ extern "C" {
       cv::Point2f point(corners[2 * i], corners[2 * i + 1]);
       charuco_corners.push_back(point);
     };
-    cv::aruco::drawDetectedCornersCharuco(img, charuco_corners, charuco_ids, cv::Scalar(255, 0, 0));
+    try {
+      cv::aruco::drawDetectedCornersCharuco(img, charuco_corners, charuco_ids, cv::Scalar(255, 0, 0));
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-draw-corners", e.what(), SCM_EOL);
+    }
     return SCM_UNDEFINED;
   }
 
@@ -155,9 +173,17 @@ extern "C" {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
     scm_c_define("CV_8SC1" , scm_from_int(CV_8SC1 ));
+    scm_c_define("CV_8SC3" , scm_from_int(CV_8SC3 ));
     scm_c_define("CV_16UC1", scm_from_int(CV_16UC1));
+    scm_c_define("CV_16UC3", scm_from_int(CV_16UC3));
     scm_c_define("CV_16SC1", scm_from_int(CV_16SC1));
+    scm_c_define("CV_16SC3", scm_from_int(CV_16SC3));
     scm_c_define("CV_32SC1", scm_from_int(CV_32SC1));
+    scm_c_define("CV_32SC3", scm_from_int(CV_32SC3));
+    scm_c_define("CV_32FC1", scm_from_int(CV_32FC1));
+    scm_c_define("CV_32FC3", scm_from_int(CV_32FC3));
+    scm_c_define("CV_64FC1", scm_from_int(CV_64FC1));
+    scm_c_define("CV_64FC3", scm_from_int(CV_64FC3));
     scm_c_define("DICT_4X4_50"        , scm_from_int(cv::aruco::DICT_4X4_50        ));
     scm_c_define("DICT_4X4_50"        , scm_from_int(cv::aruco::DICT_4X4_50        ));
     scm_c_define("DICT_4X4_100"       , scm_from_int(cv::aruco::DICT_4X4_100       ));
@@ -183,6 +209,7 @@ extern "C" {
 
     scm_c_define_gsubr("opencv-connected-components",  5, 0, 0, SCM_FUNC(opencv_connected_components));
     scm_c_define_gsubr("opencv-charuco-board"       ,  6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
+    scm_c_define_gsubr("opencv-draw-marker"         ,  4, 0, 0, SCM_FUNC(opencv_draw_marker         ));
     scm_c_define_gsubr("opencv-detect-markers"      ,  4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
     scm_c_define_gsubr("opencv-interpolate-corners" , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
     scm_c_define_gsubr("opencv-draw-corners"        ,  6, 0, 0, SCM_FUNC(opencv_draw_corners        ));

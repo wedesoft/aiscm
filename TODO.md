@@ -1,7 +1,8 @@
 ## Ready
 
-* Charuco board example
-* draw single Aruco marker
+* error handling when detecting markers in image
+* camera calibration using Charuco
+* estimate pose of Aruco markers
 * Ghost in the Shell style animations
 * connected components analysis
 * OpenCV bindings
