@@ -19,6 +19,8 @@ The example below shows how to use OpenCV to detect a Charuco board.
 
 A Charuco board image can be generated as follows.
 
+![board.png](board.png "Charuco board")
+
 ```Scheme
 @../tests/integration/charuco-board.scm@
 ```

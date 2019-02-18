@@ -29,3 +29,4 @@ train-labels-idx1-ubyte
 voice-commands.csv
 voice-commands.mp3
 voice-model.meta
+board.png
