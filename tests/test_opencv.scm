@@ -62,6 +62,8 @@
     '(24 2) (shape (cdr corners)))
   (test-equal "detect markers in color image"
     '(17) (shape (car color-aruco)))
+  (test-error "throw exception if detection image is of wrong type"
+    'misc-error (detect-markers (make (multiarray <int> 2) #:shape '(320 240)) DICT_4X4_50))
   (test-equal "interpolate Charuco corners in color image"
     '(24) (shape (car (interpolate-corners color-aruco color-img 5 7 100 50))))
   (test-error "throw error if no markers defined"

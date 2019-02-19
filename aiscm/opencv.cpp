@@ -93,7 +93,11 @@ extern "C" {
     cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
     std::vector<int> marker_ids;
     std::vector<std::vector<cv::Point2f>> marker_corners;
-    cv::aruco::detectMarkers(img, dict, marker_corners, marker_ids);
+    try {
+      cv::aruco::detectMarkers(img, dict, marker_corners, marker_ids);
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-detect-markers", e.what(), SCM_EOL);
+    }
     int *ids = from_int_vector(marker_ids);
     float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
     for (int j=0; j<marker_corners.size(); j++)
