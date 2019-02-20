@@ -43,7 +43,7 @@
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
-* colour swapped when converting MJPEG video to FFmpeg video
+* colour swapped when converting MJPEG video to I420 (but not YV12)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * ==, != for complex numbers
 * galaxy simulation

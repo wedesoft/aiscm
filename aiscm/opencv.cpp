@@ -36,15 +36,20 @@ std::vector<int> to_int_vector(void *mem, int count)
   return result;
 }
 
+cv::Mat to_cvmat(SCM scm_shape, SCM scm_type, SCM scm_pointer)
+{
+  int height = scm_to_int(scm_car(scm_shape));
+  int width = scm_to_int(scm_cadr(scm_shape));
+  return cv::Mat(height, width, scm_to_int(scm_type), scm_to_pointer(scm_pointer));
+}
+
 extern "C" {
-  SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_connectivity, SCM scm_label_type)
+  SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_type, SCM scm_connectivity, SCM scm_label_type)
   {
     int count;
     try {
-      int height = scm_to_int(scm_car(scm_shape));
-      int width = scm_to_int(scm_cadr(scm_shape));
-      cv::Mat img(height, width, CV_8UC1, scm_to_pointer(scm_img));
-      cv::Mat result(height, width, scm_to_int(scm_label_type), scm_to_pointer(scm_result));
+      cv::Mat img(to_cvmat(scm_shape, scm_type, scm_img));
+      cv::Mat result(to_cvmat(scm_shape, scm_label_type, scm_result));
       count = connectedComponents(img, result, scm_to_int(scm_connectivity), scm_to_int(scm_label_type));
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-connected-components", e.what(), SCM_EOL);
@@ -73,12 +78,10 @@ extern "C" {
 
   SCM opencv_draw_marker(SCM scm_memory, SCM scm_size, SCM scm_id, SCM scm_dict)
   {
-    int size = scm_to_int(scm_size);
-    int id = scm_to_int(scm_id);
     try {
-      cv::Mat result(size, size, CV_8UC1, scm_to_pointer(scm_memory));
+      cv::Mat result(to_cvmat(scm_list_2(scm_size, scm_size), scm_from_int(CV_8UC1), scm_memory));
       cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
-      cv::aruco::drawMarker(dict, id, size, result);
+      cv::aruco::drawMarker(dict, scm_to_int(scm_id), scm_to_int(scm_size), result);
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-draw-marker", e.what(), SCM_EOL);
     }
@@ -87,9 +90,7 @@ extern "C" {
 
   SCM opencv_detect_markers(SCM scm_shape, SCM scm_type, SCM scm_memory, SCM scm_dict)
   {
-    int height = scm_to_int(scm_car(scm_shape));
-    int width = scm_to_int(scm_cadr(scm_shape));
-    cv::Mat img(height, width, scm_to_int(scm_type), scm_to_pointer(scm_memory));
+    cv::Mat img(to_cvmat(scm_shape, scm_type, scm_memory));
     cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
     std::vector<int> marker_ids;
     std::vector<std::vector<cv::Point2f>> marker_corners;
@@ -113,9 +114,7 @@ extern "C" {
   SCM opencv_interpolate_corners(SCM scm_count, SCM scm_ids, SCM scm_markers, SCM scm_shape, SCM scm_type, SCM scm_image,
                                  SCM scm_rows, SCM scm_cols, SCM scm_size, SCM scm_marker_size)
   {
-    int height = scm_to_int(scm_car(scm_shape));
-    int width = scm_to_int(scm_cadr(scm_shape));
-    cv::Mat img(height, width, scm_to_int(scm_type), scm_to_pointer(scm_image));
+    cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> marker_ids(to_int_vector(scm_to_pointer(scm_ids), count));
     std::vector<std::vector<cv::Point2f>> marker_corners;
@@ -154,9 +153,7 @@ extern "C" {
 
   SCM opencv_draw_corners(SCM scm_shape, SCM scm_type, SCM scm_image, SCM scm_count, SCM scm_ids, SCM scm_corners)
   {
-    int height = scm_to_int(scm_car(scm_shape));
-    int width = scm_to_int(scm_cadr(scm_shape));
-    cv::Mat img(height, width, scm_to_int(scm_type), scm_to_pointer(scm_image));
+    cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
     std::vector<cv::Point2f> charuco_corners;
@@ -211,7 +208,7 @@ extern "C" {
     scm_c_define("DICT_APRILTAG_36h10", scm_from_int(cv::aruco::DICT_APRILTAG_36h10));
     scm_c_define("DICT_APRILTAG_36h11", scm_from_int(cv::aruco::DICT_APRILTAG_36h11));
 
-    scm_c_define_gsubr("opencv-connected-components",  5, 0, 0, SCM_FUNC(opencv_connected_components));
+    scm_c_define_gsubr("opencv-connected-components",  6, 0, 0, SCM_FUNC(opencv_connected_components));
     scm_c_define_gsubr("opencv-charuco-board"       ,  6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
     scm_c_define_gsubr("opencv-draw-marker"         ,  4, 0, 0, SCM_FUNC(opencv_draw_marker         ));
     scm_c_define_gsubr("opencv-detect-markers"      ,  4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
