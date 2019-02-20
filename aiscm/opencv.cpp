@@ -43,6 +43,37 @@ cv::Mat to_cvmat(SCM scm_shape, SCM scm_type, SCM scm_pointer)
   return cv::Mat(height, width, scm_to_int(scm_type), scm_to_pointer(scm_pointer));
 }
 
+float *from_point_vector(const std::vector<cv::Point2f> &vec)
+{
+  float *result = (float *)scm_gc_malloc_pointerless(vec.size() * 2 * sizeof(float), "corners");
+  for (int j=0; j<vec.size(); j++) {
+    result[j * 2    ] = vec[j].x;
+    result[j * 2 + 1] = vec[j].y;
+  };
+  return result;
+}
+
+std::vector<cv::Point2f> to_point_vector(void *mem, int count)
+{
+  std::vector<cv::Point2f> result;
+  for (int i=0; i<count; i++) {
+    cv::Point2f point(((float *)mem)[2 * i], ((float *)mem)[2 * i + 1]);
+    result.push_back(point);
+  };
+  return result;
+}
+
+float *from_point_vector_vector(const std::vector<std::vector<cv::Point2f>> &vec)
+{
+  float *result = (float *)scm_gc_malloc_pointerless(vec.size() * 8 * sizeof(float), "marker-corners");
+  for (int j=0; j<vec.size(); j++)
+    for (int i=0; i<4; i++) {
+      result[j * 8 + 2 * i    ] = vec[j][i].x;
+      result[j * 8 + 2 * i + 1] = vec[j][i].y;
+    };
+  return result;
+}
+
 extern "C" {
   SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_type, SCM scm_connectivity, SCM scm_label_type)
   {
@@ -98,12 +129,7 @@ extern "C" {
       scm_misc_error("opencv-detect-markers", e.what(), SCM_EOL);
     }
     int *ids = from_int_vector(marker_ids);
-    float *markers = (float *)scm_gc_malloc_pointerless(marker_corners.size() * 8 * sizeof(float), "marker-corners");
-    for (int j=0; j<marker_corners.size(); j++)
-      for (int i=0; i<4; i++) {
-        markers[j * 8 + 2 * i    ] = marker_corners[j][i].x;
-        markers[j * 8 + 2 * i + 1] = marker_corners[j][i].y;
-      };
+    float *markers = from_point_vector_vector(marker_corners);
     return scm_list_3(scm_from_int(marker_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
@@ -139,11 +165,7 @@ extern "C" {
       scm_misc_error("opencv-charuco-board", e.what(), SCM_EOL);
     }
     int *ids = from_int_vector(charuco_ids);
-    markers = (float *)scm_gc_malloc_pointerless(charuco_corners.size() * 2 * sizeof(float), "marker-corners");
-    for (int j=0; j<charuco_corners.size(); j++) {
-      markers[j * 2    ] = charuco_corners[j].x;
-      markers[j * 2 + 1] = charuco_corners[j].y;
-    };
+    markers = from_point_vector(charuco_corners);
     return scm_list_3(scm_from_int(charuco_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
@@ -154,12 +176,7 @@ extern "C" {
     cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
-    std::vector<cv::Point2f> charuco_corners;
-    float *corners = (float *)scm_to_pointer(scm_corners);
-    for (int i=0; i<count; i++) {
-      cv::Point2f point(corners[2 * i], corners[2 * i + 1]);
-      charuco_corners.push_back(point);
-    };
+    std::vector<cv::Point2f> charuco_corners(to_point_vector(scm_to_pointer(scm_corners), count));
     try {
       cv::aruco::drawDetectedCornersCharuco(img, charuco_corners, charuco_ids, cv::Scalar(255, 0, 0));
     } catch (cv::Exception &e) {
