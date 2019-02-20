@@ -74,6 +74,20 @@ float *from_point_vector_vector(const std::vector<std::vector<cv::Point2f>> &vec
   return result;
 }
 
+std::vector<std::vector<cv::Point2f>> to_point_vector_vector(void *mem, int count)
+{
+  std::vector<std::vector<cv::Point2f>> result;
+  for (int j=0; j<count; j++) {
+    std::vector<cv::Point2f> empty;
+    result.push_back(empty);
+    for (int i=0; i<4; i++) {
+      cv::Point2f point(((float *)mem)[j * 8 + 2 * i], ((float *)mem)[j * 8 + 2 * i + 1]);
+      result[j].push_back(point);
+    };
+  };
+  return result;
+}
+
 extern "C" {
   SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_type, SCM scm_connectivity, SCM scm_label_type)
   {
@@ -141,16 +155,7 @@ extern "C" {
     cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> marker_ids(to_int_vector(scm_to_pointer(scm_ids), count));
-    std::vector<std::vector<cv::Point2f>> marker_corners;
-    float *markers = (float *)scm_to_pointer(scm_markers);
-    for (int j=0; j<count; j++) {
-      std::vector<cv::Point2f> empty;
-      marker_corners.push_back(empty);
-      for (int i=0; i<4; i++) {
-        cv::Point2f point(markers[j * 8 + 2 * i], markers[j * 8 + 2 * i + 1]);
-        marker_corners[j].push_back(point);
-      };
-    };
+    std::vector<std::vector<cv::Point2f>> marker_corners(to_point_vector_vector(scm_to_pointer(scm_markers), count));
     int rows = scm_to_int(scm_rows);
     int cols = scm_to_int(scm_cols);
     int size = scm_to_int(scm_size);
@@ -165,7 +170,7 @@ extern "C" {
       scm_misc_error("opencv-charuco-board", e.what(), SCM_EOL);
     }
     int *ids = from_int_vector(charuco_ids);
-    markers = from_point_vector(charuco_corners);
+    float *markers = from_point_vector(charuco_corners);
     return scm_list_3(scm_from_int(charuco_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
