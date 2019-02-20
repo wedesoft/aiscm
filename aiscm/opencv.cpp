@@ -57,19 +57,17 @@ extern "C" {
     return scm_from_int(count);
   }
 
-  SCM opencv_charuco_board(SCM scm_result, SCM scm_rows, SCM scm_cols, SCM scm_size, SCM scm_marker_size, SCM scm_dict)
+  SCM opencv_charuco_board(SCM scm_result, SCM scm_shape, SCM scm_rows, SCM scm_cols, SCM scm_size, SCM scm_marker_size, SCM scm_dict)
   {
     try {
       int rows = scm_to_int(scm_rows);
       int cols = scm_to_int(scm_cols);
       int size = scm_to_int(scm_size);
       int marker_size = scm_to_int(scm_marker_size);
-      int width = cols * size;
-      int height = rows * size;
-      cv::Mat result(height, width, CV_8UC1, scm_to_pointer(scm_result));
+      cv::Mat result(to_cvmat(scm_shape, scm_from_int(CV_8UC1), scm_result));
       cv::Ptr<cv::aruco::Dictionary> dict(cv::aruco::getPredefinedDictionary(scm_to_int(scm_dict)));
       cv::Ptr<cv::aruco::CharucoBoard> board(cv::aruco::CharucoBoard::create(cols, rows, size, marker_size, dict));
-      board->draw(cv::Size(width, height), result, 0, 1);
+      board->draw(cv::Size(scm_to_int(scm_cadr(scm_shape)), scm_to_int(scm_car(scm_shape))), result, 0, 1);
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-charuco-board", e.what(), SCM_EOL);
     }
@@ -209,7 +207,7 @@ extern "C" {
     scm_c_define("DICT_APRILTAG_36h11", scm_from_int(cv::aruco::DICT_APRILTAG_36h11));
 
     scm_c_define_gsubr("opencv-connected-components",  6, 0, 0, SCM_FUNC(opencv_connected_components));
-    scm_c_define_gsubr("opencv-charuco-board"       ,  6, 0, 0, SCM_FUNC(opencv_charuco_board       ));
+    scm_c_define_gsubr("opencv-charuco-board"       ,  7, 0, 0, SCM_FUNC(opencv_charuco_board       ));
     scm_c_define_gsubr("opencv-draw-marker"         ,  4, 0, 0, SCM_FUNC(opencv_draw_marker         ));
     scm_c_define_gsubr("opencv-detect-markers"      ,  4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
     scm_c_define_gsubr("opencv-interpolate-corners" , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
