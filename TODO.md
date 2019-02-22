@@ -1,6 +1,5 @@
 ## Ready
 
-* refactor opencv.cpp
 * camera calibration using Charuco
 * estimate pose of Aruco markers
 * Ghost in the Shell style animations

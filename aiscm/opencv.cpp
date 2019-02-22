@@ -190,6 +190,21 @@ extern "C" {
     return SCM_UNDEFINED;
   }
 
+  SCM opencv_grid(SCM scm_cols, SCM scm_size, SCM scm_indices, SCM scm_count)
+  {
+    int cols = scm_to_int(scm_cols);
+    float size = scm_to_double(scm_size);
+    int count = scm_to_int(scm_count);
+    float *result = (float *)scm_gc_malloc_pointerless(count * 3 * sizeof(float), "opencv-grid");
+    int *indices = (int *)scm_to_pointer(scm_indices);
+    for (int i=0; i<count; i++) {
+      result[i * 3    ] = (indices[i] % cols) * size;
+      result[i * 3 + 1] = (indices[i] / cols) * size;
+      result[i * 3 + 2] = 0.0;
+    };
+    return scm_from_pointer(result, NULL);
+  }
+
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
@@ -234,5 +249,6 @@ extern "C" {
     scm_c_define_gsubr("opencv-detect-markers"      ,  4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
     scm_c_define_gsubr("opencv-interpolate-corners" , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
     scm_c_define_gsubr("opencv-draw-corners"        ,  6, 0, 0, SCM_FUNC(opencv_draw_corners        ));
+    scm_c_define_gsubr("opencv-grid"                ,  4, 0, 0, SCM_FUNC(opencv_grid                ));
   };
 }

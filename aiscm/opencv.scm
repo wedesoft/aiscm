@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
-  #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners draw-corners
+  #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners draw-corners grid
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -85,3 +85,9 @@
     (opencv-draw-corners (shape result) (assq-ref typemap (typecode result)) (memory result)
                          (car (shape (car corners))) (memory (car corners)) (memory (cdr corners)))
     result))
+
+(define (grid cols size ids)
+  "Compute 3D object points from Charuco board corner indices"
+  (let* [(indices (to-type <int> ids))
+         (result  (opencv-grid cols size (memory indices) (car (shape indices))))]
+    (make (multiarray <float> 2) #:shape (list (car (shape indices)) 3) #:memory result)))

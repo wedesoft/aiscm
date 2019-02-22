@@ -75,4 +75,12 @@
   (test-error "throw exception when drawing Charuco corners does not work"
     'misc-error (draw-corners (make (multiarray <ubyte> 2) #:shape '(0 0)) corners)))
 
+(test-group "camera calibration"
+  (test-equal "grid with only one corner"
+    '((0.0 0.0 0.0)) (to-list (grid 7 0.25 (arr 0))))
+  (test-equal "grid with second corner"
+    '((0.25 0.0 0.0)) (to-list (grid 7 0.25 (arr 1))))
+  (test-equal "second row of grid"
+    '((0.0 0.25 0.0)) (to-list (grid 7 0.25 (arr 7)))))
+
 (test-end "aiscm opencv")
