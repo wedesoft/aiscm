@@ -3,7 +3,6 @@
 * camera calibration using Charuco
 * estimate pose of Aruco markers
 * Ghost in the Shell style animations
-* connected components analysis
 * OpenCV bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings

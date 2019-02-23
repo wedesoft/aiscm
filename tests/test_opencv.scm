@@ -75,12 +75,21 @@
   (test-error "throw exception when drawing Charuco corners does not work"
     'misc-error (draw-corners (make (multiarray <ubyte> 2) #:shape '(0 0)) corners)))
 
+(define object-points (arr <float> (0 0 0) (0 1 0) (1 0 0) (1 1 0)))
+(define image-points (arr <float> (0 0) (0 1) (1 0) (1 1)))
 (test-group "camera calibration"
   (test-equal "grid with only one corner"
     '((0.0 0.0 0.0)) (to-list (grid 7 0.25 (arr 0))))
   (test-equal "grid with second corner"
     '((0.25 0.0 0.0)) (to-list (grid 7 0.25 (arr 1))))
   (test-equal "second row of grid"
-    '((0.0 0.25 0.0)) (to-list (grid 7 0.25 (arr 7)))))
+    '((0.0 0.25 0.0)) (to-list (grid 7 0.25 (arr 7))))
+  (test-error "error if no object points specified"
+    'misc-error (camera-calibration '() '() '(320 240)))
+  (test-expect-fail 2)
+  (test-equal "shape of camera matrix"
+    '(3 3) (shape (car (camera-calibration (list object-points) (list image-points) '(320 240)))))
+  (test-equal "shape of distortion coefficients"
+    '(5) (shape (cadr (camera-calibration (list object-points) (list image-points) '(320 240))))))
 
 (test-end "aiscm opencv")

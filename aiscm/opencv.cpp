@@ -18,6 +18,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
 #include "util-helpers.h"
 
 int *from_int_vector(const std::vector<int> &vec)
@@ -205,6 +206,26 @@ extern "C" {
     return scm_from_pointer(result, NULL);
   }
 
+  SCM opencv_camera_calibration(SCM scm_count, SCM scm_sizes, SCM scm_object_points, SCM scm_image_points, SCM scm_image_size)
+  {
+    float *camera = (float *)scm_gc_malloc_pointerless(3 * 3 * sizeof(float), "camera-matrix");
+    float *distortion = (float *)scm_gc_malloc_pointerless(5 * sizeof(float), "distortion");
+    std::vector<std::vector<cv::Vec3f>> object_points;
+    std::vector<std::vector<cv::Vec2f>> image_points;
+    cv::Size image_size(scm_to_int(scm_car(scm_image_size)), scm_to_int(scm_cadr(scm_image_size)));
+    cv::Mat camera_matrix(3, 3, CV_32FC1, camera);
+    cv::Mat dist_coeffs(5, 1, CV_32FC1, distortion);
+    std::vector<cv::Mat> rvecs;
+    std::vector<cv::Mat> tvecs;
+    try {
+      double error = cv::calibrateCamera(object_points, image_points, image_size, camera_matrix, dist_coeffs, rvecs, tvecs);
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-calibrate-camera", e.what(), SCM_EOL);
+    }
+    return scm_list_2(scm_from_pointer(camera, NULL),
+                      scm_from_pointer(distortion, NULL));
+  }
+
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
@@ -250,5 +271,6 @@ extern "C" {
     scm_c_define_gsubr("opencv-interpolate-corners" , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
     scm_c_define_gsubr("opencv-draw-corners"        ,  6, 0, 0, SCM_FUNC(opencv_draw_corners        ));
     scm_c_define_gsubr("opencv-grid"                ,  4, 0, 0, SCM_FUNC(opencv_grid                ));
+    scm_c_define_gsubr("opencv-camera-calibration"  ,  5, 0, 0, SCM_FUNC(opencv_camera_calibration  ));
   };
 }

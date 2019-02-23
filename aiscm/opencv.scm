@@ -18,7 +18,7 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
-  #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners draw-corners grid
+  #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners draw-corners grid camera-calibration
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -91,3 +91,12 @@
   (let* [(indices (to-type <int> ids))
          (result  (opencv-grid cols size (memory indices) (car (shape indices))))]
     (make (multiarray <float> 2) #:shape (list (car (shape indices)) 3) #:memory result)))
+
+(define (camera-calibration object-points image-points image-size)
+  (let [(result (opencv-camera-calibration (length object-points)
+                                           (map (compose car shape) object-points)
+                                           (map memory object-points)
+                                           (map memory image-points)
+                                           image-size))]
+    (list (make (multiarray <float> 2) #:shape '(3 3) #:memory (car result))
+          (make (multiarray <float> 1) #:shape '(5) #:memory (cadr result)))))
