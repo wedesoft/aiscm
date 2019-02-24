@@ -89,6 +89,44 @@ std::vector<std::vector<cv::Point2f>> to_point_vector_vector(void *mem, int coun
   return result;
 }
 
+std::vector<std::vector<cv::Point3f>> to_point3f_vector_vector(SCM scm_count, SCM scm_sizes, SCM scm_points)
+{
+  int count = scm_to_int(scm_count);
+  std::vector<std::vector<cv::Point3f>> result;
+  for (int i=0; i<count; i++) {
+    std::vector<cv::Point3f> points;
+    float *ptr = (float *)scm_to_pointer(scm_car(scm_points));
+    int size = scm_to_int(scm_car(scm_sizes));
+    for (int j=0; j<size; j++) {
+      cv::Point3f p(ptr[3 * j], ptr[3 * j + 1], ptr[3 * j + 2]);
+      points.push_back(p);
+    };
+    result.push_back(points);
+    scm_sizes = scm_cdr(scm_sizes);
+    scm_points = scm_cdr(scm_points);
+  };
+  return result;
+}
+
+std::vector<std::vector<cv::Point2f>> to_point2f_vector_vector(SCM scm_count, SCM scm_sizes, SCM scm_points)
+{
+  int count = scm_to_int(scm_count);
+  std::vector<std::vector<cv::Point2f>> result;
+  for (int i=0; i<count; i++) {
+    std::vector<cv::Point2f> points;
+    float *ptr = (float *)scm_to_pointer(scm_car(scm_points));
+    int size = scm_to_int(scm_car(scm_sizes));
+    for (int j=0; j<size; j++) {
+      cv::Point2f p(ptr[2 * j], ptr[2 * j + 1]);
+      points.push_back(p);
+    };
+    result.push_back(points);
+    scm_sizes = scm_cdr(scm_sizes);
+    scm_points = scm_cdr(scm_points);
+  };
+  return result;
+}
+
 extern "C" {
   SCM opencv_connected_components(SCM scm_img, SCM scm_result, SCM scm_shape, SCM scm_type, SCM scm_connectivity, SCM scm_label_type)
   {
@@ -210,8 +248,9 @@ extern "C" {
   {
     float *camera = (float *)scm_gc_malloc_pointerless(3 * 3 * sizeof(float), "camera-matrix");
     float *distortion = (float *)scm_gc_malloc_pointerless(5 * sizeof(float), "distortion");
-    std::vector<std::vector<cv::Vec3f>> object_points;
-    std::vector<std::vector<cv::Vec2f>> image_points;
+    int count = scm_to_int(scm_count);
+    std::vector<std::vector<cv::Point3f>> object_points(to_point3f_vector_vector(scm_count, scm_sizes, scm_object_points));
+    std::vector<std::vector<cv::Point2f>> image_points(to_point2f_vector_vector(scm_count, scm_sizes, scm_object_points));
     cv::Size image_size(scm_to_int(scm_car(scm_image_size)), scm_to_int(scm_cadr(scm_image_size)));
     cv::Mat camera_matrix(3, 3, CV_32FC1, camera);
     cv::Mat dist_coeffs(5, 1, CV_32FC1, distortion);

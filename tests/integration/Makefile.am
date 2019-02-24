@@ -19,7 +19,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
 										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm \
 										gauss_blur.scm gauss_gradient.scm harris_stephens.scm zoom.scm \
-										components.scm charuco-board.scm charuco.scm
+										components.scm charuco-board.scm charuco.scm calibrate_camera.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg letters.png \
 						 voice-record.scm voice-train.scm voice-run.scm

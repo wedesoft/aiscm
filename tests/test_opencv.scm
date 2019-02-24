@@ -86,7 +86,6 @@
     '((0.0 0.25 0.0)) (to-list (grid 7 0.25 (arr 7))))
   (test-error "error if no object points specified"
     'misc-error (camera-calibration '() '() '(320 240)))
-  (test-expect-fail 2)
   (test-equal "shape of camera matrix"
     '(3 3) (shape (car (camera-calibration (list object-points) (list image-points) '(320 240)))))
   (test-equal "shape of distortion coefficients"
