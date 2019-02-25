@@ -250,7 +250,7 @@ extern "C" {
     float *distortion = (float *)scm_gc_malloc_pointerless(5 * sizeof(float), "distortion");
     int count = scm_to_int(scm_count);
     std::vector<std::vector<cv::Point3f>> object_points(to_point3f_vector_vector(scm_count, scm_sizes, scm_object_points));
-    std::vector<std::vector<cv::Point2f>> image_points(to_point2f_vector_vector(scm_count, scm_sizes, scm_object_points));
+    std::vector<std::vector<cv::Point2f>> image_points(to_point2f_vector_vector(scm_count, scm_sizes, scm_image_points));
     cv::Size image_size(scm_to_int(scm_car(scm_image_size)), scm_to_int(scm_cadr(scm_image_size)));
     cv::Mat camera_matrix(3, 3, CV_32FC1, camera);
     cv::Mat dist_coeffs(5, 1, CV_32FC1, distortion);

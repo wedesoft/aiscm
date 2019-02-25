@@ -201,7 +201,6 @@ AC_LANG_PUSH(C++)
 old_LIBS="$LIBS"
 old_CXXFLAGS="$CXXFLAGS"
 LIBS="$LIBS -lopencv_highgui"
-CXXFLAGS="$CFLAGS -I/usr/local/include/opencv4 -I/usr/include/opencv4"
 AC_MSG_CHECKING([for OpenCV library])
 AC_TRY_LINK([#include <opencv2/highgui.hpp>],
             [cv::destroyAllWindows()],
@@ -209,7 +208,6 @@ AC_TRY_LINK([#include <opencv2/highgui.hpp>],
             [AC_MSG_RESULT([no])]
             [AC_MSG_ERROR([Could not locate OpenCV library])])
 LIBS="$old_LIBS"
-CXXFLAGS="$old_CXXFLAGS"
 AC_LANG_POP(C++)
 
 AC_PATH_XTRA
