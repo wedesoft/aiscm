@@ -11,11 +11,12 @@
         (let* [(corners (interpolate-corners markers img 5 7 100 50))
                (object  (grid (1- 7) 0.02 (car corners)))
                (image   (cdr corners))]
-          (if (>= (car (shape (car corners))) 4)
+          (if (>= (car (shape (car corners))) 5)
             (begin
               (set! object-points (cons object object-points))
               (set! image-points (cons image image-points))))
           (draw-corners img corners))))))
-(define image-size (list (cadr (shape v)) (car (shape v))))
-(define cal (camera-calibration object-points image-points image-size))
-(format #t "error = ~a~&camera matrix = ~a~&distortion coefficients = ~a~&" (car cal) (cadr cal) (caddr cal))
+(define cal (camera-calibration object-points image-points (shape v)))
+(format #t "error = ~a~&" (car cal))
+(format #t "camera matrix = ~a~&" (cadr cal))
+(format #t "distortion coefficients = ~a~&" (to-list (caddr cal)))
