@@ -1,5 +1,6 @@
 ## Ready
 
+* return calibration error
 * Use OpenCV 3.4.5 (via pkg-config)
 * camera calibration using Charuco
 * estimate pose of Aruco markers
