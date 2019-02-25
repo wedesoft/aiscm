@@ -18,4 +18,4 @@
           (draw-corners img corners))))))
 (define image-size (list (cadr (shape v)) (car (shape v))))
 (define cal (camera-calibration object-points image-points image-size))
-(format #t "~a~&~a~&~a~&" image-size (car cal) (cadr cal))
+(format #t "error = ~a~&camera matrix = ~a~&distortion coefficients = ~a~&" (car cal) (cadr cal) (caddr cal))

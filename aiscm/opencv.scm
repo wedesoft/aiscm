@@ -98,5 +98,6 @@
                                            (map memory object-points)
                                            (map memory image-points)
                                            image-size))]
-    (list (make (multiarray <double> 2) #:shape '(3 3) #:memory (car result))
-          (make (multiarray <double> 1) #:shape '(5) #:memory (cadr result)))))
+    (list (car result)
+          (make (multiarray <double> 2) #:shape '(3 3) #:memory (cadr result))
+          (make (multiarray <double> 1) #:shape '(5) #:memory (caddr result)))))

@@ -87,8 +87,8 @@
   (test-error "error if no object points specified"
     'misc-error (camera-calibration '() '() '(320 240)))
   (test-equal "shape of camera matrix"
-    '(3 3) (shape (car (camera-calibration (list object-points) (list image-points) '(320 240)))))
+    '(3 3) (shape (cadr (camera-calibration (list object-points) (list image-points) '(320 240)))))
   (test-equal "shape of distortion coefficients"
-    '(5) (shape (cadr (camera-calibration (list object-points) (list image-points) '(320 240))))))
+    '(5) (shape (caddr (camera-calibration (list object-points) (list image-points) '(320 240))))))
 
 (test-end "aiscm opencv")

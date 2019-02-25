@@ -256,12 +256,14 @@ extern "C" {
     cv::Mat dist_coeffs(5, 1, CV_64FC1, distortion);
     std::vector<cv::Mat> rvecs;
     std::vector<cv::Mat> tvecs;
+    double error;
     try {
-      double error = cv::calibrateCamera(object_points, image_points, image_size, camera_matrix, dist_coeffs, rvecs, tvecs);
+      error = cv::calibrateCamera(object_points, image_points, image_size, camera_matrix, dist_coeffs, rvecs, tvecs);
     } catch (cv::Exception &e) {
       scm_misc_error("opencv-calibrate-camera", e.what(), SCM_EOL);
     }
-    return scm_list_2(scm_from_pointer(camera, NULL),
+    return scm_list_3(scm_from_double(error),
+                      scm_from_pointer(camera, NULL),
                       scm_from_pointer(distortion, NULL));
   }
 
