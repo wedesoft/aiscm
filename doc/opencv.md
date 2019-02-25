@@ -19,8 +19,14 @@ The example below shows how to use OpenCV to detect a Charuco board.
 
 A Charuco board image can be generated as follows.
 
-![board.png](board.png "Charuco board")
-
 ```Scheme
 @../tests/integration/charuco-board.scm@
+```
+
+![board.png](board.png "Charuco board")
+
+A printed Charuco board can be used to calibrate a camera as shown below.
+
+```Scheme
+@../tests/integration/calibrate_camera.scm@
 ```
