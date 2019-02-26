@@ -80,6 +80,10 @@ PKG_CHECK_MODULES(AVFORMAT, libavformat >= 54.20.4)
 AC_SUBST(AVFORMAT_CFLAGS)
 AC_SUBST(AVFORMAT_LIBS)
 
+PKG_CHECK_MODULES(OPENCV, opencv >= 3.4.5)
+AC_SUBST(OPENCV_CFLAGS)
+AC_SUBST(OPENCV_LIBS)
+
 old_LIBS="$LIBS"
 LIBS="$LIBS $AVFORMAT_LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
 AC_MSG_CHECKING([for av_frame_alloc])
@@ -196,19 +200,6 @@ AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
             [AC_MSG_RESULT([no])]
             [AC_MSG_ERROR([Could not locate Tensorflow C library])])
 LIBS="$old_LIBS"
-
-AC_LANG_PUSH(C++)
-old_LIBS="$LIBS"
-old_CXXFLAGS="$CXXFLAGS"
-LIBS="$LIBS -lopencv_highgui"
-AC_MSG_CHECKING([for OpenCV library])
-AC_TRY_LINK([#include <opencv2/highgui.hpp>],
-            [cv::destroyAllWindows()],
-            [AC_MSG_RESULT([yes])],
-            [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate OpenCV library])])
-LIBS="$old_LIBS"
-AC_LANG_POP(C++)
 
 AC_PATH_XTRA
 if test "x$no_x" = xyes; then
