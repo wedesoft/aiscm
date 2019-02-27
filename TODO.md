@@ -1,7 +1,8 @@
 ## Ready
 
-* camera calibration using Charuco
+* draw detected markers (error handling)
 * estimate pose of Aruco markers
+* draw axes
 * Ghost in the Shell style animations
 * OpenCV bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)

@@ -229,6 +229,16 @@ extern "C" {
     return SCM_UNDEFINED;
   }
 
+  SCM opencv_draw_detected_markers(SCM scm_shape, SCM scm_type, SCM scm_image, SCM scm_count, SCM scm_ids, SCM scm_markers)
+  {
+    cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
+    int count = scm_to_int(scm_count);
+    std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
+    std::vector<std::vector<cv::Point2f>> marker_corners(to_point_vector_vector(scm_to_pointer(scm_markers), count));
+    cv::aruco::drawDetectedMarkers(img, marker_corners, charuco_ids, cv::Scalar(0, 255, 0));
+    return SCM_UNDEFINED;
+  }
+
   SCM opencv_grid(SCM scm_cols, SCM scm_size, SCM scm_indices, SCM scm_count)
   {
     int cols = scm_to_int(scm_cols);
@@ -305,13 +315,14 @@ extern "C" {
     scm_c_define("DICT_APRILTAG_36h10", scm_from_int(cv::aruco::DICT_APRILTAG_36h10));
     scm_c_define("DICT_APRILTAG_36h11", scm_from_int(cv::aruco::DICT_APRILTAG_36h11));
 
-    scm_c_define_gsubr("opencv-connected-components",  6, 0, 0, SCM_FUNC(opencv_connected_components));
-    scm_c_define_gsubr("opencv-charuco-board"       ,  7, 0, 0, SCM_FUNC(opencv_charuco_board       ));
-    scm_c_define_gsubr("opencv-draw-marker"         ,  4, 0, 0, SCM_FUNC(opencv_draw_marker         ));
-    scm_c_define_gsubr("opencv-detect-markers"      ,  4, 0, 0, SCM_FUNC(opencv_detect_markers      ));
-    scm_c_define_gsubr("opencv-interpolate-corners" , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners ));
-    scm_c_define_gsubr("opencv-draw-corners"        ,  6, 0, 0, SCM_FUNC(opencv_draw_corners        ));
-    scm_c_define_gsubr("opencv-grid"                ,  4, 0, 0, SCM_FUNC(opencv_grid                ));
-    scm_c_define_gsubr("opencv-camera-calibration"  ,  5, 0, 0, SCM_FUNC(opencv_camera_calibration  ));
+    scm_c_define_gsubr("opencv-connected-components" ,  6, 0, 0, SCM_FUNC(opencv_connected_components ));
+    scm_c_define_gsubr("opencv-charuco-board"        ,  7, 0, 0, SCM_FUNC(opencv_charuco_board        ));
+    scm_c_define_gsubr("opencv-draw-marker"          ,  4, 0, 0, SCM_FUNC(opencv_draw_marker          ));
+    scm_c_define_gsubr("opencv-detect-markers"       ,  4, 0, 0, SCM_FUNC(opencv_detect_markers       ));
+    scm_c_define_gsubr("opencv-interpolate-corners"  , 10, 0, 0, SCM_FUNC(opencv_interpolate_corners  ));
+    scm_c_define_gsubr("opencv-draw-corners"         ,  6, 0, 0, SCM_FUNC(opencv_draw_corners         ));
+    scm_c_define_gsubr("opencv-draw-detected-markers",  6, 0, 0, SCM_FUNC(opencv_draw_detected_markers));
+    scm_c_define_gsubr("opencv-grid"                 ,  4, 0, 0, SCM_FUNC(opencv_grid                 ));
+    scm_c_define_gsubr("opencv-camera-calibration"   ,  5, 0, 0, SCM_FUNC(opencv_camera_calibration   ));
   };
 }
