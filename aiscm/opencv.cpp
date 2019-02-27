@@ -235,7 +235,11 @@ extern "C" {
     int count = scm_to_int(scm_count);
     std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
     std::vector<std::vector<cv::Point2f>> marker_corners(to_point_vector_vector(scm_to_pointer(scm_markers), count));
-    cv::aruco::drawDetectedMarkers(img, marker_corners, charuco_ids, cv::Scalar(0, 255, 0));
+    try {
+      cv::aruco::drawDetectedMarkers(img, marker_corners, charuco_ids, cv::Scalar(0, 255, 0));
+    } catch (cv::Exception &e) {
+      scm_misc_error("opencv-draw-detected-markers", e.what(), SCM_EOL);
+    }
     return SCM_UNDEFINED;
   }
 

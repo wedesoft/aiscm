@@ -75,7 +75,9 @@
   (test-error "throw exception when drawing Charuco corners does not work"
     'misc-error (draw-corners (make (multiarray <ubyte> 2) #:shape '(0 0)) corners))
   (test-equal "draw detected markers"
-    '(500 700) (shape (draw-detected-markers img aruco))))
+    '(500 700) (shape (draw-detected-markers img aruco)))
+  (test-error "error handling when drawing detected markers"
+    'misc-error (draw-detected-markers (make (multiarray (rgb <ubyte>) 2) #:shape '(0 0)) aruco)))
 
 (define object-points (arr <float> (0 0 0) (0 1 0) (1 0 0) (1 1 0)))
 (define image-points (arr <float> (0 0) (0 1) (1 0) (1 1)))

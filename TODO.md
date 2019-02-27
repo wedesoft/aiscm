@@ -1,6 +1,5 @@
 ## Ready
 
-* draw detected markers (error handling)
 * estimate pose of Aruco markers
 * draw axes
 * Ghost in the Shell style animations
