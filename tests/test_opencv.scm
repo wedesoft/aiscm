@@ -100,8 +100,9 @@
 (define distortion (arr <double> 0.25 0.5 0.75 1.0 1.25))
 (write-camera-calibration cal-file-name intrinsic distortion)
 (test-group "save/load camera calibration"
-  (test-expect-fail 1)
   (test-equal "read camera intrinsic matrix"
-    (to-list intrinsic) (to-list (car (read-camera-calibration cal-file-name)))))
+    (to-list intrinsic) (to-list (car (read-camera-calibration cal-file-name))))
+  (test-equal "read distortion coefficients"
+    (to-list distortion) (to-list (cdr (read-camera-calibration cal-file-name)))))
 
 (test-end "aiscm opencv")

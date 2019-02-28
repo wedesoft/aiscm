@@ -117,4 +117,6 @@
 
 (define (read-camera-calibration file-name)
   "Read camera calibration data from file"
-  (cons #f #f))
+  (let [(result (opencv-read-calibration file-name))]
+    (cons (make (multiarray <double> 2) #:shape '(3 3) #:memory (car result))
+          (make (multiarray <double> 1) #:shape '(5) #:memory (cadr result)))))
