@@ -281,6 +281,17 @@ extern "C" {
                       scm_from_pointer(distortion, NULL));
   }
 
+  SCM opencv_write_calibration(SCM scm_file_name, SCM scm_intrinsic, SCM scm_distortion)
+  {
+    cv::FileStorage fs(scm_to_locale_string(scm_file_name), cv::FileStorage::WRITE);
+    cv::Mat intrinsic(3, 3, CV_64FC1, scm_to_pointer(scm_intrinsic));
+    cv::Mat distortion(5, 1, CV_64FC1, scm_to_pointer(scm_distortion));
+    fs << "cameraMatrix" << intrinsic;
+    fs << "distCoeffs" << distortion;
+    fs.release();
+    return SCM_UNDEFINED;
+  }
+
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
@@ -328,5 +339,6 @@ extern "C" {
     scm_c_define_gsubr("opencv-draw-detected-markers",  6, 0, 0, SCM_FUNC(opencv_draw_detected_markers));
     scm_c_define_gsubr("opencv-grid"                 ,  4, 0, 0, SCM_FUNC(opencv_grid                 ));
     scm_c_define_gsubr("opencv-camera-calibration"   ,  5, 0, 0, SCM_FUNC(opencv_camera_calibration   ));
+    scm_c_define_gsubr("opencv-write-calibration"    ,  3, 0, 0, SCM_FUNC(opencv_write_calibration    ));
   };
 }

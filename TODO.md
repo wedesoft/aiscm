@@ -1,7 +1,10 @@
 ## Ready
 
+* read calibration data from file
+* add drawing of detected markers to documentation
 * estimate pose of Aruco markers
 * draw axes
+* OpenCV find circles grid?
 * Ghost in the Shell style animations
 * OpenCV bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)

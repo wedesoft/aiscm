@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners
-            draw-corners draw-detected-markers grid camera-calibration
+            draw-corners draw-detected-markers grid camera-calibration write-camera-calibration read-camera-calibration
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -110,3 +110,11 @@
     (list (car result)
           (make (multiarray <double> 2) #:shape '(3 3) #:memory (cadr result))
           (make (multiarray <double> 1) #:shape '(5) #:memory (caddr result)))))
+
+(define (write-camera-calibration file-name intrinsic distortion)
+  "Write camera calibration data to file"
+  (opencv-write-calibration file-name (memory intrinsic) (memory distortion)))
+
+(define (read-camera-calibration file-name)
+  "Read camera calibration data from file"
+  (cons #f #f))

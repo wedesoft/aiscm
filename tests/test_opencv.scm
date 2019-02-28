@@ -95,4 +95,13 @@
   (test-equal "shape of distortion coefficients"
     '(5) (shape (caddr (camera-calibration (list object-points) (list image-points) '(320 240))))))
 
+(define cal-file-name (string-append (tmpnam) ".yml"))
+(define intrinsic (arr <double> (680.0 0.0 320.0) (0.0 680.0 240.0) (0.0 0.0 1.0)))
+(define distortion (arr <double> 0.25 0.5 0.75 1.0 1.25))
+(write-camera-calibration cal-file-name intrinsic distortion)
+(test-group "save/load camera calibration"
+  (test-expect-fail 1)
+  (test-equal "read camera intrinsic matrix"
+    (to-list intrinsic) (to-list (car (read-camera-calibration cal-file-name)))))
+
 (test-end "aiscm opencv")
