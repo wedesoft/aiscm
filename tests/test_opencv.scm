@@ -103,6 +103,10 @@
   (test-equal "read camera intrinsic matrix"
     (to-list intrinsic) (to-list (car (read-camera-calibration cal-file-name))))
   (test-equal "read distortion coefficients"
-    (to-list distortion) (to-list (cdr (read-camera-calibration cal-file-name)))))
+    (to-list distortion) (to-list (cdr (read-camera-calibration cal-file-name))))
+  (test-error "throw exception when failing to write camera calibration"
+    'misc-error (write-camera-calibration "nosuchdir/test.yml" intrinsic distortion))
+  (test-error "throw exception when failing to read a camera calibration file"
+    'misc-error (read-camera-calibration "nosuchfile.yml")))
 
 (test-end "aiscm opencv")

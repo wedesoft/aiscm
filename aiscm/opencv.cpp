@@ -284,24 +284,26 @@ extern "C" {
   SCM opencv_write_calibration(SCM scm_file_name, SCM scm_intrinsic, SCM scm_distortion)
   {
     cv::FileStorage fs(scm_to_locale_string(scm_file_name), cv::FileStorage::WRITE);
+    if (!fs.isOpened())
+      scm_misc_error("opencv-write-calibration", "error writing to calibration file \"~a\"", scm_list_1(scm_file_name));
     cv::Mat intrinsic(3, 3, CV_64FC1, scm_to_pointer(scm_intrinsic));
     cv::Mat distortion(5, 1, CV_64FC1, scm_to_pointer(scm_distortion));
     fs << "cameraMatrix" << intrinsic;
     fs << "distCoeffs" << distortion;
-    fs.release();
     return SCM_UNDEFINED;
   }
 
   SCM opencv_read_calibration(SCM scm_file_name)
   {
     cv::FileStorage fs(scm_to_locale_string(scm_file_name), cv::FileStorage::READ);
+    if (!fs.isOpened())
+      scm_misc_error("opencv-read-calibration", "error reading from calibration file \"~a\"", scm_list_1(scm_file_name));
     float *camera_ptr = (float *)scm_gc_malloc_pointerless(3 * 3 * sizeof(double), "camera-matrix");
     float *distortion_ptr = (float *)scm_gc_malloc_pointerless(5 * sizeof(double), "distortion");
     cv::Mat intrinsic(3, 3, CV_64FC1, camera_ptr);
     cv::Mat distortion(5, 1, CV_64FC1, distortion_ptr);
     fs["cameraMatrix"] >> intrinsic;
     fs["distCoeffs"] >> distortion;
-    fs.release();
     return scm_list_2(scm_from_pointer(camera_ptr, NULL),
                       scm_from_pointer(distortion_ptr, NULL));
   }

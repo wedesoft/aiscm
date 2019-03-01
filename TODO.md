@@ -1,6 +1,5 @@
 ## Ready
 
-* error handling when writing/reading cal file
 * add drawing of detected markers to documentation
 * estimate pose of Aruco markers
 * draw axes
