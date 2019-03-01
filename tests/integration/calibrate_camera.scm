@@ -17,6 +17,5 @@
               (set! image-points (cons image image-points))))
           (draw-corners img corners))))))
 (define cal (camera-calibration object-points image-points (shape v)))
-(format #t "error = ~a~&" (car cal))
-(format #t "camera matrix = ~a~&" (cadr cal))
-(format #t "distortion coefficients = ~a~&" (to-list (caddr cal)))
+(format #t "reprojection error = ~a~&" (car cal))
+(write-camera-calibration "camera.yml" (cadr cal) (caddr cal))
