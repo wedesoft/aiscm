@@ -44,7 +44,7 @@ cv::Mat to_cvmat(SCM scm_shape, SCM scm_type, SCM scm_pointer)
   return cv::Mat(height, width, scm_to_int(scm_type), scm_to_pointer(scm_pointer));
 }
 
-float *from_point_vector(const std::vector<cv::Point2f> &vec)
+float *from_point2f_vector(const std::vector<cv::Point2f> &vec)
 {
   float *result = (float *)scm_gc_malloc_pointerless(vec.size() * 2 * sizeof(float), "corners");
   for (int j=0; j<vec.size(); j++) {
@@ -54,7 +54,7 @@ float *from_point_vector(const std::vector<cv::Point2f> &vec)
   return result;
 }
 
-std::vector<cv::Point2f> to_point_vector(void *mem, int count)
+std::vector<cv::Point2f> to_point2f_vector(void *mem, int count)
 {
   std::vector<cv::Point2f> result;
   for (int i=0; i<count; i++) {
@@ -64,7 +64,7 @@ std::vector<cv::Point2f> to_point_vector(void *mem, int count)
   return result;
 }
 
-float *from_point_vector_vector(const std::vector<std::vector<cv::Point2f>> &vec)
+float *from_point2f_quadruple_vector(const std::vector<std::vector<cv::Point2f>> &vec)
 {
   float *result = (float *)scm_gc_malloc_pointerless(vec.size() * 8 * sizeof(float), "marker-corners");
   for (int j=0; j<vec.size(); j++)
@@ -75,7 +75,7 @@ float *from_point_vector_vector(const std::vector<std::vector<cv::Point2f>> &vec
   return result;
 }
 
-std::vector<std::vector<cv::Point2f>> to_point_vector_vector(void *mem, int count)
+std::vector<std::vector<cv::Point2f>> to_point2f_quadruple_vector(void *mem, int count)
 {
   std::vector<std::vector<cv::Point2f>> result;
   for (int j=0; j<count; j++) {
@@ -182,7 +182,7 @@ extern "C" {
       scm_misc_error("opencv-detect-markers", e.what(), SCM_EOL);
     }
     int *ids = from_int_vector(marker_ids);
-    float *markers = from_point_vector_vector(marker_corners);
+    float *markers = from_point2f_quadruple_vector(marker_corners);
     return scm_list_3(scm_from_int(marker_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
@@ -194,7 +194,7 @@ extern "C" {
     cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> marker_ids(to_int_vector(scm_to_pointer(scm_ids), count));
-    std::vector<std::vector<cv::Point2f>> marker_corners(to_point_vector_vector(scm_to_pointer(scm_markers), count));
+    std::vector<std::vector<cv::Point2f>> marker_corners(to_point2f_quadruple_vector(scm_to_pointer(scm_markers), count));
     int rows = scm_to_int(scm_rows);
     int cols = scm_to_int(scm_cols);
     int size = scm_to_int(scm_size);
@@ -209,7 +209,7 @@ extern "C" {
       scm_misc_error("opencv-charuco-board", e.what(), SCM_EOL);
     }
     int *ids = from_int_vector(charuco_ids);
-    float *markers = from_point_vector(charuco_corners);
+    float *markers = from_point2f_vector(charuco_corners);
     return scm_list_3(scm_from_int(charuco_ids.size()),
                       scm_from_pointer(ids, NULL),
                       scm_from_pointer(markers, NULL));
@@ -220,7 +220,7 @@ extern "C" {
     cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
-    std::vector<cv::Point2f> charuco_corners(to_point_vector(scm_to_pointer(scm_corners), count));
+    std::vector<cv::Point2f> charuco_corners(to_point2f_vector(scm_to_pointer(scm_corners), count));
     try {
       cv::aruco::drawDetectedCornersCharuco(img, charuco_corners, charuco_ids, cv::Scalar(255, 0, 0));
     } catch (cv::Exception &e) {
@@ -234,7 +234,7 @@ extern "C" {
     cv::Mat img(to_cvmat(scm_shape, scm_type, scm_image));
     int count = scm_to_int(scm_count);
     std::vector<int> charuco_ids(to_int_vector(scm_to_pointer(scm_ids), count));
-    std::vector<std::vector<cv::Point2f>> marker_corners(to_point_vector_vector(scm_to_pointer(scm_markers), count));
+    std::vector<std::vector<cv::Point2f>> marker_corners(to_point2f_quadruple_vector(scm_to_pointer(scm_markers), count));
     try {
       cv::aruco::drawDetectedMarkers(img, marker_corners, charuco_ids, cv::Scalar(0, 255, 0));
     } catch (cv::Exception &e) {

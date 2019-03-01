@@ -1,11 +1,8 @@
 ## Ready
 
-* add drawing of detected markers to documentation
-* estimate pose of Aruco markers
-* draw axes
-* OpenCV find circles grid?
+* estimate pose of Aruco markers (estimatePoseSingleMarkers)
+* example drawing markers and axes
 * Ghost in the Shell style animations
-* OpenCV bindings
 * histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
 * Debian sid FFmpeg API changes
