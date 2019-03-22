@@ -32,7 +32,7 @@
   (display #:init-keyword #:display #:getter get-display))
 (define-method (initialize (self <xdisplay>) initargs)
   (let-keywords initargs #f (name)
-    (let [(name (or name ":0.0"))]
+    (let [(name (or name (getenv "DISPLAY") ":0.0"))]
       (next-method self (list #:display (make-display name))))))
 (define-method (shape (self <xdisplay>)) (display-shape (get-display self)))
 (define-method (process-events (self <xdisplay>)) (display-process-events (get-display self)))
