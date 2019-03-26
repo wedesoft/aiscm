@@ -33,6 +33,27 @@ sudo apt-get install -q --yes build-essential autoconf automake libtool devscrip
 sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 ```
 
+You may install OpenCV (higher than 3.4.5) as follows:
+
+```Shell
+git clone https://github.com/opencv/opencv.git
+git clone https://github.com/opencv/opencv_contrib.git
+cd opencv
+mkdir build
+cd build
+cmake -DBUILD_EXAMPLES=ON -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules ../
+make -j
+sudo make install
+```
+
+NOTE: ```-DBUILD_EXAMPLES=ON``` is the easiest way to install Aruco.
+
+NOTE: ```-DOPENCV_GENERATE_PKGCONFIG=YES``` is required by pkg-config, since AIscm detects dependencies with pkg-config.
+
+You may install the latest TensorFlow as follows:
+
+https://www.tensorflow.org/install/lang_c
+
 ## Installation
 
 Finally you can install the software as follows
