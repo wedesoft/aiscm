@@ -1,9 +1,13 @@
 ## Ready
 
+* machine learning examples: check feature scaling
 * estimate pose of Aruco markers (estimatePoseSingleMarkers)
+* MNIST example: add bias unit to each convolutional layer
+* remove word recognition example
 * example drawing markers and axes
+* how to broadcast vectors
 * Ghost in the Shell style animations
-* histogram with weights and customisable reduce operation (e.g. min instead of + to find bounding box for each component)
+* histogram with weights and customisable default and reduce op (e.g. min instead of + to find bounding box for each component)
 * Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
