@@ -1,6 +1,6 @@
 ## Ready
 
-* machine learning examples: check feature scaling
+* MNIST: use column vectors for training data
 * estimate pose of Aruco markers (estimatePoseSingleMarkers)
 * MNIST example: add bias unit to each convolutional layer
 * remove word recognition example
