@@ -77,8 +77,8 @@
 
 ; Random initialization of network parameters
 (define initializers
-  (list (tf-assign k1 (tf-mul (sqrt (/ 2 (* 3 3 4))) (tf-truncated-normal (arr <int> 3 3 1 4) #:dtype <double>)))
-        (tf-assign k2 (tf-mul (sqrt (/ 2 (* 3 3 16))) (tf-truncated-normal (arr <int> 3 3 4 16) #:dtype <double>)))
+  (list (tf-assign k1 (tf-mul (sqrt (/ 2 (* 3 3))) (tf-truncated-normal (arr <int> 3 3 1 4) #:dtype <double>)))
+        (tf-assign k2 (tf-mul (sqrt (/ 2 (* 3 3 4))) (tf-truncated-normal (arr <int> 3 3 4 16) #:dtype <double>)))
         (tf-assign m1 (tf-mul (sqrt (/ 2 d)) (tf-truncated-normal (to-array <int> (list d 40)) #:dtype <double>)))
         (tf-assign b1 (fill <double> '(40) 0.0))
         (tf-assign m2 (tf-mul (/ 2 (sqrt 40)) (tf-truncated-normal (arr <int> 40 10) #:dtype <double>)))
