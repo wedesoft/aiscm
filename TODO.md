@@ -1,7 +1,7 @@
 ## Ready
 
-* MNIST: use column vectors for training data
 * estimate pose of Aruco markers (estimatePoseSingleMarkers)
+* draw axes of markers (drawAxis) using estimatePoseSingleMarkers
 * MNIST example: add bias unit to each convolutional layer
 * remove word recognition example
 * example drawing markers and axes

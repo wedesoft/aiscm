@@ -109,4 +109,11 @@
   (test-error "throw exception when failing to read a camera calibration file"
     'misc-error (read-camera-calibration "nosuchfile.yml")))
 
+(define corners (arr <float> ((0 0) (0 1) (1 0) (1 1))))
+(test-group "estimate pose of markers"
+  (test-equal "return array of rotation vectors"
+    '(1 3) (shape (car (estimate-pose-single-markers corners 1.0 intrinsic distortion))))
+  (test-equal "return array of rotation vectors"
+    '(1 3) (shape (cdr (estimate-pose-single-markers corners 1.0 intrinsic distortion)))))
+
 (test-end "aiscm opencv")
