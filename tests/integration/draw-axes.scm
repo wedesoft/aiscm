@@ -5,5 +5,7 @@
   (lambda _
     (let* [(img     (to-array (read-image v)))
            (markers (detect-markers img DICT_4X4_50))
-           (pose    (estimate-pose-single-markers (cdr markers) 0.02 (car c) (cdr c)))]
-      (draw-detected-markers img markers))))
+           (pose    (estimate-pose-single-markers (cdr markers) 0.02 (car c) (cdr c)))
+           (idx     (list-index (to-list (car markers)) 0))]
+      (if idx (draw-axis img (car c) (cdr c) (get (car pose) idx) (get (cdr pose) idx) 0.02))
+      img)))

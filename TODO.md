@@ -1,8 +1,7 @@
 ## Ready
 
-* estimate pose of Aruco markers (estimatePoseSingleMarkers)
-* draw axes of markers (drawAxis) using estimatePoseSingleMarkers
 * MNIST example: add bias unit to each convolutional layer
+* type checks in OpenCV wrappers
 * remove word recognition example
 * example drawing markers and axes
 * how to broadcast vectors

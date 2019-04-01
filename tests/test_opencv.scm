@@ -110,10 +110,13 @@
     'misc-error (read-camera-calibration "nosuchfile.yml")))
 
 (define corners (arr <float> ((0 0) (0 1) (1 0) (1 1))))
+(define img (make (multiarray (rgb <ubyte>) 2) #:shape '(240 320)))
 (test-group "estimate pose of markers"
   (test-equal "return array of rotation vectors"
     '(1 3) (shape (car (estimate-pose-single-markers corners 1.0 intrinsic distortion))))
   (test-equal "return array of rotation vectors"
-    '(1 3) (shape (cdr (estimate-pose-single-markers corners 1.0 intrinsic distortion)))))
+    '(1 3) (shape (cdr (estimate-pose-single-markers corners 1.0 intrinsic distortion))))
+  (test-equal "draw axes"
+    '(240 320) (shape (draw-axis img intrinsic distortion (arr <double> 0 0 0) (arr <double> 0 0 0) 0.25))))
 
 (test-end "aiscm opencv")

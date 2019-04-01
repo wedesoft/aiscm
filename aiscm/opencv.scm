@@ -20,7 +20,7 @@
   #:use-module (aiscm core)
   #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners
             draw-corners draw-detected-markers grid camera-calibration write-camera-calibration read-camera-calibration
-            estimate-pose-single-markers
+            estimate-pose-single-markers draw-axis
             DICT_4X4_50 DICT_4X4_50 DICT_4X4_100 DICT_4X4_250 DICT_4X4_1000 DICT_5X5_50 DICT_5X5_100 DICT_5X5_250 DICT_5X5_1000
             DICT_6X6_50 DICT_6X6_100 DICT_6X6_250 DICT_6X6_1000 DICT_7X7_50 DICT_7X7_100 DICT_7X7_250 DICT_7X7_1000
             DICT_ARUCO_ORIGINAL DICT_APRILTAG_16h5 DICT_APRILTAG_25h9 DICT_APRILTAG_36h10 DICT_APRILTAG_36h11))
@@ -89,7 +89,7 @@
     result))
 
 (define (draw-detected-markers img markers)
-  "Draw detected Aruco markers"
+  "Draw detected Aruco markers on a copy of the image"
   (let [(result (duplicate img))]
     (opencv-draw-detected-markers (shape result) (assq-ref typemap (typecode result)) (memory result)
                                   (car (shape (car markers))) (memory (car markers)) (memory (cdr markers)))
@@ -131,3 +131,9 @@
                                                      (memory distortion)))]
     (cons (make (multiarray <double> 2) #:shape (list (car result) 3) #:memory (cadr result))
           (make (multiarray <double> 2) #:shape (list (car result) 3) #:memory (caddr result)))))
+
+(define (draw-axis image camera distortion rvec tvec len)
+  "Draw coordinate system axis for one coordinate system into image"
+  (opencv-draw-axis (memory image) (shape image) (assq-ref typemap (typecode image))
+                    (memory camera) (memory distortion) (memory rvec) (memory tvec) len)
+  image)

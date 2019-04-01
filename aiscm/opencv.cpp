@@ -73,6 +73,16 @@ double *from_vec3d_vector(const std::vector<cv::Vec3d> &vec)
   return result;
 }
 
+cv::Vec3d to_vec3d(void *mem)
+{
+  double *double_mem = (double *)mem;
+  cv::Vec3d result;
+  result[0] = double_mem[0];
+  result[1] = double_mem[1];
+  result[2] = double_mem[2];
+  return result;
+}
+
 float *from_point2f_quadruple_vector(const std::vector<std::vector<cv::Point2f>> &vec)
 {
   float *result = (float *)scm_gc_malloc_pointerless(vec.size() * 8 * sizeof(float), "marker-corners");
@@ -339,6 +349,18 @@ extern "C" {
                       scm_from_pointer(tvecs_ptr, NULL));
   }
 
+  SCM opencv_draw_axis(SCM scm_img, SCM scm_shape, SCM scm_typecode, SCM scm_camera, SCM scm_distortion,
+                       SCM scm_rvec, SCM scm_tvec, SCM scm_len)
+  {
+    cv::Mat img(to_cvmat(scm_shape, scm_typecode, scm_img));
+    cv::Mat camera(3, 3, CV_64FC1, scm_to_pointer(scm_camera));
+    cv::Mat distortion(5, 1, CV_64FC1, scm_to_pointer(scm_distortion));
+    cv::Vec3d rvec(to_vec3d(scm_to_pointer(scm_rvec)));
+    cv::Vec3d tvec(to_vec3d(scm_to_pointer(scm_tvec)));
+    cv::aruco::drawAxis(img, camera, distortion, rvec, tvec, scm_to_double(scm_len));
+    return SCM_UNDEFINED;
+  }
+
   void init_opencv(void) {
     scm_c_define("CV_8UC1" , scm_from_int(CV_8UC1 ));
     scm_c_define("CV_8UC3" , scm_from_int(CV_8UC3 ));
@@ -389,5 +411,6 @@ extern "C" {
     scm_c_define_gsubr("opencv-write-calibration"           ,  3, 0, 0, SCM_FUNC(opencv_write_calibration           ));
     scm_c_define_gsubr("opencv-read-calibration"            ,  1, 0, 0, SCM_FUNC(opencv_read_calibration            ));
     scm_c_define_gsubr("opencv-estimate-pose-single-markers",  5, 0, 0, SCM_FUNC(opencv_estimate_pose_single_markers));
+    scm_c_define_gsubr("opencv-draw-axis"                   ,  8, 0, 0, SCM_FUNC(opencv_draw_axis                   ));
   };
 }
