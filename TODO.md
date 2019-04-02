@@ -1,6 +1,5 @@
 ## Ready
 
-* MNIST example: add bias unit to each convolutional layer
 * type checks in OpenCV wrappers
 * remove word recognition example
 * example drawing markers and axes

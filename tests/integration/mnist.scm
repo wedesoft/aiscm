@@ -50,12 +50,14 @@
 
 ; First convolutional layer with max-pooling and ReLU activation function.
 (define k1 (tf-variable #:dtype <double> #:shape '(3 3 1 4)))
-(define c1 (tf-conv2d r1 k1 #:strides '(1 1 1 1) #:padding 'VALID))
+(define b1 (tf-variable #:dtype <double> #:shape '(4)))
+(define c1 (tf-add (tf-conv2d r1 k1 #:strides '(1 1 1 1) #:padding 'VALID) b1))
 (define p1 (tf-relu (tf-max-pool c1 #:strides '(1 2 2 1) #:ksize '(1 2 2 1) #:padding 'VALID)))
 
 ; Second convolutional layer with max-pooling and ReLU activation function.
 (define k2 (tf-variable #:dtype <double> #:shape '(3 3 4 16)))
-(define c2 (tf-conv2d p1 k2 #:strides '(1 1 1 1) #:padding 'VALID))
+(define b2 (tf-variable #:dtype <double> #:shape '(16)))
+(define c2 (tf-add (tf-conv2d p1 k2 #:strides '(1 1 1 1) #:padding 'VALID) b2))
 (define p2 (tf-relu (tf-max-pool c2 #:strides '(1 2 2 1) #:ksize '(1 2 2 1) #:padding 'VALID)))
 
 ; Reshape to 2D array
@@ -78,7 +80,9 @@
 ; Random initialization of network parameters
 (define initializers
   (list (tf-assign k1 (tf-mul (sqrt (/ 2 (* 3 3))) (tf-truncated-normal (arr <int> 3 3 1 4) #:dtype <double>)))
+        (tf-assign b1 (fill <double> '(4) 0.0))
         (tf-assign k2 (tf-mul (sqrt (/ 2 (* 3 3 4))) (tf-truncated-normal (arr <int> 3 3 4 16) #:dtype <double>)))
+        (tf-assign b2 (fill <double> '(16) 0.0))
         (tf-assign m3 (tf-mul (sqrt (/ 2 d)) (tf-truncated-normal (to-array <int> (list d 40)) #:dtype <double>)))
         (tf-assign b3 (fill <double> '(40) 0.0))
         (tf-assign m4 (tf-mul (/ 2 (sqrt 40)) (tf-truncated-normal (arr <int> 40 10) #:dtype <double>)))
