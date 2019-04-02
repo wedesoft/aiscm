@@ -63,14 +63,14 @@
 (define r2 (tf-reshape p2 (to-array <int> (list -1 d))))
 
 ; First fully connected layer with bias units and ReLU activation function.
-(define m1 (tf-variable #:dtype <double> #:shape (list d 40)))
-(define b1 (tf-variable #:dtype <double> #:shape '(40)))
-(define l1 (tf-relu (tf-add (tf-mat-mul r2 m1) b1)))
+(define m3 (tf-variable #:dtype <double> #:shape (list d 40)))
+(define b3 (tf-variable #:dtype <double> #:shape '(40)))
+(define l3 (tf-relu (tf-add (tf-mat-mul r2 m3) b3)))
 
 ; Second fully connected layer with bias units and softmax activation function.
-(define m2 (tf-variable #:dtype <double> #:shape '(40 10)))
-(define b2 (tf-variable #:dtype <double> #:shape '(10)))
-(define l (tf-softmax (tf-add (tf-mat-mul l1 m2) b2)))
+(define m4 (tf-variable #:dtype <double> #:shape '(40 10)))
+(define b4 (tf-variable #:dtype <double> #:shape '(10)))
+(define l (tf-softmax (tf-add (tf-mat-mul l3 m4) b4)))
 
 ; Classification result of neural network.
 (define prediction (tf-arg-max l 1 #:name "prediction"))
@@ -79,14 +79,14 @@
 (define initializers
   (list (tf-assign k1 (tf-mul (sqrt (/ 2 (* 3 3))) (tf-truncated-normal (arr <int> 3 3 1 4) #:dtype <double>)))
         (tf-assign k2 (tf-mul (sqrt (/ 2 (* 3 3 4))) (tf-truncated-normal (arr <int> 3 3 4 16) #:dtype <double>)))
-        (tf-assign m1 (tf-mul (sqrt (/ 2 d)) (tf-truncated-normal (to-array <int> (list d 40)) #:dtype <double>)))
-        (tf-assign b1 (fill <double> '(40) 0.0))
-        (tf-assign m2 (tf-mul (/ 2 (sqrt 40)) (tf-truncated-normal (arr <int> 40 10) #:dtype <double>)))
-        (tf-assign b2 (fill <double> '(10) 0.0))))
+        (tf-assign m3 (tf-mul (sqrt (/ 2 d)) (tf-truncated-normal (to-array <int> (list d 40)) #:dtype <double>)))
+        (tf-assign b3 (fill <double> '(40) 0.0))
+        (tf-assign m4 (tf-mul (/ 2 (sqrt 40)) (tf-truncated-normal (arr <int> 40 10) #:dtype <double>)))
+        (tf-assign b4 (fill <double> '(10) 0.0))))
 (run s '() initializers)
 
 ; List of all network parameters
-(define vars (list k1 k2 m1 b1 m2 b2))
+(define vars (list k1 k2 m3 b3 m4 b4))
 
 ; Logistic loss function
 (define yh (tf-one-hot y 10 1.0 0.0))
@@ -95,7 +95,7 @@
 (define loss (tf-neg (tf-mean (tf-add (tf-mul yh (safe-log l)) (tf-mul (invert yh) (safe-log (invert l)))) (arr <int> 0 1))))
 
 ; Regularization term
-(define regularization (tf-add (tf-mean (tf-square (tf-abs m1)) (arr <int> 0 1)) (tf-mean (tf-square (tf-abs m2)) (arr <int> 0 1))))
+(define regularization (tf-add (tf-mean (tf-square (tf-abs m3)) (arr <int> 0 1)) (tf-mean (tf-square (tf-abs m4)) (arr <int> 0 1))))
 
 ; Overall cost
 (define la 0.02)
