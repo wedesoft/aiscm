@@ -74,10 +74,22 @@
     '(500 700) (shape (draw-corners img corners)))
   (test-error "throw exception when drawing Charuco corners does not work"
     'misc-error (draw-corners (make (multiarray <ubyte> 2) #:shape '(0 0)) corners))
+  (test-error "check type of marker ids"
+    'misc-error (draw-corners img (cons (to-type <sint> (car corners)) (cdr corners))))
+  (test-error "check type of marker corners"
+    'misc-error (draw-corners img (cons (car corners) (to-type <double> (cdr corners)))))
   (test-equal "draw detected markers"
     '(500 700) (shape (draw-detected-markers img aruco)))
   (test-error "error handling when drawing detected markers"
-    'misc-error (draw-detected-markers (make (multiarray (rgb <ubyte>) 2) #:shape '(0 0)) aruco)))
+    'misc-error (draw-detected-markers (make (multiarray (rgb <ubyte>) 2) #:shape '(0 0)) aruco))
+  (test-error "check marker id type"
+    'misc-error (draw-detected-markers img (cons (to-type <sint> (car aruco)) (cdr aruco))))
+  (test-error "check marker corner type"
+    'misc-error (draw-detected-markers img (cons (car aruco) (to-type <double> (cdr aruco)))))
+  (test-error "check type of marker ids"
+    'misc-error (interpolate-corners (cons (to-type <sint> (car aruco)) (cdr aruco)) img 5 7 100 50))
+  (test-error "check type of marker coordinates"
+    'misc-error (interpolate-corners (cons (car aruco) (to-type <double> (cdr aruco))) img 5 7 100 50)))
 
 (define object-points (arr <float> (0 0 0) (0 1 0) (1 0 0) (1 1 0)))
 (define image-points (arr <float> (0 0) (0 1) (1 0) (1 1)))

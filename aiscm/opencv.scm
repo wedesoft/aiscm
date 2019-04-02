@@ -18,6 +18,7 @@
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
+  #:use-module (aiscm util)
   #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners
             draw-corners draw-detected-markers grid camera-calibration write-camera-calibration read-camera-calibration
             estimate-pose-single-markers draw-axis
@@ -73,8 +74,15 @@
     (cons (make (multiarray <int> 1) #:shape (list (car result)) #:memory (cadr result))
           (make (multiarray <float> 3) #:shape (list (car result) 4 2) #:memory (caddr result)))))
 
+(define (check-marker-type markers)
+  (if (not (eq? (typecode (car markers)) <int>))
+    (aiscm-error 'interpolate-corners "Marker ids should be integer (was ~a)" (typecode (car markers))))
+  (if (not (eq? (typecode (cdr markers)) <float>))
+    (aiscm-error 'interpolate-corners "Marker coordinates should be float (was ~a)" (typecode (cdr markers)))))
+
 (define (interpolate-corners markers img rows cols size marker-size)
   "Locate chessboard corners using Aruco marker positions"
+  (check-marker-type markers)
   (let [(result (opencv-interpolate-corners (car (shape (car markers))) (memory (car markers)) (memory (cdr markers))
                                             (shape img) (assq-ref typemap (typecode img)) (memory img)
                                             rows cols size marker-size))]
@@ -82,6 +90,7 @@
           (make (multiarray <float> 2) #:shape (list (car result) 2) #:memory (caddr result)))))
 
 (define (draw-corners img corners)
+  (check-marker-type corners)
   "Draw corners with ids"
   (let [(result (duplicate img))]
     (opencv-draw-corners (shape result) (assq-ref typemap (typecode result)) (memory result)
@@ -90,6 +99,7 @@
 
 (define (draw-detected-markers img markers)
   "Draw detected Aruco markers on a copy of the image"
+  (check-marker-type markers)
   (let [(result (duplicate img))]
     (opencv-draw-detected-markers (shape result) (assq-ref typemap (typecode result)) (memory result)
                                   (car (shape (car markers))) (memory (car markers)) (memory (cdr markers)))

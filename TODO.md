@@ -1,6 +1,6 @@
 ## Ready
 
-* type checks in OpenCV wrappers
+* type checks in OpenCV wrappers: camera-calibration, write-camera-calibration, estimate-pose-single-markers, draw-axis
 * remove word recognition example
 * example drawing markers and axes
 * how to broadcast vectors
