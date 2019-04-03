@@ -1,7 +1,8 @@
 ## Ready
 
-* type checks in OpenCV wrappers: camera-calibration, write-camera-calibration, estimate-pose-single-markers, draw-axis
+* type checks in OpenCV wrappers: estimate-pose-single-markers, draw-axis
 * remove word recognition example
+* improve word recognition example
 * example drawing markers and axes
 * how to broadcast vectors
 * Ghost in the Shell style animations

@@ -105,7 +105,11 @@
   (test-equal "shape of camera matrix"
     '(3 3) (shape (cadr (camera-calibration (list object-points) (list image-points) '(320 240)))))
   (test-equal "shape of distortion coefficients"
-    '(5) (shape (caddr (camera-calibration (list object-points) (list image-points) '(320 240))))))
+    '(5) (shape (caddr (camera-calibration (list object-points) (list image-points) '(320 240)))))
+  (test-error "check type of object points"
+    'misc-error (camera-calibration (list (to-type <double> object-points)) (list image-points) '(320 240)))
+  (test-error "check type of image points"
+    'misc-error (camera-calibration (list object-points) (list (to-type <double> image-points)) '(320 240))))
 
 (define cal-file-name (string-append (tmpnam) ".yml"))
 (define intrinsic (arr <double> (680.0 0.0 320.0) (0.0 680.0 240.0) (0.0 0.0 1.0)))
@@ -119,7 +123,11 @@
   (test-error "throw exception when failing to write camera calibration"
     'misc-error (write-camera-calibration "nosuchdir/test.yml" intrinsic distortion))
   (test-error "throw exception when failing to read a camera calibration file"
-    'misc-error (read-camera-calibration "nosuchfile.yml")))
+    'misc-error (read-camera-calibration "nosuchfile.yml"))
+  (test-error "check type of camera matrix"
+    'misc-error (write-camera-calibration cal-file-name (to-type <float> intrinsic) distortion))
+  (test-error "check type of distortion coefficients"
+    'misc-error (write-camera-calibration cal-file-name intrinsic (to-type <float> distortion))))
 
 (define corners (arr <float> ((0 0) (0 1) (1 0) (1 1))))
 (define img (make (multiarray (rgb <ubyte>) 2) #:shape '(240 320)))

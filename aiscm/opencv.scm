@@ -17,6 +17,8 @@
 (define-module (aiscm opencv)
   #:use-module (oop goops)
   #:use-module (ice-9 optargs)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
   #:export (connected-components charuco-board draw-marker detect-markers interpolate-corners
@@ -113,6 +115,10 @@
 
 (define (camera-calibration object-points image-points image-size)
   "Calibrate camera using floating point object points and floating point image points"
+  (if (not (every (compose (cut eq? <> <float>) typecode) object-points))
+    (aiscm-error 'camera-calibration "Object points should be of type float"))
+  (if (not (every (compose (cut eq? <> <float>) typecode) image-points))
+    (aiscm-error 'camera-calibration "Image points should be of type float"))
   (let [(result (opencv-camera-calibration (length object-points)
                                            (map (compose car shape) object-points)
                                            (map memory object-points)
@@ -124,6 +130,10 @@
 
 (define (write-camera-calibration file-name intrinsic distortion)
   "Write camera calibration data to file"
+  (if (not (eq? (typecode intrinsic) <double>))
+    (aiscm-error 'write-camera-calibration "Camera matrix should be of type double"))
+  (if (not (eq? (typecode distortion) <double>))
+    (aiscm-error 'write-camera-calibration "Distortion coefficients should be of type double"))
   (opencv-write-calibration file-name (memory intrinsic) (memory distortion)))
 
 (define (read-camera-calibration file-name)
