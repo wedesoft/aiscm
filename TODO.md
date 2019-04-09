@@ -1,6 +1,6 @@
 ## Ready
 
-* type checks in OpenCV wrappers: estimate-pose-single-markers, draw-axis
+* type checks in OpenCV wrappers: draw-axis
 * remove word recognition example
 * improve word recognition example
 * example drawing markers and axes

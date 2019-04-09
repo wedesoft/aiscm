@@ -144,6 +144,12 @@
 
 (define (estimate-pose-single-markers corners marker-length intrinsic distortion)
   "Determine pose of detected markers"
+  (if (not (eq? (typecode corners) <float>))
+    (aiscm-error 'estimate-pose-single-markers "Corner coordinates should be of type float"))
+  (if (not (eq? (typecode intrinsic) <double>))
+    (aiscm-error 'estimate-pose-single-markers "Camera matrix should be of type double"))
+  (if (not (eq? (typecode distortion) <double>))
+    (aiscm-error 'estimate-pose-single-markers "Distortion coefficients should be of type double"))
   (let [(result (opencv-estimate-pose-single-markers (car (shape corners))
                                                      (memory corners)
                                                      marker-length
