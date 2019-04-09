@@ -158,8 +158,16 @@
     (cons (make (multiarray <double> 2) #:shape (list (car result) 3) #:memory (cadr result))
           (make (multiarray <double> 2) #:shape (list (car result) 3) #:memory (caddr result)))))
 
-(define (draw-axis image camera distortion rvec tvec len)
+(define (draw-axis image intrinsic distortion rvec tvec len)
   "Draw coordinate system axis for one coordinate system into image"
+  (if (not (eq? (typecode intrinsic) <double>))
+    (aiscm-error 'draw-axis "Camera matrix should be of type double"))
+  (if (not (eq? (typecode distortion) <double>))
+    (aiscm-error 'draw-axis "Distortion coefficients should be of type double"))
+  (if (not (eq? (typecode rvec) <double>))
+    (aiscm-error 'draw-axis "Rotation vectors should be of type double"))
+  (if (not (eq? (typecode tvec) <double>))
+    (aiscm-error 'draw-axis "Translation vectors should be of type double"))
   (opencv-draw-axis (memory image) (shape image) (assq-ref typemap (typecode image))
-                    (memory camera) (memory distortion) (memory rvec) (memory tvec) len)
+                    (memory intrinsic) (memory distortion) (memory rvec) (memory tvec) len)
   image)

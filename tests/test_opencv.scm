@@ -143,6 +143,14 @@
   (test-error "check type of distortion coefficients"
     'misc-error (estimate-pose-single-markers corners 1.0 intrinsic (to-type <float> distortion)))
   (test-equal "draw axes"
-    '(240 320) (shape (draw-axis img intrinsic distortion (arr <double> 0 0 0) (arr <double> 0 0 0) 0.25))))
+    '(240 320) (shape (draw-axis img intrinsic distortion (arr <double> 0 0 0) (arr <double> 0 0 0) 0.25)))
+  (test-error "check type of camera matrix"
+    'misc-error (draw-axis img (to-type <float> intrinsic) distortion (arr <double> 0 0 0) (arr <double> 0 0 0) 0.25))
+  (test-error "check type of distortion coefficients"
+    'misc-error (draw-axis img intrinsic (to-type <float> distortion) (arr <double> 0 0 0) (arr <double> 0 0 0) 0.25))
+  (test-error "check type of rotation vectors"
+    'misc-error (draw-axis img intrinsic distortion (arr <float> 0 0 0) (arr <double> 0 0 0) 0.25))
+  (test-error "check type of translation vectors"
+    'misc-error (draw-axis img intrinsic distortion (arr <double> 0 0 0) (arr <float> 0 0 0) 0.25)))
 
 (test-end "aiscm opencv")

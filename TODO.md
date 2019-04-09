@@ -1,6 +1,5 @@
 ## Ready
 
-* type checks in OpenCV wrappers: draw-axis
 * remove word recognition example
 * improve word recognition example
 * example drawing markers and axes
