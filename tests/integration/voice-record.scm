@@ -1,10 +1,4 @@
-(use-modules (oop goops)
-             (srfi srfi-18)
-             (ice-9 format)
-             (aiscm core)
-             (aiscm ffmpeg)
-             (aiscm pulse)
-             (aiscm util))
+(use-modules (oop goops) (srfi srfi-18) (ice-9 format) (aiscm core) (aiscm ffmpeg) (aiscm pulse) (aiscm util))
 
 (define words (list "stop" "go" "left" "right" "?"))
 (define rate 11025)

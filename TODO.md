@@ -1,7 +1,6 @@
 ## Ready
 
-* remove word recognition example
-* improve word recognition example
+* improve word recognition example (continuous monitoring)
 * example drawing markers and axes
 * how to broadcast vectors
 * Ghost in the Shell style animations
