@@ -1,11 +1,11 @@
-(use-modules (oop goops) (ice-9 format) (ice-9 readline) (aiscm core) (aiscm pulse) (aiscm ffmpeg))
+(use-modules (oop goops) (ice-9 format) (ice-9 rdelim) (aiscm core) (aiscm pulse) (aiscm ffmpeg))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
 (define chunk 512)
 (define record (make <pulse-record> #:typecode <sint> #:channels 1 #:rate rate))
 (format #t "offset? ")
-(define n (string->number (readline)))
+(define n (string->number (read-line)))
 (while #t
   (let [(choice (list-ref words (random (length words))))]
     (format #t "~d: ~a~&" n choice)
