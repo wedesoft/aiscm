@@ -36,12 +36,20 @@
   (list
     (tf-assign wcc (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
     (tf-assign wcx (tf-mul (sqrt (/ 2 chunk2)) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
-    (tf-assign bc (fill <double> (list n-hidden) 0.0))))
+    (tf-assign bc (fill <double> (list n-hidden) 0.0))
+    (tf-assign wuc (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
+    (tf-assign wux (tf-mul (sqrt (/ 2 chunk2)) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
+    (tf-assign bu (fill <double> (list n-hidden) 0.0))))
+
+(define (gru x c)
+  (let* [(cs (tf-tanh (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul x wcx)) bc)))
+         (gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))]
+    (tf-add (tf-mul gu cs) (tf-mul (tf-sub 1.0 gu) c))))
+
+(define c0 (fill <double> (list 1 n-hidden) 0.0))
 
 (define session (make-session))
 
 (run session '() initializers)
 
-(define c0 (fill <double> (list 1 n-hidden) 0.0))
-
-(run session (list (cons c c0) (cons x (cadar data))) (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul (spectrum x) wcx)) bc))
+(run session (list (cons c c0) (cons x (cadar data))) (gru (spectrum x) c))
