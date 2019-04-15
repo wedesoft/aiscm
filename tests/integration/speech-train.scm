@@ -1,7 +1,9 @@
 (use-modules (ice-9 ftw) (ice-9 regex) (srfi srfi-26) (aiscm core) (aiscm ffmpeg))
 
+(define words (list "stop" "go" "left" "right"))
+(define rate 11025)
+(define chunk 512); 21.5 chunks per second
 (define file-names (filter (cut string-match "speech-.*\\.mp3" <>) (scandir ".")))
-(define chunk 512)
 
 (define data
   (map
