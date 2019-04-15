@@ -2,7 +2,7 @@
 
 (define rate 11025)
 (define chunk 512)
-(define seconds 30)
+(define seconds 300)
 (define count (inexact->exact (* chunk (ceiling (/ (* rate seconds) chunk)))))
 
 (format #t "Recording ~a seconds of background noise~&" seconds)
