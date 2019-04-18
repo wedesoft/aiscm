@@ -23,7 +23,7 @@ char *kebab_case(const char *camel_case)
     if (*q >= 'A' && *q <= 'Z') {
       if (previous_is_small_caps)
         *p++ = '-';
-      *p++ = *q++ + 'a' - 'A';
+      *p++ = 'a' - 'A' + *q++;
       previous_is_small_caps = 0;
     } else {
       previous_is_small_caps = *q >= 'a' && *q <= 'z';
