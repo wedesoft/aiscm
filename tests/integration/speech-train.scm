@@ -1,4 +1,4 @@
-(use-modules (ice-9 ftw) (ice-9 regex) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm pulse))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
@@ -6,17 +6,39 @@
 (define chunk2 (1+ (/ chunk 2)))
 (define file-names (filter (cut string-match "speech-.*\\.mp3" <>) (scandir ".")))
 (define n-hidden 16)
+(define seconds 300); background noise seconds
+(define count (inexact->exact (* chunk (ceiling (/ (* rate seconds) chunk)))))
+
+(define background (reshape (to-array (read-audio (open-ffmpeg-input "background.mp3") count)) (list (/ count chunk) chunk)))
 
 (define data
   (map
     (lambda (file-name)
       (let* [(match (string-match "speech-(.*)-(.*)-(.*)\\.mp3" file-name))
              (word  (match:substring match 2))
+             (index (list-index (cut equal? word <>) words))
              (input (open-ffmpeg-input file-name))
              (count (string->number (match:substring match 3)))
              (n     (/ count chunk)) ]
-        (list word (reshape (to-array (read-audio input count)) (list n chunk)))))
+        (cons index (reshape (to-array (read-audio input count)) (list n chunk)))))
     file-names))
+
+(define (create-sample offset)
+  (let* [(pause     (random 60))
+         (idx       (random (length data)))
+         (candidate (cdr (list-ref data idx)))
+         (len       (car (shape candidate)))]
+    (if (>= (+ offset pause len) (/ count chunk))
+      (duplicate background)
+      (let [(sample (create-sample (+ offset pause len)))]
+        (set sample
+             (cons 0 chunk)
+             (cons (+ offset pause) (+ offset pause len))
+             (+ candidate (get background (cons 0 chunk) (cons (+ offset pause) (+ offset pause len)))))
+        sample))))
+
+;(define pulse (make <pulse-play> #:rate rate #:channels 1 #:typecode <sint>))
+;(write-audio (create-sample 0) pulse)
 
 (define x (tf-placeholder #:dtype <sint> #:shape (list -1 chunk) #:name "x"))
 (define y (tf-placeholder #:dtype <int> #:shape '(-1) #:name "y"))
