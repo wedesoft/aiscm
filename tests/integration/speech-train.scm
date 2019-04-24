@@ -3,6 +3,8 @@
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
 (define chunk 512); 21.5 chunks per second
+(define max-delay 60); maximum number of chunks between two spoken words
+(define signal 5); number of chunks where signal is kept on
 (define chunk2 (1+ (/ chunk 2)))
 (define file-names (filter (cut string-match "speech-.*\\.mp3" <>) (scandir ".")))
 (define n-hidden 16)
@@ -24,21 +26,24 @@
     file-names))
 
 (define (create-sample offset)
-  (let* [(pause     (random 60))
+  (let* [(pause     (random max-delay))
          (idx       (random (length data)))
-         (candidate (cdr (list-ref data idx)))
+         (item      (list-ref data idx))
+         (label     (car item))
+         (candidate (cdr item))
          (len       (car (shape candidate)))]
-    (if (>= (+ offset pause len) (/ count chunk))
-      (duplicate background)
-      (let [(sample (create-sample (+ offset pause len)))]
-        (set sample
-             (cons 0 chunk)
-             (cons (+ offset pause) (+ offset pause len))
-             (+ candidate (get background (cons 0 chunk) (cons (+ offset pause) (+ offset pause len)))))
+    (if (>= (+ offset pause len signal) (/ count chunk))
+      (cons (duplicate background)
+            (fill <int> (list (car (shape background))) 0))
+      (let [(sample   (create-sample (+ offset pause len signal)))
+            (interval (cons (+ offset pause) (+ offset pause len)))]
+        (set (car sample) (cons 0 chunk) interval (+ candidate (get background (cons 0 chunk) interval)))
+        (set (cdr sample) (cons (+ offset pause len) (+ offset pause len signal)) (1+ label))
         sample))))
 
+;(define s (create-sample 0))
 ;(define pulse (make <pulse-play> #:rate rate #:channels 1 #:typecode <sint>))
-;(write-audio (create-sample 0) pulse)
+;(write-audio (car s) pulse)
 
 (define x (tf-placeholder #:dtype <sint> #:shape (list -1 chunk) #:name "x"))
 (define y (tf-placeholder #:dtype <int> #:shape '(-1) #:name "y"))
