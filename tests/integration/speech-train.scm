@@ -1,4 +1,4 @@
-(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm pulse))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm pulse) (aiscm util))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
@@ -10,6 +10,7 @@
 (define n-hidden 16)
 (define seconds 300); background noise seconds
 (define count (inexact->exact (* chunk (ceiling (/ (* rate seconds) chunk)))))
+(define window 50)
 
 (define background (reshape (to-array (read-audio (open-ffmpeg-input "background.mp3") count)) (list (/ count chunk) chunk)))
 
@@ -58,6 +59,10 @@
 (define wuc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
 (define wux (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
 (define bu (tf-variable #:dtype <double> #:shape (list n-hidden)))
+(define w (tf-variable #:dtype <double> #:shape (list n-hidden 5)))
+(define b (tf-variable #:dtype <double> #:shape (list 5)))
+
+(define vars (list wcc wcx bc wuc wux bu w b))
 
 (define initializers
   (list
@@ -66,17 +71,43 @@
     (tf-assign bc (fill <double> (list n-hidden) 0.0))
     (tf-assign wuc (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
     (tf-assign wux (tf-mul (sqrt (/ 2 chunk2)) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
-    (tf-assign bu (fill <double> (list n-hidden) 0.0))))
+    (tf-assign bu (fill <double> (list n-hidden) 0.0))
+    (tf-assign w (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden 5)) #:dtype <double>)))
+    (tf-assign b (fill <double> (list 5) 0.0))))
+
+(define (nth x i) (tf-expand-dims (tf-gather x i) 0))
 
 (define (gru x c)
   (let* [(cs (tf-tanh (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul x wcx)) bc)))
          (gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))]
     (tf-add (tf-mul gu cs) (tf-mul (tf-sub 1.0 gu) c))))
 
+(define (output c)
+  (tf-softmax (tf-add (tf-mat-mul c w) b)))
+
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
 
 (define session (make-session))
 
 (run session '() initializers)
+
+(define s (create-sample 0))
+
+(define c_ c)
+(define outputs '())
+(for-each
+  (lambda (i)
+    (set! c_ (gru (spectrum (nth x i)) c_))
+    (set! outputs (attach outputs (output c_))))
+  (iota window))
+
+(define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul (tf-log output) (nth y-hot i)) (arr <int> 0 1)))
+                                            outputs
+                                            (iota window))))
+                     (tf-cast window #:DstT <double>)))
+
+(run session (list (cons c c0) (cons x (car s)) (cons y (cdr s))) loss)
+
+(run session (list (cons c c0) (cons x (car s)) (cons y (cdr s))) c_)
 
 (run session (list (cons c c0) (cons x (cadar data))) (gru (spectrum x) c))
