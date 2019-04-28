@@ -1,4 +1,4 @@
-(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm pulse) (aiscm util))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
@@ -9,10 +9,10 @@
 (define file-names (filter (cut string-match "speech-.*\\.mp3" <>) (scandir ".")))
 (define n-hidden 16)
 (define seconds 300); background noise seconds
-(define count (inexact->exact (* chunk (ceiling (/ (* rate seconds) chunk)))))
+(define count (ceiling (/ (* rate seconds) chunk)))
 (define window 50)
 
-(define background (reshape (to-array (read-audio (open-ffmpeg-input "background.mp3") count)) (list (/ count chunk) chunk)))
+(define background (reshape (to-array (read-audio (open-ffmpeg-input "background.mp3") (* count chunk))) (list count chunk)))
 
 (define data
   (map
@@ -42,16 +42,14 @@
         (set (cdr sample) (cons (+ offset pause len) (+ offset pause len signal)) (1+ label))
         sample))))
 
-;(define s (create-sample 0))
-;(define pulse (make <pulse-play> #:rate rate #:channels 1 #:typecode <sint>))
-;(write-audio (car s) pulse)
-
 (define x (tf-placeholder #:dtype <sint> #:shape (list -1 chunk) #:name "x"))
 (define y (tf-placeholder #:dtype <int> #:shape '(-1) #:name "y"))
 (define c (tf-placeholder #:dtype <double> #:shape (list 1 n-hidden) #:name "c"))
 (define y-hot (tf-one-hot y (1+ (length words)) 1.0 0.0))
+
 (define (fourier x) (tf-rfft (tf-cast x #:DstT <float>) (to-array <int> (list chunk))))
 (define (spectrum x) (let [(f (fourier x))] (tf-log (tf-add (tf-cast (tf-real (tf-mul f (tf-conj f))) #:DstT <double>) 1.0))))
+(define (nth x i) (tf-expand-dims (tf-gather x i) 0))
 
 (define wcc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
 (define wcx (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
@@ -75,23 +73,12 @@
     (tf-assign w (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden 5)) #:dtype <double>)))
     (tf-assign b (fill <double> (list 5) 0.0))))
 
-(define (nth x i) (tf-expand-dims (tf-gather x i) 0))
-
 (define (gru x c)
   (let* [(cs (tf-tanh (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul x wcx)) bc)))
          (gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))]
     (tf-add (tf-mul gu cs) (tf-mul (tf-sub 1.0 gu) c))))
-
 (define (output c)
   (tf-softmax (tf-add (tf-mat-mul c w) b)))
-
-(define c0 (fill <double> (list 1 n-hidden) 0.0))
-
-(define session (make-session))
-
-(run session '() initializers)
-
-(define s (create-sample 0))
 
 (define c_ c)
 (define outputs '())
@@ -106,8 +93,23 @@
                                             (iota window))))
                      (tf-cast window #:DstT <double>)))
 
-(run session (list (cons c c0) (cons x (car s)) (cons y (cdr s))) loss)
+(define alpha 0.001)
+(define gradients (tf-add-gradient loss vars))
+(define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
-(run session (list (cons c c0) (cons x (car s)) (cons y (cdr s))) c_)
+(define session (make-session))
 
-(run session (list (cons c c0) (cons x (cadar data))) (gru (spectrum x) c))
+(run session '() initializers)
+
+(define c0 (fill <double> (list 1 n-hidden) 0.0))
+
+(define sample (create-sample 0))
+
+(define i 3)
+
+(define range (cons (* i window) (* (1+ i) window)))
+(define batch (list (cons x (get (car sample) (cons 0 chunk) range)) (cons y (get (cdr sample) range))))
+
+(run session (cons (cons c c0) batch) step)
+(run session (cons (cons c c0) batch) loss)
+(run session (cons (cons c c0) batch) c_)
