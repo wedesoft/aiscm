@@ -102,14 +102,12 @@
 (run session '() initializers)
 
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
-
 (define sample (create-sample 0))
-
-(define i 3)
-
-(define range (cons (* i window) (* (1+ i) window)))
-(define batch (list (cons x (get (car sample) (cons 0 chunk) range)) (cons y (get (cdr sample) range))))
-
-(run session (cons (cons c c0) batch) step)
-(run session (cons (cons c c0) batch) loss)
-(run session (cons (cons c c0) batch) c_)
+(for-each
+  (lambda (i)
+    (let* [(range (cons (* i window) (* (1+ i) window)))
+           (batch (list (cons x (get (car sample) (cons 0 chunk) range)) (cons y (get (cdr sample) range))))]
+      (format #t "~a~&" (run session (cons (cons c c0) batch) loss))
+      (run session (cons (cons c c0) batch) step)
+      (set! c0 (run session (cons (cons c c0) batch) c_))))
+  (iota (floor (/ count window))))
