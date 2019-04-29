@@ -33,7 +33,7 @@
          (label     (car item))
          (candidate (cdr item))
          (len       (car (shape candidate)))]
-    (if (>= (+ offset pause len signal) (/ count chunk))
+    (if (>= (+ offset pause len signal) count)
       (cons (duplicate background)
             (fill <int> (list (car (shape background))) 0))
       (let [(sample   (create-sample (+ offset pause len signal)))
