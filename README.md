@@ -67,6 +67,38 @@ sudo make install
 cd ..
 ```
 
+### Installation using Docker
+
+Download the `.tar.xz` and the `.tar.xz.asc` files from the
+lastest [release](https://github.com/wedesoft/aiscm/releases) into the root folder of the cloned repository, then rename
+the files to `aiscm.tar.gz` and `aiscm.tar.gz.asc`, respectively.
+
+Build the Docker image using the command below, where the second line just display some minimal information about the
+image. Note that the Docker build will take *some* time.
+
+```Shell
+docker build --tag=aiscm .
+docker image ls aiscm
+```
+
+Now can can start a shell within your running container using:
+
+```Shell
+docker run -w /usr/src/aiscm/pkg/aiscm-{release-number} -it aiscm /bin/bash
+# e.g.: docker run -w /usr/src/aiscm/pkg/aiscm-0.18.1 -it aiscm /bin/bash
+```
+
+Within the `tests` folder, you'll find that all unit tests have already been run; you might also have seen the
+respective log output during `docker build`. Integration tests are not yet completely running within Docker, but you can
+e.g. run one using:
+
+```Shell
+cd tests/integration/
+make 2d_array.tmp
+```
+
+See below for more information on running the tests.
+
 ## Run tests
 
 ### Unit tests

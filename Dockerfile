@@ -33,8 +33,8 @@ RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
 RUN mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
-COPY aiscm.tar.gz .
-COPY aiscm.tar.gz.asc .
+COPY aiscm.tar.xz .
+COPY aiscm.tar.xz.asc .
 ADD configure.ac .
 ADD debian debian
 ADD Makefile.package .
