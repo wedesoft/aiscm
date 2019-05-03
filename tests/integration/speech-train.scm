@@ -1,16 +1,18 @@
-(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util) (aiscm pulse))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
 (define chunk 512); 21.5 chunks per second
 (define max-delay 60); maximum number of chunks between two spoken words
-(define signal 5); number of chunks where signal is kept on
+(define signal 10); number of chunks where signal is kept on
 (define chunk2 (1+ (/ chunk 2)))
 (define file-names (filter (cut string-match "speech-.*\\.mp3" <>) (scandir ".")))
-(define n-hidden 16)
+(define n-hidden 32)
 (define seconds 300); background noise seconds
 (define count (ceiling (/ (* rate seconds) chunk)))
-(define window 50)
+(define window 100)
+(define weights (arr <double> 1 12 12 12 12))
+(set! weights (/ (* weights 5) (sum weights)))
 
 (define background (reshape (to-array (read-audio (open-ffmpeg-input "background.mp3") (* count chunk))) (list count chunk)))
 
@@ -88,7 +90,8 @@
     (set! outputs (attach outputs (output c_))))
   (iota window))
 
-(define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul (tf-log output) (nth y-hot i)) (arr <int> 0 1)))
+(define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul weights (tf-mul (tf-log output) (nth y-hot i)))
+                                                                       (arr <int> 0 1)))
                                             outputs
                                             (iota window))))
                      (tf-cast window #:DstT <double>)))
@@ -101,15 +104,31 @@
 
 (run session '() initializers)
 
+(define j 1.0)
+
 (define sample (create-sample 0))
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
-
 (for-each
   (lambda (i)
     (let* [(range (cons (* i window) (* (1+ i) window)))
            (batch (list (cons x (get (car sample) (cons 0 chunk) range)) (cons y (get (cdr sample) range))))
            (l     (run session (cons (cons c c0) batch) loss))]
-      (format #t "~a~&" l)
+      (set! j (+ (* 0.99 j) (* 0.01 l)))
       (run session (cons (cons c c0) batch) step)
+      (format #t "~a~&" j)
       (set! c0 (run session (cons (cons c c0) batch) c_))))
   (iota (floor (/ count window))))
+
+;(define pulse (make <pulse-play> #:rate rate #:channels 1 #:typecode <sint>))
+;(write-audio (car sample) pulse)
+
+(define cs (gru (spectrum x) c))
+(define pred (tf-gather (tf-arg-max (output c) 1) 0))
+
+(define c0 (fill <double> (list 1 n-hidden) 0.0))
+(for-each
+  (lambda (i)
+    (set! c0 (run session (list (cons x (get (car sample) (cons 0 chunk) (cons i (1+ i)))) (cons c c0)) cs))
+    (let [(out (run session (list (cons c c0)) pred))]
+      (format #t "~a (~a)~&" out (get (cdr sample) i))))
+  (iota (car (shape (car sample)))))
