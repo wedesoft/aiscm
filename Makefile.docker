@@ -13,7 +13,7 @@ all: package
 	cd apt && reprepro -S lisp -P optional includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..
 	cd apt && reprepro -S lisp -P optional includedsc $(CODENAME) ../pkg/$(PACKAGE).dsc && cd ..
 
-container: docker docker/Dockerfile docker/aiscm.tar.gz docker/aiscm.tar.gz.asc \
+container: docker docker/Dockerfile docker/aiscm.tar.xz docker/aiscm.tar.xz.asc \
 	docker/debian docker/configure.ac docker/Makefile.package
 	cd docker && docker build $(OPTS) -t $(IMAGE) . && cd ..
 
@@ -46,10 +46,10 @@ docker:
 docker/Dockerfile: Dockerfile
 	cp $< $@
 
-docker/aiscm.tar.gz: aiscm-$(VERSION).tar.gz
+docker/aiscm.tar.xz: aiscm-$(VERSION).tar.xz
 	cp $< $@
 
-docker/aiscm.tar.gz.asc: aiscm-$(VERSION).tar.gz.asc
+docker/aiscm.tar.xz.asc: aiscm-$(VERSION).tar.xz.asc
 	cp $< $@
 
 docker/debian:: debian
