@@ -28,8 +28,8 @@ train-images-idx3-ubyte
 train-labels-idx1-ubyte
 voice-commands.csv
 voice-commands.mp3
-speech-*.mp3
-background.mp3
+speech-*.wav
+background.wav
 voice-model.meta
 board.png
 camera.yml
