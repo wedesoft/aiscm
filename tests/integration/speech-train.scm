@@ -135,6 +135,8 @@
 (tf-assign w   (tf-const #:value (run session '() w  ) #:dtype <double>) #:name "init-w"  )
 (tf-assign b   (tf-const #:value (run session '() b  ) #:dtype <double>) #:name "init-b"  )
 
+(tf-graph-export "speech-model.meta")
+
 ; (define sample (create-sample 0))
 ; (define c0 (fill <double> (list 1 n-hidden) 0.0))
 ; (for-each
