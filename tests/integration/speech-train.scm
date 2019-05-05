@@ -129,6 +129,7 @@
 (define cs (gru (spectrum x) c))
 (define pred (tf-gather (tf-arg-max (output c) 1) 0))
 
+(define sample (create-sample 0))
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
 (for-each
   (lambda (i)
