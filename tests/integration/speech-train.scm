@@ -1,4 +1,4 @@
-(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util) (aiscm pulse))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
@@ -123,11 +123,8 @@
         (iota (floor (/ count window))))))
   (iota 300))
 
-(define pulse (make <pulse-play> #:rate rate #:channels 1 #:typecode <sint>))
-(write-audio (car sample) pulse)
-
-(define cs (gru (spectrum x) c))
-(define pred (tf-gather (tf-arg-max (output c) 1) 0))
+(define cs (tf-identity (gru (spectrum x) c) #:name "cs"))
+(define pred (tf-gather (tf-arg-max (output c) 1) 0 #:name "prediction"))
 
 (define sample (create-sample 0))
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
