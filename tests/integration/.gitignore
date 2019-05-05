@@ -30,6 +30,6 @@ voice-commands.csv
 voice-commands.mp3
 speech-*.wav
 background.wav
-voice-model.meta
+*.meta
 board.png
 camera.yml

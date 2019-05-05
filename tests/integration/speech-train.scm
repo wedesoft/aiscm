@@ -56,12 +56,12 @@
 
 (define wcc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
 (define wcx (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define bc (tf-variable #:dtype <double> #:shape (list n-hidden)))
+(define bc  (tf-variable #:dtype <double> #:shape (list n-hidden)))
 (define wuc (tf-variable #:dtype <double> #:shape (list n-hidden n-hidden)))
 (define wux (tf-variable #:dtype <double> #:shape (list chunk2 n-hidden)))
-(define bu (tf-variable #:dtype <double> #:shape (list n-hidden)))
-(define w (tf-variable #:dtype <double> #:shape (list n-hidden 5)))
-(define b (tf-variable #:dtype <double> #:shape (list 5)))
+(define bu  (tf-variable #:dtype <double> #:shape (list n-hidden)))
+(define w   (tf-variable #:dtype <double> #:shape (list n-hidden 5)))
+(define b   (tf-variable #:dtype <double> #:shape (list 5)))
 
 (define vars (list wcc wcx bc wuc wux bu w b))
 
@@ -69,12 +69,12 @@
   (list
     (tf-assign wcc (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
     (tf-assign wcx (tf-mul (sqrt (/ 2 chunk2)) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
-    (tf-assign bc (fill <double> (list n-hidden) 0.0))
+    (tf-assign bc  (fill <double> (list n-hidden) 0.0))
     (tf-assign wuc (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden n-hidden)) #:dtype <double>)))
     (tf-assign wux (tf-mul (sqrt (/ 2 chunk2)) (tf-truncated-normal (to-array <int> (list chunk2 n-hidden)) #:dtype <double>)))
-    (tf-assign bu (fill <double> (list n-hidden) 0.0))
-    (tf-assign w (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden 5)) #:dtype <double>)))
-    (tf-assign b (fill <double> (list 5) 0.0))))
+    (tf-assign bu  (fill <double> (list n-hidden) 0.0))
+    (tf-assign w   (tf-mul (sqrt (/ 2 n-hidden)) (tf-truncated-normal (to-array <int> (list n-hidden 5)) #:dtype <double>)))
+    (tf-assign b   (fill <double> (list 5) 0.0))))
 
 (define (gru x c)
   (let* [(cs (tf-tanh (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul x wcx)) bc)))
@@ -126,11 +126,20 @@
 (define cs (tf-identity (gru (spectrum x) c) #:name "cs"))
 (define pred (tf-gather (tf-arg-max (output c) 1) 0 #:name "prediction"))
 
-(define sample (create-sample 0))
-(define c0 (fill <double> (list 1 n-hidden) 0.0))
-(for-each
-  (lambda (i)
-    (set! c0 (run session (list (cons x (get (car sample) (cons 0 chunk) (cons i (1+ i)))) (cons c c0)) cs))
-    (let [(out (run session (list (cons c c0)) pred))]
-      (format #t "~a (~a)~&" out (get (cdr sample) i))))
-  (iota (car (shape (car sample)))))
+(tf-assign wcc (tf-const #:value (run session '() wcc) #:dtype <double>) #:name "init-wcc")
+(tf-assign wcx (tf-const #:value (run session '() wcx) #:dtype <double>) #:name "init-wcx")
+(tf-assign bc  (tf-const #:value (run session '() bc ) #:dtype <double>) #:name "init-bc" )
+(tf-assign wuc (tf-const #:value (run session '() wuc) #:dtype <double>) #:name "init-wuc")
+(tf-assign wux (tf-const #:value (run session '() wux) #:dtype <double>) #:name "init-wux")
+(tf-assign bu  (tf-const #:value (run session '() bu ) #:dtype <double>) #:name "init-bu" )
+(tf-assign w   (tf-const #:value (run session '() w  ) #:dtype <double>) #:name "init-w"  )
+(tf-assign b   (tf-const #:value (run session '() b  ) #:dtype <double>) #:name "init-b"  )
+
+; (define sample (create-sample 0))
+; (define c0 (fill <double> (list 1 n-hidden) 0.0))
+; (for-each
+;   (lambda (i)
+;     (set! c0 (run session (list (cons x (get (car sample) (cons 0 chunk) (cons i (1+ i)))) (cons c c0)) cs))
+;     (let [(out (run session (list (cons c c0)) pred))]
+;       (format #t "~a (~a)~&" out (get (cdr sample) i))))
+;   (iota (car (shape (car sample)))))
