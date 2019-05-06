@@ -96,7 +96,7 @@
                                             (iota window))))
                      (tf-cast window #:DstT <double>)))
 
-(define alpha 0.02)
+(define alpha 0.05)
 (define gradients (tf-add-gradient loss vars))
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
