@@ -23,8 +23,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										draw-markers.scm draw-axes.scm speech-record.scm speech-train.scm speech-background.scm \
 										speech-run.scm
 
-EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg letters.png \
-						 voice-record.scm voice-train.scm voice-run.scm
+EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg letters.png
 
 noinst_DATA = fubk.png av-sync.mp4 test.mp3
 

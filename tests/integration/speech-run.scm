@@ -5,6 +5,9 @@
              (aiscm core)
              (aiscm pulse))
 
+;(define robot (socket PF_INET SOCK_DGRAM 0))
+;(connect robot AF_INET (car (hostent:addr-list (gethostbyname "raspberrypi.local"))) 2200)
+;(define commands (list "0,0,0" "-100,-100,0" "100,-100,0" "-100,100,0"))
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
 (define chunk 512)
@@ -36,4 +39,6 @@
     (set! c0 (run session (list (cons x samples) (cons c c0)) cs))
     (let [(out (run session (list (cons c c0)) pred))]
       (if (not (zero? out))
-        (format #t "~a~&"(list-ref words (1- out)))))))
+         (begin
+           ;(display (list-ref commands (1- out)) robot)
+           (format #t "~a~&"(list-ref words (1- out))))))))
