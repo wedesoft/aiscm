@@ -97,6 +97,9 @@
     (set! outputs (attach outputs (output c_))))
   (iota window))
 
+(define cs (tf-identity (gru (spectrum x) c) #:name "cs"))
+(define pred (tf-gather (tf-arg-max (output c) 1) 0 #:name "prediction"))
+
 (define (safe-log x) (tf-log (tf-maximum x 1e-10)))
 (define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul (safe-log output) (nth y-hot i))
                                                                        (arr <int> 0 1)))
@@ -128,10 +131,7 @@
             (format #t "~a ~a~&" epoch j)
             (set! c0 (run session (cons (cons c c0) batch) c_))))
         (iota (floor (/ count window))))))
-  (iota 300))
-
-(define cs (tf-identity (gru (spectrum x) c) #:name "cs"))
-(define pred (tf-gather (tf-arg-max (output c) 1) 0 #:name "prediction"))
+  (iota 200))
 
 (tf-assign wcc (tf-const #:value (run session '() wcc) #:dtype <double>) #:name "init-wcc")
 (tf-assign wcx (tf-const #:value (run session '() wcx) #:dtype <double>) #:name "init-wcx")
