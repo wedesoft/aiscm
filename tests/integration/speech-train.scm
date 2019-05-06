@@ -27,6 +27,14 @@
         (cons index (reshape (to-array (read-audio input count)) (list n chunk)))))
     file-names))
 
+(define (shift background)
+  (let* [(len    (car (shape background)))
+         (offset (random len))
+         (result (make (multiarray <sint> 2) #:shape (shape background)))]
+    (set result (cons 0 offset) (get background (cons (- len offset) len)))
+    (set result (cons offset len) (get background (cons 0 (- len offset))))
+    result))
+
 (define (create-sample offset)
   (let* [(pause     (random max-delay))
          (idx       (random (length data)))
@@ -35,7 +43,7 @@
          (candidate (cdr item))
          (len       (car (shape candidate)))]
     (if (>= (+ offset pause len signal) count)
-      (cons (duplicate background)
+      (cons (shift background)
             (fill <int> (list (car (shape background))) 0))
       (let [(sample   (create-sample (+ offset pause len signal)))
             (interval (cons (+ offset pause) (+ offset pause len)))]
@@ -135,12 +143,3 @@
 (tf-assign b   (tf-const #:value (run session '() b  ) #:dtype <double>) #:name "init-b"  )
 
 (tf-graph-export "speech-model.meta")
-
-; (define sample (create-sample 0))
-; (define c0 (fill <double> (list 1 n-hidden) 0.0))
-; (for-each
-;   (lambda (i)
-;     (set! c0 (run session (list (cons x (get (car sample) (cons 0 chunk) (cons i (1+ i)))) (cons c c0)) cs))
-;     (let [(out (run session (list (cons c c0)) pred))]
-;       (format #t "~a (~a)~&" out (get (cdr sample) i))))
-;   (iota (car (shape (car sample)))))
