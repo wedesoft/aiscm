@@ -33,7 +33,6 @@
 (define c0 (fill <double> (list 1 n-hidden) 0.0))
 (define record (make <pulse-record> #:typecode <sint> #:channels 1 #:rate rate))
 
-(flush record)
 (while #t
   (let [(samples (reshape (read-audio record chunk) (list 1 chunk)))]
     (set! c0 (run session (list (cons x samples) (cons c c0)) cs))
