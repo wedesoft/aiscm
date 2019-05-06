@@ -12,8 +12,6 @@
 (define seconds 300); background noise seconds
 (define count (ceiling (/ (* rate seconds) chunk)))
 (define window 100)
-(define weights (arr <double> 1 10 10 10 10))
-(set! weights (/ (* weights 5) (sum weights)))
 
 (define background (reshape (to-array (read-audio (open-ffmpeg-input "background.wav") (* count chunk))) (list count chunk)))
 
@@ -91,13 +89,14 @@
     (set! outputs (attach outputs (output c_))))
   (iota window))
 
-(define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul weights (tf-mul (tf-log output) (nth y-hot i)))
+(define (safe-log x) (tf-log (tf-maximum x 1e-10)))
+(define loss (tf-div (tf-neg (tf-add-n (map (lambda (output i) (tf-sum (tf-mul (safe-log output) (nth y-hot i))
                                                                        (arr <int> 0 1)))
                                             outputs
                                             (iota window))))
                      (tf-cast window #:DstT <double>)))
 
-(define alpha 0.001)
+(define alpha 0.02)
 (define gradients (tf-add-gradient loss vars))
 (define step (map (lambda (v g) (tf-assign v (tf-sub v (tf-mul g alpha)))) vars gradients))
 
