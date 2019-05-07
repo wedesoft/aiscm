@@ -83,9 +83,9 @@
     (tf-assign b   (fill <double> (list 5) 0.0))))
 
 (define (gru x c)
-  (let* [(cs (tf-tanh (tf-add (tf-add (tf-mat-mul c wcc) (tf-mat-mul x wcx)) bc)))
-         (gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))]
-    (tf-add (tf-mul gu cs) (tf-mul (tf-sub 1.0 gu) c))))
+  (let* [(gu (tf-sigmoid (tf-add (tf-add (tf-mat-mul c wuc) (tf-mat-mul x wux)) bu)))
+         (cs (tf-tanh (tf-add (tf-add (tf-mat-mul (tf-mul gu c) wcc) (tf-mat-mul x wcx)) bc)))]
+    (tf-add (tf-mul gu c) (tf-mul (tf-sub 1.0 gu) cs))))
 (define (output c)
   (tf-softmax (tf-add (tf-mat-mul c w) b)))
 
