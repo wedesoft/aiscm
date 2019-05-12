@@ -1,6 +1,6 @@
 ## Ready
 
-* Tensorflow strings: tf-string-join, tf-string-split
+* Tensorflow strings: tf-identity, tf-string-join, tf-string-split
 * how to broadcast vectors
 * Ghost in the Shell style animations (coins?)
 * histogram with weights and customisable default and reduce op (e.g. min instead of + to find bounding box for each component)

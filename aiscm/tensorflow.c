@@ -163,10 +163,10 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
   if (type == TF_STRING) {
     SCM* pointer = scm_to_pointer(scm_source);
     const char *str = scm_to_locale_string(*pointer);
-    int size = TF_StringEncodedSize(strlen(str));
-    self->tensor = TF_AllocateTensor(type, dims, num_dims, size + 8);
+    size_t encoded_size = TF_StringEncodedSize(strlen(str));
+    self->tensor = TF_AllocateTensor(type, dims, num_dims, encoded_size + 8);
     memset(TF_TensorData(self->tensor), 0, 8);
-    TF_StringEncode(str, strlen(str), 8 + (char *)TF_TensorData(self->tensor), size, status);
+    TF_StringEncode(str, strlen(str), 8 + TF_TensorData(self->tensor), encoded_size, status);// TODO: check status
   } else {
     self->tensor = TF_AllocateTensor(type, dims, num_dims, scm_to_int(scm_size));
     memcpy(TF_TensorData(self->tensor), scm_to_pointer(scm_source), scm_to_int(scm_size));
@@ -177,14 +177,25 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
 SCM tf_from_tensor(SCM scm_self)
 {
   struct tf_tensor_t *self = get_tf_tensor(scm_self);
+  int type = TF_TensorType(self->tensor);
   int num_dims = TF_NumDims(self->tensor);
   SCM scm_shape = SCM_EOL;
   for (int i=num_dims - 1; i>=0; i--)
     scm_shape = scm_cons(scm_from_int(TF_Dim(self->tensor, i)), scm_shape);
   size_t size = TF_TensorByteSize(self->tensor);
-  void *data = scm_gc_malloc_pointerless(size, "from-tensor");
-  memcpy(data, TF_TensorData(self->tensor), size);
-  return scm_list_3(scm_from_int(TF_TensorType(self->tensor)),
+  void *data;
+  if (type == TF_STRING) {
+    void *pointer = TF_TensorData(self->tensor);
+    const char *str;
+    size_t str_len;
+    TF_StringDecode(pointer + 8, size - 8, &str, &str_len, status);
+    data = scm_gc_malloc(8, "from-tensor");
+    *(SCM *)data = scm_from_locale_string(str);
+  } else {
+    data = scm_gc_malloc_pointerless(size, "from-tensor");
+    memcpy(data, TF_TensorData(self->tensor), size);
+  };
+  return scm_list_3(scm_from_int(type),
                     scm_shape,
                     scm_from_pointer(data, NULL));
 }
