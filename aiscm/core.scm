@@ -1610,6 +1610,8 @@
 
 (define-method (upcast-integer (type <meta<float<>>>)) type)
 
+(define-method (upcast-integer (type <meta<obj>>)) type)
+
 (define-method (upcast-integer (type <meta<structure>>))
   (apply (build type) (map upcast-integer (base type))))
 

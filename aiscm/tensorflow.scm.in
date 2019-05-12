@@ -53,7 +53,8 @@
         (cons <float>           TF_FLOAT     )
         (cons <double>          TF_DOUBLE    )
         (cons <complex<float>>  TF_COMPLEX64 )
-        (cons <complex<double>> TF_COMPLEX128)))
+        (cons <complex<double>> TF_COMPLEX128)
+        (cons <obj>             TF_STRING    )))
 
 (define inverse-typemap (alist-invert typemap))
 

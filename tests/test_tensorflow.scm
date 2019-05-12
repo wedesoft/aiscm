@@ -225,4 +225,10 @@
   (test-assert "convert double-precision complex array to tensor"
     (to-tensor (arr <complex<double>> 2+3i))))
 
+(test-group "string value"
+  (test-assert "convert string to tensor"
+    (to-tensor "test"))
+  (test-eqv "determine string length"
+    4 (let [(s (make-session))] (run s '()  (tf-string-length "test")))))
+
 (test-end "aiscm tensorflow")

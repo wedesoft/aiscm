@@ -1,11 +1,9 @@
 ## Ready
 
-* improve word recognition example (continuous monitoring)
-* example drawing markers and axes
+* Tensorflow strings: tf-string-join, tf-string-split
 * how to broadcast vectors
-* Ghost in the Shell style animations
+* Ghost in the Shell style animations (coins?)
 * histogram with weights and customisable default and reduce op (e.g. min instead of + to find bounding box for each component)
-* Tensorflow strings
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
   * avcodec\_decode\_video2 deprecated

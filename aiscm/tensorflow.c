@@ -153,14 +153,24 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
   SCM retval;
   struct tf_tensor_t *self = (struct tf_tensor_t *)scm_gc_calloc(sizeof(struct tf_tensor_t), "make-tensor");
   SCM_NEWSMOB(retval, tf_tensor_tag, self);
+  int type = scm_to_int(scm_type);
   int num_dims = scm_to_int(scm_length(scm_shape));
   int64_t *dims = scm_gc_malloc_pointerless(sizeof(int64_t) * num_dims, "make-tensor");
   for (int i=0; i<num_dims; i++) {
     dims[i] = scm_to_int(scm_car(scm_shape));
     scm_shape = scm_cdr(scm_shape);
   };
-  self->tensor = TF_AllocateTensor(scm_to_int(scm_type), dims, num_dims, scm_to_int(scm_size));
-  memcpy(TF_TensorData(self->tensor), scm_to_pointer(scm_source), scm_to_int(scm_size));
+  if (type == TF_STRING) {
+    SCM* pointer = scm_to_pointer(scm_source);
+    const char *str = scm_to_locale_string(*pointer);
+    int size = TF_StringEncodedSize(strlen(str));
+    self->tensor = TF_AllocateTensor(type, dims, num_dims, size + 8);
+    memset(TF_TensorData(self->tensor), 0, 8);
+    TF_StringEncode(str, strlen(str), 8 + (char *)TF_TensorData(self->tensor), size, status);
+  } else {
+    self->tensor = TF_AllocateTensor(type, dims, num_dims, scm_to_int(scm_size));
+    memcpy(TF_TensorData(self->tensor), scm_to_pointer(scm_source), scm_to_int(scm_size));
+  };
   return retval;
 }
 
@@ -518,6 +528,7 @@ void init_tensorflow(void)
   scm_c_define("TF_INT64"     , scm_from_int(TF_INT64     ));
   scm_c_define("TF_BOOL"      , scm_from_int(TF_BOOL      ));
   scm_c_define("TF_COMPLEX128", scm_from_int(TF_COMPLEX128));
+  scm_c_define("TF_STRING"    , scm_from_int(TF_STRING    ));
   scm_c_define_gsubr("make-tensor"                 , 4, 0, 0, SCM_FUNC(make_tensor                ));
   scm_c_define_gsubr("tf-from-tensor"              , 1, 0, 0, SCM_FUNC(tf_from_tensor             ));
   scm_c_define_gsubr("make-graph"                  , 0, 0, 0, SCM_FUNC(make_graph                 ));
