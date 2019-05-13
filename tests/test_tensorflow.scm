@@ -231,6 +231,8 @@
   (test-eqv "determine string length"
     4 (let [(s (make-session))] (run s '()  (tf-string-length "test"))))
   (test-equal "identity function on string"
-    "test" (let [(s (make-session))] (run s '() (tf-identity "test")))))
+    "test" (let [(s (make-session))] (run s '() (tf-identity "test"))))
+  (test-equal "input array of strings"
+    (list 42.0 43.0) (let [(s (make-session))] (to-list (run s '() (tf-string-to-number (arr "42" "43")))))))
 
 (test-end "aiscm tensorflow")

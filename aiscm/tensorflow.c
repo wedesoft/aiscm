@@ -156,17 +156,36 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
   int type = scm_to_int(scm_type);
   int num_dims = scm_to_int(scm_length(scm_shape));
   int64_t *dims = scm_gc_malloc_pointerless(sizeof(int64_t) * num_dims, "make-tensor");
+  int count = 1;
   for (int i=0; i<num_dims; i++) {
     dims[i] = scm_to_int(scm_car(scm_shape));
+    count = count * dims[i];
     scm_shape = scm_cdr(scm_shape);
   };
   if (type == TF_STRING) {
     SCM* pointer = scm_to_pointer(scm_source);
-    const char *str = scm_to_locale_string(*pointer);
-    size_t encoded_size = TF_StringEncodedSize(strlen(str));
-    self->tensor = TF_AllocateTensor(type, dims, num_dims, encoded_size + 8);
-    memset(TF_TensorData(self->tensor), 0, 8);
-    TF_StringEncode(str, strlen(str), 8 + TF_TensorData(self->tensor), encoded_size, status);// TODO: check status
+    size_t encoded_size = 0;
+    for (int i=0; i<count; i++) {
+      encoded_size += TF_StringEncodedSize(strlen(scm_to_locale_string(*pointer))) + 8;
+      pointer++;
+    };
+    self->tensor = TF_AllocateTensor(type, dims, num_dims, encoded_size);
+    int64_t *offsets = TF_TensorData(self->tensor);
+    int offset = 0;
+    void *result = offsets + count;
+    pointer = scm_to_pointer(scm_source);
+    encoded_size = encoded_size - count * sizeof(int64_t);
+    for (int i=0; i<count; i++) {
+      const char *str = scm_to_locale_string(*pointer++);
+      int len = TF_StringEncodedSize(strlen(str));
+      *offsets++ = offset;
+      TF_StringEncode(str, strlen(str), result, encoded_size, status);
+      if (TF_GetCode(status) != TF_OK)
+        scm_misc_error("make-tensor", TF_Message(status), SCM_EOL);
+      offset += len;
+      encoded_size -= len;
+      result += len;
+    };
   } else {
     self->tensor = TF_AllocateTensor(type, dims, num_dims, scm_to_int(scm_size));
     memcpy(TF_TensorData(self->tensor), scm_to_pointer(scm_source), scm_to_int(scm_size));
