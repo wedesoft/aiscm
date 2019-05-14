@@ -198,18 +198,29 @@ SCM tf_from_tensor(SCM scm_self)
   struct tf_tensor_t *self = get_tf_tensor(scm_self);
   int type = TF_TensorType(self->tensor);
   int num_dims = TF_NumDims(self->tensor);
+  int count = 1;
   SCM scm_shape = SCM_EOL;
-  for (int i=num_dims - 1; i>=0; i--)
+  for (int i=num_dims - 1; i>=0; i--) {
     scm_shape = scm_cons(scm_from_int(TF_Dim(self->tensor, i)), scm_shape);
+    count = count * TF_Dim(self->tensor, i);
+  };
   size_t size = TF_TensorByteSize(self->tensor);
   void *data;
   if (type == TF_STRING) {
-    void *pointer = TF_TensorData(self->tensor);
-    const char *str;
+    int64_t *offsets = TF_TensorData(self->tensor);
+    void *pointer = offsets + count;
     size_t str_len;
-    TF_StringDecode(pointer + 8, size - 8, &str, &str_len, status);
-    data = scm_gc_malloc(8, "from-tensor");
-    *(SCM *)data = scm_from_locale_string(str);
+    data = scm_gc_malloc(sizeof(SCM) * count, "from-tensor");
+    SCM *result = data;
+    for (int i=0; i<count; i++) {
+      const char *str;
+      size_t len;
+      TF_StringDecode(pointer + *offsets, size - *offsets, &str, &len, status);
+      if (TF_GetCode(status) != TF_OK)
+        scm_misc_error("from-tensor", TF_Message(status), SCM_EOL);
+      *result++ = scm_from_locale_stringn(str, len);
+      offsets++;
+    };
   } else {
     data = scm_gc_malloc_pointerless(size, "from-tensor");
     memcpy(data, TF_TensorData(self->tensor), size);
