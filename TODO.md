@@ -1,7 +1,5 @@
 ## Ready
 
-* Tensorflow strings: tf-string-strip on arrays
-* how to broadcast vectors
 * Ghost in the Shell style animations (coins?)
 * histogram with weights and customisable default and reduce op (e.g. min instead of + to find bounding box for each component)
 * Debian sid FFmpeg API changes
