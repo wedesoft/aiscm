@@ -57,9 +57,7 @@ static TF_Status *_status = NULL;
 
 static TF_Status *status(void)
 {
-  if (_status != NULL)
-    TF_DeleteStatus(_status);
-  _status = TF_NewStatus();
+  TF_SetStatus(_status, TF_OK, "");
   return _status;
 }
 
@@ -561,6 +559,8 @@ void init_tensorflow(void)
 
   tf_session_tag = scm_make_smob_type("session", sizeof(struct tf_session_t));
   scm_set_smob_free(tf_session_tag, free_session);
+
+  _status = TF_NewStatus();
 
   scm_c_define("TF_FLOAT"     , scm_from_int(TF_FLOAT     ));
   scm_c_define("TF_DOUBLE"    , scm_from_int(TF_DOUBLE    ));

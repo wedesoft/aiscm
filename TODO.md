@@ -52,7 +52,6 @@
 * how to run test suite
 * documentation for objects and arrays of objects
 * difference picture photo thunderstorm
-* virtual fighter
 * run integration tests in Docker container
 * select video codec, select audio codec
 * video player with aspect ratio
