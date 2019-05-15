@@ -53,7 +53,15 @@ struct tf_session_t {
   struct tf_graph_t *graph;// keep graph alive
 };
 
-static TF_Status *status;
+static TF_Status *_status = NULL;
+
+static TF_Status *status(void)
+{
+  if (_status != NULL)
+    TF_DeleteStatus(_status);
+  _status = TF_NewStatus();
+  return _status;
+}
 
 static struct tf_tensor_t *get_tf_tensor_no_check(SCM scm_self)
 {
@@ -143,7 +151,7 @@ static struct tf_session_t *get_tf_session(SCM scm_self)
 size_t free_session(SCM scm_self)
 {
   struct tf_session_t *self = get_tf_session_no_check(scm_self);
-  TF_DeleteSession(self->session, status);
+  TF_DeleteSession(self->session, status());
   scm_gc_free(self, sizeof(struct tf_session_t), "session");
   return 0;
 }
@@ -179,9 +187,9 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
       const char *str = scm_to_locale_string(*pointer++);
       int len = TF_StringEncodedSize(strlen(str));
       *offsets++ = offset;
-      TF_StringEncode(str, strlen(str), result, encoded_size, status);
-      if (TF_GetCode(status) != TF_OK)
-        scm_misc_error("make-tensor", TF_Message(status), SCM_EOL);
+      TF_StringEncode(str, strlen(str), result, encoded_size, status());
+      if (TF_GetCode(_status) != TF_OK)
+        scm_misc_error("make-tensor", TF_Message(_status), SCM_EOL);
       offset += len;
       encoded_size -= len;
       result += len;
@@ -215,9 +223,9 @@ SCM tf_from_tensor(SCM scm_self)
     for (int i=0; i<count; i++) {
       const char *str;
       size_t len;
-      TF_StringDecode(pointer + *offsets, size - *offsets, &str, &len, status);
-      if (TF_GetCode(status) != TF_OK)
-        scm_misc_error("from-tensor", TF_Message(status), SCM_EOL);
+      TF_StringDecode(pointer + *offsets, size - *offsets, &str, &len, status());
+      if (TF_GetCode(_status) != TF_OK)
+        scm_misc_error("from-tensor", TF_Message(_status), SCM_EOL);
       *result++ = scm_from_locale_stringn(str, len);
       offsets++;
     };
@@ -243,10 +251,10 @@ SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
 {
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   TF_Buffer *buffer = TF_NewBuffer();
-  TF_GraphToGraphDef(graph->graph, buffer, status);
-  if (TF_GetCode(status) != TF_OK) {
+  TF_GraphToGraphDef(graph->graph, buffer, status());
+  if (TF_GetCode(_status) != TF_OK) {
     TF_DeleteBuffer(buffer);
-    scm_misc_error("tf-graph-export_", TF_Message(status), SCM_EOL);
+    scm_misc_error("tf-graph-export_", TF_Message(_status), SCM_EOL);
   };
   FILE *file = fopen(scm_to_locale_string(scm_file_name), "w");
   if (!file)
@@ -274,11 +282,11 @@ SCM tf_graph_import_(SCM scm_graph, SCM scm_file_name)
   buffer->length = size;
   fclose(file);
   TF_ImportGraphDefOptions* opts = TF_NewImportGraphDefOptions();
-  TF_GraphImportGraphDef(graph->graph, buffer, opts, status);
+  TF_GraphImportGraphDef(graph->graph, buffer, opts, status());
   TF_DeleteImportGraphDefOptions(opts);
   TF_DeleteBuffer(buffer);
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-graph-import_", TF_Message(status), SCM_EOL);
+  if (TF_GetCode(_status) != TF_OK)
+    scm_misc_error("tf-graph-import_", TF_Message(_status), SCM_EOL);
   return SCM_UNDEFINED;
 }
 
@@ -297,9 +305,9 @@ SCM tf_finish_operation(SCM scm_description, SCM scm_n_outputs)
   SCM retval = SCM_EOL;
   struct tf_description_t *self = get_tf_description(scm_description);
   int n_outputs = scm_to_int(scm_n_outputs);
-  TF_Operation *operation = TF_FinishOperation(self->description, status);
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-finish-operation", TF_Message(status), SCM_EOL);
+  TF_Operation *operation = TF_FinishOperation(self->description, status());
+  if (TF_GetCode(_status) != TF_OK)
+    scm_misc_error("tf-finish-operation", TF_Message(_status), SCM_EOL);
   for (int i=n_outputs-1; i>=0; i--) {
     SCM element;
     struct tf_output_t *output = (struct tf_output_t *)scm_gc_calloc(sizeof(struct tf_output_t), "tf-finish-operation");
@@ -415,9 +423,9 @@ SCM tf_set_attr_tensor(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
   struct tf_tensor_t *value = get_tf_tensor(scm_value);
-  TF_SetAttrTensor(self->description, scm_to_locale_string(scm_name), value->tensor, status);
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("tf-set-attr-tensor", TF_Message(status), SCM_EOL);
+  TF_SetAttrTensor(self->description, scm_to_locale_string(scm_name), value->tensor, status());
+  if (TF_GetCode(_status) != TF_OK)
+    scm_misc_error("tf-set-attr-tensor", TF_Message(_status), SCM_EOL);
   return SCM_UNDEFINED;
 }
 
@@ -428,10 +436,10 @@ SCM make_tf_session(SCM scm_graph)
   SCM_NEWSMOB(retval, tf_session_tag, self);
   self->graph = get_tf_graph(scm_graph);
   TF_SessionOptions *options = TF_NewSessionOptions();
-  self->session = TF_NewSession(self->graph->graph, options, status);
+  self->session = TF_NewSession(self->graph->graph, options, status());
   TF_DeleteSessionOptions(options);
-  if (TF_GetCode(status) != TF_OK)
-    scm_misc_error("make-tf-session", TF_Message(status), SCM_EOL);
+  if (TF_GetCode(_status) != TF_OK)
+    scm_misc_error("make-tf-session", TF_Message(_status), SCM_EOL);
   return retval;
 }
 
@@ -455,9 +463,9 @@ SCM tf_run(SCM scm_session, SCM scm_input, SCM scm_output)
       output[i] = get_tf_output(scm_car(scm_output))->output;
       scm_output = scm_cdr(scm_output);
     };
-    TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status);
-    if (TF_GetCode(status) != TF_OK)
-      scm_misc_error("tf-run", TF_Message(status), SCM_EOL);
+    TF_SessionRun(session->session, NULL, inputs, input_values, ninputs, output, output_values, noutputs, NULL, 0, NULL, status());
+    if (TF_GetCode(_status) != TF_OK)
+      scm_misc_error("tf-run", TF_Message(_status), SCM_EOL);
     retval = SCM_EOL;
     for (int i=noutputs-1; i>=0; i--) {
       SCM element;
@@ -484,9 +492,9 @@ SCM tf_add_gradient_(SCM scm_graph, SCM scm_expression, SCM scm_variables)
       scm_variables = scm_cdr(scm_variables);
     };
     TF_Output *output = scm_gc_calloc(sizeof(TF_Output) * nvariables, "tf-add-gradient_");
-    TF_AddGradients(graph->graph, &expression->output, 1, variables, nvariables, NULL, status, output);
-    if (TF_GetCode(status) != TF_OK)
-      scm_misc_error("tf-add-gradient_", TF_Message(status), SCM_EOL);
+    TF_AddGradients(graph->graph, &expression->output, 1, variables, nvariables, NULL, status(), output);
+    if (TF_GetCode(_status) != TF_OK)
+      scm_misc_error("tf-add-gradient_", TF_Message(_status), SCM_EOL);
     retval = SCM_EOL;
     for (int i=nvariables-1; i>=0; i--) {
       SCM element;
@@ -553,8 +561,6 @@ void init_tensorflow(void)
 
   tf_session_tag = scm_make_smob_type("session", sizeof(struct tf_session_t));
   scm_set_smob_free(tf_session_tag, free_session);
-
-  status = TF_NewStatus();
 
   scm_c_define("TF_FLOAT"     , scm_from_int(TF_FLOAT     ));
   scm_c_define("TF_DOUBLE"    , scm_from_int(TF_DOUBLE    ));
