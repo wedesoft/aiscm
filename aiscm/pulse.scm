@@ -71,7 +71,7 @@
   samples)
 
 (define-method (write-audio (samples <samples>) (self <pulse-play>)); TODO: check type
-  (write-audio (to-array samples) self)
+  (write-audio (from-samples samples) self)
   samples)
 
 (define-method (write-audio (samples <procedure>) (self <pulse-play>))

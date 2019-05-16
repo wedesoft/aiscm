@@ -1,4 +1,5 @@
-(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg) (aiscm tensorflow) (aiscm util))
+(use-modules (oop goops) (ice-9 ftw) (ice-9 regex) (srfi srfi-1) (srfi srfi-26) (aiscm core) (aiscm ffmpeg)
+             (aiscm samples) (aiscm tensorflow) (aiscm util))
 
 (define words (list "stop" "go" "left" "right"))
 (define rate 11025)
@@ -13,7 +14,7 @@
 (define count (ceiling (/ (* rate seconds) chunk)))
 (define window 100)
 
-(define background (reshape (to-array (read-audio (open-ffmpeg-input "background.wav") (* count chunk))) (list count chunk)))
+(define background (reshape (from-samples (read-audio (open-ffmpeg-input "background.wav") (* count chunk))) (list count chunk)))
 
 (define data
   (map
@@ -24,7 +25,7 @@
              (input (open-ffmpeg-input file-name))
              (count (string->number (match:substring match 3)))
              (n     (/ count chunk)) ]
-        (cons index (reshape (to-array (read-audio input count)) (list n chunk)))))
+        (cons index (reshape (from-samples (read-audio input count)) (list n chunk)))))
     file-names))
 
 (define (shift background)

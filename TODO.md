@@ -1,7 +1,9 @@
 ## Ready
 
+* to-array -> from-image
+* histogram with optional weights
+* free scm\_to\_locale\_string
 * Ghost in the Shell style animations (coins?)
-* histogram with weights and customisable default and reduce op (e.g. min instead of + to find bounding box for each component)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
   * avcodec\_decode\_video2 deprecated
@@ -12,7 +14,6 @@
     * avcodec\_send\_packet
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
-* to-array -> from-image
 * argmin, argmax
 * mask, unmask
 * argwhere (mask coordinates)

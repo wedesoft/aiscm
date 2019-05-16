@@ -8,8 +8,8 @@
             AV_SAMPLE_FMT_U8 AV_SAMPLE_FMT_S16 AV_SAMPLE_FMT_S32 AV_SAMPLE_FMT_FLT AV_SAMPLE_FMT_DBL
             AV_SAMPLE_FMT_U8P AV_SAMPLE_FMT_S16P AV_SAMPLE_FMT_S32P AV_SAMPLE_FMT_FLTP AV_SAMPLE_FMT_DBLP
             planar? to-samples convert-samples convert-samples-from! type+planar->sample-format
-            sample-format->type sample-format->planar)
-  #:re-export (typecode shape to-array size-of))
+            sample-format->type sample-format->planar from-samples)
+  #:re-export (typecode shape size-of))
 
 (load-extension "libguile-aiscm-samples" "init_samples")
 
@@ -44,10 +44,10 @@
   "Memory size of audio samples in bytes"
   (apply * (size-of (typecode self)) (shape self)))
 
-(define-method (to-array (self <samples>))
+(define (from-samples self)
   "Convert audio samples to a numerical array"
   (if (planar? self)
-      (to-array (convert-samples self (typecode self) #f))
+      (from-samples (convert-samples self (typecode self) #f))
       (make (multiarray (typecode self) 2) #:shape (shape self) #:memory (memory self) #:memory-base (memory-base self))))
 
 (define (to-samples self rate)
