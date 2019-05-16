@@ -106,7 +106,7 @@
   (test-equal "Check shape of video frame"
     '(360 640) (shape video-frame))
   (test-equal "Check a pixel in the first video frame of the video"
-    (rgb 154 154 154) (get (to-array video-frame) 10 270))
+    (rgb 154 154 154) (get (from-image video-frame) 10 270))
 
   (define video-pts1 (video-pts input-video))
   (read-image input-video)

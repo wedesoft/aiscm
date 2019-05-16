@@ -47,7 +47,7 @@
     'misc-error (draw-marker DICT_4X4_50 0 0)))
 
 (define img (charuco-board 5 7 100 50 DICT_4X4_50))
-(define color-img (to-array (convert-image (to-image img) 'RGB)))
+(define color-img (from-image (convert-image (to-image img) 'RGB)))
 (define aruco (detect-markers img DICT_4X4_50))
 (define color-aruco (detect-markers color-img DICT_4X4_50))
 (define corners (interpolate-corners aruco img 5 7 100 50))

@@ -22,7 +22,7 @@
   #:use-module (aiscm util)
   #:use-module (aiscm core)
   #:export (<image> <meta<image>>
-            get-format convert-image to-image symbol->format format->symbol convert-image-from!))
+            get-format convert-image to-image symbol->format format->symbol convert-image-from! from-image))
 
 
 (load-extension "libguile-aiscm-image" "init_image")
@@ -156,7 +156,7 @@
 (define-method (write (self <image>) port)
   (format port "#<<image> ~a ~a>" (get-format self) (shape self)))
 
-(define-method (to-array (self <image>))
+(define (from-image self)
   (case (get-format self)
     ((GRAY) (let* [(shape   (shape self))
                    (pitches (pitches self))
@@ -170,7 +170,7 @@
                    (mem     (memory self))
                    (base    (memory-base self))]
               (make (multiarray <rgb<ubyte>> 2) #:memory mem #:memory-base base #:shape shape #:strides (list (car pitches) 3))))
-    (else   (to-array (convert-image self 'RGB)))))
+    (else   (from-image (convert-image self 'RGB)))))
 
 (define-method (to-image (self <image>)) self)
 

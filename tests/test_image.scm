@@ -47,12 +47,12 @@
   #vu8(2 3 5 7 11 13 17 19 2 3 5 7 11 13 17 19) (pointer->bytevector (memory (convert-image img 'GRAY '(2 8))) 16))
 (test-equal "correct application of custom pitches"
   2 (bytevector-u8-ref (pointer->bytevector (memory (convert-image img 'GRAY '(2 8) '(0) '(16))) 32) 16))
-(test-equal "'to-array' should convert the image to a 2D array"
-  '((2 3 5 7 11 13 17 19)) (to-list (to-array img)))
-(test-equal "'to-array' should convert the image to a colour image"
-  (rgb 3 3 3) (get (to-array (convert-image img 'UYVY)) 2 0))
-(test-equal "'to-array' should take pitches (strides) into account"
-  2 (get (to-array (convert-image img 'GRAY '(2 8) '(0) '(16))) 0 1))
+(test-equal "'from-image' should convert the image to a 2D array"
+  '((2 3 5 7 11 13 17 19)) (to-list (from-image img)))
+(test-equal "'from-image' should convert the image to a colour image"
+  (rgb 3 3 3) (get (from-image (convert-image img 'UYVY)) 2 0))
+(test-equal "'from-image' should take pitches (strides) into account"
+  2 (get (from-image (convert-image img 'GRAY '(2 8) '(0) '(16))) 0 1))
 (test-equal "'to-image' converts to grayscale image"
   'GRAY (get-format (to-image m)))
 (test-assert "'to-image' for an image has no effect"
@@ -60,24 +60,24 @@
 (test-equal "'to-image' preserves shape of array"
   '(2 4) (shape (to-image m)))
 (test-equal "Converting from unsigned byte multiarray to image and back preserves data"
-  l (to-list (to-array (to-image m))))
+  l (to-list (from-image (to-image m))))
 (test-equal "Conversion to image ensures compacting of pixel lines"
   #vu8(1 3 2 4) (pointer->bytevector (memory (to-image (roll (to-array '((1 2) (3 4)))))) 4))
 (test-equal "Converting from integer multiarray to image and back converts to byte data"
-  l (to-list (to-array (to-image (to-array l)))))
+  l (to-list (from-image (to-image (to-array l)))))
 (test-equal "Converting from floating-point multiarray to image and back converts to byte data"
-  l (to-list (to-array (to-image (to-array f)))))
+  l (to-list (from-image (to-image (to-array f)))))
 (test-equal "Convert RGB array to image"
-  c (to-list (to-array (to-image (to-array c)))))
+  c (to-list (from-image (to-image (to-array c)))))
 (test-equal "Convert integer RGB array to image"
-  c (to-list (to-array (to-image (to-array (rgb <int>) c)))))
+  c (to-list (from-image (to-image (to-array (rgb <int>) c)))))
 (test-eq "Convert RGB symbol to format number and back"
   'RGB (format->symbol (symbol->format 'RGB)))
 (test-eq "Convert I420 symbol to format number and back"
   'I420 (format->symbol (symbol->format 'I420)))
 
 (test-equal "Convert MJPEG frame to RGB and test a pixel"
-  (rgb 51 58 42) (get (to-array mjpeg-frame) 32 56))
+  (rgb 51 58 42) (get (from-image mjpeg-frame) 32 56))
 
 (define target (to-image (to-array '((0 0 0 0 0 0 0 0)))))
 (convert-image-from! target (to-image (to-array '((1 2 3 4 6 7 8 9)))))
