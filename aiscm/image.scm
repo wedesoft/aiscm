@@ -123,7 +123,7 @@
   (let [(dest-type   (descriptor self))
         (source-type (descriptor source))]
     (if (eq? (get-format source) 'MJPG)
-      (if (and (memv (get-format self) '(YV12 I420))
+      (if (and (eq? (get-format self) 'YV12)
                (equal? (shape self) (shape source))
                (equal? (pitches self) (default-pitches 'YV12 (cadr (shape self)))))
         (mjpeg-to-yuv420p (memory source) (shape self) (memory self) (offsets self))
