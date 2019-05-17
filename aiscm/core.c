@@ -251,10 +251,10 @@ SCM make_llvm_function(SCM scm_llvm, SCM scm_return_type, SCM scm_name, SCM scm_
   self = (struct llvm_function_t *)scm_gc_calloc(sizeof(struct llvm_function_t), "llvm function");
   SCM_NEWSMOB(retval, llvm_function_tag, self);
   self->builder = LLVMCreateBuilder();
-  self->function = LLVMAddFunction(llvm->module,
-                                   scm_to_locale_string(scm_name),
-                                   function_type(scm_return_type, scm_argument_types));
+  char *name = scm_to_locale_string(scm_name);
+  self->function = LLVMAddFunction(llvm->module, name, function_type(scm_return_type, scm_argument_types));
   LLVMSetFunctionCallConv(self->function, LLVMCCallConv);
+  free(name);
   return retval;
 }
 
@@ -311,7 +311,10 @@ SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
 SCM llvm_get_function_address(SCM scm_llvm, SCM scm_name)
 {
   struct llvm_module_t *self = get_llvm(scm_llvm);
-  return scm_from_pointer((void *)LLVMGetFunctionAddress(self->engine, scm_to_locale_string(scm_name)), NULL);
+  char *name = scm_to_locale_string(scm_name);
+  void *address = (void *)LLVMGetFunctionAddress(self->engine, name);
+  free(name);
+  return scm_from_pointer(address, NULL);
 }
 
 SCM llvm_verify_module(SCM scm_llvm)
@@ -333,7 +336,9 @@ SCM make_llvm_basic_block(SCM scm_function, SCM scm_name)
   struct llvm_basic_block_t *self;
   self = (struct llvm_basic_block_t *)scm_gc_calloc(sizeof(struct llvm_basic_block_t), "llvm basic block");
   SCM_NEWSMOB(retval, llvm_basic_block_tag, self);
-  self->basic_block = LLVMAppendBasicBlock(function->function, scm_to_locale_string(scm_name));
+  char *name = scm_to_locale_string(scm_name);
+  self->basic_block = LLVMAppendBasicBlock(function->function, name);
+  free(name);
   return retval;
 }
 
@@ -641,8 +646,9 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   SCM retval;
   struct llvm_function_t *function = get_llvm_function(scm_function);
   struct llvm_module_t *llvm = get_llvm(scm_llvm);
-  const char *function_name = scm_to_locale_string(scm_function_name);
+  char *function_name = scm_to_locale_string(scm_function_name);
   LLVMValueRef function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
+  free(function_name);
   // LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
   int n_values = scm_ilength(scm_values);
   LLVMValueRef *values = scm_gc_malloc_pointerless(n_values * sizeof(LLVMValueRef), "llvm-build-call");

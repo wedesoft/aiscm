@@ -1,9 +1,9 @@
 ## Ready
 
+* free scm\_to\_locale\_string
 * to-array -> from-list
 * colour swapped when converting MJPEG video to I420 (but not YV12)
 * histogram with optional weights
-* free scm\_to\_locale\_string
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
