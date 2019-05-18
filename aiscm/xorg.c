@@ -125,8 +125,9 @@ SCM make_display(SCM scm_name)
 {
   SCM retval;
   struct display_t *self;
-  const char *name = scm_to_locale_string(scm_name);
+  char *name = scm_to_locale_string(scm_name);
   Display *display = XOpenDisplay(*name == '\0' ? (const char *)NULL : name);
+  free(name);
   if (!display) scm_syserror("make-display");
   self = (struct display_t *)scm_gc_calloc(sizeof(struct display_t), "display");
   SCM_NEWSMOB(retval, display_tag, self);
@@ -484,7 +485,9 @@ SCM window_show_fullscreen(SCM scm_self)
 SCM window_title(SCM scm_self, SCM scm_title)
 {
   struct window_t *self = get_window(scm_self);
-  XStoreName(self->display->display, self->window, scm_to_locale_string(scm_title));
+  char *title = scm_to_locale_string(scm_title);
+  XStoreName(self->display->display, self->window, title);
+  free(title);
   return scm_title;
 }
 

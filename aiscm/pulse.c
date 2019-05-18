@@ -172,7 +172,7 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_playback, SCM scm_channels
   struct pulsedev_t *self = (struct pulsedev_t *)scm_gc_calloc(sizeof(struct pulsedev_t), "pulsedev");
   SCM_NEWSMOB(retval, pulsedev_tag, self);
 
-  const char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
+  char *name = scm_is_string(scm_name) ? scm_to_locale_string(scm_name) : NULL;
   char playback = scm_is_true(scm_playback);
   pa_usec_t latency = (pa_usec_t)(scm_to_double(scm_latency) * 1e6);
   self->sample_spec.format = scm_to_int(scm_type);
@@ -184,6 +184,7 @@ SCM make_pulsedev(SCM scm_name, SCM scm_type, SCM scm_playback, SCM scm_channels
   initialise_context(self);
   initialise_stream(self, playback);
   connect_stream(self, name, playback, latency);
+  if (name) free(name);
 
   return retval;
 }
@@ -203,7 +204,7 @@ void wait_for_flush(pa_stream *stream, int success, void *userdata)
   pa_threaded_mainloop_signal(userdata, 0);
 }
 
-SCM pulsedev_flush(SCM scm_self)// TODO: check audio device still open
+SCM pulsedev_flush(SCM scm_self)
 {
   struct pulsedev_t *self = get_self(scm_self);
   pa_threaded_mainloop *mainloop = get_mainloop(self);
@@ -254,7 +255,7 @@ static void fetch_callback(char *data, int count, int offset, void *userdata)
   memcpy((char *)userdata + offset, data, count);
 }
 
-SCM pulsedev_read(SCM scm_self, SCM scm_bytes)// TODO: check audio device still open
+SCM pulsedev_read(SCM scm_self, SCM scm_bytes)
 {
   struct pulsedev_t *self = get_self(scm_self);
   pa_threaded_mainloop *mainloop = get_mainloop(self);

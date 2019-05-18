@@ -173,7 +173,7 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
     SCM* pointer = scm_to_pointer(scm_source);
     size_t encoded_size = 0;
     for (int i=0; i<count; i++) {
-      encoded_size += TF_StringEncodedSize(strlen(scm_to_locale_string(*pointer))) + 8;
+      encoded_size += TF_StringEncodedSize(scm_c_string_length(*pointer)) + 8;
       pointer++;
     };
     self->tensor = TF_AllocateTensor(type, dims, num_dims, encoded_size);
@@ -183,16 +183,17 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
     pointer = scm_to_pointer(scm_source);
     encoded_size = encoded_size - count * sizeof(int64_t);
     for (int i=0; i<count; i++) {
-      const char *str = scm_to_locale_string(*pointer++);
-      int len = TF_StringEncodedSize(strlen(str));
+      char *str = scm_to_locale_string(*pointer);
+      int len = TF_StringEncodedSize(scm_c_string_length(*pointer));
       *offsets++ = offset;
-      TF_StringEncode(str, strlen(str), result, encoded_size, status());
+      TF_StringEncode(str, scm_c_string_length(*pointer), result, encoded_size, status());
       free(str);
       if (TF_GetCode(_status) != TF_OK)
         scm_misc_error("make-tensor", TF_Message(_status), SCM_EOL);
       offset += len;
       encoded_size -= len;
       result += len;
+      pointer++;
     };
   } else {
     self->tensor = TF_AllocateTensor(type, dims, num_dims, scm_to_int(scm_size));
@@ -256,7 +257,9 @@ SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
     TF_DeleteBuffer(buffer);
     scm_misc_error("tf-graph-export_", TF_Message(_status), SCM_EOL);
   };
-  FILE *file = fopen(scm_to_locale_string(scm_file_name), "w");
+  char *file_name = scm_to_locale_string(scm_file_name);
+  FILE *file = fopen(file_name, "w");
+  free(file_name);
   if (!file)
     scm_misc_error("tf-graph-export_", strerror(errno), SCM_EOL);
   fwrite(buffer->data, buffer->length, 1, file);
@@ -268,7 +271,9 @@ SCM tf_graph_export_(SCM scm_graph, SCM scm_file_name)
 SCM tf_graph_import_(SCM scm_graph, SCM scm_file_name)
 {
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  FILE *file = fopen(scm_to_locale_string(scm_file_name), "r");
+  char *file_name = scm_to_locale_string(scm_file_name);
+  FILE *file = fopen(file_name, "r");
+  free(file_name);
   if (!file)
     scm_misc_error("tf-graph-import_", strerror(errno), SCM_EOL);
   int fd = fileno(file);
@@ -296,7 +301,11 @@ SCM make_description(SCM scm_graph, SCM scm_op, SCM scm_name)
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
   struct tf_description_t *self = (struct tf_description_t *)scm_gc_calloc(sizeof(struct tf_description_t), "make-description");
   SCM_NEWSMOB(retval, tf_description_tag, self);
-  self->description = TF_NewOperation(graph->graph, scm_to_locale_string(scm_op), scm_to_locale_string(scm_name));
+  char *op = scm_to_locale_string(scm_op);
+  char *name = scm_to_locale_string(scm_name);
+  self->description = TF_NewOperation(graph->graph, op, name);
+  free(name);
+  free(op);
   return retval;
 }
 
@@ -345,17 +354,20 @@ SCM tf_add_input_list(SCM scm_description, SCM scm_inputs)
 SCM tf_set_attr_string(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
-  TF_SetAttrString(self->description,
-                   scm_to_locale_string(scm_name),
-                   scm_to_locale_string(scm_value),
-                   scm_c_string_length(scm_value));
+  char *name = scm_to_locale_string(scm_name);
+  char *value = scm_to_locale_string(scm_value);
+  TF_SetAttrString(self->description, name, value, scm_c_string_length(scm_value));
+  free(value);
+  free(name);
   return SCM_UNDEFINED;
 }
 
 SCM tf_set_attr_int(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
-  TF_SetAttrInt(self->description, scm_to_locale_string(scm_name), scm_to_int(scm_value));
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrInt(self->description, name, scm_to_int(scm_value));
+  free(name);
   return SCM_UNDEFINED;
 }
 
@@ -368,21 +380,27 @@ SCM tf_set_attr_int_list(SCM scm_description, SCM scm_name, SCM scm_values)
     values[i] = scm_to_int(scm_car(scm_values));
     scm_values = scm_cdr(scm_values);
   };
-  TF_SetAttrIntList(self->description, scm_to_locale_string(scm_name), values, num_values);
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrIntList(self->description, name, values, num_values);
+  free(name);
   return SCM_UNDEFINED;
 }
 
 SCM tf_set_attr_bool(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
-  TF_SetAttrBool(self->description, scm_to_locale_string(scm_name), scm_is_true(scm_value));
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrBool(self->description, name, scm_is_true(scm_value));
+  free(name);
   return SCM_UNDEFINED;
 }
 
 SCM tf_set_attr_float(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
-  TF_SetAttrFloat(self->description, scm_to_locale_string(scm_name), (float)scm_to_double(scm_value));
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrFloat(self->description, name, (float)scm_to_double(scm_value));
+  free(name);
   return SCM_UNDEFINED;
 }
 
@@ -395,14 +413,18 @@ SCM tf_set_attr_float_list(SCM scm_description, SCM scm_name, SCM scm_values)
     values[i] = (float)scm_to_double(scm_car(scm_values));
     scm_values = scm_cdr(scm_values);
   };
-  TF_SetAttrFloatList(self->description, scm_to_locale_string(scm_name), values, num_values);
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrFloatList(self->description, name, values, num_values);
+  free(name);
   return SCM_UNDEFINED;
 }
 
 SCM tf_set_attr_type(SCM scm_description, SCM scm_name, SCM scm_type)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
-  TF_SetAttrType(self->description, scm_to_locale_string(scm_name), scm_to_int(scm_type));
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrType(self->description, name, scm_to_int(scm_type));
+  free(name);
   return SCM_UNDEFINED;
 }
 
@@ -415,7 +437,9 @@ SCM tf_set_attr_shape(SCM scm_description, SCM scm_name, SCM scm_shape)
     dims[i] = scm_to_int(scm_car(scm_shape));
     scm_shape = scm_cdr(scm_shape);
   };
-  TF_SetAttrShape(self->description, scm_to_locale_string(scm_name), dims, num_dims);
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrShape(self->description, name, dims, num_dims);
+  free(name);
   return SCM_UNDEFINED;
 }
 
@@ -423,7 +447,9 @@ SCM tf_set_attr_tensor(SCM scm_description, SCM scm_name, SCM scm_value)
 {
   struct tf_description_t *self = get_tf_description(scm_description);
   struct tf_tensor_t *value = get_tf_tensor(scm_value);
-  TF_SetAttrTensor(self->description, scm_to_locale_string(scm_name), value->tensor, status());
+  char *name = scm_to_locale_string(scm_name);
+  TF_SetAttrTensor(self->description, name, value->tensor, status());
+  free(name);
   if (TF_GetCode(_status) != TF_OK)
     scm_misc_error("tf-set-attr-tensor", TF_Message(_status), SCM_EOL);
   return SCM_UNDEFINED;
@@ -516,7 +542,9 @@ SCM tf_outputq(SCM scm_value)
 SCM tf_graph_operation_by_name_(SCM scm_graph, SCM scm_name)
 {
   struct tf_graph_t *graph = get_tf_graph(scm_graph);
-  TF_Operation *operation = TF_GraphOperationByName(graph->graph, scm_to_locale_string(scm_name));
+  char *name = scm_to_locale_string(scm_name);
+  TF_Operation *operation = TF_GraphOperationByName(graph->graph, name);
+  free(name);
   if (!operation)
     scm_misc_error("tf-graph-operation-by-name_", "Operation '~a' not found", scm_list_1(scm_name));
   SCM retval = SCM_EOL;

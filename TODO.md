@@ -1,6 +1,5 @@
 ## Ready
 
-* free scm\_to\_locale\_string (scm\_dynwind\_free), -> magick.c
 * to-array -> from-list
 * histogram with optional weights
 * Ghost in the Shell style animations (coins?)

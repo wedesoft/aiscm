@@ -96,7 +96,9 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
   struct videodev2_t *self;
   struct stat st;
   int i;
-  const char *name = scm_to_locale_string(scm_name);
+  scm_dynwind_begin(0);
+  char *name = scm_to_locale_string(scm_name);
+  scm_dynwind_free(name);
   if (stat(name, &st))
     scm_misc_error("make-videodev2", "Error getting file status of '~a': ~a",
                    scm_list_2(scm_name, scm_from_locale_string(strerror(errno))));
@@ -266,6 +268,7 @@ SCM make_videodev2(SCM scm_name, SCM scm_channel, SCM scm_select)
     scm_misc_error("make-videodev2", "Device '~a' neither supports streaming nor reading from device",
                    scm_list_1(scm_name));
   };
+  scm_dynwind_end();
   return retval;
 }
 
