@@ -307,7 +307,9 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
 {
   SCM retval;
   struct ffmpeg_t *self;
+  scm_dynwind_begin(0);
   const char *file_name = scm_to_locale_string(scm_file_name);
+  scm_dynwind_free(file_name);
   self = (struct ffmpeg_t *)scm_gc_calloc(sizeof(struct ffmpeg_t), "ffmpeg");
   self->video_stream_idx = -1;
   self->audio_stream_idx = -1;
@@ -349,6 +351,7 @@ SCM make_ffmpeg_input(SCM scm_file_name, SCM scm_debug)
   self->pkt.data = NULL;
   self->pkt.size = 0;
 
+  scm_dynwind_end();
   return retval;
 }
 
@@ -535,7 +538,9 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 {
   SCM retval;
   struct ffmpeg_t *self;
+  scm_dynwind_begin(0);
   const char *file_name = scm_to_locale_string(scm_file_name);
+  scm_dynwind_free(file_name);
   self = (struct ffmpeg_t *)scm_gc_calloc(sizeof(struct ffmpeg_t), "ffmpeg");
   self->video_stream_idx = -1;
   self->audio_stream_idx = -1;
@@ -543,7 +548,10 @@ SCM make_ffmpeg_output(SCM scm_file_name,
 
   int err;
   const char *format_name = NULL;
-  if (!scm_is_false(scm_format_name)) format_name = scm_to_locale_string(scm_symbol_to_string(scm_format_name));
+  if (!scm_is_false(scm_format_name)) {
+    format_name = scm_to_locale_string(scm_symbol_to_string(scm_format_name));
+    scm_dynwind_free(format_name);
+  };
 #ifdef HAVE_AVFORMAT_ALLOC_OUTPUT_CONTEXT2
   err = avformat_alloc_output_context2(&self->fmt_ctx, NULL, format_name, file_name);
   if (!self->fmt_ctx) {
@@ -657,6 +665,7 @@ SCM make_ffmpeg_output(SCM scm_file_name,
   };
   self->header_written = 1;
 
+  scm_dynwind_end();
   return retval;
 }
 

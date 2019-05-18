@@ -23,10 +23,11 @@
 SCM magick_read_image(SCM scm_file_name)
 {
   SCM retval = SCM_UNDEFINED;
-  const char *file_name = scm_to_locale_string(scm_file_name);
+  char *file_name = scm_to_locale_string(scm_file_name);
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = CloneImageInfo((ImageInfo *)NULL);
   CopyMagickString(image_info->filename, file_name, MaxTextExtent);
+  free(file_name);
   Image *images = ReadImage(image_info, exception_info);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);
@@ -71,14 +72,16 @@ SCM magick_write_image(SCM scm_format, SCM scm_shape, SCM scm_mem, SCM scm_file_
   ExceptionInfo *exception_info = AcquireExceptionInfo();
   ImageInfo *image_info = AcquireImageInfo();
   GetImageInfo(image_info);
-  const char *format = scm_to_locale_string(scm_symbol_to_string(scm_format));
+  char *format = scm_to_locale_string(scm_symbol_to_string(scm_format));
   Image *image = ConstituteImage(width, height, format, CharPixel, mem, exception_info);
+  free(format);
   if (exception_info->severity < ErrorException) {
     CatchException(exception_info);
     Image *images = NewImageList();
     AppendImageToList(&images, image);
-    const char *file_name = scm_to_locale_string(scm_file_name);
+    char *file_name = scm_to_locale_string(scm_file_name);
     WriteImages(image_info, images, file_name, exception_info);
+    free(file_name);
     if (exception_info->severity < ErrorException)
       CatchException(exception_info);
     DestroyImageList(images);

@@ -183,19 +183,16 @@ SCM make_tensor(SCM scm_type, SCM scm_shape, SCM scm_size, SCM scm_source)
     pointer = scm_to_pointer(scm_source);
     encoded_size = encoded_size - count * sizeof(int64_t);
     for (int i=0; i<count; i++) {
-      scm_dynwind_begin(0);
       const char *str = scm_to_locale_string(*pointer++);
-      /* Auto free allocated str when dynamic-wind context end */
-      scm_dynwind_unwind_handler(free, (void*)str, SCM_F_WIND_EXPLICITLY);
       int len = TF_StringEncodedSize(strlen(str));
       *offsets++ = offset;
       TF_StringEncode(str, strlen(str), result, encoded_size, status());
+      free(str);
       if (TF_GetCode(_status) != TF_OK)
         scm_misc_error("make-tensor", TF_Message(_status), SCM_EOL);
       offset += len;
       encoded_size -= len;
       result += len;
-      scm_dynwind_end();
     };
   } else {
     self->tensor = TF_AllocateTensor(type, dims, num_dims, scm_to_int(scm_size));
