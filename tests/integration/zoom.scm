@@ -1,4 +1,4 @@
-(use-modules (oop goops) (aiscm core) (aiscm v4l2) (aiscm xorg))
+(use-modules (oop goops) (aiscm core) (aiscm image) (aiscm v4l2) (aiscm xorg))
 (define v (make <v4l2>))
 (define idx (apply indices (shape v)))
 (define width (cadr (shape idx)))
@@ -16,7 +16,7 @@
 (define z 50)
 (show
   (lambda _
-    (let [(img (to-array (read-image v)))]
+    (let [(img (from-image (read-image v)))]
       (set! z (min 200 (+ 10 z)))
       (let* [(o  (where (lt r z) (* r (- 1 (/ 50 z))) 0))
              (wx (to-type <int> (- x (* cs o))))

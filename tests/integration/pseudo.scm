@@ -4,4 +4,4 @@
                                                (max 0 (- 255 (abs (- (* i 4) (* 3 64 4)))))))
                               (iota 256))))
 (define img (read-image "star-ferry.jpg"))
-(write-image (warp colors (to-array (convert-image (to-image img) 'GRAY))) "pseudo.jpg")
+(write-image (warp colors (from-image (convert-image (to-image img) 'GRAY))) "pseudo.jpg")
