@@ -1901,6 +1901,7 @@
     (apply warp self args)))
 
 (define (reshape arr shp)
+  "Change shape of array to SHP"
   (let [(arr (ensure-default-strides arr))]
     (make (multiarray (typecode arr) (length shp))
           #:shape shp

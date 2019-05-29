@@ -1,57 +1,76 @@
-(use-modules (oop goops) (aiscm core) (aiscm samples) (aiscm util))
+(use-modules (srfi srfi-1) (oop goops) (aiscm core) (aiscm util))
 
-(load-extension "libguile-aiscm-ffmpeg" "init_ffmpeg")
+(define (elementwise-loop delegate result . args)
+  "Elementwise array operation with arbitrary arity"
+  (if (zero? (dimensions result))
+    (store (memory result) (apply delegate args))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pend (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(p (build-phi (pointer (typecode result))))]
+            (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))]
+              (llvm-begin
+                (add-incoming p start (memory result))
+                (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
+                (build-cond-branch (ne p pend) body end)
+                (position-builder-at-end body)
+                (apply elementwise-loop
+                       delegate
+                       (project (rebase result p))
+                       (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
+                (build-branch finish)
+                (position-builder-at-end finish)
+                (add-incoming p finish (+ p (llvm-car (strides result))))
+                (apply llvm-begin
+                  (append-map
+                    (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) '()))
+                    q
+                    args))
+                (build-branch for)
+                (position-builder-at-end end)))))))))
 
-(define-class* <ffmpeg> <object> <meta<ffmpeg>> <class>
-               (ffmpeg #:init-keyword #:ffmpeg)
-               (video-buffer #:init-value '())
-               (is-input #:init-keyword #:is-input #:getter is-input?)
-               (audio-pts #:init-value 0 #:getter audio-pts)
-               (video-pts #:init-value 0 #:getter video-pts))
+((jit (list <int> <int>) +) 2 3)
 
-(define (open-ffmpeg-input file-name)
-  "Open audio/video input file FILE-NAME using FFmpeg library"
-  (let [(debug (equal? "YES" (getenv "DEBUG")))]
-    (make <ffmpeg> #:ffmpeg (make-ffmpeg-input file-name debug) #:is-input #t)))
+((jit (list (llvmlist <int> 3)) identity) (list 2 3 5))
 
-(define self (open-ffmpeg-input "tests/fixtures/cat.wav"))
-;(define self (open-ffmpeg-input "tests/fixtures/test.mp3"))
+((jit (list (llvmlist <int> 3)) (lambda (lst) (get lst 1))) (list 2 3 5))
 
-(define (make-audio-frame sample-format shape rate offsets data size)
-  "Construct an audio frame from the specified information"
-  (make <samples> #:typecode (sample-format->type sample-format)
-                  #:shape    shape
-                  #:rate     rate
-                  #:offsets  offsets
-                  #:planar   (sample-format->planar sample-format)
-                  #:memory   data))
+((jit (list <int> <int> <int>) (lambda (x y z) (llvmlist x y z))) 2 3 5)
 
-(define (target-audio-frame self)
-  "Get target audio frame for audio encoding"
-  (apply make-audio-frame (ffmpeg-target-audio-frame (slot-ref self 'ffmpeg))))
+((jit (list (llvmarray <ubyte> 1)) identity) (arr 2 3 5))
 
-(define inverse-typemap
-  (list (cons AV_SAMPLE_FMT_U8   <ubyte> )
-        (cons AV_SAMPLE_FMT_U8P  <ubyte> )
-        (cons AV_SAMPLE_FMT_S16  <sint>  )
-        (cons AV_SAMPLE_FMT_S16P <sint>  )
-        (cons AV_SAMPLE_FMT_S32  <int>   )
-        (cons AV_SAMPLE_FMT_S32P <int>   )
-        (cons AV_SAMPLE_FMT_FLT  <float> )
-        (cons AV_SAMPLE_FMT_FLTP <float> )
-        (cons AV_SAMPLE_FMT_DBL  <double>)
-        (cons AV_SAMPLE_FMT_DBLP <double>)))
+((jit (list (llvmarray <ubyte> 1)) shape) (arr 2 3 5))
 
-(define-method (typecode (self <ffmpeg>))
-  "Query audio type of file"
-  (assq-ref inverse-typemap (ffmpeg-typecode (slot-ref self 'ffmpeg))))
+((jit (list (llvmlist <int> 3)) (lambda (shp) (allocate-array <int> shp))) (list 2 3 5))
 
-(define-method (channels (self <ffmpeg>))
-  "Query number of audio channels"
-  (ffmpeg-channels (slot-ref self 'ffmpeg)))
+((jit (list <int> <int> <int>) (lambda (x y z) (allocate-array <int> (llvmlist x y z)))) 2 3 5)
 
-(ffmpeg-decode-audio/video (slot-ref self 'ffmpeg))
+((jit (list <int>) (lambda (x) (jit-let [(arr (allocate-array <int> (llvmlist x)))] arr))) 5)
 
-(shape (target-audio-frame self))
-
-(convert-samples (target-audio-frame self) (typecode self) #f)
+((jit (list (llvmlist <int> 1) (llvmarray <int> 1))
+  (lambda (shp x)
+    (jit-let [(arr (allocate-array <int> shp))]
+      (elementwise-loop identity arr (typed-constant <int> 0))
+      (let [(start (make-basic-block "start"))
+            (for   (make-basic-block "for"))
+            (end   (make-basic-block "end"))]
+        (llvm-begin
+          (build-branch start)
+          (position-builder-at-end start)
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(q (build-phi (pointer <int>)))
+                    (qend (+ (memory x) (* (llvm-car (shape x)) (llvm-car (strides x)))))]
+            (add-incoming q start (memory x))
+            (build-branch end)
+            (position-builder-at-end end))))
+      arr)))
+  '(5) (arr <int> 2 3 3 4 4 4))
