@@ -44,7 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
-            warp reshape
+            warp reshape histogram
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1908,3 +1908,39 @@
           #:strides (default-strides (typecode arr) shp)
           #:memory (memory arr)
           #:memory-base (memory-base arr))))
+
+(define (do-histogram result arg)
+  (let [(start  (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (finish (make-basic-block "finish"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (build-branch for)
+      (position-builder-at-end for)
+      (jit-let [(q (build-phi (pointer (typecode arg))))
+                (qend (+ (memory arg) (* (llvm-car (shape arg)) (llvm-car (strides arg)))))]
+        (add-incoming q start (memory arg))
+        (build-cond-branch (ne q qend) body end)
+        (position-builder-at-end body)
+        (let [(p (+ (memory result) (* (fetch q) (llvm-car (strides result)))))]
+          (store p (+ (fetch p) (typed-constant <int> 1))))
+        (build-branch finish)
+        (position-builder-at-end finish)
+        (add-incoming q finish (+ q (llvm-car (strides arg))))
+        (build-branch for)
+        (position-builder-at-end end)))))
+
+(define-method (histogram shp . args)
+  (let  [(fun (lambda (shp . args)
+                (jit-let [(result (allocate-array <int> shp))]
+                  (elementwise-loop identity result (typed-constant <int> 0))
+                  (apply do-histogram result args)
+                  result)))]
+    (add-method! histogram
+                 (make <method>
+                       #:specializers (cons (class-of shp) (map class-of args))
+                       #:procedure (jit  (cons (llvmlist <int> (length shp)) (map native-type args)) fun)))
+    (apply histogram shp args)))

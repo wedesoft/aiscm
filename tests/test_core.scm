@@ -1702,4 +1702,14 @@
   (test-equal "ensure compact array before reshaping"
     '((2 3 5) (7 11 13)) (to-list (reshape (roll (arr (2 5 11) (3 7 13))) '(2 3)))))
 
+(test-group "histograms"
+  (test-equal "shape of histogram"
+    '(5) (shape (histogram (list 5) (arr 2 3 4))))
+  (test-equal "initialize histogram"
+    '(0 0 0 0 0) (to-list (histogram '(5) (make (multiarray <ubyte> 1) #:shape '(0)))))
+  (test-equal "1D histogram of array"
+    '(0 0 1 2 3) (to-list (histogram '(5) (arr 2 3 3 4 4 4) )))
+  (test-equal "1D histogram of array of integers"
+    '(0 0 1 2 3) (to-list (histogram '(5) (arr <int> 2 3 3 4 4 4) ))))
+
 (test-end "aiscm core")
