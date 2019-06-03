@@ -55,31 +55,6 @@
 
 ((jit (list <int>) (lambda (x) (jit-let [(arr (allocate-array <int> (llvmlist x)))] arr))) 5)
 
-((jit (list (llvmlist <int> 1) (llvmarray <int> 1))
-  (lambda (shp x)
-    (jit-let [(arr (allocate-array <int> shp))]
-      (elementwise-loop identity arr (typed-constant <int> 0))
-      (let [(start  (make-basic-block "start"))
-            (for    (make-basic-block "for"))
-            (body   (make-basic-block "body"))
-            (finish (make-basic-block "finish"))
-            (end    (make-basic-block "end"))]
-        (llvm-begin
-          (build-branch start)
-          (position-builder-at-end start)
-          (build-branch for)
-          (position-builder-at-end for)
-          (jit-let [(q (build-phi (pointer <int>)))
-                    (qend (+ (memory x) (* (llvm-car (shape x)) (llvm-car (strides x)))))]
-            (add-incoming q start (memory x))
-            (build-cond-branch (ne q qend) body end)
-            (position-builder-at-end body)
-            (let [(p (+ (memory arr) (* (fetch q) (llvm-car (strides arr)))))]
-              (store p (+ (fetch p) (typed-constant <int> 1))))
-            (build-branch finish)
-            (position-builder-at-end finish)
-            (add-incoming q finish (+ q (llvm-car (strides x))))
-            (build-branch for)
-            (position-builder-at-end end))))
-      arr)))
-  '(5) (arr <int> 2 3 3 4 4 4))
+((jit (list (llvmlist <int> 3) <int>) get) (list 1 2 3) 1)
+
+((jit (list (llvmlist <int> 3)) (lambda (x) (+ (get x 0) (get x 1) (get x 2)))) (list 1 2 3))

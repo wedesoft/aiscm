@@ -1909,7 +1909,7 @@
           #:memory (memory arr)
           #:memory-base (memory-base arr))))
 
-(define (do-histogram result arg)
+(define (do-histogram result . args)
   (let [(start  (make-basic-block "start"))
         (for    (make-basic-block "for"))
         (body   (make-basic-block "body"))
@@ -1918,20 +1918,22 @@
     (llvm-begin
       (build-branch start)
       (position-builder-at-end start)
-      (build-branch for)
-      (position-builder-at-end for)
-      (jit-let [(q (build-phi (pointer (typecode arg))))
-                (qend (+ (memory arg) (* (llvm-car (shape arg)) (llvm-car (strides arg)))))]
-        (add-incoming q start (memory arg))
-        (build-cond-branch (ne q qend) body end)
-        (position-builder-at-end body)
-        (let [(p (+ (memory result) (* (fetch q) (llvm-car (strides result)))))]
-          (store p (+ (fetch p) (typed-constant <int> 1))))
-        (build-branch finish)
-        (position-builder-at-end finish)
-        (add-incoming q finish (+ q (llvm-car (strides arg))))
+      (jit-let [(qend (+ (memory (car args)) (* (llvm-car (shape (car args))) (llvm-car (strides (car args))))))]
         (build-branch for)
-        (position-builder-at-end end)))))
+        (position-builder-at-end for)
+        (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
+          (llvm-begin
+            (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
+            (build-cond-branch (ne (car q) qend) body end)
+            (position-builder-at-end body)
+            (let [(p (+ (memory result)
+                        (apply + (map (lambda (ptr i) (* (fetch ptr) (get (strides result) i))) q (iota (length args))))))]
+              (store p (+ (fetch p) (typed-constant <int> 1))))
+            (build-branch finish)
+            (position-builder-at-end finish)
+            (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) q args))
+            (build-branch for)
+            (position-builder-at-end end)))))))
 
 (define-method (histogram shp . args)
   (let  [(fun (lambda (shp . args)
