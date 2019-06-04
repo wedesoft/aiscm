@@ -1925,15 +1925,19 @@
         (jit-let [(qend (+ (memory (car args)) (* (llvm-car (shape (car args))) (llvm-car (strides (car args))))))]
           (build-branch for)
           (position-builder-at-end for)
-          (let [(q (map (lambda (arg) (build-phi (pointer (typecode arg)))) args))]
+          (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))]
             (llvm-begin
-              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr start (memory arg))) q args))
+              (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
               (build-cond-branch (ne (car q) qend) body end)
               (position-builder-at-end body)
-              (apply do-histogram result (map (lambda (ptr arg) (fetch (project (rebase arg ptr)))) q args))
+              (apply do-histogram result (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
               (build-branch finish)
               (position-builder-at-end finish)
-              (apply llvm-begin (map (lambda (ptr arg) (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) q args))
+              (apply llvm-begin
+                (append-map
+                  (lambda (ptr arg) (if ptr (list (add-incoming ptr finish (+ ptr (llvm-car (strides arg))))) '()))
+                  q
+                  args))
               (build-branch for)
               (position-builder-at-end end))))))))
 
