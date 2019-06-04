@@ -1714,6 +1714,8 @@
   (test-equal "2D histogram y axis"
     '((0 0 0) (1 0 0)) (to-list (histogram '(2 3) (arr 1) (arr 0))))
   (test-equal "2D histogram x axis"
-    '((0 1 0) (0 0 0)) (to-list (histogram '(2 3) (arr 0) (arr 1)))))
+    '((0 1 0) (0 0 0)) (to-list (histogram '(2 3) (arr 0) (arr 1))))
+  (test-equal "1D histogram of 2D array"
+    '(0 0 1 2 3) (to-list (histogram '(5) (arr (2 3 3) (4 4 4))))))
 
 (test-end "aiscm core")

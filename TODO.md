@@ -1,6 +1,7 @@
 ## Ready
 
 * to-array -> from-list
+* run on Raspberry Pi
 * histogram with optional weights
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
