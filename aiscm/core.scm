@@ -1914,7 +1914,8 @@
     (let [(p (+ (memory result)
                 (apply + (map (lambda (value i) (* value (get (strides result) i))) args (iota (length args))))))]
       (store p (+ (fetch p) (typed-constant <int> 1))))
-    (let [(start  (make-basic-block "start"))
+    (let [(arg*   (find (cut is-a? <> <llvmarray<>>) args))
+          (start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
           (finish (make-basic-block "finish"))
@@ -1922,13 +1923,14 @@
       (llvm-begin
         (build-branch start)
         (position-builder-at-end start)
-        (jit-let [(qend (+ (memory (car args)) (* (llvm-car (shape (car args))) (llvm-car (strides (car args))))))]
+        (jit-let [(qend (+ (memory arg*) (* (llvm-car (shape arg*)) (llvm-car (strides arg*)))))]
           (build-branch for)
           (position-builder-at-end for)
-          (let [(q (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))]
+          (let* [(q  (map (lambda (arg) (if (is-a? arg <llvmarray<>>) (build-phi (pointer (typecode arg))) #f)) args))
+                 (q* (find identity q))]
             (llvm-begin
               (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
-              (build-cond-branch (ne (car q) qend) body end)
+              (build-cond-branch (ne q* qend) body end)
               (position-builder-at-end body)
               (apply do-histogram result (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
               (build-branch finish)

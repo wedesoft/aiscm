@@ -119,7 +119,7 @@ To run a single test suite, you can delete the *log* file and regenerate it usin
 
 ```Shell
 cd tests
-rm -f test_asm.log && make test_asm.log
+rm -f test_core.log && make test_core.log
 cd ..
 ```
 

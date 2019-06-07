@@ -1,6 +1,6 @@
 ## Ready
 
-* histogram of 1D and 2D array
+* coordinates to image using histogram
 * to-array -> from-list
 * run on Raspberry Pi
 * histogram with optional weights
