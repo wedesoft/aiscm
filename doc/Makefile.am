@@ -15,7 +15,7 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 aiscm.gif debian.png ubuntu.png source.png package.png \
 					 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 					 eroded.jpg dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg \
-					 components.png board.png \
+					 components.png board.png circle.png \
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
@@ -27,7 +27,7 @@ EXTRA_DIST = includes.scm dependencies.sh \
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
 						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
 						 shuttle.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg dilated.jpg pseudo.jpg mirror.jpg \
-						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg components.png board.png \
+						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg components.png board.png circle.png \
 						 *.html *.tmp
 
 MAINTAINERCLEANFILES = Makefile.in index.md
@@ -111,6 +111,9 @@ components.png: ../tests/integration/components.scm letters.png
 	$(ENVIRONMENT) $(RUN) $<
 
 board.png: ../tests/integration/charuco-board.scm
+	$(ENVIRONMENT) $(RUN) $<
+
+circle.png: ../tests/integration/circle.scm
 	$(ENVIRONMENT) $(RUN) $<
 
 .md.tmp:

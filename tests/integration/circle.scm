@@ -1,0 +1,5 @@
+(use-modules (aiscm magick) (aiscm core))
+(define a (/ (* (indices 100) 2 3.1415926) 100))
+(define y (to-type <int> (* 50 (sin a))))
+(define x (to-type <int> (* 50 (cos a))))
+(write-image (to-type <ubyte> (* (histogram '(120 120) (+ y 60) (+ x 60)) 255)) "circle.png")

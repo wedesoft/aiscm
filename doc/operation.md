@@ -114,3 +114,14 @@ In this case index arrays are used to define a warp field.
 ```Scheme
 @../tests/integration/mirror.scm@
 ```
+
+## Histograms
+
+One can compute histograms of one or more arrays of coordinates.
+The following example creates a circle.
+
+![circle.png](circle.png "Circle")
+
+```Scheme
+@../tests/integration/circle.scm@
+```
