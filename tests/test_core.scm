@@ -1722,4 +1722,10 @@
   (test-equal "2D histogram of 1D and 2D array"
     '((0 0 0) (1 0 0)) (to-list (histogram '(2 3) (arr 1) (arr (0))))))
 
+(test-group "masking"
+  (test-equal "true mask"
+    '(3) (shape (mask (arr 2 3 5) (arr #t #t #t))))
+  (test-equal "mask out some values"
+    '(2) (shape (mask (arr 2 3 5) (arr #t #f #t)))))
+
 (test-end "aiscm core")

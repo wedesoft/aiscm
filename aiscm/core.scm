@@ -44,7 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
-            warp reshape histogram
+            warp reshape histogram mask
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -1608,6 +1608,9 @@
 (define-method (upcast-integer (type <meta<int<>>>))
   (integer (if (< (bits type) 32) 32 64) signed))
 
+(define-method (upcast-integer (type <meta<bool>>))
+  <int>)
+
 (define-method (upcast-integer (type <meta<float<>>>)) type)
 
 (define-method (upcast-integer (type <meta<obj>>)) type)
@@ -1955,3 +1958,13 @@
                        #:specializers (cons (class-of shp) (map class-of args))
                        #:procedure (jit  (cons (llvmlist <int> (length shp)) (map native-type args)) fun)))
     (apply histogram shp args)))
+
+(define-method (mask arr msk)
+  (let [(fun (lambda (arr msk)
+                (jit-let [(n (map-reduce upcast-integer + identity msk))]
+                  (allocate-array (typecode arr) (llvmlist n)))))]
+    (add-method! mask
+                 (make <method>
+                       #:specializers (list (class-of arr) (class-of msk))
+                       #:procedure (jit (list (native-type arr) (native-type msk)) fun)))
+    (mask arr msk)))

@@ -1,8 +1,9 @@
 ## Ready
 
+* mask, unmask
+* weighted histogram
 * to-array -> from-list
 * run on Raspberry Pi
-* histogram with optional weights
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
@@ -15,7 +16,6 @@
   * codec deprecated (ffmpeg.c: 271, 377, 417)
 * check new lintian tag required
 * argmin, argmax
-* mask, unmask
 * argwhere (mask coordinates)
 * Kinect bindings
 * FFTW3 bindings, replace FFT in audio spectrum example
