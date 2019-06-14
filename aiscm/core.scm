@@ -1959,10 +1959,38 @@
                        #:procedure (jit  (cons (llvmlist <int> (length shp)) (map native-type args)) fun)))
     (apply histogram shp args)))
 
+(define (do-warp result arr mask)
+  (let [(start  (make-basic-block "start"))
+        (for    (make-basic-block "for"))
+        (body   (make-basic-block "body"))
+        (finish (make-basic-block "finish"))
+        (end    (make-basic-block "end"))]
+    (llvm-begin
+      (build-branch start)
+      (position-builder-at-end start)
+      (jit-let [(pend (+ (memory arr) (* (llvm-car (shape arr)) (llvm-car (strides arr))) ))]
+        (build-branch for)
+        (position-builder-at-end for)
+        (jit-let [(r (build-phi (pointer (typecode result))))
+                  (p (build-phi (pointer (typecode arr))))]
+          (add-incoming r start (memory result))
+          (add-incoming p start (memory arr))
+          (build-cond-branch (ne p pend) body end)
+          (position-builder-at-end body)
+          (store r (fetch p))
+          (build-branch finish)
+          (position-builder-at-end finish)
+          (add-incoming r finish (+ r (llvm-car (strides result))))
+          (add-incoming p finish (+ p (llvm-car (strides arr))))
+          (build-branch for)
+          (position-builder-at-end end)
+          result)))))
+
 (define-method (mask arr msk)
   (let [(fun (lambda (arr msk)
-                (jit-let [(n (map-reduce upcast-integer + identity msk))]
-                  (allocate-array (typecode arr) (llvmlist n)))))]
+                (jit-let [(n (map-reduce upcast-integer + identity msk))
+                          (result (allocate-array (typecode arr) (llvmlist n)))]
+                  (do-warp result arr msk))))]
     (add-method! mask
                  (make <method>
                        #:specializers (list (class-of arr) (class-of msk))

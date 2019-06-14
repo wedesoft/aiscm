@@ -1723,9 +1723,11 @@
     '((0 0 0) (1 0 0)) (to-list (histogram '(2 3) (arr 1) (arr (0))))))
 
 (test-group "masking"
-  (test-equal "true mask"
+  (test-equal "shape when mask is all true"
     '(3) (shape (mask (arr 2 3 5) (arr #t #t #t))))
-  (test-equal "mask out some values"
-    '(2) (shape (mask (arr 2 3 5) (arr #t #f #t)))))
+  (test-equal "shape with some values masked out"
+    '(2) (shape (mask (arr 2 3 5) (arr #t #f #t))))
+  (test-equal "all values selected"
+    '(2 3 5) (to-list (mask (arr <int> 2 3 5) (arr #t #t #t)))))
 
 (test-end "aiscm core")
