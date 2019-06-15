@@ -1963,6 +1963,8 @@
   (let [(start  (make-basic-block "start"))
         (for    (make-basic-block "for"))
         (body   (make-basic-block "body"))
+        (select (make-basic-block "select"))
+        (skip   (make-basic-block "skip"))
         (finish (make-basic-block "finish"))
         (end    (make-basic-block "end"))]
     (llvm-begin
@@ -1972,16 +1974,21 @@
         (build-branch for)
         (position-builder-at-end for)
         (jit-let [(r (build-phi (pointer (typecode result))))
-                  (p (build-phi (pointer (typecode arr))))]
+                  (p (build-phi (pointer (typecode arr))))
+                  (m (build-phi (pointer (typecode mask))))]
           (add-incoming r start (memory result))
           (add-incoming p start (memory arr))
+          (add-incoming m start (memory mask))
           (build-cond-branch (ne p pend) body end)
           (position-builder-at-end body)
-          (store r (fetch p))
+          (build-cond-branch (fetch m) select finish)
+          (position-builder-at-end select)
+          (elementwise-loop identity (rebase (project result) r) (fetch (rebase (project arr) p)))
           (build-branch finish)
           (position-builder-at-end finish)
-          (add-incoming r finish (+ r (llvm-car (strides result))))
+          (add-incoming r finish (where (fetch m) (+ r (llvm-car (strides result))) r))
           (add-incoming p finish (+ p (llvm-car (strides arr))))
+          (add-incoming m finish (+ m (llvm-car (strides mask))))
           (build-branch for)
           (position-builder-at-end end)
           result)))))

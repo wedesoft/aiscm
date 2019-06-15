@@ -1728,6 +1728,8 @@
   (test-equal "shape with some values masked out"
     '(2) (shape (mask (arr 2 3 5) (arr #t #f #t))))
   (test-equal "all values selected"
-    '(2 3 5) (to-list (mask (arr <int> 2 3 5) (arr #t #t #t)))))
+    '(2 3 5) (to-list (mask (arr <int> 2 3 5) (arr #t #t #t))))
+  (test-equal "some values selected"
+    '(2 5) (to-list (mask (arr <int> 2 3 5) (arr #t #f #t)))))
 
 (test-end "aiscm core")
