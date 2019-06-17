@@ -1852,7 +1852,7 @@
 (define-method (equal? (a <multiarray<>>) (b <multiarray<>>))
   (and (equal? (shape a) (shape b)) (equal-arrays a b)))
 
-(define (warp-array result element-dimension self . args)
+(define (do-warp result element-dimension self . args)
   (if  (eqv? (dimensions result) element-dimension)
     (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-car (strides arr)))))))
                          self (reverse args)))]
@@ -1876,7 +1876,7 @@
                 (apply llvm-begin (append-map (lambda (ptr arg) (if ptr (list (add-incoming ptr start (memory arg))) '())) q args))
                 (build-cond-branch (ne p pend) body end)
                 (position-builder-at-end body)
-                (apply warp-array (project (rebase result p)) element-dimension self
+                (apply do-warp (project (rebase result p)) element-dimension self
                   (map (lambda (ptr arg) (if ptr (fetch (project (rebase arg ptr))) arg)) q args))
                 (build-branch finish)
                 (position-builder-at-end finish)
@@ -1896,7 +1896,7 @@
                       (result-shape    (apply llvmlist (append (map (cut get shape-warp <>) (iota (dimension shape-warp)))
                                                                (map (cut get (shape self) <>) element-indices))))]
                  (jit-let [(result (allocate-array (typecode self) result-shape))]
-                   (apply warp-array result (length element-indices) self args)))))]
+                   (apply do-warp result (length element-indices) self args)))))]
     (add-method! warp
                  (make <method>
                        #:specializers (cons (class-of self) (map class-of args))
@@ -1959,45 +1959,48 @@
                        #:procedure (jit  (cons (llvmlist <int> (length shp)) (map native-type args)) fun)))
     (apply histogram shp args)))
 
-(define (do-warp result arr mask)
-  (let [(start  (make-basic-block "start"))
-        (for    (make-basic-block "for"))
-        (body   (make-basic-block "body"))
-        (select (make-basic-block "select"))
-        (finish (make-basic-block "finish"))
-        (end    (make-basic-block "end"))]
-    (llvm-begin
-      (build-branch start)
-      (position-builder-at-end start)
-      (jit-let [(pend (+ (memory arr) (* (llvm-car (shape arr)) (llvm-car (strides arr))) ))]
-        (build-branch for)
-        (position-builder-at-end for)
-        (jit-let [(r (build-phi (pointer (typecode result))))
-                  (p (build-phi (pointer (typecode arr))))
-                  (m (build-phi (pointer (typecode mask))))]
-          (add-incoming r start (memory result))
-          (add-incoming p start (memory arr))
-          (add-incoming m start (memory mask))
-          (build-cond-branch (ne p pend) body end)
-          (position-builder-at-end body)
-          (jit-let [(condition (fetch m))]
-            (build-cond-branch condition select finish)
-            (position-builder-at-end select)
-            (elementwise-loop identity (rebase (project result) r) (fetch (rebase (project arr) p)))
-            (build-branch finish)
-            (position-builder-at-end finish)
-            (add-incoming r finish (where condition (+ r (llvm-car (strides result))) r))
-            (add-incoming p finish (+ p (llvm-car (strides arr))))
-            (add-incoming m finish (+ m (llvm-car (strides mask))))
-            (build-branch for)
-            (position-builder-at-end end)
-            result))))))
+(define (do-mask result arr mask r0)
+  (if  (zero? (dimensions mask))
+    (elementwise-loop identity result arr)
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (select (make-basic-block "select"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(pend (+ (memory arr) (* (llvm-car (shape arr)) (llvm-car (strides arr))) ))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(r (build-phi (pointer (typecode result))))
+                    (p (build-phi (pointer (typecode arr))))
+                    (m (build-phi (pointer (typecode mask))))]
+            (add-incoming r start r0)
+            (add-incoming p start (memory arr))
+            (add-incoming m start (memory mask))
+            (build-cond-branch (ne p pend) body end)
+            (position-builder-at-end body)
+            (jit-let [(condition (fetch m))]
+              (build-cond-branch condition select finish)
+              (position-builder-at-end select)
+              (do-mask (rebase (project result) r) (fetch (rebase (project arr) p)) (fetch (rebase (project mask) m)) r)
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming r finish (where condition (+ r (llvm-car (strides result))) r))
+              (add-incoming p finish (+ p (llvm-car (strides arr))))
+              (add-incoming m finish (+ m (llvm-car (strides mask))))
+              (build-branch for)
+              (position-builder-at-end end)
+              r)))))))
 
 (define-method (mask arr msk)
   (let [(fun (lambda (arr msk)
                 (jit-let [(n (map-reduce upcast-integer + identity msk))
                           (result (allocate-array (typecode arr) (llvmlist n)))]
-                  (do-warp result arr msk))))]
+                  (do-mask result arr msk (memory result))
+                  result)))]
     (add-method! mask
                  (make <method>
                        #:specializers (list (class-of arr) (class-of msk))
