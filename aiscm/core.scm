@@ -1961,11 +1961,25 @@
 
 (define (do-mask result arr mask r0)
   (if  (zero? (dimensions mask))
-    (elementwise-loop identity result arr)
+    (let [(select (make-basic-block "select"))
+          (skip   (make-basic-block "skip"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-cond-branch mask select skip)
+        (position-builder-at-end select)
+        (store r0 arr)
+        (jit-let [(r1 (+ r0 (llvm-car (strides result))))]
+          (build-branch end)
+          (position-builder-at-end skip)
+          (build-branch end)
+          (position-builder-at-end end)
+          (jit-let [(r (build-phi (pointer (typecode result))))]
+            (add-incoming r skip r0)
+            (add-incoming r select r1)
+            r))))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
-          (select (make-basic-block "select"))
           (finish (make-basic-block "finish"))
           (end    (make-basic-block "end"))]
       (llvm-begin
@@ -1982,13 +1996,10 @@
             (add-incoming m start (memory mask))
             (build-cond-branch (ne p pend) body end)
             (position-builder-at-end body)
-            (jit-let [(condition (fetch m))]
-              (build-cond-branch condition select finish)
-              (position-builder-at-end select)
-              (do-mask (rebase (project result) r) (fetch (rebase (project arr) p)) (fetch (rebase (project mask) m)) r)
+            (jit-let [(r1 (do-mask result (fetch (rebase (project arr) p)) (fetch (rebase (project mask) m)) r))]
               (build-branch finish)
               (position-builder-at-end finish)
-              (add-incoming r finish (where condition (+ r (llvm-car (strides result))) r))
+              (add-incoming r finish r1)
               (add-incoming p finish (+ p (llvm-car (strides arr))))
               (add-incoming m finish (+ m (llvm-car (strides mask))))
               (build-branch for)
