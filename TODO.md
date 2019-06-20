@@ -1,6 +1,5 @@
 ## Ready
 
-* mask with arrays as elements
 * unmask
 * weighted histogram
 * to-array -> from-list

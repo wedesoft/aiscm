@@ -1961,12 +1961,15 @@
 (define (do-mask result arr mask r0)
   (if  (zero? (dimensions mask))
     (let [(select (make-basic-block "select"))
+          (done   (make-basic-block "done"))
           (skip   (make-basic-block "skip"))
           (end    (make-basic-block "end"))]
       (llvm-begin
         (build-cond-branch mask select skip)
         (position-builder-at-end select)
         (elementwise-loop identity (rebase (project result) r0) arr)
+        (build-branch done)
+        (position-builder-at-end done)
         (jit-let [(r1 (+ r0 (llvm-car (strides result))))]
           (build-branch end)
           (position-builder-at-end skip)
@@ -1974,7 +1977,7 @@
           (position-builder-at-end end)
           (jit-let [(r (build-phi (pointer (typecode result))))]
             (add-incoming r skip r0)
-            (add-incoming r select r1)
+            (add-incoming r done r1)
             r))))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
@@ -2007,10 +2010,12 @@
 
 (define-method (mask arr msk)
   (let [(fun (lambda (arr msk)
-                (jit-let [(n (map-reduce upcast-integer + identity msk))
-                          (result (allocate-array (typecode arr) (llvmlist n)))]
-                  (do-mask result arr msk (memory result))
-                  result)))]
+                (let* [(element-indices (iota (- (dimensions arr) (dimensions msk)) (dimensions msk)))
+                       (n (map-reduce upcast-integer + identity msk))
+                       (result-shape (apply llvmlist (cons n (map (cut get (shape arr) <>) element-indices))))]
+                  (jit-let [(result (allocate-array (typecode arr) result-shape))]
+                    (do-mask result arr msk (memory result))
+                    result))))]
     (add-method! mask
                  (make <method>
                        #:specializers (list (class-of arr) (class-of msk))
