@@ -1854,10 +1854,9 @@
 
 (define (do-warp result element-dimension self . args)
   (if  (eqv? (dimensions result) element-dimension)
-    (let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-car (strides arr)))))))
+    (jit-let [(element (fold (lambda (arg arr) (project (rebase arr (+ (memory arr) (* arg (llvm-car (strides arr)))))))
                          self (reverse args)))]
-      (jit-let [(dummy (memory element))]; Force computation of array pointer here to avoid problems with phi statements
-        (elementwise-loop identity result (fetch element))))
+      (elementwise-loop identity result (fetch element)))
     (let [(start  (make-basic-block "start"))
           (for    (make-basic-block "for"))
           (body   (make-basic-block "body"))
@@ -1967,7 +1966,7 @@
       (llvm-begin
         (build-cond-branch mask select skip)
         (position-builder-at-end select)
-        (store r0 arr)
+        (elementwise-loop identity (rebase (project result) r0) arr)
         (jit-let [(r1 (+ r0 (llvm-car (strides result))))]
           (build-branch end)
           (position-builder-at-end skip)

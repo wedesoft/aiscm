@@ -1732,6 +1732,9 @@
   (test-equal "some values selected"
     '(2 5) (to-list (mask (arr <int> 2 3 5) (arr #t #f #t))))
   (test-equal "mask 2D array"
-    '(2 11 13) (to-list (mask (arr (2 3 5) (7 11 13)) (arr (#t #f #f) (#f #t #t))))))
+    '(2 11 13) (to-list (mask (arr (2 3 5) (7 11 13)) (arr (#t #f #f) (#f #t #t)))))
+  (test-skip 1)
+  (test-equal "mask with arrays as elements"
+    '((2 3) (11 13) (17 19)) (to-list (mask (arr (2 3) (5 7) (11 13) (17 19)) (arr #t #f #t #t)))))
 
 (test-end "aiscm core")
