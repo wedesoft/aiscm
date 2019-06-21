@@ -44,7 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
-            warp reshape histogram mask
+            warp reshape histogram mask unmask
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
@@ -2009,6 +2009,7 @@
               r)))))))
 
 (define-method (mask arr msk)
+  "Use MSK to select elements from ARR"
   (let [(fun (lambda (arr msk)
                 (let* [(element-indices (iota (- (dimensions arr) (dimensions msk)) (dimensions msk)))
                        (n (map-reduce upcast-integer + identity msk))
@@ -2021,3 +2022,7 @@
                        #:specializers (list (class-of arr) (class-of msk))
                        #:procedure (jit (list (native-type arr) (native-type msk)) fun)))
     (mask arr msk)))
+
+(define (unmask vals mask)
+  "Use MSK to restore masked array from VALS"
+  (reshape vals (shape mask)))
