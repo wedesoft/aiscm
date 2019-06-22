@@ -1,6 +1,6 @@
 ## Ready
 
-* unmask
+* unmask with arrays as elements
 * Mandelbrot fractal
 * weighted histogram
 * to-array -> from-list

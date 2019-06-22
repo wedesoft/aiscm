@@ -2023,6 +2023,65 @@
                        #:procedure (jit (list (native-type arr) (native-type msk)) fun)))
     (mask arr msk)))
 
-(define (unmask vals mask)
-  "Use MSK to restore masked array from VALS"
-  (reshape vals (shape mask)))
+(define (do-unmask result arr mask a0)
+  (if (zero? (dimensions mask))
+    (let [(select (make-basic-block "select"))
+          (done   (make-basic-block "done"))
+          (skip   (make-basic-block "skip"))
+          (end    (make-basic-block "end")) ]
+      (llvm-begin
+        (build-cond-branch mask select skip)
+        (position-builder-at-end select)
+        (elementwise-loop identity result (fetch (rebase (project arr) a0)))
+        (build-branch done)
+        (position-builder-at-end done)
+        (jit-let [(a1 (+ a0 (llvm-car (strides arr))))]
+          (build-branch end)
+          (position-builder-at-end skip)
+          (elementwise-loop identity result (typed-constant (typecode result) 0))
+          (build-branch end)
+          (position-builder-at-end end)
+          (jit-let [(p (build-phi (pointer (typecode arr))))]
+            (add-incoming p skip a0)
+            (add-incoming p done a1)
+            p))))
+    (let [(start  (make-basic-block "start"))
+          (for    (make-basic-block "for"))
+          (body   (make-basic-block "body"))
+          (finish (make-basic-block "finish"))
+          (end    (make-basic-block "end"))]
+      (llvm-begin
+        (build-branch start)
+        (position-builder-at-end start)
+        (jit-let [(rend (+ (memory result) (* (llvm-car (shape result)) (llvm-car (strides result)))))]
+          (build-branch for)
+          (position-builder-at-end for)
+          (jit-let [(r (build-phi (pointer (typecode result))))
+                    (p (build-phi (pointer (typecode arr))))
+                    (m (build-phi (pointer (typecode mask))))]
+            (add-incoming r start (memory result))
+            (add-incoming p start a0)
+            (add-incoming m start (memory mask))
+            (build-cond-branch (ne r rend) body end)
+            (position-builder-at-end body)
+            (jit-let [(a1 (do-unmask (rebase (project result) r) arr (fetch (rebase (project mask) m)) p))]
+              (build-branch finish)
+              (position-builder-at-end finish)
+              (add-incoming r finish (+ r (llvm-car (strides result))))
+              (add-incoming m finish (+ m (llvm-car (strides mask))))
+              (add-incoming p finish a1)
+              (build-branch for)
+              (position-builder-at-end end)
+              p)))))))
+
+(define-method (unmask arr msk)
+  "Use MSK to restore masked array from ARR"
+  (let [(fun (lambda (arr msk)
+               (jit-let [(result (allocate-array (typecode arr) (shape msk)))]
+                 (do-unmask result arr msk (memory arr))
+                 result)))]
+    (add-method! unmask
+                 (make <method>
+                       #:specializers (list (class-of arr) (class-of msk))
+                       #:procedure (jit (list (native-type arr) (native-type msk)) fun)))
+    (unmask arr msk)))

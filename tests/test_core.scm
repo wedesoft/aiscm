@@ -1742,6 +1742,11 @@
   (test-equal "result when mask is true"
     '(2 3 5) (to-list (unmask (arr 2 3 5) (arr #t #t #t))))
   (test-equal "restore original shape"
-    '((2 3 5) (7 11 13)) (to-list (unmask (arr 2 3 5 7 11 13) (arr (#t #t #t) (#t #t #t))))))
+    '((2 3 5) (7 11 13)) (to-list (unmask (arr 2 3 5 7 11 13) (arr (#t #t #t) (#t #t #t)))))
+  (test-equal "restore partially masked array"
+    '(0 0 2 0 3 5) (to-list (unmask (arr 2 3 5) (arr #f #f #t #f #t #t))))
+  (test-skip 1)
+  (test-equal "restore masked array with arrays as elements"
+    '((0 0) (2 3) (3 5)) (to-list (unmask (arr (2 3) (3 5)) (arr #f #t #t)))))
 
 (test-end "aiscm core")
