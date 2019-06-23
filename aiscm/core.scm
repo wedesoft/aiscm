@@ -2027,6 +2027,7 @@
   (if (zero? (dimensions mask))
     (let [(select (make-basic-block "select"))
           (done   (make-basic-block "done"))
+          (other  (make-basic-block "other"))
           (skip   (make-basic-block "skip"))
           (end    (make-basic-block "end")) ]
       (llvm-begin
@@ -2039,10 +2040,12 @@
           (build-branch end)
           (position-builder-at-end skip)
           (elementwise-loop identity result (typed-constant (typecode result) 0))
+          (build-branch other)
+          (position-builder-at-end other)
           (build-branch end)
           (position-builder-at-end end)
           (jit-let [(p (build-phi (pointer (typecode arr))))]
-            (add-incoming p skip a0)
+            (add-incoming p other a0)
             (add-incoming p done a1)
             p))))
     (let [(start  (make-basic-block "start"))
@@ -2077,9 +2080,12 @@
 (define-method (unmask arr msk)
   "Use MSK to restore masked array from ARR"
   (let [(fun (lambda (arr msk)
-               (jit-let [(result (allocate-array (typecode arr) (shape msk)))]
-                 (do-unmask result arr msk (memory arr))
-                 result)))]
+               (let* [(element-indices (iota (- (dimensions arr) 1) 1))
+                      (result-shape (apply llvmlist (append (map (cut get (shape msk) <>) (iota (dimensions msk)))
+                                                            (map (cut get (shape arr) <>) element-indices))))]
+                 (jit-let [(result (allocate-array (typecode arr) result-shape))]
+                   (do-unmask result arr msk (memory arr))
+                   result))))]
     (add-method! unmask
                  (make <method>
                        #:specializers (list (class-of arr) (class-of msk))
