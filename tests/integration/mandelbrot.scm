@@ -1,0 +1,18 @@
+(use-modules (aiscm core) (aiscm xorg))
+(define (sqr c) (real-part (* c (conj c))))
+(define idx (indices 768 1024))
+(define f (/ 1 384))
+(define x (* f (- (% idx 1024) 650)))
+(define y (* f (- (/ idx 1024) 384)))
+(define img (fill <sint> '(768 1024) 0))
+(define c (+ x (* 0+i y)))
+(define z c)
+(for-each
+  (lambda (i)
+    (let* [(m (lt (sqr z) 4))
+           (zm (mask z m))
+           (cm (mask c m))]
+      (set! img (where m (+ img 1) img))
+      (set! z (where m (unmask (+ (* zm zm) cm) m) 8))))
+  (iota 255))
+(show img)

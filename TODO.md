@@ -1,6 +1,5 @@
 ## Ready
 
-* Mandelbrot fractal
 * weighted histogram
 * to-array -> from-list
 * run on Raspberry Pi
