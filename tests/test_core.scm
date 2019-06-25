@@ -1748,4 +1748,8 @@
   (test-equal "restore masked array with arrays as elements"
     '((0 0) (2 3) (3 5)) (to-list (unmask (arr (2 3) (3 5)) (arr #f #t #t)))))
 
+(test-group "object methods"
+  (test-equal "elementwise negation for objects"
+    '(#t #f) (to-list (! (arr <obj> #f #t)))))
+
 (test-end "aiscm core")

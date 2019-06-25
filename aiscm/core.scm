@@ -945,6 +945,7 @@
 
 (define-method (- (self <obj>)) (- (typed-constant <int> 0) self))
 (define-method (~ (self <obj>)) (typed-call <obj> "scm_lognot" (list <obj>) (list self)))
+(define-method (! (self <obj>)) (typed-call <obj> "scm_not" (list <obj>) (list self)))
 
 (define-method (+ (self <multiarray<>>)) self)
 (define-method (* (self <multiarray<>>)) self)

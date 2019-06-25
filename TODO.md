@@ -2,7 +2,6 @@
 
 * weighted histogram
 * to-array -> from-list
-* run on Raspberry Pi
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
@@ -23,11 +22,9 @@
 * port using qemu
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
-* For Scheme objects: unary !, binary &&, ||, lt, le, gt, ge, eq, ne
+* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * RGB to object, object to RGB
 * runge kutta with state vector
-* 3ds converter computing normals and tangentials and loading textures and maps
-* micro-collisions example
 * type conversions (e.g. scalar to complex, scalar to rgb)
 * use thumbnail images to illustrate examples
 * panorama video viewer
