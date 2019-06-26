@@ -984,6 +984,11 @@
 (define-object-binary |     (object-method "scm_logior"    ))
 (define-object-binary minor (object-method "scm_min"       ))
 (define-object-binary major (object-method "scm_max"       ))
+(define-object-binary gt    (object-method "scm_gr_p"      ))
+(define-object-binary ge    (object-method "scm_geq_p"     ))
+(define-object-binary lt    (object-method "scm_less_p"    ))
+(define-object-binary le    (object-method "scm_leq_p"     ))
+(define-object-binary eq    (object-method "scm_equal_p"   ))
 
 (define-syntax-rule (define-binary-delegation type-map operation int-delegate float-delegate)
   (begin

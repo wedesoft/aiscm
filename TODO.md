@@ -22,7 +22,6 @@
 * port using qemu
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
-* For Scheme objects: binary &&, ||, lt, le, gt, ge, eq, ne
 * RGB to object, object to RGB
 * runge kutta with state vector
 * type conversions (e.g. scalar to complex, scalar to rgb)

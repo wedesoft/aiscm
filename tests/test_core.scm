@@ -1750,6 +1750,16 @@
 
 (test-group "object methods"
   (test-equal "elementwise negation for objects"
-    '(#t #f) (to-list (! (arr <obj> #f #t)))))
+    '(#t #f) (to-list (! (arr <obj> #f #t))))
+  (test-equal "object greater than"
+    '(#f #f #t) (to-list (gt (arr <obj> 1 2 3) 2)))
+  (test-equal "object greater equal"
+    '(#f #t #t) (to-list (ge (arr <obj> 1 2 3) 2)))
+  (test-equal "object lower than"
+    '(#t #f #f) (to-list (lt (arr <obj> 1 2 3) 2)))
+  (test-equal "object lower equal"
+    '(#t #t #f) (to-list (le (arr <obj> 1 2 3) 2)))
+  (test-equal "object equal"
+    '(#f #t #f) (to-list (eq (arr <obj> 1 2 3) 2))))
 
 (test-end "aiscm core")
