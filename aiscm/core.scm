@@ -1069,6 +1069,7 @@
 (define-complex-binary-op +  complex)
 (define-complex-binary-op -  complex)
 (define-complex-binary-op eq &&     )
+(define-complex-binary-op ne ||     )
 
 (define-method (* (value-a <complex<>>) (value-b <complex<>>))
   (complex (- (* (real-part value-a) (real-part value-b)) (* (imag-part value-a) (imag-part value-b)))

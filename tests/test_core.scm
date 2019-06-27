@@ -1318,6 +1318,10 @@
     '(#f #f #t) (to-list (gt (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Greater-equal comparison"
     '(#f #t #t) (to-list (ge (arr 2 3 5) (arr 5 3 2))))
+  (test-equal "Equal for complex numbers"
+    '(#f #t) (to-list (eq (arr 3+2i 3+4i) 3+4i)))
+  (test-equal "not-equal for complex numbers"
+    '(#t #f) (to-list (ne (arr 3+2i 3+4i) 3+4i)))
   (test-equal "Lower-than comparison"
     '(#t #f #f) (to-list (lt (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Lower-equal comparison"

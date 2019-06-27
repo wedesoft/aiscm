@@ -34,7 +34,6 @@
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
 * polymorphic method calls (e.g. fabs, fabsf)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
-* ==, != for complex numbers
 * galaxy simulation
 * floating point exception (SIGFPE)
 * linear algebra bindings (blas, lapack, gsl, mkl)
