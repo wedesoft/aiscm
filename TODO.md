@@ -1,6 +1,5 @@
 ## Ready
 
-* add Mandelbrot to documentation
 * weighted histogram
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * hypercomplex numbers and quaternions

@@ -125,3 +125,14 @@ The following example creates a circle.
 ```Scheme
 @../tests/integration/circle.scm@
 ```
+
+## Masking and unmasking
+
+Masking and unmasking operations are useful to select a subset of array elements.
+The following example computes a Mandelbrot fractal.
+
+![mandelbrot.png](mandelbrot.png "Mandelbrot set")
+
+```Scheme
+@../tests/integration/mandelbrot.scm@
+```
