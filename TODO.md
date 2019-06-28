@@ -1,7 +1,9 @@
 ## Ready
 
+* add Mandelbrot to documentation
 * weighted histogram
-* to-array -> from-list
+* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
+* hypercomplex numbers and quaternions
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
@@ -18,7 +20,6 @@
 * Kinect bindings
 * FFTW3 bindings, replace FFT in audio spectrum example
 * Lucas-Kanade tracker
-* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * port using qemu
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
@@ -43,14 +44,11 @@
 * pixel selection example (take reference from center pixels)
 * audio frequency: bar analyser
 * GNOME video widget and player, Python/Qt/PyQt integration
-* how to run test suite
 * documentation for objects and arrays of objects
 * difference picture photo thunderstorm
 * run integration tests in Docker container
 * select video codec, select audio codec
 * video player with aspect ratio
-* NArray-like reshaping, other narray stuff
-* fractions
 * multi-threading, SIMD, memory access (cache)
 * make project more self contained (remove web streaming integration test)
 * index manipulation on function expressions
@@ -59,7 +57,6 @@
 * convert object to rgb, convert object to complex
 * line-by-line delayed video
 * smeared video (weighted average of previous value and current frame)
-* hypercomplex numbers and quaternions
 * predator tracker
 * <-> Guile 6.7.5 Arrays
 * reading and writing with Guile file decriptors or Guile network sockets?
@@ -83,3 +80,4 @@
 * x11 display: error handling for 'show', timing
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
+* NArray functionality
