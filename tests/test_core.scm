@@ -161,7 +161,9 @@
   (test-assert "Equal complex numbers"
     ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+3i))
   (test-assert "Unequal complex numbers"
-    (not ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+5i))))
+    (not ((jit (list <complex<float>> <complex<float>>) eq) 2+3i 2+5i)))
+  (test-equal "Complex absolute value"
+    '(5.0) (to-list (abs (arr 3+4i)))))
 
 (test-group "complex coercion"
   (test-eq "Coerce two complex types"

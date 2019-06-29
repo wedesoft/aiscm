@@ -574,6 +574,10 @@
 (define (to-float . args)
   (if (every (cut eq? <> <float>) args) <float> <double>))
 
+(define-method (to-scalar (type <meta<scalar>>)) type)
+
+(define-method (to-scalar (type <meta<structure>>)) (reduce coerce #f (base type)))
+
 (define (coerce-last-two a b c)
   "Coerce last two elements"
   (coerce b c))
@@ -1118,6 +1122,9 @@
 (define-method (abs (value <double>))
   (typed-call <double> "fabs" (list <double>) (list value)))
 
+(define-method (abs (value <complex<>>))
+  (sqrt (+ (* (real-part value) (real-part value)) (* (imag-part value) (imag-part value)))))
+
 (define-syntax-rule (define-unary-libc name method methodf)
   (begin
     (define-method (name (value <float>))
@@ -1562,7 +1569,7 @@
 (define-array-op !         1 identity        !       )
 (define-array-op conj      1 identity        conj    )
 (define-array-op duplicate 1 identity        identity)
-(define-array-op abs       1 identity        abs     )
+(define-array-op abs       1 to-scalar       abs     )
 (define-array-op sqrt      1 to-float        sqrt    )
 (define-array-op sin       1 to-float        sin     )
 (define-array-op cos       1 to-float        cos     )

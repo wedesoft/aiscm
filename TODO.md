@@ -58,7 +58,6 @@
 * smeared video (weighted average of previous value and current frame)
 * predator tracker
 * <-> Guile 6.7.5 Arrays
-* reading and writing with Guile file decriptors or Guile network sockets?
 * command-line tools, GUI tools (GNOME, GLADE): calibration, tracking, detection, speech processing
 * threads for reading and decoding audio/video (also requires caching code), etc/threads.scm
 * use ice-9 q? background decoder thread
@@ -66,7 +65,7 @@
 * test for planar/packed audio (see decoding\_encoding.c)
   http://kodi.wiki/view/Samples
 * upsampling (and documentation about up- and downsampling)
-* complex abs (magnitude), complex arg (and real)
+* complex arg (and real)
 * video -> panorama stitching (multiresolution)
 * save/load 16 and 32 bit images
 * (arr (rgb 1 2 3)); (arr (integer 32 signed) 2 3 4)
