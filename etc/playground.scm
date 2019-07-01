@@ -1,45 +1,40 @@
 (use-modules (srfi srfi-1) (oop goops) (aiscm core) (aiscm util))
 
-((jit (list <int> <int>) +) 2 3)
+(define-class <hypercomplex> ()
+  (real #:init-keyword #:real-part #:getter real-part)
+  (imag #:init-keyword #:imag-part #:getter imag-part)
+  (jmag #:init-keyword #:jmag-part #:getter jmag-part)
+  (kmag #:init-keyword #:kmag-part #:getter kmag-part))
 
-((jit (list (llvmlist <int> 3)) identity) (list 2 3 5))
+(define-method (write (self <hypercomplex>) port)
+  (format port "~a+~ai+~aj+~ak" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
+(define-method (display (self <hypercomplex>) port)
+  (format port "~a+~ai+~aj+~ak" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
 
-((jit (list (llvmlist <int> 3)) (lambda (lst) (get lst 1))) (list 2 3 5))
+(define (make-hypercomplex a b c d)
+  (make <hypercomplex> #:real-part a #:imag-part b #:jmag-part c #:kmag-part d))
 
-((jit (list <int> <int> <int>) (lambda (x y z) (llvmlist x y z))) 2 3 5)
+(define-structure hypercomplex make-hypercomplex (real-part imag-part jmag-part kmag-part))
+(define-uniform-constructor hypercomplex)
 
-((jit (list (llvmarray <ubyte> 1)) identity) (arr 2 3 5))
+(define-array-op jmag-part 1 channel-type jmag-part)
+(define-array-op kmag-part 1 channel-type kmag-part)
 
-((jit (list (llvmarray <ubyte> 1)) shape) (arr 2 3 5))
+(define-method (native-type (value <hypercomplex>) . args)
+  (if (every (lambda (x) (or (is-a? x <hypercomplex>) (complex? x))) args)
+      (hypercomplex <double>) (next-method)))
 
-((jit (list (llvmlist <int> 3)) (lambda (shp) (allocate-array <int> shp))) (list 2 3 5))
+(define-method (jmag-part (value <complex>)) 0)
+(define-method (kmag-part (value <complex>)) 0)
+(define-method (jmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
+(define-method (kmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
+(define-method (jmag-part (value <scalar>)) (typed-constant (class-of value) 0))
+(define-method (kmag-part (value <scalar>)) (typed-constant (class-of value) 0))
 
-((jit (list <int> <int> <int>) (lambda (x y z) (allocate-array <int> (llvmlist x y z)))) 2 3 5)
+(define-method (+ (value-a <hypercomplex<>>) (value-b <hypercomplex<>>))
+  (hypercomplex (+ (real-part value-a) (real-part value-b))
+                (+ (imag-part value-a) (imag-part value-b))
+                (+ (jmag-part value-a) (jmag-part value-b))
+                (+ (kmag-part value-a) (kmag-part value-b))))
 
-((jit (list <int>) (lambda (x) (jit-let [(arr (allocate-array <int> (llvmlist x)))] arr))) 5)
-
-((jit (list (llvmlist <int> 3) <int>) get) (list 1 2 3) 1)
-
-((jit (list (llvmlist <int> 3)) (lambda (x) (+ (get x 0) (get x 1) (get x 2)))) (list 1 2 3))
-
-
-(define f (jit (list <int>)
-  (lambda (x)
-    (let [(start  (make-basic-block "start"))
-          (select (make-basic-block "select"))
-          (skip   (make-basic-block "skip"))
-          (end    (make-basic-block "end"))]
-      (llvm-begin
-        (build-branch start)
-        (position-builder-at-end start)
-        (build-cond-branch (lt x 0) select skip)
-        (position-builder-at-end select)
-        (jit-let [(y (- x))]
-          (build-branch end)
-          (position-builder-at-end skip)
-          (build-branch end)
-          (position-builder-at-end end)
-          (jit-let [(r (build-phi <int>))]
-            (add-incoming r select y)
-            (add-incoming r skip x)
-            r)))))))
+(define x (to-array (list (make-hypercomplex 1 2 3 4) 5+6i 7)))

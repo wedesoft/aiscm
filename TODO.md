@@ -1,8 +1,8 @@
 ## Ready
 
-* weighted histogram
+* hypercomplex numbers and quaternions, +, -, /, and \*
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
-* hypercomplex numbers and quaternions
+* weighted histogram
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
   * avcodec\_encode\_video2 deprecated -> avcodec\_send\_frame and avcodec\_receive\_packet
@@ -19,7 +19,6 @@
 * Kinect bindings
 * FFTW3 bindings, replace FFT in audio spectrum example
 * Lucas-Kanade tracker
-* port using qemu
 * multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * RGB to object, object to RGB
@@ -32,7 +31,6 @@
 * rigid-body impulse-based dynamics example (and microcollisions)
 * function should return list, sequential computation of complex number
 * compile method calls to other (polymorphic) compiled methods (support modular JIT code)
-* polymorphic method calls (e.g. fabs, fabsf)
 * 2D-1D convolution, 2D-3D convolution (Sobel pair), 0D-0D convolution
 * galaxy simulation
 * floating point exception (SIGFPE)
