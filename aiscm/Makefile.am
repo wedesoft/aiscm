@@ -2,7 +2,7 @@ SUFFIXES = .c .scm .go .in
 
 sitedir = $(GUILE_SITE)/aiscm
 site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm \
-						tensorflow.scm filters.scm opencv.scm
+						tensorflow.scm filters.scm opencv.scm hypercomplex.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \

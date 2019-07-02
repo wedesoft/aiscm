@@ -37,4 +37,7 @@
                 (+ (jmag-part value-a) (jmag-part value-b))
                 (+ (kmag-part value-a) (kmag-part value-b))))
 
+(define-method (coerce (a <meta<hypercomplex<>>>) (b <meta<hypercomplex<>>>))
+  (hypercomplex (coerce (reduce coerce #f (base a)) (reduce coerce #f (base b)))))
+
 (define x (to-array (list (make-hypercomplex 1 2 3 4) 5+6i 7)))
