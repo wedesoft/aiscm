@@ -16,6 +16,7 @@
 ;;
 (define-module (aiscm hypercomplex)
   #:use-module (oop goops)
+  #:use-module (ice-9 format)
   #:use-module (aiscm core)
   #:export (make-hypercomplex jmag-part kmag-part
             <hypercomplex>)
@@ -30,3 +31,6 @@
 
 (define (make-hypercomplex a b c d)
   (make <hypercomplex> #:real-part a #:imag-part b #:jmag-part c #:kmag-part d))
+
+(define-method (write (self <hypercomplex>) port)
+  (format port "~f~@fi~@fj~@fk" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))

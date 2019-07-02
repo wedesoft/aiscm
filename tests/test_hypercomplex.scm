@@ -35,5 +35,11 @@
   (test-eqv "kmag part"
     7 (kmag-part (make-hypercomplex 2 3 5 7))))
 
+(test-group "display or write string"
+  (test-equal "write hypercomplex number"
+    "1.0+2.0i+3.0j+4.0k" (call-with-output-string (cut write (make-hypercomplex 1 2 3 4) <>)))
+  (test-equal "write hypercomplex number with negative components"
+    "-1.0-2.0i-3.0j-4.0k" (call-with-output-string (cut display (make-hypercomplex -1 -2 -3 -4) <>))))
+
 (test-end "aiscm hypercomplex")
 
