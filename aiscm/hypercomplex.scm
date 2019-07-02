@@ -18,8 +18,11 @@
   #:use-module (oop goops)
   #:use-module (ice-9 format)
   #:use-module (aiscm core)
-  #:export (make-hypercomplex jmag-part kmag-part
-            <hypercomplex>)
+  #:export (make-hypercomplex jmag-part kmag-part hypercomplex
+            <hypercomplex>
+            <hypercomplex<>>
+            <hypercomplex<float>>  <meta<hypercomplex<float>>>  <hypercomplex<float<single>>> <meta<hypercomplex<float<single>>>>
+            <hypercomplex<double>> <meta<hypercomplex<double>>> <hypercomplex<float<double>>> <meta<hypercomplex<float<double>>>>)
   #:re-export (real-part imag-part))
 
 
@@ -34,3 +37,8 @@
 
 (define-method (write (self <hypercomplex>) port)
   (format port "~f~@fi~@fj~@fk" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
+
+(define-structure hypercomplex make-hypercomplex (real-part imag-part jmag-part kmag-part))
+
+(define <hypercomplex<float>>  (hypercomplex <float> )) (define <meta<hypercomplex<float>>>  (class-of (hypercomplex <float> )))
+(define <hypercomplex<double>> (hypercomplex <double>)) (define <meta<hypercomplex<double>>> (class-of (hypercomplex <double>)))

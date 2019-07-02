@@ -41,5 +41,10 @@
   (test-equal "write hypercomplex number with negative components"
     "-1.0-2.0i-3.0j-4.0k" (call-with-output-string (cut display (make-hypercomplex -1 -2 -3 -4) <>))))
 
-(test-end "aiscm hypercomplex")
+(test-group "hypercomplex native type"
+  (test-eq "hypercomplex single precision"
+    <hypercomplex<float>> (hypercomplex <float>))
+  (test-eq "hypercomplex double precision"
+    <hypercomplex<double>> (hypercomplex <double>)))
 
+(test-end "aiscm hypercomplex")
