@@ -239,7 +239,7 @@
   (format port "(rgb ~a ~a ~a)" (red self) (green self) (blue self)))
 
 (define-method (equal? (a <rgb>) (b <rgb>))
-  (and  (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
+  (and (equal? (red a) (red b)) (equal? (green a) (green b)) (equal? (blue a) (blue b))))
 
 (define-structure rgb rgb (red green blue))
 

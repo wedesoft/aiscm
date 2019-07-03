@@ -23,7 +23,7 @@
             <hypercomplex<>>
             <hypercomplex<float>>  <meta<hypercomplex<float>>>  <hypercomplex<float<single>>> <meta<hypercomplex<float<single>>>>
             <hypercomplex<double>> <meta<hypercomplex<double>>> <hypercomplex<float<double>>> <meta<hypercomplex<float<double>>>>)
-  #:re-export (real-part imag-part))
+  #:re-export (real-part imag-part equal?))
 
 
 (define-class <hypercomplex> ()
@@ -38,7 +38,14 @@
 (define-method (write (self <hypercomplex>) port)
   (format port "~f~@fi~@fj~@fk" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
 
+(define-method (equal? (a <hypercomplex>) (b <hypercomplex>))
+  (and (equal? (real-part a) (real-part b))
+       (equal? (imag-part a) (imag-part b))
+       (equal? (jmag-part a) (jmag-part b))
+       (equal? (kmag-part a) (kmag-part b))))
+
 (define-structure hypercomplex make-hypercomplex (real-part imag-part jmag-part kmag-part))
+(define-uniform-constructor hypercomplex)
 
 (define <hypercomplex<float>>  (hypercomplex <float> )) (define <meta<hypercomplex<float>>>  (class-of (hypercomplex <float> )))
 (define <hypercomplex<double>> (hypercomplex <double>)) (define <meta<hypercomplex<double>>> (class-of (hypercomplex <double>)))

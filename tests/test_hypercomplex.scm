@@ -33,7 +33,11 @@
   (test-eqv "jmag part"
     5 (jmag-part (make-hypercomplex 2 3 5 7)))
   (test-eqv "kmag part"
-    7 (kmag-part (make-hypercomplex 2 3 5 7))))
+    7 (kmag-part (make-hypercomplex 2 3 5 7)))
+  (test-equal "hypercomplex equality"
+    (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))
+  (test-assert "unequal hypercomplex numbers"
+    (not (equal? (make-hypercomplex 2 3 6 7) (make-hypercomplex 2 3 5 7)))))
 
 (test-group "display or write string"
   (test-equal "write hypercomplex number"
@@ -45,6 +49,8 @@
   (test-eq "hypercomplex single precision"
     <hypercomplex<float>> (hypercomplex <float>))
   (test-eq "hypercomplex double precision"
-    <hypercomplex<double>> (hypercomplex <double>)))
+    <hypercomplex<double>> (hypercomplex <double>))
+  (test-equal "construct hypercomplex number in compiled code"
+    (make-hypercomplex 2 3 5 7) ((jit (list <int> <int> <int> <int>) hypercomplex) 2 3 5 7)))
 
 (test-end "aiscm hypercomplex")

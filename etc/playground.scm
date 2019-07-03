@@ -8,8 +8,6 @@
 
 (define-method (write (self <hypercomplex>) port)
   (format port "~a+~ai+~aj+~ak" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
-(define-method (display (self <hypercomplex>) port)
-  (format port "~a+~ai+~aj+~ak" (real-part self) (imag-part self) (jmag-part self) (kmag-part self)))
 
 (define (make-hypercomplex a b c d)
   (make <hypercomplex> #:real-part a #:imag-part b #:jmag-part c #:kmag-part d))
