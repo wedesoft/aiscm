@@ -53,4 +53,32 @@
   (test-equal "construct hypercomplex number in compiled code"
     (make-hypercomplex 2 3 5 7) ((jit (list <int> <int> <int> <int>) hypercomplex) 2 3 5 7)))
 
+(test-group "determine native type"
+  (test-eq "match hypercomplex type"
+    (hypercomplex <double>) (native-type (make-hypercomplex 2 3 5 7)))
+  (test-eq "match hypercomplex and complex number"
+    (hypercomplex <double>) (native-type (make-hypercomplex 2 3 5 7) 2+3i))
+  (test-eq "match hypercomplex number and symbol"
+    <obj> (native-type (make-hypercomplex 2 3 5 7) 'a))
+  (test-eq "match two hypercomplex numbers"
+    (hypercomplex <double>) (native-type (make-hypercomplex 2 3 5 7) (make-hypercomplex 3 5 7 11))))
+
+(test-group "extract channels from hypercomplex array"
+  (test-equal "extract real part"
+    '(2.0) (to-list (real-part (to-array (list (make-hypercomplex 2 3 5 7))))))
+  (test-equal "extract imaginary part"
+    '(3.0) (to-list (imag-part (to-array (list (make-hypercomplex 2 3 5 7))))))
+  (test-equal "extract jmaginary part"
+    '(5.0) (to-list (jmag-part (to-array (list (make-hypercomplex 2 3 5 7))))))
+  (test-equal "extract kmaginary part"
+    '(7.0) (to-list (kmag-part (to-array (list (make-hypercomplex 2 3 5 7))))))
+  (test-equal "jmaginary part of complex number"
+    0.0 (jmag-part 2+3i))
+  (test-equal "jmaginary part of complex array"
+    '(0.0) (to-list (jmag-part (to-array (list 2+3i)))))
+  (test-equal "kmaginary part of complex number"
+    0.0 (kmag-part 2+3i))
+  (test-equal "kmaginary part of complex array"
+    '(0.0) (to-list (kmag-part (to-array (list 2+3i))))))
+
 (test-end "aiscm hypercomplex")

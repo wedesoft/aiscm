@@ -16,8 +16,10 @@
 ;;
 (define-module (aiscm hypercomplex)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:use-module (ice-9 format)
   #:use-module (aiscm core)
+  #:use-module (aiscm util)
   #:export (make-hypercomplex jmag-part kmag-part hypercomplex
             <hypercomplex>
             <hypercomplex<>>
@@ -49,3 +51,15 @@
 
 (define <hypercomplex<float>>  (hypercomplex <float> )) (define <meta<hypercomplex<float>>>  (class-of (hypercomplex <float> )))
 (define <hypercomplex<double>> (hypercomplex <double>)) (define <meta<hypercomplex<double>>> (class-of (hypercomplex <double>)))
+
+(define-method (native-type (value <hypercomplex>) . args)
+  (if (every (lambda (x) (or (is-a? x <hypercomplex>) (complex? x))) args)
+      (hypercomplex <double>) (next-method)))
+
+(define-array-op jmag-part 1 channel-type jmag-part)
+(define-array-op kmag-part 1 channel-type kmag-part)
+
+(define-method (jmag-part (value <complex>)) 0.0)
+(define-method (kmag-part (value <complex>)) 0.0)
+(define-method (jmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
+(define-method (kmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))

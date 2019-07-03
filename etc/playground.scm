@@ -22,20 +22,20 @@
   (if (every (lambda (x) (or (is-a? x <hypercomplex>) (complex? x))) args)
       (hypercomplex <double>) (next-method)))
 
-(define-method (jmag-part (value <complex>)) 0)
-(define-method (kmag-part (value <complex>)) 0)
+(define-method (jmag-part (value <complex>)) 0.0)
+(define-method (kmag-part (value <complex>)) 0.0)
 (define-method (jmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
 (define-method (kmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
 (define-method (jmag-part (value <scalar>)) (typed-constant (class-of value) 0))
 (define-method (kmag-part (value <scalar>)) (typed-constant (class-of value) 0))
+;
+(define-method (coerce (a <meta<hypercomplex<>>>) (b <meta<hypercomplex<>>>))
+  (hypercomplex (coerce (reduce coerce #f (base a)) (reduce coerce #f (base b)))))
 
 (define-method (+ (value-a <hypercomplex<>>) (value-b <hypercomplex<>>))
   (hypercomplex (+ (real-part value-a) (real-part value-b))
                 (+ (imag-part value-a) (imag-part value-b))
                 (+ (jmag-part value-a) (jmag-part value-b))
                 (+ (kmag-part value-a) (kmag-part value-b))))
-
-(define-method (coerce (a <meta<hypercomplex<>>>) (b <meta<hypercomplex<>>>))
-  (hypercomplex (coerce (reduce coerce #f (base a)) (reduce coerce #f (base b)))))
 
 (define x (to-array (list (make-hypercomplex 1 2 3 4) 5+6i 7)))
