@@ -28,10 +28,10 @@
 (define-method (kmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
 (define-method (jmag-part (value <scalar>)) (typed-constant (class-of value) 0))
 (define-method (kmag-part (value <scalar>)) (typed-constant (class-of value) 0))
-;
+
 (define-method (coerce (a <meta<hypercomplex<>>>) (b <meta<hypercomplex<>>>))
   (hypercomplex (coerce (reduce coerce #f (base a)) (reduce coerce #f (base b)))))
-
+;
 (define-method (+ (value-a <hypercomplex<>>) (value-b <hypercomplex<>>))
   (hypercomplex (+ (real-part value-a) (real-part value-b))
                 (+ (imag-part value-a) (imag-part value-b))

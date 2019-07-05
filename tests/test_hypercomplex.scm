@@ -81,4 +81,18 @@
   (test-equal "kmaginary part of complex array"
     '(0.0) (to-list (kmag-part (to-array (list 2+3i))))))
 
+(test-group "type coercions"
+  (test-eq "coerce double- and single-precision hypercomplex types"
+    (hypercomplex <double>) (coerce (hypercomplex <double>) (hypercomplex <float>)))
+  (test-eq "coerce single- and double-precision hypercomplex types"
+    (hypercomplex <double>) (coerce (hypercomplex <float>) (hypercomplex <double>)))
+  (test-eq "coerce hypercomplex and complex number"
+    (hypercomplex <double>) (coerce (hypercomplex <float>) (complex <double>)))
+  (test-eq "coerce complex and hypercomplex number"
+    (hypercomplex <double>) (coerce (complex <double>) (hypercomplex <float>)))
+  (test-eq "coerce hypercomplex and real type"
+    (hypercomplex <double>) (coerce (hypercomplex <float>) <double>))
+  (test-eq "coerce real and hypercomplex type"
+    (hypercomplex <double>) (coerce <double> (hypercomplex <float>))))
+
 (test-end "aiscm hypercomplex")
