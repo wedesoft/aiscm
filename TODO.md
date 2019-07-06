@@ -13,6 +13,7 @@
     * avcodec\_receive\_frame
     * avcodec\_send\_packet
   * codec deprecated (ffmpeg.c: 271, 377, 417)
+* Wayland support
 * check new lintian tag required
 * argmin, argmax
 * argwhere (mask coordinates)

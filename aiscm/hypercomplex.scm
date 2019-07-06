@@ -25,7 +25,7 @@
             <hypercomplex<>>
             <hypercomplex<float>>  <meta<hypercomplex<float>>>  <hypercomplex<float<single>>> <meta<hypercomplex<float<single>>>>
             <hypercomplex<double>> <meta<hypercomplex<double>>> <hypercomplex<float<double>>> <meta<hypercomplex<float<double>>>>)
-  #:re-export (real-part imag-part equal?))
+  #:re-export (real-part imag-part equal? +))
 
 
 (define-class <hypercomplex> ()
@@ -74,3 +74,17 @@
   (hypercomplex (reduce coerce #f (cons b (base a)))))
 (define-method (coerce (a <meta<scalar>>) (b <meta<hypercomplex<>>>))
   (hypercomplex (reduce coerce #f (cons a (base b)))))
+
+(define-method (+ (a <hypercomplex<>>) (b <hypercomplex<>>))
+  (hypercomplex (+ (real-part a) (real-part b))
+                (+ (imag-part a) (imag-part b))
+                (+ (jmag-part a) (jmag-part b))
+                (+ (kmag-part a) (kmag-part b))))
+(define-method (+ (a <hypercomplex<>>) (b <complex<>>))
+  (hypercomplex (+ (real-part a) (real-part b)) (+ (imag-part a) (imag-part b)) (jmag-part a) (kmag-part a)))
+(define-method (+ (a <complex<>>) (b <hypercomplex<>>))
+  (hypercomplex (+ (real-part a) (real-part b)) (+ (imag-part a) (imag-part b)) (jmag-part b) (kmag-part b)))
+(define-method (+ (a <hypercomplex<>>) (b <scalar>))
+  (hypercomplex (+ (real-part a) b) (imag-part a) (jmag-part a) (kmag-part a)))
+(define-method (+ (a <scalar>) (b <hypercomplex<>>))
+  (hypercomplex (+ a (real-part b)) (imag-part b) (jmag-part b) (kmag-part b)))

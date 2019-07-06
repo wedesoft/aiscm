@@ -5,7 +5,7 @@ tmux select-pane -t0
 tmux send-keys "make repl -j 4" C-m
 tmux select-pane -t1
 tmux send-keys "cd tests" C-m
-tmux send-keys "./guard.sh core" C-m
+tmux send-keys "./guard.sh hypercomplex" C-m
 tmux select-pane -t2
 tmux send-keys "nvim" C-m
 sleep 1
