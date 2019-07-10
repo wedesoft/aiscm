@@ -1,6 +1,9 @@
 ## Ready
 
-* hypercomplex numbers and quaternions, +, -, /, and \*
+* hypercomplex numbers \* and /
+* operations on rgb values
+* operations on hypercomplex values
+* = for rgb and hypercomplex
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * weighted histogram
 * Ghost in the Shell style animations (coins?)

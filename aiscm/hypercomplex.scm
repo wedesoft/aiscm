@@ -93,3 +93,13 @@
 
 (define-hypercomplex-binary-op + hypercomplex)
 (define-hypercomplex-binary-op - hypercomplex)
+
+(define-method (* (a <hypercomplex<>>) (b <hypercomplex<>>))
+  (hypercomplex (+ (- (* (real-part a) (real-part b)) (* (imag-part a) (imag-part b))
+                      (* (jmag-part a) (jmag-part b))) (* (kmag-part a) (kmag-part b)))
+                (+ (* (real-part a) (imag-part b)) (* (imag-part a) (real-part b))
+                   (* (jmag-part a) (kmag-part b)) (* (kmag-part a) (jmag-part b)))
+                (+ (* (real-part a) (jmag-part b)) (* (imag-part a) (kmag-part b))
+                   (* (jmag-part a) (real-part b)) (* (kmag-part a) (imag-part b)))
+                (+ (- (* (real-part a) (kmag-part b)) (* (imag-part a) (jmag-part b))
+                      (* (jmag-part a) (imag-part b))) (* (kmag-part a) (real-part b)))))
