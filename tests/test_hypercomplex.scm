@@ -79,7 +79,15 @@
   (test-equal "kmaginary part of complex number"
     0.0 (kmag-part 2+3i))
   (test-equal "kmaginary part of complex array"
-    '(0.0) (to-list (kmag-part (to-array (list 2+3i))))))
+    '(0.0) (to-list (kmag-part (to-array (list 2+3i)))))
+  (test-equal "jmaginary part of real number"
+    0.0 (jmag-part 3.0))
+  (test-equal "jmaginary part of real array"
+    '(0.0) (to-list (jmag-part (arr 3.0))))
+  (test-equal "kmaginary part of real number"
+    0.0 (kmag-part 3.0))
+  (test-equal "kmaginary part of real array"
+    '(0.0) (to-list (kmag-part (arr 3.0)))))
 
 (test-group "type coercions"
   (test-eq "coerce double- and single-precision hypercomplex types"

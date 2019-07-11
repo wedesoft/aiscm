@@ -61,6 +61,8 @@
 
 (define-method (jmag-part (value <complex>)) 0.0)
 (define-method (kmag-part (value <complex>)) 0.0)
+(define-method (jmag-part (value <scalar>)) (typed-constant (class-of value) 0))
+(define-method (kmag-part (value <scalar>)) (typed-constant (class-of value) 0))
 (define-method (jmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
 (define-method (kmag-part (value <complex<>>)) (typed-constant (channel-type (class-of value)) 0))
 

@@ -1,6 +1,5 @@
 ## Ready
 
-* jmag and kmag of scalar arrays
 * hypercomplex numbers \* and /
 * hypercomplex conjugate, absolute
 * complex, hypercomplex exp
