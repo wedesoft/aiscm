@@ -113,3 +113,7 @@
                 (+ (* (real-part a) (imag-part b)) (* (imag-part a) (real-part b)))
                 (+ (* (real-part a) (jmag-part b)) (* (imag-part a) (kmag-part b)))
                 (- (* (real-part a) (kmag-part b)) (* (imag-part a) (jmag-part b)))))
+(define-method (* (a <hypercomplex<>>) (b <scalar>))
+  (hypercomplex (* (real-part a) b) (* (imag-part a) b) (* (jmag-part a) b) (* (kmag-part a) b)))
+(define-method (* (a <scalar>) (b <hypercomplex<>>))
+  (hypercomplex (* a (real-part b)) (* a (imag-part b)) (* a (jmag-part b)) (* a (kmag-part b))))
