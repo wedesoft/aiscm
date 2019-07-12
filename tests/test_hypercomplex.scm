@@ -163,4 +163,9 @@
     (make-hypercomplex 4.0 6.0 10.0 14.0) ((jit (list <float> (hypercomplex <float>)) *) 2 (make-hypercomplex 2 3 5 7)))
   (test-equal "multiply hypercomplex and real number"
     (make-hypercomplex 4.0 6.0 10.0 14.0) ((jit (list (hypercomplex <float>) <float>) *) (make-hypercomplex 2 3 5 7) 2)))
+
+(test-group "hypercomplex properties"
+  (test-equal "hypercomplex absolute value"
+    4.0 ((jit (list (hypercomplex <float>)) abs) (make-hypercomplex 2 2 -2 -2))))
+
 (test-end "aiscm hypercomplex")
