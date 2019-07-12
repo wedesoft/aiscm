@@ -166,6 +166,8 @@
 
 (test-group "hypercomplex properties"
   (test-equal "hypercomplex absolute value"
-    4.0 ((jit (list (hypercomplex <float>)) abs) (make-hypercomplex 2 2 -2 -2))))
+    4.0 ((jit (list (hypercomplex <float>)) abs) (make-hypercomplex 2 2 -2 -2)))
+  (test-equal "hypercomplex conjugate"
+    (make-hypercomplex 2.0 -3.0 -5.0 7.0) ((jit (list (hypercomplex <float>)) conj) (make-hypercomplex 2 3 5 7))))
 
 (test-end "aiscm hypercomplex")
