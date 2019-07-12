@@ -77,6 +77,9 @@
 (define-method (coerce (a <meta<scalar>>) (b <meta<hypercomplex<>>>))
   (hypercomplex (reduce coerce #f (cons a (base b)))))
 
+(define-method (- (a <hypercomplex<>>))
+  (hypercomplex (- (real-part a)) (- (imag-part a)) (- (jmag-part a)) (- (kmag-part a))))
+
 (define-syntax-rule (define-hypercomplex-binary-op mapping reduction)
   (begin
     (define-method (mapping (a <hypercomplex<>>) (b <hypercomplex<>>))

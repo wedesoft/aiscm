@@ -1,6 +1,6 @@
 ## Ready
 
-* hypercomplex numbers \* and /
+* hypercomplex division
 * hypercomplex conjugate, absolute
 * complex, hypercomplex exp
 * operations on rgb values

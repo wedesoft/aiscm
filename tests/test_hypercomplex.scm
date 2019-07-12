@@ -121,6 +121,8 @@
                                          1 (make-hypercomplex 1 3 5 7))))
 
 (test-group "hypercomplex minus"
+  (test-equal "hypercomplex unary minus"
+    (make-hypercomplex -2.0 -3.0 -5.0 -7.0) ((jit (list (hypercomplex <float>)) -) (make-hypercomplex 2 3 5 7)))
   (test-equal "hypercomplex minus hypercomplex"
     (make-hypercomplex 2.0 3.0 5.0 7.0) ((jit (list (hypercomplex <float>) (hypercomplex <float>)) -)
                                          (make-hypercomplex 3 5 8 9) (make-hypercomplex 1 2 3 2)))
