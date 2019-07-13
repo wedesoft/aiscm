@@ -1,6 +1,5 @@
 ## Ready
 
-* real-hypercomplex division
 * complex, hypercomplex exp
 * operations on rgb values
 * operations on hypercomplex values

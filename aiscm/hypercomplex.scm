@@ -162,3 +162,7 @@
   (jit-let [(inverse (complex-inverse b))] (* a inverse)))
 (define-method (/ (a <complex<>>) (b <hypercomplex<>>))
   (jit-let [(inverse (hypercomplex-inverse b))] (* a inverse)))
+(define-method (/ (a <scalar>) (b <hypercomplex<>>))
+  (jit-let [(inverse (hypercomplex-inverse b))] (* a inverse)))
+(define-method (/ (a <hypercomplex<>>) (b <scalar>))
+  (hypercomplex (/ (real-part a) b) (/ (imag-part a) b) (/ (jmag-part a) b) (/ (kmag-part a) b)))

@@ -181,7 +181,13 @@
       1.0 (real-part (f (make-hypercomplex 2 3 0 0) 2+3i)) 0.001))
   (let [(f (jit (list (complex <float>) (hypercomplex <float>)) /))]
     (test-approximate "real part is one for trivial complex-hypercomplex division"
-      1.0 (real-part (f 2+3i (make-hypercomplex 2 3 0 0))) 0.001)))
+      1.0 (real-part (f 2+3i (make-hypercomplex 2 3 0 0))) 0.001))
+  (let [(f (jit (list <float> (hypercomplex <float>)) /))]
+    (test-approximate "real part is one for trivial float-hypercomplex division"
+      1.0 (real-part (f 2 (make-hypercomplex 2 0 0 0))) 0.001))
+  (let [(f (jit (list (hypercomplex <float>) <float>) /))]
+    (test-approximate "real part is one for trivial hypercomplex-float division"
+      1.0 (real-part (f (make-hypercomplex 2 0 0 0) 2)) 0.001)))
 
 (test-group "hypercomplex properties"
   (test-equal "hypercomplex absolute value"
