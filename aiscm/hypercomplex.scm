@@ -25,7 +25,7 @@
             <hypercomplex<>>
             <hypercomplex<float>>  <meta<hypercomplex<float>>>  <hypercomplex<float<single>>> <meta<hypercomplex<float<single>>>>
             <hypercomplex<double>> <meta<hypercomplex<double>>> <hypercomplex<float<double>>> <meta<hypercomplex<float<double>>>>)
-  #:re-export (real-part imag-part equal? + - abs conj))
+  #:re-export (real-part imag-part equal? + - abs conj * /))
 
 
 (define-class <hypercomplex> ()
@@ -132,3 +132,33 @@
   (hypercomplex (* (real-part a) b) (* (imag-part a) b) (* (jmag-part a) b) (* (kmag-part a) b)))
 (define-method (* (a <scalar>) (b <hypercomplex<>>))
   (hypercomplex (* a (real-part b)) (* a (imag-part b)) (* a (jmag-part b)) (* a (kmag-part b))))
+
+(define (hypercomplex-inverse a)
+  (jit-let [(d1 (- (real-part a) (kmag-part a)))
+            (d2 (+ (imag-part a) (jmag-part a)))
+            (d3 (+ (real-part a) (kmag-part a)))
+            (d4 (- (imag-part a) (jmag-part a)))
+            (denom (* (+ (* d1 d1) (* d2 d2)) (+ (* d3 d3) (* d4 d4))))
+            (squares (+ (* (real-part a) (real-part a))
+                        (* (imag-part a) (imag-part a))
+                        (* (jmag-part a) (jmag-part a))
+                        (* (kmag-part a) (kmag-part a))))
+            (cross (- (* (real-part a) (kmag-part a)) (* (imag-part a) (jmag-part a))))
+            (c1 (* (kmag-part a) cross))
+            (c2 (* (jmag-part a) cross))
+            (c3 (* (imag-part a) cross))
+            (c4 (* (real-part a) cross))]
+    (hypercomplex (/ (- (* (real-part a) squares) (+ c1 c1)) denom)
+                  (/ (- (- (* (imag-part a) squares)) (+ c2 c2)) denom)
+                  (/ (- (- (* (jmag-part a) squares)) (+ c3 c3)) denom)
+                  (/ (- (* (kmag-part a) squares) (+ c4 c4)) denom))))
+(define (complex-inverse a)
+  (jit-let [(denom (+ (* (real-part a) (real-part a)) (* (imag-part a) (imag-part a))))]
+    (complex (/ (real-part a) denom) (/ (- (imag-part a)) denom))))
+
+(define-method (/ (a <hypercomplex<>>) (b <hypercomplex<>>))
+  (jit-let [(inverse (hypercomplex-inverse b))] (* a inverse)))
+(define-method (/ (a <hypercomplex<>>) (b <complex<>>))
+  (jit-let [(inverse (complex-inverse b))] (* a inverse)))
+(define-method (/ (a <complex<>>) (b <hypercomplex<>>))
+  (jit-let [(inverse (hypercomplex-inverse b))] (* a inverse)))

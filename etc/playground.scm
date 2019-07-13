@@ -1,5 +1,7 @@
 (use-modules (srfi srfi-1) (oop goops) (aiscm core) (aiscm util) (aiscm hypercomplex))
 
+; // http://mathworld.wolfram.com/HypercomplexNumber.html
+
 (define (hypercomplex-inverse a)
   (jit-let [(d1 (- (real-part a) (kmag-part a)))
             (d2 (+ (imag-part a) (jmag-part a)))

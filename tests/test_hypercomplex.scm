@@ -166,6 +166,23 @@
   (test-equal "multiply hypercomplex and real number"
     (make-hypercomplex 4.0 6.0 10.0 14.0) ((jit (list (hypercomplex <float>) <float>) *) (make-hypercomplex 2 3 5 7) 2)))
 
+(test-group "hypercomplex division"
+  (let [(f (jit (list (hypercomplex <float>) (hypercomplex <float>)) /))]
+    (test-approximate "real part is one when dividing number by itself"
+      1.0 (real-part (f (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))) 0.001)
+    (test-approximate "imaginary part is zero when dividing number by itself"
+      0.0 (imag-part (f (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))) 0.001)
+    (test-approximate "jmaginary part is zero when dividing number by itself"
+      0.0 (jmag-part (f (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))) 0.001)
+    (test-approximate "kmaginary part is zero when dividing number by itself"
+      0.0 (kmag-part (f (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))) 0.001))
+  (let [(f (jit (list (hypercomplex <float>) (complex <float>)) /))]
+    (test-approximate "real part is one for trivial hypercomplex-complex division"
+      1.0 (real-part (f (make-hypercomplex 2 3 0 0) 2+3i)) 0.001))
+  (let [(f (jit (list (complex <float>) (hypercomplex <float>)) /))]
+    (test-approximate "real part is one for trivial complex-hypercomplex division"
+      1.0 (real-part (f 2+3i (make-hypercomplex 2 3 0 0))) 0.001)))
+
 (test-group "hypercomplex properties"
   (test-equal "hypercomplex absolute value"
     4.0 ((jit (list (hypercomplex <float>)) abs) (make-hypercomplex 2 2 -2 -2)))
