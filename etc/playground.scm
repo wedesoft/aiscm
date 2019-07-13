@@ -25,4 +25,4 @@
     (* a inv)))
 
 
-((jit (list (hypercomplex <double>) (hypercomplex <double>)) /) (make-hypercomplex 2 3 0 0) (make-hypercomplex 2 3 0 0))
+((jit (list (hypercomplex <double>) (hypercomplex <double>)) /) (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))
