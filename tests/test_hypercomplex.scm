@@ -131,10 +131,12 @@
                                           (make-hypercomplex 3 5 5 7) 1+2i)))
 
 (define o (make-hypercomplex 1.0 0.0 0.0 0.0))
-(define i (make-hypercomplex 0.0 1.0 0.0 0.0))
-(define j (make-hypercomplex 0.0 0.0 1.0 0.0))
-(define k (make-hypercomplex 0.0 0.0 0.0 1.0))
 (define no (make-hypercomplex -1.0 0.0 0.0 0.0))
+(define i (make-hypercomplex 0.0 1.0 0.0 0.0))
+(define ni (make-hypercomplex 0.0 -1.0 0.0 0.0))
+(define j (make-hypercomplex 0.0 0.0 1.0 0.0))
+(define nj (make-hypercomplex 0.0 0.0 -1.0 0.0))
+(define k (make-hypercomplex 0.0 0.0 0.0 1.0))
 (define nk (make-hypercomplex 0.0 0.0 0.0 -1.0))
 (test-group "hypercomplex multiplication"
   (for-each (lambda (a results)
@@ -144,9 +146,9 @@
       (list o i j k) results))
     (list o i j k)
     (list (list o  i  j  k)
-          (list i no nk  j)
-          (list j nk no  i)
-          (list k  j  i  o))))
+          (list i no  k nj)
+          (list j  k no ni)
+          (list k nj ni  o))))
 (test-group "complex-hypercomplex multiplication"
   (for-each (lambda (a results)
     (for-each (lambda (b result)
@@ -157,7 +159,7 @@
       (list o i j k) results))
     (list 1 +i)
     (list (list o  i  j  k)
-          (list i no nk  j))))
+          (list i no  k nj))))
 (test-group "real-hypercomplex multiplication"
   (test-equal "multiply real and hypercomplex number"
     (make-hypercomplex 4.0 6.0 10.0 14.0) ((jit (list <float> (hypercomplex <float>)) *) 2 (make-hypercomplex 2 3 5 7)))

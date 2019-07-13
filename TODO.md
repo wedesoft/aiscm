@@ -77,7 +77,6 @@
 * distance transform, Chamfer matching
   http://www.gavrila.net/Research/Chamfer_System/chamfer_system.html
 * SLAM, inverse depth images
-* camera calibration
 * x11 display: error handling for 'show', timing
 * xorg: fast OpenGL rendering of grayscale images (glDrawPixels)
 * subpixel corner detector using steerable filters
