@@ -233,7 +233,6 @@ AC_TRY_LINK([#include <X11/extensions/Xv.h>],
    [AC_MSG_ERROR([Could not locate Xvideo extension])])
 old_LIBS="$LIBS"
 
-GUILE_PKG([2.2])
 GUILE_PROGS
 GUILE_FLAGS
 GUILE_SITE_DIR
