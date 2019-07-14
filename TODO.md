@@ -1,9 +1,9 @@
 ## Ready
 
-* complex, hypercomplex exp
 * operations on rgb values
 * operations on hypercomplex values
 * = for rgb and hypercomplex
+* complex, hypercomplex exp
 * save Tensorflow model
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * weighted histogram

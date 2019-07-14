@@ -33,7 +33,7 @@ sudo apt-get install -q --yes build-essential autoconf automake libtool devscrip
 sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
 ```
 
-You may install OpenCV (higher than 3.4.5) as follows:
+You may install OpenCV (higher than 4.1.0) as follows:
 
 ```Shell
 git clone https://github.com/opencv/opencv.git
