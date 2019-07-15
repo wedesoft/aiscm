@@ -75,7 +75,7 @@
             <rgb<double>> <meta<rgb<double>>> <rgb<float<double>>> <meta<rgb<float<double>>>>)
   #:export-syntax (define-structure memoize define-uniform-constructor define-mixed-constructor llvm-set
                    jit-let arr define-array-op)
-  #:re-export (- + * / real-part imag-part min max abs sqrt sin cos asin acos atan equal? exp))
+  #:re-export (- + * / = real-part imag-part min max abs sqrt sin cos asin acos atan equal? exp))
 
 (load-extension "libguile-aiscm-core" "init_core")
 
@@ -246,6 +246,20 @@
 (define <rgb<ubyte>>   (rgb <ubyte> )) (define <meta<rgb<ubyte>>>  (class-of (rgb <ubyte>)))
 (define <rgb<float>>   (rgb <float> )) (define <meta<rgb<ubyte>>>  (class-of (rgb <float>)))
 (define <rgb<double>>  (rgb <double>)) (define <meta<rgb<double>>> (class-of (rgb <double>)))
+
+(define-syntax-rule (define-rgb-map-reduce op reduction)
+  (begin
+    (define-method (op (a <rgb>) (b <rgb>))
+      (reduction (op (red a) (red b)) (op (green a) (green b)) (op (blue a) (blue b))))
+    (define-method (op (a <rgb>) (b <real>))
+      (reduction (op (red a) b) (op (green a) b) (op (blue a) b)))
+    (define-method (op (a <real>) (b <rgb>))
+      (reduction (op a (red b)) (op a (green b)) (op a (blue b))))))
+
+(define-rgb-map-reduce = and)
+(define-rgb-map-reduce + rgb)
+(define-rgb-map-reduce - rgb)
+(define-rgb-map-reduce / rgb)
 
 (define-method (target (self <pointer<>>)) (target (class-of self)))
 

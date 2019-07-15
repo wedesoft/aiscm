@@ -1407,7 +1407,25 @@
   (test-assert "RGB equal values"
     ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 5)))
   (test-assert "RGB unequal values"
-    (not ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 7)))))
+    (not ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 7))))
+  (test-assert "test numerical equal RGB values"
+    (= (rgb 1 2 3)  (rgb 1.0 2.0 3.0)))
+  (test-assert "test numerical unequal RGB values"
+    (not (= (rgb 1 2 3) (rgb 1 2 4))))
+  (test-assert "equal RGB and real value"
+    (= (rgb 3 3 3) 3.0)) 
+  (test-assert "unequal RGB and real value"
+    (not (= (rgb 3 3 4) 3.0)))
+  (test-assert "equal real and RGB value"
+    (= 3.0 (rgb 3 3 3)))
+  (test-assert "unequal real and RGB value"
+    (not (= 3.0 (rgb 3 3 4))))
+  (test-equal "RGB plus"
+    (rgb 2 5 7) (+ (rgb 1 2 3) (rgb 1 3 4)))
+  (test-equal "RGB minus"
+    (rgb 1 2 3) (- (rgb 2 3 5) (rgb 1 1 2)))
+  (test-equal "RGB division"
+    (rgb 2 3 5) (/ (rgb 4 6 10) 2)))
 
 (test-group "type conversions"
   (test-equal "convert to float"

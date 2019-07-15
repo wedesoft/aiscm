@@ -1,8 +1,8 @@
 ## Ready
 
-* operations on rgb values
+* operations on rgb values: %, minor, major
 * operations on hypercomplex values
-* = for rgb and hypercomplex
+* = for hypercomplex
 * complex, hypercomplex exp
 * save Tensorflow model
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
