@@ -1274,6 +1274,8 @@
     '(2 3) (to-list (/ (to-array '(10 21)) (to-array '(5 7)))))
   (test-equal "Modulo 1D array"
     '(2 1) (to-list (% (to-array '(10 21)) 4)))
+  (test-equal "Modulo single value"
+    2 (% 10 4))
   (test-equal "Left-shift array"
     '(20 14) (to-list (<< (arr 5 7) (arr 2 1))))
   (test-equal "Right-shift array"
@@ -1402,8 +1404,10 @@
     (rgb 14 33 65) ((jit (list (rgb <byte>) (rgb <byte>)) *) (rgb 2 3 5) (rgb 7 11 13)))
   (test-equal "RGB binary division"
     (rgb 2 3 5) ((jit (list (rgb <byte>) (rgb <byte>)) /) (rgb 14 33 65) (rgb 7 11 13)))
-  (test-equal "RGB modulo"
+  (test-equal "RGB modulo (compiled)"
     (rgb 2 3 1)  ((jit (list (rgb <byte>) <byte>) %) (rgb 2 3 5) 4))
+  (test-equal "modulo on RGB value"
+    (rgb 2 3 1) (% (rgb 2 3 5) 4))
   (test-assert "RGB equal values"
     ((jit (list (rgb <ubyte>) (rgb <ubyte>)) eq) (rgb 2 3 5) (rgb 2 3 5)))
   (test-assert "RGB unequal values"

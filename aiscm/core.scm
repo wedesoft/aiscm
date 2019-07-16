@@ -260,6 +260,7 @@
 (define-rgb-map-reduce + rgb)
 (define-rgb-map-reduce - rgb)
 (define-rgb-map-reduce / rgb)
+(define-rgb-map-reduce % rgb)
 
 (define-method (target (self <pointer<>>)) (target (class-of self)))
 
@@ -980,6 +981,8 @@
 
 (define (object-method delegate)
   (lambda (value-a value-b) (typed-call <obj> delegate (list <obj> <obj>) (list value-a value-b))))
+
+(define-method (% (a <real>) (b <real>)) (modulo a b))
 
 (define-syntax-rule (define-object-binary operation method)
   (begin

@@ -1,6 +1,6 @@
 ## Ready
 
-* operations on rgb values: %, minor, major
+* operations on rgb values: minor, major
 * operations on hypercomplex values
 * = for hypercomplex
 * complex, hypercomplex exp
