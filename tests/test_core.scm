@@ -1340,10 +1340,14 @@
     '(2 3 2) (to-list (minor (arr 2 3 5) (arr 5 3 2))))
   (test-equal "Element-wise major value"
     '(5 3 5) (to-list (major (arr 2 3 5) (arr 5 3 2))))
-  (test-equal "minor value of RGB value"
+  (test-equal "minor value of RGB values (compiled)"
     (rgb 2 3 2) ((jit (list (rgb <int>) (rgb <int>)) minor) (rgb 2 3 5) (rgb 5 3 2)))
+  (test-equal "major value of RGB values (compiled)"
+    (rgb 5 3 5) ((jit (list (rgb <int>) (rgb <int>)) major) (rgb 2 3 5) (rgb 5 3 2)))
   (test-equal "minor value of RGB values"
-    (rgb 5 3 5) ((jit (list (rgb <int>) (rgb <int>)) major) (rgb 2 3 5) (rgb 5 3 2))))
+    (rgb 2 3 2)  (minor (rgb 2 3 5) (rgb 5 3 2)))
+  (test-equal "major value of RGB values"
+    (rgb 5 3 5)  (major (rgb 2 3 5) (rgb 5 3 2))))
 
 (test-group "Array macro"
   (test-equal "Define array using macro"
@@ -1417,7 +1421,7 @@
   (test-assert "test numerical unequal RGB values"
     (not (= (rgb 1 2 3) (rgb 1 2 4))))
   (test-assert "equal RGB and real value"
-    (= (rgb 3 3 3) 3.0)) 
+    (= (rgb 3 3 3) 3.0))
   (test-assert "unequal RGB and real value"
     (not (= (rgb 3 3 4) 3.0)))
   (test-assert "equal real and RGB value"
