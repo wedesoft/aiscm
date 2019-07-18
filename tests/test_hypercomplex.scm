@@ -37,7 +37,11 @@
   (test-equal "hypercomplex equality"
     (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 7))
   (test-assert "unequal hypercomplex numbers"
-    (not (equal? (make-hypercomplex 2 3 6 7) (make-hypercomplex 2 3 5 7)))))
+    (not (equal? (make-hypercomplex 2 3 6 7) (make-hypercomplex 2 3 5 7))))
+  (test-assert "= hypercomplex numbers"
+    (= (make-hypercomplex 2 3 5 7) (make-hypercomplex 2.0 3.0 5.0 7.0)))
+  (test-assert "not = hypercomplex numbers"
+    (not (= (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 8)))))
 
 (test-group "display or write string"
   (test-equal "write hypercomplex number"

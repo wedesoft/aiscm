@@ -25,7 +25,7 @@
             <hypercomplex<>>
             <hypercomplex<float>>  <meta<hypercomplex<float>>>  <hypercomplex<float<single>>> <meta<hypercomplex<float<single>>>>
             <hypercomplex<double>> <meta<hypercomplex<double>>> <hypercomplex<float<double>>> <meta<hypercomplex<float<double>>>>)
-  #:re-export (real-part imag-part equal? + - abs conj * /))
+  #:re-export (real-part imag-part equal? + - abs conj * / =))
 
 
 (define-class <hypercomplex> ()
@@ -45,6 +45,12 @@
        (equal? (imag-part a) (imag-part b))
        (equal? (jmag-part a) (jmag-part b))
        (equal? (kmag-part a) (kmag-part b))))
+
+(define-method (= (a <hypercomplex>) (b <hypercomplex>))
+  (and (= (real-part a) (real-part b))
+       (= (imag-part a) (imag-part b))
+       (= (jmag-part a) (jmag-part b))
+       (= (kmag-part a) (kmag-part b))))
 
 (define-structure hypercomplex make-hypercomplex (real-part imag-part jmag-part kmag-part))
 (define-uniform-constructor hypercomplex)

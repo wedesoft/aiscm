@@ -1,7 +1,6 @@
 ## Ready
 
 * operations on hypercomplex values
-* = for hypercomplex
 * complex, hypercomplex exp
 * save Tensorflow model
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
