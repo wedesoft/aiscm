@@ -130,7 +130,13 @@
                                          (make-hypercomplex 1 3 5 7) 1))
   (test-equal "real plus hypercomplex"
     (make-hypercomplex 2.0 3.0 5.0 7.0) ((jit (list <float> (hypercomplex <float>)) +)
-                                         1 (make-hypercomplex 1 3 5 7))))
+                                         1 (make-hypercomplex 1 3 5 7)))
+  (test-equal "hypercomplex plus hypercomplex"
+    (make-hypercomplex 2 3 5 7) (+ (make-hypercomplex 1 2 3 4) (make-hypercomplex 1 1 2 3)))
+  (test-equal "hypercomplex plus complex"
+    (make-hypercomplex 2.0 3.0 5.0 7.0) (+ (make-hypercomplex 1.0 2.0 5.0 7.0) 1+i))
+  (test-equal "complex plus hypercomplex"
+    (make-hypercomplex 2.0 3.0 5.0 7.0) (+ 1+i (make-hypercomplex 1.0 2.0 5.0 7.0))))
 
 (test-group "hypercomplex minus"
   (test-equal "hypercomplex unary minus"
@@ -140,7 +146,9 @@
                                          (make-hypercomplex 3 5 8 9) (make-hypercomplex 1 2 3 2)))
   (test-equal "hypercomplex minus complex"
     (make-hypercomplex 2.0 3.0 5.0 7.0)  ((jit (list (hypercomplex <float>) (complex <float>)) -)
-                                          (make-hypercomplex 3 5 5 7) 1+2i)))
+                                          (make-hypercomplex 3 5 5 7) 1+2i))
+  (test-equal "hypercomplex minus hypercomplex"
+    (make-hypercomplex 2 3 5 7) (- (make-hypercomplex 3 5 8 9) (make-hypercomplex 1 2 3 2))))
 
 (define o (make-hypercomplex 1.0 0.0 0.0 0.0))
 (define no (make-hypercomplex -1.0 0.0 0.0 0.0))
