@@ -147,6 +147,8 @@
   (test-equal "hypercomplex minus complex"
     (make-hypercomplex 2.0 3.0 5.0 7.0)  ((jit (list (hypercomplex <float>) (complex <float>)) -)
                                           (make-hypercomplex 3 5 5 7) 1+2i))
+  (test-equal "hypercomplex unary minus"
+    (make-hypercomplex -2 -3 -5 -7) (- (make-hypercomplex 2 3 5 7)))
   (test-equal "hypercomplex minus hypercomplex"
     (make-hypercomplex 2 3 5 7) (- (make-hypercomplex 3 5 8 9) (make-hypercomplex 1 2 3 2))))
 
@@ -212,7 +214,11 @@
 (test-group "hypercomplex properties"
   (test-equal "hypercomplex absolute value"
     4.0 ((jit (list (hypercomplex <float>)) abs) (make-hypercomplex 2 2 -2 -2)))
+  (test-equal "hypercomplex absolute value"
+    4 (abs (make-hypercomplex 2 2 -2 -2)))
   (test-equal "hypercomplex conjugate"
-    (make-hypercomplex 2.0 -3.0 -5.0 7.0) ((jit (list (hypercomplex <float>)) conj) (make-hypercomplex 2 3 5 7))))
+    (make-hypercomplex 2.0 -3.0 -5.0 7.0) ((jit (list (hypercomplex <float>)) conj) (make-hypercomplex 2 3 5 7)))
+  (test-equal "hypercomplex conjugate"
+    (make-hypercomplex 2 -3 -5 7) (conj (make-hypercomplex 2 3 5 7))))
 
 (test-end "aiscm hypercomplex")

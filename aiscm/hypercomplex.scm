@@ -89,15 +89,20 @@
 
 (define-method (- (a <hypercomplex<>>))
   (hypercomplex (- (real-part a)) (- (imag-part a)) (- (jmag-part a)) (- (kmag-part a))))
+(define-method (- (a <hypercomplex>))
+  (make-hypercomplex (- (real-part a)) (- (imag-part a)) (- (jmag-part a)) (- (kmag-part a))))
 
-(define-method (abs (a <hypercomplex<>>))
+(define (hypercomplex-abs a)
   (sqrt (+ (* (real-part a) (real-part a))
            (* (imag-part a) (imag-part a))
            (* (jmag-part a) (jmag-part a))
            (* (kmag-part a) (kmag-part a)))))
+(define-method (abs (a <hypercomplex<>>)) (hypercomplex-abs a))
+(define-method (abs (a <hypercomplex>)) (hypercomplex-abs a))
 
-(define-method (conj (a <hypercomplex<>>))
-  (hypercomplex (real-part a) (- (imag-part a)) (- (jmag-part a)) (kmag-part a)))
+(define (hypercomplex-conj a) (list (real-part a) (- (imag-part a)) (- (jmag-part a)) (kmag-part a)))
+(define-method (conj (a <hypercomplex<>>)) (apply hypercomplex (hypercomplex-conj a)))
+(define-method (conj (a <hypercomplex>)) (apply make-hypercomplex (hypercomplex-conj a)))
 
 (define-syntax-rule (define-hypercomplex-binary-op mapping)
   (begin
