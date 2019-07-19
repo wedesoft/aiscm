@@ -51,6 +51,10 @@
        (= (imag-part a) (imag-part b))
        (= (jmag-part a) (jmag-part b))
        (= (kmag-part a) (kmag-part b))))
+(define-method (= (a <hypercomplex>) (b <complex>))
+  (= a (make-hypercomplex (real-part b) (imag-part b) 0 0)))
+(define-method (= (a <complex>) (b <hypercomplex>))
+  (= (make-hypercomplex (real-part a) (imag-part a) 0 0) b))
 
 (define-structure hypercomplex make-hypercomplex (real-part imag-part jmag-part kmag-part))
 (define-uniform-constructor hypercomplex)

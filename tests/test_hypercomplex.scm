@@ -41,7 +41,15 @@
   (test-assert "= hypercomplex numbers"
     (= (make-hypercomplex 2 3 5 7) (make-hypercomplex 2.0 3.0 5.0 7.0)))
   (test-assert "not = hypercomplex numbers"
-    (not (= (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 8)))))
+    (not (= (make-hypercomplex 2 3 5 7) (make-hypercomplex 2 3 5 8))))
+  (test-assert "= hypercomplex and complex number"
+    (= (make-hypercomplex 2 3 0 0) 2+3i))
+  (test-assert "not = hypercomplex and complex number"
+    (not (= (make-hypercomplex 2 3 5 7) 2+3i)))
+  (test-assert "= complex and hypercomplex number"
+    (= 2+3i (make-hypercomplex 2 3 0 0)))
+  (test-assert "not = complex and hypercomplex number"
+    (not (= 2+3i (make-hypercomplex 2 3 5 7)))))
 
 (test-group "display or write string"
   (test-equal "write hypercomplex number"

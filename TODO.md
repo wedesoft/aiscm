@@ -1,9 +1,9 @@
 ## Ready
 
 * operations on hypercomplex values
+* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * complex, hypercomplex exp
 * save Tensorflow model
-* OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * weighted histogram
 * Ghost in the Shell style animations (coins?)
 * Debian sid FFmpeg API changes
