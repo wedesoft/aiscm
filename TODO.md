@@ -1,5 +1,6 @@
 ## Ready
 
+* multiple C function calls in llvm-typed environment (e.g. >>)
 * hypercomplex binary /
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * complex, hypercomplex exp
@@ -21,7 +22,6 @@
 * Kinect bindings
 * FFTW3 bindings, replace FFT in audio spectrum example
 * Lucas-Kanade tracker
-* multiple C function calls in llvm-typed environment
 * how to link C functions in LLVM
 * RGB to object, object to RGB
 * runge kutta with state vector

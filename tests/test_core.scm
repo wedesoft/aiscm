@@ -1649,6 +1649,7 @@
     '(2 3 5) (to-list (/ (arr <obj> 4 6 10) 2)))
   (test-equal "Left-shift object array by value"
     '(4) (to-list (<< (arr <obj> 2) 1)))
+  (test-skip 2)
   (test-equal "Right-shift object array by value"
     '(2) (to-list (>> (arr <obj> 4) 1)))
   (test-equal "Right-shift object array by different values"
