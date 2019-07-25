@@ -1,6 +1,5 @@
 ## Ready
 
-* multiple C function calls in llvm-typed environment (e.g. >>)
 * hypercomplex binary /
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * complex, hypercomplex exp

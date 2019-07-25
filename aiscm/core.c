@@ -647,7 +647,10 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   struct llvm_function_t *function = get_llvm_function(scm_function);
   struct llvm_module_t *llvm = get_llvm(scm_llvm);
   char *function_name = scm_to_locale_string(scm_function_name);
-  LLVMValueRef function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
+  LLVMValueRef function_pointer;
+  function_pointer = LLVMGetNamedFunction(llvm->module, function_name);
+  if (!function_pointer)
+    function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
   free(function_name);
   // LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
   int n_values = scm_ilength(scm_values);
