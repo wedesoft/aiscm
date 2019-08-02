@@ -8,7 +8,7 @@ PANDOC_VARS = -Vlang=en -Vauthor-meta="Jan Wedekind" -Vdate-meta=$(DATE) \
 ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/aiscm/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0
 RUN = $(GUILE) -L $(top_builddir)
 
-doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html tensorflow.html opencv.html \
+doc_DATA = index.html installation.html assembler.html io.html array.html operation.html convolution.html \
 					 fubk.png scaled-pattern.png pavillion.jpg shuttle.jpg swap-channels.jpg rolled.jpg \
 					 cropped.jpg crop2d.jpg star-ferry.jpg inverted.jpg divided.jpg modulo.jpg \
 					 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg \
@@ -19,7 +19,7 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 					 buttondown.css
 
 EXTRA_DIST = includes.scm dependencies.sh \
-						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md tensorflow.md opencv.md \
+						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md \
 						 aiscm.gif debian.png ubuntu.png source.png package.png \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 						 buttondown.css aiscm.html5

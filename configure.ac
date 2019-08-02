@@ -2,8 +2,8 @@ dnl Run `./autogen.sh` to generate a configure script.
 dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.18.1], [jan@wedesoft.de])
-DATE=2018-11-06
+AC_INIT([aiscm], [0.19.1], [jan@wedesoft.de])
+DATE=2019-08-02
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
@@ -79,10 +79,6 @@ AC_SUBST(AVCODEC_LIBS)
 PKG_CHECK_MODULES(AVFORMAT, libavformat >= 54.20.4)
 AC_SUBST(AVFORMAT_CFLAGS)
 AC_SUBST(AVFORMAT_LIBS)
-
-PKG_CHECK_MODULES(OPENCV, opencv4 >= 4.1.0)
-AC_SUBST(OPENCV_CFLAGS)
-AC_SUBST(OPENCV_LIBS)
 
 old_LIBS="$LIBS"
 LIBS="$LIBS $AVFORMAT_LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
@@ -191,16 +187,6 @@ AC_TRY_LINK([#include <protobuf-c/protobuf-c.h>],
             [AC_MSG_ERROR([Could not locate Protocol Buffer library])])
 LIBS="$old_LIBS"
 
-old_LIBS="$LIBS"
-LIBS="$LIBS -ltensorflow"
-AC_MSG_CHECKING([for Tensorflow library])
-AC_TRY_LINK([#include <tensorflow/c/c_api.h>],
-            [TF_GetAllOpList()],
-            [AC_MSG_RESULT([yes])],
-            [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate Tensorflow C library])])
-LIBS="$old_LIBS"
-
 AC_PATH_XTRA
 if test "x$no_x" = xyes; then
   AC_MSG_ERROR([Could not find X11 libraries.])
@@ -256,9 +242,6 @@ prefix                               : $prefix
 debug mode                           : $enable_debug"
 
 AC_OUTPUT(Makefile
-          tensorflow/Makefile
-          tensorflow/core/Makefile
-          tensorflow/core/framework/Makefile
           aiscm/Makefile
           tests/Makefile
           tests/integration/Makefile

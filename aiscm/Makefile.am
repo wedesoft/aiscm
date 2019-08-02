@@ -2,32 +2,23 @@ SUFFIXES = .c .scm .go .in
 
 sitedir = $(GUILE_SITE)/aiscm
 site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm \
-						tensorflow.scm filters.scm opencv.scm hypercomplex.scm
+						filters.scm hypercomplex.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-samples.la libguile-aiscm-core.la libguile-aiscm-tensorflow.la libguile-aiscm-opencv.la
+												libguile-aiscm-samples.la libguile-aiscm-core.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
 noinst_HEADERS = ffmpeg-helpers.h util-helpers.h ringbuffer.h samples-helpers.h
 
-noinst_PROGRAMS = tensorflow-generate
-
-BUILT_SOURCES = tensorflow.scm
-
 cachedir = $(GUILE_CACHE)/aiscm
 cache_DATA = $(site_DATA:.scm=.go)
 
-EXTRA_DIST = $(site_DATA) aiscm.xpm tensorflow.scm.in
+EXTRA_DIST = $(site_DATA) aiscm.xpm
 
 AISCM_LDFLAGS = -no-undefined -module -shared -avoid-version
-
-tensorflow_generate_SOURCES = tensorflow-generate.c
-tensorflow_generate_CFLAGS = -I/usr/local/include/ClearSilver -I/usr/include/ClearSilver
-tensorflow_generate_LDFLAGS =
-tensorflow_generate_LDADD = ../tensorflow/core/framework/libtensorflow-ops.la -lneo_cs -lneo_utl -ltensorflow -lgc
 
 libguile_aiscm_tests_la_SOURCES = tests.c ffmpeg-helpers.c ffmpeg-helpers-tests.c ringbuffer.c ringbuffer-tests.c \
 																	util-helpers.c util-helpers-tests.c samples-helpers.c samples-helpers-tests.c
@@ -80,16 +71,6 @@ libguile_aiscm_core_la_CFLAGS = $(GUILE_CFLAGS) $(LLVM_CFLAGS)
 libguile_aiscm_core_la_LDFLAGS = $(AISCM_LDFLAGS) $(LLVM_LDFLAGS)
 libguile_aiscm_core_la_LIBADD = $(GUILE_LIBS) $(LLVM_LIBS)
 
-libguile_aiscm_tensorflow_la_SOURCES = tensorflow.c
-libguile_aiscm_tensorflow_la_CFLAGS = $(GUILE_CFLAGS)
-libguile_aiscm_tensorflow_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS) -ltensorflow
-
-libguile_aiscm_opencv_la_SOURCES = opencv.cpp
-libguile_aiscm_opencv_la_CXXFLAGS = $(GUILE_CFLAGS) $(OPENCV_CFLAGS)
-libguile_aiscm_opencv_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_opencv_la_LIBADD = $(GUILE_LIBS) $(OPENCV_LIBS)
-
 CLEANFILES = *.tmp *.go*
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -99,9 +80,6 @@ install-data-hook:
 
 .scm.go:
 	LD_LIBRARY_PATH=$(srcdir)/.libs:$(LD_LIBRARY_PATH) GUILE_AUTO_COMPILE=0 $(GUILE_TOOLS) compile -L$(top_builddir) -o $@ $<
-
-tensorflow.scm: tensorflow.scm.in tensorflow-generate
-	./tensorflow-generate $< > $@
 
 maintainer-clean-local:
 	rm -Rf .deps

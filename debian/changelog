@@ -1,3 +1,10 @@
+aiscm (0.19.1-1) unstable; urgency=low
+
+  - New upstream release
+  - Specify libomp-dev version. Closes: #933705
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri,  2 Aug 2019 20:51:31 +0100
+
 aiscm (0.18.1-1) unstable; urgency=low
 
   - New upstream release
