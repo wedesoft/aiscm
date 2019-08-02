@@ -160,16 +160,6 @@ AC_TRY_LINK([#include <gc.h>],
             [AC_MSG_ERROR([Could not locate Boehm Garbage Collector library])])
 LIBS="$old_LIBS"
 
-old_LIBS="$LIBS"
-LIBS="$LIBS -lprotobuf-c"
-AC_MSG_CHECKING([for Protocol Buffer library])
-AC_TRY_LINK([#include <protobuf-c/protobuf-c.h>],
-            [protobuf_c_message_unpack(NULL, NULL, 0, NULL)],
-            [AC_MSG_RESULT([yes])],
-            [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate Protocol Buffer library])])
-LIBS="$old_LIBS"
-
 AC_PATH_XTRA
 if test "x$no_x" = xyes; then
   AC_MSG_ERROR([Could not find X11 libraries.])
