@@ -29,6 +29,7 @@ RUN apt-get install -q -y llvm-7
 RUN apt-get install -q -y llvm-7-dev
 RUN apt-get install -q -y clang-7
 RUN apt-get install -q -y libomp5
+RUN apt-get install -q -y libomp-7-dev
 RUN mkdir -p /usr/src/aiscm
 WORKDIR /usr/src/aiscm
 ADD debian/control debian/control
