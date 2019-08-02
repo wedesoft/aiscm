@@ -151,19 +151,6 @@ AC_TRY_LINK([#include <X11/xpm.h>],
 LIBS="$old_LIBS"
 
 old_LIBS="$LIBS"
-old_CFLAGS="$CFLAGS"
-LIBS="$LIBS -lneo_utl"
-CFLAGS="$CFLAGS -I/usr/local/include/ClearSilver -I/usr/include/ClearSilver"
-AC_MSG_CHECKING([for ClearSilver library])
-AC_TRY_LINK([#include <ClearSilver.h>],
-            [hdf_init(NULL)],
-            [AC_MSG_RESULT([yes])],
-            [AC_MSG_RESULT([no])]
-            [AC_MSG_ERROR([Could not locate ClearSilver library])])
-LIBS="$old_LIBS"
-CFLAGS="$old_CFLAGS"
-
-old_LIBS="$LIBS"
 LIBS="$LIBS -lgc"
 AC_MSG_CHECKING([for Boehm Garbage Collector library])
 AC_TRY_LINK([#include <gc.h>],
