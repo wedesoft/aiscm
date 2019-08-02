@@ -28,10 +28,6 @@ AC_CHECK_PROG(CONVERT,convert,convert,no)
 if test "x$CONVERT" = xno; then
   AC_MSG_ERROR([Could not find 'convert' in path.])
 fi
-AC_CHECK_PROG(PROTOCC,protoc-c,protoc-c,no)
-if test "x$PROTOCC" = xno; then
-  AC_MSG_ERROR([Could not find 'protoc-c' in path.])
-fi
 AC_MSG_CHECKING([wether C compiler works])
 AC_TRY_LINK([],[],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([Failed to compile and link C program.])])
 AC_CHECK_HEADERS([assert.h stdio.h stdlib.h string.h])
