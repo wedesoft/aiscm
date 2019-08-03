@@ -1,3 +1,9 @@
+# aiscm (0.19.1)
+
+* hypercomplex numbers
+* histograms
+* masking/unmasking
+
 # aiscm (0.18.1)
 
 * Warps

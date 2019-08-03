@@ -1,10 +1,14 @@
 aiscm (0.19.1-1) unstable; urgency=low
 
   - New upstream release
-  - Specify libomp-dev version. Closes: #933705
+  - Specify libomp-dev version (libomp-7-dev). Closes: #933705
+  - Bumped Standards-Version to 4.4.0
+  - Bumped compatibility level to 12.
+  - do not run dwz on Guile object (*.go) files
 
  -- Jan Wedekind <jan@wedesoft.de>  Fri,  2 Aug 2019 20:51:31 +0100
 
+>>>>>>> master
 aiscm (0.18.1-1) unstable; urgency=low
 
   - New upstream release
