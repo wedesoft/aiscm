@@ -5,6 +5,7 @@ aiscm (0.19.1-1) unstable; urgency=low
   - Bumped Standards-Version to 4.4.0
   - Bumped compatibility level to 12.
   - do not run dwz on Guile object (*.go) files
+  - remove library-not-linked-against-libc override
 
  -- Jan Wedekind <jan@wedesoft.de>  Fri,  2 Aug 2019 20:51:31 +0100
 
