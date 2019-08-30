@@ -77,9 +77,7 @@
 
 (define (xor a b) (not (eq? a b)))
 (define (attach lst x) (reverse (cons x (reverse lst))))
-(define (index-of a b)
-  (let [(tail (member a (reverse b)))]
-    (and tail (length (cdr tail)))))
+(define (index-of a b) (list-index (cut equal? a <>) b))
 
 (define (all-but-last lst)
   "Return all but last element of LST."
