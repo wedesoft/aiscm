@@ -20,13 +20,13 @@ doc_DATA = index.html installation.html assembler.html io.html array.html operat
 
 EXTRA_DIST = includes.scm dependencies.sh \
 						 index.md.in installation.md assembler.md io.md array.md operation.md convolution.md \
-						 aiscm.gif debian.png ubuntu.png source.png package.png \
+						 aiscm.gif debian.png ubuntu.png source.png package.png mirror.jpg \
 						 fubk-colours.png sintel.jpg v4l2.jpg gplv3.png travis.png mnist.jpg \
 						 buttondown.css aiscm.html5
 
 CLEANFILES = fubk.png pavillion.jpg swap-channels.jpg pattern.png scaled-pattern.png rolled.jpg \
 						 crop2d.jpg cropped.jpg divided.jpg inverted.jpg modulo.jpg roberts-cross.jpg star-ferry.jpg \
-						 shuttle.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg dilated.jpg pseudo.jpg mirror.jpg \
+						 shuttle.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg dilated.jpg pseudo.jpg \
 						 gauss-blur.jpg gauss-gradient.jpg harris-stephens.jpg circle.png mandelbrot.png \
 						 *.html *.tmp
 
@@ -95,8 +95,9 @@ dilated.jpg: ../tests/integration/dilate.scm star-ferry.jpg
 pseudo.jpg: ../tests/integration/pseudo.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<
 
-mirror.jpg: ../tests/integration/mirror.scm star-ferry.jpg
-	$(ENVIRONMENT) $(RUN) $<
+# Crashes on Debian build server
+#mirror.jpg: ../tests/integration/mirror.scm star-ferry.jpg
+#	$(ENVIRONMENT) $(RUN) $<
 
 gauss-blur.jpg: ../tests/integration/gauss_blur.scm star-ferry.jpg
 	$(ENVIRONMENT) $(RUN) $<

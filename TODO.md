@@ -1,6 +1,5 @@
 ## Ready
 
-* hypercomplex binary /
 * OpenGL vertex array object example, RGB arrays, vertex arrays, texture images
 * complex, hypercomplex exp
 * save Tensorflow model
