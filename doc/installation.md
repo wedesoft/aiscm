@@ -7,7 +7,9 @@
 There are AMD64 binaries for
 [![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10).
 
-To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*. To do this, paste the following lines into your terminal:
+To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*.
+Note that the Debian package does not include OpenCV and Tensorflow bindings.
+To do this, paste the following lines into your terminal:
 
 ```
 echo "deb https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/aiscm.list
@@ -43,6 +45,7 @@ You need to install the dependencies:
 ```
 
 You also need
+
 * a recent version of Protobuf-C library and compiler.
 * the Tensorflow C library
 * the OpenCV library
