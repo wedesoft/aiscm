@@ -30,10 +30,10 @@ echo "deb-src https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sud
 
 ### Get the source code
 
-You can download the latest release like this:
+You can download the latest version of the code like this:
 
 ```
-wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download_url | cut -d '"' -f 4`
+git clone https://github.com/wedesoft/aiscm.git
 ```
 
 ### Install dependencies
@@ -88,20 +88,14 @@ cd ../..
 
 ### Build AIscm
 
-The software then can be unpacked and installed as follows:
+The software then can be build and installed as follows:
 
 ```
-tar xJf aiscm-*.tar.xz
-cd aiscm-*
-./configure
-make -j
-sudo make install
-```
-
-If you have cloned the Git repository instead of downloading a release, you need to first create a configure script:
-
-```
+cd aiscm
 ./autogen.sh
+./configure
+make -j `nproc`
+sudo make install
 ```
 
 ## Recommendations
