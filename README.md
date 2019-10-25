@@ -19,7 +19,7 @@ Performance is achieved by using the LLVM JIT compiler.
 
 See doc/installation.md or [website][1] for installation instructions.
 
-### Installation using Docker
+### Creating a Docker container
 
 ```
 make -f Makefile.docker run
