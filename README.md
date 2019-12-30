@@ -15,89 +15,24 @@ Performance is achieved by using the LLVM JIT compiler.
 
 ![AIscm](doc/aiscm.gif "AIscm")
 
-## Download
+## Download and installation
 
-You can download the current state of the software like this:
+See doc/installation.md or [website][1] for installation instructions.
 
-```Shell
-git clone git@github.com:wedesoft/aiscm.git
-cd aiscm
+### Creating a Docker container
+
 ```
-
-## Dependencies
-
-You can install the dependencies as follows:
-
-```Shell
-sudo apt-get install -q --yes build-essential autoconf automake libtool devscripts equivs
-sudo mk-build-deps --install --remove --tool 'apt-get -q --yes' debian/control
-```
-
-You may install OpenCV (higher than 4.1.0) as follows:
-
-```Shell
-git clone https://github.com/opencv/opencv.git
-git clone https://github.com/opencv/opencv_contrib.git
-cd opencv
-mkdir build
-cd build
-cmake -DBUILD_EXAMPLES=ON -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules ../
-make -j
-sudo make install
-```
-
-NOTE: ```-DBUILD_EXAMPLES=ON``` is the easiest way to install Aruco.
-
-NOTE: ```-DOPENCV_GENERATE_PKGCONFIG=YES``` is required by pkg-config, since AIscm detects dependencies with pkg-config.
-
-You may install the latest TensorFlow as follows:
-
-https://www.tensorflow.org/install/lang_c
-
-## Installation
-
-Finally you can install the software as follows
-
-```Shell
-./autogen.sh
-./configure
-make -j
-make check -j
-sudo make install
-cd ..
-```
-
-### Installation using Docker
-
-Download the `.tar.xz` and the `.tar.xz.asc` files from the
-lastest [release](https://github.com/wedesoft/aiscm/releases) into the root folder of the cloned repository, then rename
-the files to `aiscm.tar.gz` and `aiscm.tar.gz.asc`, respectively.
-
-Build the Docker image using the command below, where the second line just display some minimal information about the
-image. Note that the Docker build will take *some* time.
-
-```Shell
-docker build --tag=aiscm .
-docker image ls aiscm
-```
-
-Now can can start a shell within your running container using:
-
-```Shell
-docker run -w /usr/src/aiscm/pkg/aiscm-{release-number} -it aiscm /bin/bash
-# e.g.: docker run -w /usr/src/aiscm/pkg/aiscm-0.18.1 -it aiscm /bin/bash
+make -f Makefile.docker run
 ```
 
 Within the `tests` folder, you'll find that all unit tests have already been run; you might also have seen the
-respective log output during `docker build`. Integration tests are not yet completely running within Docker, but you can
-e.g. run one using:
+respective log output during the Docker build.
+Integration tests are not yet completely running within Docker, but you can e.g. run one using:
 
 ```Shell
 cd tests/integration/
 make 2d_array.tmp
 ```
-
-See below for more information on running the tests.
 
 ## Run tests
 

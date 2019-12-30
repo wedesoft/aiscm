@@ -7,7 +7,9 @@
 There are AMD64 binaries for
 [![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10).
 
-To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*. To do this, paste the following lines into your terminal:
+To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*.
+Note that the Debian package does not include OpenCV and Tensorflow bindings.
+To do this, paste the following lines into your terminal:
 
 ```
 echo "deb https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/aiscm.list
@@ -28,10 +30,10 @@ echo "deb-src https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sud
 
 ### Get the source code
 
-You can download the latest release like this:
+You can download the latest version of the code like this:
 
 ```
-wget `curl -s https://api.github.com/repos/wedesoft/aiscm/releases/latest | grep download_url | cut -d '"' -f 4`
+git clone https://github.com/wedesoft/aiscm.git
 ```
 
 ### Install dependencies
@@ -43,19 +45,56 @@ You need to install the dependencies:
 ```
 
 You also need
-* a recent version of Protobuf-C library and compiler.
-* the Tensorflow C library
-* the OpenCV library
+
+A recent version of Protobuf-C library and compiler:
+
+```
+wget -q https://github.com/protocolbuffers/protobuf/releases/download/v3.10.0/protobuf-all-3.10.0.tar.gz
+wget -q https://github.com/protobuf-c/protobuf-c/releases/download/v1.3.2/protobuf-c-1.3.2.tar.gz
+tar xzf protobuf-all-3.10.0.tar.gz
+tar xzf protobuf-c-1.3.2.tar.gz
+cd protobuf-3.10.0
+./configure
+make -j `nproc`
+sudo make install
+cd ..
+cd protobuf-c-1.3.2
+./configure
+make -j `nproc`
+sudo make install
+cd ..
+```
+
+
+The Tensorflow C library (install the GPU version instead if you have a GPU):
+
+```
+wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
+sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
+```
+
+The OpenCV library:
+
+```
+wget -q https://github.com/opencv/opencv/archive/4.1.2.tar.gz -O opencv-4.1.2.tar.gz
+wget -q https://github.com/opencv/opencv_contrib/archive/4.1.2.tar.gz -O opencv_contrib-4.1.2.tar.gz
+mkdir opencv-4.1.2/build
+cd opencv-4.1.2/build
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.1.2/modules ..
+make -j `nproc`
+sudo make install
+cd ../..
+```
 
 ### Build AIscm
 
-The software then can be unpacked and installed as follows:
+The software then can be build and installed as follows:
 
 ```
-tar xJf aiscm-*.tar.xz
-cd aiscm-*
+cd aiscm
+./autogen.sh
 ./configure
-make -j
+make -j `nproc`
 sudo make install
 ```
 
