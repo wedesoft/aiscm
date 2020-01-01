@@ -35,7 +35,7 @@ AC_ARG_WITH([llvm],
 		want_llvm="no"
     elif test "$withval" = "yes"; then
         want_llvm="yes"
-        ac_llvm_config_path=`which llvm-config-7`
+        ac_llvm_config_path=`which llvm-config-9`
     else
 	    want_llvm="yes"
         ac_llvm_config_path="$withval"
@@ -45,7 +45,7 @@ AC_ARG_WITH([llvm],
 
 	succeeded=no
 	if test -z "$ac_llvm_config_path"; then
-		ac_llvm_config_path=`which llvm-config-7`
+		ac_llvm_config_path=`which llvm-config-9`
 	fi
 
 	if test "x$want_llvm" = "xyes"; then
@@ -88,7 +88,7 @@ AC_ARG_WITH([llvm],
 	fi
 
 		if test "$succeeded" != "yes" ; then
-			AC_MSG_ERROR([[We could not detect the llvm libraries make sure that llvm-config-7 is on your path or specified by --with-llvm.]])
+			AC_MSG_ERROR([[We could not detect the llvm libraries make sure that llvm-config-9 is on your path or specified by --with-llvm.]])
 		else
 			AC_SUBST(LLVM_CFLAGS)
 			AC_SUBST(LLVM_LDFLAGS)
