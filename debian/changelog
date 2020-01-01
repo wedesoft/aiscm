@@ -1,6 +1,8 @@
 aiscm (0.20.1-1) unstable; urgency=low
 
   - Bumped Standards-Version to 4.4.1
+  - Replaced debian/compat with dependency in debian/control
+  - Add "Rules-Requires-Root: no" to debian/control
   - Update to LLVM version 9. Closes: #947434
 
  -- Jan Wedekind <jan@wedesoft.de>  Sat, 28 Dec 2019 22:54:36 +0000
