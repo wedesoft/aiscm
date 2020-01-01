@@ -16,11 +16,11 @@ apt-get install -q -y libavutil-dev
 apt-get install -q -y libavcodec-dev
 apt-get install -q -y libavformat-dev
 apt-get install -q -y libxpm-dev
-apt-get install -q -y llvm-7
-apt-get install -q -y llvm-7-dev
-apt-get install -q -y clang-7
-apt-get install -q -y libomp5-7
-apt-get install -q -y libomp-7-dev
+apt-get install -q -y llvm-9
+apt-get install -q -y llvm-9-dev
+apt-get install -q -y clang-9
+apt-get install -q -y libomp5-9
+apt-get install -q -y libomp-9-dev
 apt-get install -q -y clearsilver-dev
 apt-get install -q -y cmake
 apt-get install -q -y wget
