@@ -67,7 +67,7 @@ AC_ARG_WITH([llvm],
 			LIBS="$LIBS $LLVM_LIBS"
 			export LIBS
 
-			AC_CACHE_CHECK(can compile with and link with llvm-c 7 ([$1]),
+			AC_CACHE_CHECK(can compile with and link with llvm-c 9 ([$1]),
 						   ax_cv_llvm,
 		[AC_LINK_IFELSE([AC_LANG_PROGRAM([[@%:@include <llvm-c/ExecutionEngine.h>
 													]],
