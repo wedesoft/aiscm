@@ -20,6 +20,7 @@
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
 #include <llvm-c/Transforms/Scalar.h>
+#include <llvm-c/Transforms/Utils.h>
 #include "util-helpers.h"
 
 
