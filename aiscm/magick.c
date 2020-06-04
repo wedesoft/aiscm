@@ -54,6 +54,7 @@ SCM magick_read_image(SCM scm_file_name)
                           scm_from_int(size));
     };
     DestroyImage(image);
+    DestroyImageList(images);
   };
   SCM scm_reason = exception_info->severity < ErrorException ?
     SCM_UNDEFINED : scm_from_locale_string(exception_info->reason);
