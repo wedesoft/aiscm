@@ -6,6 +6,7 @@ aiscm (0.20.1-1) unstable; urgency=low
   - Update to LLVM version 9. Closes: #947434
 
  -- Jan Wedekind <jan@wedesoft.de>  Sat, 28 Dec 2019 22:54:36 +0000
+
 aiscm (0.19.2-1) unstable; urgency=low
 
   - Do not generate mirror.jpg. Closes: #941779
