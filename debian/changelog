@@ -1,6 +1,10 @@
 aiscm (0.21.1-1) unstable; urgency=low
 
   - Update dependency to guile-3.0. Closes: #969701
+  - Bumped Standards-Version to 4.5.0
+  - Set debhelper-compat version to 13
+  - Removed "DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed"
+  - Add VCS fields
 
  -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 Sep 2020 10:27:54 +0100
 
