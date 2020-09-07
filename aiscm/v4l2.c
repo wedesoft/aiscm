@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
