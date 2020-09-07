@@ -3,7 +3,7 @@ apt-get install -q -y build-essential
 apt-get install -q -y autoconf automake libtool
 apt-get install -q -y devscripts equivs
 apt-get install -q -y linux-libc-dev
-apt-get install -q -y guile-2.2-dev
+apt-get install -q -y guile-3.0-dev
 apt-get install -q -y libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev
 apt-get install -q -y gettext
 apt-get install -q -y pandoc

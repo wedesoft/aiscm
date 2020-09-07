@@ -12,7 +12,7 @@ RUN apt-get install -q -y build-essential
 RUN apt-get install -q -y autoconf automake libtool
 RUN apt-get install -q -y devscripts equivs
 RUN apt-get install -q -y linux-libc-dev
-RUN apt-get install -q -y guile-2.2-dev
+RUN apt-get install -q -y guile-3.0-dev
 RUN apt-get install -q -y libx11-dev libxext-dev libxv-dev libxmu-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev
 RUN apt-get install -q -y gettext
 RUN apt-get install -q -y pandoc
