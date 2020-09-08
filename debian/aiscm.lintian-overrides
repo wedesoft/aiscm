@@ -1,13 +1,3 @@
 # Checked with "blhc" that all binaries are compiled with hardening flags, however
 # "libguile-aiscm-v4l2.so" still gets flagged.
 hardening-no-fortify-functions
-
-# Guile-2.2 object files (*.go) mistakenly identified as binary object.
-# `strip' does not recognize Guile-2.2 objects.
-unstripped-binary-or-object
-
-# Guile-2.2 object files (*.go) mistakenly identified as shared libraries.
-shared-lib-without-dependency-information
-
-# Guile-2.2 object files mistakenly (*.go) identified as binaries from another architecture.
-binary-from-other-architecture
