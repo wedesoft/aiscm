@@ -5,6 +5,9 @@ aiscm (0.21.1-1) unstable; urgency=low
   - Set debhelper-compat version to 13
   - Removed "DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed"
   - Add VCS fields
+  - Removed override unstripped-binary-or-object
+  - Removed override shared-lib-without-dependency-information
+  - Removed override binary-from-other-architecture
 
  -- Jan Wedekind <jan@wedesoft.de>  Mon,  7 Sep 2020 10:27:54 +0100
 
