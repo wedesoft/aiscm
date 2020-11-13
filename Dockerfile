@@ -25,11 +25,11 @@ RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
 RUN apt-get install -q -y libavformat-dev
 RUN apt-get install -q -y libxpm-dev
-RUN apt-get install -q -y llvm-9
-RUN apt-get install -q -y llvm-9-dev
-RUN apt-get install -q -y clang-9
-RUN apt-get install -q -y libomp5-9
-RUN apt-get install -q -y libomp-9-dev
+RUN apt-get install -q -y llvm-11
+RUN apt-get install -q -y llvm-11-dev
+RUN apt-get install -q -y clang-11
+RUN apt-get install -q -y libomp5-11
+RUN apt-get install -q -y libomp-11-dev
 RUN apt-get install -q -y clearsilver-dev
 RUN apt-get install -q -y cmake
 RUN apt-get install -q -y wget
