@@ -1,3 +1,9 @@
+aiscm (0.22.1-1) unstable; urgency=low
+
+  - New upstream release
+
+ -- Jan Wedekind <jan@wedesoft.de>  Fri, 13 Nov 2020 21:26:24 +0000
+
 aiscm (0.21.1-1) unstable; urgency=low
 
   - Update dependency to guile-3.0. Closes: #969701
