@@ -1,6 +1,7 @@
 aiscm (0.22.1-1) unstable; urgency=low
 
-  - New upstream release
+  - Update dependency to on llvm-toolchain-11. Closes: #974803
+  - Update LLVM packages to version 11. Closes: #974817
 
  -- Jan Wedekind <jan@wedesoft.de>  Fri, 13 Nov 2020 21:26:24 +0000
 
