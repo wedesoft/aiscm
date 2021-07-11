@@ -78,6 +78,8 @@ The OpenCV library:
 ```
 wget -q https://github.com/opencv/opencv/archive/4.1.2.tar.gz -O opencv-4.1.2.tar.gz
 wget -q https://github.com/opencv/opencv_contrib/archive/4.1.2.tar.gz -O opencv_contrib-4.1.2.tar.gz
+tar xzf opencv-4.1.2.tar.gz
+tar xzf opencv_contrib-4.1.2.tar.gz
 mkdir opencv-4.1.2/build
 cd opencv-4.1.2/build
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.1.2/modules ..
