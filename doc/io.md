@@ -125,12 +125,6 @@ The following example records 3 seconds of audio data and then plays it back.
 @../tests/integration/pulse_in.scm@
 ```
 
-One can display a block-wise audio spectrum using the *Tensorflow* Fourier transform.
-
-```Scheme
-@../tests/integration/spectrum.scm@
-```
-
 ## Video files
 
 ### Input
