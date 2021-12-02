@@ -5,7 +5,7 @@ SCM_LOG_COMPILE = $(GUILE) -L $(top_builddir) -L $(srcdir)
 INTEGRATION_RUN = $(TESTS_ENVIRONMENT) $(SCM_LOG_COMPILE)
 
 INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.scm \
-										camera_mode.scm grab.scm integer_type.scm pulse_in.scm pulse_out.scm spectrum.scm \
+										camera_mode.scm grab.scm integer_type.scm pulse_in.scm pulse_out.scm \
 										read_image.scm roll_image.scm roll_unroll.scm swap_channels.scm typed_sequence.scm \
 										type_matching.scm virtual_arrays.scm virtual_registers.scm write_image.scm \
 										xorg_image_list.scm xorg_video_list.scm xorg_video.scm xorg_window.scm \
@@ -17,10 +17,9 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										conway.scm show_gray.scm sharpen.scm xorg_scale.scm xorg_scale_video.scm \
 										xorg_scale_image.scm xorg_scale_list.scm xorg_fullscreen.scm xorg_fullscreen_video.scm \
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
-										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm \
+										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm \
 										gauss_blur.scm gauss_gradient.scm harris_stephens.scm zoom.scm \
-										components.scm charuco-board.scm charuco.scm calibrate_camera.scm \
-										draw-markers.scm draw-axes.scm circle.scm mandelbrot.scm
+										circle.scm mandelbrot.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg letters.png \
 						 speech-record.scm speech-background.scm speech-train.scm speech-run.scm
