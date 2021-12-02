@@ -298,7 +298,7 @@ SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
   };
 
   LLVMPassManagerRef pass_manager = LLVMCreatePassManager();
-  LLVMAddConstantPropagationPass(pass_manager);
+  // LLVMAddConstantPropagationPass(pass_manager); // undefined in LLVM 13
   LLVMAddInstructionCombiningPass(pass_manager);
   LLVMAddPromoteMemoryToRegisterPass(pass_manager);
   LLVMAddGVNPass(pass_manager);
