@@ -3,7 +3,7 @@
 export DH_VERBOSE = 1
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-export CC = clang-11
+export CC = clang-13
 
 %:
 	dh $@

@@ -5,7 +5,7 @@
 FROM debian:sid
 MAINTAINER Jan Wedekind <jan@wedesoft.de>
 RUN echo "deb http://httpredir.debian.org/debian unstable main" > /etc/apt/sources.list
-RUN apt-get update  # Forced update Mo 7. Sep 10:29:43 BST 2020
+RUN apt-get update  # Forced update Do 2. Dez 14:48:32 GMT 2021
 RUN apt-get -q -y dist-upgrade
 RUN apt-get install -q -y apt-utils
 RUN apt-get install -q -y build-essential
@@ -25,11 +25,11 @@ RUN apt-get install -q -y libavutil-dev
 RUN apt-get install -q -y libavcodec-dev
 RUN apt-get install -q -y libavformat-dev
 RUN apt-get install -q -y libxpm-dev
-RUN apt-get install -q -y llvm-11
-RUN apt-get install -q -y llvm-11-dev
-RUN apt-get install -q -y clang-11
-RUN apt-get install -q -y libomp5-11
-RUN apt-get install -q -y libomp-11-dev
+RUN apt-get install -q -y llvm-13
+RUN apt-get install -q -y llvm-13-dev
+RUN apt-get install -q -y clang-13
+RUN apt-get install -q -y libomp5-13
+RUN apt-get install -q -y libomp-13-dev
 RUN apt-get install -q -y clearsilver-dev
 RUN apt-get install -q -y cmake
 RUN apt-get install -q -y wget

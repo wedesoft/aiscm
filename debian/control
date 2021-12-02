@@ -3,10 +3,10 @@ Maintainer: Jan Wedekind <jan@wedesoft.de>
 Section: lisp
 Priority: optional
 Homepage: http://wedesoft.github.io/aiscm/
-Standards-Version: 4.5.0
+Standards-Version: 4.6.0
 Vcs-Git: https://github.com/wedesoft/aiscm.git
 Vcs-Browser: https://github.com/wedesoft/aiscm
-Build-Depends: guile-3.0-dev, clang-11, llvm-11-dev, llvm-11, libomp-11-dev, linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswresample-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper-compat (= 13)
+Build-Depends: guile-3.0-dev, clang-13, llvm-13-dev, llvm-13, libomp-13-dev, linux-libc-dev, gettext, libmjpegtools-dev, imagemagick, libmagickcore-dev, libpulse-dev, libjpeg-dev, libx11-dev, libxext-dev, libxv-dev, libxmu-dev, libxi-dev, libxpm-dev, libglu1-mesa-dev, libgl1-mesa-dev, libswresample-dev, libswscale-dev, libavformat-dev, libavcodec-dev, libavutil-dev, pandoc, debhelper-compat (= 13)
 Rules-Requires-Root: no
 
 Package: aiscm
