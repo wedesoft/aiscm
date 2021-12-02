@@ -1,3 +1,10 @@
+aiscm (0.23.1-1) unstable; urgency=low
+
+  - Update dependency to on llvm-toolchain-13. Closes: #1000939
+  - Bumped Standards-Version to 4.6.0
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu,  2 Dec 2021 14:55:00 +0000
+
 aiscm (0.22.1-1) unstable; urgency=low
 
   - Update dependency to on llvm-toolchain-11. Closes: #974803
