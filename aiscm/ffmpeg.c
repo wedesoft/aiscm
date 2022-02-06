@@ -60,8 +60,8 @@ static scm_t_bits ffmpeg_tag;
 
 struct ffmpeg_t {
   AVFormatContext *fmt_ctx;
-  AVCodecContext *video_codec_ctx;
-  AVCodecContext *audio_codec_ctx;
+  struct AVCodecContext *video_codec_ctx;
+  struct AVCodecContext *audio_codec_ctx;
   int video_stream_idx;
   int audio_stream_idx;
   long output_video_pts;
@@ -94,14 +94,14 @@ static struct ffmpeg_t *get_self(SCM scm_self)
   return get_self_no_check(scm_self);
 }
 
-static AVCodecContext *video_codec_ctx(struct ffmpeg_t *self)
+static struct AVCodecContext *video_codec_ctx(struct ffmpeg_t *self)
 {
   if (!self->video_codec_ctx)
     scm_misc_error("video-codec-ctx", "File format does not have a video stream", SCM_EOL);
   return self->video_codec_ctx;
 }
 
-static AVCodecContext *audio_codec_ctx(struct ffmpeg_t *self)
+static struct AVCodecContext *audio_codec_ctx(struct ffmpeg_t *self)
 {
   if (!self->audio_codec_ctx)
     scm_misc_error("audio-codec-ctx", "File format does not have an audio stream", SCM_EOL);
@@ -127,7 +127,7 @@ static char is_input_context(struct ffmpeg_t *self)
   return self->fmt_ctx->iformat != NULL;
 }
 
-static void write_frame(struct ffmpeg_t *self, AVPacket *packet, AVCodecContext *codec, AVStream *stream, int stream_idx)
+static void write_frame(struct ffmpeg_t *self, AVPacket *packet, struct AVCodecContext *codec, AVStream *stream, int stream_idx)
 {
 #ifdef HAVE_AV_PACKET_RESCALE_TS
   av_packet_rescale_ts(packet, codec->time_base, stream->time_base);
@@ -144,7 +144,7 @@ static void write_frame(struct ffmpeg_t *self, AVPacket *packet, AVCodecContext 
 
 static int encode_video(struct ffmpeg_t *self, AVFrame *video_frame)
 {
-  AVCodecContext *codec = video_codec_ctx(self);
+  struct AVCodecContext *codec = video_codec_ctx(self);
 
   // Initialise data packet
   AVPacket pkt = { 0 };
@@ -166,7 +166,7 @@ static int encode_video(struct ffmpeg_t *self, AVFrame *video_frame)
 
 static int encode_audio(struct ffmpeg_t *self, AVFrame *audio_frame)
 {
-  AVCodecContext *codec = audio_codec_ctx(self);
+  struct AVCodecContext *codec = audio_codec_ctx(self);
 
   // Initialise data packet
   AVPacket pkt = { 0 };
@@ -234,12 +234,12 @@ SCM ffmpeg_destroy(SCM scm_self)
   };
 
   if (self->audio_codec_ctx) {
-    avcodec_close(self->audio_codec_ctx);
+    avcodec_free_context(&self->audio_codec_ctx);
     self->audio_codec_ctx = NULL;
   };
 
   if (self->video_codec_ctx) {
-    avcodec_close(self->video_codec_ctx);
+    avcodec_free_context(&self->video_codec_ctx);
     self->video_codec_ctx = NULL;
   };
 
@@ -267,7 +267,7 @@ size_t free_ffmpeg(SCM scm_self)
   return 0;
 }
 
-static AVCodecContext *open_codec(SCM scm_self, AVCodecContext *codec_ctx, AVCodec *codec,
+static struct AVCodecContext *open_codec(SCM scm_self, AVCodecContext *codec_ctx, AVCodec *codec,
                                   const char *media_type, SCM scm_file_name)
 {
   int err = avcodec_open2(codec_ctx, codec, NULL);
@@ -279,17 +279,25 @@ static AVCodecContext *open_codec(SCM scm_self, AVCodecContext *codec_ctx, AVCod
   return codec_ctx;
 }
 
-static AVCodecContext *open_decoder(SCM scm_self, SCM scm_file_name,
+static struct AVCodecContext *open_decoder(SCM scm_self, SCM scm_file_name,
                                     AVStream *stream, const char *media_type)
 {
-  AVCodecContext *dec_ctx = stream->codec;
-  AVCodec *decoder = avcodec_find_decoder(dec_ctx->codec_id);
-  if (!decoder) {
+  struct AVCodec *dec = avcodec_find_decoder(stream->codecpar->codec_id);
+  if (!dec) {
     ffmpeg_destroy(scm_self);
-    scm_misc_error("open-codec", "Failed to find ~a codec for file '~a'",
+    scm_misc_error("open-codec", "Failed to find ~a decoder for file '~a'",
                    scm_list_2(scm_from_locale_string(media_type), scm_file_name));
   };
-  return open_codec(scm_self, dec_ctx, decoder, media_type, scm_file_name);
+  struct AVCodecContext *dec_ctx = avcodec_alloc_context3(dec);
+  if (!dec_ctx) {
+    ffmpeg_destroy(scm_self);
+    scm_misc_error("open-codec", "Failed to allocate codec context for file '~a'",
+                   scm_list_1(scm_file_name));
+  };
+  avcodec_parameters_to_context(dec_ctx, stream->codecpar);
+  AVDictionary *opts = NULL;
+  avcodec_open2(dec_ctx, dec, &opts);
+  return dec_ctx;
 }
 
 static AVFrame *allocate_frame(SCM scm_self)
@@ -387,11 +395,11 @@ static AVStream *open_output_stream(SCM scm_self, AVCodec *encoder, int *stream_
   return retval;
 }
 
-static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum AVCodecID video_codec_id,
+static struct AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum AVCodecID video_codec_id,
     SCM scm_video_bit_rate, SCM scm_shape, SCM scm_frame_rate, SCM scm_aspect_ratio)
 {
   // Get codec context
-  AVCodecContext *retval = video_stream->codec;
+  struct AVCodecContext *retval = video_stream->codec;
 
   // Set codec id
   retval->codec_id = video_codec_id;
@@ -427,11 +435,11 @@ static AVCodecContext *configure_output_video_codec(AVStream *video_stream, enum
   return retval;
 }
 
-static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audio_stream, enum AVCodecID audio_codec_id,
+static struct AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audio_stream, enum AVCodecID audio_codec_id,
     SCM scm_select_rate, SCM scm_channels, SCM scm_audio_bit_rate, SCM scm_select_format)
 {
   // Get codec context
-  AVCodecContext *retval = audio_stream->codec;
+  struct AVCodecContext *retval = audio_stream->codec;
   const AVCodec *codec = retval->codec;
 
   // Select sample format
@@ -471,7 +479,7 @@ static AVCodecContext *configure_output_audio_codec(SCM scm_self, AVStream *audi
   return retval;
 }
 
-static AVFrame *allocate_output_video_frame(SCM scm_self, AVCodecContext *video_context)
+static AVFrame *allocate_output_video_frame(SCM scm_self, struct AVCodecContext *video_context)
 {
   AVFrame *retval = allocate_frame(scm_self);
   int width = video_context->width;
@@ -498,7 +506,7 @@ static AVFrame *allocate_output_video_frame(SCM scm_self, AVCodecContext *video_
   return retval;
 }
 
-static AVFrame *allocate_output_audio_frame(SCM scm_self, AVCodecContext *audio_codec, enum AVSampleFormat sample_fmt)
+static AVFrame *allocate_output_audio_frame(SCM scm_self, struct AVCodecContext *audio_codec, enum AVSampleFormat sample_fmt)
 {
   AVFrame *retval = allocate_frame(scm_self);
   retval->format = sample_fmt;
@@ -683,7 +691,7 @@ SCM ffmpeg_have_audio(SCM scm_self)
 
 SCM ffmpeg_shape(SCM scm_self)
 {
-  AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
+  struct AVCodecContext *ctx = video_codec_ctx(get_self(scm_self));
   return scm_list_2(scm_from_int(ctx->height), scm_from_int(ctx->width));
 }
 
@@ -975,7 +983,7 @@ SCM ffmpeg_fetch_audio(SCM scm_self, SCM scm_data, SCM scm_bytes)
 SCM ffmpeg_encode_audio(SCM scm_self)
 {
   struct ffmpeg_t *self = get_self(scm_self);
-  AVCodecContext *codec = audio_codec_ctx(self);
+  struct AVCodecContext *codec = audio_codec_ctx(self);
   AVFrame *audio_frame = self->audio_target_frame;
   audio_frame->pts = av_rescale_q(self->samples_count, (AVRational){1, codec->sample_rate}, codec->time_base);
   self->samples_count += audio_frame->nb_samples;
