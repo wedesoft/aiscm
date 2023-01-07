@@ -1,5 +1,5 @@
 Source: aiscm
-Maintainer: Jan Wedekind <jan@wedesoft.de>
+Maintainer: Debian QA Group <packages@qa.debian.org>
 Section: lisp
 Priority: optional
 Homepage: http://wedesoft.github.io/aiscm/

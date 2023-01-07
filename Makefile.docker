@@ -8,6 +8,7 @@ OPTS?=
 VERSION=$(shell grep AC_INIT configure.ac | sed -e "s/.*\[\([0-9\.]*\)\].*/\1/")
 PACKAGE=aiscm_$(shell dpkg-parsechangelog --show-field Version)
 XSOCK=/tmp/.X11-unix
+GPGKEY=6F8E1FCF
 
 all: package
 	cd apt && reprepro -S lisp -P optional includedeb $(CODENAME) ../pkg/$(PACKAGE)_amd64.deb && cd ..

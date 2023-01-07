@@ -1,3 +1,10 @@
+aiscm (0.24.2-1) unstable; urgency=low
+
+  - New upstram release.
+  - Orphaning package because of difficult to update ffmpeg changes.
+
+ -- Jan Wedekind <jan@wedesoft.de>  Thu, 15 Dec 2022 23:12:29 +0000
+
 aiscm (0.23.1-1) unstable; urgency=low
 
   - Update dependency to on llvm-toolchain-13. Closes: #1000939
