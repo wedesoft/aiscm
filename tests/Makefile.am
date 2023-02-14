@@ -8,7 +8,7 @@ SCM_LOG_DRIVER = $(GUILE) -L $(top_builddir) -L $(srcdir) $(top_srcdir)/build-au
 
 TESTS = test_core.scm test_tensors.scm test_ffmpeg_in.scm test_ffmpeg_out.scm test_image.scm test_magick.scm \
 				test_pulse.scm test_ringbuffer.scm test_util.scm test_samples.scm test_xorg.scm \
-				test_tensorflow.scm test_filters.scm test_opencv.scm test_hypercomplex.scm
+				test_tensorflow.scm test_filters.scm test_hypercomplex.scm
 
 EXTRA_DIST = $(TESTS)
 

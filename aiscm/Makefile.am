@@ -2,12 +2,12 @@ SUFFIXES = .c .scm .go .in
 
 sitedir = $(GUILE_SITE)/aiscm
 site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm \
-						tensorflow.scm filters.scm opencv.scm hypercomplex.scm
+						tensorflow.scm filters.scm hypercomplex.scm
 
 extensiondir = $(GUILE_EXT)
 extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
-												libguile-aiscm-samples.la libguile-aiscm-core.la libguile-aiscm-tensorflow.la libguile-aiscm-opencv.la
+												libguile-aiscm-samples.la libguile-aiscm-core.la libguile-aiscm-tensorflow.la
 
 check_LTLIBRARIES = libguile-aiscm-tests.la
 
@@ -84,11 +84,6 @@ libguile_aiscm_tensorflow_la_SOURCES = tensorflow.c
 libguile_aiscm_tensorflow_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_tensorflow_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_tensorflow_la_LIBADD = $(GUILE_LIBS) -ltensorflow
-
-libguile_aiscm_opencv_la_SOURCES = opencv.cpp
-libguile_aiscm_opencv_la_CXXFLAGS = $(GUILE_CFLAGS) $(OPENCV_CFLAGS)
-libguile_aiscm_opencv_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_opencv_la_LIBADD = $(GUILE_LIBS) $(OPENCV_LIBS)
 
 CLEANFILES = *.tmp *.go*
 
