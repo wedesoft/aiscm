@@ -19,7 +19,7 @@ INTEGRATION_TESTS = 2d_array.scm 2d_matching.scm array_shape.scm byte_sequence.s
 										xorg_fullscreen_test.scm anaglyph.scm indicator.scm fill.scm index.scm set.scm \
 										erode.scm dilate.scm tensor.scm pseudo.scm mirror.scm xor.scm mnist.scm \
 										gauss_blur.scm gauss_gradient.scm harris_stephens.scm zoom.scm \
-										components.scm circle.scm mandelbrot.scm
+										circle.scm mandelbrot.scm
 
 EXTRA_DIST = $(INTEGRATION_TESTS) pavillion.jpg star-ferry.jpg shuttle.jpg letters.png \
 						 speech-record.scm speech-background.scm speech-train.scm speech-run.scm
@@ -51,7 +51,7 @@ reintegration-local: $(INTEGRATION_TEST_TARGETS)
 
 CLEANFILES = *.tmp av-sync.mp4 fubk.png pattern.png swap-channels.jpg rolled.jpg cropped.jpg crop2d.jpg inverted.jpg \
 						 divided.jpg modulo.jpg test.mp3 roberts-cross.jpg sobel.jpg box-filter.jpg sharpen.jpg eroded.jpg \
-						 dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg components.png
+						 dilated.jpg pseudo.jpg mirror.jpg gauss-blur.jpg gauss-gradient.jpg
 
 MAINTAINERCLEANFILES = Makefile.in
 
