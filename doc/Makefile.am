@@ -111,9 +111,6 @@ harris-stephens.jpg: ../tests/integration/harris_stephens.scm star-ferry.jpg
 components.png: ../tests/integration/components.scm letters.png
 	$(ENVIRONMENT) $(RUN) $<
 
-board.png: ../tests/integration/charuco-board.scm
-	$(ENVIRONMENT) $(RUN) $<
-
 circle.png: ../tests/integration/circle.scm
 	$(ENVIRONMENT) $(RUN) $<
 

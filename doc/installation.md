@@ -1,29 +1,5 @@
 # Installation
 
-## Using binary package
-
-<div class="figure"><img src="package.png" alt=""/></div>
-
-There are AMD64 binaries for
-[![Debian](debian.png "Debian")](https://www.debian.org/) Sid (10).
-
-To install the software, you have to add the AIscm repository to your list of repositories and install via *apt-get*.
-Note that the Debian package does not include OpenCV and Tensorflow bindings.
-To do this, paste the following lines into your terminal:
-
-```
-echo "deb https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/aiscm.list
-wget -qO- https://wedesoft.github.io/aiscm/apt/pubkey.gpg | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install aiscm
-```
-
-If you wish, you can additionally register the sources with *apt*:
-
-```
-echo "deb-src https://wedesoft.github.io/aiscm/apt `lsb_release -cs` main" | sudo tee -a /etc/apt/sources.list.d/aiscm.list
-```
-
 ## Compile from source
 
 <div class="figure"><img src="source.png" alt=""/></div>
@@ -71,21 +47,6 @@ The Tensorflow C library (install the GPU version instead if you have a GPU):
 ```
 wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
 sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
-```
-
-The OpenCV library:
-
-```
-wget -q https://github.com/opencv/opencv/archive/4.1.2.tar.gz -O opencv-4.1.2.tar.gz
-wget -q https://github.com/opencv/opencv_contrib/archive/4.1.2.tar.gz -O opencv_contrib-4.1.2.tar.gz
-tar xzf opencv-4.1.2.tar.gz
-tar xzf opencv_contrib-4.1.2.tar.gz
-mkdir opencv-4.1.2/build
-cd opencv-4.1.2/build
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.1.2/modules ..
-make -j `nproc`
-sudo make install
-cd ../..
 ```
 
 ### Build AIscm

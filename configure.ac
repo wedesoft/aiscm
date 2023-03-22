@@ -2,7 +2,7 @@ dnl Run `./autogen.sh` to generate a configure script.
 dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.25.1], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.25.2], [jan@wedesoft.de])
 DATE=2023-02-14
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])
@@ -79,10 +79,6 @@ AC_SUBST(AVCODEC_LIBS)
 PKG_CHECK_MODULES(AVFORMAT, libavformat >= 54.20.4)
 AC_SUBST(AVFORMAT_CFLAGS)
 AC_SUBST(AVFORMAT_LIBS)
-
-PKG_CHECK_MODULES(OPENCV, opencv4 >= 4.1.0)
-AC_SUBST(OPENCV_CFLAGS)
-AC_SUBST(OPENCV_LIBS)
 
 old_LIBS="$LIBS"
 LIBS="$LIBS $AVFORMAT_LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
