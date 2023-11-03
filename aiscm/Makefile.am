@@ -1,7 +1,7 @@
 SUFFIXES = .c .scm .go .in
 
 sitedir = $(GUILE_SITE)/aiscm
-site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm \
+site_DATA = core.scm tensors.scm image.scm util.scm magick.scm pulse.scm v4l2.scm xorg.scm samples.scm \
 						tensorflow.scm filters.scm hypercomplex.scm
 
 extensiondir = $(GUILE_EXT)
@@ -39,11 +39,6 @@ libguile_aiscm_util_la_SOURCES = util.c
 libguile_aiscm_util_la_CFLAGS = $(GUILE_CFLAGS)
 libguile_aiscm_util_la_LDFLAGS = $(AISCM_LDFLAGS)
 libguile_aiscm_util_la_LIBADD = $(GUILE_LIBS)
-
-libguile_aiscm_ffmpeg_la_SOURCES = ffmpeg.c ffmpeg-helpers.c ringbuffer.c util-helpers.c
-libguile_aiscm_ffmpeg_la_CFLAGS = $(GUILE_CFLAGS) $(AVFORMAT_CFLAGS) $(AVCODEC_CFLAGS) $(AVUTIL_CFLAGS)
-libguile_aiscm_ffmpeg_la_LDFLAGS = $(AISCM_LDFLAGS)
-libguile_aiscm_ffmpeg_la_LIBADD = $(GUILE_LIBS) $(AVFORMAT_LIBS) $(AVCODEC_LIBS) $(AVUTIL_LIBS)
 
 libguile_aiscm_image_la_SOURCES = image.c util-helpers.c
 libguile_aiscm_image_la_CFLAGS = $(GUILE_CFLAGS) $(SWSCALE_CFLAGS) $(MJPEG_CFLAGS)
