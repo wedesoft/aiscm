@@ -72,16 +72,8 @@ PKG_CHECK_MODULES(AVUTIL, libavutil >= 52.3.0)
 AC_SUBST(AVUTIL_CFLAGS)
 AC_SUBST(AVUTIL_LIBS)
 
-PKG_CHECK_MODULES(AVCODEC, libavcodec >= 54.35.0)
-AC_SUBST(AVCODEC_CFLAGS)
-AC_SUBST(AVCODEC_LIBS)
-
-PKG_CHECK_MODULES(AVFORMAT, libavformat >= 54.20.4)
-AC_SUBST(AVFORMAT_CFLAGS)
-AC_SUBST(AVFORMAT_LIBS)
-
 old_LIBS="$LIBS"
-LIBS="$LIBS $AVFORMAT_LIBS $AVCODEC_LIBS $AVUTIL_LIBS"
+LIBS="$LIBS $AVUTIL_LIBS"
 AC_MSG_CHECKING([for av_frame_alloc])
 AC_TRY_LINK([#include <libavutil/frame.h>],
             [av_frame_alloc()],
@@ -106,12 +98,6 @@ AC_TRY_LINK([#include <libavutil/imgutils.h>],
                          [AC_MSG_RESULT([yes])],
                          [AC_MSG_RESULT([no])
                           AC_MSG_ERROR([No support for av_image_get_buffer_size or avpicture_get_size])])])
-AC_MSG_CHECKING([for avformat_alloc_output_context2])
-AC_TRY_LINK([#include <libavformat/avformat.h>],
-            [avformat_alloc_output_context2(0, 0, 0, 0)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AVFORMAT_ALLOC_OUTPUT_CONTEXT2,1,[use avformat_alloc_output_context2 to initialise output context])],
-            [AC_MSG_RESULT([no])])
 AC_MSG_CHECKING([for av_frame_get_buffer])
 AC_TRY_LINK([#include <libavutil/frame.h>],
             [av_frame_get_buffer(0, 32)],
@@ -129,18 +115,6 @@ AC_TRY_LINK([#include <libavutil/frame.h>],
             [AVFrame *frame; frame->pts],
             [AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_AV_FRAME_PTS,1,[AVFrame has pts])],
-            [AC_MSG_RESULT([no])])
-AC_MSG_CHECKING([for av_packet_rescale_ts])
-AC_TRY_LINK([#include <libavcodec/avcodec.h>],
-            [AVRational rational; av_packet_rescale_ts(0, rational, rational)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AV_PACKET_RESCALE_TS,1,[av_packet_rescale_ts available])],
-            [AC_MSG_RESULT([no])])
-AC_MSG_CHECKING([for av_packet_unref])
-AC_TRY_LINK([#include <libavcodec/avcodec.h>],
-            [av_packet_unref(NULL)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AV_PACKET_UNREF,1,[av_packet_unref available])],
             [AC_MSG_RESULT([no])])
 LIBS="$old_LIBS"
 
