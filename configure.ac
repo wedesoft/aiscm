@@ -73,52 +73,6 @@ AC_SUBST(AVUTIL_CFLAGS)
 AC_SUBST(AVUTIL_LIBS)
 
 old_LIBS="$LIBS"
-LIBS="$LIBS $AVUTIL_LIBS"
-AC_MSG_CHECKING([for av_frame_alloc])
-AC_TRY_LINK([#include <libavutil/frame.h>],
-            [av_frame_alloc()],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_FRAME_ALLOC,1,[av_frame_alloc is supported])],
-            [AC_MSG_RESULT([no])
-             AC_MSG_CHECKING([for avcodec_alloc_frame])
-             AC_TRY_LINK([#include <libavcodec/avcodec.h>],
-                         [avcodec_alloc_frame()],
-                         [AC_MSG_RESULT([yes])],
-                         [AC_MSG_RESULT([no])
-                          AC_MSG_ERROR([No support for av_frame_alloc or avcodec_alloc_frame])])])
-AC_MSG_CHECKING([for av_image_get_buffer_size])
-AC_TRY_LINK([#include <libavutil/imgutils.h>],
-            [av_image_get_buffer_size(0, 320, 240, 32)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_IMAGE_BUFFER_SIZE,1,[use av_image_get_buffer_size to get buffer size])],
-            [AC_MSG_RESULT([no])
-             AC_MSG_CHECKING([for avpicture_get_size])
-             AC_TRY_LINK([#include <libavutil/imgutils.h>],
-                         [avpicture_get_size(0, 320, 240)],
-                         [AC_MSG_RESULT([yes])],
-                         [AC_MSG_RESULT([no])
-                          AC_MSG_ERROR([No support for av_image_get_buffer_size or avpicture_get_size])])])
-AC_MSG_CHECKING([for av_frame_get_buffer])
-AC_TRY_LINK([#include <libavutil/frame.h>],
-            [av_frame_get_buffer(0, 32)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AV_FRAME_GET_BUFFER,1,[use av_frame_get_buffer to initialise output frames])],
-            [AC_MSG_RESULT([no])])
-AC_MSG_CHECKING([for av_frame_make_writable])
-AC_TRY_LINK([#include <libavutil/frame.h>],
-            [av_frame_make_writable(0)],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AV_FRAME_MAKE_WRITABLE,1,[call to av_frame_make_writable required])],
-            [AC_MSG_RESULT([no])])
-AC_MSG_CHECKING([AVFrame has pts])
-AC_TRY_LINK([#include <libavutil/frame.h>],
-            [AVFrame *frame; frame->pts],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE(HAVE_AV_FRAME_PTS,1,[AVFrame has pts])],
-            [AC_MSG_RESULT([no])])
-LIBS="$old_LIBS"
-
-old_LIBS="$LIBS"
 LIBS="$LIBS -lXpm"
 AC_MSG_CHECKING([for XpmCreatePixmapFromData])
 AC_TRY_LINK([#include <X11/xpm.h>],
