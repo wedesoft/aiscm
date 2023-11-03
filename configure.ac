@@ -2,7 +2,7 @@ dnl Run `./autogen.sh` to generate a configure script.
 dnl Then run `./configure` to generate a Makefile.
 dnl Finally run `make` to build the project.
 AC_PREREQ([2.69])
-AC_INIT([aiscm], [0.25.2], [jan@wedesoft.de])
+AC_INIT([aiscm], [0.26.1], [jan@wedesoft.de])
 DATE=2023-02-14
 AC_SUBST(DATE)
 AC_CONFIG_AUX_DIR([build-aux])
