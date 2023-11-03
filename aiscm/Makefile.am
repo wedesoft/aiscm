@@ -5,7 +5,7 @@ site_DATA = core.scm tensors.scm image.scm ffmpeg.scm util.scm magick.scm pulse.
 						tensorflow.scm filters.scm hypercomplex.scm
 
 extensiondir = $(GUILE_EXT)
-extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-ffmpeg.la libguile-aiscm-image.la \
+extension_LTLIBRARIES = libguile-aiscm-util.la libguile-aiscm-image.la \
 												libguile-aiscm-magick.la libguile-aiscm-pulse.la libguile-aiscm-v4l2.la libguile-aiscm-xorg.la \
 												libguile-aiscm-samples.la libguile-aiscm-core.la libguile-aiscm-tensorflow.la
 
