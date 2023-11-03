@@ -20,6 +20,8 @@ You need to install the dependencies:
 @dependencies.sh@
 ```
 
+Note that ffmpeg version needs to be 4.4.4 or somewhat earlier!
+
 You also need
 
 A recent version of Protobuf-C library and compiler:
