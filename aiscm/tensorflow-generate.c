@@ -44,7 +44,7 @@ int main(void)
   hdf_init(&hdf);
 
   for (int i=0; i<op_list->n_op; i++) {
-    struct _Tensorflow__OpDef *op = op_list->op[i];
+    Tensorflow__OpDef *op = op_list->op[i];
     char variable[256];
     char value[256];
     snprintf(variable, 256, "Op.%s.name", op->name);
