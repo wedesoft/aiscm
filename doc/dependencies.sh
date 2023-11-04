@@ -13,8 +13,6 @@ apt-get install -q -y imagemagick libmagickcore-dev
 apt-get install -q -y libswresample-dev
 apt-get install -q -y libswscale-dev
 apt-get install -q -y libavutil-dev
-apt-get install -q -y libavcodec-dev
-apt-get install -q -y libavformat-dev
 apt-get install -q -y libxpm-dev
 apt-get install -q -y llvm-13
 apt-get install -q -y llvm-13-dev
