@@ -20,8 +20,8 @@
   #:use-module (aiscm core)
   #:use-module (aiscm util)
   #:export (to-tensor from-tensor make-session close-session run make-tensor tf-from-tensor
-            graph make-graph make-description tf-finish-operation tf-add-input tf-run
-            tf-add-gradient tf-output? tf-graph-operation-by-name tf-reset-graph
+            with-session graph make-graph make-description tf-finish-operation tf-add-input
+            tf-run tf-add-gradient tf-output? tf-graph-operation-by-name tf-reset-graph
             tf-graph-export tf-graph-import tf-operation-names
             ; Code generated using aiscm/tensorflow.scm.in
 <?cs each:op = Op ?>            <?cs var:op.name ?>
@@ -78,6 +78,17 @@
 (define (close-session s)
   (close-tf-session s)
   #t)
+
+(define-syntax with-session
+  (syntax-rules ()
+    ((_ (placeholder) body ...)
+     (let ((placeholder #f))
+       (dynamic-wind
+	 (lambda () (set! placeholder (make-session)))
+	 (lambda () body ...)
+	 (lambda ()
+	   ;; session was managed by GC, so just close it.
+	   (close-session placeholder)))))))
 
 (define (run session alist expression)
   (let* [(tensors (map (lambda (entry) (cons (car entry) (to-tensor (cdr entry)))) alist))
