@@ -469,6 +469,15 @@ SCM make_tf_session(SCM scm_graph)
   return retval;
 }
 
+SCM close_tf_session(SCM scm_graph)
+{
+  struct tf_session_t *self = get_tf_session(scm_graph);
+  TF_CloseSession(self->session, status());
+  if (TF_GetCode(_status) != TF_OK)
+    scm_misc_error("close-tf-session", TF_Message(_status), SCM_EOL);
+  return SCM_UNDEFINED;
+}
+
 SCM tf_run(SCM scm_session, SCM scm_input, SCM scm_output)
 {
   SCM retval;
@@ -625,6 +634,7 @@ void init_tensorflow(void)
   scm_c_define_gsubr("tf-set-attr-shape"           , 3, 0, 0, SCM_FUNC(tf_set_attr_shape          ));
   scm_c_define_gsubr("tf-set-attr-tensor"          , 3, 0, 0, SCM_FUNC(tf_set_attr_tensor         ));
   scm_c_define_gsubr("make-tf-session"             , 1, 0, 0, SCM_FUNC(make_tf_session            ));
+  scm_c_define_gsubr("close-tf-session"            , 1, 0, 0, SCM_FUNC(close_tf_session           ));
   scm_c_define_gsubr("tf-run"                      , 3, 0, 0, SCM_FUNC(tf_run                     ));
   scm_c_define_gsubr("tf-add-gradient_"            , 3, 0, 0, SCM_FUNC(tf_add_gradient_           ));
   scm_c_define_gsubr("tf-output?"                  , 1, 0, 0, SCM_FUNC(tf_outputq                 ));

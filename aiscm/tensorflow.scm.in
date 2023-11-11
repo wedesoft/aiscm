@@ -19,7 +19,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (aiscm core)
   #:use-module (aiscm util)
-  #:export (to-tensor from-tensor make-session run make-tensor tf-from-tensor
+  #:export (to-tensor from-tensor make-session close-session run make-tensor tf-from-tensor
             graph make-graph make-description tf-finish-operation tf-add-input tf-run
             tf-add-gradient tf-output? tf-graph-operation-by-name tf-reset-graph
             tf-graph-export tf-graph-import tf-operation-names
@@ -74,6 +74,10 @@
 
 (define (make-session)
   (make-tf-session graph))
+
+(define (close-session s)
+  (close-tf-session s)
+  #t)
 
 (define (run session alist expression)
   (let* [(tensors (map (lambda (entry) (cons (car entry) (to-tensor (cdr entry)))) alist))
