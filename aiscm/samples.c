@@ -17,7 +17,6 @@
 #include "config.h"
 #include <libguile.h>
 #include <libavutil/channel_layout.h>
-#include <libavcodec/avcodec.h>
 #ifndef HAVE_SWRESAMPLE
 #include <libavresample/avresample.h>
 #else
