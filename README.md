@@ -41,13 +41,13 @@ make 2d_array.tmp
 You can run all tests like this
 
 ```Shell
-make check -j
+make check
 ```
 
 One can use *recheck* to run only the test suites which have not completed successfully:
 
 ```Shell
-make recheck -j
+make recheck
 ```
 
 To run a single test suite, you can delete the *log* file and regenerate it using *make*:
