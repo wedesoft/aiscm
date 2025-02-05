@@ -34,6 +34,10 @@ jobs:
         apt-get install -q -y protobuf-c-compiler libprotobuf-c-dev
         apt-get install -q -y cmake
         apt-get install -q -y wget
+    - name: Install libtensorflow-cpu-linux
+      run: |
+        wget https://storage.googleapis.com/tensorflow/versions/2.18.0/libtensorflow-cpu-linux-x86_64.tar.gz
+        tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64.tar.gz
     - name: autoreconf
       run: ./autogen.sh
     - name: configure

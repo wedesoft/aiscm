@@ -45,8 +45,8 @@ cd ..
 The Tensorflow C library (install the GPU version instead if you have a GPU):
 
 ```
-wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
-sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
+wget -q https://storage.googleapis.com/tensorflow/versions/2.18.0/libtensorflow-cpu-linux-x86_64.tar.gz
+sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64.tar.gz
 ```
 
 ### Build AIscm
