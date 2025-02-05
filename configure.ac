@@ -5,6 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT([aiscm], [0.26.1], [jan@wedesoft.de])
 DATE=2023-02-14
 AC_SUBST(DATE)
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_REQUIRE_AUX_FILE([config.rpath])
