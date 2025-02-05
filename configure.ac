@@ -5,7 +5,6 @@ AC_PREREQ([2.69])
 AC_INIT([aiscm], [0.26.1], [jan@wedesoft.de])
 DATE=2023-02-14
 AC_SUBST(DATE)
-AM_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
