@@ -13,6 +13,13 @@
 *.info
 aclocal.m4
 autom4te.cache
+compile
+config.guess
+config.rpath
+config.sub
+depcomp
+install-sh
+missing
 ChangeLog
 confdefs.h
 conftest.*
