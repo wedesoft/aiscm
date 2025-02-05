@@ -14,11 +14,11 @@ apt-get install -q -y libswresample-dev
 apt-get install -q -y libswscale-dev
 apt-get install -q -y libavutil-dev
 apt-get install -q -y libxpm-dev
-apt-get install -q -y llvm-13
-apt-get install -q -y llvm-13-dev
-apt-get install -q -y clang-13
-apt-get install -q -y libomp5-13
-apt-get install -q -y libomp-13-dev
+apt-get install -q -y llvm-14
+apt-get install -q -y llvm-14-dev
+apt-get install -q -y clang-14
+apt-get install -q -y libomp5-14
+apt-get install -q -y libomp-14-dev
 apt-get install -q -y clearsilver-dev
 apt-get install -q -y cmake
 apt-get install -q -y wget
