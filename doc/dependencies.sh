@@ -20,5 +20,6 @@ apt-get install -q -y clang-14
 apt-get install -q -y libomp5-14
 apt-get install -q -y libomp-14-dev
 apt-get install -q -y clearsilver-dev
+apt-get install -q -y protobuf-c-compiler libprotobuf-c-dev
 apt-get install -q -y cmake
 apt-get install -q -y wget

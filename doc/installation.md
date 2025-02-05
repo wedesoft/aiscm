@@ -20,33 +20,11 @@ You need to install the dependencies:
 @dependencies.sh@
 ```
 
-You also need
-
-A recent version of Protobuf-C library and compiler:
+You also need the Tensorflow C library (install the GPU version instead if you have a GPU):
 
 ```
-wget -q https://github.com/protocolbuffers/protobuf/releases/download/v3.10.0/protobuf-all-3.10.0.tar.gz
-wget -q https://github.com/protobuf-c/protobuf-c/releases/download/v1.3.2/protobuf-c-1.3.2.tar.gz
-tar xzf protobuf-all-3.10.0.tar.gz
-tar xzf protobuf-c-1.3.2.tar.gz
-cd protobuf-3.10.0
-./configure
-make -j `nproc`
-sudo make install
-cd ..
-cd protobuf-c-1.3.2
-./configure
-make -j `nproc`
-sudo make install
-cd ..
-```
-
-
-The Tensorflow C library (install the GPU version instead if you have a GPU):
-
-```
-wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
-sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz
+wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
+sudo tar xz -C /usr/local -f libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
 ```
 
 ### Build AIscm
