@@ -6,7 +6,7 @@ The _    ___
 /_/   \_\___|___/\___|_| |_| |_| extension
 ```
 
-# [AIscm][1]
+# [AIscm][1] [![Build Status](https://github.com/wedesoft/aiscm/actions/workflows/aiscm.yml/badge.svg)](https://github.com/wedesoft/aiscm/actions/workflows/aiscm.yml)
 
 [![GPLv3](doc/gplv3.png)](https://www.gnu.org/copyleft/gpl.html)
 
