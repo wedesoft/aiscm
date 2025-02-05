@@ -5,7 +5,7 @@ SUBDIRS = tensorflow aiscm tests doc bench
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = autogen.sh configure.ac README README.md TODO.md COPYING NEWS NEWS.md ChangeLog AUTHORS config.rpath test-driver.scm compile config.guess config.sub ltmain.sh missing install-sh
+EXTRA_DIST = autogen.sh configure.ac README README.md TODO.md COPYING NEWS NEWS.md ChangeLog AUTHORS config.rpath test-driver.scm
 
 repl:
 	$(ENVIRONMENT) GC_INITIAL_HEAP_SIZE=1G GC_USE_ENTIRE_HEAP=Y DEBUG=YES $(RUN)
