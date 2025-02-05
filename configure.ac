@@ -7,6 +7,7 @@ DATE=2023-02-14
 AC_SUBST(DATE)
 AM_INIT_AUTOMAKE([--warnings=no-portability foreign])
 AC_CONFIG_MACRO_DIR([m4])
+AC_REQUIRE_AUX_FILE([config.rpath])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_EXTRA_RECURSIVE_TARGETS([bench recheck integration reintegration])
 LT_INIT
