@@ -151,7 +151,8 @@ fi
 
 AC_MSG_CHECKING([for Xvideo])
 LIBS="$LIBS -lXv"
-AC_TRY_LINK([#include <X11/extensions/Xv.h>],
+AC_TRY_LINK([#include <X11/Xlib.h>
+             #include <X11/extensions/Xvlib.h>],
    [XvQueryPortAttributes(0, 0, 0)],
    [AC_MSG_RESULT([yes])],
    [AC_MSG_RESULT([no])]
