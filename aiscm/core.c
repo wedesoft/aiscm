@@ -298,11 +298,6 @@ SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
   };
 
   LLVMPassManagerRef pass_manager = LLVMCreatePassManager();
-  // LLVMAddConstantPropagationPass(pass_manager); // undefined in LLVM 13
-  LLVMAddInstructionCombiningPass(pass_manager);
-  LLVMAddPromoteMemoryToRegisterPass(pass_manager);
-  LLVMAddGVNPass(pass_manager);
-  LLVMAddCFGSimplificationPass(pass_manager);
   LLVMRunPassManager(pass_manager, self->module);
   LLVMDisposePassManager(pass_manager);
 
@@ -409,7 +404,7 @@ SCM llvm_build_load(SCM scm_function, SCM scm_type, SCM scm_address)
   struct llvm_value_t *address = get_llvm_value(scm_address);
   int type = scm_to_int(scm_type);
   LLVMValueRef pointer = LLVMBuildIntToPtr(function->builder, address->value, LLVMPointerType(llvm_type(type), 0), "x");
-  result->value = LLVMBuildLoad(function->builder, pointer, "x");
+  result->value = LLVMBuildLoad2(function->builder, llvm_type(type), pointer, "x");
   return retval;
 }
 
@@ -653,7 +648,6 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   if (!function_pointer)
     function_pointer = LLVMAddFunction(llvm->module, function_name, function_type(scm_return_type, scm_argument_types));
   free(function_name);
-  // LLVMAddFunctionAttr(function_pointer, LLVMExternalLinkage);
   int n_values = scm_ilength(scm_values);
   LLVMValueRef *values = scm_gc_malloc_pointerless(n_values * sizeof(LLVMValueRef), "llvm-build-call");
   for (int i=0; i<n_values; i++) {
@@ -662,7 +656,7 @@ SCM llvm_build_call(SCM scm_function, SCM scm_llvm, SCM scm_return_type, SCM scm
   };
   struct llvm_value_t *result = (struct llvm_value_t *)scm_gc_calloc(sizeof(struct llvm_value_t), "llvmvalue");
   SCM_NEWSMOB(retval, llvm_value_tag, result);
-  result->value = LLVMBuildCall(function->builder, function_pointer, values, n_values, "x");
+  result->value = LLVMBuildCall2(function->builder, function_type(scm_return_type, scm_argument_types), function_pointer, values, n_values, "x");
   return retval;
 }
 
