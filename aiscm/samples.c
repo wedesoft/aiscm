@@ -69,7 +69,7 @@ SCM samples_convert(SCM scm_source_ptr, SCM scm_source_type, SCM scm_dest_ptr, S
   av_opt_set_int(ctx, "out_sample_fmt"    , dest_format  , 0);
 #else
   SwrContext *ctx =
-    swr_alloc_set_opts(NULL, dest_layout, dest_format, dest_rate, source_layout, source_format, source_rate, 0, NULL);
+    swr_alloc_set_opts2(NULL, dest_layout, dest_format, dest_rate, source_layout, source_format, source_rate, 0, NULL);
 #endif
   if (!ctx)
     scm_misc_error("samples-convert", "Could not allocate resampler context", SCM_EOL);
