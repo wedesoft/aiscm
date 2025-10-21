@@ -40,7 +40,7 @@
   (test-eq "Create boolean type"
     <bool> (class-of (make <bool> #:value #t)))
   (test-eqv "Foreign type of boolean is boolean"
-    (1+ int64) (foreign-type <bool>)))
+    (+ int64 3) (foreign-type <bool>)))
 
 (test-group "construct integer types"
   (for-each

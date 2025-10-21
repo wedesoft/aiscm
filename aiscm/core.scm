@@ -89,8 +89,6 @@
 (define signed   'signed)
 (define unsigned 'unsigned)
 
-(define bool (1+ int64)); int64 is last foreign type
-
 (define-class* <void> <object> <meta<void>> <class>
                (value #:init-keyword #:value #:getter get))
 

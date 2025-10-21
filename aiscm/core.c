@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <assert.h>
 #include <libguile.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
@@ -139,8 +140,11 @@ static LLVMTypeRef llvm_type(int type)
     case SCM_FOREIGN_TYPE_UINT64:
     case SCM_FOREIGN_TYPE_INT64:
       return LLVMInt64Type();
-    default:
+    case SCM_FOREIGN_TYPE_VOID:
       return LLVMVoidType();
+    default:
+      assert(0);
+      scm_misc_error("llvm-type", "Unknown scheme type: ~a", scm_list_1(scm_from_int(type)));
   };
 }
 
@@ -165,9 +169,11 @@ static int llvm_type_index(LLVMTypeRef type)
         case 64:
           return SCM_FOREIGN_TYPE_INT64;
         default:
+          scm_misc_error("llvm-type-index", "Unknown integer type width: ~a", scm_list_1(scm_from_int(LLVMGetIntTypeWidth(type))));
           return SCM_FOREIGN_TYPE_VOID;
       };
     default:
+      scm_misc_error("llvm-type-index", "Unknown LLVM type kind", SCM_EOL);
       return SCM_FOREIGN_TYPE_VOID;
   };
 }
@@ -191,6 +197,7 @@ static LLVMValueRef scm_to_llvm_value(int type, SCM scm_value)
     case SCM_FOREIGN_TYPE_INT64:
       return LLVMConstInt(llvm_type(type), scm_to_int64(scm_value), 1);
     default:
+      scm_misc_error("scm-to-llvm-value", "Unknown foreign type: ~a", scm_list_1(scm_from_int(type)));
       return NULL;
   };
 }
@@ -286,13 +293,13 @@ SCM llvm_compile_module(SCM scm_llvm, SCM scm_name)
 {
   struct llvm_module_t *self = get_llvm(scm_llvm);
   if (self->engine != NULL)
-    scm_misc_error("llvm-compile", "LLVM module already compiled", SCM_EOL);
+    scm_misc_error("llvm-compile-module", "LLVM module already compiled", SCM_EOL);
 
   char *error = NULL;
   if (LLVMCreateJITCompilerForModule(&self->engine, self->module, 2, &error)) {
     SCM scm_error = scm_from_locale_string(error);
     LLVMDisposeMessage(error);
-    scm_misc_error("llvm-compile", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
+    scm_misc_error("llvm-compile-module", "Error initialising JIT engine: ~a", scm_list_1(scm_error));
   };
 
   LLVMPassManagerRef pass_manager = LLVMCreatePassManager();
@@ -318,7 +325,7 @@ SCM llvm_verify_module(SCM scm_llvm)
   if (LLVMVerifyModule(llvm->module, LLVMPrintMessageAction, &error)) {
     SCM scm_error = scm_from_locale_string(error);
     LLVMDisposeMessage(error);
-    scm_misc_error("verify-module", "Module is not valid: ~a", scm_list_1(scm_error));
+    scm_misc_error("llvm-verify-module", "Module is not valid: ~a", scm_list_1(scm_error));
   };
   return SCM_UNSPECIFIED;
 }
@@ -706,6 +713,7 @@ void init_core(void)
 
   llvm_basic_block_tag = scm_make_smob_type("llvm_basic_block", sizeof(struct llvm_basic_block_t));
 
+  scm_c_define("bool"       , scm_from_int(SCM_FOREIGN_TYPE_LAST + 1));
   scm_c_define("llvm-bool"  , scm_from_int(SCM_FOREIGN_TYPE_LAST + 1));
   scm_c_define("llvm-void"  , scm_from_int(SCM_FOREIGN_TYPE_VOID    ));
   scm_c_define("llvm-float" , scm_from_int(SCM_FOREIGN_TYPE_FLOAT   ));
