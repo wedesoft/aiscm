@@ -33,6 +33,7 @@ jobs:
         apt-get install -q -y protobuf-c-compiler libprotobuf-c-dev
         apt-get install -q -y cmake
         apt-get install -q -y wget
+        apt-get install -q -y nasm
     - name: Install ffmpeg-4.4.6
       run: |
         wget https://www.ffmpeg.org/releases/ffmpeg-4.4.6.tar.xz
