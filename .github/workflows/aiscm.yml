@@ -39,7 +39,7 @@ jobs:
         wget -q https://www.ffmpeg.org/releases/ffmpeg-4.4.6.tar.xz
         tar -xf ffmpeg-4.4.6.tar.xz
         cd ffmpeg-4.4.6
-        ./configure --enable-shared
+        ./configure --prefix=/usr --enable-shared
         make
         make install
     - name: Install libtensorflow-cpu-linux
