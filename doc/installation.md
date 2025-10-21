@@ -20,6 +20,8 @@ You need to install the dependencies:
 @dependencies.sh@
 ```
 
+You furthermore need FFmpeg version 4.4.6.
+
 You also need the Tensorflow C library (install the GPU version instead if you have a GPU):
 
 ```

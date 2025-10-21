@@ -45,11 +45,10 @@ AX_PTHREAD([],[AC_MSG_ERROR([Could not find pthread library])])
 AC_SUBST(PTHREAD_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
 
-PKG_CHECK_MODULES(SWSCALE, libswscale >= 2.1.0)
-AC_SUBST(SWSCALE_CFLAGS)
-AC_SUBST(SWSCALE_LIBS)
+AC_MSG_CHECKING([ffmpeg version less than 4.4.6])
+PKG_CHECK_MODULES(SWSCALE, [libswscale >= 2.1.0 libswscale <= 5.9.100])
 
-PKG_CHECK_MODULES(SWRESAMPLE, libswresample >= 1.1.100,
+PKG_CHECK_MODULES(SWRESAMPLE, libswresample >= 1.1.100 libswresample <= 3.9.100,
   [AC_DEFINE([HAVE_SWRESAMPLE], 1, [libswresample is present])],
   [PKG_CHECK_MODULES(AVRESAMPLE, libavresample >= 1.0.1)])
 AC_SUBST(SWRESAMPLE_CFLAGS)
