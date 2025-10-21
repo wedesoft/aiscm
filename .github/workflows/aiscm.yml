@@ -36,10 +36,10 @@ jobs:
         apt-get install -q -y nasm
     - name: Install ffmpeg-4.4.6
       run: |
-        wget https://www.ffmpeg.org/releases/ffmpeg-4.4.6.tar.xz
+        wget -q https://www.ffmpeg.org/releases/ffmpeg-4.4.6.tar.xz
         tar -xf ffmpeg-4.4.6.tar.xz
         cd ffmpeg-4.4.6
-        ./configure
+        ./configure --enable-shared
         make
         make install
     - name: Install libtensorflow-cpu-linux
