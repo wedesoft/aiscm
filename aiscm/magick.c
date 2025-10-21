@@ -16,7 +16,7 @@
 //
 #include <stdio.h>
 #include <libguile.h>
-#include <MagickCore/MagickCore.h>
+#include <magick/MagickCore.h>
 #include "util-helpers.h"
 
 
