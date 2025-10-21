@@ -8,9 +8,9 @@ on:
 
 jobs:
   ubuntu-build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24-04
     container:
-      image: ubuntu:latest
+      image: ubuntu:24.04
     steps:
     - uses: actions/checkout@v4
     - name: Install depdendencies
@@ -26,14 +26,21 @@ jobs:
         apt-get install -q -y libjpeg-dev libmjpegtools-dev
         apt-get install -q -y libpulse-dev
         apt-get install -q -y imagemagick libmagickcore-dev
-        apt-get install -q -y libswresample-dev libswscale-dev libavutil-dev
         apt-get install -q -y libxpm-dev
-        apt-get install -q -y llvm-14 llvm-14-dev
-        apt-get install -q -y clang-14 libomp5-14 libomp-14-dev
+        apt-get install -q -y llvm-19 llvm-19-dev
+        apt-get install -q -y clang-19 libomp5-19 libomp-19-dev
         apt-get install -q -y clearsilver-dev
         apt-get install -q -y protobuf-c-compiler libprotobuf-c-dev
         apt-get install -q -y cmake
         apt-get install -q -y wget
+    - name: Install ffmpeg-4.4.6
+      run: |
+        wget https://www.ffmpeg.org/releases/ffmpeg-4.4.6.tar.xz
+        tar -xf ffmpeg-4.4.6.tar.xz
+        cd ffmpeg-4.4.6
+        ./configure
+        make
+        make install
     - name: Install libtensorflow-cpu-linux
       run: |
         wget -q https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
