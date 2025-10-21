@@ -8,9 +8,9 @@ on:
 
 jobs:
   ubuntu-build-and-test:
-    runs-on: ubuntu-24-04
+    runs-on: ubuntu-latest
     container:
-      image: ubuntu:24.04
+      image: ubuntu:latest
     steps:
     - uses: actions/checkout@v4
     - name: Install depdendencies
