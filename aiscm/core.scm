@@ -44,7 +44,7 @@
             ~ << >> % & | ^ ! && || le lt ge gt eq ne where typed-alloca build-phi add-incoming
             to-array get set rgb red green blue ensure-default-strides default-strides roll unroll
             crop dump rebase project element minor major sum product fill indices convolve dilate erode
-            warp reshape histogram mask unmask
+            warp reshape histogram mask unmask bool
             <void> <meta<void>>
             <scalar> <meta<scalar>>
             <structure> <meta<structure>>
